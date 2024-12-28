@@ -23,7 +23,7 @@ ConsensusStat::~ConsensusStat() {}
 
 Status ConsensusStat::Accept(std::shared_ptr<ViewBlock>& v_block, uint32_t add_succ_num) {
     auto committed_consen_stat = GetMemberConsensusStat(
-        v_block->qc().leader_idx());
+        v_block->leader_idx());
     return Status::kSuccess;
 }
 
@@ -33,16 +33,16 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     }
 
     // 旧的 Commit 过滤掉
-    auto last_view = leader_last_commit_views_[v_block->qc().leader_idx()];
-    if (last_view >= v_block->qc().view()) {
+    auto last_view = leader_last_commit_views_[v_block->leader_idx()];
+    if (last_view >= v_block->view()) {
         return Status::kSuccess;
     }
-    leader_last_commit_views_[v_block->qc().leader_idx()] =
-        v_block->qc().view();
+    leader_last_commit_views_[v_block->leader_idx()] =
+        v_block->view();
 
 
     // SetMemberConsensusStat(
-    //     v_block->qc().leader_idx(), 
+    //     v_block->leader_idx(), 
     //     v_block->leader_consen_stat());
 
     // std::string ret;

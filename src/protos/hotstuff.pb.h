@@ -533,17 +533,17 @@ class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::view_block::protobuf::QcItem* mutable_tc();
   void set_allocated_tc(::shardora::view_block::protobuf::QcItem* tc);
 
-  // optional .shardora.view_block.protobuf.ViewBlockItem qc_view = 2;
-  bool has_qc_view() const;
-  void clear_qc_view();
-  static const int kQcViewFieldNumber = 2;
+  // optional .shardora.view_block.protobuf.QcItem qc = 2;
+  bool has_qc() const;
+  void clear_qc();
+  static const int kQcFieldNumber = 2;
   private:
-  const ::shardora::view_block::protobuf::ViewBlockItem& _internal_qc_view() const;
+  const ::shardora::view_block::protobuf::QcItem& _internal_qc() const;
   public:
-  const ::shardora::view_block::protobuf::ViewBlockItem& qc_view() const;
-  ::shardora::view_block::protobuf::ViewBlockItem* release_qc_view();
-  ::shardora::view_block::protobuf::ViewBlockItem* mutable_qc_view();
-  void set_allocated_qc_view(::shardora::view_block::protobuf::ViewBlockItem* qc_view);
+  const ::shardora::view_block::protobuf::QcItem& qc() const;
+  ::shardora::view_block::protobuf::QcItem* release_qc();
+  ::shardora::view_block::protobuf::QcItem* mutable_qc();
+  void set_allocated_qc(::shardora::view_block::protobuf::QcItem* qc);
 
   // optional uint64 elect_height = 3;
   bool has_elect_height() const;
@@ -556,8 +556,8 @@ class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
  private:
   void set_has_tc();
   void clear_has_tc();
-  void set_has_qc_view();
-  void clear_has_qc_view();
+  void set_has_qc();
+  void clear_has_qc();
   void set_has_elect_height();
   void clear_has_elect_height();
 
@@ -565,7 +565,7 @@ class NewViewMsg : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::shardora::view_block::protobuf::QcItem* tc_;
-  ::shardora::view_block::protobuf::ViewBlockItem* qc_view_;
+  ::shardora::view_block::protobuf::QcItem* qc_;
   ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
@@ -1692,58 +1692,58 @@ inline void NewViewMsg::set_allocated_tc(::shardora::view_block::protobuf::QcIte
   // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.NewViewMsg.tc)
 }
 
-// optional .shardora.view_block.protobuf.ViewBlockItem qc_view = 2;
-inline bool NewViewMsg::has_qc_view() const {
+// optional .shardora.view_block.protobuf.QcItem qc = 2;
+inline bool NewViewMsg::has_qc() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void NewViewMsg::set_has_qc_view() {
+inline void NewViewMsg::set_has_qc() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void NewViewMsg::clear_has_qc_view() {
+inline void NewViewMsg::clear_has_qc() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline const ::shardora::view_block::protobuf::ViewBlockItem& NewViewMsg::_internal_qc_view() const {
-  return *qc_view_;
+inline const ::shardora::view_block::protobuf::QcItem& NewViewMsg::_internal_qc() const {
+  return *qc_;
 }
-inline const ::shardora::view_block::protobuf::ViewBlockItem& NewViewMsg::qc_view() const {
-  const ::shardora::view_block::protobuf::ViewBlockItem* p = qc_view_;
-  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.NewViewMsg.qc_view)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::ViewBlockItem*>(
-      &::shardora::view_block::protobuf::_ViewBlockItem_default_instance_);
+inline const ::shardora::view_block::protobuf::QcItem& NewViewMsg::qc() const {
+  const ::shardora::view_block::protobuf::QcItem* p = qc_;
+  // @@protoc_insertion_point(field_get:shardora.hotstuff.protobuf.NewViewMsg.qc)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::view_block::protobuf::QcItem*>(
+      &::shardora::view_block::protobuf::_QcItem_default_instance_);
 }
-inline ::shardora::view_block::protobuf::ViewBlockItem* NewViewMsg::release_qc_view() {
-  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.NewViewMsg.qc_view)
-  clear_has_qc_view();
-  ::shardora::view_block::protobuf::ViewBlockItem* temp = qc_view_;
-  qc_view_ = NULL;
+inline ::shardora::view_block::protobuf::QcItem* NewViewMsg::release_qc() {
+  // @@protoc_insertion_point(field_release:shardora.hotstuff.protobuf.NewViewMsg.qc)
+  clear_has_qc();
+  ::shardora::view_block::protobuf::QcItem* temp = qc_;
+  qc_ = NULL;
   return temp;
 }
-inline ::shardora::view_block::protobuf::ViewBlockItem* NewViewMsg::mutable_qc_view() {
-  set_has_qc_view();
-  if (qc_view_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::ViewBlockItem>(GetArenaNoVirtual());
-    qc_view_ = p;
+inline ::shardora::view_block::protobuf::QcItem* NewViewMsg::mutable_qc() {
+  set_has_qc();
+  if (qc_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::view_block::protobuf::QcItem>(GetArenaNoVirtual());
+    qc_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.NewViewMsg.qc_view)
-  return qc_view_;
+  // @@protoc_insertion_point(field_mutable:shardora.hotstuff.protobuf.NewViewMsg.qc)
+  return qc_;
 }
-inline void NewViewMsg::set_allocated_qc_view(::shardora::view_block::protobuf::ViewBlockItem* qc_view) {
+inline void NewViewMsg::set_allocated_qc(::shardora::view_block::protobuf::QcItem* qc) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(qc_view_);
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(qc_);
   }
-  if (qc_view) {
+  if (qc) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      qc_view = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, qc_view, submessage_arena);
+      qc = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, qc, submessage_arena);
     }
-    set_has_qc_view();
+    set_has_qc();
   } else {
-    clear_has_qc_view();
+    clear_has_qc();
   }
-  qc_view_ = qc_view;
-  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.NewViewMsg.qc_view)
+  qc_ = qc;
+  // @@protoc_insertion_point(field_set_allocated:shardora.hotstuff.protobuf.NewViewMsg.qc)
 }
 
 // optional uint64 elect_height = 3;

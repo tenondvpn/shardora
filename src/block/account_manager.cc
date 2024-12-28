@@ -178,13 +178,13 @@ void AccountManager::HandleNormalFromTx(
     if (account_info == nullptr) {
         ZJC_INFO("get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u",
-            common::Encode::HexEncode(account_id).c_str(), view_block.qc().network_id(),
+            common::Encode::HexEncode(account_id).c_str(), view_block.network_id(),
             common::GlobalInfo::Instance()->network_id());
         account_info = std::make_shared<address::protobuf::AddressInfo>();
-        account_info->set_pool_index(view_block.qc().pool_index());
+        account_info->set_pool_index(view_block.pool_index());
         account_info->set_addr(account_id);
         account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(view_block.qc().network_id());
+        account_info->set_sharding_id(view_block.network_id());
     }
 
     if (account_info->latest_height() > block.height()) {
@@ -199,7 +199,7 @@ void AccountManager::HandleNormalFromTx(
     update_acc_con_.notify_one();
     ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
-        block.height(), view_block.qc().pool_index());
+        block.height(), view_block.pool_index());
 }
 
 void AccountManager::HandleCreateGenesisAcount(
@@ -212,13 +212,13 @@ void AccountManager::HandleCreateGenesisAcount(
     if (account_info == nullptr) {
         ZJC_INFO("get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u",
-            common::Encode::HexEncode(account_id).c_str(), view_block.qc().network_id(),
+            common::Encode::HexEncode(account_id).c_str(), view_block.network_id(),
             common::GlobalInfo::Instance()->network_id());
         account_info = std::make_shared<address::protobuf::AddressInfo>();
-        account_info->set_pool_index(view_block.qc().pool_index());
+        account_info->set_pool_index(view_block.pool_index());
         account_info->set_addr(account_id);
         account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(view_block.qc().network_id());
+        account_info->set_sharding_id(view_block.network_id());
     }
 
     if (account_info->latest_height() > block.height()) {
@@ -233,7 +233,7 @@ void AccountManager::HandleCreateGenesisAcount(
     update_acc_con_.notify_one();
     ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
-        block.height(), view_block.qc().pool_index());
+        block.height(), view_block.pool_index());
 }
 
 void AccountManager::HandleContractPrepayment(
@@ -260,7 +260,7 @@ void AccountManager::HandleContractPrepayment(
     update_acc_con_.notify_one();
     ZJC_INFO("contract prepayment address new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
-        block.height(), view_block.qc().pool_index());
+        block.height(), view_block.pool_index());
 }
 
 void AccountManager::HandleLocalToTx(
@@ -301,13 +301,13 @@ void AccountManager::HandleLocalToTx(
         if (account_info == nullptr) {
             ZJC_INFO("0 get address info failed create new address to this id: %s,"
                 "shard: %u, local shard: %u",
-                common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), view_block.qc().network_id(),
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), view_block.network_id(),
                 common::GlobalInfo::Instance()->network_id());
             account_info = std::make_shared<address::protobuf::AddressInfo>();
-            account_info->set_pool_index(view_block.qc().pool_index());
+            account_info->set_pool_index(view_block.pool_index());
             account_info->set_addr(to_txs.tos(i).to());
             account_info->set_type(address::protobuf::kNormal);
-            account_info->set_sharding_id(view_block.qc().network_id());
+            account_info->set_sharding_id(view_block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
@@ -337,8 +337,8 @@ void AccountManager::HandleContractCreateByRootTo(
 	ZJC_DEBUG("create contract by root to: %s, status: %d, sharding: %u, pool index: %u, contract_code: %s",
 		common::Encode::HexEncode(tx.to()).c_str(),
 		tx.status(),
-		view_block.qc().network_id(),
-		view_block.qc().pool_index(),
+		view_block.network_id(),
+		view_block.pool_index(),
 		tx.contract_code().c_str());
 	
 	if (tx.status() != consensus::kConsensusSuccess) {
@@ -356,9 +356,9 @@ void AccountManager::HandleContractCreateByRootTo(
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             auto& bytes_code = tx.storages(i).value();
             account_info->set_type(address::protobuf::kContract);
-            account_info->set_pool_index(view_block.qc().pool_index());
+            account_info->set_pool_index(view_block.pool_index());
             account_info->set_addr(tx.to());
-            account_info->set_sharding_id(view_block.qc().network_id());
+            account_info->set_sharding_id(view_block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(tx.amount());
             account_info->set_bytes_code(bytes_code);
@@ -368,8 +368,8 @@ void AccountManager::HandleContractCreateByRootTo(
             ZJC_INFO("create add local contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 tx.amount(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index());
+                view_block.network_id(),
+                view_block.pool_index());
             break;
 		}
 	}
@@ -387,13 +387,13 @@ void AccountManager::HandleCreateContract(
         if (account_info == nullptr) {
             ZJC_INFO("0 get address info failed create new address to this id: %s,"
                 "shard: %u, local shard: %u",
-                common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
+                common::Encode::HexEncode(tx.from()).c_str(), view_block.network_id(),
                 common::GlobalInfo::Instance()->network_id());
             account_info = std::make_shared<address::protobuf::AddressInfo>();
-            account_info->set_pool_index(view_block.qc().pool_index());
+            account_info->set_pool_index(view_block.pool_index());
             account_info->set_addr(tx.from());
             account_info->set_type(address::protobuf::kNormal);
-            account_info->set_sharding_id(view_block.qc().network_id());
+            account_info->set_sharding_id(view_block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(tx.balance());
             prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
@@ -422,9 +422,9 @@ void AccountManager::HandleCreateContract(
                 account_info = std::make_shared<address::protobuf::AddressInfo>();
                 auto& bytes_code = tx.storages(i).value();
                 account_info->set_type(address::protobuf::kContract);
-                account_info->set_pool_index(view_block.qc().pool_index());
+                account_info->set_pool_index(view_block.pool_index());
                 account_info->set_addr(tx.to());
-                account_info->set_sharding_id(view_block.qc().network_id());
+                account_info->set_sharding_id(view_block.network_id());
                 account_info->set_latest_height(block.height());
                 account_info->set_balance(tx.amount());
                 account_info->set_bytes_code(bytes_code);
@@ -432,14 +432,14 @@ void AccountManager::HandleCreateContract(
                 thread_update_accounts_queue_[thread_idx].push(account_info);
                 ZJC_INFO("1 get address info failed create new address to this id: %s,"
                     "shard: %u, local shard: %u",
-                    common::Encode::HexEncode(tx.to()).c_str(), view_block.qc().network_id(),
+                    common::Encode::HexEncode(tx.to()).c_str(), view_block.network_id(),
                     common::GlobalInfo::Instance()->network_id());
 
                 ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
                     common::Encode::HexEncode(tx.to()).c_str(),
                     tx.amount(),
-                    view_block.qc().network_id(),
-                    view_block.qc().pool_index());
+                    view_block.network_id(),
+                    view_block.pool_index());
                 break;
             }
         }
@@ -460,13 +460,13 @@ void AccountManager::HandleCreateContractByRootFrom(
     if (account_info == nullptr) {
         ZJC_INFO("0 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u",
-            common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
+            common::Encode::HexEncode(tx.from()).c_str(), view_block.network_id(),
             common::GlobalInfo::Instance()->network_id());
         account_info = std::make_shared<address::protobuf::AddressInfo>();
-        account_info->set_pool_index(view_block.qc().pool_index());
+        account_info->set_pool_index(view_block.pool_index());
         account_info->set_addr(account_id);
         account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(view_block.qc().network_id());
+        account_info->set_sharding_id(view_block.network_id());
         account_info->set_latest_height(block.height());
         account_info->set_balance(tx.balance());
         prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
@@ -485,7 +485,7 @@ void AccountManager::HandleCreateContractByRootFrom(
     update_acc_con_.notify_one();
     ZJC_INFO("contract create by root from new balance %s: %lu, height: %lu, pool: %u",
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
-        block.height(), view_block.qc().pool_index());
+        block.height(), view_block.pool_index());
 }
 
 void AccountManager::HandleContractExecuteTx(
@@ -613,17 +613,17 @@ void AccountManager::HandleJoinElectTx(
         ZJC_INFO("get address info failed create new address to this shard: %s",
             common::Encode::HexEncode(tx.from()).c_str());
         account_info = std::make_shared<address::protobuf::AddressInfo>();
-        account_info->set_pool_index(view_block.qc().pool_index());
+        account_info->set_pool_index(view_block.pool_index());
         account_info->set_addr(tx.from());
         account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(view_block.qc().network_id());
+        account_info->set_sharding_id(view_block.network_id());
         account_info->set_latest_height(block.height());
         account_info->set_balance(tx.balance());
         account_info->set_elect_pos(join_info.member_idx());
         prefix_db_->AddAddressInfo(tx.from(), *account_info);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u, elect pos: %u",
-            common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
+            common::Encode::HexEncode(tx.from()).c_str(), view_block.network_id(),
             common::GlobalInfo::Instance()->network_id(),
             join_info.member_idx());
 
@@ -638,7 +638,7 @@ void AccountManager::HandleJoinElectTx(
         prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
         ZJC_INFO("3 1 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u, elect pos: %u",
-            common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
+            common::Encode::HexEncode(tx.from()).c_str(), view_block.network_id(),
             common::GlobalInfo::Instance()->network_id(),
             join_info.member_idx());
     }
@@ -705,9 +705,9 @@ void AccountManager::NewBlockWithTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     // ZJC_DEBUG("now handle new block %u_%u_%lu %lu, gid: %s",
-    //     view_block_item.qc().network_id(), 
-    //     view_block_item.qc().pool_index(), 
-    //     view_block_item.qc().view(), 
+    //     view_block_item.network_id(), 
+    //     view_block_item.pool_index(), 
+    //     view_block_item.view(), 
     //     view_block_item.block_info().height(),
     //     common::Encode::HexEncode(tx.gid()).c_str());
     switch (tx.step()) {

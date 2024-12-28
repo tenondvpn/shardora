@@ -43,12 +43,12 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 //         ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
 //             "tx size: %u, hash: %s, elect height: %lu, "
 //             "tm height: %lu, gid: %s, status: %d, step: %d",
-//             view_block_item->qc().network_id(),
-//             view_block_item->qc().pool_index(),
+//             view_block_item->network_id(),
+//             view_block_item->pool_index(),
 //             block_item->height(),
 //             block_item->tx_list_size(),
-//             common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-//             view_block_item->qc().elect_height(),
+//             common::Encode::HexEncode(view_block_item->hash()).c_str(),
+//             view_block_item->elect_height(),
 //             block_item->timeblock_height(),
 //             common::Encode::HexEncode(tx_list[i].gid()).c_str(),
 //             tx_list[i].status(),
@@ -93,14 +93,14 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     const auto& tx_list = block_item->tx_list();
     std::string bitmap_str;
     std::string commit_bitmap_str;
-    block_shard_id->Append(view_block_item->qc().network_id());
-    block_pool_index->Append(view_block_item->qc().pool_index());
+    block_shard_id->Append(view_block_item->network_id());
+    block_pool_index->Append(view_block_item->pool_index());
     block_height->Append(block_item->height());
     block_prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
-    block_hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
+    block_hash->Append(common::Encode::HexEncode(view_block_item->hash()));
     block_version->Append(block_item->version());
     block_vss->Append(block_item->consistency_random());
-    block_elect_height->Append(view_block_item->qc().elect_height());
+    block_elect_height->Append(view_block_item->elect_height());
     block_bitmap->Append(common::Encode::HexEncode(bitmap_str));
     block_commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
     block_timestamp->Append(block_item->timestamp());
@@ -112,14 +112,14 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& tx = tx_list[i];
-        shard_id->Append(view_block_item->qc().network_id());
-        pool_index->Append(view_block_item->qc().pool_index());
+        shard_id->Append(view_block_item->network_id());
+        pool_index->Append(view_block_item->pool_index());
         height->Append(block_item->height());
         prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
-        hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
+        hash->Append(common::Encode::HexEncode(view_block_item->hash()));
         version->Append(block_item->version());
         vss->Append(block_item->consistency_random());
-        elect_height->Append(view_block_item->qc().elect_height());
+        elect_height->Append(view_block_item->elect_height());
         bitmap->Append(common::Encode::HexEncode(bitmap_str));
         commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
         timestamp->Append(block_item->timestamp());
@@ -133,7 +133,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         from_sign->Append("");
         to->Append(common::Encode::HexEncode(tx.to()));
         amount->Append(tx.amount());
-        if (view_block_item->qc().network_id() == 2 && tx.step() == 5) {
+        if (view_block_item->network_id() == 2 && tx.step() == 5) {
             gas_limit->Append(0);
             gas_used->Append(0);
             gas_price->Append(0);
@@ -170,13 +170,13 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         transfers->Append("");
         if (tx.step() == pools::protobuf::kNormalTo) {
             acc_account->Append(common::Encode::HexEncode(tx.to()));
-            acc_shard_id->Append(view_block_item->qc().network_id());
-            acc_pool_index->Append(view_block_item->qc().pool_index());
+            acc_shard_id->Append(view_block_item->network_id());
+            acc_pool_index->Append(view_block_item->pool_index());
             acc_balance->Append(tx.balance());
         } else {
             acc_account->Append(common::Encode::HexEncode(tx.from()));
-            acc_shard_id->Append(view_block_item->qc().network_id());
-            acc_pool_index->Append(view_block_item->qc().pool_index());
+            acc_shard_id->Append(view_block_item->network_id());
+            acc_pool_index->Append(view_block_item->pool_index());
             acc_balance->Append(tx.balance());
         }
 
@@ -184,7 +184,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             attr_account->Append(common::Encode::HexEncode(tx.from()));
             attr_tx_type->Append(tx.step());
             attr_to->Append(common::Encode::HexEncode(tx.to()));
-            attr_shard_id->Append(view_block_item->qc().network_id());
+            attr_shard_id->Append(view_block_item->network_id());
             std::string val;
             attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
             attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
@@ -294,15 +294,15 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 
                 ZJC_DEBUG("1 now handle local to idx: %d", i);
                 ZJC_DEBUG("now handle local to txs: %s", common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()).c_str());
-                shard_id->Append(view_block_item->qc().network_id());
-                pool_index->Append(view_block_item->qc().pool_index());
+                shard_id->Append(view_block_item->network_id());
+                pool_index->Append(view_block_item->pool_index());
                 height->Append(block_item->height());
                 prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
-                hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
+                hash->Append(common::Encode::HexEncode(view_block_item->hash()));
                 version->Append(block_item->version());
                 ZJC_DEBUG("1 0 now handle local to idx: %d", i);
                 vss->Append(block_item->consistency_random());
-                elect_height->Append(view_block_item->qc().elect_height());
+                elect_height->Append(view_block_item->elect_height());
                 bitmap->Append(common::Encode::HexEncode(bitmap_str));
                 commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
                 timestamp->Append(block_item->timestamp());
@@ -338,8 +338,8 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 
                 ZJC_DEBUG("2 now handle local to idx: %d", i);
                 acc_account->Append(common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()));
-                acc_shard_id->Append(view_block_item->qc().network_id());
-                acc_pool_index->Append(view_block_item->qc().pool_index());
+                acc_shard_id->Append(view_block_item->network_id());
+                acc_pool_index->Append(view_block_item->pool_index());
                 acc_balance->Append(to_txs.tos(to_tx_idx).balance());
                 ZJC_DEBUG("3 now handle local to idx: %d", i);
             }
@@ -349,9 +349,9 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     }
 
     ++batch_count_;
-    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->network_id(), view_block_item->pool_index(), block_item->height());
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
-    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->network_id(), view_block_item->pool_index(), block_item->height());
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
@@ -362,12 +362,12 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
             "tx size: %u, hash: %s, elect height: %lu, "
             "tm height: %lu, gid: %s, status: %d, step: %d",
-            view_block_item->qc().network_id(),
-            view_block_item->qc().pool_index(),
+            view_block_item->network_id(),
+            view_block_item->pool_index(),
             block_item->height(),
             block_item->tx_list_size(),
-            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-            view_block_item->qc().elect_height(),
+            common::Encode::HexEncode(view_block_item->hash()).c_str(),
+            view_block_item->elect_height(),
             block_item->timeblock_height(),
             common::Encode::HexEncode(tx_list[i].gid()).c_str(),
             tx_list[i].status(),

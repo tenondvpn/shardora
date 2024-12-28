@@ -21,7 +21,7 @@ message HotstuffMessage {
 
 message NewViewMsg {
     optional view_block.protobuf.QcItem tc = 1;
-    optional view_block.protobuf.ViewBlockItem qc_view = 2;
+    optional view_block.protobuf.QcItem qc = 2;
     optional uint64 elect_height = 3;
 }
 

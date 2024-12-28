@@ -34,8 +34,8 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
     GetQCWrappedByGenesis(pool_idx_, &qc);
     if (committedBlock) {
         ZJC_DEBUG("pool: %d, get leader success get latest commit block view: %lu, %s",
-            pool_idx_, committedBlock->qc().view(),
-            common::Encode::HexEncode(committedBlock->qc().view_block_hash()).c_str());
+            pool_idx_, committedBlock->view(),
+            common::Encode::HexEncode(committedBlock->hash()).c_str());
         qc_ptr = &committedBlock->qc();
     } else {
         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
@@ -48,7 +48,7 @@ common::BftMemberPtr LeaderRotation::GetLeader() {
         return nullptr;
     }
     
-    auto leader = getLeaderByRate(static_cast<uint64_t>(random_hash));
+    auto leader = getLeaderByRandom(static_cast<uint64_t>(random_hash));
     if (leader->public_ip == 0 || leader->public_port == 0) {
         // 刷新 members 的 ip port
         elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());

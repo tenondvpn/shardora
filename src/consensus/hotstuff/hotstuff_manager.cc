@@ -86,9 +86,7 @@ int HotstuffManager::Init(
                         ViewDurationSampleSize,
                         ViewDurationStartTimeoutMs,
                         ViewDurationMaxTimeoutMs,
-                        ViewDurationMultiplier),
-                std::bind(&ViewBlockChain::HighQC, chain),
-                std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1));
+                        ViewDurationMultiplier));
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
@@ -135,12 +133,12 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
     }
 
     // 由于验签很占资源，再检查一下数据库，避免重复同步
-    if (prefix_db_->HasViewBlockInfo(pb_vblock.qc().view_block_hash())) {
+    if (prefix_db_->HasViewBlockInfo(pb_vblock.hash())) {
         ZJC_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
-            pb_vblock.qc().network_id(),
-            pb_vblock.qc().pool_index(),
+            pb_vblock.network_id(),
+            pb_vblock.pool_index(),
             pb_vblock.block_info().height(),
-            common::Encode::HexEncode(pb_vblock.qc().view_block_hash()).c_str());
+            common::Encode::HexEncode(pb_vblock.hash()).c_str());
         return 0;
     }
     
@@ -162,10 +160,10 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
         return Status::kSuccess;
     }
 
-    // if (view_block_hash != vblock.qc().view_block_hash()) {
+    // if (view_block_hash != vblock.hash()) {
     //     ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
     //         common::Encode::HexEncode(view_block_hash).c_str(),
-    //         common::Encode::HexEncode(vblock.qc().view_block_hash()).c_str());
+    //         common::Encode::HexEncode(vblock.hash()).c_str());
     //     assert(false);
     //     return Status::kInvalidArgument;
     // }
@@ -176,37 +174,37 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     }
 
     auto view_block_hash = GetQCMsgHash(vblock.qc());
-    auto hf = hotstuff(vblock.qc().pool_index());
+    auto hf = hotstuff(vblock.pool_index());
     
     Status s = hf->crypto()->Verify(
             agg_sig,
             view_block_hash,
-            vblock.qc().network_id(), 
-            vblock.qc().elect_height());
+            vblock.network_id(), 
+            vblock.elect_height());
     if (s != Status::kSuccess) {
         ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
-            s, vblock.qc().view(), vblock.qc().view(),
-            vblock.qc().network_id(),
-            vblock.qc().pool_index(),
+            s, vblock.view(), vblock.view(),
+            vblock.network_id(),
+            vblock.pool_index(),
             vblock.block_info().height(),
-            vblock.qc().elect_height(),
+            vblock.elect_height(),
             network::kRootCongressNetworkId,
-            vblock.qc().network_id(),
-            vblock.qc().elect_height());
+            vblock.network_id(),
+            vblock.elect_height());
         return s;
     }
 
     ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
-            s, vblock.qc().view(), vblock.qc().view(),
-            vblock.qc().network_id(),
-            vblock.qc().pool_index(),
+            s, vblock.view(), vblock.view(),
+            vblock.network_id(),
+            vblock.pool_index(),
             vblock.block_info().height(),
-            vblock.qc().elect_height(),
+            vblock.elect_height(),
             network::kRootCongressNetworkId,
-            vblock.qc().network_id(),
-            vblock.qc().elect_height());    
+            vblock.network_id(),
+            vblock.elect_height());    
 #else
     libff::alt_bn128_G1 sign = libff::alt_bn128_G1::zero();
     try {
@@ -226,36 +224,36 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     }
 
     auto view_block_hash = GetQCMsgHash(vblock.qc());
-    auto hf = hotstuff(vblock.qc().pool_index());
+    auto hf = hotstuff(vblock.pool_index());
     Status s = hf->crypto()->VerifyThresSign(
-        vblock.qc().network_id(), 
-        vblock.qc().elect_height(), 
+        vblock.network_id(), 
+        vblock.elect_height(), 
         view_block_hash, 
         sign);
     if (s != Status::kSuccess) {
         ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
-            s, vblock.qc().view(), vblock.qc().view(),
-            vblock.qc().network_id(),
-            vblock.qc().pool_index(),
+            s, vblock.view(), vblock.view(),
+            vblock.network_id(),
+            vblock.pool_index(),
             vblock.block_info().height(),
-            vblock.qc().elect_height(),
+            vblock.elect_height(),
             network::kRootCongressNetworkId,
-            vblock.qc().network_id(),
-            vblock.qc().elect_height());
+            vblock.network_id(),
+            vblock.elect_height());
         return s;
     }
 
     ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
-            s, vblock.qc().view(), vblock.qc().view(),
-            vblock.qc().network_id(),
-            vblock.qc().pool_index(),
+            s, vblock.view(), vblock.view(),
+            vblock.network_id(),
+            vblock.pool_index(),
             vblock.block_info().height(),
-            vblock.qc().elect_height(),
+            vblock.elect_height(),
             network::kRootCongressNetworkId,
-            vblock.qc().network_id(),
-            vblock.qc().elect_height());
+            vblock.network_id(),
+            vblock.elect_height());
 #endif    
     return Status::kSuccess;
 }
@@ -333,6 +331,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
+        case RESET_TIMER:
+            hotstuff(hotstuff_msg.pool_index())->HandleResetTimerMsg(header);
+            break;                      
         default:
             ZJC_WARN("consensus message type is error.");
             break;
@@ -354,21 +355,18 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+            pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
+            
             bool has_user_tx = false;
             bool has_system_tx = false;
             // if (now_tm_ms >= prev_check_timer_single_tm_ms_ + 3000lu) {
                 prev_check_timer_single_tm_ms_ = now_tm_ms;
-                pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
+
                 auto gid_valid_func = [&](const std::string& gid) -> bool {
-                    auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
-                    if (!latest_block) {
-                        return false;
-                    }
-                    
                     return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
-                        gid, 
-                        latest_block->qc().view_block_hash());
-                };
+                            gid, 
+                            pacemaker(pool_idx)->HighQC()->view_block_hash());
+                };                
 
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
             // }

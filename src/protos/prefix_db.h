@@ -394,27 +394,27 @@ public:
     }
 
     bool SaveBlock(const view_block::protobuf::ViewBlockItem& view_block, db::DbWriteBatch& batch) {
-        assert(!view_block.qc().view_block_hash().empty());
-        if (BlockExists(view_block.qc().view_block_hash())) {
+        assert(!view_block.hash().empty());
+        if (BlockExists(view_block.hash())) {
             auto* block_item = &view_block.block_info();
-            ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
+            ZJC_DEBUG("view_block.hash() exists: %s, "
                 "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
                 "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
+                common::Encode::HexEncode(view_block.hash()).c_str(),
+                view_block.network_id(),
+                view_block.pool_index(),
                 block_item->height(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                view_block.qc().view(),
+                view_block.network_id(),
+                view_block.pool_index(),
+                view_block.view(),
                 block_item->tx_list_size(),
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().elect_height(),
+                common::Encode::HexEncode(view_block.hash()).c_str(),
+                view_block.elect_height(),
                 block_item->timeblock_height());
             std::string block_hash;
             assert(GetBlockHashWithBlockHeight(
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
+                view_block.network_id(),
+                view_block.pool_index(),
                 block_item->height(),
                 &block_hash));
             return false;
@@ -423,13 +423,13 @@ public:
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
-        key.append(view_block.qc().view_block_hash());
+        key.append(view_block.hash());
         auto& block = view_block.block_info();
         SaveBlockHashWithBlockHeight(
-            view_block.qc().network_id(),
-            view_block.qc().pool_index(),
+            view_block.network_id(),
+            view_block.pool_index(),
             block.height(),
-            view_block.qc().view_block_hash(),
+            view_block.hash(),
             batch);
         batch.Put(key, view_block.SerializeAsString());
         return true;
@@ -663,75 +663,75 @@ public:
     }
 
     void SaveViewBlockInfo(
-            uint32_t sharding_id,
-            uint32_t pool_index,
-            uint64_t block_height,
             const view_block::protobuf::ViewBlockItem& pb_view_block,
             std::shared_ptr<db::DbWriteBatch>& db_batch) {
         std::string hash_key;
         hash_key.append(kViewBlockHashKeyPrefix);
-        hash_key.append(pb_view_block.qc().view_block_hash());
+        hash_key.append(pb_view_block.hash());
         db_batch->Put(hash_key, pb_view_block.SerializeAsString());
         std::string pre_hash_key;
         auto* view_block = &pb_view_block;
-        if (pb_view_block.qc().view() > 0) {
-            if (pb_view_block.parent_hash().empty()) {
-                ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
-                    "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
-                    view_block->qc().network_id(), view_block->qc().pool_index(), 
-                    view_block->qc().view(), view_block->block_info().height(),
-                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-                    common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-                    common::Encode::HexEncode(pre_hash_key).c_str(),
-                    common::Encode::HexEncode(hash_key).c_str());
-            }
+        // if (pb_view_block.view() > 0) {
+        //     if (pb_view_block.parent_hash().empty()) {
+        //         ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
+        //             "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
+        //             view_block->network_id(), view_block->pool_index(), 
+        //             view_block->view(), view_block->block_info().height(),
+        //             common::Encode::HexEncode(view_block->hash()).c_str(),
+        //             common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+        //             common::Encode::HexEncode(pre_hash_key).c_str(),
+        //             common::Encode::HexEncode(hash_key).c_str());
+        //     }
 
-            pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-            pre_hash_key.append(pb_view_block.parent_hash());
-            pre_hash_key.append(pb_view_block.qc().view_block_hash());
-            db_batch->Put(pre_hash_key, hash_key);
-        }
+        //     pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+        //     pre_hash_key.append(pb_view_block.parent_hash());
+        //     pre_hash_key.append(pb_view_block.hash());
+        //     db_batch->Put(pre_hash_key, hash_key);
+        // }
         
         ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
             "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
-            view_block->qc().network_id(), view_block->qc().pool_index(), 
-            view_block->qc().view(), view_block->block_info().height(),
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+            view_block->network_id(), view_block->pool_index(), 
+            view_block->view(), view_block->block_info().height(),
+            common::Encode::HexEncode(view_block->hash()).c_str(),
             common::Encode::HexEncode(view_block->parent_hash()).c_str(),
             common::Encode::HexEncode(pre_hash_key).c_str(),
             common::Encode::HexEncode(hash_key).c_str());
     }
 
-    void GetChildrenViewBlock(
-            const std::string& parent_hash,
-            std::vector<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& res_vec) {
-        std::string pre_hash_key;
-        pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-        pre_hash_key.append(parent_hash);
-        std::map<std::string, std::string> view_block_map;
-        db_->GetAllPrefix(pre_hash_key, view_block_map);
-        ZJC_DEBUG("now get parent hash: %s, prefix: %s, get size: %u", 
-            common::Encode::HexEncode(parent_hash).c_str(),
-            common::Encode::HexEncode(pre_hash_key).c_str(),
-            view_block_map.size());
-        for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
-            auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
-            auto& view_block = *view_block_ptr;
-            if (!GetViewBlockInfo(iter->second, view_block)) {
-                ZJC_DEBUG("invalid view block");
-                // assert(false);
-                continue;
-            }
+    // void GetChildrenViewBlock(
+    //         const std::string& parent_hash,
+    //         std::vector<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& res_vec) {
+    //     std::string pre_hash_key;
+    //     pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+    //     pre_hash_key.append(parent_hash);
+    //     std::map<std::string, std::string> view_block_map;
+    //     db_->GetAllPrefix(pre_hash_key, view_block_map);
+    //     ZJC_DEBUG("now get parent hash: %s, prefix: %s, get size: %u", 
+    //         common::Encode::HexEncode(parent_hash).c_str(),
+    //         common::Encode::HexEncode(pre_hash_key).c_str(),
+    //         view_block_map.size());
+    //     for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
+    //         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+    //         auto& view_block = *view_block_ptr;
+    //         if (!GetViewBlockInfo(iter->second, view_block)) {
+    //             ZJC_DEBUG("invalid view block");
+    //             // assert(false);
+    //             continue;
+    //         }
 
-            res_vec.push_back(view_block_ptr);
-        }
-    }
+    //         res_vec.push_back(view_block_ptr);
+    //     }
+    // }
 
     bool GetViewBlockInfo(
-            const std::string& hash_key, 
+            const std::string& view_block_hash, 
             view_block::protobuf::ViewBlockItem& view_block) {
-        ZJC_DEBUG("now get view block hash: %s", common::Encode::HexEncode(hash_key).c_str());
+        ZJC_DEBUG("now get view block hash: %s", common::Encode::HexEncode(view_block_hash).c_str());
         std::string val;
+        std::string hash_key;
+        hash_key.append(kViewBlockHashKeyPrefix);
+        hash_key.append(view_block_hash);   
         auto st = db_->Get(hash_key, &val);
         if (!st.ok()) {
             assert(false);
@@ -1934,13 +1934,13 @@ public:
         value.resize(24);
         uint64_t* val_data = (uint64_t*)value.data();
         memset(val_data, 0, 24);
-        val_data[0] = view_block->qc().network_id();
-        val_data[1] = view_block->qc().pool_index();
+        val_data[0] = view_block->network_id();
+        val_data[1] = view_block->pool_index();
         val_data[2] = view_block->block_info().height();
         db_batch.Put(key, value);
         ZJC_DEBUG("success save latest to block: %u_%u_%lu",
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
+            view_block->network_id(), 
+            view_block->pool_index(), 
             view_block->block_info().height());
     }
 
@@ -2019,9 +2019,9 @@ public:
     void SaveLatestLeaderProposeMessage(const transport::protobuf::Header& header) {
         std::string key;
         key.append(kLatestLeaderProposeMessage);
-        uint32_t network_id = header.hotstuff().pro_msg().view_item().qc().network_id();
+        uint32_t network_id = header.hotstuff().pro_msg().view_item().network_id();
         key.append((char*)&network_id, sizeof(network_id));
-        uint32_t pool_idx = header.hotstuff().pro_msg().view_item().qc().pool_index();
+        uint32_t pool_idx = header.hotstuff().pro_msg().view_item().pool_index();
         key.append((char*)&pool_idx, sizeof(pool_idx));
         auto st = db_->Put(key, header.SerializeAsString());
         if (!st.ok()) {

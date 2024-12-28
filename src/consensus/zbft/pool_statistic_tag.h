@@ -23,7 +23,7 @@ public:
             std::unordered_map<std::string, int64_t>& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         ZJC_WARN("succcess call pool statistic tag pool: %d, view: %lu", 
-            view_block.qc().pool_index(), view_block.qc().view());
+            view_block.pool_index(), view_block.view());
         return consensus::kConsensusSuccess;
     }
 private:

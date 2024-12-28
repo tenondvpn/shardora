@@ -95,9 +95,9 @@ bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item) {
 //     msg.append(qc_hash);
 //     msg.append(block_hash);
 //     msg.append(view_block_item.parent_hash());
-//     auto leader_idx = view_block_item.qc().leader_idx();
+//     auto leader_idx = view_block_item.leader_idx();
 //     msg.append((char*)&(leader_idx), sizeof(leader_idx));
-//     auto view = view_block_item.qc().view();
+//     auto view = view_block_item.view();
 //     msg.append((char*)&(view), sizeof(view));
 //     msg.append(leader_consen_stat_hash);
 //     if (view_block_item.has_leader_consen_stat()) {

@@ -2,6 +2,8 @@
 
 #include <bls/bls_utils.h>
 #include <cmath>
+#include <common/log.h>
+#include <common/utils.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <utility>
 #include <vector>
@@ -711,15 +713,15 @@ int GenesisBlockInit::CreateElectBlock(
     storage->set_value(ec_block.SerializeAsString());
     tenon_block->set_version(common::kTransactionVersion);
     // 这个 pool index 用了 shard 的值而已
-    view_block_ptr->set_parent_hash(root_pre_vb_hash);
-    if (CreateAllQc(
+    CreateViewBlock(
             network::kRootCongressNetworkId,
+            root_pre_vb_hash,
             shard_netid,
-            hotstuff::BeforeGenesisView, 
-            root_genesis_nodes, 
-            view_block_ptr) != kInitSuccess) {
+            view,
+            view_block_ptr);
+    if (CreateCommitQC(root_genesis_nodes, view_block_ptr) != kInitSuccess) {
         assert(false);
-        return kInitError;
+        return kInitError;        
     }
     
     auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
@@ -736,7 +738,7 @@ int GenesisBlockInit::CreateElectBlock(
     block_mgr_->GenesisNewBlock(view_block_ptr);
     StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
     root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
-    root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
+    root_pre_vb_hash = view_block_ptr->hash();
     db_->Put(db_batch);
     auto account_ptr = account_mgr_->GetAcountInfoFromDb(account_info->addr());
     if (account_ptr == nullptr) {
@@ -752,31 +754,43 @@ int GenesisBlockInit::CreateElectBlock(
     return kInitSuccess;
 }
 
-int GenesisBlockInit::CreateAllQc(
-        uint32_t  network_id,
-        uint32_t  pool_index,
-        uint64_t view,
-        const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
-        std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
-    auto* commit_qc = view_block_ptr->mutable_qc();
-    commit_qc->set_network_id(network_id);
-    commit_qc->set_pool_index(pool_index);
-    commit_qc->set_view(view);
-    commit_qc->set_leader_idx(0);
-    commit_qc->set_elect_height(1);
-    auto view_block_hash = hotstuff::GetBlockHash(*view_block_ptr);
-    commit_qc->set_view_block_hash(view_block_hash);
+void GenesisBlockInit::CreateViewBlock(
+        uint32_t network_id,
+        hotstuff::HashStr prehash,
+        uint32_t pool_idx,
+        hotstuff::View view,
+        std::shared_ptr<hotstuff::ViewBlock>& view_block) {
+    view_block->set_network_id(network_id);
+    view_block->set_pool_index(pool_idx);
+    view_block->set_parent_hash(prehash);
+    view_block->set_leader_idx(0);
+    view_block->set_elect_height(1);
+    auto* qc = view_block->mutable_qc();
+    hotstuff::GetQCWrappedByGenesis(pool_idx, qc);
+    view_block->set_view(view);
+    auto view_block_hash = hotstuff::GetBlockHash(*view_block);
+    view_block->set_hash(view_block_hash);
+}
+
+int GenesisBlockInit::CreateCommitQC(
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+        std::shared_ptr<hotstuff::ViewBlock>& vblock) {
     std::shared_ptr<libff::alt_bn128_G1> agg_sign;
-    BlsAggSignViewBlock(genesis_nodes, *commit_qc, agg_sign);
+    BlsAggSignViewBlock(genesis_nodes, vblock, agg_sign);
     if (!agg_sign) {
         assert(false);
         return kInitError;
     }
 
+    auto* commit_qc = vblock->mutable_self_commit_qc();
+    commit_qc->set_network_id(common::GlobalInfo::Instance()->network_id());
+    commit_qc->set_pool_index(vblock->pool_index());
     commit_qc->set_sign_x(libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
     commit_qc->set_sign_y(libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
-    ZJC_DEBUG("success create qc: %u_%u_%lu",
-        network_id, pool_index, view_block_ptr->block_info().height());
+    commit_qc->set_view(vblock->view());
+    commit_qc->set_leader_idx(vblock->leader_idx());
+    commit_qc->set_elect_height(vblock->elect_height());
+    commit_qc->set_view_block_hash(vblock->hash());
     return kInitSuccess;
 }
 
@@ -791,7 +805,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
     GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
-    hotstuff::View root_single_block_view = 0;
+    hotstuff::View root_single_block_view = hotstuff::GenesisView;
     // for root single block chain
     // 呃，这个账户不是已经创建了么
     auto root_pool_addr = common::kRootPoolsAddress;
@@ -813,15 +827,16 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_height(root_single_block_height++);
         // TODO 此处 network_id 一定是 root
-        view_block_ptr->set_parent_hash(root_pre_vb_hash);
-        if (CreateAllQc(
+        CreateViewBlock(
                 common::GlobalInfo::Instance()->network_id(),
+                root_pre_vb_hash,
                 common::kRootChainPoolIndex,
-                root_single_block_view++, 
-                genesis_nodes, 
-                view_block_ptr) != kInitSuccess) {
+                root_single_block_view++,
+                view_block_ptr);
+
+        if (CreateCommitQC(genesis_nodes, view_block_ptr) != kInitSuccess) {
             assert(false);
-            return kInitError;
+            return kInitError;            
         }
         
         fputs((common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(),
@@ -840,7 +855,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t tm_with_block_height;
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
-        root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
+        root_pre_vb_hash = view_block_ptr->hash();
         db_->Put(db_batch);
     }
 
@@ -880,16 +895,18 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //         vss_random_attr->set_value(std::to_string(now_tm));
         tenon_block->set_version(common::kTransactionVersion);
         // TODO network_id 一定是 root
-        view_block_ptr->set_parent_hash(root_pre_vb_hash);
-        if (CreateAllQc(
+        CreateViewBlock(
                 common::GlobalInfo::Instance()->network_id(),
+                root_pre_vb_hash,
                 common::kRootChainPoolIndex,
-                root_single_block_view++, 
-                genesis_nodes, 
-                view_block_ptr) != kInitSuccess) {
+                root_single_block_view++,
+                view_block_ptr);
+
+        if (CreateCommitQC(genesis_nodes, view_block_ptr) != kInitSuccess) {
             assert(false);
-            return kInitError;
+            return kInitError;            
         }
+        
         auto tmp_str = view_block_ptr->SerializeAsString();
         
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
@@ -916,7 +933,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
 
         root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
-        root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
+        root_pre_vb_hash = view_block_ptr->hash();
         db_->Put(db_batch);
     }
 
@@ -1042,7 +1059,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     std::string prehashes[common::kImmutablePoolSize]; // 256
     std::string vb_prehashes[common::kImmutablePoolSize] = {""};
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {};
+    std::fill(std::begin(vb_latest_view), std::end(vb_latest_view), hotstuff::GenesisView);
     
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
@@ -1176,19 +1194,20 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
 
-        view_block_ptr->set_parent_hash(vb_prehashes[iter->first]);
-        if (CreateAllQc(
+        CreateViewBlock(
                 network::kRootCongressNetworkId,
+                vb_prehashes[iter->first],
                 iter->first,
-                vb_latest_view[iter->first]++, 
-                root_genesis_nodes, 
-                view_block_ptr) != kInitSuccess) {
+                vb_latest_view[iter->first]++,
+                view_block_ptr);
+
+        if (CreateCommitQC(root_genesis_nodes, view_block_ptr) != kInitSuccess) {
             assert(false);
-            return kInitError;
+            return kInitError;            
         }
 
-        pool_prev_vb_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
-        vb_prehashes[iter->first] = view_block_ptr->qc().view_block_hash();
+        pool_prev_vb_hash_map[iter->first] = view_block_ptr->hash();
+        vb_prehashes[iter->first] = view_block_ptr->hash();
         
         // 提交 view block
         // 更新交易池最新信息
@@ -1366,37 +1385,42 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
 bool GenesisBlockInit::BlsAggSignViewBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
-        const view_block::protobuf::QcItem& commit_qc,
+        const std::shared_ptr<hotstuff::ViewBlock>& vblock,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
+    auto qc_ptr = std::make_shared<hotstuff::QC>();
+    qc_ptr->set_network_id(vblock->network_id());
+    qc_ptr->set_pool_index(vblock->pool_index());
+    qc_ptr->set_view(vblock->view());
+    qc_ptr->set_view_block_hash(vblock->hash());
+    qc_ptr->set_elect_height(vblock->elect_height());
+    qc_ptr->set_leader_idx(vblock->leader_idx());
+
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
     std::vector<size_t> idx_vec;
-    auto qc_hash = hotstuff::GetQCMsgHash(commit_qc);
+    auto qc_hash = hotstuff::GetQCMsgHash(*qc_ptr);
     auto g1_hash = libBLS::Bls::Hashing(qc_hash);
     std::mutex mutex;
+
     auto sign_task = [&](uint32_t i) {
         libff::alt_bn128_G1 sign;
         bls::BlsSign::Sign(
-            t,
-            n,
-            genesis_nodes[i]->bls_prikey,
-            g1_hash,
-            &sign);
+                t,
+                n,
+                genesis_nodes[i]->bls_prikey,
+                g1_hash,
+                &sign);
 
-        ZJC_DEBUG("use network %u, index: %d, prikey: %s",
-            commit_qc.network_id(), i, 
-            libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[i]->bls_prikey).c_str());
         std::lock_guard<std::mutex> lock(mutex);
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
-        ZJC_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
     };
 
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < t; ++i) {
         threads.emplace_back(sign_task, i);
-        if (threads.size() >= 1 || i == t - 1) {
+        if (threads.size() >= 8 || i == t - 1) {
             for (uint32_t i = 0; i < threads.size(); ++i) {
                 threads[i].join();
             }
@@ -1412,16 +1436,10 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
-    if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
-        ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
-            commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
+    if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[vblock->network_id()])) {
+        ZJC_FATAL("agg sign failed shard: %u", vblock->network_id());
         return false;
     }
-
-    ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s",
-        commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
     agg_sign->to_affine_coordinates();
     return true;
 } catch (std::exception& e) {
@@ -1429,18 +1447,83 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
     return false;
 }
 
+// bool GenesisBlockInit::BlsAggSignViewBlock(
+//         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+//         const view_block::protobuf::QcItem& commit_qc,
+//         std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
+//     std::vector<libff::alt_bn128_G1> all_signs;
+//     uint32_t n = genesis_nodes.size();
+//     uint32_t t = common::GetSignerCount(n);
+//     std::vector<size_t> idx_vec;
+//     auto qc_hash = hotstuff::GetQCMsgHash(commit_qc);
+//     auto g1_hash = libBLS::Bls::Hashing(qc_hash);
+//     std::mutex mutex;
+//     auto sign_task = [&](uint32_t i) {
+//         libff::alt_bn128_G1 sign;
+//         bls::BlsSign::Sign(
+//             t,
+//             n,
+//             genesis_nodes[i]->bls_prikey,
+//             g1_hash,
+//             &sign);
+
+//         ZJC_DEBUG("use network %u, index: %d, prikey: %s",
+//             commit_qc.network_id(), i, 
+//             libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[i]->bls_prikey).c_str());
+//         std::lock_guard<std::mutex> lock(mutex);
+//         all_signs.push_back(sign);
+//         idx_vec.push_back(i + 1);
+//         ZJC_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
+//     };
+
+//     std::vector<std::thread> threads;
+//     for (uint32_t i = 0; i < t; ++i) {
+//         threads.emplace_back(sign_task, i);
+//         if (threads.size() >= 1 || i == t - 1) {
+//             for (uint32_t i = 0; i < threads.size(); ++i) {
+//                 threads[i].join();
+//             }
+
+//             threads.clear();
+//         }        
+//     }
+
+//     libBLS::Bls bls_instance = libBLS::Bls(t, n);
+//     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+//     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+//     agg_sign = std::make_shared<libff::alt_bn128_G1>(
+//         bls_instance.SignatureRecover(
+//             all_signs,
+//             lagrange_coeffs));
+//     if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
+//         ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
+//             commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
+//             libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
+//         return false;
+//     }
+
+//     ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s",
+//         commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
+//     agg_sign->to_affine_coordinates();
+//     return true;
+// } catch (std::exception& e) {
+//     ZJC_ERROR("catch bls exception: %s", e.what());
+//     return false;
+// }
+
 void GenesisBlockInit::AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         db::DbWriteBatch& db_batch) {
     auto* block = &view_block->block_info();
     pools::protobuf::PoolLatestInfo pool_info;
     pool_info.set_height(block->height());
-    pool_info.set_hash(view_block->qc().view_block_hash());
+    pool_info.set_hash(view_block->hash());
     pool_info.set_timestamp(block->timestamp());
     prefix_db_->SaveLatestPoolInfo(
-        view_block->qc().network_id(), view_block->qc().pool_index(), pool_info, db_batch);
+        view_block->network_id(), view_block->pool_index(), pool_info, db_batch);
     ZJC_DEBUG("success add pool latest info: %u, %u, %lu, %lu",
-        view_block->qc().network_id(), view_block->qc().pool_index(), block->height(), block->timestamp());
+        view_block->network_id(), view_block->pool_index(), block->height(), block->timestamp());
 }
 
 // 在 net_id 中为 shard 节点创建块
@@ -1538,31 +1621,26 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         pool_height[pool_index] = pool_height[pool_index] + 1;
         tenon_block->set_timeblock_height(0);
         // TODO network 就是 net_id
-        view_block_ptr->set_parent_hash(pool_prev_vb_hash_map[pool_index]);
+        CreateViewBlock(
+                net_id,
+                pool_prev_vb_hash_map[pool_index],
+                pool_index,
+                pool_latest_view[pool_index]++,
+                view_block_ptr);
         if (net_id == network::kRootCongressNetworkId) {
-            if (CreateAllQc(
-                    net_id,
-                    pool_index,
-                    pool_latest_view[pool_index]++, 
-                    root_genesis_nodes, 
-                    view_block_ptr) != kInitSuccess) {
+            if (CreateCommitQC(root_genesis_nodes, view_block_ptr) != kInitSuccess) {
                 assert(false);
-                return kInitError;
+                return kInitError;                
             }
         } else {
-            if (CreateAllQc(
-                    net_id,
-                    pool_index,
-                    pool_latest_view[pool_index]++, 
-                    cons_genesis_nodes, 
-                    view_block_ptr) != kInitSuccess) {
+            if (CreateCommitQC(cons_genesis_nodes, view_block_ptr) != kInitSuccess) {
                 assert(false);
-                return kInitError;
+                return kInitError;                
             }
         }
 
-        pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
-        pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
+        pool_prev_hash_map[pool_index] = view_block_ptr->hash();
+        pool_prev_vb_hash_map[pool_index] = view_block_ptr->hash();
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
@@ -1647,7 +1725,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
+    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1];
+    std::fill(std::begin(vb_latest_view), std::end(vb_latest_view), hotstuff::GenesisView);
     
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
@@ -1716,20 +1795,22 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_height(0);
         tenon_block->set_timeblock_height(0);
-        view_block_ptr->set_parent_hash("");
-        if (CreateAllQc(
-                net_id,
-                iter->first,
-                vb_latest_view[iter->first]++, 
-                cons_genesis_nodes, 
-                view_block_ptr) != kInitSuccess) {
-            assert(false);
-            return kInitError;
-        }
 
+        CreateViewBlock(
+                net_id,
+                "",
+                iter->first,
+                vb_latest_view[iter->first]++,
+                view_block_ptr);
+        
+        if (CreateCommitQC(cons_genesis_nodes, view_block_ptr) != kInitSuccess) {
+            assert(false);
+            return kInitError;            
+        }
+        
         // 更新所有 pool 的 prehash
-        pool_prev_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
-        pool_prev_vb_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
+        pool_prev_hash_map[iter->first] = view_block_ptr->hash();
+        pool_prev_vb_hash_map[iter->first] = view_block_ptr->hash();
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
@@ -1840,7 +1921,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 
     for (uint32_t i = 0; i < shard_config["accounts"].size(); i++) {
         std::string account_id = shard_config["accounts"][i].as<std::string>();
-        pool_index_map.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
+        pool_index_map.insert(std::make_pair(i % common::kImmutablePoolSize, common::Encode::HexDecode(account_id)));
     }
     return pool_index_map;
 }
@@ -1848,7 +1929,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 void GenesisBlockInit::GenerateRootAccounts() {
     for (uint32_t i = 0; i < genesis_config_["root"]["accounts"].size(); i++) {
         std::string account_id = genesis_config_["root"]["accounts"][i].as<std::string>();
-        root_account_with_pool_index_map_.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
+        root_account_with_pool_index_map_.insert(std::make_pair(i % common::kImmutablePoolSize, common::Encode::HexDecode(account_id)));
     }
 }
 

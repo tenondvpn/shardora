@@ -38,8 +38,8 @@ struct CompareProposeMsg {
     bool operator()(
             const std::shared_ptr<ProposeMsgWrapper>& lhs, 
             const std::shared_ptr<ProposeMsgWrapper>& rhs) const {
-        auto lview = lhs->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view();
-        auto rview = rhs->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view();
+        auto lview = lhs->msg_ptr->header.hotstuff().pro_msg().view_item().view();
+        auto rview = rhs->msg_ptr->header.hotstuff().pro_msg().view_item().view();
         return lview > rview;
     }
 };
@@ -86,7 +86,7 @@ public:
             auto iter = leader_view_with_propose_msgs_.find(key);
             if (iter != leader_view_with_propose_msgs_.end()) {
                 if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view() > 
-                        iter->second->view_block_ptr->qc().view()) {
+                        iter->second->view_block_ptr->view()) {
                     assert(derectly_call_accept_and_store_fn_ != nullptr);
                     Status prev_s = derectly_call_accept_and_store_fn_(
                         iter->second, 
@@ -98,7 +98,7 @@ public:
                             iter->second->view_block_ptr->block_info().timestamp());
                         assert(false);
                     }
-                }                                                                                                                                                                                                                                              
+                }
                 
                 leader_view_with_propose_msgs_.erase(iter);
                 CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);

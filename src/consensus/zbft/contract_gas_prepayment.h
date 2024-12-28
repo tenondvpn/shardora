@@ -28,7 +28,7 @@ public:
             return;
         }
 
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
+        if (block.height() <= pools_max_heights_[view_block.pool_index()]) {
 //             assert(false);
             return;
         }
@@ -82,11 +82,11 @@ public:
             ZJC_INFO("success save contract prepayment contract: %s, prepayment: %lu, pool: %u, height: %lu",
                 common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
                 to_txs.tos(i).balance(),
-                view_block.qc().pool_index(),
+                view_block.pool_index(),
                 block.height());
         }
 
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
+        pools_max_heights_[view_block.pool_index()] = block.height();
     }
 
     void HandleUserCreate(
@@ -98,7 +98,7 @@ public:
             return;
         }
 
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
+        if (block.height() <= pools_max_heights_[view_block.pool_index()]) {
             return;
         }
 
@@ -111,13 +111,13 @@ public:
         std::string key = tx.to() + tx.from();
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.contract_prepayment());
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
+        pools_max_heights_[view_block.pool_index()] = block.height();
         ZJC_INFO("success save contract prepayment contract: %s, "
             "set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.contract_prepayment(),
-            view_block.qc().pool_index(),
+            view_block.pool_index(),
             block.height());
     }
 
@@ -126,7 +126,7 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         auto& block = view_block.block_info();
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
+        if (block.height() <= pools_max_heights_[view_block.pool_index()]) {
             return;
         }
 
@@ -139,12 +139,12 @@ public:
         std::string key = tx.to() + tx.from();
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.balance());
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
+        pools_max_heights_[view_block.pool_index()] = block.height();
         ZJC_INFO("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.balance(),
-            view_block.qc().pool_index(),
+            view_block.pool_index(),
             block.height());
     }
 

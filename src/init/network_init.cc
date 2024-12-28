@@ -383,10 +383,10 @@ void NetworkInit::AddCmds() {
             return;
         }
 
-        std::cout << "highQC: " << chain->HighViewBlock()->qc().view()
+        std::cout << "highQC: " << pacemaker->HighQC()->view()
                   << ",highTC: " << pacemaker->HighTC()->view()
                   << ",chainSize: " << chain->Size()
-                  << ",commitView: " << chain->LatestCommittedBlock()->qc().view()
+                  << ",commitView: " << chain->LatestCommittedBlock()->view()
                   << ",CurView: " << pacemaker->CurView() << std::endl;
         chain->Print();
     });
@@ -1130,33 +1130,33 @@ void NetworkInit::AddBlockItemToCache(
         db::DbWriteBatch& db_batch) {
     // TODO: fix
     auto* block = &view_block->block_info();
-    if (prefix_db_->BlockExists(view_block->qc().view_block_hash())) {
+    if (prefix_db_->BlockExists(view_block->hash())) {
         ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-            view_block->qc().network_id(),
-            view_block->qc().pool_index(),
+            view_block->network_id(),
+            view_block->pool_index(),
             block->height(),
             block->tx_list_size(),
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+            common::Encode::HexEncode(view_block->hash()).c_str());
         return;
     }
 
-    if (prefix_db_->BlockExists(view_block->qc().network_id(), view_block->qc().pool_index(), block->height())) {
+    if (prefix_db_->BlockExists(view_block->network_id(), view_block->pool_index(), block->height())) {
         ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-            view_block->qc().network_id(),
-            view_block->qc().pool_index(),
+            view_block->network_id(),
+            view_block->pool_index(),
             block->height(),
             block->tx_list_size(),
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+            common::Encode::HexEncode(view_block->hash()).c_str());
         return;
     }
 
     ZJC_DEBUG("cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-        view_block->qc().network_id(),
-        view_block->qc().pool_index(),
+        view_block->network_id(),
+        view_block->pool_index(),
         block->height(),
         block->tx_list_size(),
-        common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-    if (network::IsSameToLocalShard(view_block->qc().network_id())) {
+        common::Encode::HexEncode(view_block->hash()).c_str());
+    if (network::IsSameToLocalShard(view_block->network_id())) {
         pools_mgr_->UpdateLatestInfo(view_block, db_batch);
     } else {
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
@@ -1220,11 +1220,11 @@ void NetworkInit::HandleTimeBlock(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     ZJC_DEBUG("time block coming %u_%u_%lu, %u_%u_%lu",
-        view_block->qc().network_id(), 
-        view_block->qc().pool_index(), 
-        view_block->qc().view(), 
-        view_block->qc().network_id(), 
-        view_block->qc().pool_index(), 
+        view_block->network_id(), 
+        view_block->pool_index(), 
+        view_block->view(), 
+        view_block->network_id(), 
+        view_block->pool_index(), 
         view_block->block_info().height());
     auto& block = view_block->block_info();
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
@@ -1256,7 +1256,7 @@ void NetworkInit::HandleElectionBlock(
         db::DbWriteBatch& db_batch) {
     auto* block = &view_block->block_info();
     ZJC_DEBUG("new elect block coming, net: %u, pool: %u, height: %lu",
-        view_block->qc().network_id(), view_block->qc().pool_index(), block->height());
+        view_block->network_id(), view_block->pool_index(), block->height());
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
@@ -1382,7 +1382,7 @@ void NetworkInit::HandleElectionBlock(
         "elect height: %lu, used elect height: %lu, net: %u, "
         "local net id: %u, prev elect height: %lu",
         block->height(), elect_height, 
-        view_block->qc().elect_height(), 
+        view_block->elect_height(), 
         elect_block->shard_network_id(), 
         common::GlobalInfo::Instance()->network_id(),
         elect_block->prev_members().prev_elect_height());
