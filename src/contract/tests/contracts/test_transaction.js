@@ -659,7 +659,7 @@ async function test_transfers() {
             to_sk = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
         }
         let to_addr = sk_to_account(to_sk);
-        // llog("to_addr: " + to_addr);
+        llog("to_addr: " + to_addr);
         let from_shard = testcases_transfer[i].from_shard;
         var need_create = testcases_transfer[i].need_create;
         let create_ok = testcases_transfer[i].create_ok;
