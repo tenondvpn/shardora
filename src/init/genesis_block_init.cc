@@ -724,16 +724,6 @@ int GenesisBlockInit::CreateElectBlock(
         return kInitError;        
     }
     
-    // if (CreateAllQc(
-    //         network::kRootCongressNetworkId,
-    //         shard_netid,
-    //         hotstuff::BeforeGenesisView, 
-    //         root_genesis_nodes, 
-    //         view_block_ptr) != kInitSuccess) {
-    //     assert(false);
-    //     return kInitError;
-    // }
-    
     auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
     auto& db_batch = *db_batch_ptr;
     auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
@@ -804,34 +794,6 @@ int GenesisBlockInit::CreateCommitQC(
     return kInitSuccess;
 }
 
-// int GenesisBlockInit::CreateAllQc(
-//         uint32_t  network_id,
-//         uint32_t  pool_index,
-//         uint64_t view,
-//         const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
-//         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
-//     auto* commit_qc = view_block_ptr->mutable_qc();
-//     commit_qc->set_network_id(network_id);
-//     commit_qc->set_pool_index(pool_index);
-//     commit_qc->set_view(view);
-//     commit_qc->set_leader_idx(0);
-//     commit_qc->set_elect_height(1);
-//     auto view_block_hash = hotstuff::GetBlockHash(*view_block_ptr);
-//     commit_qc->set_view_block_hash(view_block_hash);
-//     std::shared_ptr<libff::alt_bn128_G1> agg_sign;
-//     BlsAggSignViewBlock(genesis_nodes, *commit_qc, agg_sign);
-//     if (!agg_sign) {
-//         assert(false);
-//         return kInitError;
-//     }
-
-//     commit_qc->set_sign_x(libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
-//     commit_qc->set_sign_y(libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
-//     ZJC_DEBUG("success create qc: %u_%u_%lu",
-//         network_id, pool_index, view_block_ptr->block_info().height());
-//     return kInitSuccess;
-// }
-
 int GenesisBlockInit::GenerateRootSingleBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         FILE* root_gens_init_block_file,
@@ -876,16 +838,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             assert(false);
             return kInitError;            
         }
-        
-        // if (CreateAllQc(
-        //         common::GlobalInfo::Instance()->network_id(),
-        //         common::kRootChainPoolIndex,
-        //         root_single_block_view++, 
-        //         genesis_nodes, 
-        //         view_block_ptr) != kInitSuccess) {
-        //     assert(false);
-        //     return kInitError;
-        // }
         
         fputs((common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
@@ -954,16 +906,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             assert(false);
             return kInitError;            
         }
-
-        // if (CreateAllQc(
-        //         common::GlobalInfo::Instance()->network_id(),
-        //         common::kRootChainPoolIndex,
-        //         root_single_block_view++, 
-        //         genesis_nodes, 
-        //         view_block_ptr) != kInitSuccess) {
-        //     assert(false);
-        //     return kInitError;
-        // }
+        
         auto tmp_str = view_block_ptr->SerializeAsString();
         
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
@@ -1262,16 +1205,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             assert(false);
             return kInitError;            
         }
-        
-        // if (CreateAllQc(
-        //         network::kRootCongressNetworkId,
-        //         iter->first,
-        //         vb_latest_view[iter->first]++, 
-        //         root_genesis_nodes, 
-        //         view_block_ptr) != kInitSuccess) {
-        //     assert(false);
-        //     return kInitError;
-        // }
 
         pool_prev_vb_hash_map[iter->first] = view_block_ptr->hash();
         vb_prehashes[iter->first] = view_block_ptr->hash();
@@ -1699,29 +1632,11 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 assert(false);
                 return kInitError;                
             }
-            // if (CreateAllQc(
-            //         net_id,
-            //         pool_index,
-            //         pool_latest_view[pool_index]++, 
-            //         root_genesis_nodes, 
-            //         view_block_ptr) != kInitSuccess) {
-            //     assert(false);
-            //     return kInitError;
-            // }
         } else {
             if (CreateCommitQC(cons_genesis_nodes, view_block_ptr) != kInitSuccess) {
                 assert(false);
                 return kInitError;                
-            }            
-            // if (CreateAllQc(
-            //         net_id,
-            //         pool_index,
-            //         pool_latest_view[pool_index]++, 
-            //         cons_genesis_nodes, 
-            //         view_block_ptr) != kInitSuccess) {
-            //     assert(false);
-            //     return kInitError;
-            // }
+            }
         }
 
         pool_prev_hash_map[pool_index] = view_block_ptr->hash();
@@ -1892,17 +1807,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             assert(false);
             return kInitError;            
         }
-
-        // if (CreateAllQc(
-        //         net_id,
-        //         iter->first,
-        //         vb_latest_view[iter->first]++, 
-        //         cons_genesis_nodes, 
-        //         view_block_ptr) != kInitSuccess) {
-        //     assert(false);
-        //     return kInitError;
-        // }
-
+        
         // 更新所有 pool 的 prehash
         pool_prev_hash_map[iter->first] = view_block_ptr->hash();
         pool_prev_vb_hash_map[iter->first] = view_block_ptr->hash();
@@ -2016,7 +1921,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 
     for (uint32_t i = 0; i < shard_config["accounts"].size(); i++) {
         std::string account_id = shard_config["accounts"][i].as<std::string>();
-        pool_index_map.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
+        pool_index_map.insert(std::make_pair(i % common::kImmutablePoolSize, common::Encode::HexDecode(account_id)));
     }
     return pool_index_map;
 }
@@ -2024,7 +1929,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 void GenesisBlockInit::GenerateRootAccounts() {
     for (uint32_t i = 0; i < genesis_config_["root"]["accounts"].size(); i++) {
         std::string account_id = genesis_config_["root"]["accounts"][i].as<std::string>();
-        root_account_with_pool_index_map_.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
+        root_account_with_pool_index_map_.insert(std::make_pair(i % common::kImmutablePoolSize, common::Encode::HexDecode(account_id)));
     }
 }
 

@@ -126,14 +126,7 @@ private:
             hotstuff::HashStr prehash,
             uint32_t pool_idx,
             hotstuff::View view,
-            std::shared_ptr<hotstuff::ViewBlock>& view_block);    
-
-    // int CreateAllQc(
-    //     uint32_t  network_id,
-    //     uint32_t  pool_index,
-    //     uint64_t view,
-    //     const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
-    //     std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
+            std::shared_ptr<hotstuff::ViewBlock>& view_block);
 
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
