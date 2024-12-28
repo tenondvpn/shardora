@@ -1879,6 +1879,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_height(0);
         tenon_block->set_timeblock_height(0);
 
+        ZJC_DEBUG("create view block, pool: %lu, view: %lu", iter->first, vb_latest_view[iter->first]);
         CreateViewBlock(
                 net_id,
                 "",
