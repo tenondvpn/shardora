@@ -283,7 +283,7 @@ public:
     }    
 
 private:
-    void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
+    // void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
     void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
 
     void InitHandleProposeMsgPipeline() {

@@ -671,23 +671,23 @@ public:
         db_batch->Put(hash_key, pb_view_block.SerializeAsString());
         std::string pre_hash_key;
         auto* view_block = &pb_view_block;
-        if (pb_view_block.view() > 0) {
-            if (pb_view_block.parent_hash().empty()) {
-                ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
-                    "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
-                    view_block->network_id(), view_block->pool_index(), 
-                    view_block->view(), view_block->block_info().height(),
-                    common::Encode::HexEncode(view_block->hash()).c_str(),
-                    common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-                    common::Encode::HexEncode(pre_hash_key).c_str(),
-                    common::Encode::HexEncode(hash_key).c_str());
-            }
+        // if (pb_view_block.view() > 0) {
+        //     if (pb_view_block.parent_hash().empty()) {
+        //         ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
+        //             "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
+        //             view_block->network_id(), view_block->pool_index(), 
+        //             view_block->view(), view_block->block_info().height(),
+        //             common::Encode::HexEncode(view_block->hash()).c_str(),
+        //             common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+        //             common::Encode::HexEncode(pre_hash_key).c_str(),
+        //             common::Encode::HexEncode(hash_key).c_str());
+        //     }
 
-            pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-            pre_hash_key.append(pb_view_block.parent_hash());
-            pre_hash_key.append(pb_view_block.hash());
-            db_batch->Put(pre_hash_key, hash_key);
-        }
+        //     pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+        //     pre_hash_key.append(pb_view_block.parent_hash());
+        //     pre_hash_key.append(pb_view_block.hash());
+        //     db_batch->Put(pre_hash_key, hash_key);
+        // }
         
         ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
             "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
@@ -699,30 +699,30 @@ public:
             common::Encode::HexEncode(hash_key).c_str());
     }
 
-    void GetChildrenViewBlock(
-            const std::string& parent_hash,
-            std::vector<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& res_vec) {
-        std::string pre_hash_key;
-        pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-        pre_hash_key.append(parent_hash);
-        std::map<std::string, std::string> view_block_map;
-        db_->GetAllPrefix(pre_hash_key, view_block_map);
-        ZJC_DEBUG("now get parent hash: %s, prefix: %s, get size: %u", 
-            common::Encode::HexEncode(parent_hash).c_str(),
-            common::Encode::HexEncode(pre_hash_key).c_str(),
-            view_block_map.size());
-        for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
-            auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
-            auto& view_block = *view_block_ptr;
-            if (!GetViewBlockInfo(iter->second, view_block)) {
-                ZJC_DEBUG("invalid view block");
-                // assert(false);
-                continue;
-            }
+    // void GetChildrenViewBlock(
+    //         const std::string& parent_hash,
+    //         std::vector<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& res_vec) {
+    //     std::string pre_hash_key;
+    //     pre_hash_key.append(kViewBlockParentHashKeyPrefix);
+    //     pre_hash_key.append(parent_hash);
+    //     std::map<std::string, std::string> view_block_map;
+    //     db_->GetAllPrefix(pre_hash_key, view_block_map);
+    //     ZJC_DEBUG("now get parent hash: %s, prefix: %s, get size: %u", 
+    //         common::Encode::HexEncode(parent_hash).c_str(),
+    //         common::Encode::HexEncode(pre_hash_key).c_str(),
+    //         view_block_map.size());
+    //     for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
+    //         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+    //         auto& view_block = *view_block_ptr;
+    //         if (!GetViewBlockInfo(iter->second, view_block)) {
+    //             ZJC_DEBUG("invalid view block");
+    //             // assert(false);
+    //             continue;
+    //         }
 
-            res_vec.push_back(view_block_ptr);
-        }
-    }
+    //         res_vec.push_back(view_block_ptr);
+    //     }
+    // }
 
     bool GetViewBlockInfo(
             const std::string& view_block_hash, 

@@ -47,24 +47,24 @@ void Hotstuff::Init() {
 // xufeisofly ? 已经是 latest_committed_block 了为什么还有子块，只有 committed
 // block 会被保存才对
 // Deprecated
-void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
-        std::shared_ptr<ViewBlock>& view_block) {
-    std::vector<std::shared_ptr<ViewBlock>> children_view_blocks;
-    prefix_db_->GetChildrenViewBlock(
-            view_block->hash(), 
-            children_view_blocks);
-    ZJC_DEBUG("init load view block %u_%u_%lu, %lu, hash: %s, phash: %s, size: %u",
-        view_block->network_id(), view_block->pool_index(), 
-        view_block->view(), view_block->block_info().height(),
-        common::Encode::HexEncode(view_block->hash()).c_str(),
-        common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-        children_view_blocks.size());
-    for (auto iter = children_view_blocks.begin(); iter != children_view_blocks.end(); ++iter) {
-        assert(!view_block_chain_->Has((*iter)->hash()));
-        InitAddNewViewBlock(*iter);
-        LoadAllViewBlockWithLatestCommitedBlock(*iter);
-    }
-}
+// void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
+//         std::shared_ptr<ViewBlock>& view_block) {
+//     std::vector<std::shared_ptr<ViewBlock>> children_view_blocks;
+//     prefix_db_->GetChildrenViewBlock(
+//             view_block->hash(), 
+//             children_view_blocks);
+//     ZJC_DEBUG("init load view block %u_%u_%lu, %lu, hash: %s, phash: %s, size: %u",
+//         view_block->network_id(), view_block->pool_index(), 
+//         view_block->view(), view_block->block_info().height(),
+//         common::Encode::HexEncode(view_block->hash()).c_str(),
+//         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+//         children_view_blocks.size());
+//     for (auto iter = children_view_blocks.begin(); iter != children_view_blocks.end(); ++iter) {
+//         assert(!view_block_chain_->Has((*iter)->hash()));
+//         InitAddNewViewBlock(*iter);
+//         LoadAllViewBlockWithLatestCommitedBlock(*iter);
+//     }
+// }
     
 void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block) {
     ZJC_WARN("pool: %d, latest vb from db, vb view: %lu",
