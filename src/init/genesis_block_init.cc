@@ -2,6 +2,7 @@
 
 #include <bls/bls_utils.h>
 #include <cmath>
+#include <common/log.h>
 #include <common/utils.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <utility>
@@ -1884,10 +1885,13 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 iter->first,
                 vb_latest_view[iter->first]++,
                 view_block_ptr);
+        
         if (CreateCommitQC(cons_genesis_nodes, view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;            
         }
+
+        ZJC_DEBUG("create view block, pool: %lu, view: %lu, hash: %s", view_block_ptr->pool_index(), view_block_ptr->view(), common::Encode::HexEncode(view_block_ptr->hash()).c_str());
 
         // if (CreateAllQc(
         //         net_id,
@@ -2012,7 +2016,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 
     for (uint32_t i = 0; i < shard_config["accounts"].size(); i++) {
         std::string account_id = shard_config["accounts"][i].as<std::string>();
-        pool_index_map.insert(std::make_pair(i % common::kImmutablePoolSize, common::Encode::HexDecode(account_id)));
+        pool_index_map.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
     }
     return pool_index_map;
 }
@@ -2020,7 +2024,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 void GenesisBlockInit::GenerateRootAccounts() {
     for (uint32_t i = 0; i < genesis_config_["root"]["accounts"].size(); i++) {
         std::string account_id = genesis_config_["root"]["accounts"][i].as<std::string>();
-        root_account_with_pool_index_map_.insert(std::make_pair(i % common::kImmutablePoolSize, common::Encode::HexDecode(account_id)));
+        root_account_with_pool_index_map_.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
     }
 }
 
