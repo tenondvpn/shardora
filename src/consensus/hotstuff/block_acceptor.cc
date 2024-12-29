@@ -628,7 +628,7 @@ void BlockAcceptor::commit(
             queue_item_ptr->view_block_ptr->qc().elect_height(),
             block->timestamp(),
             block->tx_list_size(),
-            ProtobufToJson(cons_debug).c_str());
+            ProtobufToJson(cons_debug).c_str(), (now_ms - cons_debug.begin_timestamp()));
         ADD_DEBUG_PROCESS_TIMESTAMP();
 #endif
     }
