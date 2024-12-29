@@ -75,7 +75,7 @@ private:
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             pools::CheckGidValidFunction gid_vlid_func) {
-        if (pools_mgr_->tx_size() <= 4) {
+        if (pools_mgr_->tx_size(pool_idx_) <= 4) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
