@@ -356,22 +356,22 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             bool has_user_tx = false;
             bool has_system_tx = false;
-            // if (now_tm_ms >= prev_check_timer_single_tm_ms_ + 3000lu) {
-                prev_check_timer_single_tm_ms_ = now_tm_ms;
-                pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
-                auto gid_valid_func = [&](const std::string& gid) -> bool {
-                    auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
-                    if (!latest_block) {
-                        return false;
-                    }
-                    
-                    return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
-                        gid, 
-                        latest_block->qc().view_block_hash());
-                };
+            pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
+            auto gid_valid_func = [&](const std::string& gid) -> bool {
+                auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
+                if (!latest_block) {
+                    return false;
+                }
+                
+                return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
+                    gid, 
+                    latest_block->qc().view_block_hash());
+            };
 
+            if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
+                prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
-            // }
+            }
 
             pools_mgr_->PopTxs(pool_idx, false, &has_user_tx, &has_system_tx);
             pools_mgr_->CheckTimeoutTx(pool_idx);
