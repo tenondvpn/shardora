@@ -123,18 +123,6 @@ public:
         return true;
     }
 
-    bool TxExists(const std::string& gid) {
-        if (gid_map_.find(gid) != gid_map_.end()) {
-            return true;
-        }
-
-        if (removed_gid_.find(gid) != removed_gid_.end()) {
-            return true;
-        }
-
-        return false;
-    }
-
     uint32_t all_tx_size() const {
         return gid_map_.size();
     }
@@ -209,7 +197,6 @@ private:
     std::vector<uint64_t> latencys_us_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
-    std::unordered_set<std::string> removed_gid_;
     std::map<std::string, TxItemPtr> prio_map_;
     std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;

@@ -139,13 +139,6 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         return kPoolsTxAdded;
     }
     CheckThreadIdValid();
-//     if (removed_gid_.find(tx_ptr->tx_info.gid()) != removed_gid_.end()) {
-// #ifndef ENABLE_HOTSTUFF        
-//         // assert(false);
-// #endif
-//         return kPoolsTxAdded;
-//     }
-
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend 1024");
         return kPoolsError;
@@ -197,6 +190,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_size(),
         gid_map_.size(),
         consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
+    assert(gid_map_.size() == tx_size());
     return kPoolsSuccess;
 }
 
@@ -217,8 +211,12 @@ void TxPool::GetTxSyncToLeader(
 
         }
 
+        auto tmp_iter = gid_map_.find(iter->second->tx_info.gid());
+        assert(tmp_iter != gid_map_.end());
+        gid_map_.erase(tmp_iter);
         iter = prio_map_.erase(iter);
     }
+    assert(gid_map_.size() == tx_size());
 }
 
 void TxPool::GetTxIdempotently(
@@ -271,6 +269,7 @@ void TxPool::GetTxIdempotently(
         "exists count: %u, gid: %u, cons: %u, prio: %u, uni: %u",
         pool_index_, count, res_map.size(), src_prio_map.size(), gid_map_.size(),
         consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
+    assert(gid_map_.size() == tx_size());
 }
 
 void TxPool::GetTxByIds(
@@ -316,6 +315,7 @@ void TxPool::GetTxByHash(
     assert(miter != gid_map_.end());
     gid_map_.erase(miter);
     iter = src_prio_map.erase(iter);
+    assert(gid_map_.size() == tx_size());
 }
 
 void TxPool::CheckTimeoutTx() {
@@ -413,7 +413,6 @@ void TxPool::RecoverTx(const std::string& gid) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    removed_gid_.insert(gid);
     auto giter = gid_map_.find(gid);
     if (giter == gid_map_.end()) {
         return;
