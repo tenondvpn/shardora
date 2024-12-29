@@ -191,9 +191,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
-    ZJC_DEBUG("success add tx pool: %d, gid: %s", 
+    ZJC_DEBUG("success add tx pool: %d, gid: %s, tx size: %u", 
         pool_index_, 
-        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+        tx_size());
     return kPoolsSuccess;
 }
 
