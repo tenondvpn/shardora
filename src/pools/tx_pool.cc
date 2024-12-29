@@ -313,6 +313,9 @@ void TxPool::GetTxByHash(
     tx = iter->second;
     assert(!iter->second->unique_tx_hash.empty());
     iter = src_prio_map.erase(iter);
+    auto miter = gid_map_.find(iter->second->tx_info.gid());
+    assert(miter != gid_map_.end());
+    gid_map_.erase(miter);
 }
 
 void TxPool::CheckTimeoutTx() {
