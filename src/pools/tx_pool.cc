@@ -191,7 +191,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
-    ZJC_DEBUG("success add tx pool: %d, gid: %s, tx size: %u, all size: %u, gid: %u, cons: %u, prio: %u, uni: %u", 
+    ZJC_DEBUG("success add tx pool: %d, gid: %s, tx size: %u, gid: %u, cons: %u, prio: %u, uni: %u", 
         pool_index_, 
         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
         tx_size(),
@@ -238,8 +238,6 @@ void TxPool::GetTxIdempotently(
 
     GetTxIdempotently(prio_map_, res_map, count, gid_vlid_func);
     GetTxIdempotently(consensus_tx_map_, res_map, count, gid_vlid_func);    
-    ZJC_DEBUG("pool index: %u, success get tx size: %d, all size: %u, gid: %u, cons: %u, prio: %u, uni: %u",
-        pool_index_, res_map.size(), tx_size(), gid_map_.size(), consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
 }
 
 void TxPool::GetTxIdempotently(
@@ -269,8 +267,10 @@ void TxPool::GetTxIdempotently(
         iter = src_prio_map.erase(iter);
     }
     
-    ZJC_DEBUG("success get tx pool: %u, count: %u, get count: %u, exists count: %u, all: %u",
-        pool_index_, count, res_map.size(), src_prio_map.size(), gid_map_.size());
+    ZJC_DEBUG("success get tx pool: %u, count: %u, get count: %u, "
+        "exists count: %u, gid: %u, cons: %u, prio: %u, uni: %u",
+        pool_index_, count, res_map.size(), src_prio_map.size(), gid_map_.size(),
+        consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
 }
 
 void TxPool::GetTxByIds(
