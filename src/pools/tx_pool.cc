@@ -191,10 +191,11 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
-    ZJC_DEBUG("success add tx pool: %d, gid: %s, tx size: %u", 
+    ZJC_DEBUG("success add tx pool: %d, gid: %s, tx size: %u, all size: %u", 
         pool_index_, 
         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-        tx_size());
+        tx_size(),
+        gid_map_.size());
     return kPoolsSuccess;
 }
 
@@ -264,8 +265,8 @@ void TxPool::GetTxIdempotently(
         iter = src_prio_map.erase(iter);
     }
     
-    ZJC_DEBUG("success get tx pool: %u, count: %u, get count: %u, exists count: %u",
-        pool_index_, count, res_map.size(), src_prio_map.size());
+    ZJC_DEBUG("success get tx pool: %u, count: %u, get count: %u, exists count: %u, all: %u",
+        pool_index_, count, res_map.size(), src_prio_map.size(), gid_map_.size());
 }
 
 void TxPool::GetTxByIds(
