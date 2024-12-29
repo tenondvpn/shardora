@@ -276,7 +276,6 @@ Status Hotstuff::Propose(
             tc->view());
     }
 
-    tmp_msg_ptr->is_leader = true;
     // HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
@@ -565,6 +564,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     ZJC_DEBUG("HandleProposeMsgStep_VerifyLeader called hash: %lu, propose_debug: %s", 
         pro_msg_wrap->msg_ptr->header.hash64(), ProtobufToJson(cons_debug).c_str());
     auto& view_item = *pro_msg_wrap->view_block_ptr;
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (VerifyLeader(view_item.qc().leader_idx()) != Status::kSuccess) {
         // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
         // 只能依赖同步，但由于同步慢于新的 Propose 消息
@@ -578,6 +578,11 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
             pool_idx_, view_item.qc().view(), pro_msg_wrap->msg_ptr->header.hash64());
         return Status::kError;
     }        
+
+    if (view_item.qc().leader_idx() == local_idx) {
+        pro_msg_wrap->msg_ptr->is_leader = true;
+    }
+
     return Status::kSuccess;
 }
 
@@ -1774,15 +1779,18 @@ Status Hotstuff::ConstructVoteMsg(
 
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_y(sign_y);
-#endif    
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto* txs = vote_msg->mutable_txs();
-    wrapper()->GetTxSyncToLeader(
-        v_block->qc().leader_idx(), 
-        view_block_chain_, 
-        view_block_chain_->HighQC().view_block_hash(), 
-        txs);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+#endif
+    if (!msg_ptr->is_leader) {
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        auto* txs = vote_msg->mutable_txs();
+        wrapper()->GetTxSyncToLeader(
+            v_block->qc().leader_idx(), 
+            view_block_chain_, 
+            view_block_chain_->HighQC().view_block_hash(), 
+            txs);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+    }
+    
     return Status::kSuccess;
 }
 
