@@ -35,13 +35,16 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(view_block->debug());
-
+#endif
     if (Has(view_block->qc().view_block_hash())) {
+#ifndef NDEBUG
         ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
             ProtobufToJson(cons_debug).c_str());        
+#endif
         return Status::kSuccess;
     }
 
@@ -104,6 +107,7 @@ Status ViewBlockChain::Store(
 //     }
 // #endif
 
+#ifndef NDEBUG
     ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
         "%u_%u_%lu, %lu, hash: %s, prehash: %s",
         balane_map_ptr ? balane_map_ptr->size() : 0, ProtobufToJson(cons_debug).c_str(),
@@ -111,6 +115,7 @@ Status ViewBlockChain::Store(
         view_block->qc().view(), view_block->block_info().height(),
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block->parent_hash()).c_str());
+#endif
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr, zjc_host_ptr);
     if (!start_block_) {
         start_block_ = view_block;
@@ -153,11 +158,13 @@ Status ViewBlockChain::Store(
     // }
     SetViewBlockToMap(block_info_ptr);
     AddChildrenToMap(view_block);
+#ifndef NDEBUG
     ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), ProtobufToJson(cons_debug).c_str());
+#endif
     return Status::kSuccess;
 }
 
