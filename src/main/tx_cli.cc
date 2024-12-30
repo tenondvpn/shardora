@@ -273,7 +273,7 @@ int tx_main(int argc, char** argv) {
             count = 0;
         }
 
-        usleep(delayus);
+        // usleep(delayus);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
