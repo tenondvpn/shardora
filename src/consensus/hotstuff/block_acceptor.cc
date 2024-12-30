@@ -634,8 +634,25 @@ void BlockAcceptor::commit(
             block->timestamp(),
             block->tx_list_size(),
             ProtobufToJson(cons_debug).c_str(), (now_ms - cons_debug.begin_timestamp()));
-        ADD_DEBUG_PROCESS_TIMESTAMP();
+#else
+        auto now_ms = common::TimeUtils::TimestampMs();
+        ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
+            "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu",
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            queue_item_ptr->view_block_ptr->qc().view(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            block->height(),
+            queue_item_ptr->view_block_ptr->qc().elect_height(),
+            block->timestamp(),
+            block->tx_list_size(),
+            "",
+            0);
 #endif
+        ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
