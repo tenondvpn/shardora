@@ -119,7 +119,9 @@ Status BlockAcceptor::Accept(
     // 2. Get txs from local pool
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     s = GetAndAddTxsLocally(
+        msg_ptr,
         view_block_chain, 
         view_block.parent_hash(), 
         propose_msg, 
@@ -457,6 +459,7 @@ Status BlockAcceptor::addTxsToPool(
 }
 
 Status BlockAcceptor::GetAndAddTxsLocally(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& tx_propose,
@@ -465,7 +468,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
-        nullptr,
+        msg_ptr,
         view_block_chain, 
         parent_hash, 
         tx_propose.txs(), 

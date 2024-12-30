@@ -149,6 +149,7 @@ private:
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
     Status GetAndAddTxsLocally(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& block_info,
