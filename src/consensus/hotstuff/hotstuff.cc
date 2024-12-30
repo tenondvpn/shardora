@@ -238,6 +238,8 @@ Status Hotstuff::Propose(
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
     ZJC_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
+#else
+    header.set_debug(std::to_string(common::TimeUtils::TimestampMs()));
 #endif
     s = crypto()->SignMessage(tmp_msg_ptr);
     if (s != Status::kSuccess) {
@@ -413,6 +415,8 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->block_info().timestamp(),
         ProtobufToJson(cons_debug).c_str());
+#else
+    pro_msg_wrap->view_block_ptr->set_debug(msg_ptr->header.debug());
 #endif
     assert(pro_msg_wrap->view_block_ptr->block_info().tx_list_size() == 0);
     if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {

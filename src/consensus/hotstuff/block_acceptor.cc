@@ -636,6 +636,8 @@ void BlockAcceptor::commit(
             ProtobufToJson(cons_debug).c_str(), (now_ms - cons_debug.begin_timestamp()));
 #else
         auto now_ms = common::TimeUtils::TimestampMs();
+        uint64_t b_tm = 0;
+        common::StringUtil::ToUint64(queue_item_ptr->view_block_ptr->debug(), &b_tm);
         ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
             "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu",
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -650,7 +652,7 @@ void BlockAcceptor::commit(
             block->timestamp(),
             block->tx_list_size(),
             "",
-            0);
+            (now_ms - b_tm));
 #endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
     }
