@@ -434,10 +434,12 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 
 int TxPoolManager::BackupConsensusAddTxs(
+        transport::MessagePtr msg_ptr,
         uint32_t pool_index, 
         const std::map<std::string, pools::TxItemPtr>& txs) {
     int res = kPoolsSuccess;
     std::vector<pools::TxItemPtr> valid_txs;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto tx_ptr = iter->second;
         if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
@@ -473,8 +475,10 @@ int TxPoolManager::BackupConsensusAddTxs(
         //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
     tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return res;
 }
 

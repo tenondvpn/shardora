@@ -1058,7 +1058,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64());
 
     // 同步 replica 的 txs
-    acceptor()->AddTxs(vote_msg.txs());
+    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
@@ -1328,7 +1328,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 // #endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
-        Status s = acceptor()->AddTxs(pre_rst_timer_msg.txs());
+        Status s = acceptor()->AddTxs(msg_ptr, pre_rst_timer_msg.txs());
         if (s != Status::kSuccess) {
             ZJC_WARN("reset timer failed, add txs failed");
             return;

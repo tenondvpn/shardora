@@ -190,16 +190,17 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
         common::Encode::HexEncode(GetBlockHash(*queue_item_ptr->view_block_ptr)).c_str());
 }
 
-Status BlockAcceptor::AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
+Status BlockAcceptor::AddTxs(transport::MessagePtr msg_ptr, const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     std::shared_ptr<ViewBlockChain> chain = nullptr;
     // TODO: check valid
     BalanceMap now_balance_map;
     zjcvm::ZjchainHost zjc_host;
-    return addTxsToPool(chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
+    return addTxsToPool(msg_ptr, chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
 };
 
 Status BlockAcceptor::addTxsToPool(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
@@ -211,11 +212,13 @@ Status BlockAcceptor::addTxsToPool(
         return Status::kAcceptorTxsEmpty;
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     BalanceMap prevs_balance_map;
     view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
         prevs_balance_map.size(), txs.size());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
@@ -441,8 +444,10 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     // 放入交易池并弹出（避免重复打包）
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add txs size: %u", txs_map.size());
-    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
+    int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), txs_map);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");
         return Status::kError;
@@ -460,6 +465,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
+        nullptr,
         view_block_chain, 
         parent_hash, 
         tx_propose.txs(), 
