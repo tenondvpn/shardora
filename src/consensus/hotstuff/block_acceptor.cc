@@ -102,7 +102,7 @@ Status BlockAcceptor::Accept(
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
-    
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // 1. verify block
     if (!IsBlockValid(view_block)) {
@@ -592,11 +592,11 @@ void BlockAcceptor::commit(
         std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     auto block = &queue_item_ptr->view_block_ptr->block_info();
     new_block_cache_callback_(
-            queue_item_ptr->view_block_ptr,
-            *queue_item_ptr->final_db_batch);
+        queue_item_ptr->view_block_ptr,
+        *queue_item_ptr->final_db_batch);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
         if (block->tx_list_size() > 0) {
-            ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
             ADD_DEBUG_PROCESS_TIMESTAMP();
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
