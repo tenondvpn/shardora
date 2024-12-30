@@ -1162,6 +1162,8 @@ void NetworkInit::AddBlockItemToCache(
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
     }
 
+    // TODO: fix
+    return;
     // one block must be one consensus pool
     const auto& tx_list = block->tx_list();
     for (int32_t i = 0; i < tx_list.size(); ++i) {

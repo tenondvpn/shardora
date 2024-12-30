@@ -86,8 +86,8 @@ void Execution::NewBlockWithTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     if (tx.step() != pools::protobuf::kContractCreate &&
-        tx.step() != pools::protobuf::kContractExcute &&
-        tx.step() != pools::protobuf::kContractCreateByRootTo) {
+            tx.step() != pools::protobuf::kContractExcute &&
+            tx.step() != pools::protobuf::kContractCreateByRootTo) {
         return;
     }
 
