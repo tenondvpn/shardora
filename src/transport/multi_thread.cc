@@ -79,10 +79,10 @@ void ThreadHandler::HandleMessage() {
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 300000) {
+            if (etime - btime > 100000) {
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
-                    if (diff_time > 100000) {
+                    if (diff_time > 50000) {
                         ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
                             "thread_idx: %d, maping_thread_idx: %d, all time: %lu",
                             msg_ptr->header.hash64(), msg_ptr->times[i], 
