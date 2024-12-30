@@ -52,7 +52,7 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
 // #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
@@ -66,9 +66,9 @@ struct Construct {
         msg_ptr->times_idx++; \
     } \
 }
-#else
-#define ADD_DEBUG_PROCESS_TIMESTAMP()
-#endif
+// #else
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+// #endif
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
