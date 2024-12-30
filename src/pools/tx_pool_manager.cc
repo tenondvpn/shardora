@@ -105,13 +105,13 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    // if (security_->Verify(
-    //         msg_ptr->msg_hash,
-    //         tx_msg.pubkey(),
-    //         tx_msg.sign()) != security::kSecuritySuccess) {
-    //     ZJC_ERROR("verify signature failed!");
-    //     return transport::kFirewallCheckError;
-    // }
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            tx_msg.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("verify signature failed!");
+        return transport::kFirewallCheckError;
+    }
 
     auto tmp_acc_ptr = acc_mgr_.lock();
     msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
@@ -443,7 +443,6 @@ int TxPoolManager::BackupConsensusAddTxs(
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto tx_ptr = iter->second;
         if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-            assert(false);
             continue;
         }
 
@@ -1121,6 +1120,10 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
             tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas);
         assert(false);
+        return;
+    }
+
+    if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(tx_msg.gid())) {
         return;
     }
 
