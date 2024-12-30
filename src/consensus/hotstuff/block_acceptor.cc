@@ -63,12 +63,6 @@ Status BlockAcceptor::Accept(
         zjcvm::ZjchainHost& zjc_host) {
     auto& msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto b = common::TimeUtils::TimestampMs();
-    defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
-        });
-
     auto& propose_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose();
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     if (propose_msg.txs().empty()) {
@@ -108,8 +102,8 @@ Status BlockAcceptor::Accept(
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
+    
     ADD_DEBUG_PROCESS_TIMESTAMP();
-
     // 1. verify block
     if (!IsBlockValid(view_block)) {
         ZJC_WARN("IsBlockValid error!");

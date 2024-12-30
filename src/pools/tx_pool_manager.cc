@@ -443,6 +443,7 @@ int TxPoolManager::BackupConsensusAddTxs(
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto tx_ptr = iter->second;
         if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
+            assert(false);
             continue;
         }
 
