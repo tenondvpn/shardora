@@ -140,7 +140,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     // }
     CheckThreadIdValid();
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        ZJC_WARN("add failed extend %u, %u", gid_map_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs());
+        ZJC_WARN("add failed extend %u, %u, all valid: %u", gid_map_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
         return kPoolsError;
     }
 
