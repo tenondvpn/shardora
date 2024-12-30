@@ -265,9 +265,9 @@ int tx_main(int argc, char** argv) {
 
 
         count++;
-        if (count == step_num) {
-            auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
-            auto tps = step_num * 1000000 / dur;
+        auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+        if (dur >= 3000000lu) {
+            auto tps = count * 1000000 / dur;
             std::cout << "tps: " << tps << std::endl;
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
