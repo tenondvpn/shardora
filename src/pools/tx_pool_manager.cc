@@ -192,7 +192,7 @@ void TxPoolManager::ConsensusTimerMessage() {
     // }
 
     std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
-// #ifndef NDEBUG
+#ifndef NDEBUG
     // std::string test_str;
     uint32_t max_count = 0;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -208,7 +208,7 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     now_max_tx_count_ = max_count * 2 / 3;
     // ZJC_DEBUG("set max txcount: %u, test str: %s", tx_count_queue.top(), test_str.c_str());
-// #endif
+#endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         SyncMinssingRootHeights(now_tm_ms);
