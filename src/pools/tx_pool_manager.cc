@@ -1297,7 +1297,7 @@ void TxPoolManager::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map,
         pools::CheckGidValidFunction gid_vlid_func) {
     // TODO: check latency
-    if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+    if (tx_pool_[pool_index].tx_size() < count) {
         return;
     }
 
