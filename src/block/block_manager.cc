@@ -71,9 +71,11 @@ int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
-void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
+void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     account_mgr_->GetAccountInfo("");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (prev_timer_ms_ + 100lu > now_tm_ms) {
         return;
     }
@@ -87,11 +89,9 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& message) {
         CreateStatisticTx();
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     HandleAllConsensusBlocks();
-    auto etime = common::TimeUtils::TimestampMs();
-    if (etime - now_tm_ms >= 100) {
-        ZJC_DEBUG("BlockManager handle message use time: %lu", (etime - now_tm_ms));
-    }
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void BlockManager::OnNewElectBlock(
