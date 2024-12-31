@@ -60,9 +60,11 @@ public:
         // }
 
         db_batch_.Put(key, value);
+        ++count_;
     }
 
     bool Exist(const std::string& key) {
+        assert(false);
         return false;
         // return data_map_.find(key) != data_map_.end();
     }
@@ -74,6 +76,7 @@ public:
         // }
         
         // *value = iter->second;
+        assert(false);
         return false;
     }
 
@@ -92,14 +95,15 @@ public:
     }
 
     size_t ApproximateSize() const {
-// #ifdef LEVELDB
+#ifdef LEVELDB
         return db_batch_.ApproximateSize();
-// #else
-//         return data_map_.size() > 0 ? 100 : 0;
-// #endif
+#else
+        return count_ > 0 ? 100 : 0;
+#endif
     }
 
     TmpDbWriteBatch db_batch_;
+    uint32_t count_ = 0;
     // std::unordered_map<std::string, std::string> data_map_;
 };
 
