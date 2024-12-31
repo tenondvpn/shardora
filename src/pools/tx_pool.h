@@ -98,8 +98,13 @@ public:
             ZJC_DEBUG("data size: %u", added_gids_.size()); 
             // assert(added_gids_.size() < 120200); 
         }
+
+        if (!tmp_res.second) {
+            return tmp_res.second;
+        }
         
-        return tmp_res.second;
+        return prefix_db_->JustCheckCommitedGidExists(gid);
+        // return tmp_res.second;
         // if (gid_map_.find(gid) != gid_map_.end()) {
         //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
         //         pool_index_, 

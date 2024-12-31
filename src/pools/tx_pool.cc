@@ -413,30 +413,35 @@ void TxPool::RecoverTx(const std::string& gid) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    auto giter = gid_map_.find(gid);
-    if (giter == gid_map_.end()) {
-        return;
+    auto added_gid_iter = added_gids_.find(gid);
+    if (added_gid_iter != added_gids_.end()) {
+        added_gids_.erase(added_gid_iter);
     }
 
-    auto prio_iter = prio_map_.find(giter->second->prio_key);
-    if (prio_iter != prio_map_.end()) {
-        prio_map_.erase(prio_iter);
-    }
+    // auto giter = gid_map_.find(gid);
+    // if (giter == gid_map_.end()) {
+    //     return;
+    // }
 
-    auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
-    if (universal_prio_iter != universal_prio_map_.end()) {
-        universal_prio_map_.erase(universal_prio_iter);
-    }
+    // auto prio_iter = prio_map_.find(giter->second->prio_key);
+    // if (prio_iter != prio_map_.end()) {
+    //     prio_map_.erase(prio_iter);
+    // }
 
-    auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
-    if (cons_iter != consensus_tx_map_.end()) {
-        consensus_tx_map_.erase(cons_iter);
-    }
+    // auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
+    // if (universal_prio_iter != universal_prio_map_.end()) {
+    //     universal_prio_map_.erase(universal_prio_iter);
+    // }
 
-    // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
-    //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
-    //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
-    gid_map_.erase(giter);
+    // auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
+    // if (cons_iter != consensus_tx_map_.end()) {
+    //     consensus_tx_map_.erase(cons_iter);
+    // }
+
+    // // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+    // //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
+    // //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
+    // gid_map_.erase(giter);
 #ifdef LATENCY    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
