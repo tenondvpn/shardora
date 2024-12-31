@@ -44,7 +44,7 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
 }
 
 int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std::string& sign) {
-#if MOCK_VERIFY
+#ifdef MOCK_VERIFY
     // std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
     return kSecuritySuccess;
 #else
