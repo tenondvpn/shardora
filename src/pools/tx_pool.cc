@@ -415,6 +415,12 @@ void TxPool::RecoverTx(const std::string& gid) {
 bool TxPool::GidValid(const std::string& gid) {
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
+    added_gids_queue_.push_back(gid);
+    if (added_gids_queue_.size() >= 102400) {
+        added_gids_.erase(added_gids_queue_.front());
+        added_gids_queue_.pop_front();
+    }
+    
     CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
         return true;
@@ -455,11 +461,11 @@ bool TxPool::GidValid(const std::string& gid) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    CheckThreadIdValid();
-    auto added_gid_iter = added_gids_.find(gid);
-    if (added_gid_iter != added_gids_.end()) {
-        added_gids_.erase(added_gid_iter);
-    }
+    // CheckThreadIdValid();
+    // auto added_gid_iter = added_gids_.find(gid);
+    // if (added_gid_iter != added_gids_.end()) {
+    //     added_gids_.erase(added_gid_iter);
+    // }
 
     // auto giter = gid_map_.find(gid);
     // if (giter == gid_map_.end()) {

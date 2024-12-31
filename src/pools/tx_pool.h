@@ -199,6 +199,7 @@ private:
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
+    std::deque<std::string> added_gids_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
