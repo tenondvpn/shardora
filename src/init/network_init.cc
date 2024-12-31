@@ -110,6 +110,7 @@ int NetworkInit::Init(int argc, char** argv) {
     std::string net_name;
     int genesis_check = GenesisCmd(parser_arg, net_name);
     if (genesis_check != -1) {
+        common::GlobalInfo::Instance()->set_global_stoped();
         std::cout << net_name << " genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
