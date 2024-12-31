@@ -16,6 +16,10 @@
 
 namespace shardora {
 
+namespace transport {
+    struct TransportMessage;
+}
+
 namespace common {
 
 class GlobalInfo {
@@ -164,36 +168,7 @@ public:
     }
 
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
-    uint8_t get_thread_index() {
-        auto now_thread_id_tmp = std::this_thread::get_id();
-        uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
-        uint8_t thread_idx = 0;
-        if (should_check_thread_all_valid_) {
-            std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
-            auto iter = thread_with_index_.find(now_thread_id);
-            if (iter == thread_with_index_.end()) {
-                thread_idx = now_valid_thread_index_++;
-                thread_with_index_[now_thread_id] = thread_idx;
-                ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
-            } else {
-                thread_idx = iter->second;
-            }
-            
-            auto now_tm_ms = common::TimeUtils::TimestampMs();
-            if (main_inited_success_ && begin_run_timestamp_ms_ <= now_tm_ms) {
-                should_check_thread_all_valid_ = false;
-            }
-        } else {
-            auto iter = thread_with_index_.find(now_thread_id);
-            if (iter == thread_with_index_.end()) {
-                ZJC_FATAL("invalid get new thread index: %u", now_thread_id);
-            }
-                
-            thread_idx = iter->second;
-        }
-
-        return thread_idx;
-    }
+    uint8_t get_thread_index(std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr);
 
     void set_global_stoped() {
         global_stoped_ = true;
