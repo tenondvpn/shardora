@@ -751,6 +751,7 @@ void BlockManager::AddNewBlock(
             continue;
         }
 
+        account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddress:
             // ZJC_DEBUG("success handle root create address tx.");
