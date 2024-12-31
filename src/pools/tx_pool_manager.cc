@@ -399,11 +399,13 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
     // just one thread
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u",
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size(),
         common::GlobalInfo::Instance()->pools_each_thread_max_messages());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pools_msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
         return;
     }

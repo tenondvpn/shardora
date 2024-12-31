@@ -6,9 +6,7 @@
 #include "common/log.h"
 #include "common/encode.h"
 #include "common/time_utils.h"
-#ifndef NDEBUG
 #include "transport/transport_utils.h"
-#endif
 
 namespace shardora {
 
