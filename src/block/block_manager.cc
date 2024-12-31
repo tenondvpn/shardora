@@ -136,12 +136,6 @@ void BlockManager::ConsensusAddBlock(
 void BlockManager::HandleAllConsensusBlocks() {
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         account_mgr_->GetAccountInfo("");
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
-        if (prev_timer_ms_ + 100lu > now_tm_ms) {
-            return;
-        }
-
-        prev_timer_ms_ = now_tm_ms;
         auto now_tm = common::TimeUtils::TimestampUs();
         ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
             prev_create_statistic_tx_tm_us_, now_tm);
