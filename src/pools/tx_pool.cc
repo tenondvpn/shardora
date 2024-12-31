@@ -416,21 +416,21 @@ bool TxPool::GidValid(const std::string& gid) {
     auto tmp_res = added_gids_.insert(gid);
     CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
-        // if (prefix_db_->CheckAndSaveGidExists(gid)) {
-        //     return false;
-        // }
+        if (prefix_db_->CheckAndSaveGidExists(gid)) {
+            return false;
+        }
 
-        // std::string key = protos::kGidPrefix + gid;
-        // added_gids_batch_.Put(key, "1");
-        // if (added_gids_.size() >= 102400) {
-        //     auto st = db_->Put(added_gids_batch_);
-        //     if (!st.ok()) {
-        //         ZJC_FATAL("write data to db failed!");
-        //     }
+        std::string key = protos::kGidPrefix + gid;
+        added_gids_batch_.Put(key, "1");
+        if (added_gids_.size() >= 102400) {
+            auto st = db_->Put(added_gids_batch_);
+            if (!st.ok()) {
+                ZJC_FATAL("write data to db failed!");
+            }
 
-        //     added_gids_batch_ = db::DbWriteBatch();
-        //     added_gids_.clear();
-        // }
+            added_gids_batch_ = db::DbWriteBatch();
+            added_gids_.clear();
+        }
 
         return true;
     }
@@ -440,10 +440,10 @@ bool TxPool::GidValid(const std::string& gid) {
 
 void TxPool::RemoveTx(const std::string& gid) {
     // CheckThreadIdValid();
-    auto added_gid_iter = added_gids_.find(gid);
-    if (added_gid_iter != added_gids_.end()) {
-        added_gids_.erase(added_gid_iter);
-    }
+    // auto added_gid_iter = added_gids_.find(gid);
+    // if (added_gid_iter != added_gids_.end()) {
+    //     added_gids_.erase(added_gid_iter);
+    // }
 
     // auto giter = gid_map_.find(gid);
     // if (giter == gid_map_.end()) {
