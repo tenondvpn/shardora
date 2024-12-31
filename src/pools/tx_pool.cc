@@ -415,12 +415,12 @@ void TxPool::RecoverTx(const std::string& gid) {
 bool TxPool::GidValid(const std::string& gid) {
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
-    added_gids_queue_.push_back(gid);
-    if (added_gids_queue_.size() >= 102400) {
-        added_gids_.erase(added_gids_queue_.front());
-        added_gids_queue_.pop_front();
-    }
-    
+    // added_gids_queue_.push_back(gid);
+    // if (added_gids_queue_.size() >= 102400) {
+    //     added_gids_.erase(added_gids_queue_.front());
+    //     added_gids_queue_.pop_front();
+    // }
+
     CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
         return true;
@@ -502,10 +502,6 @@ void TxPool::RemoveTx(const std::string& gid) {
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     CheckThreadIdValid();
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(universal_prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(consensus_tx_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& gid = tx_list[i].gid(); 
         RemoveTx(gid);
@@ -530,10 +526,6 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 #endif
     }
 
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(universal_prio_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(consensus_tx_map_, (std::string("pool index:") + std::to_string(pool_index_)).c_str());
     finish_tx_count_ += tx_list.size();
 }
 
