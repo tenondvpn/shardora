@@ -461,11 +461,11 @@ bool TxPool::GidValid(const std::string& gid) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    // CheckThreadIdValid();
-    // auto added_gid_iter = added_gids_.find(gid);
-    // if (added_gid_iter != added_gids_.end()) {
-    //     added_gids_.erase(added_gid_iter);
-    // }
+    CheckThreadIdValid();
+    auto added_gid_iter = added_gids_.find(gid);
+    if (added_gid_iter != added_gids_.end()) {
+        added_gids_.erase(added_gid_iter);
+    }
 
     // auto giter = gid_map_.find(gid);
     // if (giter == gid_map_.end()) {
