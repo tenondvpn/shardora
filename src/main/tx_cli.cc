@@ -17,7 +17,7 @@ static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13001;
 static const int shardnum = 3;
-static const int delayus = 10;
+static const int delayus = 1000;
 static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";   
@@ -266,13 +266,13 @@ int tx_main(int argc, char** argv) {
         count++;
         auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
         if (dur >= 3000000lu) {
-            auto tps = count * 1000000 / dur;
+            auto tps = count * 1000000lu / dur;
             std::cout << "tps: " << tps << std::endl;
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
         }
 
-        // usleep(delayus);
+        usleep(delayus);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
