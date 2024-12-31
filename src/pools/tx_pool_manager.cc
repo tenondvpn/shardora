@@ -1125,10 +1125,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(tx_msg.gid())) {
-        return;
-    }
-
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
 //         msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
@@ -1256,6 +1252,10 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
+    if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
+        return;
+    }
+
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
         return;
