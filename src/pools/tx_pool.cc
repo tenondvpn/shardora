@@ -159,7 +159,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    // CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
 #ifdef LATENCY
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
@@ -176,7 +176,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     timeout_txs_.push(tx_ptr->tx_info.gid());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
+    // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
     if (pool_index_ == common::kImmutablePoolSize) {
         ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
             pool_index_, 
@@ -445,30 +445,30 @@ void TxPool::RemoveTx(const std::string& gid) {
     //     added_gids_.erase(added_gid_iter);
     // }
 
-    auto giter = gid_map_.find(gid);
-    if (giter == gid_map_.end()) {
-        return;
-    }
+    // auto giter = gid_map_.find(gid);
+    // if (giter == gid_map_.end()) {
+    //     return;
+    // }
 
-    auto prio_iter = prio_map_.find(giter->second->prio_key);
-    if (prio_iter != prio_map_.end()) {
-        prio_map_.erase(prio_iter);
-    }
+    // auto prio_iter = prio_map_.find(giter->second->prio_key);
+    // if (prio_iter != prio_map_.end()) {
+    //     prio_map_.erase(prio_iter);
+    // }
 
-    auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
-    if (universal_prio_iter != universal_prio_map_.end()) {
-        universal_prio_map_.erase(universal_prio_iter);
-    }
+    // auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
+    // if (universal_prio_iter != universal_prio_map_.end()) {
+    //     universal_prio_map_.erase(universal_prio_iter);
+    // }
 
-    auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
-    if (cons_iter != consensus_tx_map_.end()) {
-        consensus_tx_map_.erase(cons_iter);
-    }
+    // auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
+    // if (cons_iter != consensus_tx_map_.end()) {
+    //     consensus_tx_map_.erase(cons_iter);
+    // }
 
-    // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
-    //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
-    //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
-    gid_map_.erase(giter);
+    // // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+    // //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
+    // //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
+    // gid_map_.erase(giter);
 #ifdef LATENCY    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
@@ -817,14 +817,14 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         // }
 
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(
-            gid_map_, 
-            (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+        // CHECK_MEMORY_SIZE_WITH_MESSAGE(
+        //     gid_map_, 
+        //     (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
         txs[i]->is_consensus_add_tx = true;
         consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(
-            consensus_tx_map_, 
-            (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+        // CHECK_MEMORY_SIZE_WITH_MESSAGE(
+        //     consensus_tx_map_, 
+        //     (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
         // ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
         //     pool_index_,
         //     txs[i]->tx_info.step(), 
