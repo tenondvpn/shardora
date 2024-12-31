@@ -418,7 +418,7 @@ bool TxPool::GidValid(const std::string& gid) {
     if (tmp_res.second) {
         std::string key = protos::kGidPrefix + gid;
         added_gids_batch_.Put(key, "1");
-        if (added_gids_.size() >= 102400) {
+        if (added_gids_.size() >= 10240) {
             auto st = db_->Put(added_gids_batch_);
             if (!st.ok()) {
                 ZJC_FATAL("write data to db failed!");
@@ -427,7 +427,7 @@ bool TxPool::GidValid(const std::string& gid) {
             added_gids_batch_.Clear();
             added_gids_.clear();
         }
-        
+
         return true;
     }
 
