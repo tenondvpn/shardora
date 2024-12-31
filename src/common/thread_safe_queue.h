@@ -23,6 +23,7 @@ public:
         // auto btime = common::TimeUtils::TimestampUs();
         rw_queue_.enqueue(e);
         auto& tmp_item = *this;
+        assert(size() < 1204);
         CHECK_MEMORY_SIZE(tmp_item);
         // while (!rw_queue_.try_enqueue(e) && !common::GlobalInfo::Instance()->global_stoped()) {
         //     std::unique_lock<std::mutex> lock(mutex_);

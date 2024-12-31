@@ -152,14 +152,14 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
     if (tx_ptr->step == pools::protobuf::kCreateLibrary) {
         universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
-        // CHECK_MEMORY_SIZE(universal_prio_map_);
+        CHECK_MEMORY_SIZE(universal_prio_map_);
     } else {
         prio_map_[tx_ptr->prio_key] = tx_ptr;
-        // CHECK_MEMORY_SIZE(prio_map_);
+        CHECK_MEMORY_SIZE(prio_map_);
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
-    // CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
 #ifdef LATENCY
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
@@ -176,7 +176,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     timeout_txs_.push(tx_ptr->tx_info.gid());
-    // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
     if (pool_index_ == common::kImmutablePoolSize) {
         ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
             pool_index_, 
@@ -817,14 +817,14 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         // }
 
         gid_map_[txs[i]->tx_info.gid()] = txs[i];
-        // CHECK_MEMORY_SIZE_WITH_MESSAGE(
-        //     gid_map_, 
-        //     (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(
+            gid_map_, 
+            (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
         txs[i]->is_consensus_add_tx = true;
         consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
-        // CHECK_MEMORY_SIZE_WITH_MESSAGE(
-        //     consensus_tx_map_, 
-        //     (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(
+            consensus_tx_map_, 
+            (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
         // ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
         //     pool_index_,
         //     txs[i]->tx_info.step(), 
