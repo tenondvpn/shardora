@@ -152,10 +152,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
     if (tx_ptr->step == pools::protobuf::kCreateLibrary) {
         universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
-        CHECK_MEMORY_SIZE(universal_prio_map_);
+        // CHECK_MEMORY_SIZE(universal_prio_map_);
     } else {
         prio_map_[tx_ptr->prio_key] = tx_ptr;
-        CHECK_MEMORY_SIZE(prio_map_);
+        // CHECK_MEMORY_SIZE(prio_map_);
     }
 
     gid_map_[tx_ptr->tx_info.gid()] = tx_ptr;
