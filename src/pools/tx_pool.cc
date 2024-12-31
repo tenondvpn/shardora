@@ -428,7 +428,7 @@ bool TxPool::GidValid(const std::string& gid) {
                 ZJC_FATAL("write data to db failed!");
             }
 
-            added_gids_batch_.Clear();
+            added_gids_batch_ = db::DbWriteBatch();
             added_gids_.clear();
         }
 
