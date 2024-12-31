@@ -94,11 +94,7 @@ public:
     void RecoverTx(const std::string& gid);
     bool GidValid(const std::string& gid) {
         auto tmp_res = added_gids_.insert(gid);
-        if (added_gids_.size() >= 120200) { 
-            ZJC_DEBUG("data size: %u", added_gids_.size()); 
-            // assert(added_gids_.size() < 120200); 
-        }
-
+        CHECK_MEMORY_SIZE(added_gids_);
         if (!tmp_res.second) {
             return tmp_res.second;
         }
@@ -126,15 +122,15 @@ public:
         // ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
         //         pool_index_, 
         //         common::Encode::HexEncode(gid).c_str());
-        auto res = prefix_db_->CheckAndSaveGidExists(gid);
-        if (res) {
-            ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
-                pool_index_, 
-                common::Encode::HexEncode(gid).c_str());
-            return false;
-        }
+        // auto res = prefix_db_->CheckAndSaveGidExists(gid);
+        // if (res) {
+        //     ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+        //         pool_index_, 
+        //         common::Encode::HexEncode(gid).c_str());
+        //     return false;
+        // }
 
-        return true;
+        // return true;
     }
 
     uint32_t all_tx_size() const {
