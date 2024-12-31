@@ -113,14 +113,14 @@ static transport::MessagePtr CreateTransactionWithAttr(
         return nullptr;
     }
 
-    std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
-        << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
-        << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
-        << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
-        << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
-        << "amount: " << amount << std::endl
-        << "gas_limit: " << gas_limit << std::endl
-        << std::endl;
+    // std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+    //     << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+    //     << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+    //     << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+    //     << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+    //     << "amount: " << amount << std::endl
+    //     << "gas_limit: " << gas_limit << std::endl
+    //     << std::endl;
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -219,9 +219,8 @@ int tx_main(int argc, char** argv) {
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint32_t step_num = 1000;
+    std::string gid = common::Random::RandomString(32);
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
-
-        std::string gid = common::Random::RandomString(32);
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
         if (g_pri_addrs_map[from_prikey] == to) {
@@ -263,7 +262,6 @@ int tx_main(int argc, char** argv) {
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
         }
-
 
         count++;
         auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
