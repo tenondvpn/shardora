@@ -422,7 +422,7 @@ bool TxPool::GidValid(const std::string& gid) {
 
         std::string key = protos::kGidPrefix + gid;
         added_gids_batch_.Put(key, "1");
-        if (added_gids_.size() >= 102400) {
+        if (added_gids_.size() >= 1024) {
             auto st = db_->Put(added_gids_batch_);
             if (!st.ok()) {
                 ZJC_FATAL("write data to db failed!");
@@ -445,30 +445,30 @@ void TxPool::RemoveTx(const std::string& gid) {
     //     added_gids_.erase(added_gid_iter);
     // }
 
-    // auto giter = gid_map_.find(gid);
-    // if (giter == gid_map_.end()) {
-    //     return;
-    // }
+    auto giter = gid_map_.find(gid);
+    if (giter == gid_map_.end()) {
+        return;
+    }
 
-    // auto prio_iter = prio_map_.find(giter->second->prio_key);
-    // if (prio_iter != prio_map_.end()) {
-    //     prio_map_.erase(prio_iter);
-    // }
+    auto prio_iter = prio_map_.find(giter->second->prio_key);
+    if (prio_iter != prio_map_.end()) {
+        prio_map_.erase(prio_iter);
+    }
 
-    // auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
-    // if (universal_prio_iter != universal_prio_map_.end()) {
-    //     universal_prio_map_.erase(universal_prio_iter);
-    // }
+    auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
+    if (universal_prio_iter != universal_prio_map_.end()) {
+        universal_prio_map_.erase(universal_prio_iter);
+    }
 
-    // auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
-    // if (cons_iter != consensus_tx_map_.end()) {
-    //     consensus_tx_map_.erase(cons_iter);
-    // }
+    auto cons_iter = consensus_tx_map_.find(giter->second->unique_tx_hash);
+    if (cons_iter != consensus_tx_map_.end()) {
+        consensus_tx_map_.erase(cons_iter);
+    }
 
-    // // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
-    // //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
-    // //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
-    // gid_map_.erase(giter);
+    // ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+    //     common::Encode::HexEncode(giter->second->tx_info.gid()).c_str(),
+    //     common::Encode::HexEncode(giter->second->unique_tx_hash).c_str());
+    gid_map_.erase(giter);
 #ifdef LATENCY    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
