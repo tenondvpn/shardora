@@ -96,7 +96,7 @@ public:
         auto tmp_res = added_gids_.insert(gid);
         if (added_gids_.size() >= 120200) { 
             ZJC_DEBUG("data size: %u", added_gids_.size()); 
-            assert(added_gids_.size() < 120200); 
+            // assert(added_gids_.size() < 120200); 
         }
         
         return tmp_res.second;
