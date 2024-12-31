@@ -102,8 +102,12 @@ public:
         if (!tmp_res.second) {
             return tmp_res.second;
         }
+
+        if (!prefix_db_->JustCheckCommitedGidExists(gid)) {
+            return true;
+        }
         
-        return prefix_db_->JustCheckCommitedGidExists(gid);
+        return false;
         // return tmp_res.second;
         // if (gid_map_.find(gid) != gid_map_.end()) {
         //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
