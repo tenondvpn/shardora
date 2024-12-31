@@ -426,9 +426,9 @@ bool TxPool::GidValid(const std::string& gid) {
         return true;
     }
 
-    // if (prefix_db_->JustCheckCommitedGidExists(gid)) {
-    //     return false;
-    // }
+    if (prefix_db_->JustCheckCommitedGidExists(gid)) {
+        return false;
+    }
     
     return true;
     // return tmp_res.second;
