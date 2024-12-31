@@ -15,10 +15,10 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13001;
+static const uint16_t kBroadcastPort = 13004;
 static const int shardnum = 3;
-static const int delayus = 200;
-static const bool multi_pool = false;
+static const int delayus = 10;
+static const bool multi_pool = true;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";   
 
@@ -256,7 +256,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (multi_pool && pos % 10 == 0) {
+        if (multi_pool && pos % 10000 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
