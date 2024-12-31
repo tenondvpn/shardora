@@ -412,7 +412,50 @@ void TxPool::RecoverTx(const std::string& gid) {
     }
 }
 
+bool TxPool::GidValid(const std::string& gid) {
+    CheckThreadIdValid();
+    auto tmp_res = added_gids_.insert(gid);
+    CHECK_MEMORY_SIZE(added_gids_);
+    if (!tmp_res.second) {
+        return tmp_res.second;
+    }
+
+    if (!prefix_db_->JustCheckCommitedGidExists(gid)) {
+        return true;
+    }
+    
+    return false;
+    // return tmp_res.second;
+    // if (gid_map_.find(gid) != gid_map_.end()) {
+    //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
+    //         pool_index_, 
+    //         common::Encode::HexEncode(gid).c_str());
+    //     return false;
+    // }
+
+    // if (removed_gid_.find(gid) != removed_gid_.end()) {
+    //     ZJC_DEBUG("removed_gid_.find(gid) != removed_gid_.end() pool: %d, gid: %s", 
+    //         pool_index_, 
+    //         common::Encode::HexEncode(gid).c_str());
+    //     return false;
+    // }
+
+    // ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+    //         pool_index_, 
+    //         common::Encode::HexEncode(gid).c_str());
+    // auto res = prefix_db_->CheckAndSaveGidExists(gid);
+    // if (res) {
+    //     ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
+    //         pool_index_, 
+    //         common::Encode::HexEncode(gid).c_str());
+    //     return false;
+    // }
+
+    // return true;
+}
+
 void TxPool::RemoveTx(const std::string& gid) {
+    CheckThreadIdValid();
     auto added_gid_iter = added_gids_.find(gid);
     if (added_gid_iter != added_gids_.end()) {
         added_gids_.erase(added_gid_iter);
