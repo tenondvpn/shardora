@@ -92,6 +92,7 @@ public:
     void Clear() {
         // data_map_.clear();
         db_batch_.Clear();
+        count_ = 0;
     }
 
     size_t ApproximateSize() const {
