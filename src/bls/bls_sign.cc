@@ -19,7 +19,7 @@ void BlsSign::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* sign) {
     try {
-#if MOCK_SIGN
+#ifdef MOCK_SIGN
         *sign = libff::alt_bn128_G1::one();
         std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
 #else

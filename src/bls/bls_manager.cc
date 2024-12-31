@@ -835,7 +835,7 @@ bool BlsManager::VerifyAggSignValid(
     }
 
     try {
-#if MOCK_SIGN
+#ifdef MOCK_SIGN
         auto bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one()); 
 #else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
