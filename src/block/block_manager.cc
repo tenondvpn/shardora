@@ -77,22 +77,22 @@ int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    account_mgr_->GetAccountInfo("");
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (prev_timer_ms_ + 100lu > now_tm_ms) {
-        return;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // account_mgr_->GetAccountInfo("");
+    // auto now_tm_ms = common::TimeUtils::TimestampMs();
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (prev_timer_ms_ + 100lu > now_tm_ms) {
+    //     return;
+    // }
 
-    prev_timer_ms_ = now_tm_ms;
-    auto now_tm = common::TimeUtils::TimestampUs();
-    ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
-        prev_create_statistic_tx_tm_us_, now_tm);
-    if (prev_create_statistic_tx_tm_us_ < now_tm) {
-        prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
-        CreateStatisticTx();
-    }
+    // prev_timer_ms_ = now_tm_ms;
+    // auto now_tm = common::TimeUtils::TimestampUs();
+    // ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
+    //     prev_create_statistic_tx_tm_us_, now_tm);
+    // if (prev_create_statistic_tx_tm_us_ < now_tm) {
+    //     prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
+    //     CreateStatisticTx();
+    // }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // HandleAllConsensusBlocks();
@@ -135,6 +135,21 @@ void BlockManager::ConsensusAddBlock(
 
 void BlockManager::HandleAllConsensusBlocks() {
     while (!common::GlobalInfo::Instance()->global_stoped()) {
+        account_mgr_->GetAccountInfo("");
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        if (prev_timer_ms_ + 100lu > now_tm_ms) {
+            return;
+        }
+
+        prev_timer_ms_ = now_tm_ms;
+        auto now_tm = common::TimeUtils::TimestampUs();
+        ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
+            prev_create_statistic_tx_tm_us_, now_tm);
+        if (prev_create_statistic_tx_tm_us_ < now_tm) {
+            prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
+            CreateStatisticTx();
+        }
+
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (true) {
                 BlockToDbItemPtr db_item_ptr = nullptr;
