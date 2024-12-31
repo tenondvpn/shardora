@@ -52,8 +52,7 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-// #ifndef NDEBUG
-// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+#ifndef NDEBUG
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
@@ -64,11 +63,11 @@ struct Construct {
         msg_ptr->times_idx++; \
     } \
 }
-// #else
-// #define ADD_DEBUG_PROCESS_TIMESTAMP()
-// #endif
+#else
+#define ADD_DEBUG_PROCESS_TIMESTAMP()
+#endif
 
-// #ifndef NDEBUG
+#ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
     if (data_map.size() >= 12020) { \
         ZJC_INFO("data size: %u", data_map.size()); \
@@ -82,10 +81,10 @@ struct Construct {
         assert(data_map.size() < 120240); \
     } \
 }
-// #else
-// #define CHECK_MEMORY_SIZE(data_map)
-// #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
-// #endif
+#else
+#define CHECK_MEMORY_SIZE(data_map)
+#define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
+#endif
 
 namespace shardora {
 
