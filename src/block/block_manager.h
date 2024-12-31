@@ -1,6 +1,10 @@
 #pragma once
 
 #include <deque>
+#include <thread>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
 
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
@@ -201,6 +205,9 @@ private:
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;
+    std::shared_ptr<std::thread> handle_consensus_block_thread_;
+    std::mutex wait_mutex_;
+    std::condition_variable wait_con_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

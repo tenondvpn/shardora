@@ -33,6 +33,10 @@ BlockManager::BlockManager(
 }
 
 BlockManager::~BlockManager() {
+    if (handle_consensus_block_thread_) {
+        handle_consensus_block_thread_->join();
+    }
+
     if (consensus_block_queues_ != nullptr) {
         delete[] consensus_block_queues_;
     }
@@ -64,6 +68,7 @@ int BlockManager::Init(
     bool genesis = false;
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
     leader_prev_get_to_tx_tm_ = common::TimeUtils::TimestampMs();
+    handle_consensus_block_thread_ = std::make_shared<std::thread>(std::bind(&AccountManager::HandleAllConsensusBlocks, this));
     return kBlockSuccess;
 }
 
@@ -90,7 +95,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    HandleAllConsensusBlocks();
+    // HandleAllConsensusBlocks();
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
@@ -129,36 +134,40 @@ void BlockManager::ConsensusAddBlock(
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
-    for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        while (true) {
-            BlockToDbItemPtr db_item_ptr = nullptr;
-            consensus_block_queues_[i].pop(&db_item_ptr);
-            if (db_item_ptr == nullptr) {
-                break;
+    while (!common::GlobalInfo::Instance()->global_stoped()) {
+        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            while (true) {
+                BlockToDbItemPtr db_item_ptr = nullptr;
+                consensus_block_queues_[i].pop(&db_item_ptr);
+                if (db_item_ptr == nullptr) {
+                    break;
+                }
+
+                auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
+                ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                        db_item_ptr->view_block_ptr->qc().network_id(),
+                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        block_ptr->height(),
+                        block_ptr->tx_list_size(),
+                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        block_ptr->timeblock_height());
+                AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
+                ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                        db_item_ptr->view_block_ptr->qc().network_id(),
+                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        block_ptr->height(),
+                        block_ptr->tx_list_size(),
+                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        block_ptr->timeblock_height());
             }
-
-            auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
-            ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                    db_item_ptr->view_block_ptr->qc().network_id(),
-                    db_item_ptr->view_block_ptr->qc().pool_index(),
-                    block_ptr->height(),
-                    block_ptr->tx_list_size(),
-                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                    db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height());
-            AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
-            ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                    db_item_ptr->view_block_ptr->qc().network_id(),
-                    db_item_ptr->view_block_ptr->qc().pool_index(),
-                    block_ptr->height(),
-                    block_ptr->tx_list_size(),
-                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                    db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height());
-
         }
+
+        std::unique_lock<std::mutex> lock(wait_mutex_);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
 }
 
