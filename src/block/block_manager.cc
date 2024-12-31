@@ -68,7 +68,7 @@ int BlockManager::Init(
     bool genesis = false;
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
     leader_prev_get_to_tx_tm_ = common::TimeUtils::TimestampMs();
-    handle_consensus_block_thread_ = std::make_shared<std::thread>(std::bind(&AccountManager::HandleAllConsensusBlocks, this));
+    handle_consensus_block_thread_ = std::make_shared<std::thread>(std::bind(&BlockManager::HandleAllConsensusBlocks, this));
     return kBlockSuccess;
 }
 
