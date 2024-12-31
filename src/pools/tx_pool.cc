@@ -416,15 +416,15 @@ bool TxPool::GidValid(const std::string& gid) {
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
     CHECK_MEMORY_SIZE(added_gids_);
-    if (!tmp_res.second) {
-        return tmp_res.second;
-    }
-
-    if (!prefix_db_->JustCheckCommitedGidExists(gid)) {
+    if (tmp_res.second) {
         return true;
     }
+
+    if (prefix_db_->JustCheckCommitedGidExists(gid)) {
+        return false;
+    }
     
-    return false;
+    return true;
     // return tmp_res.second;
     // if (gid_map_.find(gid) != gid_map_.end()) {
     //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
