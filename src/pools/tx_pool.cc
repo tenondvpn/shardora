@@ -319,7 +319,6 @@ void TxPool::GetTxByHash(
 }
 
 void TxPool::CheckTimeoutTx() {
-//     common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
     if (prev_check_tx_timeout_tm_ > now_tm) {
         return;
@@ -415,57 +414,36 @@ void TxPool::RecoverTx(const std::string& gid) {
 bool TxPool::GidValid(const std::string& gid) {
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
-    // added_gids_queue_.push_back(gid);
-    // if (added_gids_queue_.size() >= 102400) {
-    //     added_gids_.erase(added_gids_queue_.front());
-    //     added_gids_queue_.pop_front();
-    // }
-
     CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
+        std::string key = protos::kGidPrefix + gid;
+        added_gids_batch_.Put(key, "1");
+        if (added_gids_.size() >= 102400) {
+            auto st = db_->Put(added_gids_batch_);
+            if (!st.ok()) {
+                ZJC_FATAL("write data to db failed!");
+            }
+
+            added_gids_batch_.Clear();
+            added_gids_.clear();
+        }
+        
         return true;
     }
 
-    if (prefix_db_->JustCheckCommitedGidExists(gid)) {
+    if (prefix_db_->CheckAndSaveGidExists(gid)) {
         return false;
     }
     
     return true;
-    // return tmp_res.second;
-    // if (gid_map_.find(gid) != gid_map_.end()) {
-    //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
-    //         pool_index_, 
-    //         common::Encode::HexEncode(gid).c_str());
-    //     return false;
-    // }
-
-    // if (removed_gid_.find(gid) != removed_gid_.end()) {
-    //     ZJC_DEBUG("removed_gid_.find(gid) != removed_gid_.end() pool: %d, gid: %s", 
-    //         pool_index_, 
-    //         common::Encode::HexEncode(gid).c_str());
-    //     return false;
-    // }
-
-    // ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
-    //         pool_index_, 
-    //         common::Encode::HexEncode(gid).c_str());
-    // auto res = prefix_db_->CheckAndSaveGidExists(gid);
-    // if (res) {
-    //     ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
-    //         pool_index_, 
-    //         common::Encode::HexEncode(gid).c_str());
-    //     return false;
-    // }
-
-    // return true;
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    CheckThreadIdValid();
-    auto added_gid_iter = added_gids_.find(gid);
-    if (added_gid_iter != added_gids_.end()) {
-        added_gids_.erase(added_gid_iter);
-    }
+    // CheckThreadIdValid();
+    // auto added_gid_iter = added_gids_.find(gid);
+    // if (added_gid_iter != added_gids_.end()) {
+    //     added_gids_.erase(added_gid_iter);
+    // }
 
     // auto giter = gid_map_.find(gid);
     // if (giter == gid_map_.end()) {
