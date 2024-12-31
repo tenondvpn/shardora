@@ -349,13 +349,16 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     account_mgr_->GetAccountInfo("");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             bool has_user_tx = false;
             bool has_system_tx = false;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             auto gid_valid_func = [&](const std::string& gid) -> bool {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
@@ -373,12 +376,17 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
             }
 
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->PopTxs(pool_idx, false, &has_user_tx, &has_system_tx);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->CheckTimeoutTx(pool_idx);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             hotstuff(pool_idx)->TryRecoverFromStuck(has_user_tx, has_system_tx);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
         }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     // 打印总 tps
     double tps = 0;
     if (now_tm_ms >= prev_handler_timer_tm_ms_ + 3000lu) {
@@ -395,6 +403,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_ERROR("tps: %.2f", tps);
         }
     }
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void HotstuffManager::RegisterCreateTxCallbacks() {
