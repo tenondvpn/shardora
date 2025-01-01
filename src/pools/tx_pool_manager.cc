@@ -1294,6 +1294,7 @@ void TxPoolManager::GetTxSyncToLeader(
 }
 
 void TxPoolManager::GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
@@ -1303,7 +1304,7 @@ void TxPoolManager::GetTxIdempotently(
         return;
     }
 
-    tx_pool_[pool_index].GetTxIdempotently(res_map, count, gid_vlid_func);    
+    tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxByGids(

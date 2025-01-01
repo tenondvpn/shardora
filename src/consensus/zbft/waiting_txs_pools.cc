@@ -17,9 +17,11 @@ WaitingTxsPools::WaitingTxsPools(
 WaitingTxsPools::~WaitingTxsPools() {}
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
+        const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
         pools::CheckGidValidFunction gid_vlid_func) {
     auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
     #ifdef TEST_NO_CROSS
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
@@ -27,6 +29,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index, gid_vlid_func);
     #endif
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item != nullptr) {
         for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
             if (!gid_vlid_func(iter->second->tx_info.gid())) {
@@ -37,9 +40,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     }
 
     if (txs_item == nullptr) {
-        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently(gid_vlid_func);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently(msg_ptr, gid_vlid_func);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
         if (!txs_item->txs.empty()) {
@@ -55,6 +61,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
             thread_id, pool_index, 0);
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return txs_item;
 }
 

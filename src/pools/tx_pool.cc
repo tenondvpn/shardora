@@ -220,25 +220,31 @@ void TxPool::GetTxSyncToLeader(
 }
 
 void TxPool::GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         pools::CheckGidValidFunction gid_vlid_func) {
     CheckThreadIdValid();
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("now get tx universal_prio_map_ size: %u, prio_map_: %u, consensus_tx_map_: %u",
         universal_prio_map_.size(),
         prio_map_.size(),
         consensus_tx_map_.size());
-    GetTxIdempotently(universal_prio_map_, res_map, count, gid_vlid_func);
+    GetTxIdempotently(msg_ptr, universal_prio_map_, res_map, count, gid_vlid_func);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (!res_map.empty()) {
         ZJC_DEBUG("pool index: %u, success get tx size: %d", pool_index_, res_map.size());
         return;
     }
 
-    GetTxIdempotently(prio_map_, res_map, count, gid_vlid_func);
-    GetTxIdempotently(consensus_tx_map_, res_map, count, gid_vlid_func);    
+    GetTxIdempotently(msg_ptr, prio_map_, res_map, count, gid_vlid_func);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    GetTxIdempotently(msg_ptr, consensus_tx_map_, res_map, count, gid_vlid_func);    
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void TxPool::GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,

@@ -40,6 +40,7 @@ public:
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
     void GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,

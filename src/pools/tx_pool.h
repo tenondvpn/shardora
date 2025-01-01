@@ -63,6 +63,7 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         pools::CheckGidValidFunction gid_vlid_func);
@@ -149,6 +150,7 @@ private:
             const bls::protobuf::JoinElectInfo& join_info,
             std::string* new_hash);
     void GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,

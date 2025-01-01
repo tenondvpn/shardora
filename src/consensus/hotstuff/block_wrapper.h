@@ -83,7 +83,7 @@ private:
             ADD_DEBUG_PROCESS_TIMESTAMP();
         }
 
-        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(pool_idx_, gid_vlid_func);
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, gid_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
