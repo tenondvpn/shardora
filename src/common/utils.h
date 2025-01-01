@@ -52,20 +52,20 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
-        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 50000lu)ZJC_DEBUG("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 50000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
         msg_ptr->times[msg_ptr->times_idx] = btime; \
         msg_ptr->times_idx++; \
     } \
 }
-#else
-#define ADD_DEBUG_PROCESS_TIMESTAMP()
-#endif
+// #else
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+// #endif
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
