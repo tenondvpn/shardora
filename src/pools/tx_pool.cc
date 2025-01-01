@@ -175,8 +175,8 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     CHECK_MEMORY_SIZE(gid_start_time_map_);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
-    timeout_txs_.push(tx_ptr->tx_info.gid());
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
+    // timeout_txs_.push(tx_ptr->tx_info.gid());
+    // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
     if (pool_index_ == common::kImmutablePoolSize) {
         ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
             pool_index_, 
@@ -319,57 +319,57 @@ void TxPool::GetTxByHash(
 }
 
 void TxPool::CheckTimeoutTx() {
-    auto now_tm = common::TimeUtils::TimestampUs();
-    if (prev_check_tx_timeout_tm_ > now_tm) {
-        return;
-    }
+    // auto now_tm = common::TimeUtils::TimestampUs();
+    // if (prev_check_tx_timeout_tm_ > now_tm) {
+    //     return;
+    // }
 
-    prev_check_tx_timeout_tm_ = now_tm + 1000000lu;
-    uint32_t count = 0;
-    while (!timeout_txs_.empty() && count++ < 1024) {
-        auto& gid = timeout_txs_.front();
-        auto iter = gid_map_.find(gid);
-        if (iter == gid_map_.end()) {
-            timeout_txs_.pop();
-            CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
-            continue;
-        }
+    // prev_check_tx_timeout_tm_ = now_tm + 1000000lu;
+    // uint32_t count = 0;
+    // while (!timeout_txs_.empty() && count++ < 1024) {
+    //     auto& gid = timeout_txs_.front();
+    //     auto iter = gid_map_.find(gid);
+    //     if (iter == gid_map_.end()) {
+    //         timeout_txs_.pop();
+    //         CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
+    //         continue;
+    //     }
 
-        // ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
-        //     common::Encode::HexEncode(gid).c_str(),
-        //     gid_map_.size(), iter->second->timeout, now_tm);
-        if (iter->second->timeout > now_tm) {
-            break;
-        }
+    //     // ZJC_DEBUG("check tx timeout gid: %s, size: %u, iter->second->timeout: %lu now_tm: %lu", 
+    //     //     common::Encode::HexEncode(gid).c_str(),
+    //     //     gid_map_.size(), iter->second->timeout, now_tm);
+    //     if (iter->second->timeout > now_tm) {
+    //         break;
+    //     }
 
-        timeout_txs_.pop();
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
-        timeout_remove_txs_.push(gid);
-        CHECK_MEMORY_SIZE(timeout_remove_txs_);
-    }
+    //     timeout_txs_.pop();
+    //     CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
+    //     timeout_remove_txs_.push(gid);
+    //     CHECK_MEMORY_SIZE(timeout_remove_txs_);
+    // }
 
-    count = 0;
-    while (!timeout_remove_txs_.empty() && count++ < 64) {
-        auto& gid = timeout_remove_txs_.front();
-        auto iter = gid_map_.find(gid);
-        if (iter == gid_map_.end()) {
-            timeout_remove_txs_.pop();
-            continue;
-        }
+    // count = 0;
+    // while (!timeout_remove_txs_.empty() && count++ < 64) {
+    //     auto& gid = timeout_remove_txs_.front();
+    //     auto iter = gid_map_.find(gid);
+    //     if (iter == gid_map_.end()) {
+    //         timeout_remove_txs_.pop();
+    //         continue;
+    //     }
 
-        ZJC_DEBUG("remove tx timeout size: %u, iter->second->timeout: %lu now_tm: %lu", 
-            gid_map_.size(), iter->second->remove_timeout, now_tm);
-        if (iter->second->remove_timeout > now_tm) {
-            break;
-        }
+    //     ZJC_DEBUG("remove tx timeout size: %u, iter->second->timeout: %lu now_tm: %lu", 
+    //         gid_map_.size(), iter->second->remove_timeout, now_tm);
+    //     if (iter->second->remove_timeout > now_tm) {
+    //         break;
+    //     }
 
-        RemoveTx(gid);
-        timeout_remove_txs_.pop();
-        CHECK_MEMORY_SIZE(timeout_remove_txs_);
-        ZJC_DEBUG("timeout remove gid: %s, tx hash: %s",
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
-    }
+    //     RemoveTx(gid);
+    //     timeout_remove_txs_.pop();
+    //     CHECK_MEMORY_SIZE(timeout_remove_txs_);
+    //     ZJC_DEBUG("timeout remove gid: %s, tx hash: %s",
+    //         common::Encode::HexEncode(gid).c_str(),
+    //         common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
+    // }
 }
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
