@@ -439,6 +439,7 @@ int TxPoolManager::BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr,
         uint32_t pool_index, 
         const std::map<std::string, pools::TxItemPtr>& txs) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     int res = kPoolsSuccess;
     std::vector<pools::TxItemPtr> valid_txs;
     ADD_DEBUG_PROCESS_TIMESTAMP();
