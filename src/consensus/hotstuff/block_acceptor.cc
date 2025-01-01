@@ -450,6 +450,7 @@ Status BlockAcceptor::addTxsToPool(
                         assert(false);
                     } else {
                         valid_txs.push_back(tx_ptr);
+                        pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
                     }
                 }
             }
@@ -461,15 +462,15 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     // 放入交易池并弹出（避免重复打包）
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("success add txs size: %u", txs_map.size());
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), valid_txs);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (res != pools::kPoolsSuccess) {
-        ZJC_ERROR("invalid consensus, txs invalid.");
-        return Status::kError;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // ZJC_DEBUG("success add txs size: %u", txs_map.size());
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), valid_txs);
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (res != pools::kPoolsSuccess) {
+    //     ZJC_ERROR("invalid consensus, txs invalid.");
+    //     return Status::kError;
+    // }
 
     return Status::kSuccess;
 }

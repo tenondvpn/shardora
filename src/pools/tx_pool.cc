@@ -809,6 +809,29 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
     return factor;
 }
 
+void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
+    if (!pools::IsUserTransaction(tx->tx_info.step())) {
+        ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
+            tx->tx_info.step(),
+            common::Encode::HexEncode(tx->tx_info.gid()).c_str());
+        return;
+    }
+
+    // if (!GidValid(txs[i]->tx_info.gid())) {
+    //     continue;
+    // }
+
+    gid_map_[tx->tx_info.gid()] = tx;
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(
+        gid_map_, 
+        (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    tx->is_consensus_add_tx = true;
+    consensus_tx_map_[tx->unique_tx_hash] = tx;
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(
+        consensus_tx_map_, 
+        (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+}
+
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     for (uint32_t i = 0; i < txs.size(); ++i) {
         if (!pools::IsUserTransaction(txs[i]->tx_info.step())) {

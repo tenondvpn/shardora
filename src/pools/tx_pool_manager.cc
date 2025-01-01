@@ -445,6 +445,14 @@ int TxPoolManager::BackupConsensusAddTxs(
     return kPoolsSuccess;
 }
 
+int TxPoolManager::BackupConsensusAddTxs(
+        transport::MessagePtr msg_ptr, 
+        uint32_t pool_index, 
+        const pools::TxItemPtr& valid_tx) {
+    tx_pool_[pool_index].ConsensusAddTxs(valid_tx);
+    return kPoolsSuccess;
+}
+
 void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
     std::vector<pools::TxItemPtr> valid_txs;
     for (uint32_t i = 0; i < txs.size(); ++i) {

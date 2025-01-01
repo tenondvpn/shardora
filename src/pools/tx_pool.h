@@ -80,6 +80,7 @@ public:
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
     void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs);
+    void ConsensusAddTxs(const pools::TxItemPtr& tx);
     void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs);
     void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash);
     void SaveTempBftInvalidHashs(uint64_t height, const std::set<std::string>& hashs);
