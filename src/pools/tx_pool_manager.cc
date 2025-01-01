@@ -438,51 +438,11 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 int TxPoolManager::BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr,
         uint32_t pool_index, 
-        const std::map<std::string, pools::TxItemPtr>& txs) {
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    int res = kPoolsSuccess;
-    std::vector<pools::TxItemPtr> valid_txs;
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
-        auto tx_ptr = iter->second;
-        if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-            continue;
-        }
-
-        if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
-            // valid_txs.push_back(tx_ptr);
-            continue;
-        }
-
-        if (security_->Verify(
-                tx_ptr->unique_tx_hash,
-                tx_ptr->tx_info.pubkey(),
-                tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
-            ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-                "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
-                tx_ptr->address_info->balance(),
-                tx_ptr->tx_info.amount(),
-                tx_ptr->tx_info.contract_prepayment(),
-                consensus::kCallContractDefaultUseGas,
-                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-                tx_ptr->tx_info.step());
-            assert(false);
-            continue;
-        }
-        
-
-        valid_txs.push_back(tx_ptr);
-        // ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
-        //     tx_ptr->tx_info.step(), 
-        //     common::Encode::HexEncode(tx_ptr->tx_info.to()).c_str(), 
-        //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-    }
-    
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+        const std::vector<pools::TxItemPtr>& valid_txs) {
     ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
     tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    return res;
+    return kPoolsSuccess;
 }
 
 void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {

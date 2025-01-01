@@ -72,7 +72,7 @@ public:
     int BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index, 
-        const std::map<std::string, pools::TxItemPtr>& txs);
+        const std::vector<pools::TxItemPtr>& valid_txs);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
 

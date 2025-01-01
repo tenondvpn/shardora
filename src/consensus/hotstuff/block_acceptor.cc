@@ -215,6 +215,8 @@ Status BlockAcceptor::addTxsToPool(
     ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
         prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    std::vector<pools::TxItemPtr> valid_txs;
+    valid_txs.reserve(txs.size());
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
@@ -430,8 +432,33 @@ Status BlockAcceptor::addTxsToPool(
 
         if (tx_ptr != nullptr) {
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-            // TODO: verify signature
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
+            if (!pools_mgr_->GidValid(pool_idx(), tx_ptr->tx_info.gid())) {
+                break;
+            }
+
+            if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
+                // valid_txs.push_back(tx_ptr);
+                break;
+            }
+
+            if (security_ptr_->Verify(
+                    tx_ptr->unique_tx_hash,
+                    tx_ptr->tx_info.pubkey(),
+                    tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+                ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+                    "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
+                    tx_ptr->address_info->balance(),
+                    tx_ptr->tx_info.amount(),
+                    tx_ptr->tx_info.contract_prepayment(),
+                    consensus::kCallContractDefaultUseGas,
+                    common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+                    tx_ptr->tx_info.step());
+                assert(false);
+                break;
+            }
+
+            valid_txs.push_back(tx_ptr);
         }
     }
 
@@ -443,7 +470,7 @@ Status BlockAcceptor::addTxsToPool(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add txs size: %u", txs_map.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), txs_map);
+    int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), valid_txs);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (res != pools::kPoolsSuccess) {
         ZJC_ERROR("invalid consensus, txs invalid.");
