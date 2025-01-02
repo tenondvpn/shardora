@@ -225,17 +225,17 @@ int tx_main(int argc, char** argv) {
         std::string gid = common::Random::RandomString(32);
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
-        if (g_pri_addrs_map[from_prikey] == to) {
-            ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-        }
+        // if (g_pri_addrs_map[from_prikey] == to) {
+        //     ++prikey_pos;
+        //     from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+        //     security->SetPrivateKey(from_prikey);
+        // }
 
-        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
-            ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-        }
+        // if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
+        //     ++prikey_pos;
+        //     from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+        //     security->SetPrivateKey(from_prikey);
+        // }
 
         // uint32_t* tmp_data = (uint32_t*)to.c_str();
         // if (common::Random::RandomInt32() % 10 < 3) {
