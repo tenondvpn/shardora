@@ -444,7 +444,7 @@ function InitC2cEnv(key, value) {
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     out_lines[3] + cons_codes.substring(2));
-                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
+                var contract_cmd = `clickhouse-client --host 127.0.0.1 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
                 const execPromise = util.promisify(exec);
