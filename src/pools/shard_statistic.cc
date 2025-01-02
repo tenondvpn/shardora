@@ -50,7 +50,7 @@ int ShardStatistic::Init() {
         statistic_pool_info_[statistic_info.height()] = tmp_pool_map;
         CHECK_MEMORY_SIZE(statistic_pool_info_);
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
-        for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
+        for (int32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
             statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
             pool_map[i] = statistic_item;
@@ -108,15 +108,15 @@ void ShardStatistic::OnNewBlock(
             continue;
         }
 
-        ZJC_DEBUG("handle statsitic block %u_%u_%lu, "
-            "block height: %lu, tm height: %lu, gid: %s, step: %d", 
-            view_block_ptr->qc().network_id(),
-            view_block_ptr->qc().pool_index(),
-            view_block_ptr->qc().view(),
-            view_block_ptr->block_info().height(),
-            view_block_ptr->block_info().timeblock_height(),
-            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            tx_list[i].step());
+        // ZJC_DEBUG("handle statsitic block %u_%u_%lu, "
+        //     "block height: %lu, tm height: %lu, gid: %s, step: %d", 
+        //     view_block_ptr->qc().network_id(),
+        //     view_block_ptr->qc().pool_index(),
+        //     view_block_ptr->qc().view(),
+        //     view_block_ptr->block_info().height(),
+        //     view_block_ptr->block_info().timeblock_height(),
+        //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+        //     tx_list[i].step());
         if (tx_list[i].step() == pools::protobuf::kStatistic) {
             HandleStatisticBlock(block, tx_list[i]);
         }
@@ -290,7 +290,7 @@ void ShardStatistic::HandleStatistic(
             auto& tx = block.tx_list(i);
             if (tx.step() == pools::protobuf::kPoolStatisticTag) {
                 uint64_t statistic_height = 0;
-                for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
                     if (tx.storages(storage_idx).key() == protos::kPoolStatisticTag) {
                         uint64_t* udata = (uint64_t*)tx.storages(storage_idx).value().c_str();
                         statistic_height = udata[0];

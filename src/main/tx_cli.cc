@@ -15,10 +15,10 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13001;
+static const uint16_t kBroadcastPort = 13004;
 static const int shardnum = 3;
 static const int delayus = 10;
-static const bool multi_pool = true;//false;
+static const bool multi_pool = true;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";   
 
@@ -113,13 +113,14 @@ static transport::MessagePtr CreateTransactionWithAttr(
         return nullptr;
     }
 
-    std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
-        << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
-        << " tx to: " << common::Encode::HexEncode(new_tx->to())
-        << " tx hash: " << common::Encode::HexEncode(tx_hash)
-        << " tx sign: " << common::Encode::HexEncode(sign)
-        << " hash64: " << msg.hash64()
-        << std::endl;
+    // std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+    //     << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+    //     << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+    //     << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+    //     << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+    //     << "amount: " << amount << std::endl
+    //     << "gas_limit: " << gas_limit << std::endl
+    //     << std::endl;
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -218,9 +219,8 @@ int tx_main(int argc, char** argv) {
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint32_t step_num = 1000;
+    std::string gid = common::Random::RandomString(32);
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
-
-        std::string gid = common::Random::RandomString(32);
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
         if (g_pri_addrs_map[from_prikey] == to) {
@@ -256,18 +256,17 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (multi_pool && pos % 10 == 0) {
+        if (multi_pool && pos % 10000 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
         }
 
-
         count++;
-        if (count == step_num) {
-            auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
-            auto tps = step_num * 1000000 / dur;
+        auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+        if (dur >= 3000000lu) {
+            auto tps = count * 1000000lu / dur;
             std::cout << "tps: " << tps << std::endl;
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
@@ -342,12 +341,19 @@ int one_tx_main(int argc, char** argv) {
         val = argv[6];
     }
 
+
     std::string prikey = common::Encode::HexDecode(from_prikey);
     std::string to = common::Encode::HexDecode(argv[2]);
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
     std::string gid = common::Random::RandomString(32);
+    if (argc >= 8) {
+        FILE* fd = fopen(argv[7], "w");
+        fwrite(common::Encode::HexEncode(gid).c_str(), 1, 2 * gid.size(), fd);
+        fclose(fd);
+    }
+
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,

@@ -54,52 +54,58 @@ public:
     }
 
     void Put(const std::string& key, const std::string& value) {
-        if (data_map_.find(key) == data_map_.end()) {
-            data_map_[key] = value;
-            CHECK_MEMORY_SIZE(data_map_);
-        }
+        // if (data_map_.find(key) == data_map_.end()) {
+        //     data_map_[key] = value;
+        //     CHECK_MEMORY_SIZE(data_map_);
+        // }
 
         db_batch_.Put(key, value);
+        ++count_;
     }
 
     bool Exist(const std::string& key) {
-        return data_map_.find(key) != data_map_.end();
+        assert(false);
+        return false;
+        // return data_map_.find(key) != data_map_.end();
     }
 
     bool Get(const std::string& key, std::string* value) {
-        auto iter = data_map_.find(key);
-        if (iter == data_map_.end()) {
-            return false;
-        }
+        // auto iter = data_map_.find(key);
+        // if (iter == data_map_.end()) {
+        //     return false;
+        // }
         
-        *value = iter->second;
-        return true;
+        // *value = iter->second;
+        assert(false);
+        return false;
     }
 
     void Delete(const std::string& key) {
-        auto iter = data_map_.find(key);
-        if (iter != data_map_.end()) {
-            data_map_.erase(iter);
-            CHECK_MEMORY_SIZE(data_map_);
+        // auto iter = data_map_.find(key);
+        // if (iter != data_map_.end()) {
+        //     data_map_.erase(iter);
+        //     CHECK_MEMORY_SIZE(data_map_);
             db_batch_.Delete(key);
-        }
+        // }
     }
 
     void Clear() {
-        data_map_.clear();
+        // data_map_.clear();
         db_batch_.Clear();
+        count_ = 0;
     }
 
     size_t ApproximateSize() const {
 #ifdef LEVELDB
         return db_batch_.ApproximateSize();
 #else
-        return data_map_.size() > 0 ? 100 : 0;
+        return count_ > 0 ? 100 : 0;
 #endif
     }
 
     TmpDbWriteBatch db_batch_;
-    std::unordered_map<std::string, std::string> data_map_;
+    uint32_t count_ = 0;
+    // std::unordered_map<std::string, std::string> data_map_;
 };
 
 class Db {

@@ -66,7 +66,9 @@ public:
     // Commit a block
     virtual void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     // Add txs to local pool
-    virtual Status AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) = 0;
+    virtual Status AddTxs(
+        transport::MessagePtr msg_ptr, 
+        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<view_block::protobuf::ViewBlockItem>&) = 0;
     // Handle Synced Block From KeyValueSyncer
@@ -108,7 +110,9 @@ public:
     // Commit a block and execute its txs.
     void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // Add txs from hotstuff msg to local pool
-    Status AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
+    Status AddTxs(
+        transport::MessagePtr msg_ptr, 
+        const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
     void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
     void MarkBlockTxsAsUsed(const block::protobuf::Block&) override;
@@ -130,6 +134,7 @@ public:
 
 private:
     Status addTxsToPool(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
@@ -144,6 +149,7 @@ private:
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
     Status GetAndAddTxsLocally(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& block_info,
@@ -180,9 +186,9 @@ private:
     }
 
     uint32_t pool_idx_;
+    std::shared_ptr<elect::ElectManager> elect_mgr_= nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    std::shared_ptr<elect::ElectManager> elect_mgr_= nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;

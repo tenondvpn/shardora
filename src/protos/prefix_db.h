@@ -811,8 +811,8 @@ public:
             return true;
         }
         
-        db_->Put(key, "1");
-        ZJC_DEBUG("success save tx gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), false);
+        // db_->Put(key, "1");
+        // ZJC_DEBUG("success save tx gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), false);
         return false;
     }
 

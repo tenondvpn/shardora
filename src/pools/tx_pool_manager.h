@@ -40,6 +40,7 @@ public:
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
     void GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
@@ -68,7 +69,14 @@ public:
         uint32_t pool_index,
         std::vector<std::string> gids,
         std::map<std::string, pools::TxItemPtr>& res_map);
-    int BackupConsensusAddTxs(uint32_t pool_index, const std::map<std::string, pools::TxItemPtr>& txs);
+    int BackupConsensusAddTxs(
+        transport::MessagePtr msg_ptr, 
+        uint32_t pool_index, 
+        const std::vector<pools::TxItemPtr>& valid_txs);
+    int BackupConsensusAddTxs(
+        transport::MessagePtr msg_ptr, 
+        uint32_t pool_index, 
+        const pools::TxItemPtr& valid_tx);
     void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
 
@@ -78,10 +86,6 @@ public:
 
     uint32_t tx_size(uint32_t pool_index) const {
         return tx_pool_[pool_index].tx_size();
-    }
-
-    void RemoveTx(uint32_t pool_index, const std::string& gid) {
-        tx_pool_[pool_index].RemoveTx(gid);
     }
 
     void RecoverTx(uint32_t pool_index, const std::string& gid) {

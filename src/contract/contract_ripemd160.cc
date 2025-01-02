@@ -436,7 +436,7 @@ int Ripemd160::AggSignAndVerify(
         element_clear(agg_signature);
     }
     
-    for (uint32_t i = 0; i < valid_idx; ++i) {
+    for (int32_t i = 0; i < valid_idx; ++i) {
         element_clear(delta_primes[i]);
         element_clear(y_primes[i]);
         auto& item = pi_proofs[i];

@@ -45,6 +45,7 @@ public:
     }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
+        const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_vlid_func);
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, const std::string& tx_hash);

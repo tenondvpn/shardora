@@ -32,6 +32,7 @@
 #define DEBUG(fmt, ...)  do {\
     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
+// #define ZJC_DEBUG(fmt, ...)
 #define ZJC_DEBUG(fmt, ...)  do {\
     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
@@ -140,6 +141,7 @@
 #endif
 
 static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
+    return "";
     std::string json_str;
     google::protobuf::util::JsonPrintOptions options;
     options.add_whitespace = pretty_print;

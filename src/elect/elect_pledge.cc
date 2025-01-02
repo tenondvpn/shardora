@@ -30,6 +30,7 @@ int ElectPlege::gen_elect_plege_GensisBlocks(uint64_t shard_id, block::protobuf:
     ZJC_DEBUG("gen_elect_plege_GensisBlocks contract_addr: %s , gid: %s ,",
                                             common::Encode::HexEncode(contract_addr).c_str(),
                                             common::Encode::HexEncode(tx_info->gid()).c_str());
+    return kElectSuccess;
 }
 std::string  ElectPlege::toHexString(uint64_t shard_id, size_t width) {
     std::ostringstream oss;

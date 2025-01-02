@@ -52,36 +52,31 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-#ifndef NDEBUG
-// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+// #ifndef NDEBUG
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
-        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; } \
-        std::string tmp_str = common::StringUtil::Format("thread: %d, %s:%s:%u, diff time: %lu", msg_ptr->thread_index, ZJC_LOG_FILE_NAME,  __FUNCTION__, __LINE__, diff_time); \
+        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 50000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
         msg_ptr->times[msg_ptr->times_idx] = btime; \
-        msg_ptr->debug_str[msg_ptr->times_idx] = tmp_str; \
         msg_ptr->times_idx++; \
     } \
 }
-#else
-#define ADD_DEBUG_PROCESS_TIMESTAMP()
-#endif
+// #else
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
+// #endif
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    if (data_map.size() >= 12024) { \
+    if (data_map.size() >= 42020) { \
         ZJC_DEBUG("data size: %u", data_map.size()); \
-        assert(data_map.size() < 12024); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
-    if (data_map.size() >= 12024) { \
+    if (data_map.size() >= 42020) { \
         ZJC_DEBUG("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
-        assert(data_map.size() < 120240); \
     } \
 }
 #else

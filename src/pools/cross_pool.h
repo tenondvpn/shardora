@@ -104,11 +104,7 @@ public:
                 (prev_synced_height_ < synced_height_ + 64);
                 ++prev_synced_height_) {
             if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
-                ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
-                    des_sharding_id_,
-                    pool_index_,
-                    prev_synced_height_ + 1);
-                ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                ZJC_DEBUG("kvsync add sync block height net: %u, pool: %u, height: %lu",
                     des_sharding_id_,
                     pool_index_,
                     prev_synced_height_ + 1);

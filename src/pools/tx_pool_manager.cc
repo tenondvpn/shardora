@@ -105,13 +105,13 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    // if (security_->Verify(
-    //         msg_ptr->msg_hash,
-    //         tx_msg.pubkey(),
-    //         tx_msg.sign()) != security::kSecuritySuccess) {
-    //     ZJC_ERROR("verify signature failed!");
-    //     return transport::kFirewallCheckError;
-    // }
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            tx_msg.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("verify signature failed!");
+        return transport::kFirewallCheckError;
+    }
 
     auto tmp_acc_ptr = acc_mgr_.lock();
     msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
@@ -193,21 +193,21 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
 #ifndef NDEBUG
-    std::string test_str;
+    // std::string test_str;
     uint32_t max_count = 0;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        if (tx_pool_[i].tx_size() > max_count) {
-            max_count = tx_pool_[i].tx_size();
-        }
-        test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
+        // if (tx_pool_[i].tx_size() > max_count) {
+        //     max_count = tx_pool_[i].tx_size();
+        // }
+        // test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
         tx_count_queue.push(tx_pool_[i].tx_size());
         if (tx_count_queue.size() > 2) {
             tx_count_queue.pop();
         }
     }
 
-    // now_max_tx_count_ = max_count * 2 / 3;
-    ZJC_DEBUG("set max txcount: %u, test str: %s", tx_count_queue.top(), test_str.c_str());
+    now_max_tx_count_ = max_count * 2 / 3;
+    // ZJC_DEBUG("set max txcount: %u, test str: %s", tx_count_queue.top(), test_str.c_str());
 #endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
@@ -397,13 +397,15 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
     // just one thread
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u",
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size(),
         common::GlobalInfo::Instance()->pools_each_thread_max_messages());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pools_msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
         return;
     }
@@ -434,50 +436,21 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 
 int TxPoolManager::BackupConsensusAddTxs(
+        transport::MessagePtr msg_ptr,
         uint32_t pool_index, 
-        const std::map<std::string, pools::TxItemPtr>& txs) {
-    int res = kPoolsSuccess;
-    std::vector<pools::TxItemPtr> valid_txs;
-    for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
-        auto tx_ptr = iter->second;
-        if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-            continue;
-        }
-
-        if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
-            // valid_txs.push_back(tx_ptr);
-            continue;
-        }
-
-        if (security_->Verify(
-                tx_ptr->unique_tx_hash,
-                tx_ptr->tx_info.pubkey(),
-                tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
-            ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-                "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
-                tx_ptr->address_info->balance(),
-                tx_ptr->tx_info.amount(),
-                tx_ptr->tx_info.contract_prepayment(),
-                consensus::kCallContractDefaultUseGas,
-                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-                tx_ptr->tx_info.step());
-            assert(false);
-            continue;
-        }
-        // if (tx_pool_[pool_index].TxExists(tx_ptr->tx_info.gid())) {
-        //     continue;
-        // }
-
-        valid_txs.push_back(tx_ptr);
-        // ZJC_DEBUG("succcess add tx step: %d, to: %s, gid: %s", 
-        //     tx_ptr->tx_info.step(), 
-        //     common::Encode::HexEncode(tx_ptr->tx_info.to()).c_str(), 
-        //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-    }
-    
+        const std::vector<pools::TxItemPtr>& valid_txs) {
     ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
     tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
-    return res;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    return kPoolsSuccess;
+}
+
+int TxPoolManager::BackupConsensusAddTxs(
+        transport::MessagePtr msg_ptr, 
+        uint32_t pool_index, 
+        const pools::TxItemPtr& valid_tx) {
+    tx_pool_[pool_index].ConsensusAddTxs(valid_tx);
+    return kPoolsSuccess;
 }
 
 void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
@@ -650,6 +623,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         return;
     }
 
+    uint32_t src_net_id = msg_ptr->header.src_sharding_id();
     if (msg_ptr->header.sync_heights().req()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             return;
@@ -664,7 +638,6 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         uint32_t pool_idx = common::kInvalidPoolIndex;
         std::string sync_debug;
         std::string cross_debug;
-        auto src_net_id = msg_ptr->header.src_sharding_id();
         if (src_net_id >= network::kConsensusWaitingShardBeginNetworkId) {
             src_net_id -= network::kConsensusWaitingShardOffset;
         }
@@ -694,12 +667,12 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
             msg_ptr->header.hash64(), msg.hash64());
     } else {
-        if (msg_ptr->header.src_sharding_id() >= network::kConsensusShardEndNetworkId) {
+        if (src_net_id >= network::kConsensusShardEndNetworkId) {
             return;
         }
 
-        if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            if (msg_ptr->header.src_sharding_id() != network::kRootCongressNetworkId) {
+        if (src_net_id != common::GlobalInfo::Instance()->network_id()) {
+            if (src_net_id != network::kRootCongressNetworkId) {
                 auto sharding_id = msg_ptr->header.src_sharding_id();
                 auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
                 uint64_t update_height = cross_pools_[sharding_id].latest_height();
@@ -1248,6 +1221,10 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
+    if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
+        return;
+    }
+
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
         return;
@@ -1286,6 +1263,7 @@ void TxPoolManager::GetTxSyncToLeader(
 }
 
 void TxPoolManager::GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
@@ -1295,7 +1273,7 @@ void TxPoolManager::GetTxIdempotently(
         return;
     }
 
-    tx_pool_[pool_index].GetTxIdempotently(res_map, count, gid_vlid_func);    
+    tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxByGids(

@@ -63,6 +63,7 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
         pools::CheckGidValidFunction gid_vlid_func);
@@ -79,6 +80,7 @@ public:
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
     void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs);
+    void ConsensusAddTxs(const pools::TxItemPtr& tx);
     void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs);
     void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash);
     void SaveTempBftInvalidHashs(uint64_t height, const std::set<std::string>& hashs);
@@ -92,48 +94,7 @@ public:
     void SyncBlock();
     double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count);
     void RecoverTx(const std::string& gid);
-    bool GidValid(const std::string& gid) {
-        // auto res = added_gids_.insert(gid);
-        // return res.second;
-        // if (gid_map_.find(gid) != gid_map_.end()) {
-        //     ZJC_DEBUG("gid_map_.find(gid) != gid_map_.end() pool: %d, gid: %s", 
-        //         pool_index_, 
-        //         common::Encode::HexEncode(gid).c_str());
-        //     return false;
-        // }
-
-        // if (removed_gid_.find(gid) != removed_gid_.end()) {
-        //     ZJC_DEBUG("removed_gid_.find(gid) != removed_gid_.end() pool: %d, gid: %s", 
-        //         pool_index_, 
-        //         common::Encode::HexEncode(gid).c_str());
-        //     return false;
-        // }
-
-        // ZJC_DEBUG("0 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
-        //         pool_index_, 
-        //         common::Encode::HexEncode(gid).c_str());
-        auto res = prefix_db_->CheckAndSaveGidExists(gid);
-        if (res) {
-            ZJC_DEBUG("1 prefix_db_->CheckAndSaveGidExists(gid) pool: %d, gid: %s", 
-                pool_index_, 
-                common::Encode::HexEncode(gid).c_str());
-            return false;
-        }
-
-        return true;
-    }
-
-    bool TxExists(const std::string& gid) {
-        if (gid_map_.find(gid) != gid_map_.end()) {
-            return true;
-        }
-
-        if (removed_gid_.find(gid) != removed_gid_.end()) {
-            return true;
-        }
-
-        return false;
-    }
+    bool GidValid(const std::string& gid);
 
     uint32_t all_tx_size() const {
         return gid_map_.size();
@@ -190,6 +151,7 @@ private:
             const bls::protobuf::JoinElectInfo& join_info,
             std::string* new_hash);
     void GetTxIdempotently(
+        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
@@ -209,7 +171,6 @@ private:
     std::vector<uint64_t> latencys_us_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
-    std::unordered_set<std::string> removed_gid_;
     std::map<std::string, TxItemPtr> prio_map_;
     std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;
@@ -241,6 +202,7 @@ private:
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
+    db::DbWriteBatch added_gids_batch_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

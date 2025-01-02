@@ -102,7 +102,7 @@ enum BftRole {
 };
 
 static const uint32_t kMaxTxCount = 2048u;
-static const uint32_t kSyncToLeaderTxCount = kMaxTxCount; // consensus can be slow if it's large
+static const uint32_t kSyncToLeaderTxCount = 256u; // consensus can be slow if it's large
 static const uint32_t kBitcountWithItemCount = 20u;  // m/n, k = 8, error ratio = 0.000009
 static const uint32_t kHashCount = 6u;  // k
 static const uint32_t kDirectTxCount = kBitcountWithItemCount * 8 / 32;
@@ -114,7 +114,7 @@ static const uint64_t kCreateLibraryDefaultUseGas = 100000llu;
 static const uint64_t kCreateContractDefaultUseGas = 100000llu;
 static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
-static int32_t EvmcStatusToZbftStatus(evmc_status_code status_code) {
+inline static int32_t EvmcStatusToZbftStatus(evmc_status_code status_code) {
     switch (status_code) {
     case EVMC_SUCCESS:
         return kConsensusSuccess;

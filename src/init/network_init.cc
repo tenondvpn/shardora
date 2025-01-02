@@ -110,6 +110,7 @@ int NetworkInit::Init(int argc, char** argv) {
     std::string net_name;
     int genesis_check = GenesisCmd(parser_arg, net_name);
     if (genesis_check != -1) {
+        common::GlobalInfo::Instance()->set_global_stoped();
         std::cout << net_name << " genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
@@ -1175,14 +1176,14 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kContractGasPrepayment:
         case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractCreate:
         case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kContractExcute:
         case pools::protobuf::kNormalTo:
-            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
             zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);

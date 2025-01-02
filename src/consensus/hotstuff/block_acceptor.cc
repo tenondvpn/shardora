@@ -42,10 +42,10 @@ BlockAcceptor::BlockAcceptor(
         std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
         consensus::BlockCacheCallback new_block_cache_callback):
-        pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
+        pool_idx_(pool_idx), elect_mgr_(elect_mgr), security_ptr_(security), account_mgr_(account_mgr),
         elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
         db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), 
+        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), 
         new_block_cache_callback_(new_block_cache_callback) {
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
@@ -63,12 +63,6 @@ Status BlockAcceptor::Accept(
         zjcvm::ZjchainHost& zjc_host) {
     auto& msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto b = common::TimeUtils::TimestampMs();
-    defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d Accept duration: %lu ms", pool_idx_, e-b);
-        });
-
     auto& propose_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose();
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     if (propose_msg.txs().empty()) {
@@ -108,8 +102,8 @@ Status BlockAcceptor::Accept(
         ZJC_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
-    ADD_DEBUG_PROCESS_TIMESTAMP();
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     // 1. verify block
     if (!IsBlockValid(view_block)) {
         ZJC_WARN("IsBlockValid error!");
@@ -119,7 +113,9 @@ Status BlockAcceptor::Accept(
     // 2. Get txs from local pool
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     s = GetAndAddTxsLocally(
+        msg_ptr,
         view_block_chain, 
         view_block.parent_hash(), 
         propose_msg, 
@@ -190,16 +186,17 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
         common::Encode::HexEncode(GetBlockHash(*queue_item_ptr->view_block_ptr)).c_str());
 }
 
-Status BlockAcceptor::AddTxs(const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
+Status BlockAcceptor::AddTxs(transport::MessagePtr msg_ptr, const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     std::shared_ptr<ViewBlockChain> chain = nullptr;
     // TODO: check valid
     BalanceMap now_balance_map;
     zjcvm::ZjchainHost zjc_host;
-    return addTxsToPool(chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
+    return addTxsToPool(msg_ptr, chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
 };
 
 Status BlockAcceptor::addTxsToPool(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
@@ -211,11 +208,15 @@ Status BlockAcceptor::addTxsToPool(
         return Status::kAcceptorTxsEmpty;
     }
     
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     BalanceMap prevs_balance_map;
     view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
         prevs_balance_map.size(), txs.size());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    std::vector<pools::TxItemPtr> valid_txs;
+    valid_txs.reserve(txs.size());
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
@@ -431,8 +432,28 @@ Status BlockAcceptor::addTxsToPool(
 
         if (tx_ptr != nullptr) {
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-            // TODO: verify signature
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
+            if (pools_mgr_->GidValid(pool_idx(), tx_ptr->tx_info.gid())) {
+                if (!tx_ptr->tx_info.pubkey().empty() && !tx_ptr->tx_info.sign().empty()) {
+                    if (security_ptr_->Verify(
+                            tx_ptr->unique_tx_hash,
+                            tx_ptr->tx_info.pubkey(),
+                            tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+                        ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+                            "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
+                            tx_ptr->address_info->balance(),
+                            tx_ptr->tx_info.amount(),
+                            tx_ptr->tx_info.contract_prepayment(),
+                            consensus::kCallContractDefaultUseGas,
+                            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+                            tx_ptr->tx_info.step());
+                        assert(false);
+                    } else {
+                        valid_txs.push_back(tx_ptr);
+                        pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
+                    }
+                }
+            }
         }
     }
 
@@ -441,17 +462,21 @@ Status BlockAcceptor::addTxsToPool(
     }
 
     // 放入交易池并弹出（避免重复打包）
-    ZJC_DEBUG("success add txs size: %u", txs_map.size());
-    int res = pools_mgr_->BackupConsensusAddTxs(pool_idx(), txs_map);
-    if (res != pools::kPoolsSuccess) {
-        ZJC_ERROR("invalid consensus, txs invalid.");
-        return Status::kError;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // ZJC_DEBUG("success add txs size: %u", txs_map.size());
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), valid_txs);
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (res != pools::kPoolsSuccess) {
+    //     ZJC_ERROR("invalid consensus, txs invalid.");
+    //     return Status::kError;
+    // }
 
     return Status::kSuccess;
 }
 
 Status BlockAcceptor::GetAndAddTxsLocally(
+        transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& tx_propose,
@@ -460,6 +485,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
+        msg_ptr,
         view_block_chain, 
         parent_hash, 
         tx_propose.txs(), 
@@ -477,7 +503,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         return Status::kAcceptorTxsEmpty;
     }
 
-    if (txs_ptr->txs.size() != tx_propose.txs_size()) {
+    if (txs_ptr->txs.size() != (size_t)tx_propose.txs_size()) {
 // #ifndef NDEBUG
 //         for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
 //             auto tx = &tx_propose.txs(i);
@@ -589,23 +615,25 @@ void BlockAcceptor::commit(
         std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     auto block = &queue_item_ptr->view_block_ptr->block_info();
     new_block_cache_callback_(
-            queue_item_ptr->view_block_ptr,
-            *queue_item_ptr->final_db_batch);
+        queue_item_ptr->view_block_ptr,
+        *queue_item_ptr->final_db_batch);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
         if (block->tx_list_size() > 0) {
-            ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
             ADD_DEBUG_PROCESS_TIMESTAMP();
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
             ADD_DEBUG_PROCESS_TIMESTAMP();
         } else {
+#ifndef NDEBUG
             transport::protobuf::ConsensusDebug cons_debug;
             cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
             ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
                 queue_item_ptr->view_block_ptr->qc().network_id(),
                 queue_item_ptr->view_block_ptr->qc().pool_index(),
                 block->height(),
-                ProtobufToJson(cons_debug).c_str());        
+                ProtobufToJson(cons_debug).c_str());     
+#endif   
         }
 
         // tps measurement
@@ -628,9 +656,28 @@ void BlockAcceptor::commit(
             queue_item_ptr->view_block_ptr->qc().elect_height(),
             block->timestamp(),
             block->tx_list_size(),
-            ProtobufToJson(cons_debug).c_str());
-        ADD_DEBUG_PROCESS_TIMESTAMP();
+            ProtobufToJson(cons_debug).c_str(), (now_ms - cons_debug.begin_timestamp()));
+#else
+        auto now_ms = common::TimeUtils::TimestampMs();
+        uint64_t b_tm = 0;
+        common::StringUtil::ToUint64(queue_item_ptr->view_block_ptr->debug(), &b_tm);
+        ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
+            "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu",
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            queue_item_ptr->view_block_ptr->qc().view(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            block->height(),
+            queue_item_ptr->view_block_ptr->qc().elect_height(),
+            block->timestamp(),
+            block->tx_list_size(),
+            "",
+            (now_ms - b_tm));
 #endif
+        ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();

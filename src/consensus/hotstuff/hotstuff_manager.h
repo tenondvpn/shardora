@@ -339,7 +339,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     uint64_t prev_handler_timer_tm_ms_ = 0;
-    uint64_t prev_check_timer_single_tm_ms_ = 0;
+    uint64_t prev_check_timer_single_tm_ms_[common::kImmutablePoolSize] = {0};
     uint64_t first_timeblock_timestamp_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
 

@@ -6,6 +6,7 @@
 #include "common/log.h"
 #include "common/encode.h"
 #include "common/time_utils.h"
+#include "transport/transport_utils.h"
 
 namespace shardora {
 
@@ -83,6 +84,40 @@ int GlobalInfo::Init(const common::Config& config) {
     }
 
     return kCommonSuccess;
+}
+
+uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage> msg_ptr) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    auto now_thread_id_tmp = std::this_thread::get_id();
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
+    uint8_t thread_idx = 0;
+    if (should_check_thread_all_valid_) {
+        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
+        auto iter = thread_with_index_.find(now_thread_id);
+        if (iter == thread_with_index_.end()) {
+            thread_idx = now_valid_thread_index_++;
+            thread_with_index_[now_thread_id] = thread_idx;
+            ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
+        } else {
+            thread_idx = iter->second;
+        }
+        
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        if (main_inited_success_ && begin_run_timestamp_ms_ <= now_tm_ms) {
+            should_check_thread_all_valid_ = false;
+        }
+    } else {
+        auto iter = thread_with_index_.find(now_thread_id);
+        if (iter == thread_with_index_.end()) {
+            ZJC_FATAL("invalid get new thread index: %u", now_thread_id);
+        }
+            
+        thread_idx = iter->second;
+    }
+
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    return thread_idx;
 }
 
 }  // namespace common

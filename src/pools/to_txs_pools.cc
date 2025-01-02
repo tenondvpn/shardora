@@ -63,6 +63,7 @@ void ToTxsPools::NewBlock(
         }
     }
 
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString( view_block_ptr->debug());
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, "
@@ -74,6 +75,7 @@ void ToTxsPools::NewBlock(
         ProtobufToJson(cons_debug).c_str(),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
+#endif
     added_heights_[view_block_ptr->qc().pool_index()].insert(std::make_pair(block.height(), view_block_ptr));
     CHECK_MEMORY_SIZE(added_heights_[view_block_ptr->qc().pool_index()]);
     valided_heights_[view_block_ptr->qc().pool_index()].insert(block.height());
@@ -785,7 +787,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
-    for (uint32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
+    for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
         if (prev_to_heights_ != nullptr) {
             min_height = prev_to_heights_->heights(pool_idx) + 1;

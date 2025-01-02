@@ -19,7 +19,7 @@ void BlsSign::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* sign) {
     try {
-#if MOCK_SIGN
+#ifdef MOCK_SIGN
         *sign = libff::alt_bn128_G1::one();
         std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
 #else
@@ -62,7 +62,7 @@ int BlsSign::Verify(
         const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash) try {
-#if MOCK_VERIFY
+#ifdef MOCK_VERIFY
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
     return kBlsSuccess;
 #else
@@ -87,9 +87,9 @@ int BlsSign::GetVerifyHash(
         const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash) try {
-#if MOCK_VERIFY
+#ifdef MOCK_VERIFY
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
-    std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
+    // std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
     return kBlsSuccess;
 #else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
@@ -112,9 +112,9 @@ int BlsSign::GetVerifyHash(
         uint32_t n,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash) try {
-#if MOCK_VERIFY
+#ifdef MOCK_VERIFY
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
-    std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
+    // std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
     return kBlsSuccess;
 #else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);

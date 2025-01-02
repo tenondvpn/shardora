@@ -1,6 +1,10 @@
 #pragma once
 
 #include <deque>
+#include <thread>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
 
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
@@ -174,6 +178,7 @@ private:
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
+    transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
@@ -182,7 +187,6 @@ private:
     uint64_t latest_timeblock_tm_sec_ = 0;
     uint64_t prev_timeblock_height_ = 0;
     uint64_t consensused_timeblock_height_ = 0;
-    transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
     common::MembersPtr latest_members_ = nullptr;
@@ -201,6 +205,9 @@ private:
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;
+    std::shared_ptr<std::thread> handle_consensus_block_thread_;
+    std::mutex wait_mutex_;
+    std::condition_variable wait_con_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

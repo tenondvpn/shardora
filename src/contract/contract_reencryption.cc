@@ -207,7 +207,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
             }
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp.size(); ++tmp_idx) {
             ZJC_WARN("create member rk1: %d, %d, rk1: %s",
             i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -640,7 +640,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         rc4.push_back(tmp4);
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
-        for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
@@ -648,7 +648,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             param.zjc_host->SaveKeyValue(param.from, key, tmp1[tmp_idx].toString(true));
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
@@ -656,7 +656,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             param.zjc_host->SaveKeyValue(param.from, key, tmp2[tmp_idx].toString());
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
@@ -664,7 +664,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             param.zjc_host->SaveKeyValue(param.from, key, tmp3[tmp_idx].toString(true));
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
@@ -672,7 +672,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             param.zjc_host->SaveKeyValue(param.from, key, tmp4[tmp_idx].toString());
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
@@ -680,7 +680,7 @@ int ContractReEncryption::ReEncryptUserMessage(
             param.zjc_host->SaveKeyValue(param.from, key, tmp5[tmp_idx].toString(true));
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
@@ -887,7 +887,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         rc4.push_back(tmp4);
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
-        for (int32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
@@ -895,7 +895,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             param.zjc_host->SaveKeyValue(param.from, key, tmp1[tmp_idx].toString(true));
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
@@ -903,7 +903,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             param.zjc_host->SaveKeyValue(param.from, key, tmp2[tmp_idx].toString());
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
@@ -911,7 +911,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             param.zjc_host->SaveKeyValue(param.from, key, tmp3[tmp_idx].toString(true));
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
@@ -919,7 +919,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             param.zjc_host->SaveKeyValue(param.from, key, tmp4[tmp_idx].toString());
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
@@ -927,7 +927,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
             param.zjc_host->SaveKeyValue(param.from, key, tmp5[tmp_idx].toString(true));
         }
 
-        for (int32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
+        for (uint32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
             ZJC_WARN("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
