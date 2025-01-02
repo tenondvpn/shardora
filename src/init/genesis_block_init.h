@@ -105,11 +105,11 @@ private:
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes);
     bool BlsAggSignViewBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
-        const view_block::protobuf::QcItem& commit_qc,
+        const std::shared_ptr<hotstuff::ViewBlock>& vblock,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign);
-    std::shared_ptr<hotstuff::QC> CreateCommitQC(
+    int CreateCommitQC(
             const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
-            const std::shared_ptr<hotstuff::ViewBlock>& vblock);
+            std::shared_ptr<hotstuff::ViewBlock>& vblock);
     void SetPrevElectInfo(
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::BlockTx& block_tx);
@@ -117,21 +117,16 @@ private:
     void StoreViewBlockWithCommitQC(
             const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
             std::shared_ptr<db::DbWriteBatch>& db_batch) {
-        assert(view_block->qc().view() < 100);
-        prefix_db_->SaveViewBlockInfo(
-            view_block->qc().network_id(),
-            view_block->qc().pool_index(),
-            view_block->block_info().height(),
-            *view_block,
-            db_batch);
+        assert(view_block->view() < 100);
+        prefix_db_->SaveViewBlockInfo(*view_block, db_batch);
     }
 
-    int CreateAllQc(
-        uint32_t  network_id,
-        uint32_t  pool_index,
-        uint64_t view,
-        const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
-        std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
+    void CreateViewBlock(
+            uint32_t network_id,
+            hotstuff::HashStr prehash,
+            uint32_t pool_idx,
+            hotstuff::View view,
+            std::shared_ptr<hotstuff::ViewBlock>& view_block);
 
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;

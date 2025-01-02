@@ -71,29 +71,29 @@ Status BlockAcceptor::Accept(
                 "height: %lu, view hash: %s", 
                 0, 
                 view_block.block_info().tx_list_size(), 
-                view_block.qc().network_id(), 
-                view_block.qc().pool_index(), 
-                view_block.qc().view(), 
+                view_block.network_id(), 
+                view_block.pool_index(), 
+                view_block.view(), 
                 view_block.block_info().height(),
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
-            assert(view_block.qc().view_block_hash().empty());
-            view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
+                common::Encode::HexEncode(view_block.hash()).c_str());
+            assert(view_block.hash().empty());
+            view_block.set_hash(GetBlockHash(view_block));
             ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu, "
                 "chain has hash: %d, db has hash: %d",
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(view_block.hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                view_block.qc().view(),
-                view_block_chain->Has(view_block.qc().view_block_hash()),
-                prefix_db_->BlockExists(view_block.qc().view_block_hash()));
-            // view_block_chain->ResetViewBlock(view_block.qc().view_block_hash());
-            if (view_block_chain->Has(view_block.qc().view_block_hash())) {
+                view_block.network_id(),
+                view_block.pool_index(),
+                view_block.view(),
+                view_block_chain->Has(view_block.hash()),
+                prefix_db_->BlockExists(view_block.hash()));
+            // view_block_chain->ResetViewBlock(view_block.hash());
+            if (view_block_chain->Has(view_block.hash())) {
                 // assert(false);
                 return Status::kSuccess;
             }
 
-            if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
+            if (prefix_db_->BlockExists(view_block.hash())) {
                 assert(false);
                 return Status::kAcceptorBlockInvalid;
             }
@@ -140,19 +140,19 @@ Status BlockAcceptor::Accept(
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
-        view_block.qc().network_id(), 
-        view_block.qc().pool_index(), 
-        view_block.qc().view(), 
+        view_block.network_id(), 
+        view_block.pool_index(), 
+        view_block.view(), 
         view_block.block_info().height());
-    view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
+    view_block.set_hash(GetBlockHash(view_block));
     ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
-        common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block.hash()).c_str(),
         common::Encode::HexEncode(view_block.parent_hash()).c_str(),
-        view_block.qc().network_id(),
-        view_block.qc().pool_index(),
-        view_block.qc().view());
+        view_block.network_id(),
+        view_block.pool_index(),
+        view_block.view());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
+    if (prefix_db_->BlockExists(view_block.hash())) {
         return Status::kAcceptorBlockInvalid;
     }
 
@@ -161,7 +161,7 @@ Status BlockAcceptor::Accept(
 
 // AcceptSync 验证同步来的 block 信息，并更新交易池
 Status BlockAcceptor::AcceptSync(const view_block::protobuf::ViewBlockItem& view_block) {
-    if (view_block.qc().pool_index() != pool_idx()) {
+    if (view_block.pool_index() != pool_idx()) {
         return Status::kError;
     }
     
@@ -180,8 +180,8 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
     commit(msg_ptr, queue_item_ptr);
     auto block_ptr = &queue_item_ptr->view_block_ptr->block_info();
     ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-        queue_item_ptr->view_block_ptr->qc().network_id(),
-        queue_item_ptr->view_block_ptr->qc().pool_index(),
+        queue_item_ptr->view_block_ptr->network_id(),
+        queue_item_ptr->view_block_ptr->pool_index(),
         block_ptr->height(),
         common::Encode::HexEncode(GetBlockHash(*queue_item_ptr->view_block_ptr)).c_str());
 }
@@ -563,50 +563,6 @@ Status BlockAcceptor::DoTransactions(
         return s;
     }
 
-// #ifndef NDEBUG
-//     if (!txs_ptr->txs.empty() && !network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
-//         bool valid = true;
-//         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-//             auto& tx = view_block->block_info().tx_list(i);
-//             ZJC_WARN("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
-//                 (tx.from().empty() ? 
-//                 "" : 
-//                 common::Encode::HexEncode(tx.from()).c_str()), 
-//                 common::Encode::HexEncode(tx.to()).c_str(), 
-//                 tx.amount(),
-//                 tx.balance(),
-//                 view_block->qc().network_id(),
-//                 view_block->qc().pool_index(),
-//                 view_block->qc().view(),
-//                 view_block->block_info().height());
-
-//             if (tx.amount() != 0) {
-//                 valid = false;
-//                 const std::string* addr = nullptr;
-//                 if (pools::IsTxUseFromAddress(tx.step())) {
-//                     addr = &tx.from();
-//                 } else {
-//                     addr = &tx.to();
-//                 }
-
-//                 auto addr_iter = balance_map.find(*addr);
-//                 if (addr_iter == balance_map.end()) {
-//                     assert(false);
-//                 }
-                    
-//             ZJC_WARN("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
-//                     common::Encode::HexEncode(*addr).c_str(), addr_iter->second, 
-//                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
-//                     common::Encode::HexEncode(view_block->parent_hash()).c_str());
-//             }
-//         }
-
-//         if (balance_map.empty()) {
-//             assert(valid);
-//         }
-//     }
-// #endif
-
     return s;
 }
 
@@ -615,13 +571,14 @@ void BlockAcceptor::commit(
         std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     auto block = &queue_item_ptr->view_block_ptr->block_info();
     new_block_cache_callback_(
-        queue_item_ptr->view_block_ptr,
-        *queue_item_ptr->final_db_batch);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
+            queue_item_ptr->view_block_ptr,
+            *queue_item_ptr->final_db_batch);
+    if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->network_id())) {
         if (block->tx_list_size() > 0) {
-            pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
             ADD_DEBUG_PROCESS_TIMESTAMP();
+            pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->pool_index(), block->tx_list());
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
             ADD_DEBUG_PROCESS_TIMESTAMP();
         } else {
@@ -629,8 +586,8 @@ void BlockAcceptor::commit(
             transport::protobuf::ConsensusDebug cons_debug;
             cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
             ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
-                queue_item_ptr->view_block_ptr->qc().network_id(),
-                queue_item_ptr->view_block_ptr->qc().pool_index(),
+                queue_item_ptr->view_block_ptr->network_id(),
+                queue_item_ptr->view_block_ptr->pool_index(),
                 block->height(),
                 ProtobufToJson(cons_debug).c_str());     
 #endif   
@@ -645,15 +602,15 @@ void BlockAcceptor::commit(
         cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
         ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
             "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu",
-            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->hash()).c_str(),
             common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
-            queue_item_ptr->view_block_ptr->qc().network_id(),
-            queue_item_ptr->view_block_ptr->qc().pool_index(),
-            queue_item_ptr->view_block_ptr->qc().view(),
-            queue_item_ptr->view_block_ptr->qc().network_id(),
-            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            queue_item_ptr->view_block_ptr->network_id(),
+            queue_item_ptr->view_block_ptr->pool_index(),
+            queue_item_ptr->view_block_ptr->view(),
+            queue_item_ptr->view_block_ptr->network_id(),
+            queue_item_ptr->view_block_ptr->pool_index(),
             block->height(),
-            queue_item_ptr->view_block_ptr->qc().elect_height(),
+            queue_item_ptr->view_block_ptr->elect_height(),
             block->timestamp(),
             block->tx_list_size(),
             ProtobufToJson(cons_debug).c_str(), (now_ms - cons_debug.begin_timestamp()));

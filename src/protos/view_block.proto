@@ -19,9 +19,19 @@ message QcItem {
 message ViewBlockItem {
     optional bytes parent_hash = 1;
     optional block.protobuf.Block block_info = 2;
-    optional QcItem qc = 3;
+    optional QcItem qc = 3; // qc for previous vblock
     optional MemberConsensusStat leader_consen_stat = 4;
-    optional bytes debug = 5;
+
+    // hotstuff-v2
+    optional uint64 view = 5;
+    optional bytes hash = 6;
+    optional uint64 elect_height = 7;
+    optional uint32 leader_idx = 8;
+    optional uint32 network_id = 9;
+    optional uint32 pool_index = 10;
+    optional QcItem self_commit_qc = 11; // commit qc for vblock itself
+    
+    optional bytes debug = 12;
 }
 
 message MemberConsensusStat {
@@ -52,10 +62,11 @@ message ViewBlockSyncResponse {
     optional uint32 network_id = 1;
     optional uint32 pool_idx = 2;
     repeated ViewBlockItem view_block_items = 3;
-    optional ViewBlockItem high_view_block = 4;
-    optional QcItem high_tc = 5;
-    optional bytes query_hash = 6; // single request 中的 query hash
-    optional ViewBlockItem latest_committed_block = 7; // 保证 leader 一致性
+    repeated QcItem view_block_qcs = 4;
+    optional QcItem high_qc = 5;
+    optional QcItem high_tc = 6;
+    optional bytes query_hash = 7; // single request 中的 query hash
+    optional ViewBlockItem latest_committed_block = 8; // 保证 leader 一致性
 }
 
 message SingleViewBlockSyncRequest {

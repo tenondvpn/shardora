@@ -62,6 +62,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     if (bls_collection_->handled) {
         auto collect_item = bls_collection_->GetItem(msg_hash);
         if (collect_item != nullptr && collect_item->agg_sig != nullptr) {
+            ZJC_DEBUG("collect_item agg_sig: %lu", collect_item->agg_sig->participants().size());
             agg_sig = *collect_item->agg_sig;
             return Status::kBlsHandled;
         }
@@ -97,8 +98,11 @@ Status AggCrypto::VerifyAndAggregateSig(
     }
     s = AggregateSigs(partial_sigs, &agg_sig);
     if (s == Status::kSuccess) {
-        collection_item->agg_sig = &agg_sig;
+        collection_item->agg_sig = std::make_shared<AggregateSignature>(agg_sig);
         bls_collection_->handled = true;
+        ZJC_DEBUG("collect_item partial size: %lu, %lu, agg_sig: %lu", partial_sigs.size(),
+            partial_sigs[0]->participants().size(),
+            collection_item->agg_sig->participants().size());
     } else {
         assert(false);
     }
@@ -181,9 +185,9 @@ Status AggCrypto::VerifyAggregateQC(
     if (agg_qc->QCs().size() == 0) {
         return Status::kError;
     }
-    // TODO 默认取 agg_qc 中第一个 qc 对应的 elect_item
-    auto elect_height = agg_qc->QCs()[0]->elect_height();
-    auto elect_item = GetElectItem(sharding_id, elect_height);
+
+    auto elect_height = agg_qc->ElectHeight();
+    auto elect_item = GetElectItem(sharding_id, agg_qc->ElectHeight());
     if (!elect_item) {
         return Status::kError;
     }
@@ -234,7 +238,7 @@ Status AggCrypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
         !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
         return Status::kInvalidArgument;
     }
-    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx());
+    auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
         ZJC_WARN("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());

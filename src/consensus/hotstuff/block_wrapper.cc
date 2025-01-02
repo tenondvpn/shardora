@@ -41,7 +41,7 @@ Status BlockWrapper::Wrap(
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
     ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
-        view_block->qc().network_id(), view_block->qc().pool_index(), 
+        view_block->network_id(), view_block->pool_index(), 
         block->height(), prev_block->height());
     if (block->height() <= 0) {
         ZJC_WARN("block->height() <= 0, pool index: %d", pool_idx_);
@@ -57,7 +57,7 @@ Status BlockWrapper::Wrap(
     // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     auto gid_valid_func = [&](const std::string& gid) -> bool {
-        return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
+        return view_block_chain->CheckTxGidValid(gid, prev_view_block->hash());
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
@@ -65,9 +65,9 @@ Status BlockWrapper::Wrap(
         // 允许 3 个连续的空交易块
         ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
             s, pool_idx_, 
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
-            view_block->qc().view(), 
+            view_block->network_id(), 
+            view_block->pool_index(), 
+            view_block->view(), 
             (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
         return s;
     }
@@ -75,25 +75,25 @@ Status BlockWrapper::Wrap(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
         s, pool_idx_, 
-        view_block->qc().network_id(), 
-        view_block->qc().pool_index(), 
-        view_block->qc().view(), 
+        view_block->network_id(), 
+        view_block->pool_index(), 
+        view_block->view(), 
         (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
-    view_block->set_parent_hash(prev_view_block->qc().view_block_hash());
+    view_block->set_parent_hash(prev_view_block->hash());
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
             assert(tx_info->gid().size() == 32);
-            // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-            //     "step: %d, to: %s, gid: %s, tx info: %s",
-            //     view_block->qc().pool_index(),
-            //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-            //     block->height(),
-            //     tx_info->step(),
-            //     common::Encode::HexEncode(tx_info->to()).c_str(),
-            //     common::Encode::HexEncode(tx_info->gid()).c_str(),
-            //     "ProtobufToJson(*tx_info).c_str()");
+            ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
+                "step: %d, to: %s, gid: %s, tx info: %s",
+                view_block->pool_index(),
+                common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+                block->height(),
+                tx_info->step(),
+                common::Encode::HexEncode(tx_info->to()).c_str(),
+                common::Encode::HexEncode(tx_info->gid()).c_str(),
+                "ProtobufToJson(*tx_info).c_str()");
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
@@ -102,20 +102,17 @@ Status BlockWrapper::Wrap(
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item) {
         return Status::kElectItemNotFound;
-    }
-    
-    view_block->mutable_qc()->set_elect_height(elect_item->ElectHeight());
-    view_block->mutable_qc()->set_leader_idx(leader_idx);
+    }    
+
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     ZJC_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
-        "elect height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
-        view_block->qc().network_id(), view_block->qc().pool_index(),
+        "elect height: %lu, parent hash: %s, %u_%u_%lu",
+        view_block->network_id(), view_block->pool_index(),
         block->height(), prev_block->height(), elect_item->ElectHeight(),
-        common::Encode::HexEncode(GetQCMsgHash(view_block->qc())).c_str(),
         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-        view_block->qc().network_id(),
-        view_block->qc().pool_index(),
-        view_block->qc().view());
+        view_block->network_id(),
+        view_block->pool_index(),
+        view_block->view());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }

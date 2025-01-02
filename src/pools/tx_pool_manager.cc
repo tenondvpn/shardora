@@ -13,6 +13,7 @@
 #include "security/ecdsa/secp256k1.h"
 #include "transport/processor.h"
 #include "transport/tcp_transport.h"
+#include <common/encode.h>
 #include <common/time_utils.h>
 #include <protos/pools.pb.h>
 
@@ -1044,7 +1045,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
         ZJC_WARN("no address info.");
         return false;
     }
-
+    
     if (msg_ptr->address_info->addr() == tx_msg.to()) {
         assert(false);
         return false;

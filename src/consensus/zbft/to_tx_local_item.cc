@@ -41,7 +41,7 @@ int ToTxLocalItem::HandleTx(
             }
         } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) { // to + from, for gas prepayment tx
             to_balance = gas_prepayment_->GetAddressPrepayment(
-                view_block.qc().pool_index(),
+                view_block.pool_index(),
                 to_txs.tos(i).des().substr(0, security::kUnicastAddressLength),
                 to_txs.tos(i).des().substr(security::kUnicastAddressLength, security::kUnicastAddressLength));
             ZJC_DEBUG("success add contract prepayment: %s, %lu",

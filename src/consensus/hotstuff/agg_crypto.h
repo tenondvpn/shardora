@@ -21,7 +21,7 @@ public:
         HashStr msg_hash;
         common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
         AggregateSignature partial_sigs[common::kEachShardMaxNodeCount];
-        AggregateSignature* agg_sig;
+        std::shared_ptr<AggregateSignature> agg_sig;
 
         inline uint32_t OkCount() const {
             return ok_bitmap.valid_count();

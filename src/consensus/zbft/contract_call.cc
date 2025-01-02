@@ -14,7 +14,7 @@ void ContractCall::GetTempPerpaymentBalance(
     auto iter = acc_balance_map.find("pre_" + block_tx.from());
     if (iter == acc_balance_map.end()) {
         uint64_t from_balance = prepayment_->GetAddressPrepayment(
-            view_block.qc().pool_index(),
+            view_block.pool_index(),
             block_tx.to(),
             block_tx.from());
         acc_balance_map["pre_" + block_tx.from()] = from_balance;
