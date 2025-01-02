@@ -65,9 +65,9 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     //     block.timeblock_height(), 
     //     block.timestamp(), 
     //     block.change_leader_invalid_hashs_size());
-    uint32_t sharding_id = view_block.qc().network_id();
+    uint32_t sharding_id = view_block.network_id();
     msg.append((char*)&sharding_id, sizeof(sharding_id));
-    uint32_t pool_index = view_block.qc().pool_index();
+    uint32_t pool_index = view_block.pool_index();
     msg.append((char*)&pool_index, sizeof(pool_index));
     msg.append(view_block.parent_hash());
     uint64_t vss_random = block.consistency_random();

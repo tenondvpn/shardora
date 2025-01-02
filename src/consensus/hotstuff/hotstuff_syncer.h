@@ -57,7 +57,6 @@ public:
     void Start();
     void Stop();
     void SyncPool(const uint32_t& pool_idx, const int32_t& node_num);
-    void SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     void ConsumeMessages();
@@ -65,7 +64,7 @@ public:
             const uint32_t& pool_idx,
             std::shared_ptr<ViewBlockChain>& ori_chain,
             const std::shared_ptr<ViewBlockChain>& sync_chain,
-            const ViewBlock& high_commit_qc);
+            const std::shared_ptr<QC>& high_commit_qc);
 
     // 修改处理 view_block 的函数
     inline void SetOnRecvViewBlockFn(const OnRecvViewBlockFn& fn) {
@@ -117,7 +116,6 @@ private:
     // void SyncChains();
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
-    Status processRequestSingle(const transport::MessagePtr&);
 
     Status processResponseQcTc(
             const uint32_t& pool_idx,

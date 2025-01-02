@@ -84,9 +84,9 @@ int FromTxItem::HandleTx(
     //     common::Encode::HexEncode(block_tx.to()).c_str(),
     //     block_tx.amount(),
     //     src_banalce,
-    //     view_block.qc().network_id(),
-    //     view_block.qc().pool_index(),
-    //     view_block.qc().view(),
+    //     view_block.network_id(),
+    //     view_block.pool_index(),
+    //     view_block.view(),
     //     view_block.block_info().height());
     return kConsensusSuccess;
 }

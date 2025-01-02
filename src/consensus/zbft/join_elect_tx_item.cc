@@ -123,7 +123,7 @@ int JoinElectTxItem::HandleTx(
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
         block_tx.status(), common::Encode::HexEncode(from).c_str(),
-        view_block.qc().pool_index(),
+        view_block.pool_index(),
         block.height(),
         join_info.shard_id());
 #ifndef NDEBUG
@@ -131,7 +131,7 @@ int JoinElectTxItem::HandleTx(
         ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, "
             "des shard: %d, key: %s, value size: %d",
             block_tx.status(), common::Encode::HexEncode(from).c_str(),
-            view_block.qc().pool_index(),
+            view_block.pool_index(),
             block.height(),
             join_info.shard_id(),
             block_tx.storages(i).key().c_str(),

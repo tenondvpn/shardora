@@ -189,7 +189,9 @@ struct AggregateQC {
             const std::unordered_map<uint32_t, std::shared_ptr<QC>>& qcs,
             const std::shared_ptr<AggregateSignature>& sig,
             View view) :
-        qcs_(qcs), sig_(sig), view_(view) {}
+        qcs_(qcs), sig_(sig), view_(view) {
+        assert(qcs.size() > 0);
+    }
 
     inline std::unordered_map<uint32_t, std::shared_ptr<QC>> QCs() const {
         return qcs_;
@@ -204,7 +206,11 @@ struct AggregateQC {
     }
 
     inline bool IsValid() const {
-        return sig_->IsValid() && sig_->participants().size() == qcs_.size();  
+        return sig_->IsValid() && sig_->participants().size() == qcs_.size() && qcs_.size() > 0;  
+    }
+
+    inline uint64_t ElectHeight() const {
+        return qcs_.begin()->second->elect_height();
     }
 };
 
