@@ -186,9 +186,9 @@ private:
     }
 
     uint32_t pool_idx_;
+    std::shared_ptr<elect::ElectManager> elect_mgr_= nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> tx_pools_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    std::shared_ptr<elect::ElectManager> elect_mgr_= nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
