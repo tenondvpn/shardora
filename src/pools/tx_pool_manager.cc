@@ -13,6 +13,7 @@
 #include "security/ecdsa/secp256k1.h"
 #include "transport/processor.h"
 #include "transport/tcp_transport.h"
+#include <common/encode.h>
 #include <common/time_utils.h>
 #include <protos/pools.pb.h>
 
@@ -1045,6 +1046,10 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
         return false;
     }
 
+    ZJC_DEBUG("====8.1 from addr is %s, to: %s",
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+        common::Encode::HexEncode(tx_msg.to()).c_str());
+    
     if (msg_ptr->address_info->addr() == tx_msg.to()) {
         assert(false);
         return false;
@@ -1079,6 +1084,8 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 //         assert(false);
         return;
     }
+
+    ZJC_DEBUG("====8.2 from addr is %s, %d", common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(), msg_ptr->address_info->balance());
 
     // 验证账户余额是否足够
     if (msg_ptr->address_info->balance() <
