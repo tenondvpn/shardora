@@ -571,21 +571,12 @@ void BlockAcceptor::commit(
         std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     auto block = &queue_item_ptr->view_block_ptr->block_info();
     new_block_cache_callback_(
-<<<<<<< HEAD
-        queue_item_ptr->view_block_ptr,
-        *queue_item_ptr->final_db_batch);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
-        if (block->tx_list_size() > 0) {
-            pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
-=======
             queue_item_ptr->view_block_ptr,
             *queue_item_ptr->final_db_batch);
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->network_id())) {
         if (block->tx_list_size() > 0) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->pool_index(), block->tx_list());
->>>>>>> 29c692f5d (fix)
             ADD_DEBUG_PROCESS_TIMESTAMP();
 
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);

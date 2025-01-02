@@ -815,7 +815,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-#ifndef NDEBUG
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, local: %lu",
         pool_idx_,
