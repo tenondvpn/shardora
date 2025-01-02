@@ -101,12 +101,6 @@ protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& ad
 void AccountManager::InitLoadAllAddress() {
     std::unordered_map<std::string, protos::AddressInfoPtr> addr_map;
     prefix_db_->GetAllAddressInfo(&addr_map);
-
-    for (auto iter = addr_map.begin(); iter != addr_map.end(); iter++) {
-        auto addr = iter->first;
-        auto info = iter->second;
-        ZJC_DEBUG("====8.3 addr: %s, balance: %lu", common::Encode::HexEncode(addr).c_str(), info->balance());
-    }
     
     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
         thread_address_map_[i] = addr_map;
