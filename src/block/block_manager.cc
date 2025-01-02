@@ -345,7 +345,7 @@ void BlockManager::HandleNormalToTx(
                 continue;
             }
 
-            for (uint32_t i = 0; i < to_txs.tos_size(); ++i) {
+            for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
                 ZJC_DEBUG("success add local transfer tx tos %u_%u_%lu, "
                     "view height: %lu, address: %s, amount: %lu",
                     view_block.qc().network_id(), 
@@ -1243,7 +1243,7 @@ void BlockManager::HandleStatisticBlock(
             block.timeblock_height(),
             elect_statistic,
             db_batch);
-        for (uint32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
             ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
                 elect_statistic.sharding_id(), 
                 common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
@@ -1330,7 +1330,7 @@ pools::TxItemPtr BlockManager::GetToTx(
     }
 
     std::string string_for_hash;
-    for (uint32_t i = 0; i < heights.heights_size(); ++i) {
+    for (int32_t i = 0; i < heights.heights_size(); ++i) {
         auto height = heights.heights(i);
         string_for_hash.append((char*)&height, sizeof(height));
     }
@@ -1401,7 +1401,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
         return nullptr;
     }
 
-    bool all_valid = true;
     // 聚合不同 to shard 的交易
     if (!to_txs_pool_->StatisticTos(heights)) {
         ZJC_DEBUG("statistic tos failed!");
@@ -1438,7 +1437,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
                 0,
                 heights,
                 to_tx) != pools::kPoolsSuccess) {
-            all_valid = false;
             all_to_txs.mutable_to_tx_arr()->RemoveLast();
             ZJC_DEBUG("1 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
         }

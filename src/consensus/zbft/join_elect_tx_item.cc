@@ -127,7 +127,7 @@ int JoinElectTxItem::HandleTx(
         block.height(),
         join_info.shard_id());
 #ifndef NDEBUG
-    for (uint32_t i = 0; i < block_tx.storages_size(); ++i) {
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, "
             "des shard: %d, key: %s, value size: %d",
             block_tx.status(), common::Encode::HexEncode(from).c_str(),

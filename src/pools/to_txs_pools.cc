@@ -787,7 +787,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
-    for (uint32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
+    for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
         if (prev_to_heights_ != nullptr) {
             min_height = prev_to_heights_->heights(pool_idx) + 1;

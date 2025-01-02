@@ -229,7 +229,7 @@ int ElectTxItem::getMaxElectHeightInfo(shardora::pools::protobuf::ElectStatistic
         };
 
         std::unordered_map<std::string, ElectItemInfo> elect_info_map;
-        for (uint32_t i = 0; i < statistic->tx_count_size(); ++i) {
+        for (int32_t i = 0; i < statistic->tx_count_size(); ++i) {
             ElectItemInfo tmp_info;
             tmp_info.tx_count = statistic->tx_count(i);
             tmp_info.stoke = statistic->stokes(i);

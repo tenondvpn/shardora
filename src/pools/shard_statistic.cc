@@ -50,7 +50,7 @@ int ShardStatistic::Init() {
         statistic_pool_info_[statistic_info.height()] = tmp_pool_map;
         CHECK_MEMORY_SIZE(statistic_pool_info_);
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
-        for (uint32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
+        for (int32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
             statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
             pool_map[i] = statistic_item;
@@ -290,7 +290,7 @@ void ShardStatistic::HandleStatistic(
             auto& tx = block.tx_list(i);
             if (tx.step() == pools::protobuf::kPoolStatisticTag) {
                 uint64_t statistic_height = 0;
-                for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
                     if (tx.storages(storage_idx).key() == protos::kPoolStatisticTag) {
                         uint64_t* udata = (uint64_t*)tx.storages(storage_idx).value().c_str();
                         statistic_height = udata[0];

@@ -623,6 +623,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         return;
     }
 
+    uint32_t src_net_id = msg_ptr->header.src_sharding_id();
     if (msg_ptr->header.sync_heights().req()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             return;
@@ -637,7 +638,6 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         uint32_t pool_idx = common::kInvalidPoolIndex;
         std::string sync_debug;
         std::string cross_debug;
-        auto src_net_id = msg_ptr->header.src_sharding_id();
         if (src_net_id >= network::kConsensusWaitingShardBeginNetworkId) {
             src_net_id -= network::kConsensusWaitingShardOffset;
         }
@@ -667,12 +667,12 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
             msg_ptr->header.hash64(), msg.hash64());
     } else {
-        if (msg_ptr->header.src_sharding_id() >= network::kConsensusShardEndNetworkId) {
+        if (src_net_id >= network::kConsensusShardEndNetworkId) {
             return;
         }
 
-        if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            if (msg_ptr->header.src_sharding_id() != network::kRootCongressNetworkId) {
+        if (src_net_id != common::GlobalInfo::Instance()->network_id()) {
+            if (src_net_id != network::kRootCongressNetworkId) {
                 auto sharding_id = msg_ptr->header.src_sharding_id();
                 auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
                 uint64_t update_height = cross_pools_[sharding_id].latest_height();

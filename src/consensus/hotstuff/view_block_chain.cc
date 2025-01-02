@@ -50,7 +50,7 @@ Status ViewBlockChain::Store(
 
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceMap>();
-        for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
             if (tx.balance() == 0) {
                 continue;
@@ -64,7 +64,7 @@ Status ViewBlockChain::Store(
 
     if (!zjc_host_ptr) {
         zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
-        for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
             ZJC_DEBUG("store success prev storage key tx step: %d", tx.step());
             for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {

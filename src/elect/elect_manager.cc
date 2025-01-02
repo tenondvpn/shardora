@@ -267,11 +267,11 @@ bool ElectManager::ProcessPrevElectMembers(
         return false;
     }
 
-    int32_t expect_leader_count = (int32_t)pow(
+    uint32_t expect_leader_count = (int32_t)pow(
         2.0,
         (double)((int32_t)log2(double(in.size() / 3))));
-    if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
-        expect_leader_count = (int32_t)common::kImmutablePoolSize;
+    if (expect_leader_count > common::kImmutablePoolSize) {
+        expect_leader_count = common::kImmutablePoolSize;
     }
 
     uint32_t leader_count = 0;

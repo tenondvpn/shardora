@@ -178,6 +178,7 @@ private:
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
+    transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
@@ -186,7 +187,6 @@ private:
     uint64_t latest_timeblock_tm_sec_ = 0;
     uint64_t prev_timeblock_height_ = 0;
     uint64_t consensused_timeblock_height_ = 0;
-    transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
     common::MembersPtr latest_members_ = nullptr;

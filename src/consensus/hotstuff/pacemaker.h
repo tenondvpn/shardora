@@ -141,9 +141,6 @@ private:
     
 
     uint32_t pool_idx_;
-    std::shared_ptr<TC> high_tc_ = nullptr;
-    GetHighQCFn get_high_qc_fn_ = nullptr;
-    UpdateHighQCFn update_high_qc_fn_ = nullptr;
     View cur_view_ = 0llu;
 
 #ifdef USE_AGG_BLS
@@ -153,6 +150,9 @@ private:
 #endif
     std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     std::shared_ptr<ViewDuration> duration_;
+    std::shared_ptr<TC> high_tc_ = nullptr;
+    GetHighQCFn get_high_qc_fn_ = nullptr;
+    UpdateHighQCFn update_high_qc_fn_ = nullptr;
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC

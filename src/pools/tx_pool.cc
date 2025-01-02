@@ -200,7 +200,7 @@ void TxPool::GetTxSyncToLeader(
         pools::CheckGidValidFunction gid_vlid_func) {
     CheckThreadIdValid();
     auto iter = prio_map_.begin();
-    while (iter != prio_map_.end() && txs->size() < count) {
+    while (iter != prio_map_.end() && txs->size() < (int32_t)count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
             ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
         } else {

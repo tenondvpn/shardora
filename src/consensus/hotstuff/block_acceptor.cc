@@ -42,10 +42,10 @@ BlockAcceptor::BlockAcceptor(
         std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
         consensus::BlockCacheCallback new_block_cache_callback):
-        pool_idx_(pool_idx), security_ptr_(security), account_mgr_(account_mgr),
+        pool_idx_(pool_idx), elect_mgr_(elect_mgr), security_ptr_(security), account_mgr_(account_mgr),
         elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
         db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), elect_mgr_(elect_mgr), 
+        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), 
         new_block_cache_callback_(new_block_cache_callback) {
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
@@ -503,7 +503,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         return Status::kAcceptorTxsEmpty;
     }
 
-    if (txs_ptr->txs.size() != tx_propose.txs_size()) {
+    if (txs_ptr->txs.size() != (size_t)tx_propose.txs_size()) {
 // #ifndef NDEBUG
 //         for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
 //             auto tx = &tx_propose.txs(i);

@@ -156,7 +156,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         }
 
         if (tx.step() == pools::protobuf::kContractExcute) {
-            for (uint32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
+            for (int32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
                 if (tx.storages(st_idx).key().find(std::string("ars_create_agg_sign")) != std::string::npos && tx.storages(st_idx).value().size() < 2048) {
                     storage_str += "," + tx.storages(st_idx).value();
                     ZJC_DEBUG("success get key: %s, value: %s",
@@ -382,7 +382,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 // }
 
 void ClickHouseClient::FlushToCkWithData() try {
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    int64_t now_tm_ms = common::TimeUtils::TimestampMs();
     if (batch_count_ >= kBatchCountToCk || (pre_time_out_ + 1000 < now_tm_ms)) {
         if (batch_count_ > 0) {
             clickhouse::Block trans;

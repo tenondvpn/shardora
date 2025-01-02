@@ -114,7 +114,7 @@ static const uint64_t kCreateLibraryDefaultUseGas = 100000llu;
 static const uint64_t kCreateContractDefaultUseGas = 100000llu;
 static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
-static int32_t EvmcStatusToZbftStatus(evmc_status_code status_code) {
+inline static int32_t EvmcStatusToZbftStatus(evmc_status_code status_code) {
     switch (status_code) {
     case EVMC_SUCCESS:
         return kConsensusSuccess;
