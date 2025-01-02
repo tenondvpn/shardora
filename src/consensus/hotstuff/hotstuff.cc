@@ -1335,10 +1335,9 @@ bool Hotstuff::CommitInner(
     if (latest_committed_block && latest_committed_block->view() >= v_block->view()) {
         return false;
     }
-
-
-#ifndef NDEBUG
+    
     if (!latest_committed_block && v_block->view() == GenesisView) {
+#ifndef NDEBUG        
         ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
             "vb view: %lu, %u_%u_%lu, propose_debug: %s",
             pool_idx_, 0, v_block->view(),
