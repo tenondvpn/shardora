@@ -403,6 +403,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     ZJC_DEBUG("HandleProposeMsgStep_VerifyLeader called hash: %lu, propose_debug: %s", 
         pro_msg_wrap->msg_ptr->header.hash64(), ProtobufToJson(cons_debug).c_str());
 #endif
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     if (VerifyLeader(view_item.leader_idx()) != Status::kSuccess) {
         // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
@@ -418,7 +419,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
         return Status::kError;
     }        
 
-    if (view_item.qc().leader_idx() == local_idx) {
+    if (view_item.leader_idx() == local_idx) {
         pro_msg_wrap->msg_ptr->is_leader = true;
     }
 
