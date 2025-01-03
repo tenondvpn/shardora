@@ -1176,14 +1176,19 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kContractGasPrepayment:
         case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractCreate:
         case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kContractExcute:
         case pools::protobuf::kNormalTo:
-            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            ZJC_DEBUG("prepayment step: %d, from: %s, to: %s, prepayment: %d",
+                tx_list[i].step(),
+                common::Encode::HexEncode(tx_list[i].from()).c_str(),
+                common::Encode::HexEncode(tx_list[i].to()).c_str(),
+                tx_list[i].contract_prepayment());
+            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
             zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
