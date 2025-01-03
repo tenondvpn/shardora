@@ -765,8 +765,10 @@ void BlockManager::AddNewBlock(
         //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
         //     tx_list[i].status(),
         //     tx_list[i].step());
-        // xufeisofly !!! 这一句将 shard 2 的创世块交易也执行了，导致创世节点余额归 0
-        // account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+        if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
+            account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+        }
+        
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
