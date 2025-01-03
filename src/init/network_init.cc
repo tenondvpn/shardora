@@ -1176,7 +1176,7 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kContractGasPrepayment:
         case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractCreate:
