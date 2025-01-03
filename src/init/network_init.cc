@@ -1183,9 +1183,6 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kContractExcute:
         case pools::protobuf::kNormalTo:
-            ZJC_DEBUG("prepayment tx step: %d, to: %s, from: %s", tx_list[i].step(),
-                common::Encode::HexEncode(tx_list[i].to()).c_str(),
-                common::Encode::HexEncode(tx_list[i].from()).c_str());
             account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
