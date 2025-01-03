@@ -2076,31 +2076,23 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     auto leader = leader_rotation()->GetLeader();
-    if (has_system_tx) {
-        if (leader) {
-            auto local_idx = leader_rotation_->GetLocalMemberIdx();
-            if (leader->index == local_idx) {
-                Propose(latest_qc_item_ptr_, nullptr, nullptr);
-                if (latest_qc_item_ptr_) {
-                    ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
-                        local_idx,
-                        pool_idx_,
-                        latest_qc_item_ptr_->network_id(), 
-                        latest_qc_item_ptr_->pool_index(), 
-                        latest_qc_item_ptr_->view());
-                }
-                return;
-            }
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    if (leader && leader->index == local_idx) {
+        Propose(latest_qc_item_ptr_, nullptr, nullptr);
+        if (latest_qc_item_ptr_) {
+            ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
+                local_idx,
+                pool_idx_,
+                latest_qc_item_ptr_->network_id(), 
+                latest_qc_item_ptr_->pool_index(), 
+                latest_qc_item_ptr_->view());
         }
+
+        return;
     }
 
     if (!has_user_tx_tag_) {
         ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
-        return;
-    }
-
-    auto local_idx = leader_rotation_->GetLocalMemberIdx();
-    if (!leader || leader->index == local_idx) {
         return;
     }
 
