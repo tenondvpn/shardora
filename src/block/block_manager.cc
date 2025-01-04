@@ -1386,13 +1386,13 @@ std::string BlockManager::GetToTxGid() {
         gid = common::Hash::keccak256(
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
-        // ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-        //     common::Encode::HexEncode(gid).c_str(),
-        //     latest_to_block->block_info().height(), 
-        //     latest_to_block->block_info().timestamp());
+        ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+            common::Encode::HexEncode(gid).c_str(),
+            latest_to_block->block_info().height(), 
+            latest_to_block->block_info().timestamp());
     } else {
-        // ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-        //     common::Encode::HexEncode(gid).c_str(), 0, 0);
+        ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+            common::Encode::HexEncode(gid).c_str(), 0, 0);
     }
     
     return gid;
@@ -1509,11 +1509,11 @@ void BlockManager::PopTxTicker() {
 }
 
 bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
-        auto cur_time = common::TimeUtils::TimestampMs();
-        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (pool_index != common::kImmutablePoolSize) {
         return false;
-    }
+    }    
+    auto cur_time = common::TimeUtils::TimestampMs();
+    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
         
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
