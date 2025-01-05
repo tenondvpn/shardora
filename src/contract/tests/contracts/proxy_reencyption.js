@@ -665,6 +665,7 @@ if (args[0] == 0) {
     InitC2cEnv("c0", pairing_param_value);
 }
 
+// xufeisofly111
 if (args[0] == 9) {
     SetManagerPrepayment(contract_address);
 }
