@@ -251,7 +251,7 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         // xufeisofly111
-        ZJC_DEBUG("accept tx step: %d", tx->step());
+        ZJC_DEBUG("accept tx step: %d, prepayment: %lu", tx->step(), tx->contract_prepayment());
         
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {
