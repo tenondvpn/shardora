@@ -472,7 +472,7 @@ function InitC2cEnv(key, value) {
                 }
 
                 // 预设值合约调用币，并等待成功
-                SetManagerPrepayment(contract_address);
+                // SetManagerPrepayment(contract_address);
             }
         }
       });
