@@ -267,6 +267,9 @@ void ToTxsPools::HandleContractGasPrepayment(
             sharding_id,
             pool_index,
             "", "", "", 0);
+
+        // xufeisofly111
+        ZJC_DEBUG("Generate to tx, gas prepayment, net: %lu, pool: %lu", sharding_id, pool_index);        
     }
 }
 
@@ -311,6 +314,8 @@ void ToTxsPools::HandleCreateContractUserCall(
             pool_index,
             "", "", "", 0);
     }
+    // xufeisofly111
+    ZJC_DEBUG("Generate to tx, contract create, net: %lu, pool: %lu", sharding_id, pool_index);
 }
 
 void ToTxsPools::HandleCreateContractByRootFrom(
