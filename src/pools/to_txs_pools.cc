@@ -819,11 +819,16 @@ int ToTxsPools::CreateToTxWithHeights(
         //     }
         // }
 
+        // xufeisofly111
+        if (max_height >= min_height) {
+            ZJC_DEBUG("max larger than min pool_id: %lu, %lu > %lu", pool_idx, max_height, min_height);
+        }
+
         if (pool_iter != network_txs_pools_.end()) {
             for (auto height = min_height; height <= max_height; ++height) {
                 auto hiter = pool_iter->second.find(height);
                 if (hiter == pool_iter->second.end()) {
-    //                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
+                    ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
                     continue;
                 }
 
