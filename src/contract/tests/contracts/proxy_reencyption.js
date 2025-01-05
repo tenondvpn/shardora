@@ -665,6 +665,10 @@ if (args[0] == 0) {
     InitC2cEnv("c0", pairing_param_value);
 }
 
+if (args[0] == 9) {
+    SetManagerPrepayment(contract_address);
+}
+
 // CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
 if (args[0] == 1) {
     CreatePrivateAndPublicKeys(id, args[2]);
