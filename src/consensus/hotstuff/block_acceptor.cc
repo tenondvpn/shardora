@@ -2,6 +2,7 @@
 
 #include "bls/agg_bls.h"
 #include <common/encode.h>
+#include <common/log.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_executor.h>
@@ -248,6 +249,9 @@ Status BlockAcceptor::addTxsToPool(
         if (iter != prevs_balance_map.end()) {
             now_balance_map[iter->first] = iter->second;
         }
+
+        // xufeisofly111
+        ZJC_DEBUG("accept tx step: %d", tx->step());
         
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {

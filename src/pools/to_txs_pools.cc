@@ -642,6 +642,8 @@ bool ToTxsPools::StatisticTos(
     }
 
     int32_t pool_size = static_cast<int32_t>(leader_to_heights.heights_size());
+    // xufeisofly111
+    ZJC_DEBUG("statistic tos, pool_size: %lu", pool_size);    
     for (int32_t pool_idx = pool_size - 1; pool_idx >= 0; --pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
