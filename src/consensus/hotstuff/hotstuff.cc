@@ -1131,8 +1131,8 @@ Status Hotstuff::Commit(
     
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view() >= v_block->view()) {
-        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
-            latest_committed_block->view(), v_block->view());
+        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu_%lu", 
+            latest_committed_block->view(), pool_idx_, v_block->view());
         return Status::kSuccess;
     }
     
@@ -1141,7 +1141,6 @@ Status Hotstuff::Commit(
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
         auto db_batch = std::make_shared<db::DbWriteBatch>();
-        
 
         // set commit_qc to vblock and store to database
         ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1155,25 +1154,15 @@ Status Hotstuff::Commit(
             break;
         }
 
-        
-
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
-            // if (latest_committed_block->view() < tmp_block->view() - 1) {
-                // kv_sync_->AddSyncViewHeight(
-                //     tmp_block->qc().network_id(), 
-                //     tmp_block->qc().pool_index(), 
-                //     tmp_block->qc().view() - 1, 
-                //     0);
-            // }
-
             break;
         }
 
-        view_block_chain()->SetLatestCommittedBlock(v_block);
+        view_block_chain()->SetLatestCommittedBlock(tmp_block);
 
         tmp_block = parent_block;
         ADD_DEBUG_PROCESS_TIMESTAMP();
