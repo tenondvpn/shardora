@@ -788,14 +788,14 @@ void BlockManager::AddNewBlock(
                 ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", view_block_item->block_info().height(), view_block_item->block_info().timestamp());
             }
 
-            // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-            //     "gid: %s, bls: %s, %s",
-            //     view_block_item->network_id(),
-            //     view_block_item->pool_index(),
-            //     block_item->height(),
-            //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
+            ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                "gid: %s, bls: %s, %s",
+                view_block_item->network_id(),
+                view_block_item->pool_index(),
+                block_item->height(),
+                common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
+                common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
             break;
         }
         case pools::protobuf::kConsensusRootTimeBlock:
@@ -1515,12 +1515,6 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
     
     auto cur_time = common::TimeUtils::TimestampMs();
     auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
-
-    // xufeisofly111
-    if (latest_to_block_ptr != nullptr) {
-        ZJC_DEBUG("latest to block ptr is not null, pool: %d", pool_index);
-    }
-    
         
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
