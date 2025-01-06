@@ -1589,20 +1589,24 @@ Status Hotstuff::ConstructViewBlock(
 }
 
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
-    auto v_block1 = view_block_chain()->QCRef(std::make_shared<ViewBlock>(v_block));
+    if (v_block.block_info().tx_list_size() > 0) {
+        return true;
+    }
+    
+    auto v_block1 = view_block_chain()->Get(v_block.parent_hash());
     if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
         return true;
     }
 
-    std::shared_ptr<ViewBlock> v_block2 = view_block_chain()->Get(v_block.parent_hash());
+    auto v_block2 = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
         return true;
     }
 
-    std::shared_ptr<ViewBlock> v_block3 = view_block_chain()->Get(v_block2->parent_hash());
+    auto v_block3 = view_block_chain()->Get(v_block2->parent_hash());
     if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
         return true;
-    }
+    }    
     
     return false;
 }
