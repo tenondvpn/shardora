@@ -1598,10 +1598,15 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
         return true;
     }
 
-    auto v_block2 = view_block_chain()->Get(v_block.parent_hash());
+    auto v_block2 = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
         return true;
     }
+
+    auto v_block3 = view_block_chain()->Get(v_block2->parent_hash());
+    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+        return true;
+    }    
     
     return false;
 }
