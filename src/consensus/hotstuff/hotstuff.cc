@@ -930,13 +930,15 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
     if (newview_msg.has_qc()) {
         auto qc_ptr = std::make_shared<QC>(newview_msg.qc());
         auto& qc = *qc_ptr;
-        if (qc.view() >= pacemaker()->HighQC()->view()) {
+        if (qc.view() > pacemaker()->HighQC()->view()) {
             if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyQC error.");
                 return;
             }
             
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc_ptr));
+            TryCommit(msg_ptr, qc, 99999999lu);
+        } else if (qc.view() == pacemaker()->HighQC()->view()) {
             TryCommit(msg_ptr, qc, 99999999lu);
         }
     }
