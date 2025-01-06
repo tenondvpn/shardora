@@ -917,29 +917,28 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
     if (newview_msg.has_tc()) {
         auto tc_ptr = std::make_shared<TC>(newview_msg.tc());
         auto& tc = *tc_ptr;
-        // if (tc.view() > pacemaker()->HighTC()->view()) {
-                
-        if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
-            ZJC_ERROR("VerifyTC error.");
-            return;
-        }
+        if (tc.view() > pacemaker()->HighTC()->view()) {                
+            if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
+                ZJC_ERROR("VerifyTC error.");
+                return;
+            }
 
-        pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
-        // }
+            pacemaker()->AdvanceView(new_sync_info()->WithTC(tc_ptr));
+        }
     }
 
     if (newview_msg.has_qc()) {
         auto qc_ptr = std::make_shared<QC>(newview_msg.qc());
         auto& qc = *qc_ptr;
-        // if (qc.view() > pacemaker()->HighQC()->view()) {
-        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
-            ZJC_ERROR("VerifyQC error.");
-            return;
-        }
+        if (qc.view() >= pacemaker()->HighQC()->view()) {
+            if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
+                ZJC_ERROR("VerifyQC error.");
+                return;
+            }
             
-        pacemaker()->AdvanceView(new_sync_info()->WithQC(qc_ptr));
-        TryCommit(msg_ptr, qc, 99999999lu);
-        // }
+            pacemaker()->AdvanceView(new_sync_info()->WithQC(qc_ptr));
+            TryCommit(msg_ptr, qc, 99999999lu);
+        }
     }
 }
 
@@ -1162,7 +1161,7 @@ Status Hotstuff::Commit(
             break;
         }
 
-        view_block_chain()->SetLatestCommittedBlock(tmp_block);
+        view_block_chain()->SetLatestCommittedBlock(v_block);
 
         tmp_block = parent_block;
         ADD_DEBUG_PROCESS_TIMESTAMP();
