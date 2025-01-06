@@ -313,7 +313,6 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = std::make_shared<consensus::ToTxItem>(*tx, account_mgr_, security_ptr_, address_info);
             } else {
                 auto gid = tx_pools_->GetToTxGid();
-                ZJC_DEBUG("====8.0 get to tx gid: %s", common::Encode::HexEncode(gid).c_str());
                 if (view_block_chain->CheckTxGidValid(gid, parent_hash)) {
                     auto tx_item = tx_pools_->GetToTxs(
                         pool_idx(), 

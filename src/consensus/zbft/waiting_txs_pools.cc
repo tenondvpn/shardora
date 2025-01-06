@@ -79,7 +79,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     if (txs_item == nullptr && pool_index == common::kImmutablePoolSize) {
         auto gid = GetToTxGid();
         if (gid_vlid_func(gid)) {
-            txs_item = GetToTxs(pool_index, ""); // xufeisofly gid 合法，但 txs_item 没有是为什么
+            txs_item = GetToTxs(pool_index, "");
             ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
         } else {
             ZJC_DEBUG("GetToTxGid failed: %d, gid: %s", 
