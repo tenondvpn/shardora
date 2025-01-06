@@ -364,6 +364,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             bool has_system_tx = false;
             
             auto gid_valid_func = [&](const std::string& gid) -> bool {
+                ZJC_DEBUG("pool: %lu high qc view block hash: %s", pool_idx,
+                    common::Encode::HexEncode(pacemaker(pool_idx)->HighQC()->view_block_hash()).c_str());
                 return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
                         gid, 
                         pacemaker(pool_idx)->HighQC()->view_block_hash());
