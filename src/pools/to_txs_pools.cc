@@ -266,10 +266,7 @@ void ToTxsPools::HandleContractGasPrepayment(
             tx.contract_prepayment(), // prepayment 通过 amount 字段传递, TODO 改为 prepayment 字段
             sharding_id,
             pool_index,
-            "", "", "", 0);
-
-        // xufeisofly111
-        ZJC_DEBUG("Generate to tx, gas prepayment, net: %lu, pool: %lu", sharding_id, pool_index);        
+            "", "", "", 0);        
     }
 }
 
@@ -314,8 +311,6 @@ void ToTxsPools::HandleCreateContractUserCall(
             pool_index,
             "", "", "", 0);
     }
-    // xufeisofly111
-    ZJC_DEBUG("Generate to tx, contract create, net: %lu, pool: %lu", sharding_id, pool_index);
 }
 
 void ToTxsPools::HandleCreateContractByRootFrom(
@@ -641,16 +636,14 @@ bool ToTxsPools::StatisticTos(
         return false;
     }
 
-    int32_t pool_size = static_cast<int32_t>(leader_to_heights.heights_size());
-    // xufeisofly111
-    ZJC_DEBUG("statistic tos, pool_size: %lu", pool_size);    
+    int32_t pool_size = static_cast<int32_t>(leader_to_heights.heights_size());    
     for (int32_t pool_idx = pool_size - 1; pool_idx >= 0; --pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        // if (max_height >= min_height) {
-        ZJC_DEBUG("now statistic to tx pool: %u, min: %lu, max: %lu",
-            pool_idx, min_height, max_height);
-            // }
+        if (max_height >= min_height) {
+            ZJC_DEBUG("now statistic to tx pool: %u, min: %lu, max: %lu",
+                pool_idx, min_height, max_height);
+        }
 
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
             if (max_height >= min_height) {
@@ -825,11 +818,6 @@ int ToTxsPools::CreateToTxWithHeights(
         //         }
         //     }
         // }
-
-        // xufeisofly111
-        if (max_height >= min_height) {
-            ZJC_DEBUG("max larger than min pool_id: %lu, %lu > %lu", pool_idx, max_height, min_height);
-        }
 
         if (pool_iter != network_txs_pools_.end()) {
             for (auto height = min_height; height <= max_height; ++height) {

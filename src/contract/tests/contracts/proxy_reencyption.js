@@ -472,7 +472,7 @@ function InitC2cEnv(key, value) {
                 }
 
                 // 预设值合约调用币，并等待成功
-                // SetManagerPrepayment(contract_address);
+                SetManagerPrepayment(contract_address);
             }
         }
       });
@@ -663,11 +663,6 @@ var id = keccak256('754049815806883199414208211028653399266475630880222957078625
 if (args[0] == 0) {
     var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
     InitC2cEnv("c0", pairing_param_value);
-}
-
-// xufeisofly111
-if (args[0] == 9) {
-    SetManagerPrepayment(contract_address);
 }
 
 // CreatPath(i)：由用户i选择多个被委托者。按选择顺序生成一个路径（列表），其中存放被委托者的公钥。
