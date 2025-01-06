@@ -190,7 +190,7 @@ public:
             }
 
             ++count;
-            if (count >= 4) {
+            if (count >= AllowedEmptyBlockCnt) {
                 break;
             }
 

@@ -917,8 +917,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
     if (newview_msg.has_tc()) {
         auto tc_ptr = std::make_shared<TC>(newview_msg.tc());
         auto& tc = *tc_ptr;
-        if (tc.view() > pacemaker()->HighTC()->view()) {
-                
+        if (tc.view() > pacemaker()->HighTC()->view()) {                
             if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
@@ -938,6 +937,8 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             }
             
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc_ptr));
+            TryCommit(msg_ptr, qc, 99999999lu);
+        } else if (qc.view() == pacemaker()->HighQC()->view()) {
             TryCommit(msg_ptr, qc, 99999999lu);
         }
     }
@@ -1131,8 +1132,8 @@ Status Hotstuff::Commit(
     
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view() >= v_block->view()) {
-        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
-            latest_committed_block->view(), v_block->view());
+        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu_%lu", 
+            latest_committed_block->view(), pool_idx_, v_block->view());
         return Status::kSuccess;
     }
     
@@ -1141,7 +1142,6 @@ Status Hotstuff::Commit(
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
         auto db_batch = std::make_shared<db::DbWriteBatch>();
-        
 
         // set commit_qc to vblock and store to database
         ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1155,21 +1155,11 @@ Status Hotstuff::Commit(
             break;
         }
 
-        
-
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
-            // if (latest_committed_block->view() < tmp_block->view() - 1) {
-                // kv_sync_->AddSyncViewHeight(
-                //     tmp_block->qc().network_id(), 
-                //     tmp_block->qc().pool_index(), 
-                //     tmp_block->qc().view() - 1, 
-                //     0);
-            // }
-
             break;
         }
 
@@ -1592,22 +1582,15 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
     if (v_block.block_info().tx_list_size() > 0) {
         return true;
     }
-    
-    auto v_block1 = view_block_chain()->Get(v_block.parent_hash());
-    if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
-        return true;
+
+    auto current = std::make_shared<ViewBlock>(v_block);
+    for (auto i = 0; i < AllowedEmptyBlockCnt-1; i++) {
+        current = view_block_chain()->Get(current->parent_hash());
+        if (!current || current->block_info().tx_list_size() > 0) {
+            return true;
+        }
     }
 
-    auto v_block2 = view_block_chain()->Get(v_block1->parent_hash());
-    if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
-        return true;
-    }
-
-    auto v_block3 = view_block_chain()->Get(v_block2->parent_hash());
-    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-        return true;
-    }    
-    
     return false;
 }
 
