@@ -19,7 +19,8 @@ cp -rf ./cbuild_$target/zjchain ./docker_files/node
 cp -f ./conf/genesis.yml ./docker_files/node/genesis.yml
 
 # 复制 _db 文件到 docker_files
-cp -rf /root/zjnodes/zjchain/*_db ./docker_files/node/
+cp -rf /root/zjnodes/zjchain/root_db ./docker_files/node/
+cp -rf /root/zjnodes/zjchain/shard_db_* ./docker_files/node/
 
 cp ./Dockerfile ./docker_files
 
