@@ -1,3 +1,4 @@
+third_party/fmt/
 third_party/pbc/
 src/contract/tests/contracts/openzeppelin
 src/contract/tests/contracts/nohup.out
