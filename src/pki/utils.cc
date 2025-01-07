@@ -12,7 +12,7 @@ std::string byte2string(const std::string& bytes) {
 
 std::string xor_strings(const std::string& str1, const std::string& str2) {
   if (str1.empty() || str2.empty()) {
-    throw std::exception("Input strings cannot be empty");
+    return "";
   }
 
   std::string result;
