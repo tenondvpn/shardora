@@ -21,6 +21,7 @@ cp -f ./conf/genesis.yml ./docker_files/node/genesis.yml
 # 复制 _db 文件到 docker_files
 cp -rf /root/zjnodes/zjchain/root_db ./docker_files/node/
 cp -rf /root/zjnodes/zjchain/shard_db_* ./docker_files/node/
+cp ./fetch.sh ./docker_files
 
 cp ./Dockerfile ./docker_files
 
