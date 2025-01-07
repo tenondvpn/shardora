@@ -167,6 +167,7 @@ set(LINK_ARGS
     websocket
     http
     contract
+    pki
     big_num
     db
     security
@@ -220,6 +221,7 @@ add_subdirectory(${SRC_DIR}/timeblock timeblock)
 add_subdirectory(${SRC_DIR}/ck ck)
 add_subdirectory(${SRC_DIR}/vss vss)
 add_subdirectory(${SRC_DIR}/sync sync)
+add_subdirectory(${SRC_DIR}/pki pki)
 
 
 add_subdirectory(${SRC_DIR}/common/tests common_test)

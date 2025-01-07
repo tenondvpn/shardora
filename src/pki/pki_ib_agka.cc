@@ -1,6 +1,6 @@
-#include "pki_ib_agka.hh"
+#include "pki/pki_ib_agka.h"
 
-#include <_types/_uint32_t.h>
+#include <cstdint>
 
 #include <chrono>
 #include <ratio>
@@ -8,7 +8,7 @@
 
 #include "fmt/base.h"
 #include "fmt/format.h"
-#include "utils.hh"
+#include "pki/utils.h"
 
 PkiIbAgka::PkiIbAgka(const std::string& secure_param)
     : pp(secure_param), k_(pp.e) {}

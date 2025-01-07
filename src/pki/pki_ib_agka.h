@@ -2,7 +2,7 @@
 
 #include <fmt/base.h>
 
-#include "def.hh"
+#include "pki/def.h"
 
 class PkiIbAgka {
  public:

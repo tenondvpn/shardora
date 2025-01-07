@@ -1,4 +1,4 @@
-#include "utils.hh"
+#include "pki/utils.h"
 
 std::string byte2string(const std::string& bytes) {
   std::string result;
@@ -12,7 +12,7 @@ std::string byte2string(const std::string& bytes) {
 
 std::string xor_strings(const std::string& str1, const std::string& str2) {
   if (str1.empty() || str2.empty()) {
-    throw std::invalid_argument("Input strings cannot be empty");
+    throw std::exception("Input strings cannot be empty");
   }
 
   std::string result;
