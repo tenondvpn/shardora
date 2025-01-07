@@ -22,3 +22,5 @@ cp -f ./conf/genesis.yml ./docker_files/node/genesis.yml
 cp -rf /root/zjnodes/zjchain/*_db ./docker_files/node/
 
 cp ./Dockerfile ./docker_files
+
+echo "==== Docker build files generated ===="
