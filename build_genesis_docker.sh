@@ -16,9 +16,9 @@ mkdir -p ./docker_files/node/conf
 cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb ./docker_files/node/conf
 cp -rf ./zjnodes/zjchain/conf/log4cpp.properties ./docker_files/node/conf
 cp -rf ./cbuild_$target/zjchain ./docker_files/node
-cp -f ./conf/genesis.yml ./docker_files/zjchain/genesis.yml
+cp -f ./conf/genesis.yml ./docker_files/node/genesis.yml
 
 # 复制 _db 文件到 docker_files
-cp -f /root/zjnodes/zjchain/*_db ./docker_files/node
+cp -rf /root/zjnodes/zjchain/*_db ./docker_files/node/
 
 cp ./Dockerfile ./docker_files
