@@ -3,6 +3,10 @@ FROM centos:7.9.2009
 
 ARG SHARD_DB # root_db, shard_db_3, shard_db_4 etc.
 
+RUN curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo && \
+    yum clean all && \
+    yum makecache
+
 # 安装开发工具和依赖包
 RUN yum groupinstall -y "Development Tools" && \
     yum install -y glibc-devel glibc-headers && \
