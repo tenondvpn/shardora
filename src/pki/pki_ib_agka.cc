@@ -187,13 +187,13 @@ int PkiIbAgka::IbExtract(
       return 1;
     }
     
-    std::string sk_str = lines[2];
+    std::string str_id = lines[2];
     std::string pki_id = lines[1];
-    std::string str_id = lines[3];
     G1 id(pp.e);
     id = pp.H1(str_id);
     // sk = H1(ID)^k
     G1 sk = id.pow_zn(k_);
+    auto sk_str = common::Encode::HexEncode(sk.to_bytes());
     // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
     // pk = e(sk,g1)
     G2 pk(pp.e);
@@ -215,6 +215,13 @@ void PkiIbAgka::IbExtract(const IdList& ids, const int& n) {
     id = pp.H1(ids[i]);
     // sk = H1(ID)^k
     G1 sk = id.pow_zn(k_);
+    {
+        std::cout << (n_ + i) << " sk:" << std::endl;
+        auto hex_bytes = shardora::common::Encode::HexEncode(sk.to_bytes());
+        std::cout << hex_bytes << std::endl;
+        sk.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+        std::cout << shardora::common::Encode::HexEncode(sk.to_bytes()) << std::endl;
+    }
     // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
     // pk = e(sk,g1)
     G2 pk(pp.e);

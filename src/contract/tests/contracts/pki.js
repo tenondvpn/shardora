@@ -418,27 +418,7 @@ function InitC2cEnv(key, value) {
       });
 }
 
-function add_pairing_param(prev, key, value) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = prev + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-    var addParam = web3.eth.abi.encodeParameters(
-        ['bytes'], 
-        [hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
-    call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
-
-}
-
-function CreateNewArs(prev, key, value, id) {
+function PkiExtract(prev, key, value, id) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
         key_len = "0" + key_len;
@@ -450,7 +430,26 @@ function CreateNewArs(prev, key, value, id) {
     var addParam = web3.eth.abi.encodeParameters(
         ['uint256', 'uint256', 'bytes32', 'bytes'], 
         [3, 2, '0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewArs(uint256,uint256,bytes32,bytes)');
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('PkiExtract(uint256,uint256,bytes32,bytes)');
+    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
+function IbExtract(prev, key, value, id) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = prev + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes'], 
+        ['0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('IbExtract(bytes32,bytes)');
     console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
@@ -518,22 +517,29 @@ if (args[0] == 0) {
 var tmp_id = args[1]
 // 测试聚合环签名整个流程
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
+var sks = [
+    "70dc351ef4b8f835d7c27166ad6c1f744de84680f904d3404331528f5ee1fb25f8a6eda3de2f7917adc990a6f120ad176da9282396885feb36aca70c1b8a2d4c5363761c68fcc297b089b7e82bb2d89e203a9fcf314311fb5fba787938e3da3a6a6e0c0d4f020f903c2aeb8319a001004b79d7aa26ab8d5ca9eeb223c9c7e155",
+    "5eb8ed56311f7edc777606e1a60cb37efb21a83b88f4d1c0f6dcbeb0f11831cebd5f57e9abff198e639ff4d45fcf3b67f266d0f5c1ec258d4030e1e1b26e86b7265544a88f7ebc14a9977b0e1a8dcafa0512c83e26b1d58b507d2b7195d868fcd984bc742e7f8c799aa8615a44fa55b68ce4785b4829aacf8b1e0800b4985876",
+    "1ae7e9b948eef55c34be67acea0e8ebdffa495e11dce29a2376caab59b4e3853db33b64298a18cc15948df89f6ecb23dde75e02f371b27ffa79b74f08583ac6d2466f5a36bcad6d8d1ee8a77a98f2b01800ffa0a2a4ab392e981b6f68293c973ca26208da46bf708946bd57305868008a24c1fa40f7475e8c2a99d41219cef3e",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+]
 console.log("get id: " + id);
 if (args[0] == 1) {
-    CreateNewArs("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290-2," + id, id);
+    PkiExtract("pkipki", "pkipki", args[1] + ";" + id + ";", id);
     console.log(id);
 }
 
 if (args[0] == 2) {
-    SingleSign("tarsps", "tarsps", args[2] + "-" + id, id);
+    IbExtract("pkipib", "pkipib", args[2] + "-" + id, id);
 }
 
 if (args[0] == 3) {
     AggSign("tarsas", "tarsas", id, id);
-}
-
-if (args[0] == 4) {
-    add_pairing_param("tars", "tars", id, id);
 }
 
 // 测试合约查询

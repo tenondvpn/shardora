@@ -7,14 +7,13 @@ pragma solidity >=0.7.0 <0.9.0;
 // 4. If the transaction is reported and the seller cannot redeem it, it will be locked,
 //    and the manager can release it according to the situation
 
-contract Ars {
+contract Pki {
     bytes32 test_ripdmd_;
     bytes32 enc_init_param_;
-    struct ArsInfo {
-        uint256 ring_size;
-        uint256 signer_count;
+    struct PkiInfo {
+        uint256 pki_count;
+        uint256 ib_count;
         bytes32 id;
-        bytes32 res_info;
         bool exists;
     }
 
@@ -26,50 +25,57 @@ contract Ars {
        bytes value
     );
 
-    mapping(bytes32 => ArsInfo) public ars_map;
+    mapping(bytes32 => PkiInfo) public pki_map;
     bytes32[] all_ids;
 
-    // SetUp：初始化算法，需要用到pbc库
-    constructor(bytes memory enc_init_param) {
-        enc_init_param_ = ripemd160(enc_init_param);
-    }
-
-    function call_proxy_reenc(bytes memory params) public {
-        test_ripdmd_ = ripemd160(params);
-    }
-
-    function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
+    function PkiExtract(uint256 pki_count, uint256 ib_count, bytes32 id, bytes memory params) public {
         emit DebugEvent(0);
+        if (!pki_map[id].exists) {
+            emit DebugEvent(1);
+            pki_map[id] = PkiInfo({
+                pki_count: pki_count,
+                ib_count: ib_count,
+                id: id,
+                exists: true
+            });
+        }
 
-        require(!ars_map[id].exists);
-        emit DebugEvent(1);
-        bytes32 res = ripemd160(params);
-        ars_map[id] = ArsInfo({
-            ring_size: ring_size,
-            signer_count: signer_count,
-            id: id,
-            res_info: res,
-            exists: true
-        });
-        all_ids.push(id);
         emit DebugEvent(2);
+        bytes32 res = ripemd160(params);
+        all_ids.push(id);
         emit DebugEvent(all_ids.length);
     }
 
-    function SingleSign(bytes32 id, bytes memory params) public {
+    function IbExtract(bytes32 id, bytes memory params) public {
         emit DebugEvent(3);
-        require(ars_map[id].exists);
+        require(pki_map[id].exists);
         emit DebugEvent(4);
         bytes32 res = ripemd160(params);
         emit DebugEvent(5);
     }
 
-    function AggSign(bytes32 id, bytes memory params) public {
+    function EncKeyGen(bytes32 id, bytes memory params) public {
         emit DebugEvent(6);
-        require(ars_map[id].exists);
+        require(pki_map[id].exists);
         emit DebugEvent(7);
         bytes32 res = ripemd160(params);
         emit DebugEvent(8);
+    }
+
+    function DecKeyGen(bytes32 id, bytes memory params) public {
+        emit DebugEvent(9);
+        require(pki_map[id].exists);
+        emit DebugEvent(10);
+        bytes32 res = ripemd160(params);
+        emit DebugEvent(11);
+    }
+
+    function Enc(bytes32 id, bytes memory params) public {
+        emit DebugEvent(12);
+        require(pki_map[id].exists);
+        emit DebugEvent(13);
+        bytes32 res = ripemd160(params);
+        emit DebugEvent(14);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
@@ -113,17 +119,15 @@ contract Ars {
         return abi.encodePacked(_data);
     }
 
-    function GetArsJson(ArsInfo memory ars, bool last) public pure returns (bytes memory) {
+    function GetPkiJson(PkiInfo memory pki, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"ring_size":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.ring_size));
+        all_bytes[filedCount++] = ToHex(u256ToBytes(pki.ring_size));
         all_bytes[filedCount++] = '","signer_count":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.signer_count));
+        all_bytes[filedCount++] = ToHex(u256ToBytes(pki.signer_count));
         all_bytes[filedCount++] = '","id":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
-        all_bytes[filedCount++] = '","res":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
+        all_bytes[filedCount++] = ToHex(Bytes32toBytes(pki.id));
         if (last) {
             all_bytes[filedCount++] = '"}';
         } else {
@@ -132,13 +136,13 @@ contract Ars {
         return bytesConcat(all_bytes, filedCount);
     }
 
-    function GetAllArsJson() public view returns(bytes memory) {
+    function GetAllPkiJson() public view returns(bytes memory) {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](all_ids.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = all_ids.length;
         for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetArsJson(ars_map[all_ids[i]], (i == arrayLength - 1));
+            all_bytes[i + 1] = GetPkiJson(pki_map[all_ids[i]], (i == arrayLength - 1));
             ++validLen;
         }
 
