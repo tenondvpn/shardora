@@ -154,6 +154,7 @@ set(LINK_ARGS
     init
     consensus
     sync
+    zjcvm
     block
     vss
     ck
