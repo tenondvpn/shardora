@@ -7,15 +7,24 @@
 #include <vector>
 
 #include "common/encode.h"
+#include "common/split.h"
+#include "common/string_utils.h"
 
 #include "fmt/base.h"
 #include "fmt/format.h"
 #include "pki/utils.h"
+#include "zjcvm/zjc_host.h"
 
-PkiIbAgka::PkiIbAgka(const std::string& secure_param, const std::string& k, const std::string& g)
-    : pp(secure_param), k_(pp.e) {
-      k_.from_bytes(shardora::common::Encode::HexDecode(k));
-      pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
+using namespace shardora;
+
+PkiIbAgka::PkiIbAgka(
+      const std::string& secure_param, 
+      const std::string& k, 
+      const std::string& g, 
+      std::shared_ptr<shardora::protos::PrefixDb> prefix_db)
+      : pp(secure_param), k_(pp.e), prefix_db_(prefix_db) {
+    k_.from_bytes(shardora::common::Encode::HexDecode(k));
+    pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
   }
 
 // Simulate the protocol
@@ -107,6 +116,32 @@ void PkiIbAgka::Setup() {
   };
 }
 
+int PkiIbAgka::PkiExtract(
+    shardora::contract::CallParameters& param, 
+    const std::string& key, 
+    const std::string& value) {
+  auto lines = common::Split<>(value.c_str(), ';');
+  if (lines.Count() != 3) {
+    return 1;
+  }
+
+  int32_t i = -1;
+  if (!common::StringUtil::ToInt32(lines[0], &i)) {
+    return 1;
+  }
+  
+  std::string sk_str = lines[2];
+  std::string pki_id = lines[1];
+  G1 sk(pp.e);
+  sk.from_bytes(shardora::common::Encode::HexDecode(sk_str));
+  G2 pk(pp.e);
+  pp.e.apply(pk, sk, pp.g);
+  std::string key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
+  std::string value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
+  param.zjc_host->SaveKeyValue(param.from, key, value);
+  return 0;
+}
+
 // Stage2: PKI Extract
 void PkiIbAgka::PkiExtract(const int& n) {
   pki_keys_.reserve(n);
@@ -131,8 +166,40 @@ void PkiIbAgka::PkiExtract(const int& n) {
     // generate key and add to list
     pki_keys_.emplace_back(n_++, std::move(pk), std::move(sk));
   }
-  
+
   std::cout << "pki_keys_ size: " << pki_keys_.size() << std::endl;
+}
+
+int PkiIbAgka::IbExtract(
+        shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 4) {
+      return 1;
+    }
+
+    int32_t i = -1;
+    if (!common::StringUtil::ToInt32(lines[0], &i)) {
+      return 1;
+    }
+    
+    std::string sk_str = lines[2];
+    std::string pki_id = lines[1];
+    std::string str_id = lines[3];
+    G1 id(pp.e);
+    id = pp.H1(str_id);
+    // sk = H1(ID)^k
+    G1 sk = id.pow_zn(k_);
+    // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
+    // pk = e(sk,g1)
+    G2 pk(pp.e);
+    pp.e.apply(pk, id, pp.g1);
+    
+    std::string key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
+    std::string value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
+    param.zjc_host->SaveKeyValue(param.from, key, value);
+    return 0;
 }
 
 void PkiIbAgka::IbExtract(const IdList& ids, const int& n) {
@@ -156,6 +223,101 @@ void PkiIbAgka::IbExtract(const IdList& ids, const int& n) {
 
   std::cout << "ib_keys_ size: " << ib_keys_.size() << std::endl;
 }
+
+int PkiIbAgka::EncKeyGen(
+        shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 3) {
+        return 1;
+    }
+
+    int32_t pki_count = 0;
+    if (!common::StringUtil::ToInt32(lines[0], &pki_count)) {
+        return 1;
+    }
+
+    int32_t ib_count = 0;
+    if (!common::StringUtil::ToInt32(lines[1], &ib_count)) {
+        return 1;
+    }
+
+    if (pki_count < 3 || pki_count >= 1024) {
+        return 1;
+    }
+
+    if (ib_count < 3 || ib_count >= 1024) {
+        return 1;
+    }
+
+    std::string pki_id = lines[2];
+    for (int32_t i = 0; i < pki_count; ++i) {
+      std::string key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
+      std::string val;
+      if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+          return 1;
+      }
+
+      auto val_splits = common::Split<>(val.c_str(), ',');
+      G1 sk(pp.e);
+      sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      G2 pk(pp.e);
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      pki_keys_.emplace_back(i, std::move(pk), std::move(sk));
+    }
+
+    for (int32_t i = 0; i < ib_count; ++i) {
+      std::string key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
+      std::string val;
+      if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+          return 1;
+      }
+
+      auto val_splits = common::Split<>(val.c_str(), ',');
+      G1 sk(pp.e);
+      sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      G2 pk(pp.e);
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      ib_keys_.emplace_back(pki_count + i, std::move(pk), std::move(sk));
+    }
+
+    for (const auto& key : pki_keys_) {
+      G1 f_j = pp.H2(key.i);
+      j_map_.insert(std::make_pair(key.i, std::move(f_j)));
+    }
+
+    for (const auto& key : ib_keys_) {
+      G1 f_j = pp.H2(key.i);
+      j_map_.insert(std::make_pair(key.i, std::move(f_j)));
+    }
+    // PKI Agreement
+    agreement(pki_keys_, pki_msgs_);
+    // IB Agreement
+    agreement(ib_keys_, ib_msgs_);
+
+    G1 omega(pp.e);
+    for (auto& msg : pki_msgs_) {
+      omega *= msg.r;
+    }
+    for (auto& msg : ib_msgs_) {
+      omega *= msg.r;
+    }
+    G2 Q(pp.e);  // NOLINT
+    for (auto& key : pki_keys_) {
+      Q *= key.pk;
+    }
+    for (auto& key : ib_keys_) {
+      Q *= key.pk;
+    }
+
+    std::string key = std::string("cpki_encode_key_") + pki_id;
+    std::string value = shardora::common::Encode::HexEncode(omega.to_bytes()) + "," + 
+      shardora::common::Encode::HexEncode(Q.to_bytes());
+    param.zjc_host->SaveKeyValue(param.from, key, value);
+    return 0;
+}
+
 
 void PkiIbAgka::PkiIbAgreement() {
   // generate j -> H2(j)
@@ -193,6 +355,119 @@ EncodeKey PkiIbAgka::EncKeyGen() {
   fmt::println("\t- Q = {}\n", byte2string(Q.to_bytes()));
 
   return EncodeKey{.omega = std::move(omega), .Q = std::move(Q)};
+}
+
+int PkiIbAgka::DecKeyGen(
+        shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 3) {
+        return 1;
+    }
+
+    int32_t pki_count = 0;
+    if (!common::StringUtil::ToInt32(lines[0], &pki_count)) {
+        return 1;
+    }
+
+    int32_t ib_count = 0;
+    if (!common::StringUtil::ToInt32(lines[1], &ib_count)) {
+        return 1;
+    }
+
+    if (pki_count < 3 || pki_count >= 1024) {
+        return 1;
+    }
+
+    if (ib_count < 3 || ib_count >= 1024) {
+        return 1;
+    }
+
+    std::string pki_id = lines[2];
+    for (int32_t i = 0; i < pki_count; ++i) {
+      std::string key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
+      std::string val;
+      if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+          return 1;
+      }
+
+      auto val_splits = common::Split<>(val.c_str(), ',');
+      G1 sk(pp.e);
+      sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      G2 pk(pp.e);
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      pki_keys_.emplace_back(i, std::move(pk), std::move(sk));
+    }
+
+    for (int32_t i = 0; i < ib_count; ++i) {
+      std::string key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
+      std::string val;
+      if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+          return 1;
+      }
+
+      auto val_splits = common::Split<>(val.c_str(), ',');
+      G1 sk(pp.e);
+      sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      G2 pk(pp.e);
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      ib_keys_.emplace_back(pki_count + i, std::move(pk), std::move(sk));
+    }
+
+    for (const auto& key : pki_keys_) {
+      G1 f_j = pp.H2(key.i);
+      j_map_.insert(std::make_pair(key.i, std::move(f_j)));
+    }
+
+    for (const auto& key : ib_keys_) {
+      G1 f_j = pp.H2(key.i);
+      j_map_.insert(std::make_pair(key.i, std::move(f_j)));
+    }
+    // PKI Agreement
+    agreement(pki_keys_, pki_msgs_);
+    // IB Agreement
+    agreement(ib_keys_, ib_msgs_);
+
+    std::map<int, DecodeKey> dk_map;
+    // PKI decode key gen
+    for (auto& src : pki_msgs_) {
+      // fmt::println("🍟 Generate PKI Participant {} Decode Key:", src.i);
+      G1 di(pp.e);
+      for (auto const& msg_j : pki_msgs_) {
+        auto d_j_i = msg_j.d_map.at(src.i);
+        di *= d_j_i;
+      }
+      for (auto const& msg_j : ib_msgs_) {
+        auto d_j_i = msg_j.d_map.at(src.i);
+        di *= d_j_i;
+      }
+      // fmt::println("\t- d{} = {}\n", src.i, byte2string(di.to_bytes()));
+      dk_map.try_emplace(src.i, src.i, std::move(di));
+    }
+    // IB decode key gen
+    for (auto& src : ib_msgs_) {
+      // fmt::println("\n🍌 Generate IB Participant {} Decode Key ", src.i);
+      G1 di(pp.e);
+      for (auto const& msg_j : pki_msgs_) {
+        auto d_j_i = msg_j.d_map.at(src.i);
+        di *= d_j_i;
+      }
+      for (auto const& msg_j : ib_msgs_) {
+        auto d_j_i = msg_j.d_map.at(src.i);
+        di *= d_j_i;
+      }
+      // fmt::println("\t- d{} = {}\n", src.i, byte2string(di.to_bytes()));
+      dk_map.try_emplace(src.i, src.i, std::move(di));
+    }
+
+    for (auto iter = dk_map.begin(); iter != dk_map.end(); ++iter) {
+        std::string key = std::string("cpki_decode_key_") + pki_id + std::to_string(iter->first);
+        std::string value = shardora::common::Encode::HexEncode(iter->second.d.to_bytes());
+        param.zjc_host->SaveKeyValue(param.from, key, value);
+    }
+
+    return 0;
 }
 
 std::map<int, DecodeKey> PkiIbAgka::DecKeyGen() {
@@ -256,6 +531,62 @@ void PkiIbAgka::Test(EncodeKey& ek, std::map<int, DecodeKey>& dks) {
   //}
 }
 
+int PkiIbAgka::Enc(
+        shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 2) {
+        return 1;
+    }
+
+    std::string pki_id = lines[0];
+    std::string plain = lines[1];
+    std::string key = std::string("cpki_encode_key_") + pki_id;
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
+        return 1;
+    }
+
+    auto splits = common::Split<>(val.c_str(), ',');
+    if (splits.Count() != 2) {
+        return 1;
+    }
+
+    G1 omega(pp.e);
+    omega.from_bytes(common::Encode::HexDecode(splits[0]));
+    G2 Q(pp.e);
+    Q.from_bytes(common::Encode::HexDecode(splits[1]));
+
+    auto ek = EncodeKey{.omega = std::move(omega), .Q = std::move(Q)};
+    Zq e(pp.e);
+    e.set_random();
+    {
+        std::cout << " enc e:" << std::endl;
+        auto hex_bytes = shardora::common::Encode::HexEncode(e.to_bytes());
+        std::cout << hex_bytes << std::endl;
+        e.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+        std::cout << shardora::common::Encode::HexEncode(e.to_bytes()) << std::endl;
+    }
+    // calc c1 = g^e
+    G1 c1(pp.e);
+    c1 = pp.g.pow_zn(e);
+    // calc c1 = w^e
+    G1 c2(pp.e);
+    c2 = ek.omega.pow_zn(e);
+    // calc c3 = m + H3(Qe)
+    ByteStream c3;
+    G2 tmp1 = ek.Q.pow_zn(e);
+    ByteStream tmp2 = pp.H3(tmp1);
+    c3 = xor_strings(plain, tmp2);
+    std::string key = std::string("cpki_enc_data_") + pki_id;
+    std::string value = shardora::common::Encode::HexEncode(c1.to_bytes()) + "," +
+        shardora::common::Encode::HexEncode(c2.to_bytes()) + "," +
+        shardora::common::Encode::HexEncode(c3);
+    param.zjc_host->SaveKeyValue(param.from, key, value);
+    return 0;      
+}
+
 // Stage7 : Encode CipherText
 CipherText PkiIbAgka::Enc(PlainText& plain, EncodeKey& ek) {
   //  randomly select e from Zq
@@ -281,6 +612,38 @@ CipherText PkiIbAgka::Enc(PlainText& plain, EncodeKey& ek) {
   c3 = xor_strings(plain, tmp2);
   return CipherText{
       .c1 = std::move(c1), .c2 = std::move(c2), .c3 = std::move(c3)};
+}
+
+int PkiIbAgka::Dec(
+        shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto lines = common::Split<>(value.c_str(), ';');
+    if (lines.Count() != 6) {
+        return 1;
+    }
+
+    std::string pki_id = lines[0];
+    G1 c1(pp.e);
+    c1.from_bytes(common::Encode::HexDecode(lines[1]));
+    G1 c2(pp.e);
+    c2.from_bytes(common::Encode::HexDecode(lines[2]));
+    ByteStream c3 = common::Encode::HexDecode(lines[3]);
+    G1 di(pp.e);
+    di.from_bytes(common::Encode::HexDecode(lines[5]));
+    int32_t index = 0;
+    if (!common::StringUtil::ToInt32(lines[5], &index)) {
+        return 1;
+    }
+
+    auto start = std::chrono::steady_clock::now();
+    G2 pair1 = pp.e(di, c1);
+    G1 f_j = pp.H2(index);
+    G2 pair2 = pp.e(f_j.invert(), c2);
+    G2 pair = pair1 * pair2;
+    std::string plain = xor_strings(c3, pp.H3(pair));
+    std::cout << plain << std::endl;
+    return 0;
 }
 
 PlainText PkiIbAgka::Dec(CipherText& cipher, DecodeKey& dk) {
