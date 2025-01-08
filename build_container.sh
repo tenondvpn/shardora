@@ -20,7 +20,7 @@ docker build --build-arg SHARD_DB=$shard_db_name -t ${image_name}:1.0 ./docker_f
 
 # 检查构建是否成功
 if [ $? -eq 0 ]; then
-  echo "Docker image shardora-image-$shard_db_name:1.0 built successfully."
+  echo "Docker image ${image_name}:1.0 built successfully."
 else
   echo "Error: Failed to build Docker image."
   exit 1
