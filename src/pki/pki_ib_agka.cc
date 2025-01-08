@@ -131,6 +131,8 @@ void PkiIbAgka::PkiExtract(const int& n) {
     // generate key and add to list
     pki_keys_.emplace_back(n_++, std::move(pk), std::move(sk));
   }
+  
+  std::cout << "pki_keys_ size: " << pki_keys_.size() << std::endl;
 }
 
 void PkiIbAgka::IbExtract(const IdList& ids, const int& n) {
@@ -151,6 +153,8 @@ void PkiIbAgka::IbExtract(const IdList& ids, const int& n) {
     // generate key and add to list
     ib_keys_.emplace_back(n_++, std::move(pk), std::move(sk));
   }
+
+  std::cout << "ib_keys_ size: " << ib_keys_.size() << std::endl;
 }
 
 void PkiIbAgka::PkiIbAgreement() {
