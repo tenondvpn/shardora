@@ -122,10 +122,10 @@ contract Pki {
     function GetPkiJson(PkiInfo memory pki, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
-        all_bytes[filedCount++] = '{"ring_size":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(pki.ring_size));
-        all_bytes[filedCount++] = '","signer_count":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(pki.signer_count));
+        all_bytes[filedCount++] = '{"pki_count":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(pki.pki_count));
+        all_bytes[filedCount++] = '","ib_count":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(pki.ib_count));
         all_bytes[filedCount++] = '","id":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(pki.id));
         if (last) {
