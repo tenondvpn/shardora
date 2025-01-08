@@ -27,5 +27,5 @@ docker run -d \
   -e LOCAL_PORT=${local_port} \
   -e HTTP_PORT=${http_port} \
   -p ${http_port}:${http_port} \
-  -p ${tcp_port}:${tcp_port} \
+  -p ${local_port}:${local_port} \
   ${image_name}  # 替换为你的 Docker 镜像名称
