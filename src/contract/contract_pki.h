@@ -37,7 +37,47 @@ public:
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res);
-    
+    int PkiExtract(
+            const shardora::contract::CallParameters& param, 
+            const std::string& key, 
+            const std::string& value) {
+        return protocol_->PkiExtract(param, key, value);
+    }
+
+    int IbExtract(
+            const shardora::contract::CallParameters& param, 
+            const std::string& key, 
+            const std::string& value) {
+        return protocol_->IbExtract(param, key, value);
+    }
+
+    int EncKeyGen(
+            const shardora::contract::CallParameters& param, 
+            const std::string& key, 
+            const std::string& value) {
+        return protocol_->EncKeyGen(param, key, value);
+    }
+
+    int DecKeyGen(
+            const shardora::contract::CallParameters& param, 
+            const std::string& key, 
+            const std::string& value) {
+        return protocol_->DecKeyGen(param, key, value);
+    }
+
+    int Enc(
+            const shardora::contract::CallParameters& param, 
+            const std::string& key, 
+            const std::string& value) {
+        return protocol_->Enc(param, key, value);
+    }
+
+    int Dec(
+            const shardora::contract::CallParameters& param, 
+            const std::string& key, 
+            const std::string& value) {
+        return protocol_->Dec(param, key, value);
+    }
 
 private:
     std::shared_ptr<PkiIbAgka> protocol_;

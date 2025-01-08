@@ -116,7 +116,7 @@ void PkiIbAgka::Setup() {
 }
 
 int PkiIbAgka::PkiExtract(
-    shardora::contract::CallParameters& param, 
+    const shardora::contract::CallParameters& param, 
     const std::string& in_key, 
     const std::string& value) {
   auto lines = common::Split<>(value.c_str(), ';');
@@ -170,7 +170,7 @@ void PkiIbAgka::PkiExtract(const int& n) {
 }
 
 int PkiIbAgka::IbExtract(
-        shardora::contract::CallParameters& param, 
+        const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
     auto lines = common::Split<>(value.c_str(), ';');
@@ -224,7 +224,7 @@ void PkiIbAgka::IbExtract(const IdList& ids, const int& n) {
 }
 
 int PkiIbAgka::EncKeyGen(
-        shardora::contract::CallParameters& param, 
+        const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
     auto lines = common::Split<>(value.c_str(), ';');
@@ -357,7 +357,7 @@ EncodeKey PkiIbAgka::EncKeyGen() {
 }
 
 int PkiIbAgka::DecKeyGen(
-        shardora::contract::CallParameters& param, 
+        const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
     auto lines = common::Split<>(value.c_str(), ';');
@@ -531,7 +531,7 @@ void PkiIbAgka::Test(EncodeKey& ek, std::map<int, DecodeKey>& dks) {
 }
 
 int PkiIbAgka::Enc(
-        shardora::contract::CallParameters& param, 
+        const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
     auto lines = common::Split<>(value.c_str(), ';');
@@ -614,7 +614,7 @@ CipherText PkiIbAgka::Enc(PlainText& plain, EncodeKey& ek) {
 }
 
 int PkiIbAgka::Dec(
-        shardora::contract::CallParameters& param, 
+        const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
     auto lines = common::Split<>(value.c_str(), ';');

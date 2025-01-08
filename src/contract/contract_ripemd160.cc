@@ -4,6 +4,7 @@
 #include "common/split.h"
 #include "common/string_utils.h"
 #include "contract/contract_pairing.h"
+#include "contract/contract_pki.h"
 #include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
 #include "zjcvm/zjc_host.h"
@@ -106,6 +107,48 @@ int Ripemd160::call(
         GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.ReEncryptUserMessageWithMember(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkipki") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.PkiExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkipib") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.IbExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkiege") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.EncKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkidge") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.DecKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkienc") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.Enc(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkidec") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.Dec(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
