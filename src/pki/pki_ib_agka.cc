@@ -77,7 +77,7 @@ void PkiIbAgka::Setup() {
       std::cout << "pp.g:" << std::endl;
       auto hex_bytes = shardora::common::Encode::HexEncode(pp.g.to_bytes());
       std::cout << hex_bytes << std::endl;
-      k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+      pp.g.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
       std::cout << shardora::common::Encode::HexEncode(pp.g.to_bytes()) << std::endl;
   }
   // fmt::println("\t- g = {}", byte2string(pp.g.to_bytes()));
@@ -117,7 +117,7 @@ void PkiIbAgka::PkiExtract(const int& n) {
         std::cout << i << " sk:" << std::endl;
         auto hex_bytes = shardora::common::Encode::HexEncode(sk.to_bytes());
         std::cout << hex_bytes << std::endl;
-        k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+        sk.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
         std::cout << shardora::common::Encode::HexEncode(sk.to_bytes()) << std::endl;
     }
     // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
@@ -258,7 +258,7 @@ CipherText PkiIbAgka::Enc(PlainText& plain, EncodeKey& ek) {
       std::cout << " enc e:" << std::endl;
       auto hex_bytes = shardora::common::Encode::HexEncode(e.to_bytes());
       std::cout << hex_bytes << std::endl;
-      k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+      e.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
       std::cout << shardora::common::Encode::HexEncode(e.to_bytes()) << std::endl;
   }
   // calc c1 = g^e
@@ -309,7 +309,7 @@ void PkiIbAgka::agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs) {
         std::cout << i++ << " agreement eta:" << std::endl;
         auto hex_bytes = shardora::common::Encode::HexEncode(eta.to_bytes());
         std::cout << hex_bytes << std::endl;
-        k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+        eta.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
         std::cout << shardora::common::Encode::HexEncode(eta.to_bytes()) << std::endl;
     }
     // r = g^eta
