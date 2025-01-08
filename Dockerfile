@@ -28,4 +28,4 @@ RUN if [ -d "./$SHARD_DB" ]; then \
     fi
 
 # 创建一个默认的命令来查看系统状态
-CMD ["./zjchain"]
+CMD ["./zjchain", "-f", "0", "-g", "0"]
