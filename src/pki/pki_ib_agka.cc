@@ -12,8 +12,11 @@
 #include "fmt/format.h"
 #include "pki/utils.h"
 
-PkiIbAgka::PkiIbAgka(const std::string& secure_param)
-    : pp(secure_param), k_(pp.e) {}
+PkiIbAgka::PkiIbAgka(const std::string& secure_param, const std::string& k, const std::string& g)
+    : pp(secure_param), k_(pp.e) {
+      k_.from_bytes(shardora::common::Encode::HexDecode(k));
+      pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
+  }
 
 // Simulate the protocol
 void PkiIbAgka::Simulate() {
@@ -60,7 +63,7 @@ void PkiIbAgka::Setup() {
 
   // fmt::println("🍬 Master Secret:");
   // randomly select master secret k_
-  k_.set_random();
+  // k_.set_random();
   {
       std::cout << "k_:" << std::endl;
       auto hex_bytes = shardora::common::Encode::HexEncode(k_.to_bytes());
@@ -72,7 +75,7 @@ void PkiIbAgka::Setup() {
 
   // fmt::println("\n🍼 Public Parameter:");
   // get generator g
-  pp.g.set_random();
+  // pp.g.set_random();
   {
       std::cout << "pp.g:" << std::endl;
       auto hex_bytes = shardora::common::Encode::HexEncode(pp.g.to_bytes());

@@ -43,7 +43,7 @@ class PkiIbAgka {
   // Stage9: Test
   void Test(EncodeKey& ek, std::map<int, DecodeKey>& dks);
 
-  explicit PkiIbAgka(const std::string& secure_param);
+  explicit PkiIbAgka(const std::string& secure_param, const std::string& k, const std::string& g);
   ~PkiIbAgka() = default;
 
   PkiIbAgka(PkiIbAgka const&) = delete;
