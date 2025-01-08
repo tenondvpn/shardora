@@ -6,6 +6,8 @@
 #include <ratio>
 #include <vector>
 
+#include "common/encode.h"
+
 #include "fmt/base.h"
 #include "fmt/format.h"
 #include "pki/utils.h"
@@ -59,6 +61,10 @@ void PkiIbAgka::Setup() {
   // fmt::println("🍬 Master Secret:");
   // randomly select master secret k_
   k_.set_random();
+  auto hex_bytes = shardora::common::Encode::HexEncode(k_.to_bytes());
+  std::cout << hex_bytes << std::endl;
+  k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+  std::cout << shardora::common::Encode::HexEncode(k_.to_bytes()) << std::endl;
   // fmt::println("\t- k = {}", byte2string(k_.to_bytes()));
 
   // fmt::println("\n🍼 Public Parameter:");
