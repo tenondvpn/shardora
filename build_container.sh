@@ -20,7 +20,7 @@ fi
 
 sh gen_docker_files.sh $target $no_build
 
-target_lower=echo $target | tr '[:upper:]' '[:lower:]'
+target_lower=$(echo $target | tr '[:upper:]' '[:lower:]')
 image_name="shardora-image-${net_name}-${target_lower}"
 
 echo "Building image ${image_name}"
