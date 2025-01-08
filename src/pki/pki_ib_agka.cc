@@ -20,9 +20,8 @@ using namespace shardora;
 PkiIbAgka::PkiIbAgka(
       const std::string& secure_param, 
       const std::string& k, 
-      const std::string& g, 
-      std::shared_ptr<shardora::protos::PrefixDb> prefix_db)
-      : pp(secure_param), k_(pp.e), prefix_db_(prefix_db) {
+      const std::string& g)
+      : pp(secure_param), k_(pp.e) {
     k_.from_bytes(shardora::common::Encode::HexDecode(k));
     pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
   }

@@ -72,8 +72,7 @@ class PkiIbAgka {
   explicit PkiIbAgka(
     const std::string& secure_param, 
     const std::string& k, 
-    const std::string& g, 
-    std::shared_ptr<shardora::protos::PrefixDb> prefix_db);
+    const std::string& g);
   ~PkiIbAgka() = default;
 
   PkiIbAgka(PkiIbAgka const&) = delete;
@@ -85,5 +84,4 @@ class PkiIbAgka {
   void agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs);
   void ek_gen_omega(std::vector<Msg>& msgs);
   void ek_gen_Q(std::vector<Msg>& msgs);
-  std::shared_ptr<shardora::protos::PrefixDb> prefix_db_;
 };
