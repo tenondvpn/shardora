@@ -6,9 +6,10 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-shard_name_db=$1_db # eg. root shard_3
+shard_name=$1 # eg. root shard_3
 target=$2
 no_build=$3
+shard_db_name="${shard_name}_db"
 
 sh gen_docker_files.sh $target $no_build
 
