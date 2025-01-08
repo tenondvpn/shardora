@@ -138,7 +138,7 @@ link_directories(
 )
 
 # bin/lib
-add_executable(pki ${MAIN_DIR}/pki.cc)
+add_executable(pkicli ${MAIN_DIR}/pki.cc)
 add_executable(zjchain ${MAIN_DIR}/main.cc)
 add_executable(https ${MAIN_DIR}/http_svr.cc)
 add_executable(httpc ${MAIN_DIR}/http_cli.cc)
@@ -185,7 +185,7 @@ set(LINK_ARGS
     gmp
 )
 
-target_link_libraries(pki ${LINK_ARGS})
+target_link_libraries(pkicli ${LINK_ARGS})
 target_link_libraries(blsmain ${LINK_ARGS})
 target_link_libraries(zjchain ${LINK_ARGS})
 target_link_libraries(httpc http common tcmalloc pthread gmp)
