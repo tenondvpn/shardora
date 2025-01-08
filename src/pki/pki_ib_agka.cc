@@ -61,15 +61,25 @@ void PkiIbAgka::Setup() {
   // fmt::println("🍬 Master Secret:");
   // randomly select master secret k_
   k_.set_random();
-  auto hex_bytes = shardora::common::Encode::HexEncode(k_.to_bytes());
-  std::cout << hex_bytes << std::endl;
-  k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
-  std::cout << shardora::common::Encode::HexEncode(k_.to_bytes()) << std::endl;
+  {
+      std::cout << "k_:" << std::endl;
+      auto hex_bytes = shardora::common::Encode::HexEncode(k_.to_bytes());
+      std::cout << hex_bytes << std::endl;
+      k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+      std::cout << shardora::common::Encode::HexEncode(k_.to_bytes()) << std::endl;
+  }
   // fmt::println("\t- k = {}", byte2string(k_.to_bytes()));
 
   // fmt::println("\n🍼 Public Parameter:");
   // get generator g
   pp.g.set_random();
+  {
+      std::cout << "pp.g:" << std::endl;
+      auto hex_bytes = shardora::common::Encode::HexEncode(pp.g.to_bytes());
+      std::cout << hex_bytes << std::endl;
+      k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+      std::cout << shardora::common::Encode::HexEncode(pp.g.to_bytes()) << std::endl;
+  }
   // fmt::println("\t- g = {}", byte2string(pp.g.to_bytes()));
 
   // compute g1 = g^k
@@ -103,6 +113,13 @@ void PkiIbAgka::PkiExtract(const int& n) {
     // sk from G1 randomly
     G1 sk(pp.e);
     sk.set_random();
+    {
+        std::cout << i << " sk:" << std::endl;
+        auto hex_bytes = shardora::common::Encode::HexEncode(sk.to_bytes());
+        std::cout << hex_bytes << std::endl;
+        k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+        std::cout << shardora::common::Encode::HexEncode(sk.to_bytes()) << std::endl;
+    }
     // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
     // pk = e(sk,g);
     G2 pk(pp.e);
@@ -237,6 +254,13 @@ CipherText PkiIbAgka::Enc(PlainText& plain, EncodeKey& ek) {
   //  randomly select e from Zq
   Zq e(pp.e);
   e.set_random();
+  {
+      std::cout << " enc e:" << std::endl;
+      auto hex_bytes = shardora::common::Encode::HexEncode(e.to_bytes());
+      std::cout << hex_bytes << std::endl;
+      k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+      std::cout << shardora::common::Encode::HexEncode(e.to_bytes()) << std::endl;
+  }
   // calc c1 = g^e
   G1 c1(pp.e);
   c1 = pp.g.pow_zn(e);
@@ -275,11 +299,19 @@ PlainText PkiIbAgka::Dec(CipherText& cipher, DecodeKey& dk) {
 void PkiIbAgka::agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs) {
   msgs.reserve(keys.size());
 
+  int i = 0;
   for (auto& key : keys) {
     // fmt::println("🔖 Generate PKI IB Agreement Message {}", key.i);
     // eta from Zq randomly
     Zq eta(pp.e);
     eta.set_random();
+    {
+        std::cout << i++ << " agreement eta:" << std::endl;
+        auto hex_bytes = shardora::common::Encode::HexEncode(eta.to_bytes());
+        std::cout << hex_bytes << std::endl;
+        k_.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
+        std::cout << shardora::common::Encode::HexEncode(eta.to_bytes()) << std::endl;
+    }
     // r = g^eta
     G1 r = pp.g.pow_zn(eta);
     // d_i_j = sk_i * f_j^eta_i
