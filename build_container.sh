@@ -6,7 +6,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-shard_db_name=$1 # eg. root_db shard_3_db
+shard_name_db=$1_db # eg. root shard_3
 target=$2
 no_build=$3
 
