@@ -41,7 +41,8 @@ void PkiIbAgka::Simulate() {
   auto cipher = Enc(txt, ek);
 
   // fmt::println("\n[ Stage8: 📨 Decode Cipher ]\n");
-  Dec(cipher, dks.at(0));
+  auto dec_txt = Dec(cipher, dks.at(0));
+  std::cout << "src: " << txt << ", dec: " << dec_txt << std::endl;
 
   // fmt::println("\n[ Stage9: 🧪 Final Test ]\n");
   Test(ek, dks);
