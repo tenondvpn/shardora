@@ -529,12 +529,12 @@ var sks = [
 ]
 console.log("get id: " + id);
 if (args[0] == 1) {
-    PkiExtract("pkipki", "pkipki", args[2] + ";" + id + ";" + sks[internal.parseInt(args[2])], id);
+    PkiExtract("pkipki", "pkipki", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
     console.log(id);
 }
 
 if (args[0] == 2) {
-    IbExtract("pkipib", "pkipib", args[2] + ";" + id + ";" + sks[internal.parseInt(args[2])], id);
+    IbExtract("pkipib", "pkipib", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
 }
 
 if (args[0] == 3) {
