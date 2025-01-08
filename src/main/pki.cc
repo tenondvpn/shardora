@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     }
 
     int type;
-    parser_arg.Get("i", type);
+    parser_arg.Get("t", type);
     std::cout << "type: " << type << std::endl;
     PkiIbAgka protocol(kTypeA);
     protocol.Simulate();
