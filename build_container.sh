@@ -14,7 +14,7 @@ if [ "$net_id" -eq 2 ]; then
     shard_db_name="root_db"
 	net_name="root"
 else
-	shard_db_name="shard_${net_id}_db"
+	shard_db_name="shard_db_${net_id}"
 	net_name="shard${net_id}"
 fi
 
