@@ -2,7 +2,7 @@
 
 # 检查是否传入了 shard_db_name 参数
 if [ -z "$1" ]; then
-  echo "Error: Missing shard_db_name argument. Please specify the database name (e.g., root_db, shard_3_db)."
+  echo "Error: Missing shard_db_name argument. Please specify the database name (e.g., root, shard_3)."
   exit 1
 fi
 
