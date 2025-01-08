@@ -21,7 +21,7 @@ echo "LOCAL Port: $local_port"
 echo "HTTP Port: $http_port"
 
 # 运行 Docker 容器，并将 IP 和端口号通过环境变量传递给容器
-# docker run --network host -d \
+# docker run -d \
 #   -v ${config_file}:/root/node/conf/zjchain.conf \
 #   -e LOCAL_IP=${local_ip} \
 #   -e LOCAL_PORT=${local_port} \
