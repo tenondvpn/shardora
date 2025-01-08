@@ -14,13 +14,6 @@ RUN yum groupinstall -y "Development Tools" && \
     yum install -y sshpass && \
     yum clean all
 
-# 配置 sysctl 设置
-RUN echo 'net.core.rmem_max=16777216' >> /etc/sysctl.conf && \
-    echo 'net.core.wmem_max=16777216' >> /etc/sysctl.conf && \
-    echo 'net.ipv4.tcp_rmem=4096 87380 16777216' >> /etc/sysctl.conf && \
-    echo 'net.ipv4.tcp_wmem=4096 65536 16777216' >> /etc/sysctl.conf && \
-    sysctl -p
-
 # 设置工作目录
 COPY . /root
 WORKDIR /root/node
