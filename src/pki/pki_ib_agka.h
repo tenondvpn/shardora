@@ -6,6 +6,10 @@
 #include "pki/def.h"
 #include "protos/prefix_db.h"
 
+namespace shardora {
+
+namespace pki {
+
 class PkiIbAgka {
  public:
   PublicParam pp;
@@ -85,3 +89,7 @@ class PkiIbAgka {
   void ek_gen_omega(std::vector<Msg>& msgs);
   void ek_gen_Q(std::vector<Msg>& msgs);
 };
+
+}
+
+}

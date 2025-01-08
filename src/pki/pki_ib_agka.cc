@@ -17,6 +17,10 @@
 
 using namespace shardora;
 
+namespace shardora {
+
+namespace pki {
+
 PkiIbAgka::PkiIbAgka(
       const std::string& secure_param, 
       const std::string& k, 
@@ -693,4 +697,8 @@ void PkiIbAgka::agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs) {
     // generate message
     msgs.emplace_back(key.i, std::move(r), std::move(d_i_j));
   }
+}
+
+}
+
 }
