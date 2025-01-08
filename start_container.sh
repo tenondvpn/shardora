@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # 配置文件路径
-config_file=$1
+image_name=$1
+config_file=$2
 
 if [[ ! -f "$config_file" ]]; then
     echo "Error: Configuration file '$config_file' does not exist."
@@ -26,4 +27,4 @@ docker run -d \
   -e LOCAL_PORT=$local_port \
   -e HTTP_PORT=$http_port \
   -p $TCP_PORT:$TCP_PORT \
-  shardora-image  # 替换为你的 Docker 镜像名称
+  ${image_name}  # 替换为你的 Docker 镜像名称
