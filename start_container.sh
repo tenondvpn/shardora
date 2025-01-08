@@ -22,10 +22,10 @@ echo "HTTP Port: $http_port"
 
 # 运行 Docker 容器，并将 IP 和端口号通过环境变量传递给容器
 docker run -d \
-  -v $config_file:/root/node/conf/zjchain.conf \
-  -e LOCAL_IP=$local_ip \
-  -e LOCAL_PORT=$local_port \
-  -e HTTP_PORT=$http_port \
-  -p $http_port:$http_port \
-  -p $tcp_port:$tcp_port \
+  -v ${config_file}:/root/node/conf/zjchain.conf \
+  -e LOCAL_IP=${local_ip} \
+  -e LOCAL_PORT=${local_port} \
+  -e HTTP_PORT=${http_port} \
+  -p ${http_port}:${http_port} \
+  -p ${tcp_port}:${tcp_port} \
   ${image_name}  # 替换为你的 Docker 镜像名称
