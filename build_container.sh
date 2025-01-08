@@ -13,7 +13,10 @@ shard_db_name="${shard_name}_db"
 
 sh gen_docker_files.sh $target $no_build
 
-docker build --build-arg SHARD_DB=$shard_db_name -t shardora-image-$target-$shard_db_name:1.0 ./docker_files
+target_lower=echo $target | tr '[:upper:]' '[:lower:]'
+image_name="shardora-image-${target_lower}-${shard_name}"
+
+docker build --build-arg SHARD_DB=$shard_db_name -t ${image_name}:1.0 ./docker_files
 
 # 检查构建是否成功
 if [ $? -eq 0 ]; then
