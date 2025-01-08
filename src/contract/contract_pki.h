@@ -4,7 +4,6 @@
 
 #include "common/tick.h"
 #include "contract/contract_interface.h"
-#include "cpppbc/PBC.h"
 #include "db/db.h"
 #include "pki/pki_ib_agka.h"
 
