@@ -391,27 +391,32 @@ int PkiIbAgka::DecKeyGen(
         const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
-    ZJC_DEBUG("success dec key gen: %s", value.c_str());
+    ZJC_DEBUG("called dec key gen %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 3) {
+        ZJC_DEBUG("line count error: %d", lines.Count());
         return 1;
     }
 
     int32_t pki_count = 0;
     if (!common::StringUtil::ToInt32(lines[0], &pki_count)) {
+        ZJC_DEBUG("pki_count count error: %s", lines[0]);
         return 1;
     }
 
     int32_t ib_count = 0;
     if (!common::StringUtil::ToInt32(lines[1], &ib_count)) {
+        ZJC_DEBUG("ib_count count error: %s", lines[1]);
         return 1;
     }
 
     if (pki_count < 3 || pki_count >= 1024) {
+        ZJC_DEBUG("pki_count count error: %d", pki_count);
         return 1;
     }
 
     if (ib_count < 2 || ib_count >= 1024) {
+        ZJC_DEBUG("ib_count count error: %d", ib_count);
         return 1;
     }
 
@@ -420,30 +425,38 @@ int PkiIbAgka::DecKeyGen(
       std::string tmp_key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
       std::string val;
       if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+          ZJC_DEBUG("get key value error from: %s, tmp key: %s", 
+            common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
           return 1;
       }
 
+      ZJC_DEBUG("success get %s, %s", tmp_key.c_str(), val.c_str());
       auto val_splits = common::Split<>(val.c_str(), ',');
       G1 sk(pp.e);
       sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
       G2 pk(pp.e);
-      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
       pki_keys_.emplace_back(i, std::move(pk), std::move(sk));
+      ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
     }
 
     for (int32_t i = 0; i < ib_count; ++i) {
-      std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
+      std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(pki_count + i);
       std::string val;
       if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+          ZJC_DEBUG("get key value error from: %s, tmp key: %s", 
+              common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
           return 1;
       }
 
+      ZJC_DEBUG("success get %s, %s", tmp_key.c_str(), val.c_str());
       auto val_splits = common::Split<>(val.c_str(), ',');
       G1 sk(pp.e);
       sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
       G2 pk(pp.e);
-      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
       ib_keys_.emplace_back(pki_count + i, std::move(pk), std::move(sk));
+      ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
     }
 
     for (const auto& key : pki_keys_) {
@@ -455,6 +468,7 @@ int PkiIbAgka::DecKeyGen(
       G1 f_j = pp.H2(key.i);
       j_map_.insert(std::make_pair(key.i, std::move(f_j)));
     }
+
     // PKI Agreement
     agreement(pki_keys_, pki_msgs_);
     // IB Agreement
@@ -496,7 +510,7 @@ int PkiIbAgka::DecKeyGen(
         std::string tmp_key = std::string("cpki_decode_key_") + pki_id + std::to_string(iter->first);
         std::string tmp_value = shardora::common::Encode::HexEncode(iter->second.d.to_bytes());
         param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-        ZJC_DEBUG("success dec key gen key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
+        ZJC_DEBUG("success dec key gen key: %s, index: %d, value: %s", tmp_key.c_str(), iter->first, tmp_value.c_str());
     }
 
     return 0;
