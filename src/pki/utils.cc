@@ -1,4 +1,8 @@
-#include "utils.hh"
+#include "pki/utils.h"
+
+namespace shardora {
+
+namespace pki {
 
 std::string byte2string(const std::string& bytes) {
   std::string result;
@@ -12,7 +16,7 @@ std::string byte2string(const std::string& bytes) {
 
 std::string xor_strings(const std::string& str1, const std::string& str2) {
   if (str1.empty() || str2.empty()) {
-    throw std::invalid_argument("Input strings cannot be empty");
+    return "";
   }
 
   std::string result;
@@ -26,4 +30,8 @@ std::string xor_strings(const std::string& str1, const std::string& str2) {
   }
 
   return result;
+}
+
+}
+
 }

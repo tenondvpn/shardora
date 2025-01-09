@@ -54,7 +54,7 @@ class ElementWrapper {
   // Shortcut for the type of the current template instatiation.
   typedef ElementWrapper<init, Derived> MyType;
 
- protected:
+ public:
   // Only used in very special cases, inits element same as other but doesn't
   // copy the value. Used in some operators.
   ElementWrapper(element_t e) {
@@ -264,7 +264,7 @@ class ElementWrapper {
  * integers and mpz data types. Can also be used a pow_zn exponents.
  */
 class ZrElement : public ElementWrapper<element_init_Zr, ZrElement> {
- protected:
+ public:
   // Needed so that operators in ElementWrapper can do partial constructions of
   // this derived class, without defining operators here.
   friend class ElementWrapper<element_init_Zr, ZrElement>;
@@ -299,7 +299,7 @@ namespace {
  */
 template <__element_initializer_t init, class Derived>
 class GElementBase : public ElementWrapper<init, Derived> {
- protected:
+ public:
   typedef ElementWrapper<init, Derived> MyWrapper;
   // Needed so that operators in ElementWrapper can do partial constructions of
   // this derived class, without defining operators here.
@@ -361,7 +361,7 @@ class GElementBase : public ElementWrapper<init, Derived> {
 
 #define __DEFINE_ELEMENT_CLASS(name, init)                   \
 class name : public GElementBase<init, name> {               \
- protected:                                                  \
+ public:                                                  \
   friend class ElementWrapper<init, name>;                   \
   friend class GElementBase<init, name>;                     \
   name(element_t e) : GElementBase(e) {}                     \
@@ -384,7 +384,7 @@ class Pairing {
   template <__element_initializer_t init, class Derived>
   friend class ElementWrapper;
 
- private:
+ public:
   // Just like elements, this needs to be mutable as PBC doesn't use const.
   mutable pairing_t pairing_;
 

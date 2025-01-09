@@ -6,6 +6,10 @@
 #include "pbc/pbc.h"
 #include "pbc/pbcxx.h"
 
+namespace shardora {
+
+namespace pki {
+
 using G1 = pbc::G1Element;  // G1
 using G2 = pbc::GTElement;  // G2
 using Zq = pbc::ZrElement;
@@ -75,3 +79,7 @@ struct DecodeKey {
 
   DecodeKey(int i, G1&& d) : i(i), d(std::move(d)) {};
 };
+
+}
+
+}

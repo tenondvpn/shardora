@@ -2,7 +2,13 @@
 
 #include <fmt/base.h>
 
-#include "def.hh"
+#include "contract/call_parameters.h"
+#include "pki/def.h"
+#include "protos/prefix_db.h"
+
+namespace shardora {
+
+namespace pki {
 
 class PkiIbAgka {
  public:
@@ -28,14 +34,38 @@ class PkiIbAgka {
   void Setup();
   // Stage2: PKI Extrect
   void PkiExtract(const int& n = kPKIn);
+  int PkiExtract(
+        const shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+  int IbExtract(
+        const shardora::contract::CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
   // Stage3: IB Extrect
   void IbExtract(const IdList& ids, const int& n = kIBn);
   // Stage4: PKI IB Agreement
   void PkiIbAgreement();
+  int EncKeyGen(
+      const shardora::contract::CallParameters& param, 
+      const std::string& key, 
+      const std::string& value);
+  int DecKeyGen(
+      const shardora::contract::CallParameters& param, 
+      const std::string& key, 
+      const std::string& value);
   // Stage5: Encode Key Gen
   EncodeKey EncKeyGen();
   // Stage6: Encode Key Gen
   std::map<int, DecodeKey> DecKeyGen();
+  int Enc(
+      const shardora::contract::CallParameters& param, 
+      const std::string& key, 
+      const std::string& value);
+  int Dec(
+      const shardora::contract::CallParameters& param, 
+      const std::string& key, 
+      const std::string& value);
   // Stage7: Encode
   CipherText Enc(PlainText& plain, EncodeKey& ek);
   // Stage8: Decode
@@ -43,7 +73,10 @@ class PkiIbAgka {
   // Stage9: Test
   void Test(EncodeKey& ek, std::map<int, DecodeKey>& dks);
 
-  explicit PkiIbAgka(const std::string& secure_param);
+  explicit PkiIbAgka(
+    const std::string& secure_param, 
+    const std::string& k, 
+    const std::string& g);
   ~PkiIbAgka() = default;
 
   PkiIbAgka(PkiIbAgka const&) = delete;
@@ -56,3 +89,7 @@ class PkiIbAgka {
   void ek_gen_omega(std::vector<Msg>& msgs);
   void ek_gen_Q(std::vector<Msg>& msgs);
 };
+
+}
+
+}
