@@ -182,7 +182,7 @@ int PkiIbAgka::IbExtract(
         const std::string& value) {
     ZJC_DEBUG("ib extract called value: %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
-    if (lines.Count() != 4) {
+    if (lines.Count() != 3) {
       return 1;
     }
 
