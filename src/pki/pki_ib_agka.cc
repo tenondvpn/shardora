@@ -246,24 +246,29 @@ int PkiIbAgka::EncKeyGen(
     ZJC_DEBUG("called enc key gen %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 3) {
+        ZJC_DEBUG("line count error: %d", lines.Count());
         return 1;
     }
 
     int32_t pki_count = 0;
     if (!common::StringUtil::ToInt32(lines[0], &pki_count)) {
+        ZJC_DEBUG("pki_count count error: %s", lines[0]);
         return 1;
     }
 
     int32_t ib_count = 0;
     if (!common::StringUtil::ToInt32(lines[1], &ib_count)) {
+        ZJC_DEBUG("ib_count count error: %s", lines[1]);
         return 1;
     }
 
     if (pki_count < 3 || pki_count >= 1024) {
+        ZJC_DEBUG("pki_count count error: %d", pki_count);
         return 1;
     }
 
     if (ib_count < 2 || ib_count >= 1024) {
+        ZJC_DEBUG("ib_count count error: %d", ib_count);
         return 1;
     }
 
@@ -272,6 +277,8 @@ int PkiIbAgka::EncKeyGen(
       std::string tmp_key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
       std::string val;
       if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+          ZJC_DEBUG("get key value error from: %s, tmp key: %s", 
+            common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
           return 1;
       }
 
@@ -284,9 +291,11 @@ int PkiIbAgka::EncKeyGen(
     }
 
     for (int32_t i = 0; i < ib_count; ++i) {
-      std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
+      std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(pki_count + i);
       std::string val;
       if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+          ZJC_DEBUG("get key value error from: %s, tmp key: %s", 
+              common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
           return 1;
       }
 
