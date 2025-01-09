@@ -588,7 +588,8 @@ int PkiIbAgka::Enc(
 
     auto ek = EncodeKey{.omega = std::move(omega), .Q = std::move(Q)};
     Zq e(pp.e);
-    e.set_random();
+    e.from_bytes(common::Encode::HexDecode("097e94b77dd45abc7a37afeb442fe8ca6e6d0fc3"));
+    // e.set_random();
     {
         std::cout << " enc e:" << std::endl;
         auto hex_bytes = shardora::common::Encode::HexEncode(e.to_bytes());
