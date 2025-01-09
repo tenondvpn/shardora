@@ -1,31 +1,16 @@
 #!/bin/bash
 
-# 检查是否传入了 net_id 参数
-if [ -z "$1" ]; then
-  echo "Error: Missing shard_db_name argument. Please specify the database name (e.g., root, shard_3)."
-  exit 1
-fi
-
-net_id=$1 # eg. 2, 3, 4
-target=$2
-no_build=$3
-
-if [ "$net_id" -eq 2 ]; then
-    shard_db_name="root_db"
-	net_name="root"
-else
-	shard_db_name="shard_db_${net_id}"
-	net_name="shard${net_id}"
-fi
+target=$1
+no_build=$2
 
 sh gen_docker_files.sh $target $no_build
 
 target_lower=$(echo $target | tr '[:upper:]' '[:lower:]')
-image_name="shardora-image-${net_name}-${target_lower}"
+image_name="shardora-image-${target_lower}"
 
 echo "Building image ${image_name}"
 
-docker build --build-arg SHARD_DB=$shard_db_name -t ${image_name} ./docker_files
+docker build -t ${image_name} ./docker_files
 
 # 检查构建是否成功
 if [ $? -eq 0 ]; then
