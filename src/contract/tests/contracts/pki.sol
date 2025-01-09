@@ -78,6 +78,14 @@ contract Pki {
         emit DebugEvent(14);
     }
 
+    function Dec(bytes32 id, bytes memory params) public {
+        emit DebugEvent(15);
+        require(pki_map[id].exists);
+        emit DebugEvent(16);
+        bytes32 res = ripemd160(params);
+        emit DebugEvent(17);
+    }
+
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
         uint len = 0;
         for (uint i = 0; i < count; i++) {
