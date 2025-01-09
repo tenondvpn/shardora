@@ -510,7 +510,7 @@ int PkiIbAgka::DecKeyGen(
         std::string tmp_key = std::string("cpki_decode_key_") + pki_id + std::to_string(iter->first);
         std::string tmp_value = shardora::common::Encode::HexEncode(iter->second.d.to_bytes());
         param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-        ZJC_DEBUG("success dec key gen index: %d, key: %s, value: %s", tmp_key.c_str(), iter->first, tmp_value.c_str());
+        ZJC_DEBUG("success dec key gen index: %d, key: %s, value: %s", iter->first, tmp_key.c_str(), tmp_value.c_str());
     }
 
     return 0;
