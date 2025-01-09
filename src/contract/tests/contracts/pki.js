@@ -565,7 +565,7 @@ if (args[0] == 4) {
 }
 
 if (args[0] == 5) {
-    Enc("pkienc", "pkienc", id + ";" + web3.utils.toHex("test"), id);
+    Enc("pkienc", "pkienc", id + ";" + args[2], id);
 }
 
 if (args[0] == 6) {
