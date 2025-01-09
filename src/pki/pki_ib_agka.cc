@@ -698,7 +698,8 @@ int PkiIbAgka::Dec(
     G2 pair = pair1 * pair2;
     std::string plain = xor_strings(c3, pp.H3(pair));
     std::cout << plain << std::endl;
-    ZJC_DEBUG("success dec plain: %s", plain.c_str());
+    std::string tkey = std::string("cpki_enc_data_") + pki_id;
+    ZJC_DEBUG("success dec index: %d, pki id: %s, plain: %s", index, pki_id.c_str(), plain.c_str());
     return 0;
 }
 
