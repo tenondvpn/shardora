@@ -282,12 +282,14 @@ int PkiIbAgka::EncKeyGen(
           return 1;
       }
 
+      ZJC_DEBUG("success get %s, %s", tmp_key.c_str(), val.c_str());
       auto val_splits = common::Split<>(val.c_str(), ',');
       G1 sk(pp.e);
       sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
       G2 pk(pp.e);
-      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
       pki_keys_.emplace_back(i, std::move(pk), std::move(sk));
+      ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
     }
 
     for (int32_t i = 0; i < ib_count; ++i) {
@@ -299,12 +301,14 @@ int PkiIbAgka::EncKeyGen(
           return 1;
       }
 
+      ZJC_DEBUG("success get %s, %s", tmp_key.c_str(), val.c_str());
       auto val_splits = common::Split<>(val.c_str(), ',');
       G1 sk(pp.e);
       sk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
       G2 pk(pp.e);
-      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[0]));
+      pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
       ib_keys_.emplace_back(pki_count + i, std::move(pk), std::move(sk));
+      ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
     }
 
     for (const auto& key : pki_keys_) {
@@ -706,19 +710,11 @@ PlainText PkiIbAgka::Dec(CipherText& cipher, DecodeKey& dk) {
 void PkiIbAgka::agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs) {
   msgs.reserve(keys.size());
 
-  int i = 0;
   for (auto& key : keys) {
     // fmt::println("🔖 Generate PKI IB Agreement Message {}", key.i);
     // eta from Zq randomly
     Zq eta(pp.e);
     eta.from_bytes("1af65845814a5553d9bc9c7354bf52c95fd94c2d");
-    {
-        std::cout << i++ << " agreement eta:" << std::endl;
-        auto hex_bytes = shardora::common::Encode::HexEncode(eta.to_bytes());
-        std::cout << hex_bytes << std::endl;
-        eta.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
-        std::cout << shardora::common::Encode::HexEncode(eta.to_bytes()) << std::endl;
-    }
     // r = g^eta
     G1 r = pp.g.pow_zn(eta);
     // d_i_j = sk_i * f_j^eta_i
