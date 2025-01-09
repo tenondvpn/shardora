@@ -619,8 +619,8 @@ int PkiIbAgka::Enc(
       common::Encode::HexEncode(c3).c_str());
 
     std::string tkey = std::string("cpki_enc_data_") + pki_id;
-    std::string tvalue = shardora::common::Encode::HexEncode(c1.to_bytes()) + "," +
-        shardora::common::Encode::HexEncode(c2.to_bytes()) + "," +
+    std::string tvalue = shardora::common::Encode::HexEncode(c1.to_bytes()) + ";" +
+        shardora::common::Encode::HexEncode(c2.to_bytes()) + ";" +
         shardora::common::Encode::HexEncode(c3);
     param.zjc_host->SaveKeyValue(param.from, tkey, tvalue);
     ZJC_DEBUG("success enc key: %s, value: %s", tkey.c_str(), tvalue.c_str());
@@ -671,7 +671,7 @@ int PkiIbAgka::Dec(
     c2.from_bytes(common::Encode::HexDecode(lines[2]));
     ByteStream c3 = common::Encode::HexDecode(lines[3]);
     G1 di(pp.e);
-    di.from_bytes(common::Encode::HexDecode(lines[5]));
+    di.from_bytes(common::Encode::HexDecode(lines[4]));
     int32_t index = 0;
     if (!common::StringUtil::ToInt32(lines[5], &index)) {
         return 1;
