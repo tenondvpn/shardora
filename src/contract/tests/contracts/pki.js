@@ -60,14 +60,14 @@ function PostCode(data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                console.log('Response: ' + chunk + ", " + data);
+                //console.log('Response: ' + chunk + ", " + data);
             } else {
-                console.log('Response: ' + chunk + ", " + data);
+                //console.log('Response: ' + chunk + ", " + data);
             }
         })
     });
 
-    //console.log("req data: " + post_data);
+    ////console.log("req data: " + post_data);
     post_req.write(post_data);
     post_req.end();
 }
@@ -134,9 +134,9 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
     var isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
-    console.log("gid: " + gid.toString(16))
+    //console.log("gid: " + gid.toString(16))
     if (!isValidSig) {
-        console.log('signature transaction failed.')
+        //console.log('signature transaction failed.')
         return;
     }
 
@@ -204,7 +204,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var sigS = Secp256k1.uint256(sig.s, 16)
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
-    console.log("gid: " + gid.toString(16))
+    //console.log("gid: " + gid.toString(16))
     return {
         'gid': gid,
         'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
@@ -240,7 +240,7 @@ function new_contract(from_str_prikey, contract_bytes) {
 }
 
 function call_contract(str_prikey, input, amount) {
-    console.log("contract_address: " + contract_address);
+    //console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
         str_prikey,
@@ -277,9 +277,9 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
+            //console.log('Response: ' + chunk);
             var json_res = JSON.parse(chunk)
-            // console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
+            // //console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
         })
     });
 
@@ -334,9 +334,9 @@ async function SetManagerPrepayment(contract_address) {
                 break;
             }
 
-            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
         } catch (error) {
-            console.log(error);
+            //console.log(error);
         }
 
         ++try_times;
@@ -362,7 +362,7 @@ function InitC2cEnv(key, value) {
         }
 
         var out_lines = stdout.split('\n');
-        console.log(`solc bin codes: ${out_lines[3]}`);
+        //console.log(`solc bin codes: ${out_lines[3]}`);
         {
             // 转账到管理账户，创建合约
             {
@@ -378,13 +378,13 @@ function InitC2cEnv(key, value) {
                     // wait for exec to complete
                         const {stdout, stderr} = await execPromise(contract_cmd);
                         if (stdout.trim() == contract_address) {
-                            console.log(`create contract success ${stdout}`);
+                            //console.log(`create contract success ${stdout}`);
                             break;
                         }
                             
-                        console.log(`create contract failed ${stderr}`);
+                        //console.log(`create contract failed ${stderr}`);
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                     }
 
                     ++try_times;
@@ -418,7 +418,7 @@ function PkiExtract(prev, key, value, id) {
         ['uint256', 'uint256', 'bytes32', 'bytes'], 
         [pki_count, ib_count, '0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('PkiExtract(uint256,uint256,bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -437,7 +437,7 @@ function IbExtract(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('IbExtract(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -455,7 +455,7 @@ function EncKeyGen(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('EncKeyGen(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -473,7 +473,7 @@ function DecKeyGen(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('DecKeyGen(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -491,7 +491,7 @@ function Enc(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('Enc(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -509,7 +509,7 @@ function Dec(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('Dec(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -517,7 +517,7 @@ function Dec(prev, key, value, id) {
 
 function GetAllArsJson() {
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllArsJson()');
-    console.log("GetAllArsJson 0: " + addParamCode.substring(2));
+    //console.log("GetAllArsJson 0: " + addParamCode.substring(2));
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2));
@@ -526,7 +526,7 @@ function GetAllArsJson() {
 const args = process.argv.slice(2)
 if (process.env.contract_address != null) {
     contract_address = process.env.contract_address;
-    console.log("use env contract address: " + contract_address)
+    //console.log("use env contract address: " + contract_address)
 }
 
 // SetUp：初始化算法，需要用到pbc库
@@ -545,10 +545,11 @@ var sks = [
     "1b3cf8c37ce6da0bda5fc859e4a34edf380457480d18a150315c84cc6550336b35db7eb8047ce54159297d609e47e2a061804c66544e496642a25100011a7c100d863de5ad7a892cc9572f3d3cf878940de1825e51ea157597bc4102c845c605876118e9d23d9659cac93904394fabc0e9e8bdff8a06daaf0e276547194d6866",
     "9df49ef65b11fbb8ce0d8e942fe56c0b840edf24872865dc8d799cd298a08d9cfbc2038e27f68e124b5a95da823253df7f004c95b5015dd428d1c53363a2368742109837308076d3fcc7bd78ac4ce87239db45dac7669de47b2490d3869b8b1c0fc6fd4540b76fcc2b69b994a6671781f38297209823e81cd80b533bad8ce81f",
 ]
-console.log("get id: " + id);
+
+console.log(id);
 if (args[0] == 1) {
     PkiExtract("pkipki", "pkipki", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
-    console.log(id);
+    //console.log(id);
 }
 
 if (args[0] == 2) {
@@ -564,7 +565,7 @@ if (args[0] == 4) {
 }
 
 if (args[0] == 5) {
-    Enc("pkienc", "pkienc", id + ";" + web3.utils.toHex("test"), id);
+    Enc("pkienc", "pkienc", id + ";" + args[2], id);
 }
 
 if (args[0] == 6) {

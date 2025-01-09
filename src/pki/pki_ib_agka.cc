@@ -144,7 +144,7 @@ int PkiIbAgka::PkiExtract(
   std::string tmp_key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
   std::string tmp_value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
   param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-  ZJC_DEBUG("success pki extract key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
+  ZJC_DEBUG("success pki extract index: %d key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
   return 0;
 }
 
@@ -206,7 +206,7 @@ int PkiIbAgka::IbExtract(
     std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
     std::string tmp_value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-    ZJC_DEBUG("success ib extract key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
+    ZJC_DEBUG("success ib extract index: %d, key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
     return 0;
 }
 
@@ -510,7 +510,7 @@ int PkiIbAgka::DecKeyGen(
         std::string tmp_key = std::string("cpki_decode_key_") + pki_id + std::to_string(iter->first);
         std::string tmp_value = shardora::common::Encode::HexEncode(iter->second.d.to_bytes());
         param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-        ZJC_DEBUG("success dec key gen key: %s, index: %d, value: %s", tmp_key.c_str(), iter->first, tmp_value.c_str());
+        ZJC_DEBUG("success dec key gen index: %d, key: %s, value: %s", iter->first, tmp_key.c_str(), tmp_value.c_str());
     }
 
     return 0;
@@ -698,7 +698,8 @@ int PkiIbAgka::Dec(
     G2 pair = pair1 * pair2;
     std::string plain = xor_strings(c3, pp.H3(pair));
     std::cout << plain << std::endl;
-    ZJC_DEBUG("success dec plain: %s", plain.c_str());
+    std::string tkey = std::string("cpki_enc_data_") + pki_id;
+    ZJC_DEBUG("success dec index: %d, pki id: %s, plain: %s", index, pki_id.c_str(), plain.c_str());
     return 0;
 }
 
