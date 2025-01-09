@@ -144,7 +144,7 @@ int PkiIbAgka::PkiExtract(
   std::string tmp_key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
   std::string tmp_value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
   param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-  ZJC_DEBUG("success pki extract key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
+  ZJC_DEBUG("success pki extract index: %d key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
   return 0;
 }
 
@@ -206,7 +206,7 @@ int PkiIbAgka::IbExtract(
     std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
     std::string tmp_value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
-    ZJC_DEBUG("success ib extract key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
+    ZJC_DEBUG("success ib extract index: %d, key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
     return 0;
 }
 
