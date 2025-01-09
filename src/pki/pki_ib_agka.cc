@@ -320,6 +320,7 @@ int PkiIbAgka::EncKeyGen(
       G1 f_j = pp.H2(key.i);
       j_map_.insert(std::make_pair(key.i, std::move(f_j)));
     }
+
     // PKI Agreement
     agreement(pki_keys_, pki_msgs_);
     // IB Agreement
@@ -714,7 +715,7 @@ void PkiIbAgka::agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs) {
     // fmt::println("🔖 Generate PKI IB Agreement Message {}", key.i);
     // eta from Zq randomly
     Zq eta(pp.e);
-    eta.from_bytes("1af65845814a5553d9bc9c7354bf52c95fd94c2d");
+    eta.from_bytes(common::Encode::HexDecode("1af65845814a5553d9bc9c7354bf52c95fd94c2d"));
     // r = g^eta
     G1 r = pp.g.pow_zn(eta);
     // d_i_j = sk_i * f_j^eta_i
