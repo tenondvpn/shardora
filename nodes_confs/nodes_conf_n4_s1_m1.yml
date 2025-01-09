@@ -2,37 +2,37 @@ nodes:
 - http_port: 22001
   name: r1
   net: 2
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 12001
 - http_port: 22002
   name: r2
   net: 2
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 12002
 - http_port: 22003
   name: r3
   net: 2
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 12003
 - http_port: 23001
   name: s3_1
   net: 3
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 13001
 - http_port: 23002
   name: s3_2
   net: 3
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 13002
 - http_port: 23003
   name: s3_3
   net: 3
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 13003
 - http_port: 23004
   name: s3_4
   net: 3
-  server: 192.168.0.2
+  server: 127.0.0.1
   tcp_port: 13004
 account_sks:
   3:

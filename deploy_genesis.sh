@@ -3,7 +3,7 @@
 # 修改配置文件
 # 确保服务器安装了 sshpass
 echo "==== STEP1: START DEPLOY ===="
-server0=192.168.0.2
+server0=127.0.0.1
 target=$1
 no_build=$2
 
@@ -12,7 +12,7 @@ ps -ef | grep zjchain | grep root | awk -F' ' '{print $2}' | xargs kill -9
 
 echo "[$server0]"
 sh ./build_genesis.sh $target $no_build
-cd /root && sh -x fetch.sh 127.0.0.1 ${server0} 'Xf4aGbTaf!' '/root' r1 r2 r3 s3_1 s3_2 s3_3 s3_4
+cd /root && sh -x fetch.sh 127.0.0.1 ${server0} '' '/root' r1 r2 r3 s3_1 s3_2 s3_3 s3_4
 echo "==== 同步中继服务器 ====" 
 wait
 
