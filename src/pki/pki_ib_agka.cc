@@ -711,7 +711,7 @@ void PkiIbAgka::agreement(std::vector<KeyPair>& keys, std::vector<Msg>& msgs) {
     // fmt::println("🔖 Generate PKI IB Agreement Message {}", key.i);
     // eta from Zq randomly
     Zq eta(pp.e);
-    eta.set_random();
+    eta.from_bytes("1af65845814a5553d9bc9c7354bf52c95fd94c2d");
     {
         std::cout << i++ << " agreement eta:" << std::endl;
         auto hex_bytes = shardora::common::Encode::HexEncode(eta.to_bytes());
