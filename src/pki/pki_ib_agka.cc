@@ -589,25 +589,30 @@ int PkiIbAgka::Enc(
     auto ek = EncodeKey{.omega = std::move(omega), .Q = std::move(Q)};
     Zq e(pp.e);
     e.from_bytes(common::Encode::HexDecode("097e94b77dd45abc7a37afeb442fe8ca6e6d0fc3"));
-    // e.set_random();
-    {
-        std::cout << " enc e:" << std::endl;
-        auto hex_bytes = shardora::common::Encode::HexEncode(e.to_bytes());
-        std::cout << hex_bytes << std::endl;
-        e.from_bytes(shardora::common::Encode::HexDecode(hex_bytes));
-        std::cout << shardora::common::Encode::HexEncode(e.to_bytes()) << std::endl;
-    }
     // calc c1 = g^e
     G1 c1(pp.e);
     c1 = pp.g.pow_zn(e);
+    ZJC_DEBUG("enc ppg: %s, c1: %s", 
+      common::Encode::HexEncode(pp.g.to_bytes()).c_str(), 
+      common::Encode::HexEncode(c1.to_bytes()).c_str());
+
     // calc c1 = w^e
     G1 c2(pp.e);
     c2 = ek.omega.pow_zn(e);
+    ZJC_DEBUG("enc  ek.omega: %s, c2: %s", 
+      common::Encode::HexEncode(ek.omega.to_bytes()).c_str(), 
+      common::Encode::HexEncode(c2.to_bytes()).c_str());
     // calc c3 = m + H3(Qe)
     ByteStream c3;
     G2 tmp1 = ek.Q.pow_zn(e);
     ByteStream tmp2 = pp.H3(tmp1);
     c3 = xor_strings(plain, tmp2);
+    ZJC_DEBUG("enc  ek.q: %s, tmp1: %s, tmp2: %s, c3: %s", 
+      common::Encode::HexEncode(ek.Q.to_bytes()).c_str(), 
+      common::Encode::HexEncode(tmp1.to_bytes()).c_str(), 
+      common::Encode::HexEncode(tmp2).c_str(), 
+      common::Encode::HexEncode(c3).c_str());
+
     std::string tkey = std::string("cpki_enc_data_") + pki_id;
     std::string tvalue = shardora::common::Encode::HexEncode(c1.to_bytes()) + "," +
         shardora::common::Encode::HexEncode(c2.to_bytes()) + "," +
