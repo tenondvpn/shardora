@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "common/encode.h"
+#include "common/log.h"
 #include "common/split.h"
 #include "common/string_utils.h"
 
@@ -123,6 +124,7 @@ int PkiIbAgka::PkiExtract(
     const shardora::contract::CallParameters& param, 
     const std::string& in_key, 
     const std::string& value) {
+  ZJC_DEBUG("pki extract called value: %s", value.c_str());
   auto lines = common::Split<>(value.c_str(), ';');
   if (lines.Count() != 3) {
     return 1;
@@ -142,6 +144,7 @@ int PkiIbAgka::PkiExtract(
   std::string tmp_key = std::string("cpki_pki_extract_") + pki_id + std::to_string(i);
   std::string tmp_value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
   param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+  ZJC_DEBUG("success pki extract key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
   return 0;
 }
 
@@ -177,6 +180,7 @@ int PkiIbAgka::IbExtract(
         const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
+    ZJC_DEBUG("ib extract called value: %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 4) {
       return 1;
@@ -202,6 +206,7 @@ int PkiIbAgka::IbExtract(
     std::string tmp_key = std::string("cpki_ib_extract_") + pki_id + std::to_string(i);
     std::string tmp_value = sk_str + "," + shardora::common::Encode::HexEncode(pk.to_bytes());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+    ZJC_DEBUG("success ib extract key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
     return 0;
 }
 
@@ -238,6 +243,7 @@ int PkiIbAgka::EncKeyGen(
         const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
+    ZJC_DEBUG("called enc key gen %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 3) {
         return 1;
@@ -325,9 +331,9 @@ int PkiIbAgka::EncKeyGen(
     std::string tmp_value = shardora::common::Encode::HexEncode(omega.to_bytes()) + "," + 
       shardora::common::Encode::HexEncode(Q.to_bytes());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+    ZJC_DEBUG("success enc key gen key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
     return 0;
 }
-
 
 void PkiIbAgka::PkiIbAgreement() {
   // generate j -> H2(j)
@@ -371,6 +377,7 @@ int PkiIbAgka::DecKeyGen(
         const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
+    ZJC_DEBUG("success dec key gen: %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 3) {
         return 1;
@@ -475,6 +482,7 @@ int PkiIbAgka::DecKeyGen(
         std::string tmp_key = std::string("cpki_decode_key_") + pki_id + std::to_string(iter->first);
         std::string tmp_value = shardora::common::Encode::HexEncode(iter->second.d.to_bytes());
         param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+        ZJC_DEBUG("success dec key gen key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
     }
 
     return 0;
@@ -545,6 +553,7 @@ int PkiIbAgka::Enc(
         const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
+    ZJC_DEBUG("success enc: %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
         return 1;
@@ -594,6 +603,7 @@ int PkiIbAgka::Enc(
         shardora::common::Encode::HexEncode(c2.to_bytes()) + "," +
         shardora::common::Encode::HexEncode(c3);
     param.zjc_host->SaveKeyValue(param.from, tkey, tvalue);
+    ZJC_DEBUG("success enc key: %s, value: %s", tkey.c_str(), tvalue.c_str());
     return 0;      
 }
 
@@ -628,6 +638,7 @@ int PkiIbAgka::Dec(
         const shardora::contract::CallParameters& param, 
         const std::string& in_key, 
         const std::string& value) {
+    ZJC_DEBUG("success called dec: %s", value.c_str());
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 6) {
         return 1;
@@ -653,6 +664,7 @@ int PkiIbAgka::Dec(
     G2 pair = pair1 * pair2;
     std::string plain = xor_strings(c3, pp.H3(pair));
     std::cout << plain << std::endl;
+    ZJC_DEBUG("success dec plain: %s", plain.c_str());
     return 0;
 }
 
