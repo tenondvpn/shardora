@@ -263,7 +263,7 @@ int PkiIbAgka::EncKeyGen(
         return 1;
     }
 
-    if (ib_count < 3 || ib_count >= 1024) {
+    if (ib_count < 2 || ib_count >= 1024) {
         return 1;
     }
 
