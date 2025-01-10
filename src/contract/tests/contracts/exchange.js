@@ -404,6 +404,7 @@ function CreateNewItem(hash, info, price, start, end) {
         ['bytes32', 'bytes', 'uint256', 'uint256', 'uint256'], 
         [hash, info, price, start, end]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes,uint256,uint256,uint256)');
+    SetManagerPrepayment("611cf0f0a69ef9c74ef36d2e0892280dc4494fe5");
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
