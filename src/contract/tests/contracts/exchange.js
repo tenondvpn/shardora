@@ -273,9 +273,14 @@ function QueryPostCode(path, data) {
 
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            http_response = '' + chunk;
-        })
+        var data = '';
+        res.on('data', function(chunk) {
+            data += chunk;
+        });
+        
+        res.on('end', function() {
+            http_response = data;
+        });
     });
 
     post_req.write(post_data);
