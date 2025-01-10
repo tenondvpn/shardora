@@ -14,7 +14,7 @@ contract Exchange {
     struct BuyerInfo {
         address payable buyer;
         uint256 price;
-    };
+    }
     
     struct ItemInfo {
         uint256 id;
