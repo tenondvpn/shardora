@@ -7,17 +7,17 @@ nodes:
 - http_port: 22002
   name: r2
   net: 2
-  server: 192.168.0.2
+  server: 192.168.0.3
   tcp_port: 12002
 - http_port: 22003
   name: r3
   net: 2
-  server: 192.168.0.2
+  server: 192.168.0.4
   tcp_port: 12003
 - http_port: 23001
   name: s3_1
   net: 3
-  server: 192.168.0.2
+  server: 192.168.0.5
   tcp_port: 13001
 - http_port: 23002
   name: s3_2
@@ -27,17 +27,17 @@ nodes:
 - http_port: 23003
   name: s3_3
   net: 3
-  server: 192.168.0.2
+  server: 192.168.0.3
   tcp_port: 13003
 - http_port: 23004
   name: s3_4
   net: 3
-  server: 192.168.0.2
+  server: 192.168.0.4
   tcp_port: 13004
 - http_port: 24001
   name: s4_1
   net: 4
-  server: 192.168.0.2
+  server: 192.168.0.5
   tcp_port: 14001
 - http_port: 24002
   name: s4_2
@@ -47,12 +47,12 @@ nodes:
 - http_port: 24003
   name: s4_3
   net: 4
-  server: 192.168.0.2
+  server: 192.168.0.3
   tcp_port: 14003
 - http_port: 24004
   name: s4_4
   net: 4
-  server: 192.168.0.2
+  server: 192.168.0.4
   tcp_port: 14004
 account_sks:
   3:
@@ -381,10 +381,7 @@ account_sks:
     - d479b25b6e13df2352de8303d76d0aa1ca3aff3abd7b5d6442af5c215f988c3b
     - cbaca7fd5f40344695acfa760120e4a52541d54ab24299fb79dcef6af7212793  
 passwords:
-  192.168.0.2: 'Xf4aGbTaf!'
-  192.168.0.3: 'Xf4aGbTaf!'
-  192.168.0.4: 'Xf4aGbTaf!'
-  192.168.0.5: 'Xf4aGbTaf!'
+  10.0.0.201: 'Xf4aGbTaf!'
 node_sks:
   r1: 076886edab4bac346ec43c209c5438c23376742afa6c1837e145c24b088669a0
   r2: 5067f35bbc7c00f7837ade097141a93955c06e1bf9ec1db0860c58d665de7b31
