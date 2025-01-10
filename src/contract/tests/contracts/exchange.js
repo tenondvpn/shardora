@@ -455,6 +455,8 @@ async function GetAllItemJson() {
         await sleep(1000);
     }
 
+    console.log(http_response);
+
     var res_json = JSON.parse(http_response);
     for (var i = 0; i < res_json.length; ++i) {
         res_json[i].id = hexStringToInt64(res_json[i].id);
