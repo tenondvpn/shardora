@@ -107,6 +107,36 @@ contract Exchange {
         return abi.encodePacked(_data);
     }
 
+    function GetBuyerJson(BuyerInfo memory item, bool last) public pure returns (bytes memory) {
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"buyer":"';
+        all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
+        all_bytes[filedCount++] = '","price":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(item.price));
+
+        if (last) {
+            all_bytes[filedCount++] = '"}';
+        } else {
+            all_bytes[filedCount++] = '"},';
+        }
+        return bytesConcat(all_bytes, filedCount);
+    }
+
+    function GetSubArrayItem(BuyerInfo[] memory buyers) public pure returns (bytes memory) {
+        uint validLen = 1;
+        bytes[] memory all_bytes = new bytes[](buyers.length + 2);
+        all_bytes[0] = '[';
+        uint arrayLength = buyers.length;
+        for (uint i=0; i<arrayLength; i++) {
+            all_bytes[i + 1] = GetItemJson(buyers[i], (i == arrayLength - 1));
+            ++validLen;
+        }
+
+        all_bytes[validLen] = ']';
+        return bytesConcat(all_bytes, validLen + 1);
+    }
+
     function GetItemJson(ItemInfo memory item, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
@@ -124,8 +154,8 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.start_time_ms));
         all_bytes[filedCount++] = '","end_time":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.end_time_ms));
-        all_bytes[filedCount++] = '","buyer":"';
-        all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
+        all_bytes[filedCount++] = '","all_buyers":"';
+        all_bytes[filedCount++] = ToHex(toBytes(item.all_buyers));
 
         if (last) {
             all_bytes[filedCount++] = '"}';
