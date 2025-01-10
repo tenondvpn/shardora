@@ -79,7 +79,7 @@ contract Exchange {
         require(!purchase_map[key]);
         emit DebugEvent(5);
         ItemInfo storage item = item_map[hash];
-        require(!item_map[hash].price <= msg.value);
+        require(item_map[hash].price <= msg.value);
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
         purchase_map[key] = true;
         emit DebugEvent(6);
