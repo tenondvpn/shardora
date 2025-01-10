@@ -16,14 +16,25 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13004;
-static const int shardnum = 3;
+static const uint16_t kBroadcastPort = 13001;
+static int shardnum = 3;
 static const int delayus = 500;
-static const bool multi_pool = true;
+static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
-static const std::string from_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";   
+static const std::string from_prikey =
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> net_pool_sk_map = {
+    {3, {{15, "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708"},
+         {14, "02b91d27bb1761688be87898c44772e727f5e2f64aaf51a42931a0ca66a8a227"}}},
+    {4, {{15, "ed8aa75374998a6fb20139171e570ae67ceb34817b87b05400023ff9f1e06532"},
+         {14, "c2e8fb3673f82cadd860d7523c12e71a7279faec0814803e547286bb0363d0e8"}}}
+};
 
 static void SignalCallback(int sig_int) { global_stop = true; }
+
+static const std::string get_from_prikey(uint32_t net_id, uint32_t pool_id) {
+    return net_pool_sk_map[net_id][pool_id];
+}
 
 void SignalRegister() {
 #ifndef _WIN32
@@ -211,8 +222,14 @@ int tx_main(int argc, char** argv) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
     }
-
-    std::string prikey = common::Encode::HexDecode(from_prikey);
+    
+    uint32_t pool_id = 15;
+    if (argc == 3) {
+        shardnum = argv[2][0] - '0';
+        pool_id = argv[3][0] - '0';        
+    }
+    
+    std::string prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -714,7 +731,7 @@ int contract_call(int argc, char** argv, bool more=false) {
 
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
-    if (argc <= 1) {
+    if (argv[1][0] == '0' || argc <= 1) {
         tx_main(argc, argv);
         transport::TcpTransport::Instance()->Stop();
         usleep(1000000);
