@@ -11,6 +11,8 @@ const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 var contract_address = "0009eab96c9e759daa3aff82b40e77cd615a41d9";
+var http_response = "";
+
 var node_host = "127.0.0.1"
 
 {
@@ -272,9 +274,7 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.error('Response: ' + chunk);
-            var json_res = JSON.parse(chunk)
-            // //console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
+            http_response = chunk;
         })
     });
 
@@ -466,5 +466,12 @@ if (args[0] == 2) {
 
 // 测试合约查询
 if (args[0] == 30) {
+    http_response = "";
     GetAllItemJson();
+    while (http_response == "") {
+        console.log("waiting...");
+        sleep(1000);
+    }
+
+    console.log(http_response);
 }
