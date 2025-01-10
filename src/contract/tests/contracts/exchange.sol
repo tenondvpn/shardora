@@ -14,7 +14,6 @@ contract Exchange {
     struct BuyerInfo {
         address payable buyer;
         uint256 price;
-        bool exists;
     }
     
     struct ItemInfo {
@@ -40,6 +39,7 @@ contract Exchange {
     );
 
     mapping(bytes32 => ItemInfo) public item_map;
+    mapping(bytes => bool) public purchase_map;
     bytes32[] all_hashes;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
@@ -61,17 +61,20 @@ contract Exchange {
         emit DebugEvent(2);
         all_hashes.push(hash);
         emit DebugEvent(all_hashes.length);
+        purchase_map[Bytes32toBytes(hash) + toBytes(0x0000000000000000000000000000000000000000)] = true;
     }
 
     function PurchaseItem(bytes32 hash) public payable {
         emit DebugEvent(3);
         require(item_map[hash].exists);
         emit DebugEvent(4);
-        require(!item_map[hash].buyers[msg.sender].exists);
+        bytes memory key = Bytes32toBytes(hash) + toBytes(msg.sender);
+        require(!purchase_map[key]);
         emit DebugEvent(5);
         ItemInfo storage item = item_map[hash];
         require(!item_map[hash].price <= msg.value);
-        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value, true));
+        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
+        purchase_map[key] = true;
         emit DebugEvent(6);
     }
 
