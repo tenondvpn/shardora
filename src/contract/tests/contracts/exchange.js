@@ -416,7 +416,7 @@ function PurchaseItem(hash, price) {
         [hash]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('PurchaseItem(bytes32)');
     call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
         addParamCode.substring(2) + addParam.substring(2), price);
 }
 
