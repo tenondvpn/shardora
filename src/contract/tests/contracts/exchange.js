@@ -433,7 +433,7 @@ var tmp_id = args[1]
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
 console.log(id);
 if (args[0] == 1) {
-    CreateNewItem(id, web3.utils.toHex("test_json"), 1, 0, 0);
+    CreateNewItem('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
     //console.log(id);
 }
 
