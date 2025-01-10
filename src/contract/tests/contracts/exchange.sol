@@ -28,6 +28,7 @@ contract Exchange {
         address payable buyer;
         BuyerInfo[] buyers;
         bool exists;
+        address[] all_buyers;
     }
 
     event DebugEvent(
@@ -56,9 +57,8 @@ contract Exchange {
         item.selled = false;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
         item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
+        item.all_buyers.push(0x0000000000000000000000000000000000000000);
         item.exists = true;
-       
-
         emit DebugEvent(2);
         all_hashes.push(hash);
         emit DebugEvent(all_hashes.length);
