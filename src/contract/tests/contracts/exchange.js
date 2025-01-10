@@ -431,11 +431,19 @@ function PurchaseItem(hash, price) {
         addParamCode.substring(2) + addParam.substring(2), price);
 }
 
-function GetAllItemJson() {
+async function GetAllItemJson() {
+    http_response = "";
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson()');
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2));
+
+    while (http_response == "") {
+        console.log("waiting...");
+        await sleep(1000);
+    }
+
+    console.log(http_response);
 }
 
 const args = process.argv.slice(2)
@@ -466,12 +474,5 @@ if (args[0] == 2) {
 
 // 测试合约查询
 if (args[0] == 30) {
-    http_response = "";
     GetAllItemJson();
-    while (http_response == "") {
-        console.log("waiting...");
-        await sleep(1000);
-    }
-
-    console.log(http_response);
 }
