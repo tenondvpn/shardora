@@ -493,7 +493,7 @@ async function main() {
 	const args = process.argv.slice(2)
 	// SetUp：初始化算法，需要用到pbc库
 	if (args[0] == 0) {
-		for (var i = 0; i < 2; i++) {
+		for (var i = 0; i < args[1]; i++) {
 			await run_multi_contracts(i);
 		}
 	}
