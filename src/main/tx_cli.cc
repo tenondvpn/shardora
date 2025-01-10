@@ -225,8 +225,8 @@ int tx_main(int argc, char** argv) {
     
     uint32_t pool_id = 15;
     if (argc == 3) {
-        shardnum = argv[2][0] - '0';
-        pool_id = argv[3][0] - '0';        
+        shardnum = std::stoi(argv[2]);
+        pool_id = std::stoi(argv[3]);
     }
     
     std::string prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
@@ -234,6 +234,8 @@ int tx_main(int argc, char** argv) {
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
+    std::cout << "from: " << common::Encode::HexEncode(security->GetAddress())
+              << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;    
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint32_t step_num = 1000;
