@@ -381,7 +381,10 @@ account_sks:
     - d479b25b6e13df2352de8303d76d0aa1ca3aff3abd7b5d6442af5c215f988c3b
     - cbaca7fd5f40344695acfa760120e4a52541d54ab24299fb79dcef6af7212793  
 passwords:
-  10.0.0.201: 'Xf4aGbTaf!'
+  192.168.0.2: 'Xf4aGbTaf!'
+  192.168.0.3: 'Xf4aGbTaf!'
+  192.168.0.4: 'Xf4aGbTaf!'
+  192.168.0.5: 'Xf4aGbTaf!'  
 node_sks:
   r1: 076886edab4bac346ec43c209c5438c23376742afa6c1837e145c24b088669a0
   r2: 5067f35bbc7c00f7837ade097141a93955c06e1bf9ec1db0860c58d665de7b31
