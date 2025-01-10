@@ -470,7 +470,7 @@ if (args[0] == 30) {
     GetAllItemJson();
     while (http_response == "") {
         console.log("waiting...");
-        sleep(1000);
+        await sleep(1000);
     }
 
     console.log(http_response);
