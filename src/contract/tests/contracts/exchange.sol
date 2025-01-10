@@ -56,7 +56,7 @@ contract Exchange {
         item.end_time_ms = end;
         item.selled = false;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
-        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0, true));
+        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
         emit DebugEvent(2);
         all_hashes.push(hash);
