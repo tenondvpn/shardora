@@ -28,7 +28,6 @@ contract Exchange {
         address payable buyer;
         BuyerInfo[] buyers;
         bool exists;
-        address[] all_buyers;
     }
 
     event DebugEvent(
@@ -154,8 +153,8 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.start_time_ms));
         all_bytes[filedCount++] = '","end_time":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.end_time_ms));
-        all_bytes[filedCount++] = '","all_buyers":"';
-        all_bytes[filedCount++] = GetSubArrayItem(item.all_buyers);
+        all_bytes[filedCount++] = '","buyers":"';
+        all_bytes[filedCount++] = GetSubArrayItem(item.buyers);
 
         if (last) {
             all_bytes[filedCount++] = '"}';
