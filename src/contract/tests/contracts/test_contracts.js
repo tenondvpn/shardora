@@ -12,7 +12,6 @@ let co = require('co');
 
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d0";
 
 {
     const newLog = function () {
@@ -67,9 +66,9 @@ function PostCode(data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                console.log('Response: ' + chunk + ", " + data);
+                // console.log('Response: ' + chunk + ", " + data);
             } else {
-                console.log('Response: ' + chunk + ", " + data);
+                // console.log('Response: ' + chunk + ", " + data);
             }
         })
     });
@@ -158,7 +157,7 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
     var isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
-    console.log("gid: " + gid.toString(16))
+    // console.log("gid: " + gid.toString(16))
     if (!isValidSig) {
         console.log('signature transaction failed.')
         return;
@@ -244,7 +243,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var sigS = Secp256k1.uint256(sig.s, 16)
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
-    console.log("gid: " + gid.toString(16))
+    // console.log("gid: " + gid.toString(16))
     return {
         'gid': gid,
         'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
@@ -282,7 +281,7 @@ function new_contract(from_str_prikey, contract_bytes) {
 }
 
 function call_contract(str_prikey, input, amount, key, value) {
-    console.log("contract_address: " + contract_address);
+    // console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
         str_prikey,
@@ -316,7 +315,7 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log(chunk);
+            // console.log(chunk);
         })
     });
 
@@ -419,7 +418,7 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function InitC2cEnv(key, value) {
+function InitC2cEnv(key, value, contract_address) {
     const { exec } = require('child_process');
     exec('solc --bin ./proxy_reencyption.sol', async (error, stdout, stderr) => {
         if (error) {
@@ -443,7 +442,7 @@ function InitC2cEnv(key, value) {
                 cons_codes = web3.eth.abi.encodeParameters(
                     ['bytes'], 
                     [hexparam]);
-                console.log("cons_codes: " + cons_codes.substring(2));
+                // console.log("cons_codes: " + cons_codes.substring(2));
             }
             // 转账到管理账户，创建合约
             {
@@ -488,7 +487,7 @@ async function run_multi_contracts(times) {
 	for (var i = 0; i < times; i++) {
 		contract_address = get_contract_address(i.toString());
 		var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
-		InitC2cEnv("c0", pairing_param_value);		
+		InitC2cEnv("c0", pairing_param_value, contract_address);		
 	}
 }
 
