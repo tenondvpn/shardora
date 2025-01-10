@@ -1,5 +1,4 @@
 const Web3 = require('web3')
-const Web3 = require('web3')
 var net = require('net');
 var web3 = new Web3(new Web3.providers.IpcProvider('/Users/myuser/Library/Ethereum/geth.ipc', net)); // mac os path
 const { randomBytes } = require('crypto')
