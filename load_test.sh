@@ -1,9 +1,11 @@
 #!/bin/bash
 
+pass='Xf4aGbTaf!'
+
 if [[ $1 == "stop" ]];
 then
 ps -ef | grep txcli | awk -F' ' '{print $2}' | xargs kill -9	
-sshpass -p 'Xf4aGbTaf!' ssh -o StrictHostKeyChecking=no root@192.168.0.3 <<"EOF"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no root@192.168.0.3 <<"EOF"
 ps -ef | grep txcli | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
@@ -12,7 +14,7 @@ fi
 
 cd /root/xufei/shardora/cbuild_Release && make txcli
 
-pass='Xf4aGbTaf!'
+
 
 sshpass -p $pass ssh -f -o StrictHostKeyChecking=no root@192.168.0.3 bash -c "'\
 mkdir /root/load_test
