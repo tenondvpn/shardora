@@ -153,13 +153,13 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.start_time_ms));
         all_bytes[filedCount++] = '","end_time":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.end_time_ms));
-        all_bytes[filedCount++] = '","buyers":"';
+        all_bytes[filedCount++] = '","buyers":';
         all_bytes[filedCount++] = GetSubArrayItem(item.buyers);
 
         if (last) {
-            all_bytes[filedCount++] = '"}';
+            all_bytes[filedCount++] = '}';
         } else {
-            all_bytes[filedCount++] = '"},';
+            all_bytes[filedCount++] = '},';
         }
         return bytesConcat(all_bytes, filedCount);
     }
