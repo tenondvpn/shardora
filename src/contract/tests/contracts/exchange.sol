@@ -40,12 +40,12 @@ contract Exchange {
 
     mapping(bytes32 => ItemInfo) public item_map;
     bytes32[] all_hashes;
+    ItemInfo tmp_item;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
         emit DebugEvent(0);
         require(!item_map[hash].exists);
         emit DebugEvent(1);
-        ItemInfo tmp_item;
         ItemInfo memory item = tmp_item;
         item.id = global_id++;
         item.hash = hash;
