@@ -549,8 +549,8 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
             continue;
         }
 
-        // ZJC_DEBUG("pop valid message hash: %lu, size: %u, thread: %u",
-        //     msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
+        ZJC_DEBUG("tcp pop valid message hash: %lu, size: %u, thread: %u",
+            msg_obj->header.hash64(), threads_message_queues_[thread_idx][pri].size(), thread_idx);
         return msg_obj;
     }
 
@@ -568,6 +568,8 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
         //         common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
         //         msg_obj->header.type());
         // }
+        ZJC_DEBUG("http pop valid message hash: %lu, size: %u, thread: %u",
+            msg_obj->header.hash64(), http_server_message_queue_.size(), thread_idx);        
         return msg_obj;
     }
     
