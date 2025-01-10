@@ -188,7 +188,8 @@ static void LoadAllAccounts() {
 int tx_main(int argc, char** argv) {
     uint32_t pool_id = -1;
     auto ip = kBroadcastIp;
-    auto port = kBroadcastPort;    
+    auto port = kBroadcastPort;
+    auto delayus_a = delayus;
     if (argc >= 4) {
         shardnum = std::stoi(argv[2]);
         pool_id = std::stoi(argv[3]);
@@ -198,6 +199,10 @@ int tx_main(int argc, char** argv) {
         ip = argv[4];
         port = std::stoi(argv[5]);
     }
+    
+    if (argc >= 7) {
+        delayus_a = std::stoi(argv[4]);
+    }    
 
     std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
     
@@ -310,7 +315,7 @@ int tx_main(int argc, char** argv) {
             count = 0;
         }
 
-        usleep(delayus);
+        usleep(delayus_a);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
