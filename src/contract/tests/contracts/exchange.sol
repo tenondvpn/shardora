@@ -199,7 +199,7 @@ contract Exchange {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"id":"';
-        all_bytes[filedCount++] = int64ToStr(int64(item.id));
+        all_bytes[filedCount++] = bytes(int64ToStr(int64(item.id)));
         all_bytes[filedCount++] = '","hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.hash));
         all_bytes[filedCount++] = '","owner":"';
