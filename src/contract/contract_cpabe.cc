@@ -289,7 +289,7 @@ int ContractCpabe::test_cpabe() {
 
     std::string decrypted_message;
     if (decrypt(publicKey, userPrivateKey, cipher, decrypted_message)) {
-//        std::cout << "解密成功，消息: " << decrypted_message << std::endl;
+        std::cout << "解密成功，消息: " << decrypted_message << std::endl;
         log("解密成功。");
 
         c1_bytes_size = BN_num_bytes(cipher.C1);
@@ -326,6 +326,7 @@ int ContractCpabe::test_cpabe() {
 
     return 0;
 }
+
 }  // namespace contract
 
 }  // namespace shardora
