@@ -10,7 +10,7 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "0002eab96c9e759daa3aff82b40e77cd615a41d9";
+var contract_address = "0003eab96c9e759daa3aff82b40e77cd615a41d9";
 var node_host = "127.0.0.1"
 
 {
