@@ -398,7 +398,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (tps >= 0.000001) {
-            ZJC_ERROR("total tps: %.2f", tps);
+            ZJC_ERROR("total tps: %.2f, net: %d", tps, common::GlobalInfo::Instance()->network_id());
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
