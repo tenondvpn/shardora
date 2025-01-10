@@ -40,25 +40,25 @@ contract Exchange {
 
     mapping(bytes32 => ItemInfo) public item_map;
     bytes32[] all_hashes;
-    ItemInfo tmp_item;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
         emit DebugEvent(0);
         require(!item_map[hash].exists);
         emit DebugEvent(1);
-        ItemInfo memory item = tmp_item;
-        item.id = global_id++;
-        item.hash = hash;
-        item.owner = payable(msg.sender);
-        item.info = info;
-        item.price = price;
-        item.start_time_ms = start;
-        item.end_time_ms = end;
-        item.selled = false;
-        item.buyers = new BuyerInfo[](0);
-        item.exists = true;
-        item_map[hash] = item;
-        
+        BuyerInfo[] memory tmp_buyers;
+        item_map[hash] = ItemInfo({
+            id: global_id++,
+            hash: hash,
+            owner: payable(msg.sender),
+            info: info,
+            price: price,
+            start_time_ms: start,
+            end_time_ms: end,
+            selled: false,
+            buyer: payable(0x0000000000000000000000000000000000000000),
+            buyers: tmp_buyers,
+            exists: true
+        });
 
         emit DebugEvent(2);
         all_hashes.push(hash);
