@@ -63,6 +63,15 @@ contract Exchange {
     }
 
     function PurchaseItem(bytes32 hash) public payable {
+        emit DebugEvent(3);
+        require(item_map[hash].exists);
+        emit DebugEvent(4);
+        require(!item_map[hash].buyers[msg.sender].exists);
+        emit DebugEvent(5);
+        ItemInfo storage item = item_map[hash];
+        require(!item_map[hash].price <= msg.value);
+        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
+        emit DebugEvent(6);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
