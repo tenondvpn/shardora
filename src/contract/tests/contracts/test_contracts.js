@@ -12,7 +12,7 @@ let co = require('co');
 
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-const contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d0";
+var contract_address = "48e1eab96c9e759daa3aff82b40e77cd615a41d0";
 
 {
     const newLog = function () {
