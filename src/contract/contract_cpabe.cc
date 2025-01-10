@@ -1,5 +1,6 @@
 #include "contract/contract_cpabe.h"
 
+#include "common/encode.h"
 #include "common/split.h"
 #include "common/string_utils.h"
 #include "common/time_utils.h"
@@ -289,7 +290,7 @@ int ContractCpabe::test_cpabe() {
 
     std::string decrypted_message;
     if (decrypt(publicKey, userPrivateKey, cipher, decrypted_message)) {
-        std::cout << "解密成功，消息: " << decrypted_message << std::endl;
+        std::cout << "解密成功，消息: " << common::Encode::HexDecode(decrypted_message) << std::endl;
         log("解密成功。");
 
         c1_bytes_size = BN_num_bytes(cipher.C1);
