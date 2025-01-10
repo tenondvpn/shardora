@@ -458,15 +458,15 @@ async function GetAllItemJson() {
     console.log(http_response);
 
     var res_json = JSON.parse(http_response);
-    for (var i = 0; i < res_json.length; ++i) {
-        res_json[i].id = hexStringToInt64(res_json[i].id);
-        res_json[i].price = hexStringToInt64(res_json[i].price);
-        res_json[i].start_time = hexStringToInt64(res_json[i].start_time);
-        res_json[i].end_time = hexStringToInt64(res_json[i].end_time);
-        for (var j = 0; j < res_json[i].buyers.length; ++j) {
-            res_json[i].buyers[j].price = hexStringToInt64(res_json[i].buyers[j].price);
-        }
-    }
+    // for (var i = 0; i < res_json.length; ++i) {
+    //     res_json[i].id = hexStringToInt64(res_json[i].id);
+    //     res_json[i].price = hexStringToInt64(res_json[i].price);
+    //     res_json[i].start_time = hexStringToInt64(res_json[i].start_time);
+    //     res_json[i].end_time = hexStringToInt64(res_json[i].end_time);
+    //     for (var j = 0; j < res_json[i].buyers.length; ++j) {
+    //         res_json[i].buyers[j].price = hexStringToInt64(res_json[i].buyers[j].price);
+    //     }
+    // }
 
 
     console.log(res_json);
