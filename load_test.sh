@@ -10,7 +10,7 @@ EOF
 exit
 fi
 
-cd /root/xufei/shardora && make txcli && cd cbuild_Release
+cd /root/xufei/shardora/cbuild_Release && make txcli
 
 pass="Xf4aGbTaf!"
 
