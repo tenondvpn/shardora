@@ -11,6 +11,11 @@ contract Exchange {
     bytes32 test_ripdmd_;
     bytes32 enc_init_param_;
     uint256 global_id;
+    struct BuyerInfo {
+        address payable buyer;
+        uint256 price;
+    };
+    
     struct ItemInfo {
         uint256 id;
         bytes32 hash;
@@ -21,6 +26,7 @@ contract Exchange {
         uint256 end_time_ms;
         bool selled;
         address payable buyer;
+        BuyerInfo[] buyers;
         bool exists;
     }
 
@@ -39,6 +45,7 @@ contract Exchange {
         emit DebugEvent(0);
         require(!item_map[hash].exists);
         emit DebugEvent(1);
+        
         item_map[hash] = ItemInfo({
             id: global_id++,
             hash: hash,
@@ -55,6 +62,9 @@ contract Exchange {
         emit DebugEvent(2);
         all_hashes.push(hash);
         emit DebugEvent(all_hashes.length);
+    }
+
+    function PurchaseItem(bytes32 hash) public payable {
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
