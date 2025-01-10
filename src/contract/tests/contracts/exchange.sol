@@ -71,6 +71,7 @@ contract Exchange {
         emit DebugEvent(3);
         require(item_map[hash].exists);
         emit DebugEvent(4);
+        bytes[] memory all_bytes = new bytes[](2);
         all_bytes[0] = Bytes32toBytes(hash);
         all_bytes[1] = toBytes(msg.sender);
 
