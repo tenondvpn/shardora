@@ -558,17 +558,17 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx, bool htt
     if (http_svr_thread) {
         MessagePtr msg_obj;
         http_server_message_queue_.pop(&msg_obj);
-        // xufeisofly111
-        if (msg_obj != nullptr) {
-            ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
-                common::Encode::HexEncode(
-                security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
-                msg_obj->header.hash64(),
-                msg_obj->header.tx_proto().step(),
-                common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
-                msg_obj->header.type());
-        }        
+        // if (msg_obj != nullptr) {
+        //     ZJC_DEBUG("get msg http transaction success %s, %s, hash64: %lu, step: %d, gid: %s, type: %d", 
+        //         common::Encode::HexEncode(
+        //         security_->GetAddress(msg_obj->header.tx_proto().pubkey())).c_str(),
+        //         common::Encode::HexEncode(msg_obj->header.tx_proto().to()).c_str(),
+        //         msg_obj->header.hash64(),
+        //         msg_obj->header.tx_proto().step(),
+        //         common::Encode::HexEncode(msg_obj->header.tx_proto().gid()).c_str(),
+        //         msg_obj->header.type());
+        // }
+        
         return msg_obj;
     }
     

@@ -687,7 +687,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 
     std::string followers_gids;
 #ifndef NDEBUG
-    for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
+    for (uint32_t i = 0; i < uint32_t(vote_msg.txs_size()); ++i) {
         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
     }
 #endif
