@@ -201,7 +201,7 @@ int tx_main(int argc, char** argv) {
     }
     
     if (argc >= 7) {
-        delayus_a = std::stoi(argv[4]);
+        delayus_a = std::stoi(argv[6]);
     }    
 
     std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
