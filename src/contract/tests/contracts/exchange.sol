@@ -61,14 +61,14 @@ contract Exchange {
         emit DebugEvent(2);
         all_hashes.push(hash);
         emit DebugEvent(all_hashes.length);
-        purchase_map[Bytes32toBytes(hash) + toBytes(0x0000000000000000000000000000000000000000)] = true;
+        purchase_map[bytesConcat([Bytes32toBytes(hash), toBytes(0x0000000000000000000000000000000000000000)], 2)] = true;
     }
 
     function PurchaseItem(bytes32 hash) public payable {
         emit DebugEvent(3);
         require(item_map[hash].exists);
         emit DebugEvent(4);
-        bytes memory key = Bytes32toBytes(hash) + toBytes(msg.sender);
+        bytes memory key = bytesConcat([Bytes32toBytes(hash), toBytes(msg.sender)], 2);
         require(!purchase_map[key]);
         emit DebugEvent(5);
         ItemInfo storage item = item_map[hash];
