@@ -456,11 +456,11 @@ async function GetAllItemJson() {
     }
 
     console.log(http_response);
-    var json_test = '[{"id":"00","hash":"3e07c561e4a40074e6344f1a62ad739be146ea945f0fda414d459a70b87d8a5a","owner":"44a5c714cb3f502fb77618a4a0353d96148fde7e","info":"746573745f6a736f6e","price":"01","start_time":"00","end_time":"00","buyers":[{"buyer":"0000000000000000000000000000000000000000","price":"00"},{"buyer":"611cf0f0a69ef9c74ef36d2e0892280dc4494fe5","price":"64"}]}]';
-    var res_json_tmp = JSON.parse(json_test);
+    // var json_test = '[{"id":"00","hash":"3e07c561e4a40074e6344f1a62ad739be146ea945f0fda414d459a70b87d8a5a","owner":"44a5c714cb3f502fb77618a4a0353d96148fde7e","info":"746573745f6a736f6e","price":"01","start_time":"00","end_time":"00","buyers":[{"buyer":"0000000000000000000000000000000000000000","price":"00"},{"buyer":"611cf0f0a69ef9c74ef36d2e0892280dc4494fe5","price":"64"}]}]';
+    // var res_json_tmp = JSON.parse(json_test);
 
 
-    var res_json = http_response;//JSON.parse(http_response);
+    var res_json = JSON.parse(str(http_response));
     for (var i = 0; i < res_json.length; ++i) {
         res_json[i].id = hexStringToInt64(res_json[i].id);
         res_json[i].price = hexStringToInt64(res_json[i].price);
