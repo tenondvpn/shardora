@@ -105,6 +105,19 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.id));
         all_bytes[filedCount++] = '","hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.hash));
+        all_bytes[filedCount++] = '","owner":"';
+        all_bytes[filedCount++] = ToHex(toBytes(item.owner));
+        all_bytes[filedCount++] = '","info":"';
+        all_bytes[filedCount++] = ToHex(item.info);
+        all_bytes[filedCount++] = '{"price":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(item.price));
+        all_bytes[filedCount++] = '{"start_time":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(item.start_time_ms));
+        all_bytes[filedCount++] = '{"end_time":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(item.end_time_ms));
+        all_bytes[filedCount++] = '{"buyer":"';
+        all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
+
         if (last) {
             all_bytes[filedCount++] = '"}';
         } else {
