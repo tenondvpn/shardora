@@ -483,9 +483,15 @@ function InitC2cEnv(key, value, contract_address) {
       });
 }
 
+function generateSecureRandomString(length) {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => String.fromCharCode(byte % 94 + 33)).join('');
+}
+
 async function run_multi_contracts(times) {
 	for (var i = 0; i < times; i++) {
-		var contract_address = get_contract_address(i.toString());
+		var contract_address = get_contract_address(generateSecureRandomString(5));
 		var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
 		InitC2cEnv("c0", pairing_param_value, contract_address);		
 	}
