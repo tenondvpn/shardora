@@ -195,11 +195,17 @@ contract Exchange {
         return string(b);
     }
 
+    function uint256ToInt64Safe(uint256 _value) public pure returns (int64) {
+        require(_value <= type(int64).max, "Value exceeds int64 maximum");
+        // Solidity 0.8.x 及更高版本支持隐式类型转换，只需直接返回即可
+        return int64(_value);
+    }
+
     function GetItemJson(ItemInfo memory item, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"id":"';
-        all_bytes[filedCount++] = bytes(int64ToStr(int64(item.id)));
+        all_bytes[filedCount++] = bytes(int64ToStr(uint256ToInt64Safe(item.id)));
         all_bytes[filedCount++] = '","hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.hash));
         all_bytes[filedCount++] = '","owner":"';
