@@ -14,6 +14,7 @@ contract Exchange {
     struct BuyerInfo {
         address payable buyer;
         uint256 price;
+        bool exists;
     }
     
     struct ItemInfo {
@@ -55,7 +56,7 @@ contract Exchange {
         item.end_time_ms = end;
         item.selled = false;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
-        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
+        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0, true));
         item.exists = true;
         emit DebugEvent(2);
         all_hashes.push(hash);
@@ -70,7 +71,7 @@ contract Exchange {
         emit DebugEvent(5);
         ItemInfo storage item = item_map[hash];
         require(!item_map[hash].price <= msg.value);
-        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
+        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value, true));
         emit DebugEvent(6);
     }
 
