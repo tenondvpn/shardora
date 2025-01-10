@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 // 1. The seller can sell at most coins equal to the pledged quantity
 // 2. The pledged currency can only be recovered by the seller
