@@ -32,7 +32,10 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 
-static const std::string get_from_prikey(uint32_t net_id, uint32_t pool_id) {
+static const std::string get_from_prikey(uint32_t net_id, int32_t pool_id) {
+    if (pool_id == -1) {
+        return from_prikey;
+    }
     return net_pool_sk_map[net_id][pool_id];
 }
 
@@ -183,6 +186,19 @@ static void LoadAllAccounts() {
 }
 
 int tx_main(int argc, char** argv) {
+    uint32_t pool_id = -1;
+    auto ip = kBroadcastIp;
+    auto port = kBroadcastPort;    
+    if (argc >= 4) {
+        shardnum = std::stoi(argv[2]);
+        pool_id = std::stoi(argv[3]);
+    }
+
+    if (argc >= 6) {
+        ip = argv[4];
+        port = std::stoi(argv[5]);
+    }    
+    
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
@@ -190,7 +206,7 @@ int tx_main(int argc, char** argv) {
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
-    if (!db_ptr->Init(db_path)) {
+    if (!db_ptr->Init(db_path + "_" + std::to_string(shardnum) + "_" + std::to_string(pool_id))) {
         std::cout << "init db failed!" << std::endl;
         return 1;
     }
@@ -221,12 +237,6 @@ int tx_main(int argc, char** argv) {
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
-    }
-    
-    uint32_t pool_id = 15;
-    if (argc >= 4) {
-        shardnum = std::stoi(argv[2]);
-        pool_id = std::stoi(argv[3]);
     }
     
     std::string prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
@@ -262,8 +272,6 @@ int tx_main(int argc, char** argv) {
         //     tmp_data[0] = common::Random::RandomInt16();
         // }
 
-        
-
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
@@ -275,7 +283,7 @@ int tx_main(int argc, char** argv) {
             10000,
             1,
             shardnum);
-        if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
