@@ -15,20 +15,20 @@ var http_response = "";
 
 var node_host = "127.0.0.1"
 
-{
-    const newLog = function () {
-      console.info(new Date().toLocaleString());
-      arguments.callee.oLog.apply(this, arguments);
-    };
-    const newError = function () {
-      console.info(new Date().toLocaleString());
-      arguments.callee.oError.apply(this, arguments);
-    };
-    newLog.oLog = console.log;
-    newError.oError = console.error;
-    console.log = newLog;
-    console.error = newError;
-}
+// {
+//     const newLog = function () {
+//       console.info(new Date().toLocaleString());
+//       arguments.callee.oLog.apply(this, arguments);
+//     };
+//     const newError = function () {
+//       console.info(new Date().toLocaleString());
+//       arguments.callee.oError.apply(this, arguments);
+//     };
+//     newLog.oLog = console.log;
+//     newError.oError = console.error;
+//     console.log = newLog;
+//     console.error = newError;
+// }
   
 function str_to_hex(str) {
     var arr1 = [];
