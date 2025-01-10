@@ -48,7 +48,7 @@ contract Exchange {
             start_time_ms: start,
             end_time_ms: end,
             selled: false,
-            buyer: payable('0x0000000000000000000000000000000000000000'),
+            buyer: payable(0x0000000000000000000000000000000000000000),
             exists: true
         });
 
