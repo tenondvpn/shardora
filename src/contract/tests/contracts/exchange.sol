@@ -56,7 +56,7 @@ contract Exchange {
         item.selled = false;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
         quest.options.push(Option(_id, _option1));
-        item.buyers.push(BuyerInfo(buyer:payable(0x0000000000000000000000000000000000000000), price: 0));
+        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
        
 
