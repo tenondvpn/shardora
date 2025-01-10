@@ -10,7 +10,7 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "000beab96c9e759daa3aff82b40e77cd615a41d9";
+var contract_address = "000ceab96c9e759daa3aff82b40e77cd615a41d9";
 var http_response = "";
 
 var node_host = "127.0.0.1"
@@ -431,6 +431,18 @@ function PurchaseItem(hash, price) {
         addParamCode.substring(2) + addParam.substring(2), price);
 }
 
+function hexStringToInt64(hexString) {
+    // 将16进制字符串转换为Buffer
+    const buffer = Buffer.from(hexString, 'hex');
+    // 如果buffer大小大于8，则截取前8个字节
+    if (buffer.length > 8) {
+        buffer.slice(0, 8);
+    }
+    // 使用DataView以64位整数形式读取
+    const dataView = new DataView(buffer.buffer.slice(0, 8));
+    return dataView.getBigInt64(0);
+}
+
 async function GetAllItemJson() {
     http_response = "";
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson()');
@@ -443,7 +455,19 @@ async function GetAllItemJson() {
         await sleep(1000);
     }
 
-    console.log(http_response);
+    var res_json = JSON.parse(http_response);
+    for (var i = 0; i < res_json.length; ++i) {
+        res_json[i].id = hexStringToInt64(res_json[i].id);
+        res_json[i].price = hexStringToInt64(res_json[i].price);
+        res_json[i].start_time = hexStringToInt64(res_json[i].start_time);
+        res_json[i].end_time = hexStringToInt64(res_json[i].end_time);
+        for (var j = 0; j < res_json[i].buyers.length; ++j) {
+            res_json[i].buyers[j].price = hexStringToInt64(res_json[i].buyers[j].price);
+        }
+    }
+
+
+    console.log(res_json);
 }
 
 const args = process.argv.slice(2)
