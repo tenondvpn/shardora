@@ -45,20 +45,19 @@ contract Exchange {
         emit DebugEvent(0);
         require(!item_map[hash].exists);
         emit DebugEvent(1);
-        BuyerInfo[] memory tmp_buyers;
-        item_map[hash] = ItemInfo(
-            global_id++,
-            hash,
-            payable(msg.sender),
-            info,
-            price,
-            start,
-            end,
-            false,
-            payable(0x0000000000000000000000000000000000000000),
-            tmp_buyers,
-            true
-        );
+        item_map[hash] = ItemInfo({
+            id: global_id++,
+            hash: hash,
+            owner: payable(msg.sender),
+            info: info,
+            price: price,
+            start_time_ms: start,
+            end_time_ms: end,
+            selled: false,
+            buyer: payable(0x0000000000000000000000000000000000000000),
+            buyers: new BuyerInfo[](0),
+            exists: true
+        });
 
         emit DebugEvent(2);
         all_hashes.push(hash);
