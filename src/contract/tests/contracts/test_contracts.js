@@ -427,7 +427,7 @@ function InitC2cEnv(key, value, contract_address) {
         }
 
         var out_lines = stdout.split('\n');
-        console.log(`solc bin codes: ${out_lines[3]}`);
+        // console.log(`solc bin codes: ${out_lines[3]}`);
         {
             var cons_codes = "";
             {
