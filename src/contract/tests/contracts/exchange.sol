@@ -158,54 +158,11 @@ contract Exchange {
         return bytesConcat(all_bytes, validLen + 1);
     }
 
-    function int64ToStr(int64 _value) public pure returns (string memory) {
-        if (_value < 0) {
-            // 对于负数，先取绝对值，然后在前面加上负号
-            uint64 absValue = uint64(-_value);
-            return string(abi.encodePacked("-", uint64ToStr(absValue)));
-        } else {
-            // 对于正数或零，直接转换
-            return uint64ToStr(uint64(_value));
-        }
-    }
-
-    // 辅助函数：将uint64转换为string
-    function uint64ToStr(uint64 _value) internal pure returns (string memory) {
-        // 这里假设_value不会超过uint64的最大值，因此不需要额外的范围检查
-        // 实际上，你可能需要根据具体需求添加适当的检查
-        if (_value == 0) {
-            return "0";
-        }
-
-        uint256 temp = _value;
-        string memory result = "";
-        while (temp > 0) {
-            uint8 digit = uint8(temp % 10);
-            temp = temp / 10;
-            result = string(abi.encodePacked(char(48 + digit), result));
-        }
-        return result;
-    }
-
-    // 辅助函数：将数字转换为对应的ASCII字符
-    function char(uint8 _value) internal pure returns (string memory) {
-        // 这里只处理0-9的字符，因此不需要完整的ASCII表
-        // 如果需要更多字符，可以扩展这个函数
-        bytes1 b = bytes1(_value + 48);
-        return string(b);
-    }
-
-    function uint256ToInt64Safe(uint256 _value) public pure returns (int64) {
-        require(_value <= type(int64).max, "Value exceeds int64 maximum");
-        // Solidity 0.8.x 及更高版本支持隐式类型转换，只需直接返回即可
-        return int64(_value);
-    }
-
     function GetItemJson(ItemInfo memory item, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"id":"';
-        all_bytes[filedCount++] = bytes(int64ToStr(uint256ToInt64Safe(item.id)));
+        all_bytes[filedCount++] = u256ToBytes(item.id);
         all_bytes[filedCount++] = '","hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.hash));
         all_bytes[filedCount++] = '","owner":"';
