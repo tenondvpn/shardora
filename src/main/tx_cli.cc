@@ -27,7 +27,7 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
     {3, {{15, "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708"},
          {9, "580bb274af80b8d39b33f25ddbc911b14a1b3a2a6ec8ca376ffe9661cf809d36"}}},
     {4, {{15, "ed8aa75374998a6fb20139171e570ae67ceb34817b87b05400023ff9f1e06532"},
-         {14, "c2e8fb3673f82cadd860d7523c12e71a7279faec0814803e547286bb0363d0e8"}}}
+         {12, "c2e8fb3673f82cadd860d7523c12e71a7279faec0814803e547286bb0363d0e8"}}}
 };
 
 static void SignalCallback(int sig_int) { global_stop = true; }
