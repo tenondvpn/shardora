@@ -496,7 +496,7 @@ async function main() {
 	// SetUp：初始化算法，需要用到pbc库
 	if (args[0] == 0) {
 		for (var i = 0; i < 10; i++) {
-			await run_multi_contracts(10);
+			await run_multi_contracts(1);
 		}
 	}
 }
