@@ -197,7 +197,9 @@ int tx_main(int argc, char** argv) {
     if (argc >= 6) {
         ip = argv[4];
         port = std::stoi(argv[5]);
-    }    
+    }
+
+    std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
     
     LoadAllAccounts();
     SignalRegister();
@@ -283,6 +285,8 @@ int tx_main(int argc, char** argv) {
             10000,
             1,
             shardnum);
+
+        
         if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
