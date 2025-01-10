@@ -14,6 +14,7 @@ contract Exchange {
     struct BuyerInfo {
         address payable buyer;
         uint256 price;
+        bool exists;
     }
     
     struct ItemInfo {
@@ -26,9 +27,8 @@ contract Exchange {
         uint256 end_time_ms;
         bool selled;
         address payable buyer;
-        BuyerInfo[] buyers;
+        mapping(address => BuyerInfo) public buyers;
         bool exists;
-        address[] all_buyers;
     }
 
     event DebugEvent(
@@ -56,8 +56,7 @@ contract Exchange {
         item.end_time_ms = end;
         item.selled = false;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
-        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
-        item.all_buyers.push(0x0000000000000000000000000000000000000000);
+        item.buyers[0x0000000000000000000000000000000000000000] = BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0, true);
         item.exists = true;
         emit DebugEvent(2);
         all_hashes.push(hash);
@@ -65,6 +64,9 @@ contract Exchange {
     }
 
     function PurchaseItem(bytes32 hash) public payable {
+        emit DebugEvent(3);
+        require(item_map[hash].exists);
+        require(!item_map[hash].buyers[msg.sender].exists);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
