@@ -274,7 +274,7 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            http_response = chunk;
+            http_response = '' + chunk;
         })
     });
 
@@ -460,7 +460,7 @@ async function GetAllItemJson() {
     // var res_json_tmp = JSON.parse(json_test);
 
 
-    var res_json = JSON.parse(str(http_response));
+    var res_json = JSON.parse(http_response);
     for (var i = 0; i < res_json.length; ++i) {
         res_json[i].id = hexStringToInt64(res_json[i].id);
         res_json[i].price = hexStringToInt64(res_json[i].price);
