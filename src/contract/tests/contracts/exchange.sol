@@ -55,6 +55,7 @@ contract Exchange {
         item.start_time_ms = start;
         item.end_time_ms = end;
         item.selled = false;
+        item.buyers = new BuyerInfo[](0);
         item.exists = true;
         item_map[hash] = item;
         
