@@ -279,6 +279,7 @@ function QueryPostCode(path, data) {
         });
         
         res.on('end', function() {
+            console.log("ddd: " + data);
             http_response = data;
         });
     });
