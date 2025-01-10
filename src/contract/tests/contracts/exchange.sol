@@ -45,7 +45,8 @@ contract Exchange {
         emit DebugEvent(0);
         require(!item_map[hash].exists);
         emit DebugEvent(1);
-        ItemInfo memory item = new ItemInfo();
+        ItemInfo tmp_item;
+        ItemInfo memory item = tmp_item;
         item.id = global_id++;
         item.hash = hash;
         item.owner = payable(msg.sender);
