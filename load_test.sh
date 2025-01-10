@@ -16,7 +16,7 @@ pass="Xf4aGbTaf!"
 
 sshpass -p $pass scp -o StrictHostKeyChecking=no -r ./txcli ../addrs root@192.168.0.3:/root/
 
-sshpass -p 'Xf4aGbTaf!' ssh -f -o StrictHostKeyChecking=no root@$server2 bash -c "'\
+sshpass -p $pass ssh -f -o StrictHostKeyChecking=no root@$192.168.0.3 bash -c "'\
 cd /root && ./txcli 0 3 15 192.168.0.3 13003 20 &
 cd /root && ./txcli 0 4 15 192.168.0.3 14003 20 &
 wait \
