@@ -308,11 +308,11 @@ function Prepayment(str_prikey, prepay) {
     PostCode(data);
 }
 
-async function SetManagerPrepayment(contract_address) {
+async function SetManagerPrepayment(contract_address, prikey) {
     // 为管理账户设置prepayment
-    Prepayment("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 1000000000000);
+    Prepayment(prikey, 1000000000000);
     var account1 = web3.eth.accounts.privateKeyToAccount(
-        '0xcefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848');
+        '0x' + prikey);
     var check_accounts_str = "";
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
     var check_count = 1;
@@ -392,7 +392,18 @@ function InitC2cEnv(key, value) {
                 }
 
                 // 预设值合约调用币，并等待成功
-                SetManagerPrepayment(contract_address);
+                var prikeys = [
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
+                    "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d",
+                    "6ad7b4019956c958da14121fa273a34b612a2a03239771e8e16fa730e43e6512",
+                    "ee762323b168752a9249c2959ed7c04b794d881005d511e6ac894025d52d5938",
+                  
+                ];
+                for (var i = 0; i < prikeys.length; ++i)
+                {
+                    SetManagerPrepayment(contract_address, prikeys[i]);
+                }
+
             }
         }
       });
@@ -404,7 +415,6 @@ function CreateNewItem(hash, info, price, start, end) {
         ['bytes32', 'bytes', 'uint256', 'uint256', 'uint256'], 
         [hash, info, price, start, end]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes,uint256,uint256,uint256)');
-    SetManagerPrepayment("611cf0f0a69ef9c74ef36d2e0892280dc4494fe5");
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
