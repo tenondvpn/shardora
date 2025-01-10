@@ -272,7 +272,7 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            //console.log('Response: ' + chunk);
+            console.error('Response: ' + chunk);
             var json_res = JSON.parse(chunk)
             // //console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
         })
