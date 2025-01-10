@@ -115,6 +115,28 @@ contract Exchange {
         return converted;
     }
 
+    function NumberToHex(bytes memory buffer) public pure returns (bytes memory) {
+        bytes memory converted = new bytes(buffer.length * 2);
+        bytes memory _base = "0123456789abcdef";
+        bool find_first = false;
+        uint256 start_idx = 0;
+        for (uint256 i = 0; i < buffer.length; i++) {
+            converted[start_idx * 2] = _base[uint8(buffer[i]) / _base.length];
+            converted[start_idx * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
+            if (find_first) {
+                start_idx++;
+                continue;
+            }
+
+            if (converted[start_idx * 2] != '0' || converted[start_idx * 2 + 1] != '0') {
+                find_first = true;
+                start_idx++;
+            }
+        }
+
+        return converted;
+    }
+
     function toBytes(address a) public pure returns (bytes memory) {
         return abi.encodePacked(a);
     }
@@ -134,7 +156,7 @@ contract Exchange {
         all_bytes[filedCount++] = '{"buyer":"';
         all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
         all_bytes[filedCount++] = '","price":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(item.price));
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.price));
 
         if (last) {
             all_bytes[filedCount++] = '"}';
@@ -162,7 +184,7 @@ contract Exchange {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
         all_bytes[filedCount++] = '{"id":"';
-        all_bytes[filedCount++] = u256ToBytes(item.id);
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.id));
         all_bytes[filedCount++] = '","hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.hash));
         all_bytes[filedCount++] = '","owner":"';
@@ -170,11 +192,11 @@ contract Exchange {
         all_bytes[filedCount++] = '","info":"';
         all_bytes[filedCount++] = ToHex(item.info);
         all_bytes[filedCount++] = '","price":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(item.price));
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.price));
         all_bytes[filedCount++] = '","start_time":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(item.start_time_ms));
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.start_time_ms));
         all_bytes[filedCount++] = '","end_time":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(item.end_time_ms));
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.end_time_ms));
         all_bytes[filedCount++] = '","buyers":';
         all_bytes[filedCount++] = GetSubArrayItem(item.buyers);
 
