@@ -10,7 +10,7 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "0007eab96c9e759daa3aff82b40e77cd615a41d9";
+var contract_address = "0008eab96c9e759daa3aff82b40e77cd615a41d9";
 var node_host = "127.0.0.1"
 
 {
@@ -409,6 +409,17 @@ function CreateNewItem(hash, info, price, start, end) {
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
+function PurchaseItem(hash, price) {
+    // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32'], 
+        [hash]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('PurchaseItem(bytes32)');
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), price);
+}
+
 function GetAllItemJson() {
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson()');
     QueryContract(
@@ -434,6 +445,11 @@ var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958
 console.log(id);
 if (args[0] == 1) {
     CreateNewItem('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
+    //console.log(id);
+}
+
+if (args[0] == 2) {
+    PurchaseItem('0x'+id, 100);
     //console.log(id);
 }
 
