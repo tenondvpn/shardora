@@ -256,11 +256,6 @@ function call_contract(str_prikey, input, amount) {
     PostCode(data);
 }
 
-function do_transaction(str_prikey, to_addr, amount, gas_limit, gas_price) {
-    var data = create_tx(str_prikey, to_addr, amount, gas_limit, gas_price, 0, 0);
-    PostCode(data);
-}
-
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
@@ -414,9 +409,8 @@ function CreateNewItem(hash, info, price, start, end) {
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function GetAllArsJson() {
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllArsJson()');
-    //console.log("GetAllArsJson 0: " + addParamCode.substring(2));
+function GetAllItemJson() {
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson()');
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2));
@@ -445,5 +439,5 @@ if (args[0] == 1) {
 
 // 测试合约查询
 if (args[0] == 30) {
-    GetAllArsJson();
+    GetAllItemJson();
 }
