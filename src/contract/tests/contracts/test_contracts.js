@@ -396,7 +396,7 @@ async function SetManagerPrepayment(contract_address) {
         try {
             const {stdout, stderr} = await execPromise(cmd);
             if (stdout.trim() == check_count.toString()) {
-                console.error(`contract prepayment success: ${stdout}`);
+                console.error(`contract prepayment success: ${stdout}, contract_address: ${contract_address}`);
                 break;
             }
 
@@ -410,7 +410,7 @@ async function SetManagerPrepayment(contract_address) {
     }
 
     if (try_times >= 30) {
-        console.error(`contract prepayment failed!`);
+        console.error(`contract prepayment failed! ${contract_address}`);
         return;
     }
 }
@@ -459,7 +459,7 @@ function InitC2cEnv(key, value) {
                     // wait for exec to complete
                         const {stdout, stderr} = await execPromise(contract_cmd);
                         if (stdout.trim() == contract_address) {
-                            console.log(`create contract success ${stdout}`);
+                            console.log(`create contract success ${stdout} ${contract_address}`);
                             break;
                         }
                             
@@ -473,7 +473,7 @@ function InitC2cEnv(key, value) {
                 }
 
                 if (try_times >= 30) {
-                    console.error(`create contract address failed!`);
+                    console.error(`create contract address failed! ${contract_address}`);
                     return;
                 }
 
@@ -484,18 +484,22 @@ function InitC2cEnv(key, value) {
       });
 }
 
+async function run_multi_contracts(times) {
+	for (var i = 0; i < times; i++) {
+		contract_address = get_contract_address(i.toString());
+		var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
+		InitC2cEnv("c0", pairing_param_value);		
+	}
+}
+
 async function main() {
 	const args = process.argv.slice(2)
 	// SetUp：初始化算法，需要用到pbc库
 	if (args[0] == 0) {
 		for (var i = 0; i < 10; i++) {
-			contract_address = get_contract_address(i.toString());
-			var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
-			InitC2cEnv("c0", pairing_param_value);
-			console.log("======== done", contract_address);
+			await run_multi_contracts(10);
 		}
 	}
-	
 }
 
 main();
