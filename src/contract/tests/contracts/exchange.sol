@@ -27,7 +27,7 @@ contract Exchange {
         uint256 end_time_ms;
         bool selled;
         address payable buyer;
-        mapping(address => BuyerInfo) public buyers;
+        mapping(address => BuyerInfo) buyers;
         bool exists;
     }
 
