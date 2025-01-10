@@ -224,7 +224,7 @@ int tx_main(int argc, char** argv) {
     }
     
     uint32_t pool_id = 15;
-    if (argc == 3) {
+    if (argc >= 4) {
         shardnum = std::stoi(argv[2]);
         pool_id = std::stoi(argv[3]);
     }
