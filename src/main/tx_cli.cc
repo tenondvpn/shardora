@@ -186,6 +186,7 @@ static void LoadAllAccounts() {
 }
 
 int tx_main(int argc, char** argv) {
+    // ./txcli 0 $net_id $pool_id $ip $port $delay_us
     uint32_t pool_id = -1;
     auto ip = kBroadcastIp;
     auto port = kBroadcastPort;
