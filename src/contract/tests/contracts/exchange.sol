@@ -45,7 +45,7 @@ contract Exchange {
         emit DebugEvent(0);
         require(!item_map[hash].exists);
         emit DebugEvent(1);
-        BuyerInfo memory [] buyers = new BuyerInfo[](0);
+        BuyerInfo  [] memory buyers = new BuyerInfo[](0);
         item_map[hash] = ItemInfo({
             id: global_id++,
             hash: hash,
