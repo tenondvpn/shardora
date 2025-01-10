@@ -229,6 +229,8 @@ Status BlockAcceptor::addTxsToPool(
             return Status::kError;
         }
 
+        ZJC_DEBUG("====8.0 add tx gid: %s", common::Encode::HexEncode(tx->gid()).c_str());        
+
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
@@ -432,7 +434,10 @@ Status BlockAcceptor::addTxsToPool(
             return Status::kError;
         }
 
+        ZJC_DEBUG("====8.1 add tx gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
+
         if (tx_ptr != nullptr) {
+            ZJC_DEBUG("====8.2 add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools_mgr_->GidValid(pool_idx(), tx_ptr->tx_info.gid())) {
