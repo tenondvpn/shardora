@@ -155,7 +155,7 @@ contract Exchange {
         all_bytes[filedCount++] = '","end_time":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.end_time_ms));
         all_bytes[filedCount++] = '","all_buyers":"';
-        all_bytes[filedCount++] = ToHex(toBytes(item.all_buyers));
+        all_bytes[filedCount++] = GetSubArrayItem(item.all_buyers);
 
         if (last) {
             all_bytes[filedCount++] = '"}';
