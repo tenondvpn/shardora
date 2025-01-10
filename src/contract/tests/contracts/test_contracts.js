@@ -262,7 +262,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     }
 }
 
-function new_contract(from_str_prikey, contract_bytes) {
+function new_contract(from_str_prikey, contract_bytes, contract_address) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var kechash = keccak256(from_str_prikey + gid + contract_bytes).toString('hex')
     var data = param_contract(
@@ -280,7 +280,7 @@ function new_contract(from_str_prikey, contract_bytes) {
     return contract_address;
 }
 
-function call_contract(str_prikey, input, amount, key, value) {
+function call_contract(str_prikey, input, amount, key, value, contract_address) {
     // console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
@@ -357,7 +357,7 @@ function sendHttpRequest(path, in_data, encoding = 'utf8') {
     });
 }
 
-function QueryContract(str_prikey, input) {
+function QueryContract(str_prikey, input, contract_address) {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
@@ -373,14 +373,14 @@ function QueryContract(str_prikey, input) {
     QueryPostCode('/query_contract', data);
 }
 
-function Prepayment(str_prikey, prepay) {
+function Prepayment(str_prikey, prepay, contract_address) {
     var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7, "key", "value");
     PostCode(data);
 }
 
 async function SetManagerPrepayment(contract_address) {
     // 为管理账户设置prepayment
-    Prepayment("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 1000000000000);
+    Prepayment("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 1000000000000, contract_address);
     var account1 = web3.eth.accounts.privateKeyToAccount(
         '0xcefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848');
     var check_accounts_str = "";
@@ -448,7 +448,7 @@ function InitC2cEnv(key, value, contract_address) {
             {
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    out_lines[3] + cons_codes.substring(2));
+                    out_lines[3] + cons_codes.substring(2), contract_address);
                 var contract_cmd = `clickhouse-client --host 127.0.0.1 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
@@ -485,7 +485,7 @@ function InitC2cEnv(key, value, contract_address) {
 
 async function run_multi_contracts(times) {
 	for (var i = 0; i < times; i++) {
-		contract_address = get_contract_address(i.toString());
+		var contract_address = get_contract_address(i.toString());
 		var pairing_param_value = "type a\nq 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\nh 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\nr 730750818665451621361119245571504901405976559617\nexp2 159\nexp1 107\nsign1 1\nsign0 1";
 		InitC2cEnv("c0", pairing_param_value, contract_address);		
 	}
