@@ -1,4 +1,4 @@
-// #include "contract/contract_cpabe.h"
+#include "contract/contract_cpabe.h"
 
 // #include "common/encode.h"
 // #include "common/split.h"
@@ -6,19 +6,19 @@
 // #include "common/time_utils.h"
 // #include "zjcvm/zjc_host.h"
 
-// namespace shardora {
+namespace shardora {
 
-// namespace contract {
+namespace contract {
 
-// ContractCpabe::~ContractCpabe() {}
+ContractCpabe::~ContractCpabe() {}
 
-// int ContractCpabe::call(
-//         const CallParameters& param,
-//         uint64_t gas,
-//         const std::string& origin_address,
-//         evmc_result* res) {
-//     return kContractSuccess;
-// }
+int ContractCpabe::call(
+        const CallParameters& param,
+        uint64_t gas,
+        const std::string& origin_address,
+        evmc_result* res) {
+    return kContractSuccess;
+}
 
 
 // // 日志记录函数
@@ -328,6 +328,6 @@
 //     return 0;
 // }
 
-// }  // namespace contract
+}  // namespace contract
 
-// }  // namespace shardora
+}  // namespace shardora
