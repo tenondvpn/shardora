@@ -117,25 +117,6 @@ contract Exchange {
         return converted;
     }
 
-    function resizeBytes(bytes memory _bytes, uint newLength) public pure returns (bytes memory) {
-        require(newLength > 0 && newLength <= 32, "New length out of bounds");
-        bytes memory tempBytes;
- 
-        // 如果新长度小于原长度，则截断
-        if (newLength < _bytes.length) {
-            assembly {
-                tempBytes := mload(add(_bytes, 32))
-            }
-            tempBytes.length = newLength;
-        } else {
-            // 如果新长度大于原长度，则通过填充0来扩展
-            tempBytes = new bytes(newLength - _bytes.length);
-            tempBytes = bytes.concat(_bytes, tempBytes);
-        }
- 
-        return tempBytes;
-    }
-
     function NumberToHex(bytes memory buffer) public pure returns (bytes memory) {
         bytes memory converted = new bytes(buffer.length * 2);
         bytes memory _base = "0123456789abcdef";
@@ -155,8 +136,20 @@ contract Exchange {
             }
         }
 
-        converted = resizeBytes(converted, start_idx * 2);
-        return converted;
+        if (start_idx == 0) {
+            bytes memory new_bytes = new bytes(start_idx * 2);
+            new_bytes[0] = '0';
+            new_bytes[1] = '0';
+            return new_bytes;
+        }
+
+
+        bytes memory new_bytes = new bytes(start_idx * 2);
+        for (uint256 i = 0; i < start_idx * 2; ++i) {
+            new_bytes[i] = converted[i];
+        }
+
+        return new_bytes;
     }
 
     function toBytes(address a) public pure returns (bytes memory) {
