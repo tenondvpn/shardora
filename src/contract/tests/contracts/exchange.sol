@@ -39,6 +39,7 @@ contract Exchange {
     );
 
     mapping(bytes32 => ItemInfo) public item_map;
+    mapping(uint256 => bytes32) public id_with_hash_map;
     mapping(bytes => bool) public purchase_map;
     bytes32[] all_hashes;
 
@@ -65,6 +66,7 @@ contract Exchange {
         all_bytes[0] = Bytes32toBytes(hash);
         all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
         purchase_map[bytesConcat(all_bytes, 2)] = true;
+        id_with_hash_map[item.id] = hash;
     }
 
     function PurchaseItem(bytes32 hash) public payable {
@@ -208,7 +210,7 @@ contract Exchange {
         return bytesConcat(all_bytes, filedCount);
     }
 
-    function GetAllItemJson() public view returns(bytes memory) {
+    function GetAllItemJson(uint256 start_pos, uint256 len) public view returns(bytes memory) {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
         all_bytes[0] = '[';
