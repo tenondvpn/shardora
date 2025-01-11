@@ -215,7 +215,7 @@ contract Exchange {
         bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = all_hashes.length;
-        for (uint i=0; i<arrayLength; i++) {
+        for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
             all_bytes[i + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1));
             ++validLen;
         }
