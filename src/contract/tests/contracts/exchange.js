@@ -450,10 +450,13 @@ function hexStringToInt64(hexString) {
 
 async function GetAllItemJson() {
     http_response = "";
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson()');
+    var addParam = web3.eth.abi.encodeParameters(
+        ['uint256', 'uint256'], 
+        [0, 100]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson(uint256,uint256)');
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2));
+        addParamCode.substring(2) + addParam.substring(2));
 
     while (http_response == "") {
         console.log("waiting...");
