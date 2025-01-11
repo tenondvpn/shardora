@@ -78,7 +78,7 @@ public:
     ContractCpabe() : ContractInterface("") {
     }
 
-    virtual ~ContractCpabe();
+    virtual ~ContractCpabe() {}
     virtual int call(
         const CallParameters& param,
         uint64_t gas,
