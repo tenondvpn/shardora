@@ -252,7 +252,7 @@ public:
             exit(1);
         }
 
-        std::cout << "padded_message_size: " << padded_message_size << std::endl;
+        std::cout << "padded_message_size: " << padded_message_size << ", " << message.size() << std::endl;
         unsigned char encrypted_message[padded_message_size];
         memset(encrypted_message, 0, sizeof(encrypted_message));
         for (size_t i = 0; i < padded_message_size; i += AES_BLOCK_SIZE) {
