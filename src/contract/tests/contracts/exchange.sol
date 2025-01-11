@@ -137,7 +137,7 @@ contract Exchange {
         }
 
         if (start_idx == 0) {
-            bytes memory new_bytes = new bytes(start_idx * 2);
+            bytes memory new_bytes = new bytes(2);
             new_bytes[0] = '0';
             new_bytes[1] = '0';
             return new_bytes;
