@@ -365,7 +365,7 @@ std::string bn_to_hex(BIGNUM* bn) {
     return result;
 }
 
-int test_main() {
+int test_cpabe() {
     PublicKey publicKey;
     MasterKey masterKey;
     UserPrivateKey userPrivateKey;
