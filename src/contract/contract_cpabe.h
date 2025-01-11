@@ -255,9 +255,9 @@ public:
         std::cout << "padded_message_size: " << padded_message_size << ", " << message.size() << std::endl;
         unsigned char encrypted_message[padded_message_size];
         memset(encrypted_message, 0, sizeof(encrypted_message));
-        for (size_t i = 0; i < padded_message_size; i += AES_BLOCK_SIZE) {
-            AES_encrypt(padded_message + i, encrypted_message + i, &aes_encrypt_key);
-        }
+        // for (size_t i = 0; i < padded_message_size; i += AES_BLOCK_SIZE) {
+        //     AES_encrypt(padded_message + i, encrypted_message + i, &aes_encrypt_key);
+        // }
 
         // 生成混淆因子（以BIGNUM形式），增加加密的随机性和复杂度
         BIGNUM* confusion_factor = BN_new();
