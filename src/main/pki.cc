@@ -42,8 +42,31 @@ int test_pki(int argc, char** argv) {
 }
 
 int test_cpabe(int argc, char** argv) {
+    common::ParserArgs parser_arg;
+    parser_arg.AddArgType('d', "des_file", common::kNoValue);
+    std::string tmp_params = "";
+    for (int i = 1; i < argc; i++) {
+        if (strlen(argv[i]) == 0) {
+            tmp_params += static_cast<char>(31);
+        }
+        else {
+            tmp_params += argv[i];
+        }
+        tmp_params += " ";
+    }
+
+    std::string err_pos;
+    if (parser_arg.Parse(tmp_params, err_pos) != common::kParseSuccess) {
+        printf("parse params failed!\n");
+        return 1;
+    }
+
+    std::string des_file;
+    parser_arg.Get("d", des_file);
+    std::cout << "des file: " << des_file << std::endl;
+
     contract::ContractCpabe cpabe;
-    cpabe.test_cpabe();
+    cpabe.test_cpabe(des_file);
     return 0;
 }
 

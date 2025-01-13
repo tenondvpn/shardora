@@ -253,7 +253,7 @@ bool ContractCpabe::decrypt(const PublicKey &publicKey, const MasterKey &masterK
     return true;
 }
 
-int ContractCpabe::test_cpabe() {
+int ContractCpabe::test_cpabe(const std::string& des_file) {
     // 初始化公钥和主密钥
     PublicKey initPublicKey;
     MasterKey initMasterKey;
@@ -267,6 +267,12 @@ int ContractCpabe::test_cpabe() {
     initialize_keys(initPublicKey.to_string(), initMasterKey.to_string(), publicKey, masterKey);
     std::cout << "public key: " << publicKey.to_string() << std::endl;
     std::cout << "master key: " << masterKey.to_string() << std::endl;
+    if (!des_file.empty()) {
+        FILE* fd = fopen(des_file.c_str(), "w");
+        auto des_str = publicKey.to_string() + "-" + masterKey.to_string();
+        fwrite(des_str.c_str(), 1, des_str.size(), fd);
+        fclose(fd);
+    }
 
     // 定义第三个用户属性（复杂策略匹配成功）
     std::vector<std::string> user_attributes_complex = {"X", "Y", "Z"};

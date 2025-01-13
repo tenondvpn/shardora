@@ -340,7 +340,7 @@ public:
         const UserPrivateKey &userPrivateKey, 
         const CipherText &cipher, 
         std::string &decrypted_message);
-    int test_cpabe();
+    int test_cpabe(const std::string& des_file);
 
 private:
     
