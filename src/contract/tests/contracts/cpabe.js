@@ -433,7 +433,7 @@ function EncryptMessage(hash, cipher) {
     var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptMessage(bytes32,bytes)');
     call_contract(
         "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
-        addParamCode.substring(2) + addParam.substring(2), price);
+        addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
 function hexStringToInt64(hexString) {
@@ -489,12 +489,12 @@ var tmp_id = args[1]
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
 console.log(id);
 if (args[0] == 1) {
-    AddUserPublicKey('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
+    AddUserPublicKey('0x'+id, web3.utils.toHex("test_json"));
     //console.log(id);
 }
 
 if (args[0] == 2) {
-    EncryptMessage('0x'+id, 100);
+    EncryptMessage('0x'+id, "cipher");
     //console.log(id);
 }
 
