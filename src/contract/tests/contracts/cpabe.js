@@ -607,7 +607,7 @@ if (args[0] == 3) {
         check_accounts_str += "'" + to + "',"; 
     }
 
-    await check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
+    check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
 }
 
 if (args[0] == 4) {
@@ -628,7 +628,7 @@ if (args[0] == 4) {
         check_accounts_str += "'" + to + "',"; 
     }
 
-    await CheckPrepayment(contract_address, check_accounts_str);
+    CheckPrepayment(contract_address, check_accounts_str);
 }
 
 // 测试合约查询
