@@ -490,10 +490,9 @@ function InitC2cEnv(key, value) {
                 // 预设值合约调用币，并等待成功
                 var prikeys = [
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
-                    "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d",
-                    "6ad7b4019956c958da14121fa273a34b612a2a03239771e8e16fa730e43e6512",
-                    "ee762323b168752a9249c2959ed7c04b794d881005d511e6ac894025d52d5938",
-                  
+                    "259a715d21d50e32202e51b7b6ec353e2caeff9f0523db9f2c30ad2a1b9e2b10",
+                    "6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350",
+                    "d8576c5cb33400abb3a8e1306f463a1a72b2cd28447cf3078d82b5fbcd2206d6",
                 ];
                 for (var i = 0; i < prikeys.length; ++i)
                 {
@@ -523,7 +522,7 @@ function EncryptMessage(hash, cipher) {
         [hash, cipher]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptMessage(bytes32,bytes)');
     call_contract(
-        "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
+        "259a715d21d50e32202e51b7b6ec353e2caeff9f0523db9f2c30ad2a1b9e2b10", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
