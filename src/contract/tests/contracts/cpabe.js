@@ -355,7 +355,7 @@ function sleep(ms) {
 
 function InitC2cEnv(key, value) {
     const { exec } = require('child_process');
-    exec('solc --bin ./exchange.sol', async (error, stdout, stderr) => {
+    exec('solc --bin ./cpabe.sol', async (error, stdout, stderr) => {
         if (error) {
           console.error(`exec error: ${error}`);
           return;
@@ -414,23 +414,23 @@ function InitC2cEnv(key, value) {
       });
 }
 
-function CreateNewItem(hash, info, price, start, end) {
+function AddUserPublicKey(hash, pubkey) {
     // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
-        ['bytes32', 'bytes', 'uint256', 'uint256', 'uint256'], 
-        [hash, info, price, start, end]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes,uint256,uint256,uint256)');
+        ['bytes32', 'bytes'], 
+        [hash, pubkey]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes)');
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function PurchaseItem(hash, price) {
+function EncryptMessage(hash, cipher) {
     // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
-        ['bytes32'], 
-        [hash]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('PurchaseItem(bytes32)');
+        ['bytes32', 'bytes'], 
+        [hash, cipher]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptMessage(bytes32,bytes)');
     call_contract(
         "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
         addParamCode.substring(2) + addParam.substring(2), price);
@@ -469,17 +469,6 @@ async function GetAllItemJson() {
 
 
     var res_json = JSON.parse(http_response);
-    for (var i = 0; i < res_json.length; ++i) {
-        res_json[i].id = hexStringToInt64(res_json[i].id);
-        res_json[i].price = hexStringToInt64(res_json[i].price);
-        res_json[i].start_time = hexStringToInt64(res_json[i].start_time);
-        res_json[i].end_time = hexStringToInt64(res_json[i].end_time);
-        for (var j = 0; j < res_json[i].buyers.length; ++j) {
-            res_json[i].buyers[j].price = hexStringToInt64(res_json[i].buyers[j].price);
-        }
-    }
-
-
     console.log(res_json);
 }
 
@@ -500,12 +489,12 @@ var tmp_id = args[1]
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
 console.log(id);
 if (args[0] == 1) {
-    CreateNewItem('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
+    AddUserPublicKey('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
     //console.log(id);
 }
 
 if (args[0] == 2) {
-    PurchaseItem('0x'+id, 100);
+    EncryptMessage('0x'+id, 100);
     //console.log(id);
 }
 
