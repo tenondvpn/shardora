@@ -419,7 +419,7 @@ function AddUserPublicKey(hash, pubkey) {
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
         [hash, pubkey]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes)');
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('AddUserPublicKey(bytes32,bytes)');
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
