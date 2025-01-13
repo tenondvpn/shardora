@@ -62,9 +62,9 @@ function PostCode(data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                //console.log('Response: ' + chunk + ", " + data);
+                console.log('Response: ' + chunk + ", " + data);
             } else {
-                //console.log('Response: ' + chunk + ", " + data);
+                console.log('Response: ' + chunk + ", " + data);
             }
         })
     });
