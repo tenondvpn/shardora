@@ -603,7 +603,7 @@ if (args[0] == 3) {
         var account1 = web3.eth.accounts.privateKeyToAccount(
             '0x' + prikey_base);
         to = account1.address.toString('hex').toLowerCase().substring(2);
-        console.log(prikey_base + ", " + to + ", " + args[4]);
+        console.log(prikey_base + ", " + to + ", " + args[4] + ", " + tmp_str);
         // var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
         // PostCode(data);
         check_accounts_str += "'" + to + "',"; 
