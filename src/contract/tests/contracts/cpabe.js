@@ -593,6 +593,7 @@ if (args[0] == 3) {
     var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
     var start = parseInt(args[2]);
     var end = parseInt(args[3]);
+    console.log(start +"," + end +"," + args[4]);
     for (var i = start; i < end; ++i) {
         var tmp_str = "" + i;
         for (var j = 0; j < tmp_str.length; ++j) {
@@ -601,8 +602,9 @@ if (args[0] == 3) {
 
         var account1 = web3.eth.accounts.privateKeyToAccount(
             '0x' + prikey_base);
-        to = account1.address.toString('hex').toLowerCase().substring(2); 
-        var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 7);
+        to = account1.address.toString('hex').toLowerCase().substring(2);
+        console.log(prikey_base + ", " + to + ", " + args[4]);
+        var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
         PostCode(data);
         check_accounts_str += "'" + to + "',"; 
     }
