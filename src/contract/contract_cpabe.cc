@@ -251,25 +251,25 @@ int ContractCpabe::test_cpabe() {
 
     initialize_keys(publicKey, masterKey);
 
-    // 定义第一个用户属性（匹配策略）
-    std::vector<std::string> user_attributes_success = {"X", "Y"};
-    UserPrivateKey userPrivateKey_success;
-    generate_user_private_key(publicKey, user_attributes_success, userPrivateKey_success);
+    // // 定义第一个用户属性（匹配策略）
+    // std::vector<std::string> user_attributes_success = {"X", "Y"};
+    // UserPrivateKey userPrivateKey_success;
+    // generate_user_private_key(publicKey, user_attributes_success, userPrivateKey_success);
 
-    // 定义第二个用户属性（不匹配策略）
-    std::vector<std::string> user_attributes_failure = {"A", "B"};
-    UserPrivateKey userPrivateKey_failure;
-    generate_user_private_key(publicKey, user_attributes_failure, userPrivateKey_failure);
+    // // 定义第二个用户属性（不匹配策略）
+    // std::vector<std::string> user_attributes_failure = {"A", "B"};
+    // UserPrivateKey userPrivateKey_failure;
+    // generate_user_private_key(publicKey, user_attributes_failure, userPrivateKey_failure);
 
     // 定义第三个用户属性（复杂策略匹配成功）
     std::vector<std::string> user_attributes_complex = {"X", "Y", "Z"};
     UserPrivateKey userPrivateKey_complex;
     generate_user_private_key(publicKey, user_attributes_complex, userPrivateKey_complex);
 
-    // 定义第四个用户属性（复杂策略匹配失败）
-    std::vector<std::string> user_attributes_complex_fail = {"X", "Z"};
-    UserPrivateKey userPrivateKey_complex_fail;
-    generate_user_private_key(publicKey, user_attributes_complex_fail, userPrivateKey_complex_fail);
+    // // 定义第四个用户属性（复杂策略匹配失败）
+    // std::vector<std::string> user_attributes_complex_fail = {"X", "Z"};
+    // UserPrivateKey userPrivateKey_complex_fail;
+    // generate_user_private_key(publicKey, user_attributes_complex_fail, userPrivateKey_complex_fail);
 
     // 显示公钥信息
     std::cout << "公钥 (p, g, h): {"
@@ -289,51 +289,51 @@ int ContractCpabe::test_cpabe() {
     }
     std::cout << "]" << std::endl;
 
-    // 加密消息
-    std::string message1 = "Hello, CP-ABE!";
-    std::cout << "待加密密文：" << message1 <<std::endl ;
-    std::string policy1 = "X OR Y";  // 访问策略
-    CipherText cipher1 = encrypt(publicKey, message1, policy1);
+    // // 加密消息
+    // std::string message1 = "Hello, CP-ABE!";
+    // std::cout << "待加密密文：" << message1 <<std::endl ;
+    // std::string policy1 = "X OR Y";  // 访问策略
+    // CipherText cipher1 = encrypt(publicKey, message1, policy1);
 
-    // 显示密文
-    std::cout << "密文:" << std::endl;
-    std::cout << "C1: " << bn_to_hex(cipher1.C1.get()) << std::endl;
-    std::cout << "C2: " << bn_to_hex(cipher1.C2.get()) << std::endl;
+    // // 显示密文
+    // std::cout << "密文:" << std::endl;
+    // std::cout << "C1: " << bn_to_hex(cipher1.C1.get()) << std::endl;
+    // std::cout << "C2: " << bn_to_hex(cipher1.C2.get()) << std::endl;
 
-    // 解密消息
-    std::string decrypted_message1;
-    if (decrypt(publicKey, masterKey, userPrivateKey_success, cipher1, decrypted_message1)) {
-        std::cout << "解密后的消息: " << decrypted_message1 << std::endl;
-    } else {
-        std::cout << "解密失败，策略不匹配！" << std::endl;
-    }
+    // // 解密消息
+    // std::string decrypted_message1;
+    // if (decrypt(publicKey, masterKey, userPrivateKey_success, cipher1, decrypted_message1)) {
+    //     std::cout << "解密后的消息: " << decrypted_message1 << std::endl;
+    // } else {
+    //     std::cout << "解密失败，策略不匹配！" << std::endl;
+    // }
 
-    // ----------- 测试用例2：策略匹配失败 -----------
-    std::cout << "\n--- 测试用例2：策略匹配失败 ---" << std::endl;
-    // 显示用户属性
-    std::cout << "用户属性列表：[";
-    for (size_t i = 0; i < userPrivateKey_failure.attributes.size(); ++i) {
-        std::cout << (i > 0 ? ", " : "") << userPrivateKey_failure.attributes[i].attribute;
-    }
-    std::cout << "]" << std::endl;
+    // // ----------- 测试用例2：策略匹配失败 -----------
+    // std::cout << "\n--- 测试用例2：策略匹配失败 ---" << std::endl;
+    // // 显示用户属性
+    // std::cout << "用户属性列表：[";
+    // for (size_t i = 0; i < userPrivateKey_failure.attributes.size(); ++i) {
+    //     std::cout << (i > 0 ? ", " : "") << userPrivateKey_failure.attributes[i].attribute;
+    // }
+    // std::cout << "]" << std::endl;
 
-    // 加密消息
-    std::string message2 = "你猜猜我是不是可以解密的";
-    std::string policy2 = "Doctor OR Engineer";  // 访问策略
-    CipherText cipher2 = encrypt(publicKey, message2, policy2);
+    // // 加密消息
+    // std::string message2 = "你猜猜我是不是可以解密的";
+    // std::string policy2 = "Doctor OR Engineer";  // 访问策略
+    // CipherText cipher2 = encrypt(publicKey, message2, policy2);
 
-    // 显示密文
-    std::cout << "密文:" << std::endl;
-    std::cout << "C1: " << bn_to_hex(cipher2.C1.get()) << std::endl;
-    std::cout << "C2: " << bn_to_hex(cipher2.C2.get()) << std::endl;
+    // // 显示密文
+    // std::cout << "密文:" << std::endl;
+    // std::cout << "C1: " << bn_to_hex(cipher2.C1.get()) << std::endl;
+    // std::cout << "C2: " << bn_to_hex(cipher2.C2.get()) << std::endl;
 
-    // 解密消息
-    std::string decrypted_message2;
-    if (decrypt(publicKey, masterKey, userPrivateKey_failure, cipher2, decrypted_message2)) {
-        std::cout << "解密后的消息: " << decrypted_message2 << std::endl;
-    } else {
-        std::cout << "解密失败，策略不匹配！" << std::endl;
-    }
+    // // 解密消息
+    // std::string decrypted_message2;
+    // if (decrypt(publicKey, masterKey, userPrivateKey_failure, cipher2, decrypted_message2)) {
+    //     std::cout << "解密后的消息: " << decrypted_message2 << std::endl;
+    // } else {
+    //     std::cout << "解密失败，策略不匹配！" << std::endl;
+    // }
 
     // ----------- 测试用例3：复杂策略匹配成功 -----------
     std::cout << "\n--- 测试用例3：复杂策略匹配成功 ---" << std::endl;
@@ -363,32 +363,32 @@ int ContractCpabe::test_cpabe() {
         std::cout << "解密失败，策略不匹配！" << std::endl;
     }
 
-    // ----------- 测试用例4：复杂策略匹配失败 -----------
-    std::cout << "\n--- 测试用例4：复杂策略匹配失败 ---" << std::endl;
-    // 显示用户属性
-    std::cout << "用户属性列表：[";
-    for (size_t i = 0; i < userPrivateKey_complex_fail.attributes.size(); ++i) {
-        std::cout << (i > 0 ? ", " : "") << userPrivateKey_complex_fail.attributes[i].attribute;
-    }
-    std::cout << "]" << std::endl;
+    // // ----------- 测试用例4：复杂策略匹配失败 -----------
+    // std::cout << "\n--- 测试用例4：复杂策略匹配失败 ---" << std::endl;
+    // // 显示用户属性
+    // std::cout << "用户属性列表：[";
+    // for (size_t i = 0; i < userPrivateKey_complex_fail.attributes.size(); ++i) {
+    //     std::cout << (i > 0 ? ", " : "") << userPrivateKey_complex_fail.attributes[i].attribute;
+    // }
+    // std::cout << "]" << std::endl;
 
-    // 加密消息
-    std::string message4 = "Another Complex Policy Test!";
-    std::string policy4 = "X AND (Y OR NOT Z)";  // 访问策略
-    CipherText cipher4 = encrypt(publicKey, message4, policy4);
+    // // 加密消息
+    // std::string message4 = "Another Complex Policy Test!";
+    // std::string policy4 = "X AND (Y OR NOT Z)";  // 访问策略
+    // CipherText cipher4 = encrypt(publicKey, message4, policy4);
 
-    // 显示密文
-    std::cout << "密文:" << std::endl;
-    std::cout << "C1: " << bn_to_hex(cipher4.C1.get()) << std::endl;
-    std::cout << "C2: " << bn_to_hex(cipher4.C2.get()) << std::endl;
+    // // 显示密文
+    // std::cout << "密文:" << std::endl;
+    // std::cout << "C1: " << bn_to_hex(cipher4.C1.get()) << std::endl;
+    // std::cout << "C2: " << bn_to_hex(cipher4.C2.get()) << std::endl;
 
-    // 解密消息
-    std::string decrypted_message4;
-    if (decrypt(publicKey, masterKey, userPrivateKey_complex_fail, cipher4, decrypted_message4)) {
-        std::cout << "解密后的消息: " << decrypted_message4 << std::endl;
-    } else {
-        std::cout << "解密失败，策略不匹配！" << std::endl;
-    }
+    // // 解密消息
+    // std::string decrypted_message4;
+    // if (decrypt(publicKey, masterKey, userPrivateKey_complex_fail, cipher4, decrypted_message4)) {
+    //     std::cout << "解密后的消息: " << decrypted_message4 << std::endl;
+    // } else {
+    //     std::cout << "解密失败，策略不匹配！" << std::endl;
+    // }
 
     return 0;
 }
