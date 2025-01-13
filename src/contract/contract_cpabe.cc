@@ -42,17 +42,17 @@ void ContractCpabe::initialize_keys(
         MasterKey &masterKey) {
     auto pk_splits = common::Split<>(pk_str.c_str(), ',');
     BN_CTX* ctx = BN_CTX_new();
-    BIGNUM* p;
+    BIGNUM* p = BN_new();
     BN_hex2bn(&p, pk_splits[0]);
     publicKey.p = BIGNUM_ptr(p, BN_free);
-    BIGNUM* g;
+    BIGNUM* g = BN_new();
     BN_hex2bn(&g, pk_splits[1]);
     publicKey.g = BIGNUM_ptr(g, BN_free);
-    BIGNUM* h;
+    BIGNUM* h = BN_new();
     BN_hex2bn(&h, pk_splits[1]);
     publicKey.h = BIGNUM_ptr(h, BN_free);
 
-    BIGNUM* alpha;
+    BIGNUM* alpha = BN_new();
     BN_hex2bn(&alpha, master_key_str.c_str());
     masterKey.alpha = BIGNUM_ptr(alpha, BN_free);
     BN_CTX_free(ctx);
