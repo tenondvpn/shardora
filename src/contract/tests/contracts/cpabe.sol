@@ -95,10 +95,10 @@ contract Exchange {
         }
 
         if (start_idx == 0) {
-            bytes memory new_bytes = new bytes(2);
-            new_bytes[0] = '0';
-            new_bytes[1] = '0';
-            return new_bytes;
+            bytes memory new_bytes_sub = new bytes(2);
+            new_bytes_sub[0] = '0';
+            new_bytes_sub[1] = '0';
+            return new_bytes_sub;
         }
 
 
@@ -121,36 +121,6 @@ contract Exchange {
 
     function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
         return abi.encodePacked(_data);
-    }
-
-    function GetBuyerJson(BuyerInfo memory item, bool last) public pure returns (bytes memory) {
-        bytes[] memory all_bytes = new bytes[](100);
-        uint filedCount = 0;
-        all_bytes[filedCount++] = '{"buyer":"';
-        all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
-        all_bytes[filedCount++] = '","price":"';
-        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.price));
-
-        if (last) {
-            all_bytes[filedCount++] = '"}';
-        } else {
-            all_bytes[filedCount++] = '"},';
-        }
-        return bytesConcat(all_bytes, filedCount);
-    }
-
-    function GetSubArrayItem(BuyerInfo[] memory buyers) public pure returns (bytes memory) {
-        uint validLen = 1;
-        bytes[] memory all_bytes = new bytes[](buyers.length + 2);
-        all_bytes[0] = '[';
-        uint arrayLength = buyers.length;
-        for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetBuyerJson(buyers[i], (i == arrayLength - 1));
-            ++validLen;
-        }
-
-        all_bytes[validLen] = ']';
-        return bytesConcat(all_bytes, validLen + 1);
     }
 
     function GetItemJson(UserInfo memory item, bool last) public pure returns (bytes memory) {
