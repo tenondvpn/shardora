@@ -173,7 +173,6 @@ CipherText ContractCpabe::encrypt(const PublicKey &publicKey, const std::string 
 
     // 清理
     BN_CTX_free(ctx);
-    log_message("加密成功。");
     return std::move(cipher);
 }
 
@@ -230,7 +229,6 @@ bool ContractCpabe::decrypt(const PublicKey &publicKey, const MasterKey &masterK
 
     // 清理
     BN_CTX_free(ctx);
-    log_message("解密成功。");
     return true;
 }
 
