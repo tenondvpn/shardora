@@ -57,7 +57,7 @@ int test_cpabe(int argc, char** argv) {
 
     std::string err_pos;
     if (parser_arg.Parse(tmp_params, err_pos) != common::kParseSuccess) {
-        printf("parse params failed!\n");
+        printf("parse params failed: %s\n", tmp_params.c_str());
         return 1;
     }
 
