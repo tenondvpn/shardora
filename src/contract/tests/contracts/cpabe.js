@@ -487,15 +487,24 @@ if (args[0] == 0) {
 var tmp_id = args[1]
 // 测试聚合环签名整个流程
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
-console.log(id);
 if (args[0] == 1) {
-    AddUserPublicKey('0x'+id, web3.utils.toHex("test_json"));
+    AddUserPublicKey('0x'+id, web3.utils.toHex(args[2]));
     //console.log(id);
 }
 
 if (args[0] == 2) {
-    EncryptMessage('0x'+id, web3.utils.toHex("cipher"));
+    EncryptMessage('0x'+id, web3.utils.toHex(args[2]));
     //console.log(id);
+}
+
+if (args[0] == 3) {
+    const privateKeyBuf = Secp256k1.uint256(args[2], 16)
+    self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    address = address.slice(address.length - 40, address.length)
+    console.log(address.toString('hex'));
 }
 
 // 测试合约查询
