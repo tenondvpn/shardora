@@ -318,6 +318,11 @@ public:
 
     // 初始化密钥
     void initialize_keys(PublicKey &publicKey, MasterKey &masterKey);
+    void initialize_keys(
+        const std::string& pk_str, 
+        const std::string& master_key_str, 
+        PublicKey &publicKey, 
+        MasterKey &masterKey);
     // 生成用户私钥
     void generate_user_private_key(
         const PublicKey &publicKey, 

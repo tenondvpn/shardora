@@ -35,6 +35,27 @@ bool ContractCpabe::policy_matches(const std::string& policy_str, const std::vec
     return policy_tree->evaluate(user_attributes);
 }
 
+void ContractCpabe::initialize_keys(
+        const std::string& pk_str, 
+        const std::string& master_key_str, 
+        PublicKey &publicKey, 
+        MasterKey &masterKey) {
+    auto pk_splits = common::Split<>(pk_str.c_str(), ',');
+    BIGNUM* p;
+    BN_hex2bn(&p, pk_splits[0]);
+    publicKey.p = BIGNUM_ptr(p, BN_free);
+    BIGNUM* g;
+    BN_hex2bn(&g, pk_splits[1]);
+    publicKey.g = BIGNUM_ptr(g, BN_free);
+    BIGNUM* h;
+    BN_hex2bn(&h, pk_splits[1]);
+    publicKey.h = BIGNUM_ptr(h, BN_free);
+
+    BIGNUM* alpha;
+    BN_hex2bn(&alpha, master_key_str.c_str());
+    masterKey.alpha = BIGNUM_ptr(alpha, BN_free);
+}
+
 // 初始化密钥
 void ContractCpabe::initialize_keys(PublicKey &publicKey, MasterKey &masterKey) {
     BN_CTX* ctx = BN_CTX_new();
@@ -79,7 +100,6 @@ void ContractCpabe::initialize_keys(PublicKey &publicKey, MasterKey &masterKey) 
     }
 
     BN_CTX_free(ctx);
-    log_message("密钥初始化成功。");
 }
 
 // 生成用户私钥
@@ -115,7 +135,6 @@ void ContractCpabe::generate_user_private_key(const PublicKey &publicKey, const 
     }
 
     BN_CTX_free(ctx);
-    log_message("用户私钥生成成功。");
 }
 
 // 加密函数
@@ -234,10 +253,14 @@ bool ContractCpabe::decrypt(const PublicKey &publicKey, const MasterKey &masterK
 
 int ContractCpabe::test_cpabe() {
     // 初始化公钥和主密钥
+    PublicKey initPublicKey;
+    MasterKey initMasterKey;
+
+    initialize_keys(initPublicKey, initMasterKey);
+
     PublicKey publicKey;
     MasterKey masterKey;
-
-    initialize_keys(publicKey, masterKey);
+    initialize_keys(initPublicKey.to_string(), initMasterKey.to_string(), publicKey, masterKey);
     std::cout << "public key: " << publicKey.to_string() << std::endl;
     std::cout << "master key: " << masterKey.to_string() << std::endl;
 
