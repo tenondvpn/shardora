@@ -359,7 +359,7 @@ async function check_transaction(check_count, check_accounts_str, amount) {
                 break;
             }
 
-            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}, check_count: ${check_count}`);
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout.trim()}, check_count: ${check_count}`);
         } catch (error) {
             console.log(error);
         }
