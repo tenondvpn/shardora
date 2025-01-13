@@ -126,9 +126,7 @@ contract Exchange {
     function GetItemJson(UserInfo memory item, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
-        all_bytes[filedCount++] = '{"id":"';
-        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.id));
-        all_bytes[filedCount++] = '","hash":"';
+        all_bytes[filedCount++] = '{"hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.hash));
         all_bytes[filedCount++] = '","cipher_str":"';
         all_bytes[filedCount++] = ToHex(item.cipher_str);
