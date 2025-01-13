@@ -41,6 +41,7 @@ void ContractCpabe::initialize_keys(
         PublicKey &publicKey, 
         MasterKey &masterKey) {
     auto pk_splits = common::Split<>(pk_str.c_str(), ',');
+    BN_CTX* ctx = BN_CTX_new();
     BIGNUM* p;
     BN_hex2bn(&p, pk_splits[0]);
     publicKey.p = BIGNUM_ptr(p, BN_free);
@@ -54,6 +55,7 @@ void ContractCpabe::initialize_keys(
     BIGNUM* alpha;
     BN_hex2bn(&alpha, master_key_str.c_str());
     masterKey.alpha = BIGNUM_ptr(alpha, BN_free);
+    BN_CTX_free(ctx);
 }
 
 // 初始化密钥
