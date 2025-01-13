@@ -601,12 +601,12 @@ if (args[0] == 3) {
             '0x' + prikey_base);
         to = account1.address.toString('hex').toLowerCase().substring(2);
         console.log(prikey + ", " + to + ", " + args[4] + ", " + tmp_str);
-        // var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
-        // PostCode(data);
+        var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
+        PostCode(data);
         check_accounts_str += "'" + to + "',"; 
     }
 
-    // check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
+    check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
 }
 
 if (args[0] == 4) {
@@ -616,14 +616,11 @@ if (args[0] == 4) {
     var end = parseInt(args[3]);
     for (var i = start; i < end; ++i) {
         var tmp_str = i.toString();
-        for (var j = 0; j < tmp_str.length; ++j) {
-            prikey_base[j] = tmp_str[j];
-        }
-
+        var prikey = tmp_str + prikey_base.substring(tmp_str.length, prikey_base.length);
         var account1 = web3.eth.accounts.privateKeyToAccount(
             '0x' + prikey_base);
         to = account1.address.toString('hex').toLowerCase().substring(2); 
-        Prepayment(prikey_base, 1000000000000);
+        Prepayment(prikey, 1000000000000);
         check_accounts_str += "'" + to + "',"; 
     }
 
