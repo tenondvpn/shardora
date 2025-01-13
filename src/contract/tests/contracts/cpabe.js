@@ -596,7 +596,7 @@ if (args[0] == 3) {
     console.log(start +"," + end +"," + args[4]);
     for (var i = start; i < end; ++i) {
         var tmp_str = i.toString();
-        var prikey = tmp_str + prikey_base.substring(tmp_str.length, prikey_base.length);
+        var prikey = prikey_base.substring(tmp_str.length, prikey_base.length) + tmp_str;
         var account1 = web3.eth.accounts.privateKeyToAccount(
             '0x' + prikey);
         to = account1.address.toString('hex').toLowerCase().substring(2);
@@ -618,7 +618,7 @@ if (args[0] == 4) {
     var end = parseInt(args[3]);
     for (var i = start; i < end; ++i) {
         var tmp_str = i.toString();
-        var prikey = tmp_str + prikey_base.substring(tmp_str.length, prikey_base.length);
+        var prikey = prikey_base.substring(tmp_str.length, prikey_base.length) + tmp_str;
         var account1 = web3.eth.accounts.privateKeyToAccount(
             '0x' + prikey);
         to = account1.address.toString('hex').toLowerCase().substring(2); 
