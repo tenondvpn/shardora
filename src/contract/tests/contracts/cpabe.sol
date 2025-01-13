@@ -134,9 +134,9 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(item.public_key);
 
         if (last) {
-            all_bytes[filedCount++] = '}';
+            all_bytes[filedCount++] = '"}';
         } else {
-            all_bytes[filedCount++] = '},';
+            all_bytes[filedCount++] = '"},';
         }
         return bytesConcat(all_bytes, filedCount);
     }
