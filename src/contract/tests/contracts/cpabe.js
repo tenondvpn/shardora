@@ -601,7 +601,9 @@ if (args[0] == 3) {
             '0x' + prikey_base);
         to = account1.address.toString('hex').toLowerCase().substring(2);
         console.log(prikey + ", " + to + ", " + args[4] + ", " + tmp_str);
-        var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
+        var data = create_tx(
+            "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+            to, parseInt(args[4]), 100000, 1, 0, 0);
         PostCode(data);
         check_accounts_str += "'" + to + "',"; 
     }
