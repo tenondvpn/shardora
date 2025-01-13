@@ -602,7 +602,7 @@ if (args[0] == 3) {
         var account1 = web3.eth.accounts.privateKeyToAccount(
             '0x' + prikey_base);
         to = account1.address.toString('hex').toLowerCase().substring(2); 
-        var data = create_tx(str_prikey, to, parseInt(args[4]), 100000, 1, 0, 7);
+        var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 7);
         PostCode(data);
         check_accounts_str += "'" + to + "',"; 
     }
