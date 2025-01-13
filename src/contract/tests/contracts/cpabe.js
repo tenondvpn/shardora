@@ -607,7 +607,7 @@ if (args[0] == 3) {
         check_accounts_str += "'" + to + "',"; 
     }
 
-    check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
+    check_transaction(end - start, check_accounts_str, parseInt(args[4]));
 }
 
 if (args[0] == 4) {
