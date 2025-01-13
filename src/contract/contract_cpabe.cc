@@ -49,7 +49,7 @@ void ContractCpabe::initialize_keys(
     BN_hex2bn(&g, pk_splits[1]);
     publicKey.g = BIGNUM_ptr(g, BN_free);
     BIGNUM* h = BN_new();
-    BN_hex2bn(&h, pk_splits[1]);
+    BN_hex2bn(&h, pk_splits[2]);
     publicKey.h = BIGNUM_ptr(h, BN_free);
 
     BIGNUM* alpha = BN_new();
