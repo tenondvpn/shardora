@@ -43,7 +43,7 @@ int test_pki(int argc, char** argv) {
 
 int test_cpabe(int argc, char** argv) {
     common::ParserArgs parser_arg;
-    parser_arg.AddArgType('d', "des_file", common::kNoValue);
+    parser_arg.AddArgType('d', "des_file", common::kMaybeValue);
     std::string tmp_params = "";
     for (int i = 1; i < argc; i++) {
         if (strlen(argv[i]) == 0) {
