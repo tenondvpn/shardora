@@ -24,7 +24,7 @@ contract Exchange {
        bytes value
     );
 
-    mapping(bytes32 => bytes) public public_keys;
+    mapping(bytes32 => UserInfo) public public_keys;
     bytes32[] all_hashes;
 
     function AddUserPublicKey(bytes32 hash, bytes memory public_key) public {
