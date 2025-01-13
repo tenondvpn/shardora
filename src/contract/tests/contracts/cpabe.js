@@ -308,9 +308,70 @@ function Prepayment(str_prikey, prepay) {
     PostCode(data);
 }
 
-function Prepayment(str_prikey, prepay) {
-    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
+async function transaction(str_prikey, to, amount) {
+    // 为管理账户设置prepayment
+    var data = create_tx(str_prikey, to, amount, 100000, 1, 0, 7);
     PostCode(data);
+    var account1 = web3.eth.accounts.privateKeyToAccount(
+        '0x' + prikey);
+    var check_accounts_str = "";
+    check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
+    var check_count = 1;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(*) from zjc_ck_account_table where id='${to}' and balance >= ${amount};"`;
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    // 检查合约是否创建成功
+    var try_times = 0;
+    while (try_times < 30) {
+        try {
+            const {stdout, stderr} = await execPromise(cmd);
+            if (stdout.trim() == check_count.toString()) {
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
+                break;
+            }
+
+            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+        } catch (error) {
+            //console.log(error);
+        }
+
+        ++try_times;
+        await sleep(2000);
+    }
+
+    if (try_times >= 30) {
+        console.error(`contract prepayment failed!`);
+        return;
+    }
+}
+
+async function check_transaction(check_count, check_accounts_str, amount) {
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(id)) from zjc_ck_account_table where id in (${check_accounts_str}) and balance >= ${amount};"`;
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    // 检查合约是否创建成功
+    var try_times = 0;
+    while (try_times < 30) {
+        try {
+            const {stdout, stderr} = await execPromise(cmd);
+            if (stdout.trim() == check_count.toString()) {
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
+                break;
+            }
+
+            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+        } catch (error) {
+            //console.log(error);
+        }
+
+        ++try_times;
+        await sleep(2000);
+    }
+
+    if (try_times >= 30) {
+        console.error(`contract prepayment failed!`);
+        return;
+    }
 }
 
 async function SetManagerPrepayment(contract_address, prikey) {
@@ -321,6 +382,36 @@ async function SetManagerPrepayment(contract_address, prikey) {
     var check_accounts_str = "";
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
     var check_count = 1;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    // 检查合约是否创建成功
+    var try_times = 0;
+    while (try_times < 30) {
+        try {
+            const {stdout, stderr} = await execPromise(cmd);
+            if (stdout.trim() == check_count.toString()) {
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
+                break;
+            }
+
+            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+        } catch (error) {
+            //console.log(error);
+        }
+
+        ++try_times;
+        await sleep(2000);
+    }
+
+    if (try_times >= 30) {
+        console.error(`contract prepayment failed!`);
+        return;
+    }
+}
+
+async function CheckPrepayment(check_count， contract_address, check_accounts_str) {
+    // 为管理账户设置prepayment
     var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
@@ -498,13 +589,46 @@ if (args[0] == 2) {
 }
 
 if (args[0] == 3) {
-    const privateKeyBuf = Secp256k1.uint256(args[2], 16)
-    self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
-    self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
-    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
-    var address = keccak256(pk_bytes).toString('hex')
-    address = address.slice(address.length - 40, address.length)
-    console.log(address.toString('hex'));
+    var check_accounts_str = "";
+    var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+    var start = parseInt(args[2]);
+    var end = parseInt(args[3]);
+    for (var i = start; i < end; ++i) {
+        var tmp_str = str(i);
+        for (var j = 0; j < tmp_str.length; ++j) {
+            prikey_base[j] = tmp_str[j];
+        }
+
+        var account1 = web3.eth.accounts.privateKeyToAccount(
+            '0x' + prikey_base);
+        to = account1.address.toString('hex').toLowerCase().substring(2); 
+        var data = create_tx(str_prikey, to, parseInt(args[4]), 100000, 1, 0, 7);
+        PostCode(data);
+        check_accounts_str += "'" + to + "',"; 
+    }
+
+    await check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
+}
+
+if (args[0] == 4) {
+    var check_accounts_str = "";
+    var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+    var start = parseInt(args[2]);
+    var end = parseInt(args[3]);
+    for (var i = start; i < end; ++i) {
+        var tmp_str = str(i);
+        for (var j = 0; j < tmp_str.length; ++j) {
+            prikey_base[j] = tmp_str[j];
+        }
+
+        var account1 = web3.eth.accounts.privateKeyToAccount(
+            '0x' + prikey_base);
+        to = account1.address.toString('hex').toLowerCase().substring(2); 
+        Prepayment(prikey_base, 1000000000000);
+        check_accounts_str += "'" + to + "',"; 
+    }
+
+    await CheckPrepayment(contract_address, check_accounts_str);
 }
 
 // 测试合约查询
