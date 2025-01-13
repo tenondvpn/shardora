@@ -594,7 +594,7 @@ if (args[0] == 3) {
     var start = parseInt(args[2]);
     var end = parseInt(args[3]);
     for (var i = start; i < end; ++i) {
-        var tmp_str = str(i);
+        var tmp_str = "" + i;
         for (var j = 0; j < tmp_str.length; ++j) {
             prikey_base[j] = tmp_str[j];
         }
@@ -616,7 +616,7 @@ if (args[0] == 4) {
     var start = parseInt(args[2]);
     var end = parseInt(args[3]);
     for (var i = start; i < end; ++i) {
-        var tmp_str = str(i);
+        var tmp_str = "" + i;
         for (var j = 0; j < tmp_str.length; ++j) {
             prikey_base[j] = tmp_str[j];
         }
