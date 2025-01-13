@@ -23,6 +23,8 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 
+#include "common/encode.h"
+#include "common/split.h"
 #include "common/tick.h"
 #include "contract/contract_interface.h"
 #include "db/db.h"
@@ -34,6 +36,16 @@ namespace shardora {
 namespace contract {
 
 
+// 将 BIGNUM 转换为十六进制字符串
+std::string bn_to_hex(const BIGNUM* bn) {
+    if (!bn) return "";
+    char* hex_str = BN_bn2hex(bn);
+    if (!hex_str) return "";
+    std::string result(hex_str);
+    OPENSSL_free(hex_str);
+    return result;
+}
+
 // 定义一个智能指针类型，用于管理 BIGNUM 对象
 using BIGNUM_ptr = std::unique_ptr<BIGNUM, decltype(&BN_free)>;
 
@@ -44,6 +56,9 @@ struct AttributeKeyPair {
 
     AttributeKeyPair(const std::string& attr, BIGNUM* key_val)
         : attribute(attr), key(key_val, BN_free) {}
+    std::string to_string() {
+        return common::Encode::HexEncode(attribute) + "," + bn_to_hex(key.get());
+    }
 };
 
 // 结构体：公钥
@@ -64,6 +79,11 @@ struct PublicKey {
     // 允许移动
     PublicKey(PublicKey&&) noexcept = default;
     PublicKey& operator=(PublicKey&&) noexcept = default;
+    std::string to_string() {
+        return bn_to_hex(p.get()) + "," + 
+            bn_to_hex(g.get()) + "," +
+            bn_to_hex(h.get());
+    }
 };
 
 // 结构体：主密钥
@@ -79,6 +99,9 @@ struct MasterKey {
     // 允许移动
     MasterKey(MasterKey&&) noexcept = default;
     MasterKey& operator=(MasterKey&&) noexcept = default;
+    std::string to_string() {
+        return bn_to_hex(alpha.get());
+    }
 };
 
 // 结构体：用户私钥
@@ -95,6 +118,7 @@ struct UserPrivateKey {
     // 允许移动
     UserPrivateKey(UserPrivateKey&&) noexcept = default;
     UserPrivateKey& operator=(UserPrivateKey&&) noexcept = default;
+
 };
 
 // 结构体：密文
@@ -114,6 +138,9 @@ struct CipherText {
     // 允许移动
     CipherText(CipherText&&) noexcept = default;
     CipherText& operator=(CipherText&&) noexcept = default;
+    std::string to_string() {
+        return common::Encode::HexEncode(policy) + "," + bn_to_hex(C1.get()) + "," + bn_to_hex(C2.get());
+    }
 };
 
 
@@ -283,9 +310,6 @@ public:
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res);
-
-    // 将 BIGNUM 转换为十六进制字符串
-    std::string bn_to_hex(const BIGNUM* bn);
 
     // 日志记录函数
     void log_message(const std::string& message);
