@@ -410,7 +410,7 @@ async function SetManagerPrepayment(contract_address, prikey) {
     }
 }
 
-async function CheckPrepayment(check_count， contract_address, check_accounts_str) {
+async function CheckPrepayment(check_count, contract_address, check_accounts_str) {
     // 为管理账户设置prepayment
     var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
