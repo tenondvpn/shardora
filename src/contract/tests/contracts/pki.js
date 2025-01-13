@@ -10,10 +10,9 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "08e1eab96c9e759daa3aff82b40e77cd615a41d5";
+var contract_address = "08e1eab96c9e759daa3aff82b40e77cd615a41d9";
 var node_host = "127.0.0.1"
 
-/*
 {
     const newLog = function () {
       console.info(new Date().toLocaleString());
@@ -23,12 +22,12 @@ var node_host = "127.0.0.1"
       console.info(new Date().toLocaleString());
       arguments.callee.oError.apply(this, arguments);
     };
-    newLog.oLog = //console.log;
+    newLog.oLog = console.log;
     newError.oError = console.error;
-    //console.log = newLog;
+    console.log = newLog;
     console.error = newError;
 }
-*/
+  
 function str_to_hex(str) {
     var arr1 = [];
     for (var n = 0; n < str.length; n++) {
@@ -356,7 +355,7 @@ function sleep(ms) {
 
 function InitC2cEnv(key, value) {
     const { exec } = require('child_process');
-    exec('solc --bin ./ars.sol', async (error, stdout, stderr) => {
+    exec('solc --bin ./pki.sol', async (error, stdout, stderr) => {
         if (error) {
           console.error(`exec error: ${error}`);
           return;
@@ -365,26 +364,11 @@ function InitC2cEnv(key, value) {
         var out_lines = stdout.split('\n');
         //console.log(`solc bin codes: ${out_lines[3]}`);
         {
-            var cons_codes = "";
-            {
-                var key_len = key.length.toString();
-                if (key.length <= 9) {
-                    key_len = "0" + key_len;
-                }
-    
-                var param = "readd" + key_len + key + value;
-                var hexparam = web3.utils.toHex(param);
-                // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-                cons_codes = web3.eth.abi.encodeParameters(
-                    ['bytes'], 
-                    [hexparam]);
-                //console.log("cons_codes: " + cons_codes.substring(2));
-            }
             // 转账到管理账户，创建合约
             {
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    out_lines[3] + cons_codes.substring(2));
+                    out_lines[3]);
                 var contract_cmd = `clickhouse-client --host ${node_host} --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
@@ -419,27 +403,9 @@ function InitC2cEnv(key, value) {
       });
 }
 
-function add_pairing_param(prev, key, value) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = prev + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-    var addParam = web3.eth.abi.encodeParameters(
-        ['bytes'], 
-        [hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
-    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
-    call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
-
-}
-
-function CreateNewArs(prev, key, value, id) {
+var pki_count = 3;
+var ib_count = 2;
+function PkiExtract(prev, key, value, id) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
         key_len = "0" + key_len;
@@ -450,15 +416,15 @@ function CreateNewArs(prev, key, value, id) {
     // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var addParam = web3.eth.abi.encodeParameters(
         ['uint256', 'uint256', 'bytes32', 'bytes'], 
-        [3, 2, '0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewArs(uint256,uint256,bytes32,bytes)');
+        [pki_count, ib_count, '0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('PkiExtract(uint256,uint256,bytes32,bytes)');
     //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function SingleSign(prev, key, value, id) {
+function IbExtract(prev, key, value, id) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
         key_len = "0" + key_len;
@@ -470,14 +436,14 @@ function SingleSign(prev, key, value, id) {
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('SingleSign(bytes32,bytes)');
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('IbExtract(bytes32,bytes)');
     //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function AggSign(prev, key, value, id) {
+function EncKeyGen(prev, key, value, id) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
         key_len = "0" + key_len;
@@ -485,11 +451,64 @@ function AggSign(prev, key, value, id) {
 
     var param = prev + key_len + key + value;
     var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('AggSign(bytes32,bytes)');
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('EncKeyGen(bytes32,bytes)');
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
+function DecKeyGen(prev, key, value, id) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = prev + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes'], 
+        ['0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('DecKeyGen(bytes32,bytes)');
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
+function Enc(prev, key, value, id) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = prev + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes'], 
+        ['0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('Enc(bytes32,bytes)');
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
+function Dec(prev, key, value, id) {
+    var key_len = key.length.toString();
+    if (key.length <= 9) {
+        key_len = "0" + key_len;
+    }
+
+    var param = prev + key_len + key + value;
+    var hexparam = web3.utils.toHex(param);
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32', 'bytes'], 
+        ['0x' + id, hexparam]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('Dec(bytes32,bytes)');
     //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
@@ -519,22 +538,38 @@ if (args[0] == 0) {
 var tmp_id = args[1]
 // 测试聚合环签名整个流程
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
+var sks = [
+    "70dc351ef4b8f835d7c27166ad6c1f744de84680f904d3404331528f5ee1fb25f8a6eda3de2f7917adc990a6f120ad176da9282396885feb36aca70c1b8a2d4c5363761c68fcc297b089b7e82bb2d89e203a9fcf314311fb5fba787938e3da3a6a6e0c0d4f020f903c2aeb8319a001004b79d7aa26ab8d5ca9eeb223c9c7e155",
+    "5eb8ed56311f7edc777606e1a60cb37efb21a83b88f4d1c0f6dcbeb0f11831cebd5f57e9abff198e639ff4d45fcf3b67f266d0f5c1ec258d4030e1e1b26e86b7265544a88f7ebc14a9977b0e1a8dcafa0512c83e26b1d58b507d2b7195d868fcd984bc742e7f8c799aa8615a44fa55b68ce4785b4829aacf8b1e0800b4985876",
+    "1ae7e9b948eef55c34be67acea0e8ebdffa495e11dce29a2376caab59b4e3853db33b64298a18cc15948df89f6ecb23dde75e02f371b27ffa79b74f08583ac6d2466f5a36bcad6d8d1ee8a77a98f2b01800ffa0a2a4ab392e981b6f68293c973ca26208da46bf708946bd57305868008a24c1fa40f7475e8c2a99d41219cef3e",
+    "1b3cf8c37ce6da0bda5fc859e4a34edf380457480d18a150315c84cc6550336b35db7eb8047ce54159297d609e47e2a061804c66544e496642a25100011a7c100d863de5ad7a892cc9572f3d3cf878940de1825e51ea157597bc4102c845c605876118e9d23d9659cac93904394fabc0e9e8bdff8a06daaf0e276547194d6866",
+    "9df49ef65b11fbb8ce0d8e942fe56c0b840edf24872865dc8d799cd298a08d9cfbc2038e27f68e124b5a95da823253df7f004c95b5015dd428d1c53363a2368742109837308076d3fcc7bd78ac4ce87239db45dac7669de47b2490d3869b8b1c0fc6fd4540b76fcc2b69b994a6671781f38297209823e81cd80b533bad8ce81f",
+]
+
 console.log(id);
 if (args[0] == 1) {
-    CreateNewArs("tarscr", "tarscr", args[2]+"-"+args[3]+"," + id, id);
+    PkiExtract("pkipki", "pkipki", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
     //console.log(id);
 }
 
 if (args[0] == 2) {
-    SingleSign("tarsps", "tarsps", args[2] + "-" + id, id);
+    IbExtract("pkipib", "pkipib", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
 }
 
 if (args[0] == 3) {
-    AggSign("tarsas", "tarsas", id, id);
+    EncKeyGen("pkiege", "pkiege", pki_count.toString() + ";" + ib_count.toString() + ";" + id, id);
 }
 
 if (args[0] == 4) {
-    add_pairing_param("tars", "tars", id, id);
+    DecKeyGen("pkidge", "pkidge", pki_count.toString() + ";" + ib_count.toString() + ";" + id, id);
+}
+
+if (args[0] == 5) {
+    Enc("pkienc", "pkienc", id + ";" + args[2], id);
+}
+
+if (args[0] == 6) {
+    Dec("pkidec", "pkidec", id + ";" + args[2], id);
 }
 
 // 测试合约查询
