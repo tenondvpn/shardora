@@ -494,7 +494,7 @@ if (args[0] == 1) {
 }
 
 if (args[0] == 2) {
-    EncryptMessage('0x'+id, "cipher");
+    EncryptMessage('0x'+id, web3.utils.toHex("cipher"));
     //console.log(id);
 }
 
