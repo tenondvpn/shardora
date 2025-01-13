@@ -280,14 +280,14 @@ int ContractCpabe::test_cpabe() {
     // 显示主密钥信息（通常不应公开，但为了测试展示）
     std::cout << "主密钥 (alpha): " << bn_to_hex(masterKey.alpha.get()) << std::endl;
 
-    // ----------- 测试用例1：策略匹配成功 -----------
-    std::cout << "\n--- 测试用例1：策略匹配成功 ---" << std::endl;
-    // 显示用户属性
-    std::cout << "用户属性列表：[";
-    for (size_t i = 0; i < userPrivateKey_success.attributes.size(); ++i) {
-        std::cout << (i > 0 ? ", " : "") << userPrivateKey_success.attributes[i].attribute;
-    }
-    std::cout << "]" << std::endl;
+    // // ----------- 测试用例1：策略匹配成功 -----------
+    // std::cout << "\n--- 测试用例1：策略匹配成功 ---" << std::endl;
+    // // 显示用户属性
+    // std::cout << "用户属性列表：[";
+    // for (size_t i = 0; i < userPrivateKey_success.attributes.size(); ++i) {
+    //     std::cout << (i > 0 ? ", " : "") << userPrivateKey_success.attributes[i].attribute;
+    // }
+    // std::cout << "]" << std::endl;
 
     // // 加密消息
     // std::string message1 = "Hello, CP-ABE!";
