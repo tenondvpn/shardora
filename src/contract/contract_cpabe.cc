@@ -259,6 +259,8 @@ int ContractCpabe::test_cpabe() {
     MasterKey initMasterKey;
 
     initialize_keys(initPublicKey, initMasterKey);
+    std::cout << "init public key: " << initPublicKey.to_string() << std::endl;
+    std::cout << "int master key: " << initMasterKey.to_string() << std::endl;
 
     PublicKey publicKey;
     MasterKey masterKey;
