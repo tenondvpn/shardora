@@ -68,7 +68,7 @@ int ElectTxItem::processElect(
     const pools::protobuf::PoolStatisticItem *statistic = nullptr;
     shardora::common::MembersPtr members = nullptr;
     int retVal = getMaxElectHeightInfo(elect_statistic, statistic, members);
-    if ( retVal != kConsensusSuccess) {
+    if (retVal != kConsensusSuccess) {
         ZJC_DEBUG("getMaxElectHeightInfo failed ret val: %d", retVal);
         assert(false);
         return retVal;

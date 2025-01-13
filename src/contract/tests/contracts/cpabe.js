@@ -598,7 +598,7 @@ if (args[0] == 3) {
         var tmp_str = i.toString();
         var prikey = tmp_str + prikey_base.substring(tmp_str.length, prikey_base.length);
         var account1 = web3.eth.accounts.privateKeyToAccount(
-            '0x' + prikey_base);
+            '0x' + prikey);
         to = account1.address.toString('hex').toLowerCase().substring(2);
         console.log(prikey + ", " + to + ", " + args[4] + ", " + tmp_str);
         var data = create_tx(
@@ -620,7 +620,7 @@ if (args[0] == 4) {
         var tmp_str = i.toString();
         var prikey = tmp_str + prikey_base.substring(tmp_str.length, prikey_base.length);
         var account1 = web3.eth.accounts.privateKeyToAccount(
-            '0x' + prikey_base);
+            '0x' + prikey);
         to = account1.address.toString('hex').toLowerCase().substring(2); 
         Prepayment(prikey, 1000000000000);
         check_accounts_str += "'" + to + "',"; 
