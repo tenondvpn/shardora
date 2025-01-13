@@ -369,7 +369,7 @@ int Ripemd160::SingleSign(
 
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
     ZJC_WARN("single sign success: %d, %s, from: %s, key: %s",
-        signer_idx, val.c_str(), 
+        signer_idx, line_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
     element_clear(delta_prime);
     element_clear(y_prime);
@@ -471,7 +471,7 @@ int Ripemd160::AggSignAndVerify(
         // 聚合签名验证
         bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
         if (is_aggregate_valid) {
-            ZJC_WARN("Aggregate signature verification passed!");
+            ZJC_WARN("Aggregate signature verification passed: %s", value.c_str());
         } else {
             ZJC_WARN("Aggregate signature verification failed!");
         }

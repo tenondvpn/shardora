@@ -10,25 +10,26 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "08e1eab96c9e759daa3aff82b40e77cd615a41d5";
+var contract_address = "1001eab96c9e759daa3aff82b40e77cd615a41d9";
+var http_response = "";
+
 var node_host = "127.0.0.1"
 
-/*
-{
-    const newLog = function () {
-      console.info(new Date().toLocaleString());
-      arguments.callee.oLog.apply(this, arguments);
-    };
-    const newError = function () {
-      console.info(new Date().toLocaleString());
-      arguments.callee.oError.apply(this, arguments);
-    };
-    newLog.oLog = //console.log;
-    newError.oError = console.error;
-    //console.log = newLog;
-    console.error = newError;
-}
-*/
+// {
+//     const newLog = function () {
+//       console.info(new Date().toLocaleString());
+//       arguments.callee.oLog.apply(this, arguments);
+//     };
+//     const newError = function () {
+//       console.info(new Date().toLocaleString());
+//       arguments.callee.oError.apply(this, arguments);
+//     };
+//     newLog.oLog = console.log;
+//     newError.oError = console.error;
+//     console.log = newLog;
+//     console.error = newError;
+// }
+  
 function str_to_hex(str) {
     var arr1 = [];
     for (var n = 0; n < str.length; n++) {
@@ -257,11 +258,6 @@ function call_contract(str_prikey, input, amount) {
     PostCode(data);
 }
 
-function do_transaction(str_prikey, to_addr, amount, gas_limit, gas_price) {
-    var data = create_tx(str_prikey, to_addr, amount, gas_limit, gas_price, 0, 0);
-    PostCode(data);
-}
-
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
@@ -277,11 +273,14 @@ function QueryPostCode(path, data) {
 
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            //console.log('Response: ' + chunk);
-            var json_res = JSON.parse(chunk)
-            // //console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
-        })
+        var data = '';
+        res.on('data', function(chunk) {
+            data += chunk;
+        });
+        
+        res.on('end', function() {
+            http_response = data;
+        });
     });
 
     post_req.write(post_data);
@@ -314,11 +313,11 @@ function Prepayment(str_prikey, prepay) {
     PostCode(data);
 }
 
-async function SetManagerPrepayment(contract_address) {
+async function SetManagerPrepayment(contract_address, prikey) {
     // 为管理账户设置prepayment
-    Prepayment("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 1000000000000);
+    Prepayment(prikey, 1000000000000);
     var account1 = web3.eth.accounts.privateKeyToAccount(
-        '0xcefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848');
+        '0x' + prikey);
     var check_accounts_str = "";
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
     var check_count = 1;
@@ -356,7 +355,7 @@ function sleep(ms) {
 
 function InitC2cEnv(key, value) {
     const { exec } = require('child_process');
-    exec('solc --bin ./ars.sol', async (error, stdout, stderr) => {
+    exec('solc --bin ./cpabe.sol', async (error, stdout, stderr) => {
         if (error) {
           console.error(`exec error: ${error}`);
           return;
@@ -365,26 +364,11 @@ function InitC2cEnv(key, value) {
         var out_lines = stdout.split('\n');
         //console.log(`solc bin codes: ${out_lines[3]}`);
         {
-            var cons_codes = "";
-            {
-                var key_len = key.length.toString();
-                if (key.length <= 9) {
-                    key_len = "0" + key_len;
-                }
-    
-                var param = "readd" + key_len + key + value;
-                var hexparam = web3.utils.toHex(param);
-                // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-                cons_codes = web3.eth.abi.encodeParameters(
-                    ['bytes'], 
-                    [hexparam]);
-                //console.log("cons_codes: " + cons_codes.substring(2));
-            }
             // 转账到管理账户，创建合约
             {
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-                    out_lines[3] + cons_codes.substring(2));
+                    out_lines[3]);
                 var contract_cmd = `clickhouse-client --host ${node_host} --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
@@ -413,95 +397,79 @@ function InitC2cEnv(key, value) {
                 }
 
                 // 预设值合约调用币，并等待成功
-                SetManagerPrepayment(contract_address);
+                var prikeys = [
+                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
+                    "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d",
+                    "6ad7b4019956c958da14121fa273a34b612a2a03239771e8e16fa730e43e6512",
+                    "ee762323b168752a9249c2959ed7c04b794d881005d511e6ac894025d52d5938",
+                  
+                ];
+                for (var i = 0; i < prikeys.length; ++i)
+                {
+                    SetManagerPrepayment(contract_address, prikeys[i]);
+                }
+
             }
         }
       });
 }
 
-function add_pairing_param(prev, key, value) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = prev + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-    var addParam = web3.eth.abi.encodeParameters(
-        ['bytes'], 
-        [hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
-    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
-    call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
-
-}
-
-function CreateNewArs(prev, key, value, id) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = prev + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
-    var addParam = web3.eth.abi.encodeParameters(
-        ['uint256', 'uint256', 'bytes32', 'bytes'], 
-        [3, 2, '0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewArs(uint256,uint256,bytes32,bytes)');
-    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
-    call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2) + addParam.substring(2), 0);
-}
-
-function SingleSign(prev, key, value, id) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = prev + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+function AddUserPublicKey(hash, pubkey) {
+    // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
-        ['0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('SingleSign(bytes32,bytes)');
-    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+        [hash, pubkey]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('AddUserPublicKey(bytes32,bytes)');
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function AggSign(prev, key, value, id) {
-    var key_len = key.length.toString();
-    if (key.length <= 9) {
-        key_len = "0" + key_len;
-    }
-
-    var param = prev + key_len + key + value;
-    var hexparam = web3.utils.toHex(param);
-    // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
+function EncryptMessage(hash, cipher) {
+    // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
-        ['0x' + id, hexparam]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('AggSign(bytes32,bytes)');
-    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+        [hash, cipher]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptMessage(bytes32,bytes)');
     call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function GetAllArsJson() {
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllArsJson()');
-    //console.log("GetAllArsJson 0: " + addParamCode.substring(2));
+function hexStringToInt64(hexString) {
+    // 将16进制字符串转换为Buffer
+    const buffer = Buffer.from(hexString, 'hex');
+    // 如果buffer大小大于8，则截取前8个字节
+    if (buffer.length > 8) {
+        buffer.slice(0, 8);
+    }
+    // 使用DataView以64位整数形式读取
+    const dataView = new DataView(buffer.buffer.slice(0, 8));
+    return dataView.getBigInt64(0);
+}
+
+async function GetAllItemJson() {
+    http_response = "";
+    var addParam = web3.eth.abi.encodeParameters(
+        ['uint256', 'uint256'], 
+        [0, 100]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson(uint256,uint256)');
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
-        addParamCode.substring(2));
+        addParamCode.substring(2) + addParam.substring(2));
+
+    while (http_response == "") {
+        console.log("waiting...");
+        await sleep(1000);
+    }
+
+    console.log("http_response: " + http_response);
+    // var json_test = '[{"id":"00","hash":"3e07c561e4a40074e6344f1a62ad739be146ea945f0fda414d459a70b87d8a5a","owner":"44a5c714cb3f502fb77618a4a0353d96148fde7e","info":"746573745f6a736f6e","price":"01","start_time":"00","end_time":"00","buyers":[{"buyer":"0000000000000000000000000000000000000000","price":"00"},{"buyer":"611cf0f0a69ef9c74ef36d2e0892280dc4494fe5","price":"64"}]}]';
+    // var res_json_tmp = JSON.parse(json_test);
+
+
+    var res_json = JSON.parse(http_response);
+    console.log(res_json);
 }
 
 const args = process.argv.slice(2)
@@ -521,23 +489,16 @@ var tmp_id = args[1]
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
 console.log(id);
 if (args[0] == 1) {
-    CreateNewArs("tarscr", "tarscr", args[2]+"-"+args[3]+"," + id, id);
+    AddUserPublicKey('0x'+id, web3.utils.toHex("test_json"));
     //console.log(id);
 }
 
 if (args[0] == 2) {
-    SingleSign("tarsps", "tarsps", args[2] + "-" + id, id);
-}
-
-if (args[0] == 3) {
-    AggSign("tarsas", "tarsas", id, id);
-}
-
-if (args[0] == 4) {
-    add_pairing_param("tars", "tars", id, id);
+    EncryptMessage('0x'+id, web3.utils.toHex("cipher"));
+    //console.log(id);
 }
 
 // 测试合约查询
 if (args[0] == 30) {
-    GetAllArsJson();
+    GetAllItemJson();
 }
