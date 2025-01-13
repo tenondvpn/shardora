@@ -595,7 +595,7 @@ if (args[0] == 3) {
     var end = parseInt(args[3]);
     console.log(start +"," + end +"," + args[4]);
     for (var i = start; i < end; ++i) {
-        var tmp_str = "" + i;
+        var tmp_str = i.toString();
         for (var j = 0; j < tmp_str.length; ++j) {
             prikey_base[j] = tmp_str[j];
         }
@@ -604,12 +604,12 @@ if (args[0] == 3) {
             '0x' + prikey_base);
         to = account1.address.toString('hex').toLowerCase().substring(2);
         console.log(prikey_base + ", " + to + ", " + args[4]);
-        var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
-        PostCode(data);
+        // var data = create_tx(prikey_base, to, parseInt(args[4]), 100000, 1, 0, 0);
+        // PostCode(data);
         check_accounts_str += "'" + to + "',"; 
     }
 
-    check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
+    // check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
 }
 
 if (args[0] == 4) {
@@ -618,7 +618,7 @@ if (args[0] == 4) {
     var start = parseInt(args[2]);
     var end = parseInt(args[3]);
     for (var i = start; i < end; ++i) {
-        var tmp_str = "" + i;
+        var tmp_str = i.toString();
         for (var j = 0; j < tmp_str.length; ++j) {
             prikey_base[j] = tmp_str[j];
         }
