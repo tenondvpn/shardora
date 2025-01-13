@@ -425,7 +425,7 @@ async function CheckPrepayment(check_count, contract_address, check_accounts_str
                 break;
             }
 
-            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
         } catch (error) {
             //console.log(error);
         }
@@ -625,7 +625,7 @@ if (args[0] == 4) {
         check_accounts_str += "'" + to + "',"; 
     }
 
-    CheckPrepayment(contract_address, check_accounts_str);
+    CheckPrepayment(end - start, contract_address, check_accounts_str);
 }
 
 // 测试合约查询
