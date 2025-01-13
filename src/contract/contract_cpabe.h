@@ -37,7 +37,7 @@ namespace contract {
 
 
 // 将 BIGNUM 转换为十六进制字符串
-std::string bn_to_hex(const BIGNUM* bn) {
+inline static std::string bn_to_hex(const BIGNUM* bn) {
     if (!bn) return "";
     char* hex_str = BN_bn2hex(bn);
     if (!hex_str) return "";
