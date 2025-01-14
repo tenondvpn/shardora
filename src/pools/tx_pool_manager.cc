@@ -400,11 +400,12 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
     // just one thread
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u",
+    ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u, gid: %s",
         msg_ptr->header.hash64(),
         thread_idx,
         pools_msg_queue_[thread_idx].size(),
-        common::GlobalInfo::Instance()->pools_each_thread_max_messages());
+        common::GlobalInfo::Instance()->pools_each_thread_max_messages(),
+        common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pools_msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
         return;
@@ -524,11 +525,12 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
-        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d",
+        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, gid: %s",
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
             common::Encode::HexEncode(tx_msg.to()).c_str(),
-            tx_msg.step());
+            tx_msg.step(),
+            common::Encode::HexEncode(tx_msg.gid()).c_str());
         switch (tx_msg.step()) {
         case pools::protobuf::kJoinElect:
             HandleElectTx(msg_ptr);
@@ -555,8 +557,9 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             }
             
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s", 
-                common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, gid: %s", 
+                common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
+                common::Encode::HexEncode(tx_msg.gid()).c_str());
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
             msg_queues_[pool_index].push(msg_ptr);
 //             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
@@ -1245,13 +1248,13 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     tx_pool_[pool_index].AddTx(tx_ptr);
-    // ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
-    //     pool_index,
-    //     msg_ptr->header.tx_proto().step(),
-    //     common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-    //     common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-    //     common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
-    //     common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
+    ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
+        pool_index,
+        msg_ptr->header.tx_proto().step(),
+        common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+        common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
+        common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
 void TxPoolManager::GetTxSyncToLeader(
