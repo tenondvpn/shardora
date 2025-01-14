@@ -440,7 +440,7 @@ bool TxPool::GidValid(const std::string& gid) {
 
         return true;
     }
-   
+    
     return false;
 }
 

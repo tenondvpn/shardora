@@ -359,7 +359,7 @@ async function check_transaction(check_count, check_accounts_str, amount) {
                 break;
             }
 
-            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}, check_count: ${check_count}`);
         } catch (error) {
             console.log(error);
         }
@@ -608,7 +608,7 @@ if (args[0] == 3) {
         check_accounts_str += "'" + to + "',"; 
     }
 
-    check_transaction(end - start + 1, check_accounts_str, parseInt(args[4]));
+    check_transaction(end - start, check_accounts_str, parseInt(args[4]));
 }
 
 if (args[0] == 4) {

@@ -1488,12 +1488,21 @@ Status Hotstuff::ConstructVoteMsg(
     vote_msg->set_sign_y(sign_y);
 #endif    
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto* txs = vote_msg->mutable_txs();
-    wrapper()->GetTxSyncToLeader(
-        v_block->leader_idx(), 
-        view_block_chain_, 
-        pacemaker()->HighQC()->view_block_hash(), 
-        txs);
+    auto leader = leader_rotation()->GetLeader();
+    if (!leader) {
+        ZJC_ERROR("Get Leader failed.");
+        return Status::kError;
+    }
+    auto local_idx = leader_rotation_->GetLocalMemberIdx();
+    if (leader->index != local_idx) {
+        auto* txs = vote_msg->mutable_txs();
+        wrapper()->GetTxSyncToLeader(
+                v_block->leader_idx(), 
+                view_block_chain_, 
+                pacemaker()->HighQC()->view_block_hash(), 
+                txs);        
+    }
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }

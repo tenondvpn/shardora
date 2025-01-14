@@ -229,6 +229,8 @@ Status BlockAcceptor::addTxsToPool(
             return Status::kError;
         }
 
+        ZJC_DEBUG("tx gid: %s, step: %d", common::Encode::HexEncode(tx->gid()).c_str(), tx->step());
+
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
