@@ -346,15 +346,15 @@ int ContractCpabe::decrypt(
     BIGNUM* c2 = BN_new();
     BN_hex2bn(&c1, cipher_splits[1]);
     BN_hex2bn(&c2, cipher_splits[2]);
-    cipher.C1 = BIGNUM_ptr(c1, BN_free);
-    cipher.C2 = BIGNUM_ptr(c2, BN_free);
+    cipher.C1.reset(c1);
+    cipher.C2.reset(c2);
     std::string decrypted_message;
     if (decrypt(publicKey, masterKey, userPrivateKey, cipher, decrypted_message)) {
         std::cout << "dec message: " << decrypted_message << std::endl;
     } else {
         std::cout << "dec invalid." << std::endl;
     }
-    
+
     BN_CTX_free(ctx);
     return 0;
 }
