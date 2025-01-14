@@ -231,9 +231,9 @@ Status Hotstuff::Propose(
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
-    for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
-        consensus_debug.add_vote_timestamps(0);
-    }
+    // for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
+    //     consensus_debug.add_vote_timestamps(0);
+    // }
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
