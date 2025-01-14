@@ -423,7 +423,6 @@ bool TxPool::GidValid(const std::string& gid) {
     CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
         if (prefix_db_->CheckAndSaveGidExists(gid)) {
-            ZJC_DEBUG("====8.2 gid invalid: %s", common::Encode::HexEncode(gid).c_str());
             return false;
         }
 
@@ -441,8 +440,7 @@ bool TxPool::GidValid(const std::string& gid) {
 
         return true;
     }
-
-    ZJC_DEBUG("====8.3 gid invalid: %s", common::Encode::HexEncode(gid).c_str());
+    
     return false;
 }
 
