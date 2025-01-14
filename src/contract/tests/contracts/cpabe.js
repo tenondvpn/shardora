@@ -504,25 +504,25 @@ function InitC2cEnv(key, value) {
       });
 }
 
-function AddUserPublicKey(hash, pubkey) {
+function AddUserPublicKey(private_key, hash, pubkey) {
     // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
         [hash, pubkey]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('AddUserPublicKey(bytes32,bytes)');
     call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        private_key, 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function EncryptMessage(hash, cipher) {
+function EncryptMessage(private_key, hash, cipher) {
     // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
         ['bytes32', 'bytes'], 
         [hash, cipher]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptMessage(bytes32,bytes)');
     call_contract(
-        "259a715d21d50e32202e51b7b6ec353e2caeff9f0523db9f2c30ad2a1b9e2b10", 
+        private_key, 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
@@ -578,6 +578,12 @@ var tmp_id = args[1]
 // 测试聚合环签名整个流程
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
 if (args[0] == 1) {
+    var check_accounts_str = "";
+    var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+    var start = parseInt(args[2]);
+    var end = parseInt(args[3]);
+    console.log(start +"," + end +"," + args[4]);
+
     AddUserPublicKey('0x'+id, web3.utils.toHex(args[2]));
     //console.log(id);
 }

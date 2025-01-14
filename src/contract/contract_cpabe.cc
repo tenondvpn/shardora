@@ -52,9 +52,12 @@ void ContractCpabe::initialize_keys(
     BN_hex2bn(&h, pk_splits[2]);
     publicKey.h = BIGNUM_ptr(h, BN_free);
 
-    BIGNUM* alpha = BN_new();
-    BN_hex2bn(&alpha, master_key_str.c_str());
-    masterKey.alpha = BIGNUM_ptr(alpha, BN_free);
+    if (!master_key_str.empty()) {
+        BIGNUM* alpha = BN_new();
+        BN_hex2bn(&alpha, master_key_str.c_str());
+        masterKey.alpha = BIGNUM_ptr(alpha, BN_free);
+    }
+
     BN_CTX_free(ctx);
 }
 
@@ -253,6 +256,109 @@ bool ContractCpabe::decrypt(const PublicKey &publicKey, const MasterKey &masterK
     return true;
 }
 
+int ContractCpabe::generate_private_and_public_key(const std::string& des_file) {
+    // 初始化公钥和主密钥
+    PublicKey initPublicKey;
+    MasterKey initMasterKey;
+
+    initialize_keys(initPublicKey, initMasterKey);
+    std::cout << "init public key: " << initPublicKey.to_string() << std::endl;
+    std::cout << "int master key: " << initMasterKey.to_string() << std::endl;
+
+    PublicKey publicKey;
+    MasterKey masterKey;
+    initialize_keys(initPublicKey.to_string(), initMasterKey.to_string(), publicKey, masterKey);
+    std::cout << "public key: " << publicKey.to_string() << std::endl;
+    std::cout << "master key: " << masterKey.to_string() << std::endl;
+
+    // 定义第三个用户属性（复杂策略匹配成功）
+    std::vector<std::string> user_attributes_complex = {"X", "Y", "Z"};
+    UserPrivateKey userPrivateKey_complex;
+    generate_user_private_key(publicKey, user_attributes_complex, userPrivateKey_complex);
+
+    if (!des_file.empty()) {
+        FILE* fd = fopen(des_file.c_str(), "w");
+        std::string private_str;
+        for (uint32_t i = 0; i < userPrivateKey_complex.attributes.size(); ++i) {
+            std::cout << "user PrivateKey: " << i << ", " << userPrivateKey_complex.attributes[i].to_string() << std::endl;
+            private_str += userPrivateKey_complex.attributes[i].to_string() + ",";
+        }
+
+        auto des_str = publicKey.to_string() + "-" + masterKey.to_string() + "-" + private_str;
+        fwrite(des_str.c_str(), 1, des_str.size(), fd);
+        fclose(fd);
+    }
+
+    return 0;
+}
+
+int ContractCpabe::encrypt(
+        const std::string& des_file, 
+        const std::string& public_key, 
+        const std::string& policy, 
+        const std::string& plan_text) {
+    // 加密消息
+    PublicKey publicKey;
+    MasterKey masterKey;
+    initialize_keys(public_key, "", publicKey, masterKey);
+    CipherText cipher3 = encrypt(publicKey, plan_text, policy);
+    FILE* fd = fopen(des_file.c_str(), "w");
+    auto des_str = cipher3.to_string();
+    fwrite(des_str.c_str(), 1, des_str.size(), fd);
+    fclose(fd);
+    std::cout << "cipher text: " << cipher3.to_string() << std::endl;
+}
+
+int ContractCpabe::decrypt(
+        const std::string& pk_file, 
+        const std::string& cipher_str) {
+    FILE* fd = fopen(pk_file.c_str(), "r");
+    char file_data[1024*1024];
+    fread(file_data, 1, sizeof(file_data), fd);
+    fclose(fd);
+    auto splits = common::Split<>(file_data, '-');
+    if (splits.Count() != 3) {
+        return 1;
+    }
+
+    BN_CTX* ctx = BN_CTX_new();
+    PublicKey publicKey;
+    MasterKey masterKey;
+    initialize_keys(splits[0], splits[1], publicKey, masterKey);
+    UserPrivateKey userPrivateKey;
+    auto prikey_splits = common::Split<>(splits[2], ',');
+    for (auto i = 0; i < prikey_splits.Count(); ++i) {
+        auto tmp_splits = common::Split<>(prikey_splits[i], ':');
+        BIGNUM* key = BN_new();
+        BN_hex2bn(&key, tmp_splits[1]);
+        AttributeKeyPair attr(common::Encode::HexDecode(tmp_splits[0]), key);
+        userPrivateKey.attributes.push_back(attr);
+    }
+
+
+    std::cout << "public key: " << publicKey.to_string() << std::endl;
+    std::cout << "master key: " << masterKey.to_string() << std::endl;
+    // 解密消息
+    auto cipher_splits = common::Split<>(cipher_str.c_str(), ',');
+    CipherText cipher;
+    cipher.policy = common::Encode::HexDecode(cipher_splits[0]);
+    BIGNUM* c1 = BN_new();
+    BIGNUM* c2 = BN_new();
+    BN_hex2bn(&c1, cipher_splits[1]);
+    BN_hex2bn(&c2, cipher_splits[2]);
+    cipher.C1 = BIGNUM_ptr(c1, BN_free);
+    cipher.C2 = BIGNUM_ptr(c2, BN_free);
+    std::string decrypted_message;
+    if (decrypt(publicKey, masterKey, userPrivateKey, cipher, decrypted_message)) {
+        std::cout << "dec message: " << decrypted_message << std::endl;
+    } else {
+        std::cout << "dec invalid." << std::endl;
+    }
+    
+    BN_CTX_free(ctx);
+    return 0;
+}
+
 int ContractCpabe::test_cpabe(const std::string& des_file) {
     // 初始化公钥和主密钥
     PublicKey initPublicKey;
@@ -267,19 +373,24 @@ int ContractCpabe::test_cpabe(const std::string& des_file) {
     initialize_keys(initPublicKey.to_string(), initMasterKey.to_string(), publicKey, masterKey);
     std::cout << "public key: " << publicKey.to_string() << std::endl;
     std::cout << "master key: " << masterKey.to_string() << std::endl;
-    if (!des_file.empty()) {
-        FILE* fd = fopen(des_file.c_str(), "w");
-        auto des_str = publicKey.to_string() + "-" + masterKey.to_string();
-        fwrite(des_str.c_str(), 1, des_str.size(), fd);
-        fclose(fd);
-    }
 
     // 定义第三个用户属性（复杂策略匹配成功）
     std::vector<std::string> user_attributes_complex = {"X", "Y", "Z"};
     UserPrivateKey userPrivateKey_complex;
     generate_user_private_key(publicKey, user_attributes_complex, userPrivateKey_complex);
-    for (uint32_t i = 0; i < userPrivateKey_complex.attributes.size(); ++i) {
-        std::cout << "user PrivateKey: " << i << ", " << userPrivateKey_complex.attributes[i].to_string() << std::endl;
+
+    if (!des_file.empty()) {
+        FILE* fd = fopen(des_file.c_str(), "w");
+        std::string private_str;
+        for (uint32_t i = 0; i < userPrivateKey_complex.attributes.size(); ++i) {
+            std::cout << "user PrivateKey: " << i << ", " << userPrivateKey_complex.attributes[i].to_string() << std::endl;
+            private_str += userPrivateKey_complex.attributes[i].to_string() + ",";
+        }
+
+        auto des_str = publicKey.to_string() + "-" + masterKey.to_string() + "-" + private_str;
+        des_str += "-" + 
+        fwrite(des_str.c_str(), 1, des_str.size(), fd);
+        fclose(fd);
     }
 
     // 加密消息

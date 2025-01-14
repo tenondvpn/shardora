@@ -57,7 +57,7 @@ struct AttributeKeyPair {
     AttributeKeyPair(const std::string& attr, BIGNUM* key_val)
         : attribute(attr), key(key_val, BN_free) {}
     std::string to_string() {
-        return common::Encode::HexEncode(attribute) + "," + bn_to_hex(key.get());
+        return common::Encode::HexEncode(attribute) + ":" + bn_to_hex(key.get());
     }
 };
 
@@ -341,6 +341,15 @@ public:
         const CipherText &cipher, 
         std::string &decrypted_message);
     int test_cpabe(const std::string& des_file);
+    int generate_private_and_public_key(const std::string& des_file);
+    int encrypt(
+        const std::string& des_file, 
+        const std::string& public_key, 
+        const std::string& policy, 
+        const std::string& plan_text);
+    int decrypt(
+        const std::string& des_file, 
+        const std::string& cipher);
 
 private:
     

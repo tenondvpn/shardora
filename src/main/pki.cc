@@ -43,7 +43,12 @@ int test_pki(int argc, char** argv) {
 
 int test_cpabe(int argc, char** argv) {
     common::ParserArgs parser_arg;
+    parser_arg.AddArgType('t', "type", common::kMaybeValue);
     parser_arg.AddArgType('d', "des_file", common::kMaybeValue);
+    parser_arg.AddArgType('p', "public key", common::kMaybeValue);
+    parser_arg.AddArgType('o', "policy", common::kMaybeValue);
+    parser_arg.AddArgType('a', "plain text", common::kMaybeValue);
+    parser_arg.AddArgType('c', "cipher text", common::kMaybeValue);
     std::string tmp_params = "";
     for (int i = 1; i < argc; i++) {
         if (strlen(argv[i]) == 0) {
@@ -63,15 +68,40 @@ int test_cpabe(int argc, char** argv) {
 
     std::string des_file;
     parser_arg.Get("d", des_file);
-    std::cout << "des file: " << des_file << std::endl;
+    int type = 0;
+    parser_arg.Get("t", type);
+    std::cout << "des file: " << des_file << ", type: " << type << std::endl;
 
     contract::ContractCpabe cpabe;
-    cpabe.test_cpabe(des_file);
+    if (type == 0) {
+        cpabe.test_cpabe(des_file);
+    }
+
+    if (type == 1) {
+        cpabe.generate_private_and_public_key(des_file);
+    }
+
+    if (type == 2) {
+        std::string pulic_key;
+        parser_arg.Get("p", pulic_key);
+        std::string policy;
+        parser_arg.Get("o", policy);
+        std::string plain_text;
+        parser_arg.Get("a", plain_text);
+        cpabe.encrypt(des_file, pulic_key, policy, plain_text);
+    }
+
+    if (type == 3) {
+        std::string cipher_text;
+        parser_arg.Get("c", cipher_text);
+        cpabe.decrypt(des_file, cipher_text);
+    }
+    
     return 0;
 }
 
 int main(int argc, char** argv) {
-    test_pki(argc, argv);
+    // test_pki(argc, argv);
     test_cpabe(argc, argv);
     return 0;
 }
