@@ -331,8 +331,7 @@ int ContractCpabe::decrypt(
         auto tmp_splits = common::Split<>(prikey_splits[i], ':');
         BIGNUM* key = BN_new();
         BN_hex2bn(&key, tmp_splits[1]);
-        AttributeKeyPair attr(common::Encode::HexDecode(tmp_splits[0]), key);
-        userPrivateKey.attributes.push_back(attr);
+        userPrivateKey.attributes.emplace_back(common::Encode::HexDecode(tmp_splits[0]), key);
     }
 
 
