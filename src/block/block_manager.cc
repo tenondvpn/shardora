@@ -494,6 +494,12 @@ void BlockManager::HandleLocalNormalToTx(
         //     (account_info == nullptr),
         //     to_tx.sharding_id(),
         //     (account_info == nullptr ? 0 : account_info->sharding_id()));
+        ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, gid: %s, step: %d, addr: %s, account_info == nullptr: %d", 
+            to_txs.tos_size(),
+            common::Encode::HexEncode(tx.gid()).c_str(),
+            step,
+            common::Encode::HexEncode(addr).c_str(),
+            (account_info == nullptr));
         if (account_info == nullptr) {
             // 只接受 root 发回来的块
             if (step != pools::protobuf::kRootCreateAddress) {
@@ -522,6 +528,14 @@ void BlockManager::HandleLocalNormalToTx(
             // ZJC_DEBUG("root create address coming %s, shard: %u, pool: %u",
             //     common::Encode::HexEncode(addr).c_str(), sharding_id, pool_index);
         } else {
+            ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, gid: %s, step: %d, addr: %s, "
+                "to_tx.sharding_id(): %d, account_info->sharding_id(): %d", 
+                to_txs.tos_size(),
+                common::Encode::HexEncode(tx.gid()).c_str(),
+                step,
+                common::Encode::HexEncode(addr).c_str(),
+                to_tx.sharding_id(),
+                account_info->sharding_id());
             if (to_tx.sharding_id() != account_info->sharding_id()) {
                 continue;
             }
@@ -536,10 +550,10 @@ void BlockManager::HandleLocalNormalToTx(
         }
 
         // 转账类型交易根据 to 地址聚合到一个 map 中
-        // ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, gid: %s", 
-        //     to_tx.has_library_bytes(),
-        //     common::Encode::HexEncode(to_tx.des()).c_str(),
-        //     common::Encode::HexEncode(tx.gid()).c_str());
+        ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, gid: %s", 
+            to_tx.has_library_bytes(),
+            common::Encode::HexEncode(to_tx.des()).c_str(),
+            common::Encode::HexEncode(tx.gid()).c_str());
         if (!to_tx.has_library_bytes()) {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
