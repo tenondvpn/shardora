@@ -65,7 +65,7 @@ public:
             return;
         }
 
-        ZJC_DEBUG("handle ConsensusToTxs: %s", ProtobufToJson(to_txs).c_str());
+        ZJC_DEBUG("handle ConsensusToTxs: %s", common::Encode::HexEncode(*to_txs_str).c_str());
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
             if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
