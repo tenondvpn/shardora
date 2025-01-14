@@ -1204,7 +1204,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 #ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(view_block_ptr->debug());
-        cons_debug.set_vote_timestamps(vote_msg.replica_idx(), b - cons_debug.begin_timestamp());
+        // cons_debug.set_vote_timestamps(vote_msg.replica_idx(), b - cons_debug.begin_timestamp());
         view_block_ptr->set_debug(cons_debug.SerializeAsString());
 #endif
     }
