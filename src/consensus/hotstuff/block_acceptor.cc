@@ -229,6 +229,8 @@ Status BlockAcceptor::addTxsToPool(
             return Status::kError;
         }
 
+        ZJC_DEBUG("====8.0 gid: %s, step: %d", common::Encode::HexEncode(tx->gid()).c_str(), tx->step());
+
         protos::AddressInfoPtr address_info = nullptr;
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
@@ -455,7 +457,10 @@ Status BlockAcceptor::addTxsToPool(
                         pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
                     }
                 }
+            } else {
+                ZJC_DEBUG("====8.1 gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
             }
+            
         }
     }
 
