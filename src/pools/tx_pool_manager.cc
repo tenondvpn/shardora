@@ -573,7 +573,9 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local to tx message hash: %s", common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+            ZJC_DEBUG("get local to tx message hash: %s, gid: %s",
+                common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
+                common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
             msg_queues_[pool_index].push(msg_ptr);
 //             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
@@ -1191,6 +1193,10 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
             break;
         }
 
+        ZJC_DEBUG("success pop tx gid: %s, step: %d",
+            common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
+            msg_ptr->header.tx_proto().step());
+
         if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
             if (has_user_tx != nullptr) {
                 *has_user_tx = true;
@@ -1209,22 +1215,25 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
         
         // auto use_time = common::TimeUtils::TimestampMs() - now_tm_ms;
         // if (use_time > 10) {
-        //     ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
-        //         "step: %d, has_user_tx: %d, has_system_tx: %d, over handle message debug use ms: %lu", 
-        //         pool_index, 
-        //         msg_queues_[pool_index].size(), 
-        //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
-        //         msg_ptr->header.hash64(),
-        //         msg_ptr->header.tx_proto().step(),
-        //         (has_user_tx != nullptr ? *has_user_tx : false),
-        //         (has_system_tx != nullptr ? *has_system_tx: false),
-        //         use_time);
+        // ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
+        //     "step: %d, has_user_tx: %d, has_system_tx: %d, over handle message debug use ms: %lu", 
+        //     pool_index, 
+        //     msg_queues_[pool_index].size(), 
+        //     common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
+        //     msg_ptr->header.hash64(),
+        //     msg_ptr->header.tx_proto().step(),
+        //     (has_user_tx != nullptr ? *has_user_tx : false),
+        //     (has_system_tx != nullptr ? *has_system_tx: false),
+        //     use_time);
         // }
     }
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
     if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
+        ZJC_DEBUG("gid invalid pop tx gid: %s, step: %d",
+            common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
+            msg_ptr->header.tx_proto().step());
         return;
     }
 
