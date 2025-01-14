@@ -479,19 +479,6 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
             continue;
         }
 
-        // if (!tx_pool_[pool_index].GidValid(tx_ptr->unique_tx_hash)) {
-        //     // avoid save gid different tx
-        //     ZJC_DEBUG("tx msg hash exists: %s failed!",
-        //         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
-        //     continue;
-        // }
-
-        // if (!tx_pool_[pool_index].GidValid(tx_ptr->tx_info.gid())) {
-        //     ZJC_DEBUG("tx gid exists: %s failed!", 
-        //         common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
-        //     continue;
-        // }
-
         valid_txs.push_back(tx_ptr);
     }
     
@@ -852,19 +839,6 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     msg_ptr->msg_hash = msg_hash;
     
     auto pool_index = msg_ptr->address_info->pool_index();
-    // TODO msg_ptr->msg_hash 为空
-    // if (!tx_pool_[pool_index].GidValid(msg_ptr->msg_hash)) {
-    //     // avoid save gid different tx
-    //     ZJC_DEBUG("tx msg hash exists: %s failed!",
-    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-    //     return;
-    // }
-
-    // if (!tx_pool_[pool_index].GidValid(tx_msg.gid())) {
-    //     ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     return;
-    // }
-
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     ZJC_DEBUG("success add elect tx has verify g2: %d, gid: %s, hash64: %lu, gas limit: %lu",
@@ -968,20 +942,6 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     auto pool_index = msg_ptr->address_info->pool_index();
-    // if (!tx_pool_[pool_index].GidValid(msg_ptr->msg_hash)) {
-    //     // avoid save gid different tx
-    //     ZJC_ERROR("tx msg hash exists: %s failed!",
-    //         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    //     return;
-    // }
-
-    // if (!tx_pool_[pool_index].GidValid(tx_msg.gid())) {
-    //     ZJC_ERROR("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    //     return;
-    // }
-
     if (security_->Verify(
             msg_ptr->msg_hash,
             tx_msg.pubkey(),
