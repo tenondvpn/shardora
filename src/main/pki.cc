@@ -44,6 +44,7 @@ int test_pki(int argc, char** argv) {
 int test_cpabe(int argc, char** argv) {
     common::ParserArgs parser_arg;
     parser_arg.AddArgType('t', "type", common::kMaybeValue);
+    parser_arg.AddArgType('f', "pk_file", common::kMaybeValue);
     parser_arg.AddArgType('d', "des_file", common::kMaybeValue);
     parser_arg.AddArgType('p', "public key", common::kMaybeValue);
     parser_arg.AddArgType('o', "policy", common::kMaybeValue);
@@ -78,7 +79,9 @@ int test_cpabe(int argc, char** argv) {
     }
 
     if (type == 1) {
-        cpabe.generate_private_and_public_key(des_file);
+        std::string pk_file;
+        parser_arg.Get("f", pk_file);
+        cpabe.generate_private_and_public_key(des_file, pk_file);
     }
 
     if (type == 2) {
@@ -96,7 +99,7 @@ int test_cpabe(int argc, char** argv) {
         parser_arg.Get("c", cipher_text);
         cpabe.decrypt(des_file, cipher_text);
     }
-    
+
     return 0;
 }
 

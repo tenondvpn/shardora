@@ -256,7 +256,9 @@ bool ContractCpabe::decrypt(const PublicKey &publicKey, const MasterKey &masterK
     return true;
 }
 
-int ContractCpabe::generate_private_and_public_key(const std::string& des_file) {
+int ContractCpabe::generate_private_and_public_key(
+        const std::string& des_file, 
+        const std::string& pk_file) {
     // 初始化公钥和主密钥
     PublicKey initPublicKey;
     MasterKey initMasterKey;
@@ -287,6 +289,10 @@ int ContractCpabe::generate_private_and_public_key(const std::string& des_file) 
         auto des_str = publicKey.to_string() + "-" + masterKey.to_string() + "-" + private_str;
         fwrite(des_str.c_str(), 1, des_str.size(), fd);
         fclose(fd);
+
+        FILE* pk_fd = fopen(pk_file.c_str(), "w");
+        fwrite(publicKey.to_string().c_str(), 1, publicKey.to_string().size(), pk_fd);
+        fclose(pk_fd);
     }
 
     return 0;
@@ -333,7 +339,6 @@ int ContractCpabe::decrypt(
         BN_hex2bn(&key, tmp_splits[1]);
         userPrivateKey.attributes.emplace_back(common::Encode::HexDecode(tmp_splits[0]), key);
     }
-
 
     std::cout << "public key: " << publicKey.to_string() << std::endl;
     std::cout << "master key: " << masterKey.to_string() << std::endl;

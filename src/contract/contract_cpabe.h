@@ -341,7 +341,9 @@ public:
         const CipherText &cipher, 
         std::string &decrypted_message);
     int test_cpabe(const std::string& des_file);
-    int generate_private_and_public_key(const std::string& des_file);
+    int generate_private_and_public_key(
+        const std::string& des_file, 
+        const std::string& pk_file);
     int encrypt(
         const std::string& des_file, 
         const std::string& public_key, 
