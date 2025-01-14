@@ -3,6 +3,7 @@
 # 配置文件路径
 image_name=$1
 config_file=$2
+container_name=$3
 
 if [[ ! -f "$config_file" ]]; then
     echo "Error: Configuration file '$config_file' does not exist."
@@ -31,6 +32,16 @@ echo "HTTP Port: $http_port"
 #   ${image_name}
 # 替换为你的 Docker 镜像名称
 
-docker run --network host -d \
-	   -v ${config_file}:/root/node/conf/zjchain.conf \
-	   ${image_name}  # 替换为你的 Docker 镜像名称
+  # 替换为你的 Docker 镜像名称
+
+if [ -n $container_name ]
+then
+    docker run --network host -d \
+		   --name ${container_name} \
+		   -v ${config_file}:/root/node/conf/zjchain.conf \
+		   ${image_name}	
+else
+    docker run --network host -d \
+		   -v ${config_file}:/root/node/conf/zjchain.conf \
+		   ${image_name}
+fi
