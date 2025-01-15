@@ -40,3 +40,4 @@ GRTAGS
 GTAGS
 /.ccls-cache/
 /__pycache__/
+docker_files/
