@@ -2125,9 +2125,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     hotstuff_msg->set_pool_index(pool_idx_);
     SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
-    ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u",
+    ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
-        leader_rotation_->GetLeader()->index, has_system_tx, txs->size());
+        leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),
+        trans_msg->header.hash64());
 }
 
 uint32_t Hotstuff::GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block) {
