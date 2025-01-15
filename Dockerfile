@@ -14,6 +14,8 @@ RUN yum groupinstall -y "Development Tools" && \
 
 # 设置工作目录
 COPY . /root
+COPY /usr/local/gcc-8.3.0/lib64/ /usr/local/gcc-8.3.0/lib64/
+ENV LD_LIBRARY_PATH=/usr/local/gcc-8.3.0/lib64/:$LD_LIBRARY_PATH
 WORKDIR /root/node
 
 # 创建一个默认的命令来查看系统状态
