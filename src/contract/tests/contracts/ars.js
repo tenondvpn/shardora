@@ -11,7 +11,9 @@ const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 var contract_address = "08e1eab96c9e759daa3aff82b40e77cd615a41d5";
+var node_host = "127.0.0.1"
 
+/*
 {
     const newLog = function () {
       console.info(new Date().toLocaleString());
@@ -21,12 +23,12 @@ var contract_address = "08e1eab96c9e759daa3aff82b40e77cd615a41d5";
       console.info(new Date().toLocaleString());
       arguments.callee.oError.apply(this, arguments);
     };
-    newLog.oLog = console.log;
+    newLog.oLog = //console.log;
     newError.oError = console.error;
-    console.log = newLog;
+    //console.log = newLog;
     console.error = newError;
 }
-  
+*/
 function str_to_hex(str) {
     var arr1 = [];
     for (var n = 0; n < str.length; n++) {
@@ -59,14 +61,14 @@ function PostCode(data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                console.log('Response: ' + chunk + ", " + data);
+                //console.log('Response: ' + chunk + ", " + data);
             } else {
-                console.log('Response: ' + chunk + ", " + data);
+                //console.log('Response: ' + chunk + ", " + data);
             }
         })
     });
 
-    //console.log("req data: " + post_data);
+    ////console.log("req data: " + post_data);
     post_req.write(post_data);
     post_req.end();
 }
@@ -133,9 +135,9 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
     var isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
-    console.log("gid: " + gid.toString(16))
+    //console.log("gid: " + gid.toString(16))
     if (!isValidSig) {
-        console.log('signature transaction failed.')
+        //console.log('signature transaction failed.')
         return;
     }
 
@@ -203,7 +205,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var sigS = Secp256k1.uint256(sig.s, 16)
     var pubX = Secp256k1.uint256(from_public_key.x, 16)
     var pubY = Secp256k1.uint256(from_public_key.y, 16)
-    console.log("gid: " + gid.toString(16))
+    //console.log("gid: " + gid.toString(16))
     return {
         'gid': gid,
         'pubkey': '04' + from_public_key.x.toString(16) + from_public_key.y.toString(16),
@@ -239,7 +241,7 @@ function new_contract(from_str_prikey, contract_bytes) {
 }
 
 function call_contract(str_prikey, input, amount) {
-    console.log("contract_address: " + contract_address);
+    //console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
         str_prikey,
@@ -276,9 +278,9 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
+            //console.log('Response: ' + chunk);
             var json_res = JSON.parse(chunk)
-            // console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
+            // //console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
         })
     });
 
@@ -320,7 +322,7 @@ async function SetManagerPrepayment(contract_address) {
     var check_accounts_str = "";
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
     var check_count = 1;
-    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -333,9 +335,9 @@ async function SetManagerPrepayment(contract_address) {
                 break;
             }
 
-            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
         } catch (error) {
-            console.log(error);
+            //console.log(error);
         }
 
         ++try_times;
@@ -361,7 +363,7 @@ function InitC2cEnv(key, value) {
         }
 
         var out_lines = stdout.split('\n');
-        console.log(`solc bin codes: ${out_lines[3]}`);
+        //console.log(`solc bin codes: ${out_lines[3]}`);
         {
             var cons_codes = "";
             {
@@ -376,14 +378,14 @@ function InitC2cEnv(key, value) {
                 cons_codes = web3.eth.abi.encodeParameters(
                     ['bytes'], 
                     [hexparam]);
-                console.log("cons_codes: " + cons_codes.substring(2));
+                //console.log("cons_codes: " + cons_codes.substring(2));
             }
             // 转账到管理账户，创建合约
             {
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     out_lines[3] + cons_codes.substring(2));
-                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
+                var contract_cmd = `clickhouse-client --host ${node_host} --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
                 const execPromise = util.promisify(exec);
@@ -392,13 +394,13 @@ function InitC2cEnv(key, value) {
                     // wait for exec to complete
                         const {stdout, stderr} = await execPromise(contract_cmd);
                         if (stdout.trim() == contract_address) {
-                            console.log(`create contract success ${stdout}`);
+                            //console.log(`create contract success ${stdout}`);
                             break;
                         }
                             
-                        console.log(`create contract failed ${stderr}`);
+                        //console.log(`create contract failed ${stderr}`);
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                     }
 
                     ++try_times;
@@ -430,7 +432,7 @@ function add_pairing_param(prev, key, value) {
         ['bytes'], 
         [hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('call_proxy_reenc(bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -450,7 +452,7 @@ function CreateNewArs(prev, key, value, id) {
         ['uint256', 'uint256', 'bytes32', 'bytes'], 
         [3, 2, '0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewArs(uint256,uint256,bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -469,7 +471,7 @@ function SingleSign(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('SingleSign(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -488,7 +490,7 @@ function AggSign(prev, key, value, id) {
         ['bytes32', 'bytes'], 
         ['0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('AggSign(bytes32,bytes)');
-    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -496,7 +498,7 @@ function AggSign(prev, key, value, id) {
 
 function GetAllArsJson() {
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllArsJson()');
-    console.log("GetAllArsJson 0: " + addParamCode.substring(2));
+    //console.log("GetAllArsJson 0: " + addParamCode.substring(2));
     QueryContract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2));
@@ -505,7 +507,7 @@ function GetAllArsJson() {
 const args = process.argv.slice(2)
 if (process.env.contract_address != null) {
     contract_address = process.env.contract_address;
-    console.log("use env contract address: " + contract_address)
+    //console.log("use env contract address: " + contract_address)
 }
 
 // SetUp：初始化算法，需要用到pbc库
@@ -517,10 +519,10 @@ if (args[0] == 0) {
 var tmp_id = args[1]
 // 测试聚合环签名整个流程
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
-console.log("get id: " + id);
+console.log(id);
 if (args[0] == 1) {
-    CreateNewArs("tarscr", "tarscr", "27e5ab858583f1d19ef272856859658246cd388f,1a31f75df2fba7607ae8566646a553451a1b8c14,5bc3423d99bcc823769fe36f3281739e3d022290-2," + id, id);
-    console.log(id);
+    CreateNewArs("tarscr", "tarscr", args[2]+"-"+args[3]+"," + id, id);
+    //console.log(id);
 }
 
 if (args[0] == 2) {

@@ -18,7 +18,7 @@ LeaderRotation::LeaderRotation(
         const std::shared_ptr<ViewBlockChain>& chain,
         const std::shared_ptr<ElectInfo>& elect_info) :
     pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {
-    SetExpectedLeader(GetLeader());
+    // SetExpectedLeader(GetLeader());
 }
 
 LeaderRotation::~LeaderRotation() {}

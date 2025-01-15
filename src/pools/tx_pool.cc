@@ -420,6 +420,7 @@ void TxPool::RecoverTx(const std::string& gid) {
 bool TxPool::GidValid(const std::string& gid) {
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
+    ZJC_DEBUG("check gid valid called: %s", common::Encode::HexEncode(gid).c_str());
     CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
         if (prefix_db_->CheckAndSaveGidExists(gid)) {

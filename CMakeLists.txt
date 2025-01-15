@@ -110,6 +110,8 @@ add_definitions(
 	-DDISABLE_GENESIS_BLS_VERIFY
 	#-DTEST_NO_CROSS
 	#-DUSE_AGG_BLS
+	-DXUFEI
+	-DUSE_TC
 )
 
 add_compile_options(-fPIC)
@@ -136,6 +138,7 @@ link_directories(
 )
 
 # bin/lib
+add_executable(pkicli ${MAIN_DIR}/pki.cc)
 add_executable(zjchain ${MAIN_DIR}/main.cc)
 add_executable(https ${MAIN_DIR}/http_svr.cc)
 add_executable(httpc ${MAIN_DIR}/http_cli.cc)
@@ -151,6 +154,7 @@ set(LINK_ARGS
     init
     consensus
     sync
+    zjcvm
     block
     vss
     ck
@@ -165,6 +169,7 @@ set(LINK_ARGS
     websocket
     http
     contract
+    pki
     big_num
     db
     security
@@ -181,6 +186,7 @@ set(LINK_ARGS
     gmp
 )
 
+target_link_libraries(pkicli ${LINK_ARGS})
 target_link_libraries(blsmain ${LINK_ARGS})
 target_link_libraries(zjchain ${LINK_ARGS})
 target_link_libraries(httpc http common tcmalloc pthread gmp)
@@ -218,6 +224,7 @@ add_subdirectory(${SRC_DIR}/timeblock timeblock)
 add_subdirectory(${SRC_DIR}/ck ck)
 add_subdirectory(${SRC_DIR}/vss vss)
 add_subdirectory(${SRC_DIR}/sync sync)
+add_subdirectory(${SRC_DIR}/pki pki)
 
 
 add_subdirectory(${SRC_DIR}/common/tests common_test)

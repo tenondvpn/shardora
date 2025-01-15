@@ -4,6 +4,7 @@
 #include "common/split.h"
 #include "common/string_utils.h"
 #include "contract/contract_pairing.h"
+#include "contract/contract_pki.h"
 #include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
 #include "zjcvm/zjc_host.h"
@@ -106,6 +107,48 @@ int Ripemd160::call(
         GET_KEY_VALUE_FROM_PARAM();
         ContractReEncryption proxy_reenc;
         proxy_reenc.ReEncryptUserMessageWithMember(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkipki") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.PkiExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkipib") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.IbExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkiege") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.EncKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkidge") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.DecKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkienc") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.Enc(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "pkidec") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractPki pki;
+        pki.Dec(param, key, val);
         DEFAULT_CALL_RESULT();
     }
 
@@ -326,7 +369,7 @@ int Ripemd160::SingleSign(
 
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
     ZJC_WARN("single sign success: %d, %s, from: %s, key: %s",
-        signer_idx, val.c_str(), 
+        signer_idx, line_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
     element_clear(delta_prime);
     element_clear(y_prime);
@@ -428,7 +471,7 @@ int Ripemd160::AggSignAndVerify(
         // 聚合签名验证
         bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
         if (is_aggregate_valid) {
-            ZJC_WARN("Aggregate signature verification passed!");
+            ZJC_WARN("Aggregate signature verification passed: %s", value.c_str());
         } else {
             ZJC_WARN("Aggregate signature verification failed!");
         }
