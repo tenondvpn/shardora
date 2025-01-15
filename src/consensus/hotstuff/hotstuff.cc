@@ -1023,6 +1023,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         });
     
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     if (prefix_db_->BlockExists(vote_msg.view_block_hash())) {
         return;
     }
@@ -1062,7 +1063,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64());
 
     // 同步 replica 的 txs
-    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
