@@ -194,6 +194,14 @@ Status Hotstuff::Propose(
         return s;
     }
 
+    if (pb_pro_msg->tc().view() != 0 && pb_pro_msg->tc().view() <= last_leader_propose_view_) {
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d, "
+            "pb_pro_msg->tc().view(): %lu last_leader_propose_view_: %lu",
+            pool_idx_, s,
+            pb_pro_msg->tc().view(), last_leader_propose_view_);
+        return s;
+    }
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
@@ -253,6 +261,8 @@ Status Hotstuff::Propose(
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
+    last_leader_propose_view_ = pb_pro_msg->tc().view();
+
     ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
