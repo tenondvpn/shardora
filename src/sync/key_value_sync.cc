@@ -169,8 +169,8 @@ void KeyValueSync::CheckSyncItem() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
-                    item->network_id, item->pool_idx, item->height, item->tag);
+                // ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
+                //     item->network_id, item->pool_idx, item->height, item->tag);
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -527,12 +527,12 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
-        ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
-            "responsed_timeout_us: %lu, now_tm_us: %lu",
-            iter->second->key.c_str(), 
-            iter->second->sync_times, 
-            iter->second->responsed_timeout_us, 
-            now_tm_us);
+        // ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
+        //     "responsed_timeout_us: %lu, now_tm_us: %lu",
+        //     iter->second->key.c_str(), 
+        //     iter->second->sync_times, 
+        //     iter->second->responsed_timeout_us, 
+        //     now_tm_us);
         added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
         CHECK_MEMORY_SIZE(prio_sync_queue_[iter->second->priority]);
