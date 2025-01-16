@@ -585,9 +585,9 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (VerifyLeader(view_item.qc().leader_idx()) != Status::kSuccess) {
         // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
-        // 只能依赖同步，但由于同步慢于新的 Propose 消息
-        // 即是这里再加一次同步，也很难追上 Propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
-        // 暂时无法处理的 Propose 消息
+        // 只能依赖同步，但由于同步慢于新的 propose 消息
+        // 即是这里再加一次同步，也很难追上 propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
+        // 暂时无法处理的 propose 消息
         if (sync_pool_fn_) { // leader 不一致触发同步
             sync_pool_fn_(pool_idx_, 1);
         }

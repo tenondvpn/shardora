@@ -406,7 +406,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // New Propose
     if (new_proposal_fn_) {
         ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
-        propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
+        // TODO: fix timeout
+        // propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
     }
 
     if (propose_st != Status::kSuccess && new_view_fn_) {
@@ -468,7 +469,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     // New Propose
     if (new_proposal_fn_) {
         ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
-        propose_st = new_proposal_fn_(new_tc, nullptr, msg_ptr);
+        // TODO: fix timeout
+        // propose_st = new_proposal_fn_(new_tc, nullptr, msg_ptr);
     }
 
     ZJC_DEBUG("====4.1.1 pool: %d, create tc, view: %lu, member: %d, "

@@ -147,12 +147,12 @@ public:
                     auto fiter = acc_balance_map.find(iter->first);
                     if (fiter == acc_balance_map.end()) {
                         acc_balance_map[iter->first] = iter->second;
-                        ZJC_DEBUG("merge prev all balance merge prev account balance %s: %lu, %u_%u_%lu, block height: %lu",
-                            common::Encode::HexEncode(iter->first).c_str(), iter->second, 
-                            it->second->view_block->qc().network_id(), 
-                            it->second->view_block->qc().pool_index(),
-                            it->second->view_block->qc().view(),
-                            it->second->view_block->block_info().height());
+                        // ZJC_DEBUG("merge prev all balance merge prev account balance %s: %lu, %u_%u_%lu, block height: %lu",
+                        //     common::Encode::HexEncode(iter->first).c_str(), iter->second, 
+                        //     it->second->view_block->qc().network_id(), 
+                        //     it->second->view_block->qc().pool_index(),
+                        //     it->second->view_block->qc().view(),
+                        //     it->second->view_block->block_info().height());
                     }
                 }
             }
