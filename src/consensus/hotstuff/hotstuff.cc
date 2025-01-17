@@ -178,6 +178,14 @@ Status Hotstuff::Propose(
         return s;
     }
 
+    if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d, "
+            "max_view(): %lu last_leader_propose_view_: %lu",
+            pool_idx_, Status::kError,
+            max_view(), last_leader_propose_view_);
+        return Status::kError;
+    }
+
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -191,14 +199,6 @@ Status Hotstuff::Propose(
     if (s != Status::kSuccess) {
         ZJC_DEBUG("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
-        return s;
-    }
-
-    if (pb_pro_msg->tc().view() != 0 && pb_pro_msg->tc().view() <= last_leader_propose_view_) {
-        ZJC_DEBUG("pool: %d construct propose msg failed, %d, "
-            "pb_pro_msg->tc().view(): %lu last_leader_propose_view_: %lu",
-            pool_idx_, s,
-            pb_pro_msg->tc().view(), last_leader_propose_view_);
         return s;
     }
 

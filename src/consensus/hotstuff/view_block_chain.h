@@ -94,6 +94,7 @@ public:
             const std::string& parent_hash, 
             zjcvm::ZjchainHost& zjc_host) {
         std::string phash = parent_hash;
+        // TODO: check valid
         uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
@@ -110,11 +111,11 @@ public:
                 auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
                 for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
                     zjc_host.SavePrevStorages(iter->first, iter->second, false);
-                    if (iter->first.size() > 40)
-                    ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
-                        common::Encode::HexEncode(phash).c_str(), 
-                        common::Encode::HexEncode(iter->first).c_str(),
-                        common::Encode::HexEncode(iter->second).c_str());
+                    // if (iter->first.size() > 40)
+                    // ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
+                    //     common::Encode::HexEncode(phash).c_str(), 
+                    //     common::Encode::HexEncode(iter->first).c_str(),
+                    //     common::Encode::HexEncode(iter->second).c_str());
                 }
             }
 
@@ -130,6 +131,7 @@ public:
             const std::string& parent_hash, 
             BalanceMap& acc_balance_map) {
         std::string phash = parent_hash;
+        // TODO: check valid
         uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
