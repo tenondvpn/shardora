@@ -152,8 +152,6 @@ int test_fpakep(int argc, char** argv) {
     }
 
     if (type == 1) {
-        std::string pk_file;
-        parser_arg.Get("f", pk_file);
         std::string init_str;
         parser_arg.Get("i", init_str);
         fpakep.InitPrivateAndPublicKey(init_str, des_file);
