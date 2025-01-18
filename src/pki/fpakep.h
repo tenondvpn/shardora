@@ -260,7 +260,7 @@ public:
         std::vector<uint8_t> verify_hash = fp_sm2_decrypt(sm2_key, uint8_sign);
         std::string verify_str(verify_hash.begin(), verify_hash.end());
         std::cout<< "decrypt: " << verify_str << std::endl;
-        return 0
+        return 0;
     }
 
     int test_fpakep() {
