@@ -4,8 +4,8 @@
 #include <ratio>
 #include <vector>
 
-// #include "fmt/base.h"
-// #include "fmt/format.h"
+#include "fmt/base.h"
+#include "fmt/format.h"
 #include "pki/pki_cl_utils.h"
 
 namespace shardora {
@@ -25,16 +25,16 @@ void PkiClAgka::Simulate(bool honest) {
   // plaintext 
   PlainText plain = "This is a sample message for testing the encryption scheme.";
 
-  // fmt::println("\n[ Stage1: 🛠️ Setup ]\n");
-  // auto start = std::chrono::steady_clock::now();
+  fmt::println("\n[ Stage1: 🛠️ Setup ]\n");
+  auto start = std::chrono::steady_clock::now();
   Setup();
-  // auto end = std::chrono::steady_clock::now();
+  auto end = std::chrono::steady_clock::now();
   // 计算时间差
   // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   // std::cout << "Stage1 Setup duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage2: 🚚 PKI Extract ]\n");
+  fmt::println("\n[ Stage2: 🚚 PKI Extract ]\n");
   // start = std::chrono::steady_clock::now();
   PkiExtract();
   // end = std::chrono::steady_clock::now();
@@ -42,7 +42,7 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage2 PKI Extract duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage3: 🚛 CL Extract ]\n");
+  fmt::println("\n[ Stage3: 🚛 CL Extract ]\n");
   // start = std::chrono::steady_clock::now();
   ClExtract();
   // end = std::chrono::steady_clock::now();
@@ -50,7 +50,7 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage3 CL Extract duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage4: 🧾 PKI CL Agreement ]\n");
+  fmt::println("\n[ Stage4: 🧾 PKI CL Agreement ]\n");
   // start = std::chrono::steady_clock::now();
   PkiClAgreement(honest);
   // end = std::chrono::steady_clock::now();
@@ -58,7 +58,7 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage4 PKI Agreement duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage5: 🔑 Encode Key Gen ]\n");
+  fmt::println("\n[ Stage5: 🔑 Encode Key Gen ]\n");
   // start = std::chrono::steady_clock::now();
   auto ek = EncKeyGen();
   // end = std::chrono::steady_clock::now();
@@ -66,7 +66,7 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage5 Encode Key Gen duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage6: 🪄 Decode Key Gen ]\n");
+  fmt::println("\n[ Stage6: 🪄 Decode Key Gen ]\n");
   // start = std::chrono::steady_clock::now();
   auto dks = DecKeyGen();
   // end = std::chrono::steady_clock::now();
@@ -74,7 +74,7 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage6 Decode Key Gen duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage7: 💌 Encode Message ]\n");
+  fmt::println("\n[ Stage7: 💌 Encode Message ]\n");
   // start = std::chrono::steady_clock::now();
   auto cipher = Enc(plain, ek);
   // end = std::chrono::steady_clock::now();
@@ -82,7 +82,7 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage7 Encode Message duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage8: 📨 Decode Cipher ]\n");
+  fmt::println("\n[ Stage8: 📨 Decode Cipher ]\n");
   // start = std::chrono::steady_clock::now();
   PlainText message  = Dec(cipher, dks.at(0));
   // end = std::chrono::steady_clock::now();
@@ -90,16 +90,16 @@ void PkiClAgka::Simulate(bool honest) {
   // std::cout << "Stage8 Decode Cipher duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
 
-  // fmt::println("\n[ Stage9: 🧪 Check if decrypted succussfully ]\n");
+  fmt::println("\n[ Stage9: 🧪 Check if decrypted succussfully ]\n");
   auto abort_list = Check(ek, dks);
 
-  // fmt::println("\n[ Stage10: 🧪 Identifiable Abort ]\n");
+  fmt::println("\n[ Stage10: 🧪 Identifiable Abort ]\n");
   // start = std::chrono::steady_clock::now();
   IdentifiableAbort(abort_list);
-  // end = std::chrono::steady_clock::now();
-  // duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  // std::cout << "Stage10 Identifiable Abort duration:" << duration.count() << std::endl;
-  // std::cout << duration.count() << std::endl;
+  end = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  std::cout << "Stage10 Identifiable Abort duration:" << duration.count() << std::endl;
+  std::cout << duration.count() << std::endl;
 
   // If no abort, output decrypted message.
   output_message_if_(abort_list.empty(), message);
@@ -109,23 +109,23 @@ void PkiClAgka::Simulate(bool honest) {
 void PkiClAgka::Setup() {
   // setup biliner pair e
   if (!pp.e.is_symmetric()) {
-    // fmt::println("Bilinear Pair e Not Symmetric");
+    fmt::println("Bilinear Pair e Not Symmetric");
     exit(1);
   }
 
-  // fmt::println("🍬 Master Secret:");
+  fmt::println("🍬 Master Secret:");
   // randomly select master secret k_
   k_.set_random();
-  // fmt::println("\t- k = {}", byte2string(k_.to_bytes()));
+  fmt::println("\t- k = {}", byte2string(k_.to_bytes()));
 
-  // fmt::println("\n🍼 Public Parameter:");
+  fmt::println("\n🍼 Public Parameter:");
   // get generator g
   pp.g.set_random();
-  // fmt::println("\t- g = {}", byte2string(pp.g.to_bytes()));
+  fmt::println("\t- g = {}", byte2string(pp.g.to_bytes()));
 
   // compute g1 = g^k
   pp.g1 = pp.g.pow_zn(k_);
-  // fmt::println("\t- g1 = {}", byte2string(pp.g1.to_bytes()));
+  fmt::println("\t- g1 = {}", byte2string(pp.g1.to_bytes()));
 
   // initialize H1, H2, H3, H4
   pp.H1 = [this](const std::string& cert) -> G1 {
@@ -156,12 +156,12 @@ void PkiClAgka::PkiExtract(const int& n) {
   keys_.reserve(n);
 
   for (auto i = 0; i < n; i++) {
-    // fmt::println("🍻 Generate PKI Participant Key Pair {}:", n_);
+    fmt::println("🍻 Generate PKI Participant Key Pair {}:", n_);
     // sk from G1 randomly
    
     Zq sk(pp.e);
     sk.set_random();
-    // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
+    fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
     // pk = g^sk;
     G1 pk(pp.e);
     pk = pp.g.pow_zn(sk);
@@ -172,7 +172,7 @@ void PkiClAgka::PkiExtract(const int& n) {
     G1 s(pp.e);
     s = cert.pow_zn(sk);
     
-    // fmt::println("\t- pk = {}\n", byte2string(pk.to_bytes()));
+    fmt::println("\t- pk = {}\n", byte2string(pk.to_bytes()));
     // generate key and add to list
     keys_.emplace_back(n_++, std::move(pk), std::move(s));
   }
@@ -218,7 +218,7 @@ void PkiClAgka::PkiClAgreement(bool honest) {
 }
 
 EncodeKey PkiClAgka::EncKeyGen() {
-  //fmt::println("🍔 Generate Group Encode Key (w,A):");
+  fmt::println("🍔 Generate Group Encode Key (w,A):");
   G1 omega(pp.e);
   for (auto& msg : msgs_) {
     omega *= msg.r;
@@ -242,7 +242,7 @@ std::map<int, DecodeKey> PkiClAgka::DecKeyGen() {
   std::map<int, DecodeKey> dk_map;
   // PKI decode key gen
   for (auto& src : msgs_) {
-    // fmt::println("🍟 Generate PKI Participant {} Decode Key:", src.i);
+    fmt::println("🍟 Generate PKI Participant {} Decode Key:", src.i);
     
     // fmt::println("\t- d{} = {}\n", src.i, byte2string(di.to_bytes()));
     dk_map.try_emplace(src.i, generate_d_for_list(src.i, msgs_));
@@ -261,11 +261,11 @@ std::vector<int> PkiClAgka::Check(EncodeKey& ek, std::map<int, DecodeKey>& dks) 
     G2 pair2 = pp.e(fi, ek.omega) * ek.A;
 
     if (pair1 == pair2) {
-      // fmt::println("✅ Participant {} Decode Cipher\n", iter.first);
+      fmt::println("✅ Participant {} Decode Cipher\n", iter.first);
       // std::cout << "True" << std::endl;
     } else {
       abort_list.emplace_back(iter.second.i);
-      // fmt::println("❌ Participant {} Failed Decode Cipher", iter.first);
+      fmt::println("❌ Participant {} Failed Decode Cipher", iter.first);
       // std::cout << "False" << std::endl;
     }
   }
@@ -352,7 +352,7 @@ void PkiClAgka::agreement(bool honest) {
   msgs_.reserve(keys_.size());
 
   for (auto& key : keys_) {
-    // fmt::println("🔖 Generate PKI CL Agreement Message {}", key.i);
+    fmt::println("🔖 Generate PKI CL Agreement Message {}", key.i);
     // eta from Zq randomly
     Zq eta(pp.e);
     eta.set_random();
