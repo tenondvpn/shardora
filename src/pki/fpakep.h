@@ -198,19 +198,12 @@ public:
         auto hex_pk = common::Encode::HexDecode(pubkey);
         uint8_t out[64];
         memcpy(out, hex_pk.c_str(), sizeof(out));
-        // sm2_z256_point_from_bytes(&sm2_key.public_key, out);
+        sm2_z256_point_from_bytes(&sm2_key.public_key, out);
         std::vector<uint8_t> uint8_hash(data.begin(), data.end());
         std::vector<uint8_t> sm2_ciphertext = fp_sm2_encrypt(sm2_key, uint8_hash);
         if (sm2_ciphertext.empty()) {
             return 1; // 加密失败
         }
-
-        // 输出密文
-        std::cout << "sm2 Ciphertext (hex): ";
-        for (const auto& byte : sm2_ciphertext) {
-            printf("%02x", byte);
-        }
-        std::cout << std::endl;
 
         std::string sign(sm2_ciphertext.begin(), sm2_ciphertext.end());
         FILE* fd = fopen(des_file.c_str(), "w");
