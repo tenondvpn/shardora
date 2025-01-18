@@ -234,7 +234,8 @@ public:
         auto hex_prik = common::Encode::HexDecode(private_key);
         memcpy(prikey, hex_prik.c_str(), sizeof(prikey));
         sm2_z256_from_bytes(sm2_key.private_key, prikey);
-        std::vector<uint8_t> uint8_sign(sign.begin(), sign.end());
+        std::string cipher_str = common::Encode::HexDecode(sign);
+        std::vector<uint8_t> uint8_sign(cipher_str.begin(), cipher_str.end());
         // 解密
         std::vector<uint8_t> verify_hash = fp_sm2_decrypt(sm2_key, uint8_sign);
         std::string verify_str(verify_hash.begin(), verify_hash.end());
@@ -300,15 +301,8 @@ public:
             return -1; // 加密失败
         }
 
-        // 输出密文
-        std::cout << "sm2 Ciphertext (hex): ";
-        for (const auto& byte : sm2_ciphertext) {
-            printf("%02x", byte);
-        }
-        std::cout << std::endl;
-
         std::string sign(sm2_ciphertext.begin(), sm2_ciphertext.end());
-        Decrypt(sign, private_key);
+        Decrypt(common::Encode::HexEncode(sign), private_key);
         // 解密
         std::vector<uint8_t> sm2_decrypted_plaintext = fp_sm2_decrypt(sm2_key, sm2_ciphertext);
         if (sm2_decrypted_plaintext.empty()) {

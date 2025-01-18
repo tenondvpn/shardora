@@ -162,8 +162,6 @@ int test_fpakep(int argc, char** argv) {
     if (type == 2) {
         std::string pulic_key;
         parser_arg.Get("p", pulic_key);
-        std::string policy;
-        parser_arg.Get("o", policy);
         std::string plain_text;
         parser_arg.Get("a", plain_text);
         fpakep.Encrypt(plain_text, pulic_key, des_file);
@@ -182,10 +180,10 @@ int test_fpakep(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     // test_pki(argc, argv);
-    std::cout << std::endl << std::endl << "*********************** test_cpabe **********************" << std::endl;
-    test_cpabe(argc, argv);
-    std::cout << std::endl << std::endl << "*********************** test_pki_cl_agka **********************" << std::endl;
-    test_pki_cl_agka(argc, argv);
+    // std::cout << std::endl << std::endl << "*********************** test_cpabe **********************" << std::endl;
+    // test_cpabe(argc, argv);
+    // std::cout << std::endl << std::endl << "*********************** test_pki_cl_agka **********************" << std::endl;
+    // test_pki_cl_agka(argc, argv);
     std::cout << std::endl << std::endl << "*********************** test_fpakep **********************" << std::endl;
     test_fpakep(argc, argv);
     return 0;
