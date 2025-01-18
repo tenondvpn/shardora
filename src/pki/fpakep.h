@@ -98,31 +98,12 @@ public:
         memcpy(key.private_key, private_key, 32);
 
         // 根据私钥生成公钥
-        if (sm2_key_generate(reinterpret_cast<SM2_KEY*>(&key)) != 1) {
+        if (sm2_key_generate(&key) != 1) {
             std::cerr << "Failed to generate public key from private key." << std::endl;
             return false;
         }
 
         return true;
-    }
-
-    // 打印公私钥
-    void print_sm2_key(const SM2_KEY& key) {
-        std::cout << "Private Key (hex): ";
-        for (int i = 0; i < 32; ++i) {
-            printf("%02x", key.private_key[i]);
-        }
-        std::cout << std::endl;
-
-        std::cout << "Public Key (hex): ";
-        for (int i = 0; i < 64; ++i) {
-            printf("%02x", key.public_key.X[i]);
-            if (i == 31) std::cout << " "; // 分隔x和y
-        }
-        for (int i = 0; i < 64; ++i) {
-            printf("%02x", key.public_key.Y[i]);
-        }
-        std::cout << std::endl;
     }
 
     // SM2加密
@@ -192,8 +173,6 @@ public:
             return -1; // 密钥生成失败
         }
 
-        // 打印公私钥
-        print_sm2_key(sm2_key);
          // 加密
         uint8_t out[64];
         sm2_z256_point_to_bytes(&sm2_key.public_key, out);
@@ -302,9 +281,6 @@ public:
         if (!generate_sm2_keypair(sm2_key, sm3_hash)) {
             return -1; // 密钥生成失败
         }
-
-        // 打印公私钥
-        print_sm2_key(sm2_key);
 
         // 加密
         uint8_t out[64];
