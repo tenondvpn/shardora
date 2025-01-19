@@ -24,8 +24,9 @@ contract Exchange {
         uint256 price;
         uint256 start_time_ms;
         uint256 end_time_ms;
-        bool selled;
         address payable buyer;
+        uint256 selled_price;
+        uint256 selled;
         BuyerInfo[] buyers;
         bool exists;
     }
@@ -55,7 +56,8 @@ contract Exchange {
         item.price = price;
         item.start_time_ms = start;
         item.end_time_ms = end;
-        item.selled = false;
+        item.selled = 0;
+        item.selled_price = 0;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
         item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
@@ -87,6 +89,38 @@ contract Exchange {
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
         purchase_map[key] = true;
         emit DebugEvent(7);
+    }
+
+    function ConfirmPurchase(bytes32 hash) public payable {
+        emit DebugEvent(8);
+        require(item_map[hash].exists);
+        emit DebugEvent(9);
+        require(item_map[hash].owner == msg.sender);
+        emit DebugEvent(10);
+        require(item_map[hash].selled == 0);
+        emit DebugEvent(11);
+        ItemInfo storage item = item_map[hash];
+        uint256 max_price = 0;
+        address payable max_buyer;
+        for (uint256 i = 0; i < item.buyers.length; ++i) {
+            if (item.buyers[i].price > max_price) {
+                max_price = item.buyers[i].price;
+                max_buyer = item.buyers[i].buyer;
+            }
+        }
+
+        require(max_price >= item.price);
+        item.selled = 1;
+        item.selled_price = max_price;
+        item.buyer = max_buyer;
+        payable(msg.sender).transfer(max_price);
+        for (uint256 i = 0; i < item.buyers.length; ++i) {
+            if (item.buyers[i].buyer != max_buyer) {
+                payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
+            }
+        }
+
+        emit DebugEvent(12);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
@@ -206,6 +240,12 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(toBytes(item.owner));
         all_bytes[filedCount++] = '","info":"';
         all_bytes[filedCount++] = ToHex(item.info);
+        all_bytes[filedCount++] = '","selled_price":"';
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.selled_price));
+        all_bytes[filedCount++] = '","selled":"';
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.selled));
+        all_bytes[filedCount++] = '","buyer":"';
+        all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
         all_bytes[filedCount++] = '","price":"';
         all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.price));
         all_bytes[filedCount++] = '","start_time":"';

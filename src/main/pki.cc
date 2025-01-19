@@ -180,9 +180,9 @@ int main(int argc, char** argv) {
     // test_pki(argc, argv);
     // std::cout << std::endl << std::endl << "*********************** test_cpabe **********************" << std::endl;
     // test_cpabe(argc, argv);
-    // std::cout << std::endl << std::endl << "*********************** test_pki_cl_agka **********************" << std::endl;
-    // test_pki_cl_agka(argc, argv);
-    std::cout << std::endl << std::endl << "*********************** test_fpakep **********************" << std::endl;
-    test_fpakep(argc, argv);
+    std::cout << std::endl << std::endl << "*********************** test_pki_cl_agka **********************" << std::endl;
+    test_pki_cl_agka(argc, argv);
+    // std::cout << std::endl << std::endl << "*********************** test_fpakep **********************" << std::endl;
+    // test_fpakep(argc, argv);
     return 0;
 }

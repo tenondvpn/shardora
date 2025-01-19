@@ -399,10 +399,6 @@ function InitC2cEnv(key, value) {
                 // 预设值合约调用币，并等待成功
                 var prikeys = [
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
-                    "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d",
-                    "6ad7b4019956c958da14121fa273a34b612a2a03239771e8e16fa730e43e6512",
-                    "ee762323b168752a9249c2959ed7c04b794d881005d511e6ac894025d52d5938",
-                  
                 ];
                 for (var i = 0; i < prikeys.length; ++i)
                 {
@@ -435,6 +431,18 @@ function PurchaseItem(hash, price) {
         "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
         addParamCode.substring(2) + addParam.substring(2), price);
 }
+
+function ConfirmPurchase(hash) {
+    // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
+    var addParam = web3.eth.abi.encodeParameters(
+        ['bytes32'], 
+        [hash]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('ConfirmPurchase(bytes32)');
+    call_contract(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        addParamCode.substring(2) + addParam.substring(2), 0);
+}
+
 
 function hexStringToInt64(hexString) {
     // 将16进制字符串转换为Buffer
@@ -507,6 +515,10 @@ if (args[0] == 1) {
 if (args[0] == 2) {
     PurchaseItem('0x'+id, 100);
     //console.log(id);
+}
+
+if (args[0] == 3) {
+    ConfirmPurchase('0x'+id)
 }
 
 // 测试合约查询
