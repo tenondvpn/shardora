@@ -94,6 +94,7 @@ public:
             const std::string& parent_hash, 
             zjcvm::ZjchainHost& zjc_host) {
         std::string phash = parent_hash;
+        // TODO: check valid
         uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
@@ -110,11 +111,11 @@ public:
                 auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
                 for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
                     zjc_host.SavePrevStorages(iter->first, iter->second, false);
-                    if (iter->first.size() > 40)
-                    ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
-                        common::Encode::HexEncode(phash).c_str(), 
-                        common::Encode::HexEncode(iter->first).c_str(),
-                        common::Encode::HexEncode(iter->second).c_str());
+                    // if (iter->first.size() > 40)
+                    // ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
+                    //     common::Encode::HexEncode(phash).c_str(), 
+                    //     common::Encode::HexEncode(iter->first).c_str(),
+                    //     common::Encode::HexEncode(iter->second).c_str());
                 }
             }
 
@@ -130,6 +131,7 @@ public:
             const std::string& parent_hash, 
             BalanceMap& acc_balance_map) {
         std::string phash = parent_hash;
+        // TODO: check valid
         uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
@@ -147,12 +149,12 @@ public:
                     auto fiter = acc_balance_map.find(iter->first);
                     if (fiter == acc_balance_map.end()) {
                         acc_balance_map[iter->first] = iter->second;
-                        ZJC_DEBUG("merge prev all balance merge prev account balance %s: %lu, %u_%u_%lu, block height: %lu",
-                            common::Encode::HexEncode(iter->first).c_str(), iter->second, 
-                            it->second->view_block->qc().network_id(), 
-                            it->second->view_block->qc().pool_index(),
-                            it->second->view_block->qc().view(),
-                            it->second->view_block->block_info().height());
+                        // ZJC_DEBUG("merge prev all balance merge prev account balance %s: %lu, %u_%u_%lu, block height: %lu",
+                        //     common::Encode::HexEncode(iter->first).c_str(), iter->second, 
+                        //     it->second->view_block->qc().network_id(), 
+                        //     it->second->view_block->qc().pool_index(),
+                        //     it->second->view_block->qc().view(),
+                        //     it->second->view_block->block_info().height());
                     }
                 }
             }

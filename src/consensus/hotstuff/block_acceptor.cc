@@ -212,8 +212,8 @@ Status BlockAcceptor::addTxsToPool(
     BalanceMap prevs_balance_map;
     view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
-    ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
-        prevs_balance_map.size(), txs.size());
+    // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
+    //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<pools::TxItemPtr> valid_txs;
     valid_txs.reserve(txs.size());
@@ -434,8 +434,6 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info.step())) {
-                // if (pools_mgr_->GidValid(pool_idx(), tx_ptr->tx_info.gid())) {
-                    // if (!tx_ptr->tx_info.pubkey().empty() && !tx_ptr->tx_info.sign().empty()) {
                 if (security_ptr_->Verify(
                         tx_ptr->unique_tx_hash,
                         tx_ptr->tx_info.pubkey(),
@@ -453,8 +451,6 @@ Status BlockAcceptor::addTxsToPool(
                     valid_txs.push_back(tx_ptr);
                     pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
                 }
-                    // }
-                // }
             }
         }
     }

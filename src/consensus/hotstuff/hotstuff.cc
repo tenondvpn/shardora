@@ -178,6 +178,14 @@ Status Hotstuff::Propose(
         return s;
     }
 
+    if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d, "
+            "max_view(): %lu last_leader_propose_view_: %lu",
+            pool_idx_, Status::kError,
+            max_view(), last_leader_propose_view_);
+        return Status::kError;
+    }
+
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -231,9 +239,9 @@ Status Hotstuff::Propose(
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
-    for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
-        consensus_debug.add_vote_timestamps(0);
-    }
+    // for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
+    //     consensus_debug.add_vote_timestamps(0);
+    // }
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
@@ -253,6 +261,8 @@ Status Hotstuff::Propose(
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
+    last_leader_propose_view_ = pb_pro_msg->tc().view();
+
     ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
@@ -585,9 +595,9 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (VerifyLeader(view_item.qc().leader_idx()) != Status::kSuccess) {
         // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
-        // 只能依赖同步，但由于同步慢于新的 Propose 消息
-        // 即是这里再加一次同步，也很难追上 Propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
-        // 暂时无法处理的 Propose 消息
+        // 只能依赖同步，但由于同步慢于新的 propose 消息
+        // 即是这里再加一次同步，也很难追上 propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
+        // 暂时无法处理的 propose 消息
         if (sync_pool_fn_) { // leader 不一致触发同步
             sync_pool_fn_(pool_idx_, 1);
         }
@@ -1023,6 +1033,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         });
     
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     if (prefix_db_->BlockExists(vote_msg.view_block_hash())) {
         return;
     }
@@ -1062,7 +1073,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hash64());
 
     // 同步 replica 的 txs
-    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
@@ -1204,7 +1214,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 #ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(view_block_ptr->debug());
-        cons_debug.set_vote_timestamps(vote_msg.replica_idx(), b - cons_debug.begin_timestamp());
+        // cons_debug.set_vote_timestamps(vote_msg.replica_idx(), b - cons_debug.begin_timestamp());
         view_block_ptr->set_debug(cons_debug.SerializeAsString());
 #endif
     }
@@ -2125,9 +2135,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     hotstuff_msg->set_pool_index(pool_idx_);
     SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
-    ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u",
+    ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
-        leader_rotation_->GetLeader()->index, has_system_tx, txs->size());
+        leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),
+        trans_msg->header.hash64());
 }
 
 uint32_t Hotstuff::GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block) {

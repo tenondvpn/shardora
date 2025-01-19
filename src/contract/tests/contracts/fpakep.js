@@ -10,7 +10,7 @@ var fs = require('fs');
 const util = require('util')
 const kTestSellerCount = 11;  // real: kTestSellerCount - 10
 const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
-var contract_address = "000feab96c9e759daa3aff82b40e77cd615a41d9";
+var contract_address = "2001eab96c9e759daa3aff82b40e77cd615a41d9";
 var http_response = "";
 
 var node_host = "127.0.0.1"
@@ -62,9 +62,9 @@ function PostCode(data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                //console.log('Response: ' + chunk + ", " + data);
+                console.log('Response: ' + chunk + ", " + post_data);
             } else {
-                //console.log('Response: ' + chunk + ", " + data);
+                console.log('Response: ' + chunk + ", " + post_data);
             }
         })
     });
@@ -308,9 +308,70 @@ function Prepayment(str_prikey, prepay) {
     PostCode(data);
 }
 
-function Prepayment(str_prikey, prepay) {
-    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
+async function transaction(str_prikey, to, amount) {
+    // 为管理账户设置prepayment
+    var data = create_tx(str_prikey, to, amount, 100000, 1, 0, 7);
     PostCode(data);
+    var account1 = web3.eth.accounts.privateKeyToAccount(
+        '0x' + prikey);
+    var check_accounts_str = "";
+    check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
+    var check_count = 1;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(*) from zjc_ck_account_table where id='${to}' and balance >= ${amount};"`;
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    // 检查合约是否创建成功
+    var try_times = 0;
+    while (try_times < 30) {
+        try {
+            const {stdout, stderr} = await execPromise(cmd);
+            if (stdout.trim() == check_count.toString()) {
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
+                break;
+            }
+
+            //console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+        } catch (error) {
+            //console.log(error);
+        }
+
+        ++try_times;
+        await sleep(2000);
+    }
+
+    if (try_times >= 30) {
+        console.error(`contract prepayment failed!`);
+        return;
+    }
+}
+
+async function check_transaction(check_count, check_accounts_str, amount) {
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(id)) from zjc_ck_account_table where id in (${check_accounts_str}) and balance >= ${amount};"`;
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    // 检查合约是否创建成功
+    var try_times = 0;
+    while (try_times < 30) {
+        try {
+            const {stdout, stderr} = await execPromise(cmd);
+            if (stdout.trim() == check_count.toString()) {
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
+                break;
+            }
+
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout.trim()}, check_count: ${check_count}`);
+        } catch (error) {
+            console.log(error);
+        }
+
+        ++try_times;
+        await sleep(2000);
+    }
+
+    if (try_times >= 30) {
+        console.error(`contract prepayment failed!`);
+        return;
+    }
 }
 
 async function SetManagerPrepayment(contract_address, prikey) {
@@ -349,13 +410,43 @@ async function SetManagerPrepayment(contract_address, prikey) {
     }
 }
 
+async function CheckPrepayment(check_count, contract_address, check_accounts_str) {
+    // 为管理账户设置prepayment
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    const { exec } = require('child_process');
+    const execPromise = util.promisify(exec);
+    // 检查合约是否创建成功
+    var try_times = 0;
+    while (try_times < 30) {
+        try {
+            const {stdout, stderr} = await execPromise(cmd);
+            if (stdout.trim() == check_count.toString()) {
+                console.error(`${cmd} contract prepayment success: ${stdout}`);
+                break;
+            }
+
+            console.log(`${cmd} contract prepayment failed error: ${stderr} count: ${stdout}`);
+        } catch (error) {
+            //console.log(error);
+        }
+
+        ++try_times;
+        await sleep(2000);
+    }
+
+    if (try_times >= 30) {
+        console.error(`contract prepayment failed!`);
+        return;
+    }
+}
+
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function InitC2cEnv(key, value) {
     const { exec } = require('child_process');
-    exec('solc --bin ./exchange.sol', async (error, stdout, stderr) => {
+    exec('solc --bin ./cpabe.sol', async (error, stdout, stderr) => {
         if (error) {
           console.error(`exec error: ${error}`);
           return;
@@ -399,6 +490,9 @@ function InitC2cEnv(key, value) {
                 // 预设值合约调用币，并等待成功
                 var prikeys = [
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
+                    "259a715d21d50e32202e51b7b6ec353e2caeff9f0523db9f2c30ad2a1b9e2b10",
+                    "6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350",
+                    "d8576c5cb33400abb3a8e1306f463a1a72b2cd28447cf3078d82b5fbcd2206d6",
                 ];
                 for (var i = 0; i < prikeys.length; ++i)
                 {
@@ -410,39 +504,27 @@ function InitC2cEnv(key, value) {
       });
 }
 
-function CreateNewItem(hash, info, price, start, end) {
+function AddUserPublicKey(private_key, hash, pubkey) {
     // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
-        ['bytes32', 'bytes', 'uint256', 'uint256', 'uint256'], 
-        [hash, info, price, start, end]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes,uint256,uint256,uint256)');
+        ['bytes32', 'bytes'], 
+        [hash, pubkey]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('AddUserPublicKey(bytes32,bytes)');
     call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        private_key, 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
-function PurchaseItem(hash, price) {
+function EncryptMessage(private_key, hash, cipher) {
     // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
     var addParam = web3.eth.abi.encodeParameters(
-        ['bytes32'], 
-        [hash]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('PurchaseItem(bytes32)');
+        ['bytes32', 'bytes'], 
+        [hash, cipher]);
+    var addParamCode = web3.eth.abi.encodeFunctionSignature('EncryptMessage(bytes32,bytes)');
     call_contract(
-        "286a4972ad6f5d7ed74715847f6b03b238b4bdc946796abac09784f8310f7f6d", 
-        addParamCode.substring(2) + addParam.substring(2), price);
-}
-
-function ConfirmPurchase(hash) {
-    // bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end
-    var addParam = web3.eth.abi.encodeParameters(
-        ['bytes32'], 
-        [hash]);
-    var addParamCode = web3.eth.abi.encodeFunctionSignature('ConfirmPurchase(bytes32)');
-    call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        private_key, 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
-
 
 function hexStringToInt64(hexString) {
     // 将16进制字符串转换为Buffer
@@ -477,17 +559,6 @@ async function GetAllItemJson() {
 
 
     var res_json = JSON.parse(http_response);
-    for (var i = 0; i < res_json.length; ++i) {
-        res_json[i].id = hexStringToInt64(res_json[i].id);
-        res_json[i].price = hexStringToInt64(res_json[i].price);
-        res_json[i].start_time = hexStringToInt64(res_json[i].start_time);
-        res_json[i].end_time = hexStringToInt64(res_json[i].end_time);
-        for (var j = 0; j < res_json[i].buyers.length; ++j) {
-            res_json[i].buyers[j].price = hexStringToInt64(res_json[i].buyers[j].price);
-        }
-    }
-
-
     console.log(res_json);
 }
 
@@ -506,19 +577,61 @@ if (args[0] == 0) {
 var tmp_id = args[1]
 // 测试聚合环签名整个流程
 var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
-console.log(id);
 if (args[0] == 1) {
-    CreateNewItem('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
+    var check_accounts_str = "";
+    var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+    var start = parseInt(args[2]);
+    var end = parseInt(args[3]);
+    console.log(start +"," + end +"," + args[4]);
+
+    AddUserPublicKey('0x'+id, web3.utils.toHex(args[2]));
     //console.log(id);
 }
 
 if (args[0] == 2) {
-    PurchaseItem('0x'+id, 100);
+    EncryptMessage('0x'+id, web3.utils.toHex(args[2]));
     //console.log(id);
 }
 
 if (args[0] == 3) {
-    ConfirmPurchase('0x'+id)
+    var check_accounts_str = "";
+    var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+    var start = parseInt(args[2]);
+    var end = parseInt(args[3]);
+    console.log(start +"," + end +"," + args[4]);
+    for (var i = start; i < end; ++i) {
+        var tmp_str = i.toString();
+        var prikey = prikey_base.substring(tmp_str.length, prikey_base.length) + tmp_str;
+        var account1 = web3.eth.accounts.privateKeyToAccount(
+            '0x' + prikey);
+        to = account1.address.toString('hex').toLowerCase().substring(2);
+        console.log(prikey + ", " + to + ", " + args[4] + ", " + tmp_str);
+        var data = create_tx(
+            "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+            to, parseInt(args[4]), 100000, 1, 0, 0);
+        PostCode(data);
+        check_accounts_str += "'" + to + "',"; 
+    }
+
+    check_transaction(end - start, check_accounts_str, parseInt(args[4]));
+}
+
+if (args[0] == 4) {
+    var check_accounts_str = "";
+    var prikey_base = "00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+    var start = parseInt(args[2]);
+    var end = parseInt(args[3]);
+    for (var i = start; i < end; ++i) {
+        var tmp_str = i.toString();
+        var prikey = prikey_base.substring(tmp_str.length, prikey_base.length) + tmp_str;
+        var account1 = web3.eth.accounts.privateKeyToAccount(
+            '0x' + prikey);
+        to = account1.address.toString('hex').toLowerCase().substring(2); 
+        Prepayment(prikey, 1000000000000);
+        check_accounts_str += "'" + to + "',"; 
+    }
+
+    CheckPrepayment(end - start, contract_address, check_accounts_str);
 }
 
 // 测试合约查询

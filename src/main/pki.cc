@@ -6,6 +6,9 @@
 #include "common/parse_args.h"
 #include "pki/param.h"
 #include "pki/pki_ib_agka.h"
+#include "pki/fpakep.h"
+#include "pki/pki_cl_agka.h"
+#include "pki/pki_cl_param.h"
 
 using namespace shardora;
 
@@ -103,8 +106,83 @@ int test_cpabe(int argc, char** argv) {
     return 0;
 }
 
+int test_pki_cl_agka(int argc, char** argv) {
+    pkicl::PkiClAgka pkicl(pkicl::kTypeA);
+    pkicl.Simulate();
+    return 0;
+}
+
+int test_fpakep(int argc, char** argv) {
+    common::ParserArgs parser_arg;
+    parser_arg.AddArgType('t', "type", common::kMaybeValue);
+    parser_arg.AddArgType('f', "pk_file", common::kMaybeValue);
+    parser_arg.AddArgType('d', "des_file", common::kMaybeValue);
+    parser_arg.AddArgType('p', "public key", common::kMaybeValue);
+    parser_arg.AddArgType('o', "policy", common::kMaybeValue);
+    parser_arg.AddArgType('a', "plain text", common::kMaybeValue);
+    parser_arg.AddArgType('c', "cipher text", common::kMaybeValue);
+    parser_arg.AddArgType('i', "init text", common::kMaybeValue);
+    parser_arg.AddArgType('j', "private key", common::kMaybeValue);
+    std::string tmp_params = "";
+    for (int i = 1; i < argc; i++) {
+        if (strlen(argv[i]) == 0) {
+            tmp_params += static_cast<char>(31);
+        }
+        else {
+            tmp_params += argv[i];
+        }
+        tmp_params += " ";
+    }
+
+    std::string err_pos;
+    if (parser_arg.Parse(tmp_params, err_pos) != common::kParseSuccess) {
+        printf("parse params failed: %s\n", tmp_params.c_str());
+        return 1;
+    }
+
+    std::string des_file;
+    parser_arg.Get("d", des_file);
+    int type = 0;
+    parser_arg.Get("t", type);
+    std::cout << "des file: " << des_file << ", type: " << type << std::endl;
+
+    fpakep::Fpakep fpakep;
+    if (type == 0) {
+        fpakep.test_fpakep();
+    }
+
+    if (type == 1) {
+        std::string init_str;
+        parser_arg.Get("i", init_str);
+        fpakep.InitPrivateAndPublicKey(init_str, des_file);
+    }
+
+    if (type == 2) {
+        std::string pulic_key;
+        parser_arg.Get("p", pulic_key);
+        std::string plain_text;
+        parser_arg.Get("a", plain_text);
+        fpakep.Encrypt(plain_text, pulic_key, des_file);
+    }
+
+    if (type == 3) {
+        std::string cipher_text;
+        parser_arg.Get("c", cipher_text);
+        std::string private_key;
+        parser_arg.Get("j", private_key);
+        fpakep.Decrypt(cipher_text, private_key);
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     // test_pki(argc, argv);
-    test_cpabe(argc, argv);
+    // std::cout << std::endl << std::endl << "*********************** test_cpabe **********************" << std::endl;
+    // test_cpabe(argc, argv);
+    std::cout << std::endl << std::endl << "*********************** test_pki_cl_agka **********************" << std::endl;
+    test_pki_cl_agka(argc, argv);
+    // std::cout << std::endl << std::endl << "*********************** test_fpakep **********************" << std::endl;
+    // test_fpakep(argc, argv);
     return 0;
 }

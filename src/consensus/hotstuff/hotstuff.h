@@ -372,6 +372,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     View last_vote_view_ = 0;
+    View last_leader_propose_view_ = 0;
     SyncPoolFn sync_pool_fn_ = nullptr;
     Pipeline handle_propose_pipeline_;
     std::map<View, transport::MessagePtr> voted_msgs_;
@@ -383,6 +384,7 @@ private:
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
+    
 };
 
 } // namespace consensus
