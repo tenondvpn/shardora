@@ -236,12 +236,12 @@ bool ViewBlockChain::Extends(const ViewBlock& block, const ViewBlock& target) {
     Status s = Status::kSuccess;
     std::shared_ptr<ViewBlock> parent_block = nullptr;
     while (tmp_block->qc().view() > target.qc().view()) {
-        parent_block = Get(tmp_block->parent_hash());
-        if (parent_block == nullptr) {
+        auto parent_block_info = Get(tmp_block->parent_hash());
+        if (parent_block_info == nullptr) {
             break;
         }
 
-        tmp_block = &(*parent_block);
+        tmp_block = &(*parent_block_info->view_block);
     }
 
     return s == Status::kSuccess && tmp_block->qc().view_block_hash() == target.qc().view_block_hash();
@@ -351,9 +351,9 @@ bool ViewBlockChain::IsValid() {
         if (!vb) {
             continue;
         }
-        std::shared_ptr<ViewBlock> parent = nullptr;
-        parent = Get(vb->parent_hash());
-        if (parent == nullptr) {
+
+        auto parent_info = Get(vb->parent_hash());
+        if (parent_info == nullptr) {
             num++;
         }
     }    
