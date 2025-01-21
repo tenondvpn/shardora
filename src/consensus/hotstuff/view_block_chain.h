@@ -66,7 +66,6 @@ public:
             zjcvm::ZjchainHost& zjc_host) {
         std::string phash = parent_hash;
         // TODO: check valid
-        uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
                 break;

@@ -99,6 +99,8 @@ void Pacemaker::NewQcView(uint64_t qc_view) {
 }
 
 void Pacemaker::OnLocalTimeout() {
+    // TODO: check it
+    return;
     // TODO(HT): test
     ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
     // start a new timer for the timeout case
