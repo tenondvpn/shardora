@@ -302,13 +302,14 @@ Status ViewBlockChain::PruneTo(
         const HashStr& target_hash, 
         std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, 
         bool include_history) {
-    std::shared_ptr<ViewBlock> current = Get(target_hash);
-    if (!current) {
+    auto current_info = Get(target_hash);
+    if (!current_info) {
         ZJC_DEBUG("failed prune view block: %s", common::Encode::HexEncode(target_hash).c_str());
         assert(false);
         return Status::kError;
     }
 
+    auto current = current_info->view_block;
     ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
         current->qc().network_id(), 
         current->qc().pool_index(), 
