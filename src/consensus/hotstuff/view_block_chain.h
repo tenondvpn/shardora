@@ -308,7 +308,7 @@ public:
         return high_view_block_;
     }
 
-    inline QC& HighQC() const {
+    inline const QC& HighQC() const {
         return high_view_block_->qc();
     }
 
