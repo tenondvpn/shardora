@@ -1423,6 +1423,11 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 
     auto v_block2 = v_block2_info->view_block;
     if (v_block2->qc().view() + 1 != v_block1->qc().view()) {
+        ZJC_DEBUG("Failed get v block 2 ref: %s, "
+            "v_block2->qc().view() + 1 != v_block1->qc().view(): %lu, %lu",
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+            v_block2->qc().view(), 
+            v_block1->qc().view());
         return nullptr;
     }
 
@@ -1467,6 +1472,11 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #endif
     // fast hotstuff
     if (v_block3->qc().view() + 1 != v_block2->qc().view()) {
+        ZJC_DEBUG("Failed get v block 2 ref: %s, "
+            "v_block3->qc().view() + 1 != v_block2->qc().view(): %lu, %lu",
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+            v_block3->qc().view(),
+            v_block2->qc().view());
         return nullptr;
     }
 
