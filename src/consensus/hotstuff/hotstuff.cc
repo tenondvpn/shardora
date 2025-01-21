@@ -716,7 +716,6 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
-    
     ZJC_DEBUG("HandleProposeMsgStep_VerifyViewBlock called hash: %lu, propose_debug: %s",
         pro_msg_wrap->msg_ptr->header.hash64(), ProtobufToJson(cons_debug).c_str());
 #endif
@@ -1644,7 +1643,7 @@ Status Hotstuff::VerifyViewBlock(
     }
 
     auto qc_view_block = qc_view_block_info->view_block;
-    if (v_block.qc().view() >= pacemaker()->CurView() && 
+    if ((v_block.qc().view() + 1) >= pacemaker()->CurView() && 
             v_block.qc().view() == qc_view_block->qc().view() + 1) {
         return Status::kSuccess;
     }
@@ -1933,7 +1932,7 @@ Status Hotstuff::ConstructViewBlock(
         return s;
     }
 
-    ZJC_DEBUG("success failed check is empty block allowd: %d, %u_%u_%lu, "
+    ZJC_DEBUG("success check is empty block allowd: %d, %u_%u_%lu, "
         "tx size: %u, cur view: %lu, pre view: %lu, last_vote_view_: %lu",
         pool_idx_, view_block->qc().network_id(), 
         view_block->qc().pool_index(), view_block->qc().view(),
