@@ -332,21 +332,21 @@ public:
 
         if (high_view_block_ == nullptr ||
                 high_view_block_->qc().view() < view_block_ptr->qc().view()) {
-// #ifndef NDEBUG
-//             if (high_view_block_ != nullptr) {
-//                 ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
-//                     "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-//                     high_view_block_->qc().view(),
-//                     common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-//                     view_block_ptr->qc().view(),
-//                     common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-//                     view_block_ptr->qc().network_id(),
-//                     view_block_ptr->qc().pool_index(),
-//                     view_block_ptr->block_info().height(),
-//                     common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
-//                     view_block_ptr->block_info().tx_list_size());
-//             }
-//     #endif
+#ifndef NDEBUG
+            if (high_view_block_ != nullptr) {
+                ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
+                    "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
+                    high_view_block_->qc().view(),
+                    common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
+                    view_block_ptr->qc().view(),
+                    common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+                    view_block_ptr->qc().network_id(),
+                    view_block_ptr->qc().pool_index(),
+                    view_block_ptr->block_info().height(),
+                    common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+                    view_block_ptr->block_info().tx_list_size());
+            }
+    #endif
             
             high_view_block_ = view_block_ptr;
             ZJC_DEBUG("final success add update high hash: %s, "

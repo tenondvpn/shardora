@@ -141,12 +141,12 @@
 #endif
 
 static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
+    return "";
     std::string json_str;
     google::protobuf::util::JsonPrintOptions options;
     options.add_whitespace = pretty_print;
     auto status = google::protobuf::util::MessageToJsonString(message, &json_str, options);
     if (!status.ok()) {
-
         return "";
     }
     return json_str;
