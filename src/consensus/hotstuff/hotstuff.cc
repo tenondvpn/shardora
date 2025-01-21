@@ -1393,6 +1393,7 @@ Status Hotstuff::TryCommit(
 
 std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     // fast hotstuff
+    assert(!qc.view_block_hash().empty());
     auto v_block1_info = view_block_chain()->Get(qc.view_block_hash());
     if (!v_block1_info) {
         ZJC_DEBUG("Failed get v block 1: %s, %u_%u_%lu",
