@@ -1208,16 +1208,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     // }    
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto view_block_ptr = view_block_chain()->Get(qc_item.view_block_hash());
-    if (view_block_ptr) {
-        auto b = common::TimeUtils::TimestampMs();
-#ifndef NDEBUG
-        transport::protobuf::ConsensusDebug cons_debug;
-        cons_debug.ParseFromString(view_block_ptr->debug());
-        // cons_debug.set_vote_timestamps(vote_msg.replica_idx(), b - cons_debug.begin_timestamp());
-        view_block_ptr->set_debug(cons_debug.SerializeAsString());
-#endif
-    }
 #endif
 
     view_block_chain()->UpdateHighViewBlock(qc_item);
@@ -1652,7 +1642,8 @@ Status Hotstuff::VerifyViewBlock(
     }
 
     auto qc_view_block = qc_view_block_info->view_block;
-    if (v_block.qc().view() >= pacemaker()->CurView() && v_block.qc().view() == qc_view_block->qc().view() + 1) {
+    if (v_block.qc().view() >= pacemaker()->CurView() && 
+            v_block.qc().view() == qc_view_block->qc().view() + 1) {
         return Status::kSuccess;
     }
 
@@ -1972,15 +1963,23 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
         return true;
     }
 
-    std::shared_ptr<ViewBlock> v_block2 = view_block_chain()->Get(v_block.parent_hash());
+    auto v_block2_info = view_block_chain()->Get(v_block.parent_hash());
+    if (!v_block2_info) {
+        return true;
+    }
+
+    auto v_block2 = v_block2_info->view_block;
     if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
         return true;
     }
 
-    std::shared_ptr<ViewBlock> v_block3 = view_block_chain()->Get(v_block2->parent_hash());
-    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-        return true;
-    }
+    // fast hotstuff
+    
+    // auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
+    // if (!v)
+    // if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+    //     return true;
+    // }
 
     // ZJC_DEBUG("failed check is empty block allowd block1: %u_%u_%lu, %s, block2: %u_%u_%lu, %s, block3: %u_%u_%lu, %s",
     //     v_block1->qc().network_id(),
