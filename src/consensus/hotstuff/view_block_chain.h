@@ -77,6 +77,10 @@ public:
                 break;
             }
 
+            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+                break;
+            }
+
             if (it->second->zjc_host_ptr) {
                 auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
                 for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
@@ -110,6 +114,10 @@ public:
 
             auto it = view_blocks_info_.find(phash);
             if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
                 break;
             }
 
