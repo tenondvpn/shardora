@@ -207,6 +207,8 @@ int NetworkInit::Init(int argc, char** argv) {
         std::placeholders::_2);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
         elect_mgr_, db_, security_, pools_mgr_, contract_mgr_);
+    tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
+    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     block_mgr_->Init(
         account_mgr_,
         db_,
@@ -214,10 +216,9 @@ int NetworkInit::Init(int argc, char** argv) {
         shard_statistic_,
         security_,
         contract_mgr_,
+        hotstuff_mgr_,
         security_->GetAddress(),
         new_db_cb);
-    tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-    hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
     auto consensus_init_res = hotstuff_mgr_->Init(
         kv_sync_,
         contract_mgr_,

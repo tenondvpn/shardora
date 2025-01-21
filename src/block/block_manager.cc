@@ -854,10 +854,12 @@ void BlockManager::AddNewBlock(
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
     }
 
-    if (network::IsSameToLocalShard(view_block_item->qc().network_id())) {
-        hotstuff_mgr_->UpdateStoredToDbView(view_block_item->qc().pool_index(), view_block_item->qc().view());
+    if (hotstuff_mgr_ && network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+        hotstuff_mgr_->UpdateStoredToDbView(
+            view_block_item->qc().pool_index(), 
+            view_block_item->qc().view());
     }
-    
+
     // ZJC_DEBUG("success new block coming sharding id: %u_%d_%lu, "
     //     "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
     //     view_block_item->qc().network_id(),
