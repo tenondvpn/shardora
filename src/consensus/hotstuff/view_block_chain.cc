@@ -31,7 +31,7 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
     
-    if (view_block->qc().view() <= prune_height_) {
+    if (prune_height_ != 0 && view_block->qc().view() <= prune_height_) {
         return Status::kSuccess;
     }
 
