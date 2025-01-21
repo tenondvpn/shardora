@@ -298,28 +298,20 @@ Status ViewBlockChain::GetRecursiveChildren(HashStr hash, std::vector<std::share
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
-Status ViewBlockChain::PruneTo(
-        const HashStr& target_hash, 
-        std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, 
-        bool include_history) {
-    auto current_info = Get(target_hash);
-    if (!current_info) {
-        ZJC_DEBUG("failed prune view block: %s", common::Encode::HexEncode(target_hash).c_str());
-        assert(false);
-        return Status::kError;
-    }
-
-    auto current = current_info->view_block;
-    ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
-        current->qc().network_id(), 
-        current->qc().pool_index(), 
-        current->qc().view(), 
-        prune_height_,
-        String().c_str());
+Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
+    ZJC_DEBUG("pool: %u, now PruneTo: %lu", pool_index_, stored_to_db_view_);
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
-                iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
-            // forked_blockes.push_back(iter->second->view_block);
+                iter->second->view_block->qc().view() <= stored_to_db_view_) {
+            if (!iter->second->valid) {
+                forked_blockes.push_back(iter->second->view_block);
+                ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
+                    iter->second->view_block->qc().network_id(), 
+                    iter->second->view_block->qc().pool_index(), 
+                    iter->second->view_block->qc().view(), 
+                    iter->second->view_block->block_info().tx_list_size());
+            }
+
             iter = view_blocks_info_.erase(iter);
             CHECK_MEMORY_SIZE(view_blocks_info_);
         } else {

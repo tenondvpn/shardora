@@ -5,6 +5,7 @@
 #include "block/block_proto.h"
 #include "common/encode.h"
 #include "common/time_utils.h"
+#include "consensus/hotstuff/hotstuff_manager.h"
 #include "db/db.h"
 #include "network/dht_manager.h"
 #include "network/route.h"
@@ -49,6 +50,7 @@ int BlockManager::Init(
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
+        std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
@@ -58,6 +60,7 @@ int BlockManager::Init(
     statistic_mgr_ = statistic_mgr;
     security_ = security;
     contract_mgr_ = contract_mgr;
+    hotstuff_mgr_ = hotstuff_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
@@ -849,6 +852,12 @@ void BlockManager::AddNewBlock(
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
+    }
+
+    if (hotstuff_mgr_ && network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+        hotstuff_mgr_->UpdateStoredToDbView(
+            view_block_item->qc().pool_index(), 
+            view_block_item->qc().view());
     }
 
     // ZJC_DEBUG("success new block coming sharding id: %u_%d_%lu, "

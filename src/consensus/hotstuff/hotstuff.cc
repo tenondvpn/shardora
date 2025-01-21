@@ -1299,7 +1299,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             }
         }
             
-        if (tc.has_view_block_hash()) {
+        if (tc.has_view_block_hash() && !tc.view_block_hash().empty()) {
             auto& qc = tc;
             pacemaker()->NewQcView(qc.view());
             view_block_chain()->UpdateHighViewBlock(qc);
@@ -1539,7 +1539,7 @@ Status Hotstuff::Commit(
         v_block->qc().view(), 
         v_block->block_info().height(),
         view_block_chain()->String().c_str());
-    auto s = view_block_chain()->PruneTo(v_block->qc().view_block_hash(), forked_blockes, true);
+    auto s = view_block_chain()->PruneTo(forked_blockes);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, prune failed s: %d, vb view: &lu", pool_idx_, s, v_block->qc().view());
         ZJC_WARN("PruneTo failed, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
