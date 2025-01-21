@@ -315,6 +315,11 @@ public:
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
         auto view_block_ptr_info = Get(qc_item.view_block_hash());
         if (!view_block_ptr_info) {
+            ZJC_DEBUG("failed get view block %u_%u_%lu, hash: %s",
+                qc_item.network_id(), 
+                qc_item.pool_index(), 
+                qc_item.view(), 
+                common::Encode::HexEncode(qc_item.view_block_hash()).c_str());
             return;
         }
 
