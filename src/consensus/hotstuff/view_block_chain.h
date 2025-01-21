@@ -14,45 +14,10 @@ namespace shardora {
 
 namespace hotstuff {
 
-struct CompareViewBlock {
-    bool operator()(const std::shared_ptr<ViewBlock>& lhs, const std::shared_ptr<ViewBlock>& rhs) const {
-        return lhs->qc().view() > rhs->qc().view();
-    }
-};
-
-using ViewBlockMinHeap =
-    std::priority_queue<std::shared_ptr<ViewBlock>,
-                        std::vector<std::shared_ptr<ViewBlock>>,
-                        CompareViewBlock>;
-
-
-static const int MaxBlockNumForView = 7;
-enum class ViewBlockStatus : int {
-    Unknown = 0,
-    Proposed = 1,
-    Locked = 2,
-    Committed = 3,
-};
-
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
 class ViewBlockChain {
-public:
-    struct ViewBlockInfo {
-        std::shared_ptr<ViewBlock> view_block;
-        ViewBlockStatus status;
-        std::vector<std::shared_ptr<ViewBlock>> children;
-        std::shared_ptr<QC> qc;
-        std::unordered_set<std::string> added_txs;
-        BalanceMapPtr acc_balance_map_ptr;
-        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
-
-        ViewBlockInfo() : 
-            view_block(nullptr), 
-            status(ViewBlockStatus::Unknown), 
-            qc(nullptr) {}
-    };
-    
+public:    
     ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager> account_mgr);
     ~ViewBlockChain();
     
@@ -66,7 +31,7 @@ public:
         BalanceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
-    std::shared_ptr<ViewBlock> Get(const HashStr& hash);
+    std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
     std::shared_ptr<ViewBlock> Get(uint64_t view);
     uint64_t GetMaxHeight() {
         if (latest_committed_block_->has_block_info()) {
@@ -343,17 +308,22 @@ public:
         return high_view_block_;
     }
 
-    inline QC HighQC() const {
+    inline const QC& HighQC() const {
         return high_view_block_->qc();
     }
 
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
-        auto view_block_ptr = Get(qc_item.view_block_hash());
-        if (!view_block_ptr) {
+        auto view_block_ptr_info = Get(qc_item.view_block_hash());
+        if (!view_block_ptr_info) {
+            ZJC_DEBUG("failed get view block %u_%u_%lu, hash: %s",
+                qc_item.network_id(), 
+                qc_item.pool_index(), 
+                qc_item.view(), 
+                common::Encode::HexEncode(qc_item.view_block_hash()).c_str());
             return;
         }
 
-
+        auto view_block_ptr = view_block_ptr_info->view_block;
         if (!IsQcTcValid(view_block_ptr->qc())) {
             view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
             view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
@@ -367,21 +337,21 @@ public:
 
         if (high_view_block_ == nullptr ||
                 high_view_block_->qc().view() < view_block_ptr->qc().view()) {
-// #ifndef NDEBUG
-//             if (high_view_block_ != nullptr) {
-//                 ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
-//                     "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
-//                     high_view_block_->qc().view(),
-//                     common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
-//                     view_block_ptr->qc().view(),
-//                     common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
-//                     view_block_ptr->qc().network_id(),
-//                     view_block_ptr->qc().pool_index(),
-//                     view_block_ptr->block_info().height(),
-//                     common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
-//                     view_block_ptr->block_info().tx_list_size());
-//             }
-//     #endif
+#ifndef NDEBUG
+            if (high_view_block_ != nullptr) {
+                ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
+                    "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
+                    high_view_block_->qc().view(),
+                    common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
+                    view_block_ptr->qc().view(),
+                    common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+                    view_block_ptr->qc().network_id(),
+                    view_block_ptr->qc().pool_index(),
+                    view_block_ptr->block_info().height(),
+                    common::Encode::HexEncode(view_block_ptr->parent_hash()).c_str(),
+                    view_block_ptr->block_info().tx_list_size());
+            }
+    #endif
             
             high_view_block_ = view_block_ptr;
             ZJC_DEBUG("final success add update high hash: %s, "

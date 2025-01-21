@@ -311,10 +311,10 @@ private:
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
         const transport::MessagePtr& msg_ptr,
-        const std::shared_ptr<ViewBlock>& v_block,
+        const std::shared_ptr<ViewBlockInfo>& v_block,
         const QC& commit_qc,
         uint64_t test_index);
-    std::shared_ptr<ViewBlock> CheckCommit(const QC& qc);
+    std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
     bool CommitInner(
         const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlock>& v_block,

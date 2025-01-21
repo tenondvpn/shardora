@@ -347,7 +347,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     // 存在交点时，仅同步交点之后的
     if (cross_vb) {
         vb_to_sync.clear();
-        chain->GetRecursiveChildren(cross_vb->qc().view_block_hash(), vb_to_sync);
+        // chain->GetRecursiveChildren(cross_vb->qc().view_block_hash(), vb_to_sync);
         // cross_vb 也同步回去，保证是一条合法的链
         vb_to_sync.push_back(cross_vb);
     } else {
@@ -421,7 +421,12 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
 
     auto query_hash = view_block_msg.single_req().query_hash();
     // 不存在 query_hash 则不同步
-    std::shared_ptr<ViewBlock> view_block = chain->Get(query_hash);
+    auto view_block_info = chain->Get(query_hash);
+    if (!view_block_info) {
+        return Status::kNotFound;
+    }
+
+    auto view_block = view_block_info->view_block;
     if (!view_block || !view_block->has_qc()) {
         return Status::kNotFound;
     }
@@ -685,8 +690,9 @@ Status HotstuffSyncer::MergeChain(
     ori_chain->GetOrderedAll(view_blocks);
     std::shared_ptr<ViewBlock> cross_block = nullptr;
     for (auto it = view_blocks.rbegin(); it != view_blocks.rend(); it++) {
-        cross_block = sync_chain->Get((*it)->qc().view_block_hash());
-        if (cross_block) {
+        auto cross_block_info = sync_chain->Get((*it)->qc().view_block_hash());
+        if (cross_block_info) {
+            cross_block = cross_block_info->view_block;
             break;
         }
     }

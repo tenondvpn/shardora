@@ -31,7 +31,7 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
     
-    if (view_block->qc().view() <= prune_height_) {
+    if (prune_height_ != 0 && view_block->qc().view() <= prune_height_) {
         return Status::kSuccess;
     }
 
@@ -168,7 +168,7 @@ Status ViewBlockChain::Store(
     return Status::kSuccess;
 }
 
-std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
+std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end()) {
         // ZJC_DEBUG("get view block from store propose_debug: %s",
@@ -181,19 +181,19 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
                 it->second->view_block->qc().pool_index(),
                 it->second->view_block->qc().view());
             assert(it->second->view_block->qc().view_block_hash() == hash);
-            return it->second->view_block;
+            return it->second;
         }
     }
 
-    if (latest_committed_block_ && latest_committed_block_->qc().view_block_hash() == hash) {
-        ZJC_DEBUG("now use latest commited block: %s, %u_%u_%lu, height: %lu",
-            common::Encode::HexEncode(hash).c_str(),
-            latest_committed_block_->qc().network_id(),
-            latest_committed_block_->qc().pool_index(),
-            latest_committed_block_->qc().view(),
-            latest_committed_block_->block_info().height());
-        return latest_committed_block_;
-    }
+    // if (latest_committed_block_ && latest_committed_block_->qc().view_block_hash() == hash) {
+    //     ZJC_DEBUG("now use latest commited block: %s, %u_%u_%lu, height: %lu",
+    //         common::Encode::HexEncode(hash).c_str(),
+    //         latest_committed_block_->qc().network_id(),
+    //         latest_committed_block_->qc().pool_index(),
+    //         latest_committed_block_->qc().view(),
+    //         latest_committed_block_->block_info().height());
+    //     return latest_committed_block_;
+    // }
 
     return nullptr;    
 }
@@ -236,12 +236,12 @@ bool ViewBlockChain::Extends(const ViewBlock& block, const ViewBlock& target) {
     Status s = Status::kSuccess;
     std::shared_ptr<ViewBlock> parent_block = nullptr;
     while (tmp_block->qc().view() > target.qc().view()) {
-        parent_block = Get(tmp_block->parent_hash());
-        if (parent_block == nullptr) {
+        auto parent_block_info = Get(tmp_block->parent_hash());
+        if (parent_block_info == nullptr) {
             break;
         }
 
-        tmp_block = &(*parent_block);
+        tmp_block = &(*parent_block_info->view_block);
     }
 
     return s == Status::kSuccess && tmp_block->qc().view_block_hash() == target.qc().view_block_hash();
@@ -302,13 +302,14 @@ Status ViewBlockChain::PruneTo(
         const HashStr& target_hash, 
         std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, 
         bool include_history) {
-    std::shared_ptr<ViewBlock> current = Get(target_hash);
-    if (!current) {
+    auto current_info = Get(target_hash);
+    if (!current_info) {
         ZJC_DEBUG("failed prune view block: %s", common::Encode::HexEncode(target_hash).c_str());
         assert(false);
         return Status::kError;
     }
 
+    auto current = current_info->view_block;
     ZJC_DEBUG("now prune view block %u_%u_%lu, prune_height_: %lu, views: %s", 
         current->qc().network_id(), 
         current->qc().pool_index(), 
@@ -351,9 +352,9 @@ bool ViewBlockChain::IsValid() {
         if (!vb) {
             continue;
         }
-        std::shared_ptr<ViewBlock> parent = nullptr;
-        parent = Get(vb->parent_hash());
-        if (parent == nullptr) {
+
+        auto parent_info = Get(vb->parent_hash());
+        if (parent_info == nullptr) {
             num++;
         }
     }    

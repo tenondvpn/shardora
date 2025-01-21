@@ -53,6 +53,42 @@ using StepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper> &)>;
 using DirectlyStepFn = std::function<Status(std::shared_ptr<ProposeMsgWrapper> &, const std::string&)>;
 using ConditionFn = std::function<bool(std::shared_ptr<ProposeMsgWrapper>&)>;
 
+struct CompareViewBlock {
+    bool operator()(const std::shared_ptr<ViewBlock>& lhs, const std::shared_ptr<ViewBlock>& rhs) const {
+        return lhs->qc().view() > rhs->qc().view();
+    }
+};
+
+using ViewBlockMinHeap =
+    std::priority_queue<std::shared_ptr<ViewBlock>,
+                        std::vector<std::shared_ptr<ViewBlock>>,
+                        CompareViewBlock>;
+
+static const int MaxBlockNumForView = 7;
+enum class ViewBlockStatus : int {
+    Unknown = 0,
+    Proposed = 1,
+    Locked = 2,
+    Committed = 3,
+};
+
+struct ViewBlockInfo {
+    std::shared_ptr<ViewBlock> view_block;
+    ViewBlockStatus status;
+    std::vector<std::shared_ptr<ViewBlock>> children;
+    std::shared_ptr<QC> qc;
+    std::unordered_set<std::string> added_txs;
+    BalanceMapPtr acc_balance_map_ptr;
+    std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
+    bool valid;
+
+    ViewBlockInfo() : 
+        view_block(nullptr), 
+        status(ViewBlockStatus::Unknown), 
+        qc(nullptr),
+        valid(false) {}
+};
+
 class Pipeline {
 public:
     static const int MAX_MSG_NUM = 2;
