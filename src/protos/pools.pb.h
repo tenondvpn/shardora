@@ -2963,6 +2963,18 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
 
   // accessors -------------------------------------------------------
 
+  // repeated uint64 tx_debug_tm_ms = 16;
+  int tx_debug_tm_ms_size() const;
+  void clear_tx_debug_tm_ms();
+  static const int kTxDebugTmMsFieldNumber = 16;
+  ::google::protobuf::uint64 tx_debug_tm_ms(int index) const;
+  void set_tx_debug_tm_ms(int index, ::google::protobuf::uint64 value);
+  void add_tx_debug_tm_ms(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      tx_debug_tm_ms() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_tx_debug_tm_ms();
+
   // optional bytes gid = 2;
   bool has_gid() const;
   void clear_gid();
@@ -3140,13 +3152,6 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 contract_prepayment() const;
   void set_contract_prepayment(::google::protobuf::uint64 value);
 
-  // optional uint64 tx_debug_tm_ms = 16;
-  bool has_tx_debug_tm_ms() const;
-  void clear_tx_debug_tm_ms();
-  static const int kTxDebugTmMsFieldNumber = 16;
-  ::google::protobuf::uint64 tx_debug_tm_ms() const;
-  void set_tx_debug_tm_ms(::google::protobuf::uint64 value);
-
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.TxMessage)
  private:
   void set_has_version();
@@ -3179,12 +3184,11 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_contract_from();
   void set_has_sign();
   void clear_has_sign();
-  void set_has_tx_debug_tm_ms();
-  void clear_has_tx_debug_tm_ms();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > tx_debug_tm_ms_;
   ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr key_;
@@ -3200,7 +3204,6 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   int step_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 contract_prepayment_;
-  ::google::protobuf::uint64 tx_debug_tm_ms_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // ===================================================================
@@ -6532,28 +6535,34 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.TxMessage.sign)
 }
 
-// optional uint64 tx_debug_tm_ms = 16;
-inline bool TxMessage::has_tx_debug_tm_ms() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
-}
-inline void TxMessage::set_has_tx_debug_tm_ms() {
-  _has_bits_[0] |= 0x00008000u;
-}
-inline void TxMessage::clear_has_tx_debug_tm_ms() {
-  _has_bits_[0] &= ~0x00008000u;
+// repeated uint64 tx_debug_tm_ms = 16;
+inline int TxMessage::tx_debug_tm_ms_size() const {
+  return tx_debug_tm_ms_.size();
 }
 inline void TxMessage::clear_tx_debug_tm_ms() {
-  tx_debug_tm_ms_ = GOOGLE_ULONGLONG(0);
-  clear_has_tx_debug_tm_ms();
+  tx_debug_tm_ms_.Clear();
 }
-inline ::google::protobuf::uint64 TxMessage::tx_debug_tm_ms() const {
+inline ::google::protobuf::uint64 TxMessage::tx_debug_tm_ms(int index) const {
   // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxMessage.tx_debug_tm_ms)
+  return tx_debug_tm_ms_.Get(index);
+}
+inline void TxMessage::set_tx_debug_tm_ms(int index, ::google::protobuf::uint64 value) {
+  tx_debug_tm_ms_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.tx_debug_tm_ms)
+}
+inline void TxMessage::add_tx_debug_tm_ms(::google::protobuf::uint64 value) {
+  tx_debug_tm_ms_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.TxMessage.tx_debug_tm_ms)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+TxMessage::tx_debug_tm_ms() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.TxMessage.tx_debug_tm_ms)
   return tx_debug_tm_ms_;
 }
-inline void TxMessage::set_tx_debug_tm_ms(::google::protobuf::uint64 value) {
-  set_has_tx_debug_tm_ms();
-  tx_debug_tm_ms_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.tx_debug_tm_ms)
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+TxMessage::mutable_tx_debug_tm_ms() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.TxMessage.tx_debug_tm_ms)
+  return &tx_debug_tm_ms_;
 }
 
 #ifdef __GNUC__

@@ -701,7 +701,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   6,
   7,
   8,
-  15,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 12, sizeof(::shardora::pools::protobuf::ToTxHeights)},
@@ -837,7 +837,7 @@ void AddDescriptorsImpl() {
       "Type:\013kNormalFrom\022\033\n\023contract_prepayment"
       "\030\013 \001(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contrac"
       "t_input\030\r \001(\014\022\025\n\rcontract_from\030\016 \001(\014\022\014\n\004"
-      "sign\030\017 \001(\014\022\026\n\016tx_debug_tm_ms\030\020 \001(\004*\241\003\n\010S"
+      "sign\030\017 \001(\014\022\026\n\016tx_debug_tm_ms\030\020 \003(\004*\241\003\n\010S"
       "tepType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022"
       "\034\n\030kConsensusRootElectShard\020\002\022\033\n\027kConsen"
       "susRootTimeBlock\020\003\022!\n\035kConsensusCreateGe"
@@ -7506,7 +7506,8 @@ TxMessage::TxMessage()
 TxMessage::TxMessage(const TxMessage& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_) {
+      _has_bits_(from._has_bits_),
+      tx_debug_tm_ms_(from.tx_debug_tm_ms_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_gid()) {
@@ -7545,8 +7546,8 @@ TxMessage::TxMessage(const TxMessage& from)
     sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
   }
   ::memcpy(&gas_limit_, &from.gas_limit_,
-    static_cast<size_t>(reinterpret_cast<char*>(&tx_debug_tm_ms_) -
-    reinterpret_cast<char*>(&gas_limit_)) + sizeof(tx_debug_tm_ms_));
+    static_cast<size_t>(reinterpret_cast<char*>(&contract_prepayment_) -
+    reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
   // @@protoc_insertion_point(copy_constructor:shardora.pools.protobuf.TxMessage)
 }
 
@@ -7561,8 +7562,8 @@ void TxMessage::SharedCtor() {
   contract_from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&gas_limit_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&tx_debug_tm_ms_) -
-      reinterpret_cast<char*>(&gas_limit_)) + sizeof(tx_debug_tm_ms_));
+      reinterpret_cast<char*>(&contract_prepayment_) -
+      reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
 }
 
 TxMessage::~TxMessage() {
@@ -7602,6 +7603,7 @@ void TxMessage::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  tx_debug_tm_ms_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -7632,10 +7634,10 @@ void TxMessage::Clear() {
   if (cached_has_bits & 0x00000100u) {
     sign_.ClearNonDefaultToEmptyNoArena();
   }
-  if (cached_has_bits & 65024u) {
+  if (cached_has_bits & 32256u) {
     ::memset(&gas_limit_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&tx_debug_tm_ms_) -
-        reinterpret_cast<char*>(&gas_limit_)) + sizeof(tx_debug_tm_ms_));
+        reinterpret_cast<char*>(&contract_prepayment_) -
+        reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -7849,14 +7851,19 @@ bool TxMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 tx_debug_tm_ms = 16;
+      // repeated uint64 tx_debug_tm_ms = 16;
       case 16: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(128u /* 128 & 0xFF */)) {
-          set_has_tx_debug_tm_ms();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, &tx_debug_tm_ms_)));
+                 2, 128u, input, this->mutable_tx_debug_tm_ms())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_tx_debug_tm_ms())));
         } else {
           goto handle_unusual;
         }
@@ -7975,9 +7982,10 @@ void TxMessage::SerializeWithCachedSizes(
       15, this->sign(), output);
   }
 
-  // optional uint64 tx_debug_tm_ms = 16;
-  if (cached_has_bits & 0x00008000u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(16, this->tx_debug_tm_ms(), output);
+  // repeated uint64 tx_debug_tm_ms = 16;
+  for (int i = 0, n = this->tx_debug_tm_ms_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
+      16, this->tx_debug_tm_ms(i), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -8089,10 +8097,9 @@ void TxMessage::SerializeWithCachedSizes(
         15, this->sign(), target);
   }
 
-  // optional uint64 tx_debug_tm_ms = 16;
-  if (cached_has_bits & 0x00008000u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(16, this->tx_debug_tm_ms(), target);
-  }
+  // repeated uint64 tx_debug_tm_ms = 16;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt64ToArray(16, this->tx_debug_tm_ms_, target);
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -8111,6 +8118,15 @@ size_t TxMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
+  // repeated uint64 tx_debug_tm_ms = 16;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt64Size(this->tx_debug_tm_ms_);
+    total_size += 2 *
+                  ::google::protobuf::internal::FromIntSize(this->tx_debug_tm_ms_size());
+    total_size += data_size;
+  }
+
   if (_has_bits_[0 / 32] & 255u) {
     // optional bytes gid = 2;
     if (has_gid()) {
@@ -8169,7 +8185,7 @@ size_t TxMessage::ByteSizeLong() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 65280u) {
+  if (_has_bits_[8 / 32] & 32512u) {
     // optional bytes sign = 15;
     if (has_sign()) {
       total_size += 1 +
@@ -8218,13 +8234,6 @@ size_t TxMessage::ByteSizeLong() const {
           this->contract_prepayment());
     }
 
-    // optional uint64 tx_debug_tm_ms = 16;
-    if (has_tx_debug_tm_ms()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->tx_debug_tm_ms());
-    }
-
   }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
@@ -8253,6 +8262,7 @@ void TxMessage::MergeFrom(const TxMessage& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  tx_debug_tm_ms_.MergeFrom(from.tx_debug_tm_ms_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -8288,7 +8298,7 @@ void TxMessage::MergeFrom(const TxMessage& from) {
       contract_from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_from_);
     }
   }
-  if (cached_has_bits & 65280u) {
+  if (cached_has_bits & 32512u) {
     if (cached_has_bits & 0x00000100u) {
       set_has_sign();
       sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
@@ -8310,9 +8320,6 @@ void TxMessage::MergeFrom(const TxMessage& from) {
     }
     if (cached_has_bits & 0x00004000u) {
       contract_prepayment_ = from.contract_prepayment_;
-    }
-    if (cached_has_bits & 0x00008000u) {
-      tx_debug_tm_ms_ = from.tx_debug_tm_ms_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -8342,6 +8349,7 @@ void TxMessage::Swap(TxMessage* other) {
 }
 void TxMessage::InternalSwap(TxMessage* other) {
   using std::swap;
+  tx_debug_tm_ms_.InternalSwap(&other->tx_debug_tm_ms_);
   gid_.Swap(&other->gid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -8366,7 +8374,6 @@ void TxMessage::InternalSwap(TxMessage* other) {
   swap(step_, other->step_);
   swap(amount_, other->amount_);
   swap(contract_prepayment_, other->contract_prepayment_);
-  swap(tx_debug_tm_ms_, other->tx_debug_tm_ms_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
