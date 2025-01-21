@@ -14,26 +14,6 @@ namespace shardora {
 
 namespace hotstuff {
 
-struct CompareViewBlock {
-    bool operator()(const std::shared_ptr<ViewBlock>& lhs, const std::shared_ptr<ViewBlock>& rhs) const {
-        return lhs->qc().view() > rhs->qc().view();
-    }
-};
-
-using ViewBlockMinHeap =
-    std::priority_queue<std::shared_ptr<ViewBlock>,
-                        std::vector<std::shared_ptr<ViewBlock>>,
-                        CompareViewBlock>;
-
-
-static const int MaxBlockNumForView = 7;
-enum class ViewBlockStatus : int {
-    Unknown = 0,
-    Proposed = 1,
-    Locked = 2,
-    Committed = 3,
-};
-
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
 class ViewBlockChain {
