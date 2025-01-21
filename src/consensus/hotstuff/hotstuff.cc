@@ -1914,7 +1914,7 @@ Status Hotstuff::ConstructViewBlock(
     // 打包 QC 和 View
     auto* qc = view_block->mutable_qc();
     qc->set_leader_idx(leader_idx);
-    qc->set_view(max_view());
+    qc->set_view(pre_v_block->qc().view() + 1);
     qc->set_network_id(common::GlobalInfo::Instance()->network_id());
     qc->set_pool_index(pool_idx_);
     // TODO 如果单分支最多连续打包三个默认交易
