@@ -1299,7 +1299,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             }
         }
             
-        if (tc.has_view_block_hash()) {
+        if (tc.has_view_block_hash() && !tc.view_block_hash().empty()) {
             auto& qc = tc;
             pacemaker()->NewQcView(qc.view());
             view_block_chain()->UpdateHighViewBlock(qc);
