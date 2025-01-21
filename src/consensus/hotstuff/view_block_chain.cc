@@ -168,7 +168,7 @@ Status ViewBlockChain::Store(
     return Status::kSuccess;
 }
 
-std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
+std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end()) {
         // ZJC_DEBUG("get view block from store propose_debug: %s",
@@ -181,19 +181,19 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(const HashStr &hash) {
                 it->second->view_block->qc().pool_index(),
                 it->second->view_block->qc().view());
             assert(it->second->view_block->qc().view_block_hash() == hash);
-            return it->second->view_block;
+            return it->second;
         }
     }
 
-    if (latest_committed_block_ && latest_committed_block_->qc().view_block_hash() == hash) {
-        ZJC_DEBUG("now use latest commited block: %s, %u_%u_%lu, height: %lu",
-            common::Encode::HexEncode(hash).c_str(),
-            latest_committed_block_->qc().network_id(),
-            latest_committed_block_->qc().pool_index(),
-            latest_committed_block_->qc().view(),
-            latest_committed_block_->block_info().height());
-        return latest_committed_block_;
-    }
+    // if (latest_committed_block_ && latest_committed_block_->qc().view_block_hash() == hash) {
+    //     ZJC_DEBUG("now use latest commited block: %s, %u_%u_%lu, height: %lu",
+    //         common::Encode::HexEncode(hash).c_str(),
+    //         latest_committed_block_->qc().network_id(),
+    //         latest_committed_block_->qc().pool_index(),
+    //         latest_committed_block_->qc().view(),
+    //         latest_committed_block_->block_info().height());
+    //     return latest_committed_block_;
+    // }
 
     return nullptr;    
 }

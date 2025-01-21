@@ -37,22 +37,7 @@ enum class ViewBlockStatus : int {
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
 class ViewBlockChain {
-public:
-    struct ViewBlockInfo {
-        std::shared_ptr<ViewBlock> view_block;
-        ViewBlockStatus status;
-        std::vector<std::shared_ptr<ViewBlock>> children;
-        std::shared_ptr<QC> qc;
-        std::unordered_set<std::string> added_txs;
-        BalanceMapPtr acc_balance_map_ptr;
-        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
-
-        ViewBlockInfo() : 
-            view_block(nullptr), 
-            status(ViewBlockStatus::Unknown), 
-            qc(nullptr) {}
-    };
-    
+public:    
     ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager> account_mgr);
     ~ViewBlockChain();
     
@@ -66,7 +51,7 @@ public:
         BalanceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
-    std::shared_ptr<ViewBlock> Get(const HashStr& hash);
+    std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
     std::shared_ptr<ViewBlock> Get(uint64_t view);
     uint64_t GetMaxHeight() {
         if (latest_committed_block_->has_block_info()) {
