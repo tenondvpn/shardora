@@ -313,12 +313,12 @@ public:
     }
 
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
-        auto view_block_ptr = Get(qc_item.view_block_hash());
-        if (!view_block_ptr) {
+        auto view_block_ptr_info = Get(qc_item.view_block_hash());
+        if (!view_block_ptr_info) {
             return;
         }
 
-
+        auto view_block_ptr = view_block_ptr_info->view_block;
         if (!IsQcTcValid(view_block_ptr->qc())) {
             view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
             view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
