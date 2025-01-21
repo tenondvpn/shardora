@@ -31,6 +31,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protob
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_CrossShardStatisticItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_PoolStatisticTxItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ShardToTxItem;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_TxDelayTestInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_PoolStatisticItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_StatisticTxItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ToTxMessageItem;
@@ -125,6 +126,11 @@ class SyncPoolsMaxHeightDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<SyncPoolsMaxHeight>
       _instance;
 } _SyncPoolsMaxHeight_default_instance_;
+class TxDelayTestInfoDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<TxDelayTestInfo>
+      _instance;
+} _TxDelayTestInfo_default_instance_;
 class TxMessageDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<TxMessage>
@@ -387,6 +393,20 @@ static void InitDefaultsSyncPoolsMaxHeight() {
 ::google::protobuf::internal::SCCInfo<0> scc_info_SyncPoolsMaxHeight =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsSyncPoolsMaxHeight}, {}};
 
+static void InitDefaultsTxDelayTestInfo() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::pools::protobuf::_TxDelayTestInfo_default_instance_;
+    new (ptr) ::shardora::pools::protobuf::TxDelayTestInfo();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::pools::protobuf::TxDelayTestInfo::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_TxDelayTestInfo =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsTxDelayTestInfo}, {}};
+
 static void InitDefaultsTxMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -398,8 +418,9 @@ static void InitDefaultsTxMessage() {
   ::shardora::pools::protobuf::TxMessage::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_TxMessage =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsTxMessage}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_TxMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsTxMessage}, {
+      &protobuf_protos_2fpools_2eproto::scc_info_TxDelayTestInfo.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_ToTxHeights.base);
@@ -419,10 +440,11 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_JoinElectNode.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ElectStatistic.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncPoolsMaxHeight.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_TxDelayTestInfo.base);
   ::google::protobuf::internal::InitSCC(&scc_info_TxMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[18];
+::google::protobuf::Metadata file_level_metadata[19];
 const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
@@ -665,6 +687,15 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   0,
   ~0u,
   ~0u,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxDelayTestInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxDelayTestInfo, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxDelayTestInfo, tx_debug_tm_ms_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxDelayTestInfo, tx_debug_info_),
+  1,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -685,7 +716,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, contract_input_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, contract_from_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, sign_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, tx_debug_tm_ms_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::TxMessage, tx_debug_),
   11,
   0,
   1,
@@ -721,7 +752,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 186, 200, sizeof(::shardora::pools::protobuf::JoinElectNode)},
   { 209, 221, sizeof(::shardora::pools::protobuf::ElectStatistic)},
   { 228, 236, sizeof(::shardora::pools::protobuf::SyncPoolsMaxHeight)},
-  { 239, 260, sizeof(::shardora::pools::protobuf::TxMessage)},
+  { 239, 246, sizeof(::shardora::pools::protobuf::TxDelayTestInfo)},
+  { 248, 269, sizeof(::shardora::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -742,6 +774,7 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::pools::protobuf::_JoinElectNode_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::pools::protobuf::_ElectStatistic_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::pools::protobuf::_SyncPoolsMaxHeight_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::pools::protobuf::_TxDelayTestInfo_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::pools::protobuf::_TxMessage_default_instance_),
 };
 
@@ -760,7 +793,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 18);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 19);
 }
 
 void AddDescriptorsImpl() {
@@ -829,29 +862,31 @@ void AddDescriptorsImpl() {
       "leaders\030\006 \003(\r\022\030\n\020statistic_height\030\007 \001(\004\""
       "P\n\022SyncPoolsMaxHeight\022\022\n\003req\030\001 \001(\010:\005fals"
       "e\022\017\n\007heights\030\002 \003(\004\022\025\n\rcross_heights\030\003 \003("
-      "\004\"\336\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030"
-      "\002 \001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004"
-      "\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005valu"
-      "e\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022<\n\004s"
-      "tep\030\n \001(\0162!.shardora.pools.protobuf.Step"
-      "Type:\013kNormalFrom\022\033\n\023contract_prepayment"
-      "\030\013 \001(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contrac"
-      "t_input\030\r \001(\014\022\025\n\rcontract_from\030\016 \001(\014\022\014\n\004"
-      "sign\030\017 \001(\014\022\026\n\016tx_debug_tm_ms\030\020 \003(\004*\241\003\n\010S"
-      "tepType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022"
-      "\034\n\030kConsensusRootElectShard\020\002\022\033\n\027kConsen"
-      "susRootTimeBlock\020\003\022!\n\035kConsensusCreateGe"
-      "nesisAcount\020\004\022\026\n\022kConsensusLocalTos\020\005\022\023\n"
-      "\017kContractCreate\020\006\022\032\n\026kContractGasPrepay"
-      "ment\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRootCrea"
-      "teAddress\020\t\022\016\n\nkStatistic\020\014\022\016\n\nkJoinElec"
-      "t\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016\n\nk"
-      "RootCross\020\020\022\033\n\027kContractCreateByRootTo\020\021"
-      "\022\035\n\031kContractCreateByRootFrom\020\022\022\025\n\021kPool"
-      "StatisticTag\020\023"
+      "\004\"@\n\017TxDelayTestInfo\022\026\n\016tx_debug_tm_ms\030\001"
+      " \001(\004\022\025\n\rtx_debug_info\030\002 \001(\014\"\202\003\n\tTxMessag"
+      "e\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006pubke"
+      "y\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n\tgas_price\030"
+      "\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n\002to\030"
+      "\010 \001(\014\022\016\n\006amount\030\t \001(\004\022<\n\004step\030\n \001(\0162!.sh"
+      "ardora.pools.protobuf.StepType:\013kNormalF"
+      "rom\022\033\n\023contract_prepayment\030\013 \001(\004\022\025\n\rcont"
+      "ract_code\030\014 \001(\014\022\026\n\016contract_input\030\r \001(\014\022"
+      "\025\n\rcontract_from\030\016 \001(\014\022\014\n\004sign\030\017 \001(\014\022:\n\010"
+      "tx_debug\030\020 \003(\0132(.shardora.pools.protobuf"
+      ".TxDelayTestInfo*\241\003\n\010StepType\022\017\n\013kNormal"
+      "From\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootE"
+      "lectShard\020\002\022\033\n\027kConsensusRootTimeBlock\020\003"
+      "\022!\n\035kConsensusCreateGenesisAcount\020\004\022\026\n\022k"
+      "ConsensusLocalTos\020\005\022\023\n\017kContractCreate\020\006"
+      "\022\032\n\026kContractGasPrepayment\020\007\022\023\n\017kContrac"
+      "tExcute\020\010\022\026\n\022kRootCreateAddress\020\t\022\016\n\nkSt"
+      "atistic\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibr"
+      "ary\020\016\022\n\n\006kCross\020\017\022\016\n\nkRootCross\020\020\022\033\n\027kCo"
+      "ntractCreateByRootTo\020\021\022\035\n\031kContractCreat"
+      "eByRootFrom\020\022\022\025\n\021kPoolStatisticTag\020\023"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3294);
+      descriptor, 3396);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -7475,6 +7510,289 @@ void SyncPoolsMaxHeight::InternalSwap(SyncPoolsMaxHeight* other) {
 
 // ===================================================================
 
+void TxDelayTestInfo::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int TxDelayTestInfo::kTxDebugTmMsFieldNumber;
+const int TxDelayTestInfo::kTxDebugInfoFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+TxDelayTestInfo::TxDelayTestInfo()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fpools_2eproto::scc_info_TxDelayTestInfo.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.pools.protobuf.TxDelayTestInfo)
+}
+TxDelayTestInfo::TxDelayTestInfo(const TxDelayTestInfo& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  tx_debug_info_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_tx_debug_info()) {
+    tx_debug_info_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.tx_debug_info_);
+  }
+  tx_debug_tm_ms_ = from.tx_debug_tm_ms_;
+  // @@protoc_insertion_point(copy_constructor:shardora.pools.protobuf.TxDelayTestInfo)
+}
+
+void TxDelayTestInfo::SharedCtor() {
+  tx_debug_info_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  tx_debug_tm_ms_ = GOOGLE_ULONGLONG(0);
+}
+
+TxDelayTestInfo::~TxDelayTestInfo() {
+  // @@protoc_insertion_point(destructor:shardora.pools.protobuf.TxDelayTestInfo)
+  SharedDtor();
+}
+
+void TxDelayTestInfo::SharedDtor() {
+  tx_debug_info_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void TxDelayTestInfo::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* TxDelayTestInfo::descriptor() {
+  ::protobuf_protos_2fpools_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fpools_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const TxDelayTestInfo& TxDelayTestInfo::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fpools_2eproto::scc_info_TxDelayTestInfo.base);
+  return *internal_default_instance();
+}
+
+
+void TxDelayTestInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.pools.protobuf.TxDelayTestInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    tx_debug_info_.ClearNonDefaultToEmptyNoArena();
+  }
+  tx_debug_tm_ms_ = GOOGLE_ULONGLONG(0);
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool TxDelayTestInfo::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.pools.protobuf.TxDelayTestInfo)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint64 tx_debug_tm_ms = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_tx_debug_tm_ms();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &tx_debug_tm_ms_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes tx_debug_info = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_tx_debug_info()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.pools.protobuf.TxDelayTestInfo)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.pools.protobuf.TxDelayTestInfo)
+  return false;
+#undef DO_
+}
+
+void TxDelayTestInfo::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.pools.protobuf.TxDelayTestInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 tx_debug_tm_ms = 1;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->tx_debug_tm_ms(), output);
+  }
+
+  // optional bytes tx_debug_info = 2;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->tx_debug_info(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.pools.protobuf.TxDelayTestInfo)
+}
+
+::google::protobuf::uint8* TxDelayTestInfo::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.pools.protobuf.TxDelayTestInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 tx_debug_tm_ms = 1;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->tx_debug_tm_ms(), target);
+  }
+
+  // optional bytes tx_debug_info = 2;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->tx_debug_info(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.pools.protobuf.TxDelayTestInfo)
+  return target;
+}
+
+size_t TxDelayTestInfo::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.pools.protobuf.TxDelayTestInfo)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional bytes tx_debug_info = 2;
+    if (has_tx_debug_info()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->tx_debug_info());
+    }
+
+    // optional uint64 tx_debug_tm_ms = 1;
+    if (has_tx_debug_tm_ms()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->tx_debug_tm_ms());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void TxDelayTestInfo::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.pools.protobuf.TxDelayTestInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  const TxDelayTestInfo* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const TxDelayTestInfo>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.pools.protobuf.TxDelayTestInfo)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.pools.protobuf.TxDelayTestInfo)
+    MergeFrom(*source);
+  }
+}
+
+void TxDelayTestInfo::MergeFrom(const TxDelayTestInfo& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.pools.protobuf.TxDelayTestInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_tx_debug_info();
+      tx_debug_info_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.tx_debug_info_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      tx_debug_tm_ms_ = from.tx_debug_tm_ms_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void TxDelayTestInfo::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.pools.protobuf.TxDelayTestInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void TxDelayTestInfo::CopyFrom(const TxDelayTestInfo& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.pools.protobuf.TxDelayTestInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool TxDelayTestInfo::IsInitialized() const {
+  return true;
+}
+
+void TxDelayTestInfo::Swap(TxDelayTestInfo* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void TxDelayTestInfo::InternalSwap(TxDelayTestInfo* other) {
+  using std::swap;
+  tx_debug_info_.Swap(&other->tx_debug_info_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(tx_debug_tm_ms_, other->tx_debug_tm_ms_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata TxDelayTestInfo::GetMetadata() const {
+  protobuf_protos_2fpools_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fpools_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void TxMessage::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -7493,7 +7811,7 @@ const int TxMessage::kContractCodeFieldNumber;
 const int TxMessage::kContractInputFieldNumber;
 const int TxMessage::kContractFromFieldNumber;
 const int TxMessage::kSignFieldNumber;
-const int TxMessage::kTxDebugTmMsFieldNumber;
+const int TxMessage::kTxDebugFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TxMessage::TxMessage()
@@ -7507,7 +7825,7 @@ TxMessage::TxMessage(const TxMessage& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
-      tx_debug_tm_ms_(from.tx_debug_tm_ms_) {
+      tx_debug_(from.tx_debug_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_gid()) {
@@ -7603,7 +7921,7 @@ void TxMessage::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  tx_debug_tm_ms_.Clear();
+  tx_debug_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -7851,19 +8169,12 @@ bool TxMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated uint64 tx_debug_tm_ms = 16;
+      // repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 16;
       case 16: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(128u /* 128 & 0xFF */)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 2, 128u, input, this->mutable_tx_debug_tm_ms())));
-        } else if (
-            static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, this->mutable_tx_debug_tm_ms())));
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_tx_debug()));
         } else {
           goto handle_unusual;
         }
@@ -7982,10 +8293,13 @@ void TxMessage::SerializeWithCachedSizes(
       15, this->sign(), output);
   }
 
-  // repeated uint64 tx_debug_tm_ms = 16;
-  for (int i = 0, n = this->tx_debug_tm_ms_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
-      16, this->tx_debug_tm_ms(i), output);
+  // repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 16;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->tx_debug_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      16,
+      this->tx_debug(static_cast<int>(i)),
+      output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -8097,9 +8411,13 @@ void TxMessage::SerializeWithCachedSizes(
         15, this->sign(), target);
   }
 
-  // repeated uint64 tx_debug_tm_ms = 16;
-  target = ::google::protobuf::internal::WireFormatLite::
-    WriteUInt64ToArray(16, this->tx_debug_tm_ms_, target);
+  // repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 16;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->tx_debug_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        16, this->tx_debug(static_cast<int>(i)), deterministic, target);
+  }
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -8118,13 +8436,15 @@ size_t TxMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated uint64 tx_debug_tm_ms = 16;
+  // repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 16;
   {
-    size_t data_size = ::google::protobuf::internal::WireFormatLite::
-      UInt64Size(this->tx_debug_tm_ms_);
-    total_size += 2 *
-                  ::google::protobuf::internal::FromIntSize(this->tx_debug_tm_ms_size());
-    total_size += data_size;
+    unsigned int count = static_cast<unsigned int>(this->tx_debug_size());
+    total_size += 2UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->tx_debug(static_cast<int>(i)));
+    }
   }
 
   if (_has_bits_[0 / 32] & 255u) {
@@ -8262,7 +8582,7 @@ void TxMessage::MergeFrom(const TxMessage& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  tx_debug_tm_ms_.MergeFrom(from.tx_debug_tm_ms_);
+  tx_debug_.MergeFrom(from.tx_debug_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -8349,7 +8669,7 @@ void TxMessage::Swap(TxMessage* other) {
 }
 void TxMessage::InternalSwap(TxMessage* other) {
   using std::swap;
-  tx_debug_tm_ms_.InternalSwap(&other->tx_debug_tm_ms_);
+  CastToBase(&tx_debug_)->InternalSwap(CastToBase(&other->tx_debug_));
   gid_.Swap(&other->gid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -8440,6 +8760,9 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::pools::protobuf::Elect
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::pools::protobuf::SyncPoolsMaxHeight* Arena::CreateMaybeMessage< ::shardora::pools::protobuf::SyncPoolsMaxHeight >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::pools::protobuf::SyncPoolsMaxHeight >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::pools::protobuf::TxDelayTestInfo* Arena::CreateMaybeMessage< ::shardora::pools::protobuf::TxDelayTestInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::pools::protobuf::TxDelayTestInfo >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::pools::protobuf::TxMessage* Arena::CreateMaybeMessage< ::shardora::pools::protobuf::TxMessage >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::pools::protobuf::TxMessage >(arena);
