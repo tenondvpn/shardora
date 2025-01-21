@@ -374,7 +374,7 @@ void Hotstuff::NewView(
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().qc().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-        view_block_chain()->HighViewBlock()->qc().view(),
+        view_block_chain()->HighViewBlock()->qc() ? view_block_chain()->HighViewBlock()->qc().view() : -1,
         pacemaker()->HighTC()->view(),
         header.hash64());
     HandleNewViewMsg(msg_ptr);
