@@ -32,6 +32,10 @@ namespace pools{
     class ShardStatistic;
 }
 
+namespace consensus {
+    class HotstuffManager;
+}
+
 namespace block {
 
 class AccountManager;
@@ -46,6 +50,7 @@ public:
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
+        std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
     // just for genesis create new block
@@ -198,6 +203,7 @@ private:
     std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_[2] = { nullptr };
     uint32_t valid_got_latest_statistic_map_ptr_index_ = 0;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
     uint64_t prev_timer_ms_ = 0;
     common::Tick pop_tx_tick_;

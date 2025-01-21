@@ -94,6 +94,10 @@ public:
     }    
     
     Status Start();
+
+    void UpdateStoredToDbView(View view) {
+        view_block_chain_->UpdateStoredToDbView(view);
+    }
     
     void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
     void HandleNewViewMsg(const transport::MessagePtr& msg_ptr);

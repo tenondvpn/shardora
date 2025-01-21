@@ -24,6 +24,12 @@ public:
     ViewBlockChain(const ViewBlockChain&) = delete;
     ViewBlockChain& operator=(const ViewBlockChain&) = delete;
 
+    void UpdateStoredToDbView(View view) {
+        if (stored_to_db_view_ < view) {
+            stored_to_db_view_ = view;
+        }
+    }
+
     // Add Node
     Status Store(
         const std::shared_ptr<ViewBlock>& view_block, 
@@ -47,7 +53,7 @@ public:
     bool Extends(const ViewBlock& block, const ViewBlock& target);
     
     // prune from last prune height to target view block
-    Status PruneTo(const HashStr& target_hash, std::vector<std::shared_ptr<ViewBlock>>& forked_blockes, bool include_history);
+    Status PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
 
     Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
     
@@ -546,6 +552,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    volatile View stored_to_db_view_ = 0llu;
 };
 
 // from db
