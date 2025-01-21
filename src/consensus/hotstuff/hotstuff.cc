@@ -1379,10 +1379,9 @@ Status Hotstuff::TryCommit(
         ADD_DEBUG_PROCESS_TIMESTAMP();
         Status s = Commit(msg_ptr, v_block_to_commit_info, commit_qc, test_index);
         if (s != Status::kSuccess) {
-            ZJC_ERROR("commit view_block failed, view: %lu hash: %s, propose_debug: %s",
+            ZJC_ERROR("commit view_block failed, view: %lu hash: %s",
                 v_block_to_commit->qc().view(),
-                common::Encode::HexEncode(v_block_to_commit->qc().view_block_hash()).c_str(), 
-                ProtobufToJson(cons_debug).c_str());
+                common::Encode::HexEncode(v_block_to_commit->qc().view_block_hash()).c_str());
             return s;
         }
         ADD_DEBUG_PROCESS_TIMESTAMP();
