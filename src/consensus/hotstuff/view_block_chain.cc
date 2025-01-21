@@ -319,7 +319,15 @@ Status ViewBlockChain::PruneTo(
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
                 iter->second->view_block->qc().view() + 16 <= current->qc().view()) {
-            // forked_blockes.push_back(iter->second->view_block);
+            if (!iter->second->valid) {
+                forked_blockes.push_back(iter->second->view_block);
+                ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
+                    iter->second->view_block->qc().network_id(), 
+                    iter->second->view_block->qc().pool_index(), 
+                    iter->second->view_block->qc().view(), 
+                    iter->second->view_block->block_info().tx_list_size());
+            }
+
             iter = view_blocks_info_.erase(iter);
             CHECK_MEMORY_SIZE(view_blocks_info_);
         } else {
