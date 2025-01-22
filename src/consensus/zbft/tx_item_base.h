@@ -83,8 +83,9 @@ protected:
         block_tx->set_amount(tx_info.amount());
         block_tx->set_status(kConsensusSuccess);
 #ifndef NDEBUG
-        for (int32_t i = 0; i < tx_info.tx_debug_tm_ms_size(); ++i) {
-            block_tx->add_tx_debug_tm_ms(tx_info.tx_debug_tm_ms(i));
+        for (int32_t i = 0; i < tx_info.tx_debug_size(); ++i) {
+            auto* tx_debug_info = block_tx->add_tx_debug();
+            *tx_debug_info = tx_info.tx_debug(i);
         }
 #endif
     }
