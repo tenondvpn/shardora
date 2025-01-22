@@ -879,6 +879,9 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
         return Status::kError;
     }
 
+#ifndef NDEBUG
+    transport::protobuf::ConsensusDebug cons_debug;
+    cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
     ZJC_DEBUG("====1.1.2 success Accept pool: %d, verify view block, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
             pool_idx_,
@@ -886,7 +889,8 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             pro_msg_wrap->msg_ptr->header.hash64(),
-            ProtobufToJson(pro_msg_wrap->msg_ptr->header.debug()).c_str());
+            ProtobufToJson(cons_debug).c_str());
+#endif
     return Status::kSuccess;
 }
 
