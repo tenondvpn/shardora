@@ -782,6 +782,7 @@ void BlockManager::AddNewBlock(
         //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
         //     tx_list[i].status(),
         //     tx_list[i].step());
+        ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
         if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
             account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
         }

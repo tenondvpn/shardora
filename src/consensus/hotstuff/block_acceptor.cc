@@ -253,6 +253,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kNormalFrom:
             tx_ptr = std::make_shared<consensus::FromTxItem>(
                     *tx, account_mgr_, security_ptr_, address_info);
+            ADD_TX_DEBUG_INFO((const_cast<pools::protobuf::TxMessage*>(tx)));
             break;
         case pools::protobuf::kRootCreateAddress:
             tx_ptr = std::make_shared<consensus::RootToTxItem>(
