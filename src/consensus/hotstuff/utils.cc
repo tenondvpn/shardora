@@ -29,10 +29,10 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).value());
-        ZJC_DEBUG("add tx key: %s, %s, val: %s",
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
-            common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
+        // ZJC_DEBUG("add tx key: %s, %s, val: %s",
+        //     tx_info.storages(i).key().c_str(),
+        //     common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
+        //     common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
     // ZJC_DEBUG("gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
