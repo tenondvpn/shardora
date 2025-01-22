@@ -870,6 +870,10 @@ void BlockManager::AddNewBlock(
     //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
     //     view_block_item->qc().elect_height(),
     //     block_item->timeblock_height());
+    
+#ifndef NDEBUG
+#endif
+
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(view_block_item);
     }
