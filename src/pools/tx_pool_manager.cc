@@ -1059,7 +1059,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    msg_ptr->header.tx_proto().add_tx_debug_tm_ms(common::TimeUtils::TimestampMs());
+    msg_ptr->header.mutable_tx_proto()->add_tx_debug_tm_ms(common::TimeUtils::TimestampMs());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
 //         msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
