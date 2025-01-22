@@ -36,6 +36,7 @@ message BlockTx {
     optional bytes contract_code = 14;
     optional bytes contract_input = 15;
     repeated TxLog events = 16;
+    repeated uint64 tx_debug_tm_ms = 17;
 }
 
 message Block {
