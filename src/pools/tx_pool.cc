@@ -201,6 +201,7 @@ void TxPool::GetTxSyncToLeader(
             ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
             auto* tx = txs->Add();
             *tx = iter->second->tx_info;
+            ADD_TX_DEBUG_INFO(tx);
             assert(!iter->second->unique_tx_hash.empty());
 
         }
