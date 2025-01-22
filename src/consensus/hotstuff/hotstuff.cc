@@ -886,7 +886,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             pro_msg_wrap->msg_ptr->header.hash64(),
-            pro_msg_wrap->msg_ptr->header.debug().c_str());
+            ProtobufToJson(pro_msg_wrap->msg_ptr->header.debug()).c_str());
     return Status::kSuccess;
 }
 
