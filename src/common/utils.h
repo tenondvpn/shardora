@@ -88,7 +88,7 @@ struct Construct {
 #define ADD_TX_DEBUG_INFO(tx_proto) { \
     auto* tx_debug = tx_proto->add_tx_debug(); \
     tx_debug->set_tx_debug_tm_ms(common::TimeUtils::TimestampMs()); \
-    tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__))); \
+    tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
 }
 #else
 #define ADD_TX_DEBUG_INFO(tx_proto)
