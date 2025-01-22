@@ -874,7 +874,7 @@ void BlockManager::AddNewBlock(
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         for (int32_t debug_idx = 1; debug_idx < tx_list[i].tx_debug_size(); ++debug_idx) {
-            ZJC_DEBUG("gid: %s, use time: %lu, pos: %s",
+            ZJC_DEBUG("tx delay debug gid: %s, use time: %lu, pos: %s",
                 common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
                 tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
                 tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
