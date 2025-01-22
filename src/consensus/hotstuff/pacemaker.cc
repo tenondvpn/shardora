@@ -43,10 +43,10 @@ Pacemaker::Pacemaker(
 Pacemaker::~Pacemaker() {}
 
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
-    if (IsTimeout()) {
-        ZJC_DEBUG("pool: %d timeout", pool_idx_);
-        OnLocalTimeout();
-    }
+    // if (IsTimeout()) {
+    //     ZJC_DEBUG("pool: %d timeout", pool_idx_);
+    //     OnLocalTimeout();
+    // }
 }
 
 void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
