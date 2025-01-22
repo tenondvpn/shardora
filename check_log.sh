@@ -1,0 +1,1 @@
+awk -F'\[' '{print $3 " "  $4 " " $5}' /root/zjnodes/s3_1/log/zjchain.log | awk -F'\]' '{print $1 $2 $3}' | awk '{arr[$0] += 1;}END{for (key in arr) {print arr[key] ":" key;}}'| sort -t ':' -k 1,1n
