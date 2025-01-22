@@ -85,6 +85,7 @@ Status BlockWrapper::Wrap(
             auto* tx_info = tx_propose->add_txs();
             *tx_info = it->second->tx_info;
             assert(tx_info->gid().size() == 32);
+            ADD_TX_DEBUG_INFO(tx_info);
             // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
             //     "step: %d, to: %s, gid: %s, tx info: %s",
             //     view_block->qc().pool_index(),

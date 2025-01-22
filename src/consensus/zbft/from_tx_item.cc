@@ -88,6 +88,7 @@ int FromTxItem::HandleTx(
     //     view_block.qc().pool_index(),
     //     view_block.qc().view(),
     //     view_block.block_info().height());
+    // ADD_TX_DEBUG_INFO((&block_tx));
     return kConsensusSuccess;
 }
 

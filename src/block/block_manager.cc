@@ -782,6 +782,7 @@ void BlockManager::AddNewBlock(
         //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
         //     tx_list[i].status(),
         //     tx_list[i].step());
+        // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
         if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
             account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
         }
@@ -869,6 +870,30 @@ void BlockManager::AddNewBlock(
     //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
     //     view_block_item->qc().elect_height(),
     //     block_item->timeblock_height());
+
+#ifndef NDEBUG
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        auto debug_len = tx_list[i].tx_debug_size();
+        for (int32_t debug_idx = 0; debug_idx < debug_len; ++debug_idx) {
+            if (debug_idx == 0) {
+                ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                    tx_list[i].step(),
+                    common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                    tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
+                    (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
+                    tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
+            } else {
+                ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                    tx_list[i].step(),
+                    common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                    (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
+                    (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
+                    tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
+            }
+        }
+    }
+#endif
+
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(view_block_item);
     }

@@ -184,6 +184,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         gid_map_.size(),
         consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
     assert(gid_map_.size() == tx_size());
+    ADD_TX_DEBUG_INFO((&tx_ptr->tx_info));
     return kPoolsSuccess;
 }
 
@@ -200,6 +201,7 @@ void TxPool::GetTxSyncToLeader(
             ZJC_DEBUG("gid valid: %s", common::Encode::HexEncode(iter->second->tx_info.gid()).c_str());
             auto* tx = txs->Add();
             *tx = iter->second->tx_info;
+            ADD_TX_DEBUG_INFO(tx);
             assert(!iter->second->unique_tx_hash.empty());
 
         }

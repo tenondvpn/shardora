@@ -52,7 +52,7 @@ struct Construct {
 #define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
-// #ifndef NDEBUG
+#ifndef NDEBUG
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
@@ -63,9 +63,9 @@ struct Construct {
         msg_ptr->times_idx++; \
     } \
 }
-// #else
-// #define ADD_DEBUG_PROCESS_TIMESTAMP()
-// #endif
+#else
+#define ADD_DEBUG_PROCESS_TIMESTAMP()
+#endif
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
@@ -82,6 +82,17 @@ struct Construct {
 #else
 #define CHECK_MEMORY_SIZE(data_map)
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
+#endif
+
+#ifndef NDEBUG
+// #define ADD_TX_DEBUG_INFO(tx_proto)
+#define ADD_TX_DEBUG_INFO(tx_proto) { \
+    auto* tx_debug = tx_proto->add_tx_debug(); \
+    tx_debug->set_tx_debug_tm_ms(common::TimeUtils::TimestampMs()); \
+    tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
+}
+#else
+#define ADD_TX_DEBUG_INFO(tx_proto)
 #endif
 
 namespace shardora {

@@ -755,6 +755,18 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TxLog >&
       events() const;
 
+  // repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 17;
+  int tx_debug_size() const;
+  void clear_tx_debug();
+  static const int kTxDebugFieldNumber = 17;
+  ::shardora::pools::protobuf::TxDelayTestInfo* mutable_tx_debug(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >*
+      mutable_tx_debug();
+  const ::shardora::pools::protobuf::TxDelayTestInfo& tx_debug(int index) const;
+  ::shardora::pools::protobuf::TxDelayTestInfo* add_tx_debug();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
+      tx_debug() const;
+
   // optional bytes gid = 1;
   bool has_gid() const;
   void clear_gid();
@@ -921,6 +933,7 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::StorageItem > storages_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TransferItem > contract_txs_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TxLog > events_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo > tx_debug_;
   ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::internal::ArenaStringPtr to_;
@@ -6197,6 +6210,33 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::
 BlockTx::events() const {
   // @@protoc_insertion_point(field_list:shardora.block.protobuf.BlockTx.events)
   return events_;
+}
+
+// repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 17;
+inline int BlockTx::tx_debug_size() const {
+  return tx_debug_.size();
+}
+inline ::shardora::pools::protobuf::TxDelayTestInfo* BlockTx::mutable_tx_debug(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.BlockTx.tx_debug)
+  return tx_debug_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >*
+BlockTx::mutable_tx_debug() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.block.protobuf.BlockTx.tx_debug)
+  return &tx_debug_;
+}
+inline const ::shardora::pools::protobuf::TxDelayTestInfo& BlockTx::tx_debug(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.BlockTx.tx_debug)
+  return tx_debug_.Get(index);
+}
+inline ::shardora::pools::protobuf::TxDelayTestInfo* BlockTx::add_tx_debug() {
+  // @@protoc_insertion_point(field_add:shardora.block.protobuf.BlockTx.tx_debug)
+  return tx_debug_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
+BlockTx::tx_debug() const {
+  // @@protoc_insertion_point(field_list:shardora.block.protobuf.BlockTx.tx_debug)
+  return tx_debug_;
 }
 
 // -------------------------------------------------------------------

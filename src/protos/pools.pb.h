@@ -41,7 +41,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[18];
+  static const ::google::protobuf::internal::ParseTable schema[19];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -102,6 +102,9 @@ extern ToTxMessageDefaultTypeInternal _ToTxMessage_default_instance_;
 class ToTxMessageItem;
 class ToTxMessageItemDefaultTypeInternal;
 extern ToTxMessageItemDefaultTypeInternal _ToTxMessageItem_default_instance_;
+class TxDelayTestInfo;
+class TxDelayTestInfoDefaultTypeInternal;
+extern TxDelayTestInfoDefaultTypeInternal _TxDelayTestInfo_default_instance_;
 class TxMessage;
 class TxMessageDefaultTypeInternal;
 extern TxMessageDefaultTypeInternal _TxMessage_default_instance_;
@@ -127,6 +130,7 @@ template<> ::shardora::pools::protobuf::SyncPoolsMaxHeight* Arena::CreateMaybeMe
 template<> ::shardora::pools::protobuf::ToTxHeights* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ToTxHeights>(Arena*);
 template<> ::shardora::pools::protobuf::ToTxMessage* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ToTxMessage>(Arena*);
 template<> ::shardora::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ToTxMessageItem>(Arena*);
+template<> ::shardora::pools::protobuf::TxDelayTestInfo* Arena::CreateMaybeMessage<::shardora::pools::protobuf::TxDelayTestInfo>(Arena*);
 template<> ::shardora::pools::protobuf::TxMessage* Arena::CreateMaybeMessage<::shardora::pools::protobuf::TxMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
@@ -2869,6 +2873,138 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
 };
 // -------------------------------------------------------------------
 
+class TxDelayTestInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.TxDelayTestInfo) */ {
+ public:
+  TxDelayTestInfo();
+  virtual ~TxDelayTestInfo();
+
+  TxDelayTestInfo(const TxDelayTestInfo& from);
+
+  inline TxDelayTestInfo& operator=(const TxDelayTestInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  TxDelayTestInfo(TxDelayTestInfo&& from) noexcept
+    : TxDelayTestInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline TxDelayTestInfo& operator=(TxDelayTestInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TxDelayTestInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const TxDelayTestInfo* internal_default_instance() {
+    return reinterpret_cast<const TxDelayTestInfo*>(
+               &_TxDelayTestInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  void Swap(TxDelayTestInfo* other);
+  friend void swap(TxDelayTestInfo& a, TxDelayTestInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline TxDelayTestInfo* New() const final {
+    return CreateMaybeMessage<TxDelayTestInfo>(NULL);
+  }
+
+  TxDelayTestInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<TxDelayTestInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const TxDelayTestInfo& from);
+  void MergeFrom(const TxDelayTestInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(TxDelayTestInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes tx_debug_info = 2;
+  bool has_tx_debug_info() const;
+  void clear_tx_debug_info();
+  static const int kTxDebugInfoFieldNumber = 2;
+  const ::std::string& tx_debug_info() const;
+  void set_tx_debug_info(const ::std::string& value);
+  #if LANG_CXX11
+  void set_tx_debug_info(::std::string&& value);
+  #endif
+  void set_tx_debug_info(const char* value);
+  void set_tx_debug_info(const void* value, size_t size);
+  ::std::string* mutable_tx_debug_info();
+  ::std::string* release_tx_debug_info();
+  void set_allocated_tx_debug_info(::std::string* tx_debug_info);
+
+  // optional uint64 tx_debug_tm_ms = 1;
+  bool has_tx_debug_tm_ms() const;
+  void clear_tx_debug_tm_ms();
+  static const int kTxDebugTmMsFieldNumber = 1;
+  ::google::protobuf::uint64 tx_debug_tm_ms() const;
+  void set_tx_debug_tm_ms(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.TxDelayTestInfo)
+ private:
+  void set_has_tx_debug_tm_ms();
+  void clear_has_tx_debug_tm_ms();
+  void set_has_tx_debug_info();
+  void clear_has_tx_debug_info();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr tx_debug_info_;
+  ::google::protobuf::uint64 tx_debug_tm_ms_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.pools.protobuf.TxMessage) */ {
  public:
   TxMessage();
@@ -2911,7 +3047,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    18;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -2962,6 +3098,18 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
+
+  // repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 16;
+  int tx_debug_size() const;
+  void clear_tx_debug();
+  static const int kTxDebugFieldNumber = 16;
+  ::shardora::pools::protobuf::TxDelayTestInfo* mutable_tx_debug(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >*
+      mutable_tx_debug();
+  const ::shardora::pools::protobuf::TxDelayTestInfo& tx_debug(int index) const;
+  ::shardora::pools::protobuf::TxDelayTestInfo* add_tx_debug();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
+      tx_debug() const;
 
   // optional bytes gid = 2;
   bool has_gid() const;
@@ -3176,6 +3324,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo > tx_debug_;
   ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr key_;
@@ -5781,6 +5930,100 @@ SyncPoolsMaxHeight::mutable_cross_heights() {
 
 // -------------------------------------------------------------------
 
+// TxDelayTestInfo
+
+// optional uint64 tx_debug_tm_ms = 1;
+inline bool TxDelayTestInfo::has_tx_debug_tm_ms() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TxDelayTestInfo::set_has_tx_debug_tm_ms() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TxDelayTestInfo::clear_has_tx_debug_tm_ms() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TxDelayTestInfo::clear_tx_debug_tm_ms() {
+  tx_debug_tm_ms_ = GOOGLE_ULONGLONG(0);
+  clear_has_tx_debug_tm_ms();
+}
+inline ::google::protobuf::uint64 TxDelayTestInfo::tx_debug_tm_ms() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_tm_ms)
+  return tx_debug_tm_ms_;
+}
+inline void TxDelayTestInfo::set_tx_debug_tm_ms(::google::protobuf::uint64 value) {
+  set_has_tx_debug_tm_ms();
+  tx_debug_tm_ms_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_tm_ms)
+}
+
+// optional bytes tx_debug_info = 2;
+inline bool TxDelayTestInfo::has_tx_debug_info() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TxDelayTestInfo::set_has_tx_debug_info() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TxDelayTestInfo::clear_has_tx_debug_info() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TxDelayTestInfo::clear_tx_debug_info() {
+  tx_debug_info_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_tx_debug_info();
+}
+inline const ::std::string& TxDelayTestInfo::tx_debug_info() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+  return tx_debug_info_.GetNoArena();
+}
+inline void TxDelayTestInfo::set_tx_debug_info(const ::std::string& value) {
+  set_has_tx_debug_info();
+  tx_debug_info_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+}
+#if LANG_CXX11
+inline void TxDelayTestInfo::set_tx_debug_info(::std::string&& value) {
+  set_has_tx_debug_info();
+  tx_debug_info_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+}
+#endif
+inline void TxDelayTestInfo::set_tx_debug_info(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_tx_debug_info();
+  tx_debug_info_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+}
+inline void TxDelayTestInfo::set_tx_debug_info(const void* value, size_t size) {
+  set_has_tx_debug_info();
+  tx_debug_info_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+}
+inline ::std::string* TxDelayTestInfo::mutable_tx_debug_info() {
+  set_has_tx_debug_info();
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+  return tx_debug_info_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxDelayTestInfo::release_tx_debug_info() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+  if (!has_tx_debug_info()) {
+    return NULL;
+  }
+  clear_has_tx_debug_info();
+  return tx_debug_info_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxDelayTestInfo::set_allocated_tx_debug_info(::std::string* tx_debug_info) {
+  if (tx_debug_info != NULL) {
+    set_has_tx_debug_info();
+  } else {
+    clear_has_tx_debug_info();
+  }
+  tx_debug_info_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), tx_debug_info);
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.TxDelayTestInfo.tx_debug_info)
+}
+
+// -------------------------------------------------------------------
+
 // TxMessage
 
 // optional uint32 version = 1;
@@ -6522,9 +6765,41 @@ inline void TxMessage::set_allocated_sign(::std::string* sign) {
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.TxMessage.sign)
 }
 
+// repeated .shardora.pools.protobuf.TxDelayTestInfo tx_debug = 16;
+inline int TxMessage::tx_debug_size() const {
+  return tx_debug_.size();
+}
+inline void TxMessage::clear_tx_debug() {
+  tx_debug_.Clear();
+}
+inline ::shardora::pools::protobuf::TxDelayTestInfo* TxMessage::mutable_tx_debug(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.TxMessage.tx_debug)
+  return tx_debug_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >*
+TxMessage::mutable_tx_debug() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.TxMessage.tx_debug)
+  return &tx_debug_;
+}
+inline const ::shardora::pools::protobuf::TxDelayTestInfo& TxMessage::tx_debug(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxMessage.tx_debug)
+  return tx_debug_.Get(index);
+}
+inline ::shardora::pools::protobuf::TxDelayTestInfo* TxMessage::add_tx_debug() {
+  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.TxMessage.tx_debug)
+  return tx_debug_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
+TxMessage::tx_debug() const {
+  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.TxMessage.tx_debug)
+  return tx_debug_;
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

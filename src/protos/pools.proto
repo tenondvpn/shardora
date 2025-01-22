@@ -153,6 +153,11 @@ message SyncPoolsMaxHeight {
     repeated uint64 cross_heights = 3;
 }
 
+message TxDelayTestInfo {
+    optional uint64 tx_debug_tm_ms = 1;
+    optional bytes tx_debug_info = 2;
+}
+
 message TxMessage {
     optional uint32 version = 1;
     optional bytes gid = 2;
@@ -169,4 +174,5 @@ message TxMessage {
     optional bytes contract_input = 13;
     optional bytes contract_from = 14;
     optional bytes sign = 15;
+    repeated TxDelayTestInfo tx_debug = 16;
 }

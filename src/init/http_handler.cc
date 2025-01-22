@@ -114,6 +114,7 @@ static int CreateTransactionWithAttr(
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
+    ADD_TX_DEBUG_INFO(new_tx);
     
     const char* key = evhtp_kv_find(evhtp_kvs, "key");
     const char* val = evhtp_kv_find(evhtp_kvs, "val");
