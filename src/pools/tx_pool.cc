@@ -184,6 +184,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         gid_map_.size(),
         consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
     assert(gid_map_.size() == tx_size());
+    ADD_TX_DEBUG_INFO(&tx_ptr->tx_info);
     return kPoolsSuccess;
 }
 
