@@ -260,6 +260,7 @@ void TxPool::GetTxIdempotently(
                 src_prio_map.size());
         }
 
+        ADD_TX_DEBUG_INFO((&iter->second->tx_info));
         auto tmp_iter = gid_map_.find(iter->second->tx_info.gid());
         assert(tmp_iter != gid_map_.end());
         gid_map_.erase(tmp_iter);
