@@ -883,7 +883,7 @@ void BlockManager::AddNewBlock(
                 //     (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
                 //     tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
             } else {
-                if ((tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()) > 1000lu) {
+                if ((tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 15000lu) {
                     debug_idx -= 1;
                     if (debug_idx == 0) {
                         ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
