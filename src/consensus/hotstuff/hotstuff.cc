@@ -1156,6 +1156,9 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.sign_x(),
         vote_msg.sign_y(),
         reconstructed_sign);
+    if (ret != Status::kInvalidOpposedCount) {
+        ZJC_WARN("invalid opposed count: %u_%u_%lu", qc_item.network_id(), qc_item.pool_index(), qc_item.view());
+    }
     // assert(ret != Status::kInvalidOpposedCount); 有可能由于状态不一致临时出现
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
