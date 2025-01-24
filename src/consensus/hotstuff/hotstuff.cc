@@ -564,19 +564,20 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
             last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
             pacemaker()->CurView());
         if (last_vote_view_ == view_item.qc().view()) {
-            auto iter = voted_msgs_.find(view_item.qc().view());
-            if (iter != voted_msgs_.end()) {
-                ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
-                    "hash64: %lu and resend vote: hash: %s",
-                    pool_idx_, view_item.qc().view(),
-                    last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
-                    common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
-                auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*iter->second);
-                if (SendMsgToLeader(tmp_msg_ptr, VOTE) != Status::kSuccess) {
-                    ZJC_ERROR("pool: %d, Send vote message is error.",
-                        pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
-                }
-            }
+            return Status::kSuccess;
+            // auto iter = voted_msgs_.find(view_item.qc().view());
+            // if (iter != voted_msgs_.end()) {
+            //     ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
+            //         "hash64: %lu and resend vote: hash: %s",
+            //         pool_idx_, view_item.qc().view(),
+            //         last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
+            //         common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
+            //     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*iter->second);
+            //     if (SendMsgToLeader(tmp_msg_ptr, VOTE) != Status::kSuccess) {
+            //         ZJC_ERROR("pool: %d, Send vote message is error.",
+            //             pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
+            //     }
+            // }
         }
         
         return Status::kError;
