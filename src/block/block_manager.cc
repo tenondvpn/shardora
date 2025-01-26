@@ -15,6 +15,7 @@
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
 #include <common/log.h>
+#include <common/utils.h>
 #include <protos/pools.pb.h>
 #include <protos/tx_storage_key.h>
 #include "db/db_utils.h"
@@ -1234,15 +1235,15 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            // ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
-            //     "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
-            //     "gid: %s, timeblock_height: %lu",
-            //     common::Encode::HexEncode(statistic_hash).c_str(),
-            //     0,
-            //     "", tx_ptr->timeout,
-            //     kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
-            //     common::Encode::HexEncode(gid).c_str(),
-            //     timeblock_height);
+            ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
+                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
+                "gid: %s, timeblock_height: %lu",
+                common::Encode::HexEncode(statistic_hash).c_str(),
+                0,
+                "", tx_ptr->timeout,
+                kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
+                common::Encode::HexEncode(gid).c_str(),
+                timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
             CHECK_MEMORY_SIZE(shard_statistics_map_);
 
@@ -1680,6 +1681,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         ZJC_DEBUG("shard_statistic_tx == nullptr, tx_gid: %s, is leader: %d",
             common::Encode::HexEncode(tx_gid).c_str(),
             leader);
+        if (pool_index == common::kRootChainPoolIndex) {
+            assert(false); // xufeisofly111
+        }
         return nullptr;
     }
 

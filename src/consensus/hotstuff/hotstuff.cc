@@ -860,22 +860,23 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     pro_msg_wrap->zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *pro_msg_wrap->zjc_host_ptr;
-    if (acceptor()->Accept(
+    Status s = acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
             true, 
             false, 
             balance_map,
-            zjc_host) != Status::kSuccess) {
+            zjc_host);
+    if (s  != Status::kSuccess) {
 #ifndef NDEBUG
         ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block failed, "
-            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, status: %d",
             pool_idx_,
             proto_msg.view_item().qc().view(),
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             pro_msg_wrap->msg_ptr->header.hash64(),
-            ProtobufToJson(cons_debug).c_str());
+            ProtobufToJson(cons_debug).c_str(), s);
 #endif
         return Status::kError;
     }
