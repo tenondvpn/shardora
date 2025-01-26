@@ -1201,12 +1201,22 @@ void BlockManager::CreateStatisticTx() {
     pools::protobuf::ElectStatistic elect_statistic;
     uint64_t timeblock_height = prev_timeblock_height_;
     ZJC_DEBUG("StatisticWithHeights called!");
+
+    if (IsTimeblockHeightStatisticDone(timeblock_height)) {
+        ZJC_DEBUG("repeat StatisticWithHeights, %lu, latest: %lu",
+            timeblock_height, latest_statistic_timeblock_height_);
+        return;
+    }
+    
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
             timeblock_height) != pools::kPoolsSuccess) {
         ZJC_DEBUG("failed StatisticWithHeights!");
         return;
     }
+
+    // 对应 timeblock_height 的 elect_statistic 已经收集，不会进行重复收集
+    MarkDoneTimeblockHeightStatistic(timeblock_height);
 
     // TODO: fix invalid hash
     std::string statistic_hash = common::Hash::keccak256(elect_statistic.SerializeAsString());
