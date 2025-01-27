@@ -927,26 +927,27 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
 
     uint64_t height = 0;
     uint64_t prepayment = 0;
-    if (!prefix_db_->GetContractUserPrepayment(
-            tx_msg.to(),
-            from,
-            &height,
-            &prepayment)) {
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return;
-    }
+    // TODO: test check
+    // if (!prefix_db_->GetContractUserPrepayment(
+    //         tx_msg.to(),
+    //         from,
+    //         &height,
+    //         &prepayment)) {
+    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     return;
+    // }
 
-    if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
-        ZJC_ERROR("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, "
-            "tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
-            common::Encode::HexEncode(tx_msg.to()).c_str(),
-            prepayment,
-            tx_msg.amount(),
-            tx_msg.gas_limit(),
-            tx_msg.gas_price(),
-            (tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()));
-        return;
-    }
+    // if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
+    //     ZJC_ERROR("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, "
+    //         "tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
+    //         common::Encode::HexEncode(tx_msg.to()).c_str(),
+    //         prepayment,
+    //         tx_msg.amount(),
+    //         tx_msg.gas_limit(),
+    //         tx_msg.gas_price(),
+    //         (tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()));
+    //     return;
+    // }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     auto pool_index = msg_ptr->address_info->pool_index();
