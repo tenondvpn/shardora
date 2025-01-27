@@ -1041,11 +1041,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     std::string followers_gids;
-// #ifndef NDEBUG
-//     for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
-//         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
-//     }
-// #endif
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
+        followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
+    }
+#endif
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(msg_ptr->header.debug());
@@ -1324,14 +1324,14 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-// #ifndef NDEBUG
-//     std::string gids;
-//     for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
-//         gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
-//     }
+#ifndef NDEBUG
+    std::string gids;
+    for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
+        gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
+    }
 
-//     ZJC_WARN("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
-// #endif
+    ZJC_WARN("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
+#endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
         Status s = acceptor()->AddTxs(msg_ptr, pre_rst_timer_msg.txs());
