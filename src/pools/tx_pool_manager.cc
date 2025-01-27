@@ -497,6 +497,7 @@ void TxPoolManager::PopPoolsMessage() {
                     break;
                 }
 
+                ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
                 HandlePoolsMessage(msg_ptr);
                 if (++count >= 64) {
                     break;
@@ -881,6 +882,11 @@ bool TxPoolManager::SaveNodeVerfiyVec(
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
+    ZJC_ERROR("queue index pool_index: %u, msg_queues_: %d, hash64: %lu, gid: %s", 
+        msg_ptr->address_info->pool_index(), 
+        msg_queues_[msg_ptr->address_info->pool_index()].size(),
+        header.hash64(),
+        common::Encode::HexEncode(tx_msg.gid()).c_str());
     // if (tx_msg.has_key() && tx_msg.key().size() > 0) {
     //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     //     return;
@@ -960,9 +966,11 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_ERROR("queue index pool_index: %u, msg_queues_: %d", 
+    ZJC_ERROR("queue index pool_index: %u, msg_queues_: %d, hash64: %lu, gid: %s", 
         msg_ptr->address_info->pool_index(), 
-        msg_queues_[msg_ptr->address_info->pool_index()].size());
+        msg_queues_[msg_ptr->address_info->pool_index()].size(),
+        header.hash64(),
+        common::Encode::HexEncode(tx_msg.gid()).c_str());
     //     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
 
