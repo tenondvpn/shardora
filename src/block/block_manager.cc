@@ -1202,6 +1202,9 @@ void BlockManager::CreateStatisticTx() {
     uint64_t timeblock_height = prev_timeblock_height_;
     ZJC_DEBUG("StatisticWithHeights called!");
 
+    // Some nodes will receive statistic block ahead of timeblock.
+    // This happens accasionally, making statistic tx failed to be found
+    // So we should make sure that one timeblock can only gathered statistic info for once
     if (IsTimeblockHeightStatisticDone(timeblock_height)) {
         ZJC_DEBUG("repeat StatisticWithHeights, %lu, latest: %lu",
             timeblock_height, latest_statistic_timeblock_height_);
@@ -1692,7 +1695,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             common::Encode::HexEncode(tx_gid).c_str(),
             leader);
         if (pool_index == common::kRootChainPoolIndex) {
-            assert(false); // xufeisofly111 bug: 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
+            assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
         }
         return nullptr;
     }
