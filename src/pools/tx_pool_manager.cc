@@ -488,6 +488,7 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
 void TxPoolManager::PopPoolsMessage() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
+        ZJC_DEBUG("now call pop pools message begin.")
         for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             auto count = 0;
             while (!destroy_) {
@@ -503,6 +504,7 @@ void TxPoolManager::PopPoolsMessage() {
             }
         }
 
+        ZJC_DEBUG("now call pop pools message end.")
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
         pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
