@@ -79,6 +79,12 @@ public:
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
             if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
+                ZJC_INFO("invalid to size: %u, save contract prepayment contract: %s, prepayment: %lu, pool: %u, height: %lu",
+                    to_txs.tos(i).to().size(),
+                    common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
+                    to_txs.tos(i).balance(),
+                    view_block.qc().pool_index(),
+                    block.height());
                 continue;
             }
             
