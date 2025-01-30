@@ -40,6 +40,14 @@ public:
                 common::Encode::HexEncode(tx.gid()).c_str(), 
                 common::Encode::HexEncode(tx.from()).c_str(),
                 common::Encode::HexEncode(tx.to()).c_str());
+            ZJC_INFO("failed save contract prepayment contract: %s, "
+                "set user: %s, prepayment: %lu, pool: %u, height: %lu",
+                common::Encode::HexEncode(tx.to()).c_str(),
+                common::Encode::HexEncode(tx.from()).c_str(),
+                tx.contract_prepayment(),
+                view_block.qc().pool_index(),
+                block.height());
+            assert(false);
             return;
         }
 
@@ -105,6 +113,13 @@ public:
         }
 
         pools_max_heights_[view_block.qc().pool_index()] = block.height();
+        ZJC_INFO("success save contract prepayment contract: %s, "
+            "set user: %s, prepayment: %lu, pool: %u, height: %lu",
+            common::Encode::HexEncode(tx.to()).c_str(),
+            common::Encode::HexEncode(tx.from()).c_str(),
+            tx.contract_prepayment(),
+            view_block.qc().pool_index(),
+            block.height());
     }
 
     void HandleUserCreate(
@@ -123,6 +138,14 @@ public:
                 common::Encode::HexEncode(tx.gid()).c_str(), 
                 common::Encode::HexEncode(tx.from()).c_str(),
                 common::Encode::HexEncode(tx.to()).c_str());
+            ZJC_INFO("failed save contract prepayment contract: %s, "
+                "set user: %s, prepayment: %lu, pool: %u, height: %lu",
+                common::Encode::HexEncode(tx.to()).c_str(),
+                common::Encode::HexEncode(tx.from()).c_str(),
+                tx.contract_prepayment(),
+                view_block.qc().pool_index(),
+                block.height());
+            assert(false);
             return;
         }
 
@@ -157,6 +180,14 @@ public:
                 common::Encode::HexEncode(tx.gid()).c_str(), 
                 common::Encode::HexEncode(tx.from()).c_str(),
                 common::Encode::HexEncode(tx.to()).c_str());
+            ZJC_INFO("failed save contract prepayment contract: %s, "
+                "set user: %s, prepayment: %lu, pool: %u, height: %lu",
+                common::Encode::HexEncode(tx.to()).c_str(),
+                common::Encode::HexEncode(tx.from()).c_str(),
+                tx.contract_prepayment(),
+                view_block.qc().pool_index(),
+                block.height());
+            assert(false);
             return;
         }
 
