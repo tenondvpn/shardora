@@ -97,7 +97,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    uint64_t pools_max_heights_[common::kImmutablePoolSize] = { 0 };
+    uint64_t pools_max_heights_[common::kInvalidPoolIndex] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(Execution);
 };

@@ -239,7 +239,7 @@ private:
     uint8_t thread_count_ = 0;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     common::LimitHashMap<std::string, uint64_t, 1024>* prepayment_gas_ = nullptr;
-    uint64_t pools_max_heights_[common::kImmutablePoolSize] = { 0 };
+    uint64_t pools_max_heights_[common::kInvalidPoolIndex] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(ContractGasPrepayment);
 };
