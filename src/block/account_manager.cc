@@ -242,6 +242,11 @@ void AccountManager::HandleContractPrepayment(
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
     auto& account_id = GetTxValidAddress(tx);
+    ZJC_DEBUG("HandleContractPrepayment address coming from: %s, to: %s, amount:%lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        common::Encode::HexEncode(tx.to()).c_str(),
+        tx.amount(),
+        tx.balance());
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
         assert(false);
@@ -294,6 +299,9 @@ void AccountManager::HandleLocalToTx(
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
             //assert(false);
+            ZJC_DEBUG("invalid address coming to: %s, balance: %lu",
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
+                to_txs.tos(i).balance());
             continue;
         }
 
@@ -380,6 +388,11 @@ void AccountManager::HandleCreateContract(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     // handle from
+    ZJC_DEBUG("HandleCreateContract address coming from: %s, to: %s, amount:%lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        common::Encode::HexEncode(tx.to()).c_str(),
+        tx.amount(),
+        tx.balance());
     auto& block = view_block.block_info();
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     {
@@ -497,6 +510,11 @@ void AccountManager::HandleContractExecuteTx(
         return;
     }
 
+    ZJC_DEBUG("HandleContractExecuteTx address coming from: %s, to: %s, amount:%lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        common::Encode::HexEncode(tx.to()).c_str(),
+        tx.amount(),
+        tx.balance());
     auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
