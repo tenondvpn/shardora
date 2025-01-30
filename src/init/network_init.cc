@@ -1168,8 +1168,8 @@ void NetworkInit::AddBlockItemToCache(
         return;
     }
 
-    gas_prepayment_->NewBlock(view_block, db_batch);
-    zjcvm::Execution::Instance()->NewBlock(view_block, db_batch);
+    gas_prepayment_->NewBlock(*view_block, db_batch);
+    zjcvm::Execution::Instance()->NewBlock(*view_block, db_batch);
     // one block must be one consensus pool
     // const auto& tx_list = block->tx_list();
     // for (int32_t i = 0; i < tx_list.size(); ++i) {
