@@ -1167,36 +1167,38 @@ void NetworkInit::AddBlockItemToCache(
     if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
         return;
     }
-    
-    // one block must be one consensus pool
-    const auto& tx_list = block->tx_list();
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        // if (tx_list[i].status() != consensus::kConsensusSuccess) {
-        //     continue;
-        // }
 
-        switch (tx_list[i].step()) {
-        case pools::protobuf::kNormalFrom:
-        case pools::protobuf::kRootCreateAddress:
-        case pools::protobuf::kJoinElect:
-        case pools::protobuf::kContractGasPrepayment:
-        case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            break;
-        case pools::protobuf::kConsensusLocalTos:
-        case pools::protobuf::kContractCreate:
-        case pools::protobuf::kContractCreateByRootTo:
-        case pools::protobuf::kContractExcute:
-        case pools::protobuf::kNormalTo:
-            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
-            zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
-            break;
-        default:
-            break;
-        }
-    }
+    gas_prepayment_->NewBlock(view_block, db_batch);
+    zjcvm::Execution::Instance()->NewBlock(view_block, db_batch);
+    // one block must be one consensus pool
+    // const auto& tx_list = block->tx_list();
+    // for (int32_t i = 0; i < tx_list.size(); ++i) {
+    //     // if (tx_list[i].status() != consensus::kConsensusSuccess) {
+    //     //     continue;
+    //     // }
+
+    //     switch (tx_list[i].step()) {
+    //     case pools::protobuf::kNormalFrom:
+    //     case pools::protobuf::kRootCreateAddress:
+    //     case pools::protobuf::kJoinElect:
+    //     case pools::protobuf::kContractGasPrepayment:
+    //     case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
+    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         break;
+    //     case pools::protobuf::kConsensusLocalTos:
+    //     case pools::protobuf::kContractCreate:
+    //     case pools::protobuf::kContractCreateByRootTo:
+    //     case pools::protobuf::kContractExcute:
+    //     case pools::protobuf::kNormalTo:
+    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
+    //         zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    // }
 }
 
 // pool tx thread, thread safe

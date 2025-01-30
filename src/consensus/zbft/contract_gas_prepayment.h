@@ -32,25 +32,6 @@ public:
             return;
         }
 
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
-//             assert(false);
-            ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] %lu, %lu, gid: %s, from: %s, to: %s", 
-                block.height(), 
-                pools_max_heights_[view_block.qc().pool_index()],
-                common::Encode::HexEncode(tx.gid()).c_str(), 
-                common::Encode::HexEncode(tx.from()).c_str(),
-                common::Encode::HexEncode(tx.to()).c_str());
-            ZJC_INFO("failed save contract prepayment contract: %s, "
-                "set user: %s, prepayment: %lu, pool: %u, height: %lu",
-                common::Encode::HexEncode(tx.to()).c_str(),
-                common::Encode::HexEncode(tx.from()).c_str(),
-                tx.contract_prepayment(),
-                view_block.qc().pool_index(),
-                block.height());
-            assert(false);
-            return;
-        }
-
         const std::string* to_txs_str = nullptr;
         for (int32_t i = 0; i < tx.storages_size(); ++i) {
             ZJC_DEBUG("handle key: %s", tx.storages(i).key().c_str());
@@ -112,7 +93,6 @@ public:
                 block.height());
         }
 
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
         ZJC_INFO("success save contract prepayment contract: %s, "
             "set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
@@ -131,24 +111,6 @@ public:
             return;
         }
 
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
-            ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] %lu, %lu, gid: %s, from: %s, to: %s", 
-                block.height(), 
-                pools_max_heights_[view_block.qc().pool_index()],
-                common::Encode::HexEncode(tx.gid()).c_str(), 
-                common::Encode::HexEncode(tx.from()).c_str(),
-                common::Encode::HexEncode(tx.to()).c_str());
-            ZJC_INFO("failed save contract prepayment contract: %s, "
-                "set user: %s, prepayment: %lu, pool: %u, height: %lu",
-                common::Encode::HexEncode(tx.to()).c_str(),
-                common::Encode::HexEncode(tx.from()).c_str(),
-                tx.contract_prepayment(),
-                view_block.qc().pool_index(),
-                block.height());
-            assert(false);
-            return;
-        }
-
         prefix_db_->SaveContractUserPrepayment(
             tx.to(),
             tx.from(),
@@ -158,7 +120,6 @@ public:
         std::string key = tx.to() + tx.from();
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.contract_prepayment());
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
         ZJC_INFO("success save contract prepayment contract: %s, "
             "set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
@@ -173,24 +134,6 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         auto& block = view_block.block_info();
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
-            ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] %lu, %lu, gid: %s, from: %s, to: %s", 
-                block.height(), 
-                pools_max_heights_[view_block.qc().pool_index()],
-                common::Encode::HexEncode(tx.gid()).c_str(), 
-                common::Encode::HexEncode(tx.from()).c_str(),
-                common::Encode::HexEncode(tx.to()).c_str());
-            ZJC_INFO("failed save contract prepayment contract: %s, "
-                "set user: %s, prepayment: %lu, pool: %u, height: %lu",
-                common::Encode::HexEncode(tx.to()).c_str(),
-                common::Encode::HexEncode(tx.from()).c_str(),
-                tx.contract_prepayment(),
-                view_block.qc().pool_index(),
-                block.height());
-            assert(false);
-            return;
-        }
-
         prefix_db_->SaveContractUserPrepayment(
             tx.to(),
             tx.from(),
@@ -200,13 +143,36 @@ public:
         std::string key = tx.to() + tx.from();
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         prepayment_gas_[thread_idx].Insert(key, tx.balance());
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
         ZJC_INFO("success save contract prepayment contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.balance(),
             view_block.qc().pool_index(),
             block.height());
+    }
+
+    void NewBlock(
+            const view_block::protobuf::ViewBlockItem& view_block,
+            db::DbWriteBatch& db_batch) {
+        auto& block = view_block.block_info();
+        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
+            ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] "
+                " %lu, %lu", 
+                block.height(), 
+                pools_max_heights_[view_block.qc().pool_index()]);
+            ZJC_INFO("failed save contract prepayment pool: %u, height: %lu",
+                view_block.qc().pool_index(),
+                block.height());
+            assert(false);
+            return;
+        }
+
+        const auto& tx_list = block.tx_list();
+        for (int32_t i = 0; i < tx_list.size(); ++i) {
+            NewBlockWithTx(view_block, tx_list[i], db_batch);
+        }
+
+        pools_max_heights_[view_block.qc().pool_index()] = block.height();
     }
 
     void NewBlockWithTx(
@@ -259,7 +225,6 @@ public:
             return 0;
         }
 
-        pools_max_heights_[pool_index] = height;
         ZJC_DEBUG("get contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(contract_addr).c_str(),
             common::Encode::HexEncode(user_addr).c_str(),
