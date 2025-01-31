@@ -262,12 +262,12 @@ int ContractCall::SaveContractCreateInfo(
         int64_t& contract_balance_add,
         int64_t& caller_balance_add,
         int64_t& gas_more) {
-    ZJC_DEBUG("now save contrat call storage acc size: %u", zjc_host.accounts_.size());
+    // ZJC_DEBUG("now save contrat call storage acc size: %u", zjc_host.accounts_.size());
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
-        ZJC_DEBUG("now save contrat call storage acc: %s storage size: %u",
-            common::Encode::HexEncode(std::string((char*)account_iter->first.bytes, 20)).c_str(), 
-            account_iter->second.storage.size());
+        // ZJC_DEBUG("now save contrat call storage acc: %s storage size: %u",
+        //     common::Encode::HexEncode(std::string((char*)account_iter->first.bytes, 20)).c_str(), 
+        //     account_iter->second.storage.size());
         for (auto storage_iter = account_iter->second.storage.begin();
                 storage_iter != account_iter->second.storage.end(); ++storage_iter) {
             auto kv = block_tx.add_storages();
@@ -277,10 +277,10 @@ int ContractCall::SaveContractCreateInfo(
             kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
-            if (str_key.size() > 40)
-            ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
-                common::Encode::HexEncode(str_key).c_str(),
-                common::Encode::HexEncode(kv->value()).c_str());
+            // if (str_key.size() > 40)
+            // ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
+            //     common::Encode::HexEncode(str_key).c_str(),
+            //     common::Encode::HexEncode(kv->value()).c_str());
             zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
@@ -296,10 +296,10 @@ int ContractCall::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
-            if (str_key.size() > 40)
-            ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
-                common::Encode::HexEncode(str_key).c_str(),
-                common::Encode::HexEncode(kv->value()).c_str());
+            // if (str_key.size() > 40)
+            // ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
+            //     common::Encode::HexEncode(str_key).c_str(),
+            //     common::Encode::HexEncode(kv->value()).c_str());
             zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
@@ -337,10 +337,10 @@ int ContractCall::SaveContractCreateInfo(
             trans_item->set_to(to_iter->first);
             trans_item->set_amount(to_iter->second);
             other_add += to_iter->second;
-            ZJC_DEBUG("contract call transfer from: %s, to: %s, amount: %lu",
-                common::Encode::HexEncode(transfer_iter->first).c_str(),
-                common::Encode::HexEncode(to_iter->first).c_str(),
-                to_iter->second);
+            // ZJC_DEBUG("contract call transfer from: %s, to: %s, amount: %lu",
+            //     common::Encode::HexEncode(transfer_iter->first).c_str(),
+            //     common::Encode::HexEncode(to_iter->first).c_str(),
+            //     to_iter->second);
         }
     }
 
