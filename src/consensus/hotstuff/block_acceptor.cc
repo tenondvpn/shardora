@@ -220,7 +220,7 @@ Status BlockAcceptor::addTxsToPool(
     std::map<std::string, pools::TxItemPtr> txs_map;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
-        ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
+        // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
         if (view_block_chain && !view_block_chain->CheckTxGidValid(tx->gid(), parent_hash)) {
             ZJC_WARN("check tx gid failed: %s, phash: %s", 
                 common::Encode::HexEncode(tx->gid()).c_str(), 
