@@ -59,6 +59,9 @@ int Ripemd160::call(
         return kContractError;
     }
 
+    CONTRACT_DEBUG("0 1 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
+
     if (param.data.substr(0, 3) == "add") {
         return AddParams(param, gas, origin_address, res);
     }
@@ -74,6 +77,8 @@ int Ripemd160::call(
     if (param.data.substr(0, 5) == "readd") {
         return AddReEncryptionParam(param, gas, origin_address, res);
     }
+    CONTRACT_DEBUG("0 2 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
 
     // proxy reencryption
     if (param.data.substr(0, 6) == "tpinit") {
@@ -103,6 +108,8 @@ int Ripemd160::call(
         proxy_reenc.ReEncryptUserMessage(param, key, val);
         DEFAULT_CALL_RESULT();
     }
+    CONTRACT_DEBUG("0 2 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
 
     if (param.data.substr(0, 6) == "mprenc") {
         GET_KEY_VALUE_FROM_PARAM();
