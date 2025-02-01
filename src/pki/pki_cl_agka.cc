@@ -409,8 +409,8 @@ int PkiClAgka::EncKeyGen(
     auto val_splits = common::Split<>(val.c_str(), ',');
     G1 s(pp.e);
     G1 spk(pp.e);
-    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[4]));
-    spk.from_bytes(shardora::common::Encode::HexDecode(val_splits[3]));
+    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[3]));
+    spk.from_bytes(shardora::common::Encode::HexDecode(val_splits[4]));
     keys_.emplace_back(pki_count + i, std::move(spk), std::move(s));
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
