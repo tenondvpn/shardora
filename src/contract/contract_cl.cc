@@ -9,9 +9,9 @@ namespace shardora {
 
 namespace contract {
 
-ContractPki::~ContractPki() {}
+ContractCl::~ContractCl() {}
 
-int ContractPki::call(
+int ContractCl::call(
         const CallParameters& param,
         uint64_t gas,
         const std::string& origin_address,
