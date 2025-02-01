@@ -535,7 +535,7 @@ int PkiClAgka::DecKeyGen(
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
 
-  PkiClAgreement(false);
+  PkiClAgreement(true);
   std::map<int, DecodeKey> dk_map;
   // PKI decode key gen
   for (auto& src : msgs_) {
@@ -632,7 +632,7 @@ int PkiClAgka::Enc(
   auto ek = EncodeKey{.omega = std::move(omega), .A = std::move(A)};
 
   Zq e(pp.e);
-  e.set_random();
+  // e.set_random();
   auto e_str = "664a694ecb6e8bc8afc800527270bdd833de32ee";  // common::Encode::HexEncode(e.to_bytes());
   std::cout << "enc e: " << e_str << std::endl;
   e.from_bytes(common::Encode::HexDecode(e_str));
