@@ -13,20 +13,20 @@ const kTestBuyerCount = 11;  // real: kTestBuyerCount - 10
 var contract_address = "080000b96c9e759daa3aff82b40e77cd615a41d9";
 var node_host = "127.0.0.1"
 
-{
-    const newLog = function () {
-      console.info(new Date().toLocaleString());
-      arguments.callee.oLog.apply(this, arguments);
-    };
-    const newError = function () {
-      console.info(new Date().toLocaleString());
-      arguments.callee.oError.apply(this, arguments);
-    };
-    newLog.oLog = console.log;
-    newError.oError = console.error;
-    console.log = newLog;
-    console.error = newError;
-}
+// {
+//     const newLog = function () {
+//       console.info(new Date().toLocaleString());
+//       arguments.callee.oLog.apply(this, arguments);
+//     };
+//     const newError = function () {
+//       console.info(new Date().toLocaleString());
+//       arguments.callee.oError.apply(this, arguments);
+//     };
+//     newLog.oLog = console.log;
+//     newError.oError = console.error;
+//     console.log = newLog;
+//     console.error = newError;
+// }
   
 function str_to_hex(str) {
     var arr1 = [];
