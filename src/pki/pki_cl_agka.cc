@@ -8,12 +8,48 @@
 #include "fmt/format.h"
 #include "pki/pki_cl_utils.h"
 
+#include "common/split.h"
+#include "common/string_utils.h"
+#include "zjcvm/zjc_host.h"
+
 namespace shardora {
 
 namespace pkicl {
 
-PkiClAgka::PkiClAgka(const std::string& secure_param)
-    : pp(secure_param), k_(pp.e) {}
+PkiClAgka::PkiClAgka(
+      const std::string& secure_param, 
+      const std::string& k, 
+      const std::string& g)
+      : pp(secure_param), k_(pp.e) {
+  k_.from_bytes(shardora::common::Encode::HexDecode(k));
+  pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
+  // compute g1 = g^k
+  pp.g1 = pp.g.pow_zn(k_);
+  fmt::println("\t- g1 = {}", byte2string(pp.g1.to_bytes()));
+
+  // initialize H1, H2, H3, H4
+  pp.H1 = [this](const std::string& cert) -> G1 {
+    G1 result(pp.e);
+    result.from_hash(cert);
+    return result;
+  };
+  
+  pp.H2 = [this](const std::string& ID) -> G1 {
+    G1 result(pp.e);
+    result.from_hash(ID);
+    return result;
+  };
+
+  pp.H3 = [this](const int& index) -> G1 {
+    G1 result(pp.e);
+    result.from_hash(std::to_string(index));
+    return result;
+  };
+
+  pp.H4 = [this](G2& input) -> ByteStream {
+    return byte2string(input.to_bytes());
+  };
+}
 
 // PkiClAgka::~PkiClAgka() {}
 
@@ -151,6 +187,45 @@ void PkiClAgka::Setup() {
   };
 }
 
+int PkiClAgka::PkiExtract(
+      const shardora::contract::CallParameters& param, 
+      const std::string& key, 
+      const std::string& value) {
+  ZJC_DEBUG("pki extract called value: %s", value.c_str());
+  auto lines = common::Split<>(value.c_str(), ';');
+  if (lines.Count() != 3) {
+    return 1;
+  }
+
+  int32_t i = -1;
+  if (!common::StringUtil::ToInt32(lines[0], &i)) {
+    return 1;
+  }
+  
+  std::string pki_id = lines[3];
+  std::string sk_str = lines[2];
+  std::string cert_str = lines[1];
+
+  Zq sk(pp.e);
+  sk.from_bytes(shardora::common::Encode::HexDecode(sk_str));
+  G1 pk(pp.e);
+  pk = pp.g.pow_zn(sk);
+
+  // s = H1(cert)^sk 
+  G1 cert(pp.e);
+  cert = pp.H1(cert_str);
+  G1 s(pp.e);
+  s = cert.pow_zn(sk);
+
+  std::string tmp_key = std::string("cl_pki_extract_") + pki_id + std::to_string(i);
+  std::string tmp_value = sk_str + "," + 
+    shardora::common::Encode::HexEncode(pk.to_bytes()) + "," + 
+    shardora::common::Encode::HexEncode(s.to_bytes());
+  param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+  ZJC_DEBUG("success cl pki extract index: %d key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
+  return 0;      
+}
+
 // Stage2: PKI Extract
 void PkiClAgka::PkiExtract(const int& n) {
   keys_.reserve(n);
@@ -176,6 +251,54 @@ void PkiClAgka::PkiExtract(const int& n) {
     // generate key and add to list
     keys_.emplace_back(n_++, std::move(pk), std::move(s));
   }
+}
+
+int PkiClAgka::ClExtract(
+    const shardora::contract::CallParameters& param, 
+    const std::string& key, 
+    const std::string& value) {
+  ZJC_DEBUG("ib extract called value: %s", value.c_str());
+  auto lines = common::Split<>(value.c_str(), ';');
+  if (lines.Count() != 3) {
+    return 1;
+  }
+
+  int32_t i = -1;
+  if (!common::StringUtil::ToInt32(lines[0], &i)) {
+    return 1;
+  }
+  
+  std::string pki_id = lines[3];
+  std::string str_id = lines[2];
+  std::string sk_str = lines[1];
+  G1 id(pp.e);
+  id = pp.H1(str_id);
+  
+  // partial private key psk = H1(ID)^k
+  G1 psk = id.pow_zn(k_);
+
+  // sk = H1(ID)^k
+  Zq sk(pp.e);
+  sk.from_bytes(common::Encode::HexDecode(sk_str));
+  // fmt::println("\t- sk = {}", byte2string(sk.to_bytes()));
+  // pk = e(sk,g1)
+  G1 fpk(pp.e);
+  fpk = pp.g.pow_zn(sk);
+  // s = psk^fsk = ((H2(ID)^k)^sk)
+  G1 s(pp.e);
+  s = psk.pow_zn(sk);
+  // spk = g1^sk;
+  G1 spk(pp.e);
+  spk = pp.g1.pow_zn(sk);
+  
+  std::string tmp_key = std::string("cl_cl_extract_") + pki_id + std::to_string(i);
+  std::string tmp_value = str_id + "," + sk_str + "," + 
+    shardora::common::Encode::HexEncode(fpk.to_bytes()) + "," +
+    shardora::common::Encode::HexEncode(s.to_bytes()) + "," +
+    shardora::common::Encode::HexEncode(spk.to_bytes());
+  param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+  ZJC_DEBUG("success ib extract index: %d, key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
+  return 0;
 }
 
 void PkiClAgka::ClExtract(const int& n) {
@@ -216,6 +339,82 @@ void PkiClAgka::PkiClAgreement(bool honest) {
   // agreement
   agreement(honest);
 }
+
+int PkiClAgka::EncKeyGen(
+    const shardora::contract::CallParameters& param, 
+    const std::string& key, 
+    const std::string& value) {
+  ZJC_DEBUG("called enc key gen %s", value.c_str());
+  auto lines = common::Split<>(value.c_str(), ';');
+  if (lines.Count() != 3) {
+      ZJC_DEBUG("line count error: %d", lines.Count());
+      return 1;
+  }
+
+  int32_t pki_count = 0;
+  if (!common::StringUtil::ToInt32(lines[0], &pki_count)) {
+      ZJC_DEBUG("pki_count count error: %s", lines[0]);
+      return 1;
+  }
+
+  int32_t cl_count = 0;
+  if (!common::StringUtil::ToInt32(lines[1], &cl_count)) {
+      ZJC_DEBUG("cl_count count error: %s", lines[1]);
+      return 1;
+  }
+
+  if (pki_count < 3 || pki_count >= 1024) {
+      ZJC_DEBUG("pki_count count error: %d", pki_count);
+      return 1;
+  }
+
+  if (cl_count < 2 || cl_count >= 1024) {
+      ZJC_DEBUG("cl_count count error: %d", cl_count);
+      return 1;
+  }
+
+  std::string pki_id = lines[2];
+  for (int32_t i = 0; i < pki_count; ++i) {
+    std::string tmp_key = std::string("cl_pki_extract_") + pki_id + std::to_string(i);
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        ZJC_DEBUG("get key value error from: %s, tmp key: %s", 
+          common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
+        return 1;
+    }
+
+    ZJC_DEBUG("success get %s, %s", tmp_key.c_str(), val.c_str());
+    auto val_splits = common::Split<>(val.c_str(), ',');
+
+    G1 pk(pp.e);
+    G1 s(pp.e);
+    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[2]));
+    pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
+    keys_.emplace_back(i, std::move(pk), std::move(s));
+    ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
+  }
+
+  for (int32_t i = 0; i < cl_count; ++i) {
+    std::string tmp_key = std::string("cl_cl_extract_") + pki_id + std::to_string(pki_count + i);
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        ZJC_DEBUG("get key value error from: %s, tmp key: %s", 
+            common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
+        return 1;
+    }
+
+    ZJC_DEBUG("success get %s, %s", tmp_key.c_str(), val.c_str());
+    auto val_splits = common::Split<>(val.c_str(), ',');
+    G1 s(pp.e);
+    G1 spk(pp.e);
+    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[4]));
+    spk.from_bytes(shardora::common::Encode::HexDecode(val_splits[3]));
+    keys_.emplace_back(pki_count + i, std::move(spk), std::move(s));
+    ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
+  }
+  return 0;    
+}
+
 
 EncodeKey PkiClAgka::EncKeyGen() {
   fmt::println("🍔 Generate Group Encode Key (w,A):");
