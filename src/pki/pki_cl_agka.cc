@@ -199,7 +199,7 @@ int PkiClAgka::PkiExtract(
   }
 
   int32_t i = -1;
-  if (!common::StringUtil::ToInt32(lines[0], &i)) {
+  if (!common::StringUtil::ToInt32(lines[0], &i) || i < kPKIn) {
     ZJC_DEBUG("pki extract called common::StringUtil::ToInt32(lines[0], &i)");
     return 1;
   }
@@ -272,7 +272,7 @@ int PkiClAgka::ClExtract(
   
   std::string pki_id = lines[1];
   std::string sk_str = lines[2];
-  std::string str_id = id_list[i];
+  std::string str_id = id_list[i - kPKIn];
   G1 id(pp.e);
   id = pp.H1(str_id);
   
