@@ -556,8 +556,8 @@ void PkiClAgka::agreement(bool honest) {
     fmt::println("🔖 Generate PKI CL Agreement Message {}", key.i);
     // eta from Zq randomly
     Zq eta(pp.e);
-    eta.set_random();
-    auto hex_eta = common::Encode::HexEncode(eta.to_bytes());
+    // eta.set_random();
+    auto hex_eta = "5c7b1ac780c323e7a4e96d03ad99daa81b7b3726";// common::Encode::HexEncode(eta.to_bytes());
     std::cout << "eta: " << hex_eta << std::endl;
     eta.from_bytes(common::Encode::HexDecode(hex_eta));
     // r = g^eta
