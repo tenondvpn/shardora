@@ -202,9 +202,9 @@ int PkiClAgka::PkiExtract(
     return 1;
   }
   
-  std::string pki_id = lines[3];
+  std::string pki_id = lines[1];
   std::string sk_str = lines[2];
-  std::string cert_str = lines[1];
+  std::string cert_str = lines[3];
 
   Zq sk(pp.e);
   sk.from_bytes(shardora::common::Encode::HexDecode(sk_str));

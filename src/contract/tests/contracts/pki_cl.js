@@ -546,9 +546,17 @@ var sks = [
     "9df49ef65b11fbb8ce0d8e942fe56c0b840edf24872865dc8d799cd298a08d9cfbc2038e27f68e124b5a95da823253df7f004c95b5015dd428d1c53363a2368742109837308076d3fcc7bd78ac4ce87239db45dac7669de47b2490d3869b8b1c0fc6fd4540b76fcc2b69b994a6671781f38297209823e81cd80b533bad8ce81f",
 ]
 
+var certs = [
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e840",
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e841",
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e842",
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e843",
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e844",
+]
+
 console.log(id);
 if (args[0] == 1) {
-    PkiExtract("clipki", "clipki", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
+    PkiExtract("clipki", "clipki", args[2] + ";" + id + ";" + sks[parseInt(args[2])] + ";" + certs[parseInt(args[2])], id);
     //console.log(id);
 }
 
