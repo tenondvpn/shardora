@@ -403,8 +403,8 @@ function InitC2cEnv(key, value) {
       });
 }
 
-var pki_count = 3;
-var ib_count = 2;
+var pki_count = 5;
+var ib_count = 3;
 function PkiExtract(prev, key, value, id) {
     var key_len = key.length.toString();
     if (key.length <= 9) {
