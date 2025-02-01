@@ -5,6 +5,7 @@
 #include "common/string_utils.h"
 #include "contract/contract_pairing.h"
 #include "contract/contract_pki.h"
+#include "contract/contract_cl.h"
 #include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
 #include "zjcvm/zjc_host.h"
@@ -110,6 +111,7 @@ int Ripemd160::call(
         DEFAULT_CALL_RESULT();
     }
 
+    // pki
     if (param.data.substr(0, 6) == "pkipki") {
         GET_KEY_VALUE_FROM_PARAM();
         ContractPki pki;
@@ -148,6 +150,49 @@ int Ripemd160::call(
     if (param.data.substr(0, 6) == "pkidec") {
         GET_KEY_VALUE_FROM_PARAM();
         ContractPki pki;
+        pki.Dec(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    // pki cl
+    if (param.data.substr(0, 6) == "clipki") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.PkiExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clipib") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.IbExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "cliege") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.EncKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clidge") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.DecKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clienc") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.Enc(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clidec") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
         pki.Dec(param, key, val);
         DEFAULT_CALL_RESULT();
     }
