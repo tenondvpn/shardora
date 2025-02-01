@@ -688,25 +688,35 @@ int PkiClAgka::Dec(
   ZJC_DEBUG("success called dec: %s", value.c_str());
   auto lines = common::Split<>(value.c_str(), ';');
   if (lines.Count() != 6) {
+      ZJC_DEBUG("failed called dec: lines.Count() != 6: %d", lines.Count());
       return 1;
   }
 
+  ZJC_DEBUG("success called dec: 0");
   std::string pki_id = lines[0];
   G1 c1(pp.e);
+  ZJC_DEBUG("success called dec: 1");
   c1.from_bytes(common::Encode::HexDecode(lines[1]));
   G1 c2(pp.e);
+  ZJC_DEBUG("success called dec: 2");
   c2.from_bytes(common::Encode::HexDecode(lines[2]));
+  ZJC_DEBUG("success called dec: 3");
   ByteStream c3 = common::Encode::HexDecode(lines[3]);
+  ZJC_DEBUG("success called dec: 4");
   G1 di(pp.e);
   di.from_bytes(common::Encode::HexDecode(lines[4]));
+  ZJC_DEBUG("success called dec: 5");
   int32_t index = 0;
   if (!common::StringUtil::ToInt32(lines[5], &index)) {
+      ZJC_DEBUG("success called dec: ToInt32(lines[5] %s", lines[5]);
       return 1;
   }
 
   auto start = std::chrono::steady_clock::now();
   G2 pair1 = pp.e(di, c1);
-  G2 pair2 = pp.e(j_map_.at(index).invert(), c2);
+
+  G1 f_j = pp.H3(index);
+  G2 pair2 = pp.e(f_j.invert(), c2);
   G2 pair = pair1 * pair2;
   std::string plain = xor_strings(c3, pp.H4(pair));
   std::cout << plain << std::endl;
