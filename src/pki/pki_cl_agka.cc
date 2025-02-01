@@ -206,7 +206,7 @@ int PkiClAgka::PkiExtract(
   
   std::string pki_id = lines[1];
   std::string sk_str = lines[2];
-  std::string cert_str = lines[3];
+  std::string cert_str = cert_list[i];
 
   Zq sk(pp.e);
   sk.from_bytes(shardora::common::Encode::HexDecode(sk_str));
@@ -272,7 +272,7 @@ int PkiClAgka::ClExtract(
   
   std::string pki_id = lines[1];
   std::string sk_str = lines[2];
-  std::string str_id = lines[3];
+  std::string str_id = id_list[i];
   G1 id(pp.e);
   id = pp.H1(str_id);
   

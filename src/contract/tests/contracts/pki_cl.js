@@ -547,11 +547,11 @@ var sks = [
 ]
 
 var certs = [
-    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e840",
-    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e841",
-    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e842",
-    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e843",
-    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e844",
+    "cert_0",
+    "cert_1",
+    "cert_2",
+    "cert_3",
+    "cert_4",
 ]
 
 console.log(id);
