@@ -412,6 +412,8 @@ int PkiClAgka::EncKeyGen(
     keys_.emplace_back(pki_count + i, std::move(spk), std::move(s));
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
+
+  PkiClAgreement(false);
   return 0;    
 }
 
@@ -555,6 +557,9 @@ void PkiClAgka::agreement(bool honest) {
     // eta from Zq randomly
     Zq eta(pp.e);
     eta.set_random();
+    auto hex_eta = common::Encode::HexEncode(eta.to_bytes());
+    std::cout << "eta: " << hex_eta << std::endl;
+    eta.from_bytes(common::Encode::HexDecode(hex_eta));
     // r = g^eta
     G1 r = pp.g.pow_zn(eta);
     // d_i_j = sk_i * f_j^eta_i
