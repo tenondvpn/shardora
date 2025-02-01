@@ -543,7 +543,10 @@ var sks = [
     "762f480a38f23a528b3ce6c1314c53711d4a9c41",
     "762f480a38f23a528b3ce6c1314c53711d4a9c42",
     "762f480a38f23a528b3ce6c1314c53711d4a9c43",
-    "5eb8ed56311f7edc777606e1a60cb37efb21a834",
+    "762f480a38f23a528b3ce6c1314c53711d4a9c44",
+    "5eb8ed56311f7edc777606e1a60cb37efb21a835",
+    "5eb8ed56311f7edc777606e1a60cb37efb21a836",
+    "5eb8ed56311f7edc777606e1a60cb37efb21a837",
 ]
 
 var certs = [
@@ -552,6 +555,9 @@ var certs = [
     "cert_2",
     "cert_3",
     "cert_4",
+    "id_0",
+    "id_1",
+    "id_2",
 ]
 
 console.log(id);
