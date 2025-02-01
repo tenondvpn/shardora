@@ -199,7 +199,7 @@ int PkiClAgka::PkiExtract(
   }
 
   int32_t i = -1;
-  if (!common::StringUtil::ToInt32(lines[0], &i) || i < kPKIn) {
+  if (!common::StringUtil::ToInt32(lines[0], &i)) {
     ZJC_DEBUG("pki extract called common::StringUtil::ToInt32(lines[0], &i)");
     return 1;
   }
@@ -266,7 +266,8 @@ int PkiClAgka::ClExtract(
   }
 
   int32_t i = -1;
-  if (!common::StringUtil::ToInt32(lines[0], &i)) {
+  if (!common::StringUtil::ToInt32(lines[0], &i) || i < kPKIn) {
+    ZJC_DEBUG("ib extract called value: %d", i);
     return 1;
   }
   
