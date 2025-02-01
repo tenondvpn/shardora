@@ -21,34 +21,34 @@ PkiClAgka::PkiClAgka(
       const std::string& k, 
       const std::string& g)
       : pp(secure_param), k_(pp.e) {
-  k_.from_bytes(shardora::common::Encode::HexDecode(k));
-  pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
-  // compute g1 = g^k
-  pp.g1 = pp.g.pow_zn(k_);
-  fmt::println("\t- g1 = {}", byte2string(pp.g1.to_bytes()));
+  // k_.from_bytes(shardora::common::Encode::HexDecode(k));
+  // pp.g.from_bytes(shardora::common::Encode::HexDecode(g));
+  // // compute g1 = g^k
+  // pp.g1 = pp.g.pow_zn(k_);
+  // fmt::println("\t- g1 = {}", byte2string(pp.g1.to_bytes()));
 
-  // initialize H1, H2, H3, H4
-  pp.H1 = [this](const std::string& cert) -> G1 {
-    G1 result(pp.e);
-    result.from_hash(cert);
-    return result;
-  };
+  // // initialize H1, H2, H3, H4
+  // pp.H1 = [this](const std::string& cert) -> G1 {
+  //   G1 result(pp.e);
+  //   result.from_hash(cert);
+  //   return result;
+  // };
   
-  pp.H2 = [this](const std::string& ID) -> G1 {
-    G1 result(pp.e);
-    result.from_hash(ID);
-    return result;
-  };
+  // pp.H2 = [this](const std::string& ID) -> G1 {
+  //   G1 result(pp.e);
+  //   result.from_hash(ID);
+  //   return result;
+  // };
 
-  pp.H3 = [this](const int& index) -> G1 {
-    G1 result(pp.e);
-    result.from_hash(std::to_string(index));
-    return result;
-  };
+  // pp.H3 = [this](const int& index) -> G1 {
+  //   G1 result(pp.e);
+  //   result.from_hash(std::to_string(index));
+  //   return result;
+  // };
 
-  pp.H4 = [this](G2& input) -> ByteStream {
-    return byte2string(input.to_bytes());
-  };
+  // pp.H4 = [this](G2& input) -> ByteStream {
+  //   return byte2string(input.to_bytes());
+  // };
 }
 
 // PkiClAgka::~PkiClAgka() {}

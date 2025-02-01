@@ -107,7 +107,7 @@ int test_cpabe(int argc, char** argv) {
 }
 
 int test_pki_cl_agka(int argc, char** argv) {
-    pkicl::PkiClAgka pkicl(pkicl::kTypeA);
+    pkicl::PkiClAgka pkicl(pkicl::kTypeA, "", "");
     pkicl.Simulate();
     return 0;
 }
