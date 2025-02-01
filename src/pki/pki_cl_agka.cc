@@ -692,20 +692,14 @@ int PkiClAgka::Dec(
       return 1;
   }
 
-  ZJC_DEBUG("success called dec: 0");
   std::string pki_id = lines[0];
   G1 c1(pp.e);
-  ZJC_DEBUG("success called dec: 1");
   c1.from_bytes(common::Encode::HexDecode(lines[1]));
   G1 c2(pp.e);
-  ZJC_DEBUG("success called dec: 2");
   c2.from_bytes(common::Encode::HexDecode(lines[2]));
-  ZJC_DEBUG("success called dec: 3");
   ByteStream c3 = common::Encode::HexDecode(lines[3]);
-  ZJC_DEBUG("success called dec: 4");
   G1 di(pp.e);
   di.from_bytes(common::Encode::HexDecode(lines[4]));
-  ZJC_DEBUG("success called dec: 5");
   int32_t index = 0;
   if (!common::StringUtil::ToInt32(lines[5], &index)) {
       ZJC_DEBUG("success called dec: ToInt32(lines[5] %s", lines[5]);
@@ -735,7 +729,7 @@ PlainText PkiClAgka::Dec(CipherText& cipher, DecodeKey& dk) {
   // auto duration =
   //     std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   // std::cout << "duration:" << duration.count() << std::endl;
-  // std::cout << "plaintext:" << plain << std::endl;
+  std::cout << "plaintext:" << plain << std::endl;
   
   return plain;
 }
