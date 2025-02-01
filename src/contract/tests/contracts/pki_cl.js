@@ -561,7 +561,7 @@ if (args[0] == 1) {
 }
 
 if (args[0] == 2) {
-    IbExtract("clipib", "clipib", args[2] + ";" + id + ";" + sks[parseInt(args[2])], id);
+    IbExtract("clipib", "clipib", args[2] + ";" + id + ";" + sks[parseInt(args[2])] + ";" + certs[parseInt(args[2])], id);
 }
 
 if (args[0] == 3) {

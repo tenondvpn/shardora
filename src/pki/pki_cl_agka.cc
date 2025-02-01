@@ -261,7 +261,7 @@ int PkiClAgka::ClExtract(
     const std::string& value) {
   ZJC_DEBUG("ib extract called value: %s", value.c_str());
   auto lines = common::Split<>(value.c_str(), ';');
-  if (lines.Count() != 3) {
+  if (lines.Count() != 4) {
     return 1;
   }
 
@@ -270,9 +270,9 @@ int PkiClAgka::ClExtract(
     return 1;
   }
   
-  std::string pki_id = lines[3];
-  std::string str_id = lines[2];
-  std::string sk_str = lines[1];
+  std::string pki_id = lines[1];
+  std::string sk_str = lines[2];
+  std::string str_id = lines[3];
   G1 id(pp.e);
   id = pp.H1(str_id);
   
