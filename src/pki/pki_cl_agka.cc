@@ -415,7 +415,7 @@ int PkiClAgka::EncKeyGen(
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
 
-  PkiClAgreement(false);
+  PkiClAgreement(true);
   fmt::println("🍔 Generate Group Encode Key (w,A):");
   G1 omega(pp.e);
   for (auto& msg : msgs_) {
