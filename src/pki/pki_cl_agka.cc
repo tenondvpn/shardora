@@ -62,9 +62,9 @@ void PkiClAgka::Simulate(bool honest) {
   PlainText plain = "This is a sample message for testing the encryption scheme.";
 
   fmt::println("\n[ Stage1: 🛠️ Setup ]\n");
-  // auto start = std::chrono::steady_clock::now();
+  auto start = std::chrono::steady_clock::now();
   // Setup();
-  // auto end = std::chrono::steady_clock::now();
+  auto end = std::chrono::steady_clock::now();
   // 计算时间差
   // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   // std::cout << "Stage1 Setup duration:" << duration.count() << std::endl;
