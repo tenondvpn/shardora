@@ -221,8 +221,8 @@ int PkiClAgka::PkiExtract(
 
   std::string tmp_key = std::string("cl_pki_extract_") + pki_id + std::to_string(i);
   std::string tmp_value = sk_str + "," + 
-    shardora::common::Encode::HexEncode(pk.to_bytes()) + "," + 
-    shardora::common::Encode::HexEncode(s.to_bytes());
+    shardora::common::Encode::HexEncode(s.to_bytes()) + "," + 
+    shardora::common::Encode::HexEncode(pk.to_bytes());
   param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
   ZJC_DEBUG("success cl pki extract index: %d key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
   return 0;      
@@ -391,8 +391,8 @@ int PkiClAgka::EncKeyGen(
 
     G1 pk(pp.e);
     G1 s(pp.e);
-    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[2]));
-    pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
+    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
+    pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[2]));
     keys_.emplace_back(i, std::move(pk), std::move(s));
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
@@ -511,8 +511,8 @@ int PkiClAgka::DecKeyGen(
 
     G1 pk(pp.e);
     G1 s(pp.e);
-    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[2]));
-    pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
+    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[1]));
+    pk.from_bytes(shardora::common::Encode::HexDecode(val_splits[2]));
     keys_.emplace_back(i, std::move(pk), std::move(s));
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
@@ -530,8 +530,8 @@ int PkiClAgka::DecKeyGen(
     auto val_splits = common::Split<>(val.c_str(), ',');
     G1 s(pp.e);
     G1 spk(pp.e);
-    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[4]));
-    spk.from_bytes(shardora::common::Encode::HexDecode(val_splits[3]));
+    s.from_bytes(shardora::common::Encode::HexDecode(val_splits[3]));
+    spk.from_bytes(shardora::common::Encode::HexDecode(val_splits[4]));
     keys_.emplace_back(pki_count + i, std::move(spk), std::move(s));
     ZJC_DEBUG("1 success get %s, %s", tmp_key.c_str(), val.c_str());
   }
