@@ -119,22 +119,10 @@ int Ripemd160::call(
     }
 
     // pki
-    CONTRACT_DEBUG("0 abe contract called decode: %s, src: %s",
-        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
-
     if (param.data.substr(0, 6) == "pkipki") {
-        CONTRACT_DEBUG("1 abe contract called decode: %s, src: %s",
-            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
-
         GET_KEY_VALUE_FROM_PARAM();
-        CONTRACT_DEBUG("2 abe contract called decode: %s, src: %s",
-            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
-
         ContractPki pki;
         pki.PkiExtract(param, key, val);
-                CONTRACT_DEBUG("3 abe contract called decode: %s, src: %s",
-            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
-
         DEFAULT_CALL_RESULT();
     }
 
@@ -174,10 +162,16 @@ int Ripemd160::call(
     }
 
     // pki cl
+    CONTRACT_DEBUG("0 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
     if (param.data.substr(0, 6) == "clipki") {
+        CONTRACT_DEBUG("1 abe contract called decode: %s, src: %s",
+            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
         GET_KEY_VALUE_FROM_PARAM();
         ContractCl pki;
         pki.PkiExtract(param, key, val);
+        CONTRACT_DEBUG("2 abe contract called decode: %s, src: %s",
+            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
         DEFAULT_CALL_RESULT();
     }
 

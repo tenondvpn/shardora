@@ -194,11 +194,13 @@ int PkiClAgka::PkiExtract(
   ZJC_DEBUG("pki extract called value: %s", value.c_str());
   auto lines = common::Split<>(value.c_str(), ';');
   if (lines.Count() != 3) {
+    ZJC_DEBUG("pki extract called lines.Count() != 3: %d", lines.Count());
     return 1;
   }
 
   int32_t i = -1;
   if (!common::StringUtil::ToInt32(lines[0], &i)) {
+    ZJC_DEBUG("pki extract called common::StringUtil::ToInt32(lines[0], &i)");
     return 1;
   }
   
