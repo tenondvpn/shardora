@@ -193,7 +193,7 @@ int PkiClAgka::PkiExtract(
       const std::string& value) {
   ZJC_DEBUG("pki extract called value: %s", value.c_str());
   auto lines = common::Split<>(value.c_str(), ';');
-  if (lines.Count() != 3) {
+  if (lines.Count() != 4) {
     ZJC_DEBUG("pki extract called lines.Count() != 3: %d", lines.Count());
     return 1;
   }
