@@ -706,11 +706,15 @@ void AccountManager::UpdateAccountsThread() {
         
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             if (thread_valid_accounts_queue_[i].size() >= 1024 && !thread_valid_[i]) {
+                ZJC_DEBUG("failed add address info thread index: %d, id: %s, balance: %lu",
+                    i, common::Encode::HexEncode(account_info->addr()).c_str(), account_info->balance());
                 continue;
             }
 
             CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("push thread index: ") + std::to_string(i)).c_str())
             thread_valid_accounts_queue_[i].push(account_info);
+            ZJC_DEBUG("success add address info thread index: %d, id: %s, balance: %lu",
+                    i, common::Encode::HexEncode(account_info->addr()).c_str(), account_info->balance());
             if (thread_valid_accounts_queue_[i].size() >= 2024) {
                 thread_valid_[i] = false;
             }
