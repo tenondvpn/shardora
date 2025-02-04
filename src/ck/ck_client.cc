@@ -128,6 +128,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
         date->Append(common::MicTimestampToDate(block_item->timestamp()));
         gid->Append(common::Encode::HexEncode(tx.gid()));
+        ZJC_DEBUG("success add gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
         from->Append(common::Encode::HexEncode(tx.from()));
         from_pubkey->Append("");
         from_sign->Append("");
