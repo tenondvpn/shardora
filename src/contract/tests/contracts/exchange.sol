@@ -269,7 +269,7 @@ contract Exchange {
         all_bytes[0] = '[';
         uint arrayLength = all_hashes.length;
         for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
-            all_bytes[i + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1));
+            all_bytes[i + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1 || validLen == len));
             ++validLen;
         }
 
