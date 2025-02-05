@@ -823,6 +823,8 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
     CHECK_MEMORY_SIZE_WITH_MESSAGE(
         consensus_tx_map_, 
         (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    ZJC_DEBUG("success add consensus tx gid: %s",
+        common::Encode::HexEncode(tx->tx_info.gid()).c_str());
 }
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
@@ -843,12 +845,12 @@ void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
         CHECK_MEMORY_SIZE_WITH_MESSAGE(
             consensus_tx_map_, 
             (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
-        // ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
-        //     pool_index_,
-        //     txs[i]->tx_info.step(), 
-        //     common::Encode::HexEncode(txs[i]->tx_info.to()).c_str(),
-        //     common::Encode::HexEncode(txs[i]->tx_info.gid()).c_str(),
-        //     common::Encode::HexEncode(txs[i]->unique_tx_hash).c_str());
+        ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
+            pool_index_,
+            txs[i]->tx_info.step(), 
+            common::Encode::HexEncode(txs[i]->tx_info.to()).c_str(),
+            common::Encode::HexEncode(txs[i]->tx_info.gid()).c_str(),
+            common::Encode::HexEncode(txs[i]->unique_tx_hash).c_str());
     }
 }
 

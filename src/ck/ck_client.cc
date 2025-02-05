@@ -424,6 +424,13 @@ void ClickHouseClient::FlushToCkWithData() try {
             trans.AppendColumn("bls_agg_sign_y", bls_agg_sign_y);
             trans.AppendColumn("commit_bitmap", commit_bitmap);
             trans.AppendColumn("gid", gid);
+
+#ifndef NDEBUG
+            for (int32_t test_i = 0; test_i < gid->Size(); ++test_i) {
+                ZJC_DEBUG("success flush gid to db: %s", gid->At(test_i).data());
+            }
+#endif
+
             trans.AppendColumn("from", from);
             trans.AppendColumn("from_pubkey", from_pubkey);
             trans.AppendColumn("from_sign", from_sign);
