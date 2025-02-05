@@ -2164,6 +2164,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         ZJC_WARN("pool: %u txs.empty().", pool_idx_);
         return;
     }
+    
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {

@@ -203,7 +203,6 @@ void TxPool::GetTxSyncToLeader(
             *tx = iter->second->tx_info;
             ADD_TX_DEBUG_INFO(tx);
             assert(!iter->second->unique_tx_hash.empty());
-
         }
 
         auto tmp_iter = gid_map_.find(iter->second->tx_info.gid());

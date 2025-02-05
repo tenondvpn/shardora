@@ -425,11 +425,11 @@ void ClickHouseClient::FlushToCkWithData() try {
             trans.AppendColumn("commit_bitmap", commit_bitmap);
             trans.AppendColumn("gid", gid);
 
-#ifndef NDEBUG
-            for (int32_t test_i = 0; test_i < gid->Size(); ++test_i) {
-                ZJC_DEBUG("success flush gid to db: %s", gid->At(test_i).data());
-            }
-#endif
+// #ifndef NDEBUG
+//             for (int32_t test_i = 0; test_i < gid->Size(); ++test_i) {
+//                 ZJC_DEBUG("success flush gid to db: %s", gid->At(test_i).data());
+//             }
+// #endif
 
             trans.AppendColumn("from", from);
             trans.AppendColumn("from_pubkey", from_pubkey);
@@ -487,11 +487,11 @@ void ClickHouseClient::FlushToCkWithData() try {
                 SetUser(common::GlobalInfo::Instance()->ck_user()).
                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
             ck_client.Insert(kClickhouseTransTableName, trans);
-            ck_client.Insert(kClickhouseBlockTableName, blocks);
-            ck_client.Insert(kClickhouseAccountTableName, accounts);
-            ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
-            ck_client.Insert(kClickhouseC2cTableName, c2cs);
-            ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+            // ck_client.Insert(kClickhouseBlockTableName, blocks);
+            // ck_client.Insert(kClickhouseAccountTableName, accounts);
+            // ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
+            // ck_client.Insert(kClickhouseC2cTableName, c2cs);
+            // ck_client.Insert(kClickhousePrepaymentTableName, prepay);
         }
 
         HandleBlsMessage();

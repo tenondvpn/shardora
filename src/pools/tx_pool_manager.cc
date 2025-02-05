@@ -1168,7 +1168,6 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
         ZJC_DEBUG("success pop tx gid: %s, step: %d",
             common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
             msg_ptr->header.tx_proto().step());
-
         if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
             if (has_user_tx != nullptr) {
                 *has_user_tx = true;
