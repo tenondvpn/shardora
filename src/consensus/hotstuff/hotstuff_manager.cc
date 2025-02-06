@@ -351,7 +351,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    account_mgr_->GetAccountInfo("");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {

@@ -131,15 +131,17 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     //     return iter->second;
     // }
     
-    BLOCK_DEBUG(
-        "get account failed[%s] in thread_idx:%d", 
-        common::Encode::HexEncode(addr).c_str(), thread_idx);
     auto addr_info = account_lru_map_.get(addr);
     if (addr_info != nullptr) {
         return addr_info;
     }
 
-    return GetAcountInfoFromDb(addr);
+    addr_info = GetAcountInfoFromDb(addr);
+    if (!addr_info) {
+        BLOCK_DEBUG(
+            "get account failed[%s] in thread_idx:%d", 
+            common::Encode::HexEncode(addr).c_str(), thread_idx);
+    }
 }
 
 protos::AddressInfoPtr AccountManager::GetContractInfoByAddress(
@@ -703,6 +705,10 @@ void AccountManager::UpdateAccountsThread() {
                 break;
             }
 
+            ZJC_DEBUG("success add address info thread index: %d, id: %s, balance: %lu",
+                    i, 
+                    common::Encode::HexEncode(account_info->addr()).c_str(), 
+                    account_info->balance());
             account_lru_map_.insert(account_info);
         }
     }
