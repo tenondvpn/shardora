@@ -111,7 +111,9 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     thread_valid_[thread_idx] = true;
     while (true) {
         std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[thread_idx], (std::string("pop thread index: ") + std::to_string(thread_idx)).c_str())
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(
+            thread_valid_accounts_queue_[thread_idx], (std::string("pop thread index: ") + 
+            std::to_string(thread_idx)).c_str());
         if (!thread_valid_accounts_queue_[thread_idx].pop(&address_info)) {
             break;
         }
@@ -715,7 +717,9 @@ void AccountManager::UpdateAccountsThread() {
             CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("push thread index: ") + std::to_string(i)).c_str())
             thread_valid_accounts_queue_[i].push(account_info);
             ZJC_DEBUG("success add address info thread index: %d, id: %s, balance: %lu",
-                    i, common::Encode::HexEncode(account_info->addr()).c_str(), account_info->balance());
+                    i, 
+                    common::Encode::HexEncode(account_info->addr()).c_str(), 
+                    account_info->balance());
             // if (thread_valid_accounts_queue_[i].size() >= 2024) {
             //     thread_valid_[i] = false;
             // }
