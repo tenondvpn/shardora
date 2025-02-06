@@ -1534,6 +1534,9 @@ Status Hotstuff::Commit(
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
+#ifndef NDEBUG
+    transport::protobuf::ConsensusDebug cons_debug3;
+    cons_debug3.ParseFromString(v_block->debug());
     ZJC_DEBUG("success commit view block %u_%u_%lu, "
         "height: %lu, now chain: %s, propose_debug: %s",
         v_block->qc().network_id(), 
@@ -1542,6 +1545,7 @@ Status Hotstuff::Commit(
         v_block->block_info().height(),
         view_block_chain()->String().c_str(),
         ProtobufToJson(cons_debug3).c_str());
+#endif
     auto s = view_block_chain()->PruneTo(forked_blockes);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, prune failed s: %d, vb view: &lu", pool_idx_, s, v_block->qc().view());
@@ -1555,8 +1559,6 @@ Status Hotstuff::Commit(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    transport::protobuf::ConsensusDebug cons_debug3;
-    cons_debug3.ParseFromString(v_block->debug());
     ZJC_DEBUG("PruneTo success, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
         v_block->qc().network_id(), 
         v_block->qc().pool_index(), 
