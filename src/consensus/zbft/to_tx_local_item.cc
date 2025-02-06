@@ -38,14 +38,20 @@ int ToTxLocalItem::HandleTx(
                     common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
                     to_txs.tos(i).amount());
                 to_balance = 0;
+            } else {
+                ZJC_DEBUG("success get to balance: %s, %lu",
+                    common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
+                    to_balance);
             }
         } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) { // to + from, for gas prepayment tx
             to_balance = gas_prepayment_->GetAddressPrepayment(
                 view_block.qc().pool_index(),
                 to_txs.tos(i).des().substr(0, security::kUnicastAddressLength),
                 to_txs.tos(i).des().substr(security::kUnicastAddressLength, security::kUnicastAddressLength));
-            ZJC_DEBUG("success add contract prepayment: %s, %lu",
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), to_balance);
+            ZJC_DEBUG("success add contract prepayment: %s, %lu, gid: %s",
+                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
+                to_balance, 
+                common::Encode::HexEncode(block_tx.gid()).c_str());
         } else {
             ZJC_ERROR("local to des invalid: %s, %u",
                 common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
@@ -65,7 +71,6 @@ int ToTxLocalItem::HandleTx(
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
             to_balance,
             to_txs.tos(i).amount());
-
     }
 
     auto storage = block_tx.add_storages();

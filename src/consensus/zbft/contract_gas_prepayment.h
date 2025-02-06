@@ -65,7 +65,7 @@ public:
         }
 
         ZJC_DEBUG("handle ConsensusToTxs: %s, to_txs.tos_size(): %u",
-            common::Encode::HexEncode(*to_txs_str).c_str(),
+            "common::Encode::HexEncode(*to_txs_str).c_str()",
             to_txs.tos_size());
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
