@@ -30,6 +30,7 @@ int ContractCall::HandleTx(
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
+    auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
     GetTempPerpaymentBalance(view_block, block_tx, acc_balance_map, &from_balance);
@@ -243,8 +244,9 @@ int ContractCall::HandleTx(
     acc_balance_map["pre_" + block_tx.from()] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
+    auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called %s, user: %s, test_from_balance: %lu, prepament: %lu, "
-        "gas used: %lu, gas_price: %lu, status: %d, step: %d",
+        "gas used: %lu, gas_price: %lu, status: %d, step: %d, use time: %lu",
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         test_from_balance,
@@ -252,7 +254,8 @@ int ContractCall::HandleTx(
         gas_used,
         block_tx.gas_price(),
         block_tx.status(),
-        block_tx.step());
+        block_tx.step(),
+        (etime - btime));
     return kConsensusSuccess;
 }
 

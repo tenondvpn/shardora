@@ -45,9 +45,9 @@ contract Exchange {
     bytes32[] all_hashes;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
-        emit DebugEvent(0);
+        // emit DebugEvent(0);
         require(!item_map[hash].exists);
-        emit DebugEvent(1);
+        // emit DebugEvent(1);
         ItemInfo storage item = item_map[hash];
         item.id = global_id++;
         item.hash = hash;
@@ -61,9 +61,9 @@ contract Exchange {
         item.buyer = payable(0x0000000000000000000000000000000000000000);
         item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
-        emit DebugEvent(2);
+        // emit DebugEvent(2);
         all_hashes.push(hash);
-        emit DebugEvent(all_hashes.length);
+        // emit DebugEvent(all_hashes.length);
         bytes[] memory all_bytes = new bytes[](2);
         all_bytes[0] = Bytes32toBytes(hash);
         all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);

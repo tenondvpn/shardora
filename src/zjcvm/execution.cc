@@ -196,6 +196,7 @@ int Execution::execute(
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* out_res) {
+    auto btime = common::TimeUtils::TimestampMs();
     const size_t code_size = bytes_code.size();
     if (code_size <= kContractHead.size() ||
             from_address.size() != security::kUnicastAddressLength ||
@@ -273,8 +274,9 @@ int Execution::execute(
     }
 
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
-    ZJC_DEBUG("execute res: %d, gas_limit: %lu gas_left: %lu, gas_refund: %lu",
-        out_res->status_code, gas, out_res->gas_left, out_res->gas_refund);
+    auto etime = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("execute res: %d, gas_limit: %lu gas_left: %lu, gas_refund: %lu, use time: %lu",
+        out_res->status_code, gas, out_res->gas_left, out_res->gas_refund, (etime - btime));
     return kZjcvmSuccess;
 }
 

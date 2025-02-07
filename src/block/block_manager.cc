@@ -874,41 +874,48 @@ void BlockManager::AddNewBlock(
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto debug_len = tx_list[i].tx_debug_size();
+        if (debug_len <= 0) {
+            continue;
+        }
+
+        bool valid_delay = (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 15000lu ? true : false;
+        if (!valid_delay) {
+            continue;
+        }
+
         for (int32_t debug_idx = 0; debug_idx < debug_len; ++debug_idx) {
             if (debug_idx == 0) {
-                // ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
-                //     tx_list[i].step(),
-                //     common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
-                //     tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
-                //     (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
-                //     tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
+                ZJC_INFO("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                    tx_list[i].step(),
+                    common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                    tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
+                    (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
+                    tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
             } else {
-                if ((tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 15000lu) {
-                    debug_idx -= 1;
-                    if (debug_idx == 0) {
-                        ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
-                            tx_list[i].step(),
-                            common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
-                            tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
-                            (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
-                            tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
-                    } else {
-                        ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
-                            tx_list[i].step(),
-                            common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
-                            (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
-                            (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
-                            tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
-                    }
-                    
-                    debug_idx += 1;
-                    ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
-                        tx_list[i].step(),
-                        common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
-                        (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
-                        (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
-                        tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
-                }
+                // debug_idx -= 1;
+                // if (debug_idx == 0) {
+                //     ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                //         tx_list[i].step(),
+                //         common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                //         tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
+                //         (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
+                //         tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
+                // } else {
+                //     ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                //         tx_list[i].step(),
+                //         common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                //         (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
+                //         (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
+                //         tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
+                // }
+                
+                // debug_idx += 1;
+                ZJC_INFO("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                    tx_list[i].step(),
+                    common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                    (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
+                    (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
+                    tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
             }
         }
     }

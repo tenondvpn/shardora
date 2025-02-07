@@ -192,7 +192,6 @@ void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
-    CheckThreadIdValid();
     auto iter = prio_map_.begin();
     while (iter != prio_map_.end() && txs->size() < (int32_t)count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {

@@ -246,7 +246,7 @@ Status Hotstuff::Propose(
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
-    ZJC_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
+    ZJC_DEBUG("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
 #else
     header.set_debug(std::to_string(common::TimeUtils::TimestampMs()));
 #endif
@@ -399,7 +399,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().sign_x()).c_str(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
         return;
@@ -425,7 +425,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
         msg_ptr->header.hash64(),
         pro_msg_wrap->view_block_ptr->block_info().timestamp(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #else
     pro_msg_wrap->view_block_ptr->set_debug(msg_ptr->header.debug());
 #endif
@@ -492,7 +492,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
 #ifndef NDEBUG
         ZJC_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
             msg_ptr->header.hash64(),
-            ProtobufToJson(cons_debug).c_str());
+            "ProtobufToJson(cons_debug).c_str()");
 #endif
         leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
         CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
@@ -555,7 +555,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
     ZJC_DEBUG("HandleProposeMsgStep_HasVote called hash: %lu, "
         "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
         pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     if (last_vote_view_ >= view_item.qc().view()) {
         ZJC_DEBUG("pool: %d has voted view: %lu, last_vote_view_: %u, "
@@ -590,7 +590,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
     ZJC_DEBUG("HandleProposeMsgStep_VerifyLeader called hash: %lu, propose_debug: %s", 
-        pro_msg_wrap->msg_ptr->header.hash64(), ProtobufToJson(cons_debug).c_str());
+        pro_msg_wrap->msg_ptr->header.hash64(), "ProtobufToJson(cons_debug).c_str()");
 #endif
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
@@ -623,7 +623,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 
     ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s", 
         pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     std::shared_ptr<TC> tc = nullptr;
     auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
@@ -665,7 +665,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
     ZJC_DEBUG("HandleProposeMsgStep_VerifyQC called hash: %lu, view_block_hash: %s, propose_debug: %s",
         msg_ptr->header.hash64(), 
         common::Encode::HexEncode(pro_msg.tc().view_block_hash()).c_str(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && IsQcTcValid(pro_msg.tc())) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -717,7 +717,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
     ZJC_DEBUG("HandleProposeMsgStep_VerifyViewBlock called hash: %lu, propose_debug: %s",
-        pro_msg_wrap->msg_ptr->header.hash64(), ProtobufToJson(cons_debug).c_str());
+        pro_msg_wrap->msg_ptr->header.hash64(), "ProtobufToJson(cons_debug).c_str()");
 #endif
     auto* tc = &pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc();
     if (VerifyViewBlock(
@@ -738,7 +738,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
         pro_msg_wrap->view_block_ptr->qc().view(),
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
         view_block_chain()->HighViewBlock()->qc().view(),
-        pro_msg_wrap->msg_ptr->header.hash64(), ProtobufToJson(cons_debug).c_str());        
+        pro_msg_wrap->msg_ptr->header.hash64(), "ProtobufToJson(cons_debug).c_str()");        
 #endif
     return Status::kSuccess;
 }
@@ -752,7 +752,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
 
     ZJC_DEBUG("HandleProposeMsgStep_Directly called hash: %lu, propose_debug: %s",
         pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
@@ -803,7 +803,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->parent_hash()).c_str(),
         pro_msg_wrap->view_block_ptr->qc().network_id(),
         pro_msg_wrap->view_block_ptr->qc().pool_index(),
-        pro_msg_wrap->view_block_ptr->qc().view(), ProtobufToJson(cons_debug).c_str());
+        pro_msg_wrap->view_block_ptr->qc().view(), "ProtobufToJson(cons_debug).c_str()");
 #endif
     if (expect_view_block_hash != pro_msg_wrap->view_block_ptr->qc().view_block_hash()) {
         ZJC_DEBUG("invalid parent hash: %s, %s",
@@ -850,7 +850,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
         "propose_debug: %s", 
         pro_msg_wrap->msg_ptr->header.hash64(), 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
@@ -874,7 +874,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             pro_msg_wrap->msg_ptr->header.hash64(),
-            ProtobufToJson(cons_debug).c_str());
+            "ProtobufToJson(cons_debug).c_str()");
 #endif
         return Status::kError;
     }
@@ -887,7 +887,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             pro_msg_wrap->msg_ptr->header.hash64(),
-            ProtobufToJson(cons_debug).c_str());
+            "ProtobufToJson(cons_debug).c_str()");
 #endif
     return Status::kSuccess;
 }
@@ -901,7 +901,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         pro_msg_wrap->msg_ptr->header.hash64(), 
         (pro_msg_wrap->view_block_ptr->qc().sign_x().empty() || 
         pro_msg_wrap->view_block_ptr->qc().sign_y().empty()), 
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     // if (pro_msg_wrap->view_block_ptr->qc().sign_x().empty() ||
     //         pro_msg_wrap->view_block_ptr->qc().sign_y().empty()) {
@@ -923,7 +923,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         pro_msg_wrap->view_block_ptr->qc().pool_index(),
         pro_msg_wrap->view_block_ptr->qc().view(),
         pro_msg_wrap->view_block_ptr->block_info().tx_list_size(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     if (s != Status::kSuccess) {
 #ifndef NDEBUG
@@ -933,7 +933,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
             pro_msg_wrap->view_block_ptr->qc().network_id(),
             pro_msg_wrap->view_block_ptr->qc().pool_index(),
             pro_msg_wrap->view_block_ptr->qc().view(),
-            ProtobufToJson(cons_debug).c_str());
+            "ProtobufToJson(cons_debug).c_str()");
 #endif
         // 父块不存在，则加入等待队列，后续处理
         if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // 父块缺失触发同步
@@ -964,7 +964,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pro_msg_wrap->view_block_ptr->qc().view(),
         pro_msg_wrap->view_block_ptr->block_info().tx_list_size(),
         pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     auto msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1059,7 +1059,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         view_block_chain()->HighViewBlock()->qc().view(),
         vote_msg.replica_idx(),
         msg_ptr->header.hash64(),
-        ProtobufToJson(cons_debug).c_str(),
+        "ProtobufToJson(cons_debug).c_str()",
         followers_gids.c_str());
 #endif
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
@@ -1120,7 +1120,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.view(),
         common::Encode::HexEncode(qc_hash).c_str(),
         msg_ptr->header.hash64(),
-        ProtobufToJson(cons_debug).c_str(),
+        "ProtobufToJson(cons_debug).c_str()",
         vote_msg.replica_idx());
     qc_item.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());
     // 切换视图
@@ -1177,7 +1177,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.view(),
         common::Encode::HexEncode(qc_hash).c_str(),
         msg_ptr->header.hash64(),
-        ProtobufToJson(cons_debug).c_str(),
+        "ProtobufToJson(cons_debug).c_str()",
         vote_msg.replica_idx());
 #endif
     qc_item.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
@@ -1218,7 +1218,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 #ifndef NDEBUG
     ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(),
-        ProtobufToJson(cons_debug).c_str());
+        "ProtobufToJson(cons_debug).c_str()");
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
@@ -1371,13 +1371,13 @@ Status Hotstuff::TryCommit(
     auto v_block_to_commit_info = CheckCommit(commit_qc);
     if (v_block_to_commit_info) {
         auto v_block_to_commit = v_block_to_commit_info->view_block;
-#ifndef NDEBUG
-        transport::protobuf::ConsensusDebug cons_debug;
-        cons_debug.ParseFromString(v_block_to_commit->debug());
-        ZJC_DEBUG("commit tx size: %u, propose_debug: %s", 
-            v_block_to_commit->block_info().tx_list_size(), 
-            ProtobufToJson(cons_debug).c_str());
-#endif
+// #ifndef NDEBUG
+//         transport::protobuf::ConsensusDebug cons_debug;
+//         cons_debug.ParseFromString(v_block_to_commit->debug());
+//         ZJC_DEBUG("commit tx size: %u, propose_debug: %s", 
+//             v_block_to_commit->block_info().tx_list_size(), 
+//             ProtobufToJson(cons_debug).c_str());
+// #endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
         Status s = Commit(msg_ptr, v_block_to_commit_info, commit_qc, test_index);
         if (s != Status::kSuccess) {
@@ -1406,13 +1406,13 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     }
 
     auto v_block1 = v_block1_info->view_block;
-#ifndef NDEBUG
-    transport::protobuf::ConsensusDebug cons_debug;
-    cons_debug.ParseFromString(v_block1->debug());
-    ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
-        common::Encode::HexEncode(qc.view_block_hash()).c_str(),
-        qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
-#endif
+// #ifndef NDEBUG
+//     transport::protobuf::ConsensusDebug cons_debug;
+//     cons_debug.ParseFromString(v_block1->debug());
+//     ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
+//         common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+//         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
+// #endif
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
@@ -1889,6 +1889,7 @@ Status Hotstuff::ConstructVoteMsg(
     if (!msg_ptr->is_leader) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
         auto* txs = vote_msg->mutable_txs();
+        ZJC_DEBUG("now vote message get tx sync to leader.");
         wrapper()->GetTxSyncToLeader(
             v_block->qc().leader_idx(), 
             view_block_chain_, 
@@ -2154,6 +2155,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
 
+    ZJC_DEBUG("now timeout reset get tx sync to leader.");
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
     auto trans_msg = std::make_shared<transport::TransportMessage>();
