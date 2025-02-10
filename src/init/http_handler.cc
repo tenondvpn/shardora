@@ -487,7 +487,6 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
         return;
     }
 
-
     const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
     if (tmp_addrs == nullptr) {
         std::string res = common::StringUtil::Format("param address is null");
@@ -500,11 +499,11 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
     auto tmp_res_addrs = res_json["addrs"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    auto addrs_splits = common::Split<1024>(tmp_addrs, ',');
+    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
     uint32_t invalid_addr_index = 0;
     for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
         std::string addr = common::Encode::HexDecode(addrs_splits[i]);
-        if (addr.length() <= 20) {
+        if (addr.length() < 20) {
             continue;
         }
 
@@ -515,10 +514,13 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
         }
 
         if (addr_info != nullptr && addr_info->balance() >= balance_val) {
-            continue;
+            res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+        } else {
+            ZJC_DEBUG("invalid addr: %s, balance: %lu",
+                addrs_splits[i], 
+                (addr_info ? addr_info->balance() : 0));
         }
-
-        res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
     }
 
     auto json_str = res_json.dump();
@@ -574,11 +576,11 @@ static void PrepaymentsValid(evhtp_request_t* req, void* data) {
     auto tmp_res_addrs = res_json["prepayments"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    auto addrs_splits = common::Split<1024>(tmp_addrs, ',');
+    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
     uint32_t invalid_addr_index = 0;
     for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
         std::string addr = common::Encode::HexDecode(addrs_splits[i]);
-        if (addr.length() <= 20) {
+        if (addr.length() < 20) {
             continue;
         }
 
@@ -586,10 +588,8 @@ static void PrepaymentsValid(evhtp_request_t* req, void* data) {
         uint64_t tmp_balance = 0;
         auto res = prefix_db->GetContractUserPrepayment(contract_addr, addr, &height, &tmp_balance);
         if (res && tmp_balance >= balance_val) {
-            continue;
+            res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
         }
-
-        res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
     }
 
     auto json_str = res_json.dump();
@@ -619,20 +619,18 @@ static void GidsValid(evhtp_request_t* req, void* data) {
     auto tmp_res_addrs = res_json["gids"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    auto addrs_splits = common::Split<1024>(tmp_gids, ',');
+    auto addrs_splits = common::Split<1024>(tmp_gids, '_');
     uint32_t invalid_addr_index = 0;
     for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
         std::string gid = common::Encode::HexDecode(addrs_splits[i]);
-        if (gid.length() <= 20) {
+        if (gid.length() < 32) {
             continue;
         }
 
         auto res = prefix_db->JustCheckCommitedGidExists(gid);
         if (res) {
-            continue;
+            res_json["gids"][invalid_addr_index++] = addrs_splits[i];
         }
-
-        res_json["gids"][invalid_addr_index++] = addrs_splits[i];
     }
 
     auto json_str = res_json.dump();

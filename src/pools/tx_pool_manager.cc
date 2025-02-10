@@ -513,6 +513,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
+        ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
         ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, gid: %s",
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
