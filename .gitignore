@@ -1,4 +1,5 @@
 src.tar.gz
+src.zip
 src/contract/tests/contracts/openzeppelin
 src/contract/tests/contracts/nohup.out
 src/contract/tests/contracts/node_modules/.staging/
