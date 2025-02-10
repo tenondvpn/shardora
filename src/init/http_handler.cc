@@ -441,7 +441,6 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
 
     std::string addr = common::Encode::HexDecode(tmp_addr);
     auto addr_info = prefix_db->GetAddressInfo(addr);
-
     if (addr_info == nullptr) {
         std::string res = "get address failed from db: " + addr;
         addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
@@ -468,6 +467,107 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
+static void AccountsValid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* balance = evhtp_kv_find(req->uri->query, "balance");
+    uint64_t balance_val = 0;
+    if (!common::StringUtil::ToUint64(std::string(balance), &balance_val)) {
+        std::string res = std::string("balance not integer: ") + balance;
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+
+    const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
+    if (tmp_addrs == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["addrs"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_addrs, ',');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string addr = common::Encode::HexDecode(addrs_splits[i]);
+        if (addr.length() <= 20) {
+            continue;
+        }
+
+        auto addr_info = prefix_db->GetAddressInfo(addr);
+        if (addr_info == nullptr) {
+            std::string res = "get address failed from db: " + addr;
+            addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+        }
+
+        if (addr_info != nullptr && addr_info->balance() >= balance_val) {
+            continue;
+        }
+
+        res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
+    }
+
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
+static void GidsValid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* tmp_gids = evhtp_kv_find(req->uri->query, "gids");
+    if (tmp_gids == nullptr) {
+        std::string res = common::StringUtil::Format("param gids is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["gids"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_gids, ',');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string gid = common::Encode::HexDecode(addrs_splits[i]);
+        if (gid.length() <= 20) {
+            continue;
+        }
+
+        auto res = prefix_db->JustCheckCommitedGidExists(gid);
+        if (res) {
+            continue;
+        }
+
+        res_json["gids"][invalid_addr_index++] = addrs_splits[i];
+    }
+
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
 
 static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
@@ -760,6 +860,8 @@ void HttpHandler::Init(
     http_server.AddCallback("/query_init", QueryInit);
     http_server.AddCallback("/get_proxy_reenc_info", GetProxyReencInfo);
     http_server.AddCallback("/ars_create_sec_keys", ArsCreateSecKeys);
+    http_server.AddCallback("/accounts_valid", AccountsValid);
+    http_server.AddCallback("/commit_gid_valid", GidsValid);
 }
 
 };  // namespace init

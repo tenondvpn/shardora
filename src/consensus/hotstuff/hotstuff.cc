@@ -983,6 +983,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     auto* hotstuff_msg = trans_header.mutable_hotstuff();
     auto* vote_msg = hotstuff_msg->mutable_vote_msg();
     assert(pro_msg_wrap->view_block_ptr->qc().elect_height() > 0);
+    trans_header.set_debug(pro_msg_wrap->msg_ptr->header.debug());
     // Construct VoteMsg
     Status s = ConstructVoteMsg(
         msg_ptr,
@@ -1067,7 +1068,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         view_block_chain()->HighViewBlock()->qc().view(),
         vote_msg.replica_idx(),
         msg_ptr->header.hash64(),
-        "ProtobufToJson(cons_debug).c_str()",
+        ProtobufToJson(cons_debug).c_str(),
         followers_gids.c_str());
 #endif
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {

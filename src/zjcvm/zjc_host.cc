@@ -63,10 +63,11 @@ evmc::bytes32 ZjchainHost::get_storage(
         ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
-    ZJC_DEBUG("success get storage addr: %s, key: %s, val: %s", 
+    ZJC_DEBUG("success get storage addr: %s, key: %s, val: %s, valid: %d", 
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
-        common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str());
+        common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
+        (tmp_val ? true : false));
     return tmp_val;
 }
 

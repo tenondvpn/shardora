@@ -244,6 +244,7 @@ int ContractCall::HandleTx(
     acc_balance_map["pre_" + block_tx.from()] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
+    ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, use time: %lu",
