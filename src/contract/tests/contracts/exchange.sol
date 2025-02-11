@@ -64,31 +64,31 @@ contract Exchange {
         // emit DebugEvent(2);
         all_hashes.push(hash);
         // emit DebugEvent(all_hashes.length);
-        bytes[] memory all_bytes = new bytes[](2);
-        all_bytes[0] = Bytes32toBytes(hash);
-        all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
-        purchase_map[bytesConcat(all_bytes, 2)] = true;
+        // bytes[] memory all_bytes = new bytes[](2);
+        // all_bytes[0] = Bytes32toBytes(hash);
+        // all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
+        // purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
     }
 
     function PurchaseItem(bytes32 hash) public payable {
-        emit DebugEvent(3);
+        //emit DebugEvent(3);
         require(item_map[hash].exists);
-        emit DebugEvent(4);
+        //emit DebugEvent(4);
         require(item_map[hash].owner != msg.sender);
-        emit DebugEvent(5);
-        bytes[] memory all_bytes = new bytes[](2);
-        all_bytes[0] = Bytes32toBytes(hash);
-        all_bytes[1] = toBytes(msg.sender);
+        //emit DebugEvent(5);
+        //bytes[] memory all_bytes = new bytes[](2);
+        //all_bytes[0] = Bytes32toBytes(hash);
+        //all_bytes[1] = toBytes(msg.sender);
 
-        bytes memory key = bytesConcat(all_bytes, 2);
-        require(!purchase_map[key]);
-        emit DebugEvent(6);
+        //bytes memory key = bytesConcat(all_bytes, 2);
+        //require(!purchase_map[key]);
+        //emit DebugEvent(6);
         ItemInfo storage item = item_map[hash];
         require(item_map[hash].price <= msg.value);
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
-        purchase_map[key] = true;
-        emit DebugEvent(7);
+        //purchase_map[key] = true;
+        //emit DebugEvent(7);
     }
 
     function ConfirmPurchase(bytes32 hash) public payable {

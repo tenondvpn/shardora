@@ -11,17 +11,17 @@
 
 namespace shardora {
 
-namespace block {
+namespace zjcvm {
 
-using AccountPtr = protos::AddressInfoPtr;
-
+using KeyValuePairPtr = std::shared_ptr<std::pair<std::string, std::string>>;
 template<uint32_t kBucketSize>
-class AccountLruMap {
+class StorageLruMap {
 public:
-    ~AccountLruMap() {}
+    ~StorageLruMap() {}
 
-    void insert(const AccountPtr& value) {
-        auto& key = value->addr();
+    void insert(const std::string& key, const std::string& value) {
+        auto kv_pair_ptr = std::make_shared<std::pair<std::string, std::string>>(
+            std::make_pair<std::string, std::string>(key, value));
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
         if (item_map_.count(key)) {
             item_list_.erase(item_map_[key]);
@@ -31,7 +31,7 @@ public:
 
         item_list_.push_front(key);
         item_map_[key] = item_list_.begin();
-        index_data_map_[index] = value;
+        index_data_map_[index] = kv_pair_ptr;
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);
@@ -45,10 +45,10 @@ public:
         }
     }
 
-    AccountPtr get(const std::string& key) {
+    KeyValuePairPtr get(const std::string& key) {
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
         auto item_ptr = index_data_map_[index];
-        if (item_ptr != nullptr && item_ptr->addr() == key) {
+        if (item_ptr != nullptr && item_ptr->first == key) {
             return item_ptr;
         }
         
@@ -58,10 +58,10 @@ public:
 private:
     std::list<std::string> item_list_;
     std::unordered_map<std::string, typename std::list<std::string>::iterator> item_map_;
-    AccountPtr index_data_map_[kBucketSize] = { nullptr };
+    KeyValuePairPtr index_data_map_[kBucketSize] = { nullptr };
 
 };
 
-};  // namespace block
+};  // namespace zjcvm
 
 };  // namespace shardora

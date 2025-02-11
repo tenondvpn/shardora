@@ -123,7 +123,7 @@ public:
         //     common::Encode::HexEncode(key).c_str(), 
         //     common::Encode::HexEncode(val).c_str());
         prev_storages_map_[key] = val;
-        CHECK_MEMORY_SIZE(prev_storages_map_);
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(prev_storages_map_, "storage");
     }
     
     const std::unordered_map<std::string, std::string>& prev_storages_map() const {

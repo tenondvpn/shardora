@@ -878,7 +878,7 @@ void BlockManager::AddNewBlock(
             continue;
         }
 
-        bool valid_delay = (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 15000lu ? true : false;
+        bool valid_delay = (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 1000lu ? true : false;
         if (!valid_delay) {
             continue;
         }

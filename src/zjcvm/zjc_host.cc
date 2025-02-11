@@ -87,7 +87,7 @@ evmc_storage_status ZjchainHost::set_storage(
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
-        CHECK_MEMORY_SIZE(accounts_);
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(accounts_, "acc");
         it = accounts_.find(addr);
     }
 
@@ -272,8 +272,8 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
             if (sender_iter == to_account_value_.end()) {
                 to_account_value_[from_str] = std::unordered_map<std::string, uint64_t>();
                 to_account_value_[from_str][dest_str] = params.value;
-                CHECK_MEMORY_SIZE(to_account_value_);
-                CHECK_MEMORY_SIZE(to_account_value_[from_str]);
+                CHECK_MEMORY_SIZE_WITH_MESSAGE(to_account_value_, "to");
+                CHECK_MEMORY_SIZE_WITH_MESSAGE(to_account_value_[from_str], "from");
             } else {
                 auto iter = sender_iter->second.find(dest_str);
                 if (iter != sender_iter->second.end()) {
@@ -335,7 +335,7 @@ void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t bala
     evmc::bytes32 tmp_val{};
     Uint64ToEvmcBytes32(tmp_val, balance);
     account_balance_[addr] = tmp_val;
-    CHECK_MEMORY_SIZE(account_balance_);
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(account_balance_, "acc");
 }
 
 int ZjchainHost::SaveKeyValue(
@@ -364,7 +364,7 @@ int ZjchainHost::SaveKeyValue(
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
-        CHECK_MEMORY_SIZE(accounts_);
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(accounts_, "acc");
         it = accounts_.find(addr);
     }
 
