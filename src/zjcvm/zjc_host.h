@@ -130,6 +130,12 @@ public:
         CHECK_MEMORY_SIZE_WITH_MESSAGE(prev_storages_map_, "storage");
     }
 
+    void clear() {
+        accounts_.clear();
+        to_account_value_.clear();
+        account_balance_.clear();
+    }
+    
     std::map<evmc::address, MockedAccount> accounts_;
     evmc_tx_context tx_context_ = {};
     std::string parent_hash_;

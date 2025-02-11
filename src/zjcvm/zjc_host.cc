@@ -63,15 +63,15 @@ evmc::bytes32 ZjchainHost::get_storage(
         evmc::bytes32 tmp_val{};
         uint32_t offset = 0;
         uint32_t length = sizeof(tmp_val.bytes);
-        if (prev_iter->second->size() < sizeof(tmp_val.bytes)) {
-            offset = sizeof(tmp_val.bytes) - prev_iter->second->size();
-            length = prev_iter->second->size();
+        if (kv_val->size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - kv_val->size();
+            length = kv_val->size();
         }
 
-        memcpy(tmp_val.bytes + offset, prev_iter->second->c_str(), length);
+        memcpy(tmp_val.bytes + offset, kv_val->c_str(), length);
         ZJC_DEBUG("success get prev storage key: %s, value: %s",
             common::Encode::HexEncode(str_key).c_str(),
-            common::Encode::HexEncode(*prev_iter->second).c_str());
+            common::Encode::HexEncode(*kv_val).c_str());
         return tmp_val;
     }
 
@@ -120,6 +120,7 @@ evmc_storage_status ZjchainHost::set_storage(
         storage_iter->second.value = value;
     } else {
         it->second.storage[key] = value;
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(it->second.storage, "zjchost_storage");
         storage_iter = it->second.storage.find(key);
     }
 
@@ -320,7 +321,8 @@ evmc_tx_context ZjchainHost::get_tx_context() const noexcept {
 
 evmc::bytes32 ZjchainHost::get_block_hash(int64_t block_number) const noexcept {
     ZJC_DEBUG("called 10");
-    return block_hash_;
+    assert(false);
+    return evmc::bytes32{};
 }
 
 void ZjchainHost::emit_log(const evmc::address& addr,
