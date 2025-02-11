@@ -65,6 +65,10 @@ Status BlockAcceptor::Accept(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& propose_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose();
     auto& view_block = *pro_msg_wrap->view_block_ptr;
+    zjc_host.view_block_chain_ = view_block_chain;
+    zjc_host.parent_hash_ = view_block.parent_hash();
+    ZJC_DEBUG("set zjc host parent hash: %s",
+        common::Encode::HexEncode(zjc_host.parent_hash_).c_str());
     if (propose_msg.txs().empty()) {
         if (no_tx_allowed) {
             ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, "

@@ -21,7 +21,7 @@ public:
 
     void insert(const std::string& key, const std::string& value) {
         auto kv_pair_ptr = std::make_shared<std::pair<std::string, std::string>>(
-            std::make_pair<std::string, std::string>(key, value));
+            std::make_pair(key, value));
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
         if (item_map_.count(key)) {
             item_list_.erase(item_map_[key]);
@@ -32,15 +32,11 @@ public:
         item_list_.push_front(key);
         item_map_[key] = item_list_.begin();
         index_data_map_[index] = kv_pair_ptr;
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(item_list_, "list");
+        CHECK_MEMORY_SIZE_WITH_MESSAGE(item_map_, "map");
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);
-            uint32_t index = common::Hash::Hash32(last) % kBucketSize;
-            auto item_ptr = index_data_map_[index];
-            if (item_ptr != nullptr && item_ptr->addr() != key) {
-                index_data_map_[index] = nullptr;
-            }
-
             item_list_.pop_back();
         }
     }

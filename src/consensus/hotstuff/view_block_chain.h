@@ -51,15 +51,45 @@ public:
     bool Has(const HashStr& hash);
     // if in the same branch
     bool Extends(const ViewBlock& block, const ViewBlock& target);
-    
     // prune from last prune height to target view block
     Status PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
-
     Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
-    
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
-
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
+
+    const std::string* GetPrevStorageValue(const std::string& parent_hash, const std::string& key) {
+        std::string phash = parent_hash;
+        // TODO: check valid
+        while (true) {
+            if (phash.empty()) {
+                break;
+            }
+
+            ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+            auto it = view_blocks_info_.find(phash);
+            if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+                break;
+            }
+
+            if (it->second->zjc_host_ptr) {
+                auto fiter = it->second->zjc_host_ptr->prev_storages_map_.find(key);
+                if (fiter != it->second->zjc_host_ptr->prev_storages_map_.end()) {
+                    return fiter->second;
+                }
+            }
+
+            if (!it->second->view_block) {
+                break;
+            }
+            
+            phash = it->second->view_block->parent_hash();
+        }
+        return nullptr;
+    }
 
     void MergeAllPrevStorageMap(
             const std::string& parent_hash, 
@@ -411,6 +441,7 @@ private:
         }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+#ifndef NDEBUG
         CHECK_MEMORY_SIZE(view_blocks_info_);
         ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
@@ -421,11 +452,13 @@ private:
             common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
             view_block_info->view_block->block_info().tx_list_size(),
             String().c_str());
-        auto& zjc_host_prev_storages = view_block_info->zjc_host_ptr->prev_storages_map();
-        for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
-            ZJC_DEBUG("success add prev storage key: %s",
-                common::Encode::HexEncode(iter->first).c_str());
-        }
+        // auto& zjc_host_prev_storages = view_block_info->zjc_host_ptr->prev_storages_map();
+        // for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
+        //     ZJC_DEBUG("success add prev storage key: %s",
+        //         common::Encode::HexEncode(iter->first).c_str());
+        // }
+#endif
+
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
@@ -456,95 +489,95 @@ private:
         view_blocks_info_[hash]->status = status;        
     }
 
-    void AddChildrenToMap(const std::shared_ptr<ViewBlock>& view_block) {
-        const HashStr& parent_hash = view_block->parent_hash();
-        if (latest_committed_block_ != nullptr && 
-                view_block->qc().view() <= latest_committed_block_->qc().view()) {
-            return;
-        }
-
-        auto it = view_blocks_info_.find(parent_hash);
-        if (it == view_blocks_info_.end()) {
-            // if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
-            //     ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
-            //         common::Encode::HexEncode(parent_hash).c_str(),
-            //         (latest_committed_block_ ? 
-            //         common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
-            //         ""));
-            //     assert(false);
-            //     return;
-            // }
-
-            // for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
-            //     auto& tx = latest_committed_block_->block_info().tx_list(i);
-            //     for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-            //         zjc_host_ptr->SavePrevStorages(
-            //             tx.storages(storage_idx).key(), 
-            //             tx.storages(storage_idx).value());
-            //         ZJC_DEBUG("store success prev storage key: %s",
-            //             common::Encode::HexEncode(tx.storages(storage_idx).key()).c_str());
-            //     }
-
-            //     if (tx.balance() == 0) {
-            //         continue;
-            //     }
-
-            //     auto& addr = account_mgr_->GetTxValidAddress(tx);
-            //     (*balane_map_ptr)[addr] = tx.balance();
-                
-            // }
-
-            // TODO: fix storage map            
-            auto block_info_ptr = GetViewBlockInfo(nullptr, nullptr, nullptr);
-            view_blocks_info_[parent_hash] = block_info_ptr;
-            CHECK_MEMORY_SIZE(view_blocks_info_);
-            ZJC_DEBUG("add null parent view block: %u_%u_%lu, height: %lu",
-                view_block->qc().network_id(), 
-                view_block->qc().pool_index(), 
-                view_block->qc().view(), 
-                view_block->block_info().height());
-            // assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
-        }
-
-// #ifndef NDEBUG
-//         std::string debug_str;
-//         auto debug_view_block = view_block;
-//         while (true) {
-//             auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
-//             if (iter == view_blocks_info_.end()) {
-//                 break;
-//             }
-
-//             auto pview_block = iter->second->view_block;
-//             debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
-//                 debug_view_block->qc().network_id(),
-//                 debug_view_block->qc().pool_index(),
-//                 debug_view_block->block_info().height(),
-//                 debug_view_block->qc().view(),
-//                 pview_block->qc().network_id(),
-//                 pview_block->qc().pool_index(),
-//                 pview_block->block_info().height(),
-//                 pview_block->qc().view(),
-//                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
-//                 common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
-//                 common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
-//                 common::Encode::HexEncode(pview_block->parent_hash()).c_str());
-//             if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
-//                 ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
-//                 assert(false);
-//             }
-
-//             if (pview_block == latest_committed_block_) {
-//                 break;
-//             }
-
-//             debug_view_block = pview_block;
+//     void AddChildrenToMap(const std::shared_ptr<ViewBlock>& view_block) {
+//         const HashStr& parent_hash = view_block->parent_hash();
+//         if (latest_committed_block_ != nullptr && 
+//                 view_block->qc().view() <= latest_committed_block_->qc().view()) {
+//             return;
 //         }
-//         ZJC_DEBUG("success add view block: %s, strings: %s",
-//             debug_str.c_str(), String().c_str());
-// #endif
-        view_blocks_info_[parent_hash]->children.push_back(view_block);
-    }
+
+//         auto it = view_blocks_info_.find(parent_hash);
+//         if (it == view_blocks_info_.end()) {
+//             // if (latest_committed_block_ == nullptr || latest_locked_block_->qc().view_block_hash() != parent_hash) {
+//             //     ZJC_DEBUG("failed find parent hash: %s, latest_locked_block_ hash: %s",
+//             //         common::Encode::HexEncode(parent_hash).c_str(),
+//             //         (latest_committed_block_ ? 
+//             //         common::Encode::HexEncode(latest_locked_block_->qc().view_block_hash()).c_str() : 
+//             //         ""));
+//             //     assert(false);
+//             //     return;
+//             // }
+
+//             // for (uint32_t i = 0; i < latest_committed_block_->block_info().tx_list_size(); ++i) {
+//             //     auto& tx = latest_committed_block_->block_info().tx_list(i);
+//             //     for (auto storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+//             //         zjc_host_ptr->SavePrevStorages(
+//             //             tx.storages(storage_idx).key(), 
+//             //             tx.storages(storage_idx).value());
+//             //         ZJC_DEBUG("store success prev storage key: %s",
+//             //             common::Encode::HexEncode(tx.storages(storage_idx).key()).c_str());
+//             //     }
+
+//             //     if (tx.balance() == 0) {
+//             //         continue;
+//             //     }
+
+//             //     auto& addr = account_mgr_->GetTxValidAddress(tx);
+//             //     (*balane_map_ptr)[addr] = tx.balance();
+                
+//             // }
+
+//             // TODO: fix storage map            
+//             auto block_info_ptr = GetViewBlockInfo(nullptr, nullptr, nullptr);
+//             view_blocks_info_[parent_hash] = block_info_ptr;
+//             CHECK_MEMORY_SIZE(view_blocks_info_);
+//             ZJC_DEBUG("add null parent view block: %u_%u_%lu, height: %lu",
+//                 view_block->qc().network_id(), 
+//                 view_block->qc().pool_index(), 
+//                 view_block->qc().view(), 
+//                 view_block->block_info().height());
+//             // assert(block_info_ptr->view_block->qc().view_block_hash() == parent_hash);
+//         }
+
+// // #ifndef NDEBUG
+// //         std::string debug_str;
+// //         auto debug_view_block = view_block;
+// //         while (true) {
+// //             auto iter = view_blocks_info_.find(debug_view_block->parent_hash());
+// //             if (iter == view_blocks_info_.end()) {
+// //                 break;
+// //             }
+
+// //             auto pview_block = iter->second->view_block;
+// //             debug_str += common::StringUtil::Format("%u_%u_%lu_%lu-_%u_%u_%lu_%lu-%s_%s-%s_%s --> ", 
+// //                 debug_view_block->qc().network_id(),
+// //                 debug_view_block->qc().pool_index(),
+// //                 debug_view_block->block_info().height(),
+// //                 debug_view_block->qc().view(),
+// //                 pview_block->qc().network_id(),
+// //                 pview_block->qc().pool_index(),
+// //                 pview_block->block_info().height(),
+// //                 pview_block->qc().view(),
+// //                 common::Encode::HexEncode(debug_view_block->qc().view_block_hash()).c_str(),
+// //                 common::Encode::HexEncode(debug_view_block->parent_hash()).c_str(),
+// //                 common::Encode::HexEncode(pview_block->qc().view_block_hash()).c_str(),
+// //                 common::Encode::HexEncode(pview_block->parent_hash()).c_str());
+// //             if (debug_view_block->block_info().height() != pview_block->block_info().height() + 1) {
+// //                 ZJC_DEBUG("failed add view block: %s", debug_str.c_str());
+// //                 assert(false);
+// //             }
+
+// //             if (pview_block == latest_committed_block_) {
+// //                 break;
+// //             }
+
+// //             debug_view_block = pview_block;
+// //         }
+// //         ZJC_DEBUG("success add view block: %s, strings: %s",
+// //             debug_str.c_str(), String().c_str());
+// // #endif
+//         view_blocks_info_[parent_hash]->children.push_back(view_block);
+//     }
 
     // prune the branch starting from view_block
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);

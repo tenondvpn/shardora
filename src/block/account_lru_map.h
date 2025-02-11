@@ -35,12 +35,6 @@ public:
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);
-            uint32_t index = common::Hash::Hash32(last) % kBucketSize;
-            auto item_ptr = index_data_map_[index];
-            if (item_ptr != nullptr && item_ptr->addr() != key) {
-                index_data_map_[index] = nullptr;
-            }
-
             item_list_.pop_back();
         }
     }

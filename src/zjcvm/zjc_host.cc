@@ -5,6 +5,7 @@
 #include "block/account_manager.h"
 #include "common/encode.h"
 #include "common/log.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "contract/call_parameters.h"
 #include "contract/contract_manager.h"
 #include "protos/prefix_db.h"
@@ -45,15 +46,32 @@ evmc::bytes32 ZjchainHost::get_storage(
         evmc::bytes32 tmp_val{};
         uint32_t offset = 0;
         uint32_t length = sizeof(tmp_val.bytes);
-        if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
-            offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
-            length = prev_iter->second.size();
+        if (prev_iter->second->size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - prev_iter->second->size();
+            length = prev_iter->second->size();
         }
 
-        memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
+        memcpy(tmp_val.bytes + offset, prev_iter->second->c_str(), length);
         ZJC_DEBUG("success get prev storage key: %s, value: %s",
             common::Encode::HexEncode(str_key).c_str(),
-            common::Encode::HexEncode(prev_iter->second).c_str());
+            common::Encode::HexEncode(*prev_iter->second).c_str());
+        return tmp_val;
+    }
+
+    auto kv_val = view_block_chain_->GetPrevStorageValue(parent_hash_, str_key);
+    if (kv_val != nullptr) {
+        evmc::bytes32 tmp_val{};
+        uint32_t offset = 0;
+        uint32_t length = sizeof(tmp_val.bytes);
+        if (prev_iter->second->size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - prev_iter->second->size();
+            length = prev_iter->second->size();
+        }
+
+        memcpy(tmp_val.bytes + offset, prev_iter->second->c_str(), length);
+        ZJC_DEBUG("success get prev storage key: %s, value: %s",
+            common::Encode::HexEncode(str_key).c_str(),
+            common::Encode::HexEncode(*prev_iter->second).c_str());
         return tmp_val;
     }
 
@@ -388,7 +406,7 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
     auto str_key = id + key_str;
     auto prev_iter = prev_storages_map_.find(str_key);
     if (prev_iter != prev_storages_map_.end()) {
-        *val = prev_iter->second;
+        *val = *prev_iter->second;
         return kZjcvmSuccess;
     }
 
