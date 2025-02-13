@@ -181,13 +181,13 @@ void BlockAcceptor::Commit(
 
 void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
     transport::MessagePtr msg_ptr;
-    commit(msg_ptr, queue_item_ptr);
     auto block_ptr = &queue_item_ptr->view_block_ptr->block_info();
     ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         queue_item_ptr->view_block_ptr->qc().network_id(),
         queue_item_ptr->view_block_ptr->qc().pool_index(),
         block_ptr->height(),
         common::Encode::HexEncode(GetBlockHash(*queue_item_ptr->view_block_ptr)).c_str());
+    commit(msg_ptr, queue_item_ptr);
 }
 
 Status BlockAcceptor::AddTxs(transport::MessagePtr msg_ptr, const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {

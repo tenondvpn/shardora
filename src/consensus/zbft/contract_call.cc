@@ -96,7 +96,6 @@ int ContractCall::HandleTx(
         }
     }
     
-
     if (from_balance > gas_used * block_tx.gas_price()) {
         from_balance -= gas_used * block_tx.gas_price();
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
@@ -247,7 +246,7 @@ int ContractCall::HandleTx(
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called %s, user: %s, test_from_balance: %lu, prepament: %lu, "
-        "gas used: %lu, gas_price: %lu, status: %d, step: %d, use time: %lu",
+        "gas used: %lu, gas_price: %lu, status: %d, step: %d, use time: %lu, %u_%u_%lu, addr: %p",
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         test_from_balance,
@@ -256,7 +255,11 @@ int ContractCall::HandleTx(
         block_tx.gas_price(),
         block_tx.status(),
         block_tx.step(),
-        (etime - btime));
+        (etime - btime),
+        view_block.qc().network_id(), 
+        view_block.qc().pool_index(), 
+        view_block.qc().view(),
+        &view_block);
     return kConsensusSuccess;
 }
 
@@ -277,14 +280,11 @@ int ContractCall::SaveContractCreateInfo(
             auto kv = block_tx.add_storages();
             auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
                 std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
-            kv->set_key(str_key);
-            kv->set_value(std::string(
+            auto str_val = std::string(
                 (char*)storage_iter->second.value.bytes,
-                sizeof(storage_iter->second.value.bytes)));
-            // if (str_key.size() > 40)
-            // ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
-            //     common::Encode::HexEncode(str_key).c_str(),
-            //     common::Encode::HexEncode(kv->value()).c_str());
+                sizeof(storage_iter->second.value.bytes));
+            kv->set_key(str_key);
+            kv->set_value(str_val);
             zjc_host.SavePrevStorages(str_key, &kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
@@ -300,10 +300,6 @@ int ContractCall::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
-            // if (str_key.size() > 40)
-            // ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
-            //     common::Encode::HexEncode(str_key).c_str(),
-            //     common::Encode::HexEncode(kv->value()).c_str());
             zjc_host.SavePrevStorages(str_key, &kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +

@@ -19,6 +19,8 @@
 #endif
 // @@protoc_insertion_point(includes)
 
+#include "common/log.h"
+
 namespace protobuf_protos_2fblock_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
 }  // namespace protobuf_protos_2fblock_2eproto
@@ -1224,13 +1226,22 @@ void ViewBlockItem::SharedCtor() {
 
 ViewBlockItem::~ViewBlockItem() {
   // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.ViewBlockItem)
+  
   SharedDtor();
 }
 
 void ViewBlockItem::SharedDtor() {
   parent_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   debug_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != internal_default_instance()) delete block_info_;
+  if (this != internal_default_instance()) {
+    ZJC_DEBUG("view block released %u_%u_%lu, addr: %p", 
+      qc().network_id(), 
+      qc().pool_index(), 
+      qc().view(),
+      this);
+    delete block_info_;
+  }
+
   if (this != internal_default_instance()) delete qc_;
   if (this != internal_default_instance()) delete leader_consen_stat_;
 }

@@ -1142,7 +1142,10 @@ void NetworkInit::AddBlockItemToCache(
         return;
     }
 
-    if (prefix_db_->BlockExists(view_block->qc().network_id(), view_block->qc().pool_index(), block->height())) {
+    if (prefix_db_->BlockExists(
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            block->height())) {
         ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
             view_block->qc().network_id(),
             view_block->qc().pool_index(),
