@@ -88,7 +88,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
 
     auto hash = common::Hash::keccak256(msg);
     ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
-        "parent_hash: %s, vss_random: %lu, height: %lu, "
+        "phash: %s, vss_random: %lu, height: %lu, "
         "timeblock_height: %lu, timestamp: %lu, msg: %s",
         common::Encode::HexEncode(hash).c_str(),
         sharding_id, pool_index, 
