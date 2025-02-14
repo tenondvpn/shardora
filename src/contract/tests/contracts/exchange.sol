@@ -63,12 +63,12 @@ contract Exchange {
         item.exists = true;
         // emit DebugEvent(2);
         all_hashes.push(hash);
-        // emit DebugEvent(all_hashes.length);
         // bytes[] memory all_bytes = new bytes[](2);
         // all_bytes[0] = Bytes32toBytes(hash);
         // all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
         // purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
+        emit DebugEvent(all_hashes.length);
         emit DebugEvent(0);
     }
 
