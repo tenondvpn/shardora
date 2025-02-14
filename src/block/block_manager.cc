@@ -167,15 +167,14 @@ void BlockManager::HandleAllConsensusBlocks() {
                     block_ptr->timeblock_height());
                 AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
                 ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, ptr use_count: %d",
+                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
                     db_item_ptr->view_block_ptr->qc().network_id(),
                     db_item_ptr->view_block_ptr->qc().pool_index(),
                     block_ptr->height(),
                     block_ptr->tx_list_size(),
                     common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
                     db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height(),
-                    db_item_ptr->view_block_ptr.use_count());
+                    block_ptr->timeblock_height());
             }
         }
 
@@ -213,8 +212,7 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
     account_info->set_latest_height(latest_height);
     account_info->set_balance(tx.balance());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.step() ==  pools::protobuf::kContractCreate && 
-                tx.storages(i).key() == protos::kCreateContractBytesCode) {
+        if (tx.step() ==  pools::protobuf::kContractCreate && tx.storages(i).key() == protos::kCreateContractBytesCode) {
             auto& bytes_code = tx.storages(i).value();
             account_info->set_type(address::protobuf::kContract);
             account_info->set_bytes_code(bytes_code);
@@ -872,6 +870,7 @@ void BlockManager::AddNewBlock(
     //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
     //     view_block_item->qc().elect_height(),
     //     block_item->timeblock_height());
+
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto debug_len = tx_list[i].tx_debug_size();
@@ -879,7 +878,7 @@ void BlockManager::AddNewBlock(
             continue;
         }
 
-        bool valid_delay = (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 1000lu ? true : false;
+        bool valid_delay = (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()) > 15000lu ? true : false;
         if (!valid_delay) {
             continue;
         }

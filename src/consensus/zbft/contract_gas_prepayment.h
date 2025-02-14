@@ -170,10 +170,6 @@ public:
         const auto& tx_list = block.tx_list();
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             NewBlockWithTx(view_block, tx_list[i], db_batch);
-            if (tx_list[i].step() == pools::protobuf::kContractExcute) {
-                auto* view_block_ptr = const_cast<view_block::protobuf::ViewBlockItem*>(&view_block);
-                view_block_ptr->mutable_block_info()->mutable_tx_list(i)->clear_storages();
-            }
         }
 
         pools_max_heights_[view_block.qc().pool_index()] = block.height();

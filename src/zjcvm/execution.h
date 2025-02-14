@@ -10,7 +10,6 @@
 #include "evmc/mocked_host.hpp"
 #include "protos/address.pb.h"
 #include "protos/prefix_db.h"
-#include "zjcvm/storage_lru_map.h"
 
 namespace shardora {
 
@@ -94,7 +93,7 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    StorageLruMap<102400> storage_map_[common::kMaxThreadCount];
+    common::LimitHashMap<std::string, std::string, 1024>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;

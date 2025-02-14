@@ -87,7 +87,6 @@ Status Hotstuff::Start() {
         ZJC_ERROR("Get Leader is error.");
     } else if (leader->index == local_member->index) {
         ZJC_INFO("ViewBlock start propose");
-        ZJC_DEBUG("2 now call [Propose] %d_%d_0.", common::GlobalInfo::Instance()->network_id(), pool_idx_);
         Propose(nullptr, nullptr, nullptr);
     }
     return Status::kSuccess;
@@ -102,24 +101,21 @@ Status Hotstuff::Propose(
     // 打包参与共识中的交易，如何保证幂等
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
-        ZJC_DEBUG("pool %u not has prev view block. %u_%u_0", 
-            pool_idx_, common::GlobalInfo::Instance()->network_id(), pool_idx_);
+        ZJC_DEBUG("pool %u not has prev view block.", pool_idx_);
         return Status::kError;
     }
 
     auto dht_ptr = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     if (!dht_ptr) {
-        ZJC_DEBUG("pool %u dht invalid. %u_%u_0", 
-            pool_idx_, common::GlobalInfo::Instance()->network_id(), pool_idx_);
+        ZJC_DEBUG("pool %u not has dht ptr.", pool_idx_);
         return Status::kError;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
-        ZJC_DEBUG("pool %u read only dht invalid. %u_%u_0", 
-            pool_idx_, common::GlobalInfo::Instance()->network_id(), pool_idx_);
+        ZJC_DEBUG("pool %u not has readobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 
@@ -155,9 +151,8 @@ Status Hotstuff::Propose(
         auto s = crypto()->SignMessage(tmp_msg_ptr);
         auto& header = tmp_msg_ptr->header;
         if (s != Status::kSuccess) {
-            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed, %d_%d_0",
-                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view(), 
-                common::GlobalInfo::Instance()->network_id(), pool_idx_);
+            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
             return s;
         }
 
@@ -167,11 +162,9 @@ Status Hotstuff::Propose(
 #ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
-        ZJC_DEBUG("%d_%d_%lu, header pool: %d, propose, txs size: %lu, view: %lu, "
-            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu, ",
-            common::GlobalInfo::Instance()->network_id(),
+        ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
             pool_idx_,
-            hotstuff_msg->pro_msg().view_item().qc().view(),
             header.hotstuff().pool_index(),
             hotstuff_msg->pro_msg().tx_propose().txs_size(),
             hotstuff_msg->pro_msg().view_item().qc().view(),
@@ -188,10 +181,9 @@ Status Hotstuff::Propose(
 
     if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
         ZJC_DEBUG("pool: %d construct propose msg failed, %d, "
-            "max_view(): %lu last_leader_propose_view_: %lu, %u_%u_0",
+            "max_view(): %lu last_leader_propose_view_: %lu",
             pool_idx_, Status::kError,
-            max_view(), last_leader_propose_view_,
-            common::GlobalInfo::Instance()->network_id(), pool_idx_);
+            max_view(), last_leader_propose_view_);
         return Status::kError;
     }
 
@@ -206,17 +198,16 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("pool: %d construct propose msg failed, %d, %u_%u_0",
-            pool_idx_, s, common::GlobalInfo::Instance()->network_id(), pool_idx_);
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
+            pool_idx_, s);
         return s;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed, %u_%u_0",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view(), 
-            common::GlobalInfo::Instance()->network_id(), pool_idx_);
+        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
+            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
         return s;
     }
 
@@ -1239,7 +1230,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         "ProtobufToJson(cons_debug).c_str()");
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("now call [Propose] %d_%d_0.", common::GlobalInfo::Instance()->network_id(), pool_idx_);
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
@@ -1376,7 +1366,6 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("0 now call [Propose] %d_%d_0.", common::GlobalInfo::Instance()->network_id(), pool_idx_);
     Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("reset timer success!");
@@ -2157,7 +2146,6 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     auto leader = leader_rotation()->GetLeader();
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader && leader->index == local_idx) {
-        ZJC_DEBUG("1 now call [Propose] %d_%d_0.", common::GlobalInfo::Instance()->network_id(), pool_idx_);
         Propose(latest_qc_item_ptr_, nullptr, nullptr);
         if (latest_qc_item_ptr_) {
             ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 

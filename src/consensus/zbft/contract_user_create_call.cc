@@ -191,7 +191,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_value(zjc_host.create_bytes_code_);
-    // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
+    zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
