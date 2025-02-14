@@ -70,7 +70,7 @@ Status ViewBlockChain::Store(
             for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
                 zjc_host_ptr->SavePrevStorages(
                     tx.storages(s_idx).key(), 
-                    &tx.storages(s_idx).value(),
+                    tx.storages(s_idx).value(),
                     true);
             }
         }

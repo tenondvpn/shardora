@@ -203,7 +203,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
-            zjc_host.SavePrevStorages(str_key, &kv->value(), true);
+            zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -218,7 +218,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
-            zjc_host.SavePrevStorages(str_key, &kv->value(), true);
+            zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
