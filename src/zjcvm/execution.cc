@@ -103,7 +103,8 @@ void Execution::UpdateStorage(
         db::DbWriteBatch& db_batch) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     storage_map_[thread_idx].insert(key, val);
-    prefix_db_->SaveTemporaryKv(key, val, db_batch);
+    // TODO:check it
+    prefix_db_->SaveTemporaryKv(key, val);
     ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
 
@@ -118,36 +119,45 @@ bool Execution::GetStorage(
     // if (thread_idx >= thread_count) {
     //     prefix_db_->GetTemporaryKv(str_key, &val);
     // } else {
-        // if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-        //         storage_map_[thread_idx].insert(str_key, val);
-        // } 
-    auto iter = storage_map_[thread_idx].find(str_key);
-    if (iter == storage_map_[thread_idx].end()) {
-        // get from db and add to memory cache
-        std::string val;
-        if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-            storage_map_[thread_idx].insert(str_key, val);
-            iter = storage_map_[thread_idx].find(str_key);
+    //    if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+    //         storage_map_[thread_idx].insert(str_key, val);
+    //    } 
+        auto kv_ptr = storage_map_[thread_idx].get(str_key);
+        if (!kv_ptr) {
+            // get from db and add to memory cache
+            std::string val;
+            if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+                storage_map_[thread_idx].insert(str_key, val);
+                kv_ptr = storage_map_[thread_idx].get(str_key);
+            }
         }
-    }
     // }
 
+    if (!kv_ptr) {
+        ZJC_DEBUG("get storage: %s, %s, valid: %d",
+            common::Encode::HexEncode(str_key).c_str(), 
+            "",
+            false);
+        return false;
+    }
+
+    auto& val = kv_ptr->second;
     ZJC_DEBUG("get storage: %s, %s, valid: %d",
         common::Encode::HexEncode(str_key).c_str(), 
-        "",
-        (iter == storage_map_[thread_idx].end()));
-    if (iter == storage_map_[thread_idx].end()) {
+        common::Encode::HexEncode(val).c_str(),
+        !val.empty());
+    if (val.empty()) {
         return false;
     }
 
     uint32_t offset = 0;
     uint32_t length = sizeof(res_val->bytes);
-    if (iter->second.size() < sizeof(res_val->bytes)) {
-        offset = sizeof(res_val->bytes) - iter->second.size();
-        length = iter->second.size();
+    if (val.size() < sizeof(res_val->bytes)) {
+        offset = sizeof(res_val->bytes) - val.size();
+        length = val.size();
     }
 
-    memcpy(res_val->bytes + offset, iter->second.c_str(), length);
+    memcpy(res_val->bytes + offset, val.c_str(), length);
     return true;
 }
 

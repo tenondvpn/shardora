@@ -94,7 +94,7 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    std::unordered_map<std::string, std::string> storage_map_[common::kMaxThreadCount];
+    StorageLruMap<102400> storage_map_[common::kMaxThreadCount];
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
