@@ -102,7 +102,7 @@ Status ViewBlockChain::Store(
     // 当 view_block 是 start_block_ 的父块，允许添加
     if (start_block_->parent_hash() == view_block->qc().view_block_hash()) {
         SetViewBlockToMap(block_info_ptr);
-        AddChildrenToMap(start_block_);
+        // AddChildrenToMap(start_block_);
         // 更新 start_block_
         start_block_ = view_block;
         return Status::kSuccess;
@@ -131,7 +131,7 @@ Status ViewBlockChain::Store(
     //     return Status::kError;
     // }
     SetViewBlockToMap(block_info_ptr);
-    AddChildrenToMap(view_block);
+    // AddChildrenToMap(view_block);
 #ifndef NDEBUG
     ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 

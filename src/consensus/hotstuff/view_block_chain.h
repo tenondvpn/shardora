@@ -73,7 +73,7 @@ public:
                 break;
             }
 
-            ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+            // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
             auto it = view_blocks_info_.find(phash);
             if (it == view_blocks_info_.end()) {
                 break;
