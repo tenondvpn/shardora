@@ -1186,7 +1186,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.view(),
         common::Encode::HexEncode(qc_hash).c_str(),
         msg_ptr->header.hash64(),
-        "ProtobufToJson(cons_debug).c_str()",
+        ProtobufToJson(cons_debug).c_str(),
         vote_msg.replica_idx());
 #endif
     qc_item.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
