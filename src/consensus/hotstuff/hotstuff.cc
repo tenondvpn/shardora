@@ -789,7 +789,6 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kError;
     }
 
-    zjc_host.clear();
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("====1.1.2 success Accept pool: %d, verify view block, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, use time: %lu",
@@ -893,7 +892,6 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
         return Status::kError;
     }
 
-    zjc_host.clear();
 #ifndef NDEBUG
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("====1.1.2 success Accept pool: %d, verify view block, "
