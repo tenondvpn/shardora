@@ -59,13 +59,15 @@ public:
 
     const std::string* GetPrevStorageValue(const std::string& parent_hash, const std::string& key) {
         std::string phash = parent_hash;
+        ZJC_DEBUG("now get prev storage map: %s, key: %s",
+            common::Encode::HexEncode(parent_hash).c_str(),
+            common::Encode::HexEncode(key).c_str());
         // TODO: check valid
         while (true) {
             if (phash.empty()) {
                 break;
             }
 
-            ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
             auto it = view_blocks_info_.find(phash);
             if (it == view_blocks_info_.end()) {
                 break;
@@ -78,6 +80,10 @@ public:
             if (it->second->zjc_host_ptr) {
                 auto fiter = it->second->zjc_host_ptr->prev_storages_map_.find(key);
                 if (fiter != it->second->zjc_host_ptr->prev_storages_map_.end()) {
+                    ZJC_DEBUG("success get prev storage map: %s, key: %s, val: %s",
+                        common::Encode::HexEncode(parent_hash).c_str(),
+                        common::Encode::HexEncode(key).c_str(),
+                        common::Encode::HexEncode(*fiter->second).c_str());
                     return fiter->second;
                 }
             }

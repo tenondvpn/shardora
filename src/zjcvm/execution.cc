@@ -113,39 +113,41 @@ bool Execution::GetStorage(
         evmc::bytes32* res_val) {
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
-    std::string val;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
-    if (thread_idx >= thread_count) {
-        prefix_db_->GetTemporaryKv(str_key, &val);
-    } else {
-       if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+    // if (thread_idx >= thread_count) {
+    //     prefix_db_->GetTemporaryKv(str_key, &val);
+    // } else {
+        // if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+        //         storage_map_[thread_idx].insert(str_key, val);
+        // } 
+    auto iter = storage_map_[thread_idx].find(str_key);
+    if (iter == storage_map_[thread_idx].end()) {
+        // get from db and add to memory cache
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(str_key, &val)) {
             storage_map_[thread_idx].insert(str_key, val);
-       } 
-        // if (!storage_map_[thread_idx].Get(str_key, &val)) {
-        //     // get from db and add to memory cache
-        //     if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-        //         storage_map_[thread_idx].Insert(str_key, val);
-        //     }
-        // }
+            iter = storage_map_[thread_idx].find(str_key);
+        }
     }
+    // }
 
     ZJC_DEBUG("get storage: %s, %s, valid: %d",
         common::Encode::HexEncode(str_key).c_str(), 
-        common::Encode::HexEncode(val).c_str(),
-        !val.empty());
-    if (val.empty()) {
+        "",
+        (iter == storage_map_[thread_idx].end()));
+    if (iter == storage_map_[thread_idx].end()) {
         return false;
     }
 
     uint32_t offset = 0;
     uint32_t length = sizeof(res_val->bytes);
-    if (val.size() < sizeof(res_val->bytes)) {
-        offset = sizeof(res_val->bytes) - val.size();
-        length = val.size();
+    if (iter->second.size() < sizeof(res_val->bytes)) {
+        offset = sizeof(res_val->bytes) - iter->second.size();
+        length = iter->second.size();
     }
 
-    memcpy(res_val->bytes + offset, val.c_str(), length);
+    memcpy(res_val->bytes + offset, iter->second.c_str(), length);
     return true;
 }
 
