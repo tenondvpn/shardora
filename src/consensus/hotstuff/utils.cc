@@ -5,7 +5,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
+std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std::string& phash) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
     message.append(tx_info.gid());
@@ -35,8 +35,9 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
         //     common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     // }
 
-    ZJC_DEBUG("gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
+    ZJC_DEBUG("phash: %s, gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
         "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
+        common::Encode::HexEncode(phash).c_str(),
         common::Encode::HexEncode(tx_info.gid()).c_str(),
         common::Encode::HexEncode(tx_info.from()).c_str(),
         common::Encode::HexEncode(tx_info.to()).c_str(),
@@ -53,7 +54,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     auto& block = view_block.block_info();
     msg.reserve(block.tx_list_size() * 32 + 256);
     for (int32_t i = 0; i < block.tx_list_size(); i++) {
-        msg.append(GetTxMessageHash(block.tx_list(i)));
+        msg.append(GetTxMessageHash(block.tx_list(i), view_block.parent_hash()));
     }
 
     // ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
