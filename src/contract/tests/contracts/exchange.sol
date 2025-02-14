@@ -73,18 +73,18 @@ contract Exchange {
     }
 
     function PurchaseItem(bytes32 hash) public payable {
-        //emit DebugEvent(3);
+        emit DebugEvent(3);
         require(item_map[hash].exists);
-        //emit DebugEvent(4);
+        emit DebugEvent(4);
         require(item_map[hash].owner != msg.sender);
-        //emit DebugEvent(5);
+        emit DebugEvent(5);
         //bytes[] memory all_bytes = new bytes[](2);
         //all_bytes[0] = Bytes32toBytes(hash);
         //all_bytes[1] = toBytes(msg.sender);
 
         //bytes memory key = bytesConcat(all_bytes, 2);
         //require(!purchase_map[key]);
-        //emit DebugEvent(6);
+        emit DebugEvent(6);
         ItemInfo storage item = item_map[hash];
         require(item_map[hash].price <= msg.value);
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
