@@ -131,6 +131,8 @@ Status BlockAcceptor::Accept(
     
     // 3. Do txs and create block_tx
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    zjc_host.parent_hash_ = view_block.parent_hash();
+    zjc_host.view_block_chain_ = view_block_chain;
     s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_WARN("DoTransactions error!");
@@ -210,7 +212,7 @@ Status BlockAcceptor::addTxsToPool(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     BalanceMap prevs_balance_map;
-    view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
+    // view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
     //     prevs_balance_map.size(), txs.size());

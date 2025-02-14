@@ -61,9 +61,11 @@ public:
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
-    void MergeAllPrevStorageMap(
+    bool GetPrevStorageKeyValue(
             const std::string& parent_hash, 
-            zjcvm::ZjchainHost& zjc_host) {
+            const std::string& id, 
+            const std::string& key, 
+            std::string* val) {
         std::string phash = parent_hash;
         // TODO: check valid
         while (true) {
@@ -82,14 +84,9 @@ public:
             }
 
             if (it->second->zjc_host_ptr) {
-                auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
-                for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
-                    zjc_host.SavePrevStorages(iter->first, iter->second, false);
-                    // if (iter->first.size() > 40)
-                    // ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
-                    //     common::Encode::HexEncode(phash).c_str(), 
-                    //     common::Encode::HexEncode(iter->first).c_str(),
-                    //     common::Encode::HexEncode(iter->second).c_str());
+                auto res = it->second->zjc_host_ptr->GetKeyValue(id, key, val);
+                if (res == zjcvm::kZjcvmSuccess) {
+                    return true;
                 }
             }
 
@@ -99,6 +96,7 @@ public:
             
             phash = it->second->view_block->parent_hash();
         }
+        return false;
     }
 
     void MergeAllPrevBalanceMap(
@@ -421,11 +419,6 @@ private:
             common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
             view_block_info->view_block->block_info().tx_list_size(),
             String().c_str());
-        auto& zjc_host_prev_storages = view_block_info->zjc_host_ptr->prev_storages_map();
-        for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
-            ZJC_DEBUG("success add prev storage key: %s",
-                common::Encode::HexEncode(iter->first).c_str());
-        }
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(

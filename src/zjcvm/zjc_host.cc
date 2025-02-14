@@ -5,6 +5,7 @@
 #include "block/account_manager.h"
 #include "common/encode.h"
 #include "common/log.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "contract/call_parameters.h"
 #include "contract/contract_manager.h"
 #include "protos/prefix_db.h"
@@ -38,29 +39,42 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
     }
 
-    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
-        std::string((char*)key.bytes, sizeof(key.bytes));
-    auto prev_iter = prev_storages_map_.find(str_key);
-    if (prev_iter != prev_storages_map_.end()) {
+    // auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
+    //     std::string((char*)key.bytes, sizeof(key.bytes));
+    // auto prev_iter = prev_storages_map_.find(str_key);
+    // if (prev_iter != prev_storages_map_.end()) {
+    //     evmc::bytes32 tmp_val{};
+    //     uint32_t offset = 0;
+    //     uint32_t length = sizeof(tmp_val.bytes);
+    //     if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
+    //         offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
+    //         length = prev_iter->second.size();
+    //     }
+
+    //     memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
+    //     ZJC_DEBUG("success get prev storage key: %s, value: %s",
+    //         common::Encode::HexEncode(str_key).c_str(),
+    //         common::Encode::HexEncode(prev_iter->second).c_str());
+    //     return tmp_val;
+    // }
+    std::string str_val;
+    if (view_block_chain_->GetPrevStorageKeyValue(parent_hash_, id, key_str, &str_val)) {
         evmc::bytes32 tmp_val{};
         uint32_t offset = 0;
         uint32_t length = sizeof(tmp_val.bytes);
-        if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
-            offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
-            length = prev_iter->second.size();
+        if (str_val.size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - str_val.size();
+            length = str_val.size();
         }
 
-        memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
-        ZJC_DEBUG("success get prev storage key: %s, value: %s",
-            common::Encode::HexEncode(str_key).c_str(),
-            common::Encode::HexEncode(prev_iter->second).c_str());
+        memcpy(tmp_val.bytes + offset, str_val.c_str(), length);
         return tmp_val;
     }
 
     evmc::bytes32 tmp_val{};
     auto res_bytes = Execution::Instance()->GetStorage(addr, key, &tmp_val);
     if (!res_bytes) {
-        ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
+        // ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
     ZJC_DEBUG("success get storage addr: %s, key: %s, val: %s, valid: %d", 
@@ -302,7 +316,8 @@ evmc_tx_context ZjchainHost::get_tx_context() const noexcept {
 
 evmc::bytes32 ZjchainHost::get_block_hash(int64_t block_number) const noexcept {
     ZJC_DEBUG("called 10");
-    return block_hash_;
+    assert(false);
+    return {};
 }
 
 void ZjchainHost::emit_log(const evmc::address& addr,
@@ -386,11 +401,14 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
     }
 
     auto str_key = id + key_str;
-    auto prev_iter = prev_storages_map_.find(str_key);
-    if (prev_iter != prev_storages_map_.end()) {
-        *val = prev_iter->second;
+    if (view_block_chain_->GetPrevStorageKeyValue(parent_hash_, id, key_str, val)) {
         return kZjcvmSuccess;
     }
+    // auto prev_iter = prev_storages_map_.find(str_key);
+    // if (prev_iter != prev_storages_map_.end()) {
+    //     *val = prev_iter->second;
+    //     return kZjcvmSuccess;
+    // }
 
     ZJC_DEBUG("called 14");
     if (!Execution::Instance()->GetStorage(addr, key_str, val)) {

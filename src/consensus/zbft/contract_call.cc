@@ -217,7 +217,7 @@ int ContractCall::HandleTx(
                 ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
                     common::Encode::HexEncode(protos::kContractDestruct).c_str());
                 acc_balance_map[block_tx.to()] = -1;
-                zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
+                // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
             }
 
             block_tx.set_amount(new_contract_balance);
@@ -285,7 +285,7 @@ int ContractCall::SaveContractCreateInfo(
             // ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
             //     common::Encode::HexEncode(str_key).c_str(),
             //     common::Encode::HexEncode(kv->value()).c_str());
-            zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -304,7 +304,7 @@ int ContractCall::SaveContractCreateInfo(
             // ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
             //     common::Encode::HexEncode(str_key).c_str(),
             //     common::Encode::HexEncode(kv->value()).c_str());
-            zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
