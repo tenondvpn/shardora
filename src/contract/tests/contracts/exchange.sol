@@ -69,6 +69,7 @@ contract Exchange {
         // all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
         // purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
+        emit DebugEvent(0);
     }
 
     function PurchaseItem(bytes32 hash) public payable {
@@ -88,7 +89,7 @@ contract Exchange {
         require(item_map[hash].price <= msg.value);
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
         //purchase_map[key] = true;
-        //emit DebugEvent(7);
+        emit DebugEvent(7);
     }
 
     function ConfirmPurchase(bytes32 hash) public payable {
