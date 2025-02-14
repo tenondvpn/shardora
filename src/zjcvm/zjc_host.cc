@@ -5,7 +5,6 @@
 #include "block/account_manager.h"
 #include "common/encode.h"
 #include "common/log.h"
-#include "consensus/hotstuff/view_block_chain.h"
 #include "contract/call_parameters.h"
 #include "contract/contract_manager.h"
 #include "protos/prefix_db.h"
@@ -46,33 +45,15 @@ evmc::bytes32 ZjchainHost::get_storage(
         evmc::bytes32 tmp_val{};
         uint32_t offset = 0;
         uint32_t length = sizeof(tmp_val.bytes);
-        auto& val = *prev_iter->second;
-        if (val.size() < sizeof(tmp_val.bytes)) {
-            offset = sizeof(tmp_val.bytes) - val.size();
-            length = val.size();
+        if (prev_iter->second.size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - prev_iter->second.size();
+            length = prev_iter->second.size();
         }
 
-        memcpy(tmp_val.bytes + offset, val.c_str(), length);
+        memcpy(tmp_val.bytes + offset, prev_iter->second.c_str(), length);
         ZJC_DEBUG("success get prev storage key: %s, value: %s",
             common::Encode::HexEncode(str_key).c_str(),
-            common::Encode::HexEncode(val).c_str());
-        return tmp_val;
-    }
-
-    auto kv_val = view_block_chain_->GetPrevStorageValue(parent_hash_, str_key);
-    if (kv_val != nullptr) {
-        evmc::bytes32 tmp_val{};
-        uint32_t offset = 0;
-        uint32_t length = sizeof(tmp_val.bytes);
-        if (kv_val->size() < sizeof(tmp_val.bytes)) {
-            offset = sizeof(tmp_val.bytes) - kv_val->size();
-            length = kv_val->size();
-        }
-
-        memcpy(tmp_val.bytes + offset, kv_val->c_str(), length);
-        ZJC_DEBUG("success get prev storage key: %s, value: %s",
-            common::Encode::HexEncode(str_key).c_str(),
-            common::Encode::HexEncode(*kv_val).c_str());
+            common::Encode::HexEncode(prev_iter->second).c_str());
         return tmp_val;
     }
 
@@ -106,7 +87,7 @@ evmc_storage_status ZjchainHost::set_storage(
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(accounts_, "acc");
+        CHECK_MEMORY_SIZE(accounts_);
         it = accounts_.find(addr);
     }
 
@@ -121,7 +102,6 @@ evmc_storage_status ZjchainHost::set_storage(
         storage_iter->second.value = value;
     } else {
         it->second.storage[key] = value;
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(it->second.storage, "zjchost_storage");
         storage_iter = it->second.storage.find(key);
     }
 
@@ -292,8 +272,8 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
             if (sender_iter == to_account_value_.end()) {
                 to_account_value_[from_str] = std::unordered_map<std::string, uint64_t>();
                 to_account_value_[from_str][dest_str] = params.value;
-                CHECK_MEMORY_SIZE_WITH_MESSAGE(to_account_value_, "to");
-                CHECK_MEMORY_SIZE_WITH_MESSAGE(to_account_value_[from_str], "from");
+                CHECK_MEMORY_SIZE(to_account_value_);
+                CHECK_MEMORY_SIZE(to_account_value_[from_str]);
             } else {
                 auto iter = sender_iter->second.find(dest_str);
                 if (iter != sender_iter->second.end()) {
@@ -322,8 +302,7 @@ evmc_tx_context ZjchainHost::get_tx_context() const noexcept {
 
 evmc::bytes32 ZjchainHost::get_block_hash(int64_t block_number) const noexcept {
     ZJC_DEBUG("called 10");
-    assert(false);
-    return evmc::bytes32{};
+    return block_hash_;
 }
 
 void ZjchainHost::emit_log(const evmc::address& addr,
@@ -356,7 +335,7 @@ void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t bala
     evmc::bytes32 tmp_val{};
     Uint64ToEvmcBytes32(tmp_val, balance);
     account_balance_[addr] = tmp_val;
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(account_balance_, "acc");
+    CHECK_MEMORY_SIZE(account_balance_);
 }
 
 int ZjchainHost::SaveKeyValue(
@@ -385,7 +364,7 @@ int ZjchainHost::SaveKeyValue(
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(accounts_, "acc");
+        CHECK_MEMORY_SIZE(accounts_);
         it = accounts_.find(addr);
     }
 
@@ -409,7 +388,7 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
     auto str_key = id + key_str;
     auto prev_iter = prev_storages_map_.find(str_key);
     if (prev_iter != prev_storages_map_.end()) {
-        *val = *prev_iter->second;
+        *val = prev_iter->second;
         return kZjcvmSuccess;
     }
 

@@ -134,7 +134,7 @@ bool Execution::GetStorage(
     // }
 
     if (!kv_ptr) {
-        ZJC_DEBUG("get storage: %s, %s, valid: %d",
+        ZJC_DEBUG("failed get storage: %s, %s, valid: %d",
             common::Encode::HexEncode(str_key).c_str(), 
             "",
             false);
@@ -142,7 +142,7 @@ bool Execution::GetStorage(
     }
 
     auto& val = kv_ptr->second;
-    ZJC_DEBUG("get storage: %s, %s, valid: %d",
+    ZJC_DEBUG("success get storage: %s, %s, valid: %d",
         common::Encode::HexEncode(str_key).c_str(), 
         common::Encode::HexEncode(val).c_str(),
         !val.empty());

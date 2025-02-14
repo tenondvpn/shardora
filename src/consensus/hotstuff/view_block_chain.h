@@ -57,57 +57,17 @@ public:
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
-    const std::string* GetPrevStorageValue(const std::string& parent_hash, const std::string& key) {
-        std::string phash = parent_hash;
-        ZJC_DEBUG("now get prev storage map: %s, key: %s",
-            common::Encode::HexEncode(parent_hash).c_str(),
-            common::Encode::HexEncode(key).c_str());
-        // TODO: check valid
-        while (true) {
-            if (phash.empty()) {
-                break;
-            }
-
-            auto it = view_blocks_info_.find(phash);
-            if (it == view_blocks_info_.end()) {
-                break;
-            }
-
-            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
-                break;
-            }
-
-            if (it->second->zjc_host_ptr) {
-                auto fiter = it->second->zjc_host_ptr->prev_storages_map_.find(key);
-                if (fiter != it->second->zjc_host_ptr->prev_storages_map_.end()) {
-                    ZJC_DEBUG("success get prev storage map: %s, key: %s, val: %s",
-                        common::Encode::HexEncode(parent_hash).c_str(),
-                        common::Encode::HexEncode(key).c_str(),
-                        common::Encode::HexEncode(*fiter->second).c_str());
-                    return fiter->second;
-                }
-            }
-
-            if (!it->second->view_block) {
-                break;
-            }
-            
-            phash = it->second->view_block->parent_hash();
-        }
-        return nullptr;
-    }
-
-    // void MergeAllPrevStorageMap(
-    //         const std::string& parent_hash, 
-    //         zjcvm::ZjchainHost& zjc_host) {
+    // const std::string* GetPrevStorageValue(const std::string& parent_hash, const std::string& key) {
     //     std::string phash = parent_hash;
+    //     ZJC_DEBUG("now get prev storage map: %s, key: %s",
+    //         common::Encode::HexEncode(parent_hash).c_str(),
+    //         common::Encode::HexEncode(key).c_str());
     //     // TODO: check valid
     //     while (true) {
     //         if (phash.empty()) {
     //             break;
     //         }
 
-    //         ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
     //         auto it = view_blocks_info_.find(phash);
     //         if (it == view_blocks_info_.end()) {
     //             break;
@@ -118,14 +78,13 @@ public:
     //         }
 
     //         if (it->second->zjc_host_ptr) {
-    //             auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
-    //             for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
-    //                 zjc_host.SavePrevStorages(iter->first, iter->second, false);
-    //                 // if (iter->first.size() > 40)
-    //                 // ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
-    //                 //     common::Encode::HexEncode(phash).c_str(), 
-    //                 //     common::Encode::HexEncode(iter->first).c_str(),
-    //                 //     common::Encode::HexEncode(iter->second).c_str());
+    //             auto fiter = it->second->zjc_host_ptr->prev_storages_map_.find(key);
+    //             if (fiter != it->second->zjc_host_ptr->prev_storages_map_.end()) {
+    //                 ZJC_DEBUG("success get prev storage map: %s, key: %s, val: %s",
+    //                     common::Encode::HexEncode(parent_hash).c_str(),
+    //                     common::Encode::HexEncode(key).c_str(),
+    //                     common::Encode::HexEncode(*fiter->second).c_str());
+    //                 return fiter->second;
     //             }
     //         }
 
@@ -135,7 +94,48 @@ public:
             
     //         phash = it->second->view_block->parent_hash();
     //     }
+    //     return nullptr;
     // }
+
+    void MergeAllPrevStorageMap(
+            const std::string& parent_hash, 
+            zjcvm::ZjchainHost& zjc_host) {
+        std::string phash = parent_hash;
+        // TODO: check valid
+        while (true) {
+            if (phash.empty()) {
+                break;
+            }
+
+            ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+            auto it = view_blocks_info_.find(phash);
+            if (it == view_blocks_info_.end()) {
+                break;
+            }
+
+            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+                break;
+            }
+
+            if (it->second->zjc_host_ptr) {
+                auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
+                for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
+                    zjc_host.SavePrevStorages(iter->first, iter->second, false);
+                    // if (iter->first.size() > 40)
+                    // ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
+                    //     common::Encode::HexEncode(phash).c_str(), 
+                    //     common::Encode::HexEncode(iter->first).c_str(),
+                    //     common::Encode::HexEncode(iter->second).c_str());
+                }
+            }
+
+            if (!it->second->view_block) {
+                break;
+            }
+            
+            phash = it->second->view_block->parent_hash();
+        }
+    }
 
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
