@@ -76,6 +76,7 @@ bool Execution::AddressWarm(const evmc::address& addr) {
 bool Execution::StorageKeyWarm(
         const evmc::address& addr,
         const evmc::bytes32& key) {
+    return false;
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
