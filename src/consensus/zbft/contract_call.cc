@@ -214,7 +214,9 @@ int ContractCall::HandleTx(
                 trans_item->set_to(destruct_to);
                 trans_item->set_amount(new_contract_balance);
                 new_contract_balance = 0;
-                ZJC_ERROR("self destruct success %s, %s, beneficiary: %s, amount: %lu, status: %d",
+                ZJC_ERROR("self destruct success gid: %s, %s, %s, "
+                    "beneficiary: %s, amount: %lu, status: %d",
+                    common::Encode::HexEncode(block_tx.gid()).c_str(),
                     common::Encode::HexEncode(destruct_from).c_str(),
                     common::Encode::HexEncode(block_tx.to()).c_str(),
                     common::Encode::HexEncode(destruct_to).c_str(),
@@ -254,8 +256,9 @@ int ContractCall::HandleTx(
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("contract called %s, user: %s, test_from_balance: %lu, prepament: %lu, "
-        "gas used: %lu, gas_price: %lu, status: %d, step: %d, use time: %lu",
+    ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
+        "gas used: %lu, gas_price: %lu, status: %d, step: %d, amount: %lu, use time: %lu",
+        common::Encode::HexEncode(block_tx.gid()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         test_from_balance,
@@ -264,6 +267,7 @@ int ContractCall::HandleTx(
         block_tx.gas_price(),
         block_tx.status(),
         block_tx.step(),
+        block_tx.amount(),
         (etime - btime));
     return kConsensusSuccess;
 }
