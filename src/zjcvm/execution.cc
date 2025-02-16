@@ -65,6 +65,7 @@ bool Execution::IsAddressExists(const std::string& addr) {
 }
 
 bool Execution::AddressWarm(const evmc::address& addr) {
+    return false;
     auto str_addr = std::string((char*)addr.bytes, sizeof(addr.bytes));
     if (acc_mgr_->AccountExists(str_addr)) {
         return true;
