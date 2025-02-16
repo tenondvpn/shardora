@@ -19,8 +19,16 @@ void ContractCall::GetTempPerpaymentBalance(
             block_tx.from());
         acc_balance_map["pre_" + block_tx.from()] = from_balance;
         *balance = from_balance;
+        ZJC_DEBUG("success get temp account prepayment from prepayment to: %s, from: %s, %lu",
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            common::Encode::HexEncode(block_tx.from()).c_str(),
+            *balance);
     } else {
         *balance = iter->second;
+        ZJC_DEBUG("success get temp account prepayment from temp to: %s, from: %s, %lu",
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            common::Encode::HexEncode(block_tx.from()).c_str(),
+            *balance);
     }
 }
 
