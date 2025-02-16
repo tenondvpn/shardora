@@ -147,8 +147,8 @@ int ContractCall::HandleTx(
         }
     }
 
+    int64_t contract_balance_add = 0;
     if (block_tx.status() == kConsensusSuccess) {
-        int64_t contract_balance_add = 0;
         int64_t caller_balance_add = 0;
         int64_t gas_more = 0;
         int res = SaveContractCreateInfo(
@@ -257,7 +257,8 @@ int ContractCall::HandleTx(
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
-        "gas used: %lu, gas_price: %lu, status: %d, step: %d, amount: %lu, use time: %lu",
+        "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
+        "amount: %lu, to_balance: %lu, contract_balance_add: %lu, use time: %lu",
         common::Encode::HexEncode(block_tx.gid()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
@@ -268,6 +269,8 @@ int ContractCall::HandleTx(
         block_tx.status(),
         block_tx.step(),
         block_tx.amount(),
+        to_balance,
+        contract_balance_add,
         (etime - btime));
     return kConsensusSuccess;
 }
@@ -353,10 +356,11 @@ int ContractCall::SaveContractCreateInfo(
             trans_item->set_to(to_iter->first);
             trans_item->set_amount(to_iter->second);
             other_add += to_iter->second;
-            // ZJC_DEBUG("contract call transfer from: %s, to: %s, amount: %lu",
-            //     common::Encode::HexEncode(transfer_iter->first).c_str(),
-            //     common::Encode::HexEncode(to_iter->first).c_str(),
-            //     to_iter->second);
+            ZJC_DEBUG("contract call transfer gid: %s, from: %s, to: %s, amount: %lu",
+                common::Encode::HexEncode(block_tx.gid()).c_str(),
+                common::Encode::HexEncode(transfer_iter->first).c_str(),
+                common::Encode::HexEncode(to_iter->first).c_str(),
+                to_iter->second);
         }
     }
 
