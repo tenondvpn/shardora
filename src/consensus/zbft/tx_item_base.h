@@ -109,12 +109,16 @@ protected:
 
             acc_balance_map[id] = acc_info->balance();
             *balance = acc_info->balance();
+            ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
+                common::Encode::HexEncode(id).c_str(), *balance);
         } else {
             if (iter->second == -1) {
                 return consensus::kConsensusAccountNotExists;
             }
 
             *balance = iter->second;
+            ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
+                common::Encode::HexEncode(id).c_str(), *balance);
         }
 
         return kConsensusSuccess;

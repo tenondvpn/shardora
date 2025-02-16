@@ -99,6 +99,10 @@ public:
         return false;
     }
 
+    bool GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance) {
+        return false;
+    }
+
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
             BalanceMap& acc_balance_map) {
