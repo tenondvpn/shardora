@@ -133,7 +133,7 @@ evmc_storage_status ZjchainHost::set_storage(
         status = EVMC_STORAGE_MODIFIED_RESTORED;
     }
 
-    return status;
+    return EVMC_STORAGE_ADDED;
 }
 
 evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexcept {
@@ -158,6 +158,7 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 }
 
 size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
+    assert(false);
     ZJC_DEBUG("called 4");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
     auto acc_info = acc_mgr_->GetAccountInfo(id);
@@ -169,6 +170,7 @@ size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
 }
 
 evmc::bytes32 ZjchainHost::get_code_hash(const evmc::address& addr) const noexcept {
+    assert(false);
     ZJC_DEBUG("called 5");
     std::string code;
      
