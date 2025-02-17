@@ -108,7 +108,8 @@ evmc_storage_status ZjchainHost::set_storage(
     auto storage_iter = it->second.storage.find(key);
     if (storage_iter != it->second.storage.end()) {
         if (storage_iter->second.value == value) {
-            return EVMC_STORAGE_MODIFIED_RESTORED;
+            return EVMC_STORAGE_ADDED;
+            // return EVMC_STORAGE_MODIFIED_RESTORED;
         }
     }
 
@@ -186,6 +187,7 @@ size_t ZjchainHost::copy_code(
         size_t code_offset,
         uint8_t* buffer_data,
         size_t buffer_size) const noexcept {
+    assert(false);
     ZJC_DEBUG("called 6");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
     auto acc_info = acc_mgr_->GetAccountInfo(id);
@@ -422,6 +424,7 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
 
 evmc_access_status ZjchainHost::access_account(const evmc::address& addr) noexcept {
     ZJC_DEBUG("called 15");
+    return EVMC_ACCESS_COLD;
     if (Execution::Instance()->AddressWarm(addr)) {
         return EVMC_ACCESS_WARM;
     }
@@ -433,6 +436,7 @@ evmc_access_status ZjchainHost::access_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) noexcept {
     ZJC_DEBUG("called 16");
+    return EVMC_ACCESS_COLD;
     if (Execution::Instance()->StorageKeyWarm(addr, key)) {
         return EVMC_ACCESS_WARM;
     }
