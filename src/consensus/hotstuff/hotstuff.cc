@@ -262,7 +262,7 @@ Status Hotstuff::Propose(
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
-    last_leader_propose_view_ = pb_pro_msg->tc().view();
+    last_leader_propose_view_ = hotstuff_msg->pro_msg().view_item().qc().view();
 
     ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
