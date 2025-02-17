@@ -6,32 +6,6 @@ namespace shardora {
 
 namespace consensus {
 
-void ContractCall::GetTempPerpaymentBalance(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& block_tx,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        uint64_t* balance) {
-    auto iter = acc_balance_map.find("pre_" + block_tx.from());
-    if (iter == acc_balance_map.end()) {
-        uint64_t from_balance = prepayment_->GetAddressPrepayment(
-            view_block.qc().pool_index(),
-            block_tx.to(),
-            block_tx.from());
-        acc_balance_map["pre_" + block_tx.from()] = from_balance;
-        *balance = from_balance;
-        ZJC_DEBUG("success get temp account prepayment from prepayment to: %s, from: %s, %lu",
-            common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(block_tx.from()).c_str(),
-            *balance);
-    } else {
-        *balance = iter->second;
-        ZJC_DEBUG("success get temp account prepayment from temp to: %s, from: %s, %lu",
-            common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(block_tx.from()).c_str(),
-            *balance);
-    }
-}
-
 int ContractCall::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
@@ -41,7 +15,8 @@ int ContractCall::HandleTx(
     auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
-    GetTempPerpaymentBalance(view_block, block_tx, acc_balance_map, &from_balance);
+    auto preppayment_id = block_tx.to() + block_tx.from();
+    GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance);
     uint64_t test_from_balance = from_balance;
     if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
         block_tx.set_status(kConsensusOutOfGas);

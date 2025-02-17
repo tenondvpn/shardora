@@ -210,6 +210,7 @@ public:
             uint32_t pool_index,
             const std::string& contract_addr,
             const std::string& user_addr) {
+        assert(false);
         std::string key = contract_addr + user_addr;
         uint64_t prepayment = 0;
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();

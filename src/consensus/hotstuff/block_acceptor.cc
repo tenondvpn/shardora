@@ -231,11 +231,15 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         protos::AddressInfoPtr address_info = nullptr;
+        std::string from_id;
+        if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+            from_id = security_ptr_->GetAddress(tx->pubkey());
+        }
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {
             if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
-                address_info = account_mgr_->GetAccountInfo(security_ptr_->GetAddress(tx->pubkey()));
+                address_info = account_mgr_->GetAccountInfo(from_id);
             } else {
                 address_info = account_mgr_->pools_address_info(pool_idx());
             }
@@ -249,8 +253,11 @@ Status BlockAcceptor::addTxsToPool(
         auto iter = prevs_balance_map.find(address_info->addr());
         if (iter != prevs_balance_map.end()) {
             now_balance_map[iter->first] = iter->second;
+        } else {
+            now_balance_map[address_info->addr()] = address_info->balance();
         }
-        
+
+        std::string contract_prepayment_id;
         pools::TxItemPtr tx_ptr = nullptr;
         switch (tx->step()) {
         case pools::protobuf::kNormalFrom:
@@ -275,6 +282,7 @@ Status BlockAcceptor::addTxsToPool(
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
+            contract_prepayment_id = tx->to() + from_id;
             break;
         case pools::protobuf::kContractExcute:
             tx_ptr = std::make_shared<consensus::ContractCall>(
@@ -285,6 +293,7 @@ Status BlockAcceptor::addTxsToPool(
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
+            contract_prepayment_id = tx->to() + from_id;
             break;
         case pools::protobuf::kContractGasPrepayment:
             tx_ptr = std::make_shared<consensus::ContractUserCall>(
@@ -293,6 +302,7 @@ Status BlockAcceptor::addTxsToPool(
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
+            contract_prepayment_id = tx->to() + from_id;
             break;
         case pools::protobuf::kConsensusLocalTos:
             tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
@@ -434,6 +444,16 @@ Status BlockAcceptor::addTxsToPool(
             return Status::kError;
         }
 
+        if (!contract_prepayment_id.empty()) {
+            auto iter = prevs_balance_map.find(contract_prepayment_id);
+            if (iter != prevs_balance_map.end()) {
+                now_balance_map[iter->first] = iter->second;
+            } else {
+                address_info = account_mgr_->GetAccountInfo(contract_prepayment_id);
+                now_balance_map[contract_prepayment_id] = address_info->balance();
+            }
+        }
+        
         if (tx_ptr != nullptr) {
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
