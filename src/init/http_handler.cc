@@ -341,8 +341,14 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string input = common::Encode::HexDecode(tmp_input);
     uint64_t height = 0;
     uint64_t prepayment = 0;
-    auto res = prefix_db->GetContractUserPrepayment(contract_addr, from, &height, &prepayment);
-    if (!res) {
+
+    auto contract_prepayment_id = contract_addr + from;
+    auto addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+    if (!addr_info) {
+        addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+    }
+
+    if (!addr_info) {
         std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
