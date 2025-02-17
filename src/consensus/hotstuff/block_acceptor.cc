@@ -450,7 +450,9 @@ Status BlockAcceptor::addTxsToPool(
                 now_balance_map[iter->first] = iter->second;
             } else {
                 address_info = account_mgr_->GetAccountInfo(contract_prepayment_id);
-                now_balance_map[contract_prepayment_id] = address_info->balance();
+                if (address_info) {
+                    now_balance_map[contract_prepayment_id] = address_info->balance();
+                }
             }
         }
         
