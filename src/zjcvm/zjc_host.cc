@@ -341,7 +341,7 @@ void ZjchainHost::emit_log(const evmc::address& addr,
         topics_str.c_str());
 #endif
 
-    recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
+    // recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
 }
 
 void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t balance) {
