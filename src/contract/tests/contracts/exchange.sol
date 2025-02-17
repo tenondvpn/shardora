@@ -99,11 +99,12 @@ contract Exchange {
         require(item_map[hash].owner == msg.sender);
         //emit DebugEvent(10);
         require(item_map[hash].selled == 0);
-        return;
         //emit DebugEvent(11);
         ItemInfo storage item = item_map[hash];
         uint256 max_price = 0;
         address payable max_buyer;
+        return;
+
         for (uint256 i = 0; i < item.buyers.length; ++i) {
             if (item.buyers[i].price > max_price) {
                 max_price = item.buyers[i].price;
