@@ -75,10 +75,16 @@ Status Crypto::ReconstructAndVerifyThresSign(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
+        ZJC_DEBUG("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
         return Status::kError;
     }
 
     if ((*elect_item->Members())[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        ZJC_DEBUG("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
         return Status::kError;
     }
 
@@ -101,6 +107,9 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
     // 已经处理过
     if (bls_collection_->handled) {
+        ZJC_DEBUG("handled bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+            "index: %u, pool_idx_: %d", 
+            bls_collection_->view, view, index, pool_idx_);
         return Status::kBlsHandled;
         // auto collect_item = bls_collection_->GetItem(msg_hash, index);
         // if (collect_item != nullptr && collect_item->reconstructed_sign != nullptr) {
