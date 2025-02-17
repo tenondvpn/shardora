@@ -269,11 +269,13 @@ Status Hotstuff::Propose(
 
 #ifndef NDEBUG
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-        "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+        "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
         hotstuff_msg->pro_msg().view_item().qc().view(),
+        last_leader_propose_view_,
+        hotstuff_msg->pro_msg().tc().view(),
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
