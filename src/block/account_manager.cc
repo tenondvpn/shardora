@@ -333,7 +333,7 @@ void AccountManager::HandleLocalToTx(
             } else {
                 account_info->set_type(address::protobuf::kNormal);
             }
-            
+
             account_info->set_sharding_id(view_block.qc().network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
@@ -524,9 +524,8 @@ void AccountManager::UpdateContractPrepayment(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    auto account_info = std::make_shared<address::protobuf::AddressInfo>();
     auto& block = view_block.block_info();
-    auto& account_id = tx.to() + tx.from();
+    auto account_id = tx.to() + tx.from();
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
         ZJC_INFO("0 get address info failed create new address to this id: %s,"
