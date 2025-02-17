@@ -185,7 +185,8 @@ int ContractCreateByRootToTxItem::HandleTx(
 
 		from_prepayment = tmp_from_balance;
 		
-		acc_balance_map["pre_" + block_tx.from()] = from_prepayment;
+    auto preppayment_id = block_tx.to() + block_tx.from();
+    acc_balance_map[preppayment_id] = from_prepayment;
 		acc_balance_map[block_tx.to()] = block_tx.amount();
 		
 		block_tx.set_contract_prepayment(from_prepayment);

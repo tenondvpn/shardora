@@ -226,7 +226,7 @@ int ContractCall::HandleTx(
         }
     }
 
-    acc_balance_map["pre_" + block_tx.from()] = from_balance;
+    acc_balance_map[preppayment_id] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
