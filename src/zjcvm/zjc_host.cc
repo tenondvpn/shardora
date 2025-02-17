@@ -284,7 +284,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
             std::string dest_str = std::string((char*)msg.recipient.bytes, sizeof(msg.recipient.bytes));
             auto sender_iter = to_account_value_.find(from_str);
             if (sender_iter == to_account_value_.end()) {
-                to_account_value_[from_str] = std::unordered_map<std::string, uint64_t>();
+                to_account_value_[from_str] = std::map<std::string, uint64_t>();
                 to_account_value_[from_str][dest_str] = params.value;
                 CHECK_MEMORY_SIZE(to_account_value_);
                 CHECK_MEMORY_SIZE(to_account_value_[from_str]);
