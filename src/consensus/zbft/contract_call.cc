@@ -45,7 +45,7 @@ int ContractCall::HandleTx(
     uint64_t test_from_balance = from_balance;
     if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
         block_tx.set_status(kConsensusOutOfGas);
-        assert(false);
+        // assert(false);
         return kConsensusSuccess;
     }
 
