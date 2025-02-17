@@ -552,8 +552,12 @@ void AccountManager::HandleContractExecuteTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("contract call address new balance %s: %lu",
-        common::Encode::HexEncode(account_id).c_str(), tx.amount());
+    ZJC_INFO("contract call address new balance %s, from: %s, to: %s, balance: %lu, amount: %lu",
+        common::Encode::HexEncode(account_id).c_str(), 
+        common::Encode::HexEncode(tx.from()).c_str(), 
+        common::Encode::HexEncode(tx.to()).c_str(), 
+        tx.balance(),
+        tx.amount());
 }
 
 void AccountManager::HandleRootCreateAddressTx(
