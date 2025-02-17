@@ -59,7 +59,7 @@ contract Exchange {
         item.selled = 0;
         item.selled_price = 0;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
-        //item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
+        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
         // emit DebugEvent(2);
         all_hashes.push(hash);
@@ -101,8 +101,8 @@ contract Exchange {
         require(item_map[hash].selled == 0);
         //emit DebugEvent(11);
         ItemInfo storage item = item_map[hash];
-        uint256 max_price = item.buyers[0].price;
-        address payable max_buyer = item.buyers[0].buyer;
+        uint256 max_price = item.buyers[1].price;
+        address payable max_buyer = item.buyers[1].buyer;
         // for (uint256 i = 0; i < item.buyers.length; ++i) {
         //     if (item.buyers[i].price > max_price) {
         //         max_price = item.buyers[i].price;
