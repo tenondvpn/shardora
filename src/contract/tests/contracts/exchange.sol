@@ -92,6 +92,8 @@ contract Exchange {
     }
 
     function ConfirmPurchase(bytes32 hash) public payable {
+        emit DebugEvent(9999999900000000);
+        return;
         //emit DebugEvent(8);
         require(item_map[hash].exists);
         //emit DebugEvent(9);
@@ -99,7 +101,6 @@ contract Exchange {
         //emit DebugEvent(10);
         require(item_map[hash].selled == 0);
         //emit DebugEvent(11);
-        return;
         ItemInfo storage item = item_map[hash];
         uint256 max_price = 0;
         address payable max_buyer;
