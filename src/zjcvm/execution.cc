@@ -275,10 +275,16 @@ int Execution::execute(
         exec_code_size = bytes_code.size();
     }
 
+    auto src_gas_left = out_res->gas_left;
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
     auto etime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("execute res: %d, gas_limit: %lu gas_left: %lu, gas_refund: %lu, use time: %lu",
-        out_res->status_code, gas, out_res->gas_left, out_res->gas_refund, (etime - btime));
+    ZJC_DEBUG("execute res: %d, from: %s, to: %s, gas_limit: %lu, "
+        "src_gas_left: %lu, gas_left: %lu, gas_refund: %lu, use time: %lu",
+        out_res->status_code, 
+        common::Encode::HexEncode(from_address).c_str(),
+        common::Encode::HexEncode(to_address).c_str(),
+        src_gas_left,
+        gas, out_res->gas_left, out_res->gas_refund, (etime - btime));
     return kZjcvmSuccess;
 }
 

@@ -244,8 +244,6 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     ZJC_DEBUG("host called kind: %u, from: %s, to: %s, amount: %lu",
         msg.kind, common::Encode::HexEncode(params.from).c_str(), 
         common::Encode::HexEncode(params.to).c_str(), params.value);
-    evmc_res.status_code = EVMC_SUCCESS;
-    return evmc_res;
     if (contract_mgr_->call(
             params,
             gas_price_,
