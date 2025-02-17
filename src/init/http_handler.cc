@@ -586,9 +586,20 @@ static void PrepaymentsValid(evhtp_request_t* req, void* data) {
 
         uint64_t height = 0;
         uint64_t tmp_balance = 0;
-        auto res = prefix_db->GetContractUserPrepayment(contract_addr, addr, &height, &tmp_balance);
-        if (res && tmp_balance >= balance_val) {
+        auto contract_prepayment_id = contract_addr + addr;
+        auto addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+        if (addr_info == nullptr) {
+            std::string res = "get address failed from db: " + contract_prepayment_id;
+            addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+        }
+
+        if (addr_info != nullptr && addr_info->balance() >= balance_val) {
             res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("valid prepayment: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+        } else {
+            ZJC_DEBUG("invalid prepayment: %s, balance: %lu",
+                addrs_splits[i], 
+                (addr_info ? addr_info->balance() : 0));
         }
     }
 
