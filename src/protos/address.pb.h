@@ -73,11 +73,12 @@ enum AddressType {
   kStatistic = 4,
   kToTxAddress = 5,
   kLocalToTxAddress = 6,
-  kElectAddress = 7
+  kElectAddress = 7,
+  kContractPrepayment = 8
 };
 bool AddressType_IsValid(int value);
 const AddressType AddressType_MIN = kNormal;
-const AddressType AddressType_MAX = kElectAddress;
+const AddressType AddressType_MAX = kContractPrepayment;
 const int AddressType_ARRAYSIZE = AddressType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* AddressType_descriptor();
