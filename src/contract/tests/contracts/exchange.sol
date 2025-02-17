@@ -103,15 +103,14 @@ contract Exchange {
         ItemInfo storage item = item_map[hash];
         uint256 max_price = 0;
         address payable max_buyer;
-        return;
-
         for (uint256 i = 0; i < item.buyers.length; ++i) {
             if (item.buyers[i].price > max_price) {
                 max_price = item.buyers[i].price;
-                max_buyer = item.buyers[i].buyer;
+                //max_buyer = item.buyers[i].buyer;
             }
         }
 
+        return;
         require(max_price >= item.price);
         item.selled = 1;
         item.selled_price = max_price;

@@ -47,8 +47,9 @@ public:
 
     AccountPtr get(const std::string& key) {
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
-        if (index_data_map_[index] != nullptr && index_data_map_[index]->addr() == key) {
-            return index_data_map_[index];
+        auto item_ptr = index_data_map_[index];
+        if (item_ptr != nullptr && item_ptr->addr() == key) {
+            return item_ptr;
         }
         
         return nullptr;
