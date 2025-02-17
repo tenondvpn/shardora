@@ -101,21 +101,21 @@ contract Exchange {
         require(item_map[hash].selled == 0);
         //emit DebugEvent(11);
         ItemInfo storage item = item_map[hash];
-        uint256 max_price = 0;
-        address payable max_buyer;
-        for (uint256 i = 0; i < item.buyers.length; ++i) {
-            if (item.buyers[i].price > max_price) {
-                max_price = item.buyers[i].price;
-                //max_buyer = item.buyers[i].buyer;
-            }
-        }
+        uint256 max_price = item.buyers[0].price;
+        address payable max_buyer = item.buyers[0].buyer;
+        // for (uint256 i = 0; i < item.buyers.length; ++i) {
+        //     if (item.buyers[i].price > max_price) {
+        //         max_price = item.buyers[i].price;
+        //         //max_buyer = item.buyers[i].buyer;
+        //     }
+        // }
 
         return;
         require(max_price >= item.price);
         item.selled = 1;
         item.selled_price = max_price;
         item.buyer = max_buyer;
-        // payable(msg.sender).transfer(max_price);
+        payable(msg.sender).transfer(max_price);
         // for (uint256 i = 0; i < item.buyers.length; ++i) {
         //     if (item.buyers[i].buyer != max_buyer) {
         //         payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
