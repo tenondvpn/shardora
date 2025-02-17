@@ -92,13 +92,13 @@ contract Exchange {
     }
 
     function ConfirmPurchase(bytes32 hash) public payable {
-        emit DebugEvent(8);
+        //emit DebugEvent(8);
         require(item_map[hash].exists);
-        emit DebugEvent(9);
+        //emit DebugEvent(9);
         require(item_map[hash].owner == msg.sender);
-        emit DebugEvent(10);
+        //emit DebugEvent(10);
         require(item_map[hash].selled == 0);
-        emit DebugEvent(11);
+        //emit DebugEvent(11);
         ItemInfo storage item = item_map[hash];
         uint256 max_price = 0;
         address payable max_buyer;
@@ -114,11 +114,11 @@ contract Exchange {
         item.selled_price = max_price;
         item.buyer = max_buyer;
         payable(msg.sender).transfer(max_price);
-        for (uint256 i = 0; i < item.buyers.length; ++i) {
-            if (item.buyers[i].buyer != max_buyer) {
-                payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
-            }
-        }
+        // for (uint256 i = 0; i < item.buyers.length; ++i) {
+        //     if (item.buyers[i].buyer != max_buyer) {
+        //         payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
+        //     }
+        // }
 
         emit DebugEvent(12);
     }
