@@ -244,6 +244,8 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     ZJC_DEBUG("host called kind: %u, from: %s, to: %s, amount: %lu",
         msg.kind, common::Encode::HexEncode(params.from).c_str(), 
         common::Encode::HexEncode(params.to).c_str(), params.value);
+    evmc_res.status_code = EVMC_SUCCESS;
+    return evmc_res;
     if (contract_mgr_->call(
             params,
             gas_price_,
@@ -314,6 +316,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
 }
 
 evmc_tx_context ZjchainHost::get_tx_context() const noexcept {
+    assert(false);
     ZJC_DEBUG("called 9");
     return tx_context_;
 }
@@ -341,7 +344,7 @@ void ZjchainHost::emit_log(const evmc::address& addr,
         topics_str.c_str());
 #endif
 
-    // recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
+    recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
 }
 
 void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t balance) {
