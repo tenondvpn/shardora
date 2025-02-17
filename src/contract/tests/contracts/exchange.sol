@@ -110,7 +110,7 @@ contract Exchange {
         //     }
         // }
 
-        return;
+        //return;
         require(max_price >= item.price);
         item.selled = 1;
         item.selled_price = max_price;
