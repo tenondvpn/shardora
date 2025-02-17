@@ -120,7 +120,7 @@ contract Exchange {
         //     }
         // }
 
-        emit DebugEvent(12);
+        emit DebugEvent(9999999900000000 + max_price);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
