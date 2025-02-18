@@ -203,8 +203,7 @@ int Execution::execute(
     if (code_size <= kContractHead.size() ||
             from_address.size() != security::kUnicastAddressLength ||
             to_address.size() != security::kUnicastAddressLength ||
-            depth >= kContractCallMaxDepth ||
-            gas_limit <= 0) {
+            depth >= kContractCallMaxDepth) {
         ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
             "to size: %u, depth: %u, gas_limit: %lu",
             code_size, from_address.size(), to_address.size(), depth, gas_limit);
