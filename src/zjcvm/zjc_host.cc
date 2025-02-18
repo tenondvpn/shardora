@@ -31,10 +31,12 @@ evmc::bytes32 ZjchainHost::get_storage(
     if (it != accounts_.end()) {
         auto storage_iter = it->second.storage.find(key);
         if (storage_iter != it->second.storage.end()) {
-            ZJC_DEBUG("zjcvm temp get storage called, id: %s, key: %s, value: %s",
+            ZJC_DEBUG("0 success get storage addr: %s, key: %s, val: %s, valid: %d",
                 common::Encode::HexEncode(id).c_str(),
                 common::Encode::HexEncode(key_str).c_str(),
-                common::Encode::HexEncode(std::string((char*)storage_iter->second.value.bytes, 32)).c_str());
+                common::Encode::HexEncode(
+                std::string((char*)storage_iter->second.value.bytes, 32)).c_str(),
+                true);
             return storage_iter->second.value;
         }
     }
@@ -68,6 +70,11 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
 
         memcpy(tmp_val.bytes + offset, str_val.c_str(), length);
+        ZJC_DEBUG("1 success get storage addr: %s, key: %s, val: %s, valid: %d", 
+            common::Encode::HexEncode(id).c_str(),
+            common::Encode::HexEncode(key_str).c_str(),
+            common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
+            true);
         return tmp_val;
     }
 
@@ -77,7 +84,7 @@ evmc::bytes32 ZjchainHost::get_storage(
         // ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
-    ZJC_DEBUG("success get storage addr: %s, key: %s, val: %s, valid: %d", 
+    ZJC_DEBUG("2 success get storage addr: %s, key: %s, val: %s, valid: %d", 
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
         common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
