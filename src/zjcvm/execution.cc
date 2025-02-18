@@ -167,13 +167,14 @@ bool Execution::GetStorage(
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, val);
     } else {
-        if (!storage_map_[thread_idx].Get(str_key, val)) {
-            // get from db and add to memory cache
-            res = prefix_db_->GetTemporaryKv(str_key, val);
-            if (res) {
-                storage_map_[thread_idx].Insert(str_key, *val);
-            }
-        }
+        prefix_db_->GetTemporaryKv(str_key, val);
+        // if (!storage_map_[thread_idx].Get(str_key, val)) {
+        //     // get from db and add to memory cache
+        //     res = prefix_db_->GetTemporaryKv(str_key, val);
+        //     if (res) {
+        //         storage_map_[thread_idx].Insert(str_key, *val);
+        //     }
+        // }
     }
 
     ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
