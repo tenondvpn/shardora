@@ -70,11 +70,12 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
 
         memcpy(tmp_val.bytes + offset, str_val.c_str(), length);
-        ZJC_DEBUG("1 success get storage addr: %s, key: %s, val: %s, valid: %d", 
+        ZJC_DEBUG("1 success get storage addr: %s, key: %s, val: %s, valid: %d, parent_hash_: %s", 
             common::Encode::HexEncode(id).c_str(),
             common::Encode::HexEncode(key_str).c_str(),
             common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
-            true);
+            true,
+            common::Encode::HexEncode(parent_hash_).c_str());
         return tmp_val;
     }
 
