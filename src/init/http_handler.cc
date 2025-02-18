@@ -404,7 +404,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + 
             std::to_string(result.status_code) + 
-            ", exec_res: " + std::to_string(exec_res));
+            ", exec_res: " + std::to_string(exec_res);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract error: %s.", res.c_str());
