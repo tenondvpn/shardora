@@ -115,6 +115,7 @@ public:
     int SaveKeyValue(const std::string& id, const std::string& key, const std::string& val);
     int SaveKeyValue(const evmc::address& addr, const std::string& key, const std::string& val);
     int GetKeyValue(const std::string& id, const std::string& key, std::string* val);
+    int GetCachedKeyValue(const std::string& id, const std::string& key, std::string* val);
     // void SavePrevStorages(const std::string& key, const std::string& val, bool cover) {
         // if (!cover) {
         //     auto iter = prev_storages_map_.find(key);

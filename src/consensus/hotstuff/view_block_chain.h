@@ -84,7 +84,7 @@ public:
             }
 
             if (it->second->zjc_host_ptr) {
-                auto res = it->second->zjc_host_ptr->GetKeyValue(id, key, val);
+                auto res = it->second->zjc_host_ptr->GetCachedKeyValue(id, key, val);
                 if (res == zjcvm::kZjcvmSuccess) {
                     return true;
                 }
