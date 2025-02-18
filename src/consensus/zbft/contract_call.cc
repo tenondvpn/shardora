@@ -233,7 +233,7 @@ int ContractCall::HandleTx(
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
-        "amount: %lu, to_balance: %lu, contract_balance_add: %lu, use time: %lu",
+        "amount: %ll, to_balance: %ll, contract_balance_add: %ll, use time: %lu",
         common::Encode::HexEncode(block_tx.gid()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
