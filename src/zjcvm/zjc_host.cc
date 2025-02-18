@@ -98,7 +98,6 @@ evmc_storage_status ZjchainHost::set_storage(
         const evmc::bytes32& key,
         const evmc::bytes32& value) noexcept {
     // just set temporary map storage, when commit set to db and block
-    ZJC_DEBUG("called 2");
     std::string id((char*)addr.bytes, sizeof(addr.bytes));
     std::string key_str((char*)key.bytes, sizeof(key.bytes));
     std::string val_str((char*)value.bytes, sizeof(value.bytes));
