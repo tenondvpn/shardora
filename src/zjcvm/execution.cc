@@ -19,9 +19,6 @@ namespace zjcvm {
 Execution::Execution() {}
 
 Execution::~Execution() {
-    if (storage_map_ != nullptr) {
-        delete[] storage_map_;
-    }
 }
 
 Execution* Execution::Instance() {
