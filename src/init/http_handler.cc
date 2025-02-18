@@ -340,7 +340,6 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
     std::string input = common::Encode::HexDecode(tmp_input);
     uint64_t height = 0;
-    uint64_t prepayment = 0;
 
     auto contract_prepayment_id = contract_addr + from;
     auto addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
@@ -356,6 +355,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
+    uint64_t prepayment = addr_info->balance();
     auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
@@ -397,7 +397,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         from,
         0,
         prepayment,
-        999999999990lu,
+        0,
         zjcvm::kJustCall,
         zjc_host,
         &result);
