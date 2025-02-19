@@ -278,4 +278,11 @@ contract Exchange {
         all_bytes[validLen] = ']';
         return bytesConcat(all_bytes, validLen + 1);
     }
+
+    function GetSellDetail(bytes32 hash) public view returns(bytes memory) {
+        uint validLen = 1;
+        bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
+        all_bytes[0] = GetItemJson(item_map[hash], true);
+        return bytesConcat(all_bytes, validLen + 1);
+    }
 }
