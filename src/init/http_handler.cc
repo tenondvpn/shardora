@@ -536,6 +536,44 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
     evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
+static void GetBlockWithGid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* gid = evhtp_kv_find(req->uri->query, "gid");
+    if (gid == nullptr) {
+        std::string res = std::string("gid not exists.");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    view_block::protobuf::ViewBlockItem view_block;
+    
+    bool res = prefix_db->GetBlockWithGid(common::Encode::HexDecode(gid), &view_block);
+    if (res) {
+        res_json["block"]["height"] = view_block.block_info().height();
+        res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());
+        res_json["block"]["parent_hash"] = common::Encode::HexEncode(view_block.parent_hash());
+        res_json["block"]["timestamp"] = view_block.block_info().timestamp();
+        res_json["block"]["no"] = view_block.qc().view();
+    }
+       
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
 static void PrepaymentsValid(evhtp_request_t* req, void* data) {
     ZJC_DEBUG("query account.");
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
@@ -951,6 +989,7 @@ void HttpHandler::Init(
     http_server.AddCallback("/accounts_valid", AccountsValid);
     http_server.AddCallback("/commit_gid_valid", GidsValid);
     http_server.AddCallback("/prepayment_valid", PrepaymentsValid);
+    http_server.AddCallback("/get_block_with_gid", GetBlockWithGid);
 }
 
 };  // namespace init
