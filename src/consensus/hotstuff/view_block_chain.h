@@ -104,6 +104,50 @@ public:
         return false;
     }
 
+    evmc::bytes32 GetPrevStorageBytes32KeyValue(
+        const std::string& parent_hash, 
+        const evmc::address& addr,
+        const evmc::bytes32& key) {
+    std::string phash = parent_hash;
+    // TODO: check valid
+    while (true) {
+        if (phash.empty()) {
+            break;
+        }
+
+        // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+        auto it = view_blocks_info_.find(phash);
+        if (it == view_blocks_info_.end()) {
+            break;
+        }
+
+        ZJC_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
+            "stored_to_db_view_: %lu, %s%s", 
+            3, pool_index_, it->second->view_block->qc().view(), 
+            stored_to_db_view_, common::Encode::HexEncode(id).c_str(), 
+            common::Encode::HexEncode(key).c_str());
+        if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+            break;
+        }
+
+        if (it->second->zjc_host_ptr) {
+            auto res = it->second->zjc_host_ptr->get_cached_storage(addr, key);
+            if (res) {
+                return res;
+            }
+        }
+
+        if (!it->second->view_block) {
+            break;
+        }
+        
+        phash = it->second->view_block->parent_hash();
+    }
+
+    evmc::bytes32 tmp_val;
+    return tmp_val;
+}
+
     bool GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance) {
         return false;
     }
