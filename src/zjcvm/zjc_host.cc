@@ -28,6 +28,14 @@ evmc::bytes32 ZjchainHost::get_storage(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     std::string id((char*)addr.bytes, sizeof(addr.bytes));
     std::string key_str((char*)key.bytes, sizeof(key.bytes));
+    ZJC_DEBUG("view: %lu, 0 0 success get storage addr: %s, "
+        "key: %s, val: %s, valid: %d, thread_idx: %d", 
+        view_,
+        common::Encode::HexEncode(id).c_str(),
+        common::Encode::HexEncode(key_str).c_str(),
+        "",
+        false,
+        thread_idx);
     auto it = accounts_.find(addr);
     if (it != accounts_.end()) {
         auto storage_iter = it->second.storage.find(key);
@@ -42,7 +50,25 @@ evmc::bytes32 ZjchainHost::get_storage(
                 true,
                 thread_idx);
             return storage_iter->second.value;
+        } else {
+            ZJC_DEBUG("key invalid view: %lu, 0 0 success get storage addr: %s, "
+                "key: %s, val: %s, valid: %d, thread_idx: %d", 
+                view_,
+                common::Encode::HexEncode(id).c_str(),
+                common::Encode::HexEncode(key_str).c_str(),
+                "",
+                false,
+                thread_idx);
         }
+    } else {
+        ZJC_DEBUG("addr invalid view: %lu, 0 0 success get storage addr: %s, "
+            "key: %s, val: %s, valid: %d, thread_idx: %d", 
+            view_,
+            common::Encode::HexEncode(id).c_str(),
+            common::Encode::HexEncode(key_str).c_str(),
+            "",
+            false,
+            thread_idx);
     }
 
     // auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
