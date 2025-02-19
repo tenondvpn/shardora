@@ -25,18 +25,22 @@ bool ZjchainHost::account_exists(const evmc::address& addr) const noexcept {
 evmc::bytes32 ZjchainHost::get_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) const noexcept {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     std::string id((char*)addr.bytes, sizeof(addr.bytes));
     std::string key_str((char*)key.bytes, sizeof(key.bytes));
     auto it = accounts_.find(addr);
     if (it != accounts_.end()) {
         auto storage_iter = it->second.storage.find(key);
         if (storage_iter != it->second.storage.end()) {
-            ZJC_DEBUG("0 success get storage addr: %s, key: %s, val: %s, valid: %d",
+            ZJC_DEBUG("view: %lu, 0 success get storage addr: %s, "
+                ": %s, val: %s, valid: %d, thread_idx: %d",
+                view_,
                 common::Encode::HexEncode(id).c_str(),
                 common::Encode::HexEncode(key_str).c_str(),
                 common::Encode::HexEncode(
                 std::string((char*)storage_iter->second.value.bytes, 32)).c_str(),
-                true);
+                true,
+                thread_idx);
             return storage_iter->second.value;
         }
     }
@@ -70,12 +74,15 @@ evmc::bytes32 ZjchainHost::get_storage(
         }
 
         memcpy(tmp_val.bytes + offset, str_val.c_str(), length);
-        ZJC_DEBUG("1 success get storage addr: %s, key: %s, val: %s, valid: %d, parent_hash_: %s", 
+        ZJC_DEBUG("view: %lu,  success get storage addr: %s, key: %s, "
+            "val: %s, valid: %d, parent_hash_: %s, thread_idx: %d", 
+            view_,
             common::Encode::HexEncode(id).c_str(),
             common::Encode::HexEncode(key_str).c_str(),
             common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
             true,
-            common::Encode::HexEncode(parent_hash_).c_str());
+            common::Encode::HexEncode(parent_hash_).c_str(),
+            thread_idx);
         return tmp_val;
     }
 
@@ -85,8 +92,8 @@ evmc::bytes32 ZjchainHost::get_storage(
         // ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    ZJC_DEBUG("2 success get storage addr: %s, key: %s, val: %s, valid: %d, thread_idx: %d", 
+    ZJC_DEBUG("view: %lu, 2 success get storage addr: %s, key: %s, val: %s, valid: %d, thread_idx: %d", 
+        view_,
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
         common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
@@ -104,7 +111,8 @@ evmc_storage_status ZjchainHost::set_storage(
     std::string key_str((char*)key.bytes, sizeof(key.bytes));
     std::string val_str((char*)value.bytes, sizeof(value.bytes));
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    ZJC_DEBUG("thread_idx: %d, zjcvm set storage called, id: %s, key: %s, value: %s",
+    ZJC_DEBUG("3_15_%lu, thread_idx: %d, zjcvm set storage called, id: %s, key: %s, value: %s",
+        view_,
         thread_idx,
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
@@ -390,7 +398,8 @@ int ZjchainHost::SaveKeyValue(
         const std::string& key,
         const std::string& val) {
     ZJC_DEBUG("called 13");
-    CONTRACT_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
+    CONTRACT_DEBUG("view: %lu, zjcvm set storage called, id: %s, key: %s, value: %s",
+        view_,
         common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
         common::Encode::HexEncode(key).c_str(),
         common::Encode::HexEncode(val).c_str());
@@ -411,7 +420,8 @@ int ZjchainHost::GetCachedKeyValue(
         const std::string& key_str, 
         std::string* val) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    CONTRACT_DEBUG("zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
+    CONTRACT_DEBUG("view: %lu, zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
+        view_,
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
         common::Encode::HexEncode(*val).c_str(),
