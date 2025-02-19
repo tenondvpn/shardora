@@ -147,6 +147,7 @@ public:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
+    uint64_t view_ = 0;
 
 };
 

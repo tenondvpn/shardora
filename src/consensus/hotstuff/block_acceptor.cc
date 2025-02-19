@@ -133,6 +133,7 @@ Status BlockAcceptor::Accept(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     zjc_host.parent_hash_ = view_block.parent_hash();
     zjc_host.view_block_chain_ = view_block_chain;
+    zjc_host.view_ = view_block.qc().view();
     s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_WARN("DoTransactions error!");
