@@ -461,7 +461,21 @@ int ZjchainHost::GetCachedKeyValue(
         if (siter != it->second.str_storage.end()) {
             *val = siter->second.str_val;
             return kZjcvmSuccess;
+        } else {
+            CONTRACT_DEBUG("key invalid, view: %lu, zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
+                view_,
+                common::Encode::HexEncode(id).c_str(),
+                common::Encode::HexEncode(key_str).c_str(),
+                common::Encode::HexEncode(*val).c_str(),
+                thread_idx);
         }
+    } else {
+        CONTRACT_DEBUG("addr invalid, view: %lu, zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
+            view_,
+            common::Encode::HexEncode(id).c_str(),
+            common::Encode::HexEncode(key_str).c_str(),
+            common::Encode::HexEncode(*val).c_str(),
+            thread_idx);
     }
     return kZjcvmError;
 }
