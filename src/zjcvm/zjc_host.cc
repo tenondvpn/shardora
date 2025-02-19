@@ -85,11 +85,13 @@ evmc::bytes32 ZjchainHost::get_storage(
         // ZJC_DEBUG("failed get prev storage key: %s", common::Encode::HexEncode(str_key).c_str());
     }
 
-    ZJC_DEBUG("2 success get storage addr: %s, key: %s, val: %s, valid: %d", 
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    ZJC_DEBUG("2 success get storage addr: %s, key: %s, val: %s, valid: %d, thread_idx: %d", 
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
         common::Encode::HexEncode(std::string((char*)tmp_val.bytes, 32)).c_str(),
-        (tmp_val ? true : false));
+        (tmp_val ? true : false),
+        thread_idx);
     return tmp_val;
 }
 
@@ -101,7 +103,9 @@ evmc_storage_status ZjchainHost::set_storage(
     std::string id((char*)addr.bytes, sizeof(addr.bytes));
     std::string key_str((char*)key.bytes, sizeof(key.bytes));
     std::string val_str((char*)value.bytes, sizeof(value.bytes));
-    ZJC_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    ZJC_DEBUG("thread_idx: %d, zjcvm set storage called, id: %s, key: %s, value: %s",
+        thread_idx,
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
         common::Encode::HexEncode(val_str).c_str());
@@ -112,34 +116,36 @@ evmc_storage_status ZjchainHost::set_storage(
         it = accounts_.find(addr);
     }
 
-    auto storage_iter = it->second.storage.find(key);
-    if (storage_iter != it->second.storage.end()) {
-        if (storage_iter->second.value == value) {
-            return EVMC_STORAGE_ADDED;
-            // return EVMC_STORAGE_MODIFIED_RESTORED;
-        }
-    }
+    it->second.storage[key] = value;
 
-    if (storage_iter != it->second.storage.end()) {
-        storage_iter->second.value = value;
-    } else {
-        it->second.storage[key] = value;
-        storage_iter = it->second.storage.find(key);
-    }
+    // auto storage_iter = it->second.storage.find(key);
+    // if (storage_iter != it->second.storage.end()) {
+    //     if (storage_iter->second.value == value) {
+    //         return EVMC_STORAGE_ADDED;
+    //         // return EVMC_STORAGE_MODIFIED_RESTORED;
+    //     }
+    // }
 
-    auto& old = storage_iter->second;
-    evmc_storage_status status{};
-    if (!old.dirty) {
-        old.dirty = true;
-        if (!old.value)
-            status = EVMC_STORAGE_ADDED;
-        else if (value)
-            status = EVMC_STORAGE_MODIFIED;
-        else
-            status = EVMC_STORAGE_DELETED;
-    } else {
-        status = EVMC_STORAGE_MODIFIED_RESTORED;
-    }
+    // if (storage_iter != it->second.storage.end()) {
+    //     storage_iter->second.value = value;
+    // } else {
+    //     it->second.storage[key] = value;
+    //     storage_iter = it->second.storage.find(key);
+    // }
+
+    // auto& old = storage_iter->second;
+    // evmc_storage_status status{};
+    // if (!old.dirty) {
+    //     old.dirty = true;
+    //     if (!old.value)
+    //         status = EVMC_STORAGE_ADDED;
+    //     else if (value)
+    //         status = EVMC_STORAGE_MODIFIED;
+    //     else
+    //         status = EVMC_STORAGE_DELETED;
+    // } else {
+    //     status = EVMC_STORAGE_MODIFIED_RESTORED;
+    // }
 
     return EVMC_STORAGE_ADDED;
 }
@@ -404,6 +410,13 @@ int ZjchainHost::GetCachedKeyValue(
         const std::string& id, 
         const std::string& key_str, 
         std::string* val) {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    CONTRACT_DEBUG("zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
+        common::Encode::HexEncode(id).c_str(),
+        common::Encode::HexEncode(key_str).c_str(),
+        common::Encode::HexEncode(*val).c_str(),
+        thread_idx);
+
     auto addr = evmc::address{};
     memcpy(addr.bytes, id.c_str(), id.size());
     auto it = accounts_.find(addr);
