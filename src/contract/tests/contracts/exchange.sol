@@ -42,6 +42,7 @@ contract Exchange {
     mapping(bytes32 => ItemInfo) public item_map;
     mapping(uint256 => bytes32) public id_with_hash_map;
     mapping(bytes => bool) public purchase_map;
+    mapping(address => bytes32[]) public owner_with_hash_map;
     bytes32[] all_hashes;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
@@ -69,6 +70,7 @@ contract Exchange {
         // all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
         // purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
+        owner_with_hash_map[msg.sender].push(hash)
     }
 
     function PurchaseItem(bytes32 hash) public payable {
@@ -269,9 +271,11 @@ contract Exchange {
         bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = all_hashes.length;
+        uint start_idx = 0;
         for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
-            all_bytes[i + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1 || validLen == len));
+            all_bytes[start_idx + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1 || validLen == len));
             ++validLen;
+            ++start_idx;
         }
 
         all_bytes[validLen] = ']';
