@@ -224,7 +224,7 @@ contract Exchange {
         all_bytes[0] = '[';
         uint arrayLength = buyers.length-1;
         for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetBuyerJson(buyers[i+1], (i == arrayLength - 2));
+            all_bytes[i + 1] = GetBuyerJson(buyers[i+1], (i == arrayLength - 1));
             ++validLen;
         }
 
