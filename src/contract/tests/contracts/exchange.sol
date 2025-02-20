@@ -282,6 +282,23 @@ contract Exchange {
         return bytesConcat(all_bytes, validLen + 1);
     }
 
+    function GetOwnerItemJson(uint256 start_pos, uint256 len, address owner) public view returns(bytes memory) {
+        uint validLen = 1;
+        hashs = owner_with_hash_map[owner]
+        bytes[] memory all_bytes = new bytes[](hashs.length + 2);
+        all_bytes[0] = '[';
+        uint arrayLength = hashs.length;
+        uint start_idx = 0;
+        for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
+            all_bytes[start_idx + 1] = GetItemJson(item_map[hashs[i]], (i == arrayLength - 1 || validLen == len));
+            ++validLen;
+            ++start_idx;
+        }
+
+        all_bytes[validLen] = ']';
+        return bytesConcat(all_bytes, validLen + 1);
+    }
+
     function GetSellDetail(bytes32 hash) public view returns(bytes memory) {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
