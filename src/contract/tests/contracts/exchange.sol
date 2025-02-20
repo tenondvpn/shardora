@@ -284,7 +284,7 @@ contract Exchange {
 
     function GetOwnerItemJson(uint256 start_pos, uint256 len, address owner) public view returns(bytes memory) {
         uint validLen = 1;
-        bytes32[] hash_array = owner_with_hash_map[owner]
+        bytes32[] memory hash_array = owner_with_hash_map[owner]
         bytes[] memory all_bytes = new bytes[](hash_array.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = hash_array.length;
