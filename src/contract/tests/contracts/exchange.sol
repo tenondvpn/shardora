@@ -220,9 +220,9 @@ contract Exchange {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](buyers.length + 2);
         all_bytes[0] = '[';
-        uint arrayLength = buyers.length;
-        for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetBuyerJson(buyers[i], (i == arrayLength - 1));
+        uint arrayLength = buyers.length-1;
+        for (uint i=0; i<arrayLength-1; i++) {
+            all_bytes[i + 1] = GetBuyerJson(buyers[i+1], (i == arrayLength - 2));
             ++validLen;
         }
 
