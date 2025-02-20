@@ -46,9 +46,7 @@ contract Exchange {
     bytes32[] all_hashes;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
-        // emit DebugEvent(0);
         require(!item_map[hash].exists);
-        // emit DebugEvent(1);
         ItemInfo storage item = item_map[hash];
         item.id = global_id++;
         item.hash = hash;
@@ -62,46 +60,31 @@ contract Exchange {
         item.buyer = payable(0x0000000000000000000000000000000000000000);
         item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
-        // emit DebugEvent(2);
         all_hashes.push(hash);
-        // emit DebugEvent(all_hashes.length);
-        // bytes[] memory all_bytes = new bytes[](2);
-        // all_bytes[0] = Bytes32toBytes(hash);
-        // all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
-        // purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
         owner_with_hash_map[msg.sender].push(hash);
     }
 
     function PurchaseItem(bytes32 hash) public payable {
-        // emit DebugEvent(3);
         require(item_map[hash].exists);
-        // emit DebugEvent(4);
         require(item_map[hash].owner != msg.sender);
-        // emit DebugEvent(5);
-        // bytes[] memory all_bytes = new bytes[](2);
-        // all_bytes[0] = Bytes32toBytes(hash);
-        // all_bytes[1] = toBytes(msg.sender);
-
-        // bytes memory key = bytesConcat(all_bytes, 2);
-        // require(!purchase_map[key]);
-        // emit DebugEvent(6);
+        emit DebugEvent(5);
+        bytes[] memory all_bytes = new bytes[](2);
+        all_bytes[0] = Bytes32toBytes(hash);
+        all_bytes[1] = toBytes(msg.sender);
+        bytes memory key = bytesConcat(all_bytes, 2);
+        require(!purchase_map[key]);
         ItemInfo storage item = item_map[hash];
         require(item_map[hash].price <= msg.value);
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
-        // purchase_map[key] = true;
+        purchase_map[key] = true;
         emit DebugEvent(99999900000000000 + msg.value);
     }
 
     function ConfirmPurchase(bytes32 hash) public payable {
-        // emit DebugEvent(9999999900000000);
-        //emit DebugEvent(8);
         require(item_map[hash].exists);
-        //emit DebugEvent(9);
         require(item_map[hash].owner == msg.sender);
-        //emit DebugEvent(10);
         require(item_map[hash].selled == 0);
-        //emit DebugEvent(11);
         ItemInfo storage item = item_map[hash];
         uint256 max_price = item.buyers[0].price;
         address payable max_buyer = item.buyers[0].buyer;
@@ -122,8 +105,6 @@ contract Exchange {
                 payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
             }
         }
-
-        emit DebugEvent(12);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
