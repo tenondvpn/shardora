@@ -284,13 +284,13 @@ contract Exchange {
 
     function GetOwnerItemJson(uint256 start_pos, uint256 len, address owner) public view returns(bytes memory) {
         uint validLen = 1;
-        hashs = owner_with_hash_map[owner]
-        bytes[] memory all_bytes = new bytes[](hashs.length + 2);
+        bytes32[] hash_array = owner_with_hash_map[owner]
+        bytes[] memory all_bytes = new bytes[](hash_array.length + 2);
         all_bytes[0] = '[';
-        uint arrayLength = hashs.length;
+        uint arrayLength = hash_array.length;
         uint start_idx = 0;
         for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
-            all_bytes[start_idx + 1] = GetItemJson(item_map[hashs[i]], (i == arrayLength - 1 || validLen == len));
+            all_bytes[start_idx + 1] = GetItemJson(item_map[hash_array[i]], (i == arrayLength - 1 || validLen == len));
             ++validLen;
             ++start_idx;
         }
