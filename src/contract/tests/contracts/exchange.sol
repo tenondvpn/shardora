@@ -70,7 +70,7 @@ contract Exchange {
         // all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
         // purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
-        owner_with_hash_map[msg.sender].push(hash)
+        owner_with_hash_map[msg.sender].push(hash);
     }
 
     function PurchaseItem(bytes32 hash) public payable {
