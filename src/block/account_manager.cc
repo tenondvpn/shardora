@@ -143,6 +143,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
             common::Encode::HexEncode(addr).c_str(), thread_idx);
     } else {
         thread_update_accounts_queue_[thread_idx].push(addr_info);
+        update_acc_con_.notify_one();
     }
 
     return addr_info;

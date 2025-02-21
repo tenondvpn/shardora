@@ -22,25 +22,18 @@ public:
 
     void insert(const AccountPtr& value) {
         auto& key = value->addr();
-        uint32_t index = common::Hash::Hash32(key) % kBucketSize;
         if (item_map_.count(key)) {
             item_list_.erase(item_map_[key]);
             item_map_.erase(key);
-            // index_data_map_[index] = nullptr;
         }
 
         item_list_.push_front(key);
         item_map_[key] = item_list_.begin();
+        uint32_t index = common::Hash::Hash32(key) % kBucketSize;
         index_data_map_[index] = value;
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);
-            // uint32_t index = common::Hash::Hash32(last) % kBucketSize;
-            // AccountPtr item_ptr = index_data_map_[index];
-            // if (item_ptr != nullptr && item_ptr->addr() != key) {
-            //     index_data_map_[index] = nullptr;
-            // }
-
             item_list_.pop_back();
         }
     }
