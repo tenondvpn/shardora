@@ -26,7 +26,7 @@ public:
         if (item_map_.count(key)) {
             item_list_.erase(item_map_[key]);
             item_map_.erase(key);
-            index_data_map_[index] = nullptr;
+            // index_data_map_[index] = nullptr;
         }
 
         item_list_.push_front(key);
@@ -35,11 +35,11 @@ public:
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);
-            uint32_t index = common::Hash::Hash32(last) % kBucketSize;
-            auto item_ptr = index_data_map_[index];
-            if (item_ptr != nullptr && item_ptr->addr() != key) {
-                index_data_map_[index] = nullptr;
-            }
+            // uint32_t index = common::Hash::Hash32(last) % kBucketSize;
+            // AccountPtr item_ptr = index_data_map_[index];
+            // if (item_ptr != nullptr && item_ptr->addr() != key) {
+            //     index_data_map_[index] = nullptr;
+            // }
 
             item_list_.pop_back();
         }
@@ -47,7 +47,7 @@ public:
 
     AccountPtr get(const std::string& key) {
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
-        auto item_ptr = index_data_map_[index];
+        AccountPtr item_ptr = index_data_map_[index];
         if (item_ptr != nullptr && item_ptr->addr() == key) {
             return item_ptr;
         }
