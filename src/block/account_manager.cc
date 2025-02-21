@@ -131,7 +131,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     //     return iter->second;
     // }
     
-    auto addr_info = account_lru_map_.get(addr);
+    protos::AddressInfoPtr addr_info = nullptr;// account_lru_map_.get(addr);
     if (addr_info != nullptr) {
         return addr_info;
     }
@@ -764,7 +764,7 @@ void AccountManager::UpdateAccountsThread() {
                     i, 
                     common::Encode::HexEncode(account_info->addr()).c_str(), 
                     account_info->balance());
-            // account_lru_map_.insert(account_info);
+            account_lru_map_.insert(account_info);
         }
     }
 
