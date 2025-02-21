@@ -764,7 +764,7 @@ void AccountManager::UpdateAccountsThread() {
                     i, 
                     common::Encode::HexEncode(account_info->addr()).c_str(), 
                     account_info->balance());
-            account_lru_map_.insert(account_info);
+            // account_lru_map_.insert(account_info);
         }
     }
 
