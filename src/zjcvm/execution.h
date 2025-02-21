@@ -54,7 +54,7 @@ public:
             ZJC_INFO("failed save contract prepayment pool: %u, height: %lu",
                 view_block.qc().pool_index(),
                 block.height());
-            assert(false);
+            // assert(false);
             return;
         }
 
