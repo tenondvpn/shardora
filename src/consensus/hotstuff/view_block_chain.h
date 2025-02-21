@@ -193,7 +193,6 @@ public:
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         std::string phash = parent_hash;
-        uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
                 break;
@@ -204,17 +203,16 @@ public:
                 break;
             }
 
+            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+                break;
+            }
+
             auto iter = it->second->added_txs.find(gid);
             if (iter != it->second->added_txs.end()) {
                 ZJC_DEBUG("failed check tx gid: %s, phash: %s",
                     common::Encode::HexEncode(gid).c_str(),
                     common::Encode::HexEncode(phash).c_str());
                 return false;
-            }
-
-            ++count;
-            if (count >= 4) {
-                break;
             }
 
             if (!it->second->view_block) {
