@@ -107,7 +107,6 @@ void AccountManager::InitLoadAllAddress() {
 }
 
 protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     // thread_valid_[thread_idx] = true;
     // while (true) {
     //     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
@@ -136,6 +135,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
         return addr_info;
     }
 
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     addr_info = GetAcountInfoFromDb(addr);
     if (!addr_info) {
         BLOCK_DEBUG(
