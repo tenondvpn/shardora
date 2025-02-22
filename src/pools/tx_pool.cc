@@ -131,6 +131,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend %u, %u, all valid: %u", gid_map_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
@@ -192,6 +193,7 @@ void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto iter = prio_map_.begin();
     while (iter != prio_map_.end() && txs->size() < (int32_t)count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
@@ -242,6 +244,7 @@ void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(iter->second->tx_info.gid())) {
@@ -275,6 +278,7 @@ void TxPool::GetTxIdempotently(
 void TxPool::GetTxByIds(
         const std::vector<std::string>& gids,
         std::map<std::string, TxItemPtr>& res_map) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
     for (const auto& gid : gids) {
         auto it = gid_map_.find(gid);
@@ -373,6 +377,7 @@ void TxPool::CheckTimeoutTx() {
 }
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto miter = gid_map_.find(iter->first);
         if (miter != gid_map_.end()) {
@@ -394,6 +399,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 }
 
 void TxPool::RecoverTx(const std::string& gid) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto miter = gid_map_.find(gid);
     if (miter != gid_map_.end()) {
         if (miter->second->is_consensus_add_tx) {
@@ -412,6 +418,7 @@ void TxPool::RecoverTx(const std::string& gid) {
 }
 
 bool TxPool::GidValid(const std::string& gid) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
     ZJC_DEBUG("check gid valid called: %s", common::Encode::HexEncode(gid).c_str());
@@ -480,32 +487,32 @@ void TxPool::RemoveTx(const std::string& gid) {
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
-    CheckThreadIdValid();
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        auto& gid = tx_list[i].gid(); 
-        RemoveTx(gid);
-#ifdef LATENCY
-        // 统计交易确认延迟
-        auto now_tm = common::TimeUtils::TimestampUs();
-        auto start_tm_iter = gid_start_time_map_.find(gid);
-        if (start_tm_iter != gid_start_time_map_.end()) {
-            latencys_us_.push_back(now_tm - start_tm_iter->second);
-            // ZJC_INFO("tx latency gid: %s, us: %llu",
-            //     common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
-            gid_start_time_map_.erase(gid);
-            CHECK_MEMORY_SIZE(gid_start_time_map_);
-        }
+//     CheckThreadIdValid();
+//     for (int32_t i = 0; i < tx_list.size(); ++i) {
+//         auto& gid = tx_list[i].gid(); 
+//         RemoveTx(gid);
+// #ifdef LATENCY
+//         // 统计交易确认延迟
+//         auto now_tm = common::TimeUtils::TimestampUs();
+//         auto start_tm_iter = gid_start_time_map_.find(gid);
+//         if (start_tm_iter != gid_start_time_map_.end()) {
+//             latencys_us_.push_back(now_tm - start_tm_iter->second);
+//             // ZJC_INFO("tx latency gid: %s, us: %llu",
+//             //     common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
+//             gid_start_time_map_.erase(gid);
+//             CHECK_MEMORY_SIZE(gid_start_time_map_);
+//         }
 
-        if (latencys_us_.size() > 10) {
-            uint64_t p50 = common::GetNthElement(latencys_us_, 0.5);
-            latencys_us_.clear();
+//         if (latencys_us_.size() > 10) {
+//             uint64_t p50 = common::GetNthElement(latencys_us_, 0.5);
+//             latencys_us_.clear();
         
-            ZJC_DEBUG("tx latency p50: %llu", p50);
-        }
-#endif
-    }
+//             ZJC_DEBUG("tx latency p50: %llu", p50);
+//         }
+// #endif
+//     }
 
-    finish_tx_count_ += tx_list.size();
+//     finish_tx_count_ += tx_list.size();
 }
 
  bool TxPool::CheckJoinElectTxInfo(pools::protobuf::TxMessage& tx_msg) {
@@ -784,6 +791,7 @@ void TxPool::SyncBlock() {
 }
 
 double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     all_finish_tx_count_ += finish_tx_count_;
     double factor = 0.0;
     if (get_factor) {
@@ -805,6 +813,7 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
 }
 
 void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     if (!pools::IsUserTransaction(tx->tx_info.step())) {
         ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
             tx->tx_info.step(),
@@ -826,6 +835,7 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
 }
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     for (uint32_t i = 0; i < txs.size(); ++i) {
         if (!pools::IsUserTransaction(txs[i]->tx_info.step())) {
             ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",

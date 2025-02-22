@@ -75,13 +75,13 @@ private:
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             pools::CheckGidValidFunction gid_vlid_func) {
-        if (pools_mgr_->tx_size(pool_idx_) <= consensus::kMaxTxCount) {
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            pools_mgr_->CheckTimeoutTx(pool_idx_);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-        }
+        // if (pools_mgr_->tx_size(pool_idx_) <= consensus::kMaxTxCount) {
+        //     ADD_DEBUG_PROCESS_TIMESTAMP();
+        //     pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
+        //     ADD_DEBUG_PROCESS_TIMESTAMP();
+        //     pools_mgr_->CheckTimeoutTx(pool_idx_);
+        //     ADD_DEBUG_PROCESS_TIMESTAMP();
+        // }
 
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, gid_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();

@@ -245,7 +245,7 @@ public:
 
 
 private:
-    void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
+    void DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
     void HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);

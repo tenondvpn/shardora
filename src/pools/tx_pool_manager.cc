@@ -511,6 +511,7 @@ void TxPoolManager::PopPoolsMessage() {
 
 void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
+    uint32_t pool_index = common::kInvalidPoolIndex;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
@@ -549,9 +550,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, gid: %s", 
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
                 common::Encode::HexEncode(tx_msg.gid()).c_str());
-            auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
-            msg_queues_[pool_index].push(msg_ptr);
-//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
+            pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
             break;
         }
         case pools::protobuf::kContractExcute:
@@ -560,25 +559,19 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kContractCreateByRootTo: 
         case pools::protobuf::kConsensusLocalTos: {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
-            auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
+            pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
             ZJC_DEBUG("get local to tx message hash: %s, gid: %s",
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
                 common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
-            msg_queues_[pool_index].push(msg_ptr);
-//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         }
         case pools::protobuf::kRootCross: {
-            auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
-            msg_queues_[pool_index].push(msg_ptr);
-//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
+            pool_index = common::GetAddressPoolIndex(tx_msg.to());
             break;
         }
         case pools::protobuf::kPoolStatisticTag: {
-            auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
-            msg_queues_[pool_index].push(msg_ptr);
-//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
+            pool_index = common::GetAddressPoolIndex(tx_msg.to());
             break;
         }
         default:
@@ -586,6 +579,18 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             assert(false);
             break;
         }
+
+        if (pool_index == common::kInvalidPoolIndex) {
+            if (!msg_ptr->address_info) {
+                ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
+                assert(false);
+                return;
+            }
+
+            pool_index = msg_ptr->address_info->pool_index();
+        }
+
+        DispatchTx(pool_index, msg_ptr);
     }
 }
 
@@ -839,12 +844,6 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("elect tx msg hash is %s", 
         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
     msg_ptr->msg_hash = msg_hash;
-    
-    auto pool_index = msg_ptr->address_info->pool_index();
-    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_DEBUG("success add elect tx has verify g2: %d, gid: %s, hash64: %lu, gas limit: %lu",
-        tx_msg.has_key(), common::Encode::HexEncode(tx_msg.gid()).c_str(), header.hash64(), tx_msg.gas_limit());
 }
 
 bool TxPoolManager::SaveNodeVerfiyVec(
@@ -881,11 +880,6 @@ bool TxPoolManager::SaveNodeVerfiyVec(
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
-    ZJC_ERROR("queue index pool_index: %u, msg_queues_: %d, hash64: %lu, gid: %s", 
-        msg_ptr->address_info->pool_index(), 
-        msg_queues_[msg_ptr->address_info->pool_index()].size(),
-        header.hash64(),
-        common::Encode::HexEncode(tx_msg.gid()).c_str());
     // if (tx_msg.has_key() && tx_msg.key().size() > 0) {
     //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     //     return;
@@ -964,14 +958,6 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         assert(false);
         return;
     }
-
-    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_ERROR("queue index pool_index: %u, msg_queues_: %d, hash64: %lu, gid: %s", 
-        msg_ptr->address_info->pool_index(), 
-        msg_queues_[msg_ptr->address_info->pool_index()].size(),
-        header.hash64(),
-        common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
 
 void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr) {
@@ -1003,11 +989,6 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
             common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
         return;
     }
-
-    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
-        msg_ptr->address_info->pool_index(),
-        msg_queues_[msg_ptr->address_info->pool_index()].size());
 }
 
 bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
@@ -1070,13 +1051,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_TX_DEBUG_INFO(msg_ptr->header.mutable_tx_proto());
-    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
-//         msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_DEBUG("success push tx: %s, %lu, pool index: %d", 
-        common::Encode::HexEncode(tx_msg.gid()).c_str(), 
-        msg_ptr->header.hash64(),
-        msg_ptr->address_info->pool_index());
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
@@ -1129,17 +1103,6 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
             tx_msg.gas_price());
         return;
     }
-
-    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-//     ZJC_INFO("address balance success: %lu, transfer amount: %lu, "
-//         "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
-//         msg_ptr->address_info->balance(),
-//         tx_msg.amount(),
-//         tx_msg.contract_prepayment(),
-//         default_gas,
-//         tx_msg.gas_price(),
-//         common::Encode::HexEncode(tx_msg.contract_code()).c_str());
 }
 
 void TxPoolManager::BftCheckInvalidGids(
@@ -1157,49 +1120,36 @@ void TxPoolManager::BftCheckInvalidGids(
 }
 
 void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx, bool* has_system_tx) {
-    uint32_t count = 0;
-    while (!destroy_) {
-        transport::MessagePtr msg_ptr = nullptr;
-        if (!msg_queues_[pool_index].pop(&msg_ptr)) {
-            break;
-        }
+    // uint32_t count = 0;
+    // while (!destroy_) {
+    //     transport::MessagePtr msg_ptr = nullptr;
+    //     if (!msg_queues_[pool_index].pop(&msg_ptr)) {
+    //         break;
+    //     }
 
-        ZJC_DEBUG("success pop tx gid: %s, step: %d",
-            common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
-            msg_ptr->header.tx_proto().step());
-        if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
-            if (has_user_tx != nullptr) {
-                *has_user_tx = true;
-            }
-        } else {
-            if (has_system_tx != nullptr) {
-                *has_system_tx = true;
-            }
-        }
+    //     ZJC_DEBUG("success pop tx gid: %s, step: %d",
+    //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
+    //         msg_ptr->header.tx_proto().step());
+    //     if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
+    //         if (has_user_tx != nullptr) {
+    //             *has_user_tx = true;
+    //         }
+    //     } else {
+    //         if (has_system_tx != nullptr) {
+    //             *has_system_tx = true;
+    //         }
+    //     }
 
-        // auto now_tm_ms = common::TimeUtils::TimestampMs();
-        DispatchTx(pool_index, msg_ptr);
-        if (!pop_all && ++count >= 1024) {
-            break;
-        }
-        
-        // auto use_time = common::TimeUtils::TimestampMs() - now_tm_ms;
-        // if (use_time > 10) {
-        // ZJC_DEBUG("pool_index: %d, size: %d, success pop tx: %s, %lu, "
-        //     "step: %d, has_user_tx: %d, has_system_tx: %d, over handle message debug use ms: %lu", 
-        //     pool_index, 
-        //     msg_queues_[pool_index].size(), 
-        //     common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), 
-        //     msg_ptr->header.hash64(),
-        //     msg_ptr->header.tx_proto().step(),
-        //     (has_user_tx != nullptr ? *has_user_tx : false),
-        //     (has_system_tx != nullptr ? *has_system_tx: false),
-        //     use_time);
-        // }
-    }
+    //     // auto now_tm_ms = common::TimeUtils::TimestampMs();
+    //     DispatchTx(pool_index, msg_ptr);
+    //     if (!pop_all && ++count >= 1024) {
+    //         break;
+    //     }
+    // }
+    assert(false);
 }
 
-void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
+void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
     if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
         ZJC_DEBUG("gid invalid pop tx gid: %s, step: %d",
             common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
