@@ -498,9 +498,6 @@ void TxPoolManager::PopPoolsMessage() {
 
                 ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
                 HandlePoolsMessage(msg_ptr);
-                if (++count >= 64) {
-                    break;
-                }
             }
         }
 
