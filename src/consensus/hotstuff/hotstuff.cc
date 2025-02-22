@@ -602,7 +602,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
 #endif
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
-    if (VerifyLeader(view_item.qc().leader_idx()) != Status::kSuccess) {
+    if (VerifyLeader(pro_msg_wrap) != Status::kSuccess) {
         // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
         // 只能依赖同步，但由于同步慢于新的 propose 消息
         // 即是这里再加一次同步，也很难追上 propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
@@ -757,7 +757,6 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
-
     ZJC_DEBUG("HandleProposeMsgStep_Directly called hash: %lu, propose_debug: %s",
         pro_msg_wrap->msg_ptr->header.hash64(), 
         "ProtobufToJson(cons_debug).c_str()");
@@ -1793,24 +1792,23 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
     return Status::kSuccess;
 }
 
-Status Hotstuff::VerifyLeader(const uint32_t& leader_idx) {
+Status Hotstuff::VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     auto leader = leader_rotation()->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
         return  Status::kError;
     }
 
-    if (leader_idx != leader->index) {
-        auto eleader = leader_rotation()->GetExpectedLeader();
-        if (!eleader || leader_idx != eleader->index) {
-            ZJC_ERROR("pool: %d, leader_idx message is error, %d, %d",
-                pool_idx_, leader_idx, leader->index);
-            // assert(false);
-            return Status::kError;
-        }
-
-        ZJC_DEBUG("use expected leader index: %u, %u", leader_idx, leader->index);
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
+        pro_msg_wrap->msg_ptr->header);
+    if (crypto_->security()->Verify(
+            msg_hash,
+            leader->pubkey,
+            pro_msg_wrap->msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(leader->id).c_str());
+        return Status::kError;
     }
+    
     return Status::kSuccess;
 }
 

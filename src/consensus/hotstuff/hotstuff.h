@@ -326,7 +326,7 @@ private:
         std::shared_ptr<block::BlockToDbItem>&);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const uint32_t& leader_idx);
+    Status VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status VerifyQC(const QC& qc);
     Status VerifyTC(const TC& tc);
     Status VerifyViewBlock(
