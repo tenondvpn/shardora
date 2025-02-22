@@ -263,8 +263,9 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 
         return kTransportPriorityLow;
     case common::kHotstuffMessage:
-    case common::kPoolsMessage:
         return kTransportPrioritySystem;
+        case common::kPoolsMessage:
+        return kTransportPriorityLow;
     case common::kInitMessage:
         return kTransportPriorityHighest;
     case common::kBlsMessage:
