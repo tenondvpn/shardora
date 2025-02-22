@@ -5,6 +5,7 @@
 
 #include <common/hash.h>
 #include <common/log.h>
+#include "common/node_members.h"
 #include <consensus/hotstuff/types.h>
 #include <protos/block.pb.h>
 #include <protos/hotstuff.pb.h>
