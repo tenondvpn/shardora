@@ -95,7 +95,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     for (auto partial_sig : collection_item->partial_sigs) {
         partial_sigs.push_back(std::make_shared<AggregateSignature>(partial_sig));
     }
-    s = AggregateSigs(partial_sigs, &agg_sig);
+    auto s = AggregateSigs(partial_sigs, &agg_sig);
     if (s == Status::kSuccess) {
         collection_item->agg_sig = &agg_sig;
         bls_collection_->handled = true;
