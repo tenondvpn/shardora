@@ -33,8 +33,18 @@ public:
         auto index = pool_idx_ % members->size();
         return (*members)[index];
     }
+
     inline common::BftMemberPtr GetExpectedLeader() const {
         return GetLeader();
+    }
+
+    inline common::BftMemberPtr GetMember(uint32_t member_index) const {
+        auto members = Members(common::GlobalInfo::Instance()->network_id());
+        if (member_index >= members->size()) {
+            return nullptr;
+        }
+
+        return (*members)[member_index];
     }
     
     inline uint32_t GetLocalMemberIdx() const {

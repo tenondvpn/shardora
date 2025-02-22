@@ -327,6 +327,7 @@ private:
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status VerifyFollower(const transport::MessagePtr& msg_ptr);
     Status VerifyQC(const QC& qc);
     Status VerifyTC(const TC& tc);
     Status VerifyViewBlock(

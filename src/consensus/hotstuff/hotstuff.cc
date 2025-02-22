@@ -1032,6 +1032,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         return Status::kError;
     }
 
+    trans_msg->set_ecdh_encrypt(crypt_msg);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
@@ -1063,6 +1064,43 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     return Status::kSuccess;
 }
 
+Status Hotstuff::VerifyFollower(const transport::MessagePtr& msg_ptr) {
+    auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+    auto member = leader_rotation_->GetMember(vote_msg.replica_idx());
+    if (!member) {
+        return Status::kError;
+    }
+
+    std::string ecdh_key;
+    if (crypto_->security()->GetEcdhKey(
+            member->pubkey,
+            &ecdh_key) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify leader sign failed: %s", 
+            common::Encode::HexEncode(member->id).c_str());
+        return Status::kError;
+    }
+
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
+        msg_ptr->header);
+    std::string decrypt_msg;
+    if (crypto_->security()->Decrypt(
+            msg_ptr->header.ecdh_encrypt(), 
+            ecdh_key, 
+            &decrypt_msg) != security::kSecuritySuccess) {
+        ZJC_DEBUG("send to leader encrypt failed: %s", 
+            common::Encode::HexEncode(member->id).c_str());
+        return Status::kError;
+    }
+
+    if (memcmp(decrypt_msg.c_str(), msg_hash.c_str(), msg_hash.size()) != 0) {
+        ZJC_DEBUG("send to leader encrypt failed: %s", 
+            common::Encode::HexEncode(member->id).c_str());
+        return Status::kError;
+    }
+
+    return Status::kSuccess;
+}
+
 void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto b = common::TimeUtils::TimestampMs();
@@ -1070,6 +1108,10 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
             auto e = common::TimeUtils::TimestampMs();
             ZJC_DEBUG("pool: %d handle vote duration: %lu ms", pool_idx_, e-b);
         });
+
+    if (VerifyFollower(msg_ptr) != Status::kSuccess) {
+        return;
+    }
     
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
     acceptor()->AddTxs(msg_ptr, vote_msg.txs());
