@@ -1032,7 +1032,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         return Status::kError;
     }
 
-    trans_msg->set_ecdh_encrypt(crypt_msg);
+    trans_msg->header.set_ecdh_encrypt(crypt_msg);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
