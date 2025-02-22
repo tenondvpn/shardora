@@ -269,6 +269,7 @@ private:
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
+    uint32_t GetTxPoolIndex(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;

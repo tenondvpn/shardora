@@ -224,47 +224,11 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
     auto& msg = msg_ptr->header;
     switch (msg.type()) {
     case common::kConsensusMessage:
-        ZJC_DEBUG("get consensus message tx type: %d, prepare: %s, precommit: %s, commit: %s, has_sync: %d",
-            msg.zbft().tx_bft().tx_type(),
-            common::Encode::HexEncode(msg.zbft().prepare_gid()).c_str(),
-            common::Encode::HexEncode(msg.zbft().precommit_gid()).c_str(),
-            common::Encode::HexEncode(msg.zbft().commit_gid()).c_str(),
-            msg.zbft().sync_block());
-        if (msg.zbft().sync_block()) {
-            return kTransportPriorityHighest;
-        }
-
-        if (msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalFrom &&
-                msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalTo) {
-            return kTransportPrioritySystem;
-        }
-
-        if (msg.zbft().pool_index() == common::kImmutablePoolSize) {
-            return kTransportPriorityHighest;
-        }
-
-        if (!msg.zbft().commit_gid().empty()) {
-            return kTransportPriorityLow;
-        }
-
-        if (!msg.zbft().prepare_gid().empty()) {
-            msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
-            return kTransportPriorityMiddle;
-        }
-       
-        if (!msg.zbft().precommit_gid().empty()) {
-            msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
-            if (msg.zbft().leader_idx() > 0) {
-                return kTransportPriorityHigh;
-            }
-
-            return kTransportPriorityHigh;
-        }
-
+        assert(false);
         return kTransportPriorityLow;
     case common::kHotstuffMessage:
         return kTransportPrioritySystem;
-        case common::kPoolsMessage:
+    case common::kPoolsMessage:
         return kTransportPriorityLow;
     case common::kInitMessage:
         return kTransportPriorityHighest;

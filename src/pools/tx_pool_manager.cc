@@ -412,6 +412,26 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto& header = msg_ptr->header;
+    if (header.has_tx_proto()) {
+        auto& tx_msg = header.tx_proto();
+        if (IsUserTransaction(tx_msg.step())) {
+            auto tmp_acc_ptr = acc_mgr_.lock();
+            auto address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+            if (!address_info) {
+                return;
+            }
+
+            if (tx_pool_[address_info->pool_index()].all_tx_size() >= 
+                    common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+                ZJC_WARN("add failed extend %u, %u, all valid: %u", 
+                    tx_pool_[address_info->pool_index()].all_tx_size(), 
+                    common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
+                    tx_pool_[address_info->pool_index()].tx_size());
+                return;
+            }
+        }
+    }
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
         ZJC_DEBUG("header.has_sync_heights()");
