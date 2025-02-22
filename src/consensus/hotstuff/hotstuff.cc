@@ -532,7 +532,7 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
     // }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
+    auto st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
