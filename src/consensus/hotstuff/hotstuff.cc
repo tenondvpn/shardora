@@ -580,7 +580,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                     last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
                     common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
                 auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*iter->second);
-                if (SendMsgToLeader(tmp_msg_ptr, VOTE) != Status::kSuccess) {
+                if (SendMsgToLeader(pro_msg_wrap->leader, tmp_msg_ptr, VOTE) != Status::kSuccess) {
                     ZJC_ERROR("pool: %d, Send vote message is error.",
                         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
                 }
@@ -1011,30 +1011,8 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         return Status::kError;
     }
     
-    std::string ecdh_key;
-    if (crypto_->security()->GetEcdhKey(
-            pro_msg_wrap->leader->pubkey,
-            &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", 
-            common::Encode::HexEncode(pro_msg_wrap->leader->id).c_str());
-        return Status::kError;
-    }
-
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
-        trans_header);
-    std::string crypt_msg;
-    if (crypto_->security()->Encrypt(
-            msg_hash, 
-            ecdh_key, 
-            &crypt_msg)!= security::kSecuritySuccess) {
-        ZJC_DEBUG("send to leader encrypt failed: %s", 
-            common::Encode::HexEncode(pro_msg_wrap->leader->id).c_str());
-        return Status::kError;
-    }
-
-    trans_msg->header.set_ecdh_encrypt(crypt_msg);
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
+    if (SendMsgToLeader(pro_msg_wrap->leader, trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
             pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
     }
@@ -1075,7 +1053,7 @@ Status Hotstuff::VerifyFollower(const transport::MessagePtr& msg_ptr) {
     if (crypto_->security()->GetEcdhKey(
             member->pubkey,
             &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", 
+        ZJC_DEBUG("verify follower get ecdh key failed: %s", 
             common::Encode::HexEncode(member->id).c_str());
         return Status::kError;
     }
@@ -1087,13 +1065,13 @@ Status Hotstuff::VerifyFollower(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.ecdh_encrypt(), 
             ecdh_key, 
             &decrypt_msg) != security::kSecuritySuccess) {
-        ZJC_DEBUG("send to leader encrypt failed: %s", 
+        ZJC_DEBUG("verify follower encrypt failed: %s", 
             common::Encode::HexEncode(member->id).c_str());
         return Status::kError;
     }
 
     if (memcmp(decrypt_msg.c_str(), msg_hash.c_str(), msg_hash.size()) != 0) {
-        ZJC_DEBUG("send to leader encrypt failed: %s", 
+        ZJC_DEBUG("verify follower encrypt failed: %s", 
             common::Encode::HexEncode(member->id).c_str());
         return Status::kError;
     }
@@ -2111,23 +2089,39 @@ Status Hotstuff::ConstructHotstuffMsg(
 }
 
 Status Hotstuff::SendMsgToLeader(
+        common::BftMemberPtr leader,
         std::shared_ptr<transport::TransportMessage>& trans_msg, 
         const MsgType msg_type) {
     Status ret = Status::kSuccess;
     auto& header_msg = trans_msg->header;
-    auto leader = leader_rotation()->GetLeader();
-    if (!leader) {
-        ZJC_ERROR("Get Leader failed.");
-        return Status::kError;
-    }
-    
-    // 记录收到回执时期望的 leader 用于验证
-    leader_rotation_->SetExpectedLeader(leader);
     header_msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(leader->net_id, leader->id);
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
     transport::TcpTransport::Instance()->SetMessageHash(header_msg);
+    std::string ecdh_key;
+    if (crypto_->security()->GetEcdhKey(
+            leader->pubkey,
+            &ecdh_key) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify leader sign failed: %s", 
+            common::Encode::HexEncode(leader->id).c_str());
+        return Status::kError;
+    }
+
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
+        header_msg);
+    std::string crypt_msg;
+    if (crypto_->security()->Encrypt(
+            msg_hash, 
+            ecdh_key, 
+            &crypt_msg)!= security::kSecuritySuccess) {
+        ZJC_DEBUG("send to leader encrypt failed: %s", 
+            common::Encode::HexEncode(leader->id).c_str());
+        return Status::kError;
+    }
+
+    trans_msg->header.set_ecdh_encrypt(crypt_msg);
+
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader->index != local_idx) {
         if (leader->public_ip == 0 || leader->public_port == 0) {
@@ -2271,7 +2265,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     hotstuff_msg->set_type(PRE_RESET_TIMER);
     hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     hotstuff_msg->set_pool_index(pool_idx_);
-    SendMsgToLeader(trans_msg, PRE_RESET_TIMER);
+    SendMsgToLeader(leader, trans_msg, PRE_RESET_TIMER);
     ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
         leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),

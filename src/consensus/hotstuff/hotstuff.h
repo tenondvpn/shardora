@@ -351,7 +351,10 @@ private:
             pb_VoteMsg* pb_vote_msg,
             pb_NewViewMsg* pb_nv_msg,
             pb_HotstuffMessage* pb_hf_msg);
-    Status SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& hotstuff_msg, const MsgType msg_type);
+    Status SendMsgToLeader(
+        common::BftMemberPtr leader, 
+        std::shared_ptr<transport::TransportMessage>& hotstuff_msg, 
+        const MsgType msg_type);
     // 是否允许空交易
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
     Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
