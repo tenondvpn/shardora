@@ -26,7 +26,7 @@ Status AggCrypto::PartialSign(
             msg_hash,
             &g1_sig);
 
-    ZJC_WARN("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
+    ZJC_DEBUG("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
         libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(bls::AggBls::Instance()->agg_sk()).c_str(),
         common::Encode::HexEncode(msg_hash).c_str(),
