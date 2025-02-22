@@ -455,7 +455,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
+    st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
     if (st != Status::kSuccess) {
         HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
         return;
