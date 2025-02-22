@@ -46,7 +46,7 @@ int TcpTransport::Init(
             std::placeholders::_1,
             std::placeholders::_2);
     transport_ = std::make_shared<TnetTransport>(
-        false,
+        true,
         10 * 1024 * 1024,
         10 * 1024 * 1024,
         1,
