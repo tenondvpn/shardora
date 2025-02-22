@@ -2215,6 +2215,10 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     auto leader = leader_rotation()->GetLeader();
+    if (!leader) {
+        return;
+    }
+    
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader && leader->index == local_idx) {
         Propose(latest_qc_item_ptr_, nullptr, nullptr);
