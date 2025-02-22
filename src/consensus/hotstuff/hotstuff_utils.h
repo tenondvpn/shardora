@@ -29,6 +29,7 @@ struct ProposeMsgWrapper {
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     Breakpoint breakpoint; // 断点位置
     int tried_times;
+    common::BftMemberPtr leader;
 
     ProposeMsgWrapper(const transport::MessagePtr& mptr) 
         : msg_ptr(mptr), breakpoint(0), tried_times(0) {}

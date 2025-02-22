@@ -1011,6 +1011,27 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         return Status::kError;
     }
     
+    std::string ecdh_key;
+    if (crypto_->security()->GetEcdhKey(
+            pro_msg_wrap->leader->pubkey,
+            &ecdh_key) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify leader sign failed: %s", 
+            common::Encode::HexEncode(pro_msg_wrap->leader->id).c_str());
+        return Status::kError;
+    }
+
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
+        trans_header);
+    std::string crypt_msg;
+    if (crypto_->security()->Encrypt(
+            msg_hash, 
+            ecdh_key, 
+            &crypt_msg)!= security::kSecuritySuccess) {
+        ZJC_DEBUG("send to leader encrypt failed: %s", 
+            common::Encode::HexEncode(pro_msg_wrap->leader->id).c_str());
+        return Status::kError;
+    }
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (SendMsgToLeader(trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
@@ -1793,10 +1814,14 @@ Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
 }
 
 Status Hotstuff::VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+    if (pro_msg_wrap->leader) {
+        return Status::kSuccess;
+    }
+
     auto leader = leader_rotation()->GetLeader(); // 判断是否为空
     if (!leader) {
         ZJC_ERROR("Get Leader is error.");
-        return  Status::kError;
+        return Status::kError;
     }
 
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
@@ -1805,10 +1830,12 @@ Status Hotstuff::VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) 
             msg_hash,
             leader->pubkey,
             pro_msg_wrap->msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(leader->id).c_str());
+        ZJC_DEBUG("verify leader sign failed: %s", 
+            common::Encode::HexEncode(leader->id).c_str());
         return Status::kError;
     }
     
+    pro_msg_wrap->leader = leader;
     return Status::kSuccess;
 }
 

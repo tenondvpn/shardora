@@ -73,6 +73,7 @@ message Header {
     optional view_block.protobuf.ViewBlockSyncMessage view_block_proto = 32;
     optional view_block.protobuf.TimeoutMessage hotstuff_timeout_proto = 33;
     optional hotstuff.protobuf.HotstuffMessage hotstuff = 34;
+    optional bytes ecdh_encrypt = 35;
 }
 
 message OldHeader {
