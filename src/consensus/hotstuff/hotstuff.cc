@@ -450,12 +450,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view(),
         ProtobufToJson(cons_debug).c_str());
 #endif
-    auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
-    if (st != Status::kSuccess) {
-        return;
-    }
-
-    st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
+    auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
     if (st != Status::kSuccess) {
         HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
         return;
@@ -525,14 +520,14 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
 
 Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> pro_msg_wrap) {
     auto msg_ptr = pro_msg_wrap->msg_ptr;
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
-    // if (st != Status::kSuccess) {
-    //     return st;
-    // }
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return st;
+    }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
+    st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
     if (st != Status::kSuccess) {
         return st;
     }
@@ -585,7 +580,8 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                     last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
                     common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
                 auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*iter->second);
-                if (SendMsgToLeader(pro_msg_wrap->leader, tmp_msg_ptr, VOTE) != Status::kSuccess) {
+                auto leader = leader_rotation_->GetLeader();
+                if (!leader || SendMsgToLeader(leader, tmp_msg_ptr, VOTE) != Status::kSuccess) {
                     ZJC_ERROR("pool: %d, Send vote message is error.",
                         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
                 }
@@ -2223,7 +2219,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     if (!leader) {
         return;
     }
-
+    
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader && leader->index == local_idx) {
         Propose(latest_qc_item_ptr_, nullptr, nullptr);
