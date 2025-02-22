@@ -433,8 +433,9 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 // #ifndef NDEBUG
             auto now_tm = common::TimeUtils::TimestampMs();
             if (now_tm > prev_show_tm_ms_ + 3000) {
-                ZJC_INFO("pools stored message size: %d, %d, gid size: %u, tx all size: %u", 
+                ZJC_INFO("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u", 
                         thread_idx, pools_msg_queue_[thread_idx].size(),
+                        address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
                         tx_pool_[address_info->pool_index()].tx_size());
                 prev_show_tm_ms_ = now_tm;
