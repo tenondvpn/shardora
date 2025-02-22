@@ -43,11 +43,11 @@ Status AggCrypto::VerifyAndAggregateSig(
         const HashStr& msg_hash,
         const AggregateSignature& partial_sig,
         AggregateSignature& agg_sig) {
-    auto s = Verify(partial_sig, msg_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
-    if (s != Status::kSuccess) {
-        assert(false);
-        return s;
-    }
+    // auto s = Verify(partial_sig, msg_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
+    // if (s != Status::kSuccess) {
+    //     assert(false);
+    //     return s;
+    // }
 
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {

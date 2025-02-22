@@ -1163,7 +1163,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
             agg_sig);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
-            ZJC_WARN("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
+            ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
                 pool_idx_, vote_msg.view(), msg_ptr->header.hash64());
             return;
         }
