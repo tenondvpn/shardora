@@ -84,16 +84,16 @@ struct Construct {
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
 #endif
 
-// #ifndef NDEBUG
+#ifndef NDEBUG
 // #define ADD_TX_DEBUG_INFO(tx_proto)
 #define ADD_TX_DEBUG_INFO(tx_proto) { \
     auto* tx_debug = tx_proto->add_tx_debug(); \
     tx_debug->set_tx_debug_tm_ms(common::TimeUtils::TimestampMs()); \
     tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
 }
-// #else
-// #define ADD_TX_DEBUG_INFO(tx_proto)
-// #endif
+#else
+#define ADD_TX_DEBUG_INFO(tx_proto)
+#endif
 
 namespace shardora {
 
