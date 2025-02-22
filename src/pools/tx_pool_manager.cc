@@ -430,7 +430,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
             auto now_tm = common::TimeUtils::TimestampMs();
             if (now_tm > prev_show_tm_ms_ + 3000) {
                 for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -441,7 +441,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 }
                 prev_show_tm_ms_ = now_tm;
             }
-#endif
+// #endif
         }
     }
 
