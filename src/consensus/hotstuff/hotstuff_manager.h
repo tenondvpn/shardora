@@ -295,7 +295,7 @@ private:
         return std::make_shared<ContractCreateByRootToTxItem>(
                 contract_mgr_, 
                 db_, 
-                &&msg_ptr->header.tx_proto(), 
+                &msg_ptr->header.tx_proto(), 
                 account_mgr_, 
                 security_ptr_, 
                 msg_ptr->address_info);
