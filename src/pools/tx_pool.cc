@@ -836,6 +836,7 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
+    if (all_tx_size())
     for (uint32_t i = 0; i < txs.size(); ++i) {
         if (!pools::IsUserTransaction(txs[i]->tx_info.step())) {
             ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",

@@ -473,6 +473,15 @@ int TxPoolManager::BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index, 
         const pools::TxItemPtr& valid_tx) {
+    if (tx_pool_[pool_index].all_tx_size() >= 
+            common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+        ZJC_WARN("add failed extend %u, %u, all valid: %u", 
+            tx_pool_[pool_index].all_tx_size(), 
+            common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
+            tx_pool_[pool_index].tx_size());
+        return;
+    }
+
     tx_pool_[pool_index].ConsensusAddTxs(valid_tx);
     return kPoolsSuccess;
 }
