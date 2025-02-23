@@ -258,9 +258,10 @@ int tx_main(int argc, char** argv) {
     uint32_t count = 0;
     uint32_t step_num = 1000;
     std::string gid = common::Random::RandomString(32);
+    uint64_t random_u64 = common::Random::RandomUint64();
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
-        gid_int[0] = pos;
+        gid_int[0] = pos + random_u64;
         if (g_pri_addrs_map[from_prikey] == to) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
@@ -299,12 +300,12 @@ int tx_main(int argc, char** argv) {
         }
 
         if (count % 1000 == 0) {
-            /*++prikey_pos;
+            ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
-            */
-            usleep(50000lu);
+            
+            usleep(20000lu);
         }
 
         count++;
