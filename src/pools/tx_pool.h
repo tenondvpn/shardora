@@ -48,7 +48,7 @@ namespace pools {
 class TxPoolManager;
 struct TxItemPriOper {
     bool operator() (TxItemPtr& a, TxItemPtr& b) {
-        return a->gas_price < b->gas_price;
+        return a->tx_info->gas_price() < b->tx_info->gas_price();
     }
 };
 
