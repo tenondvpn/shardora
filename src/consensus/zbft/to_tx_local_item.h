@@ -12,7 +12,7 @@ namespace consensus {
 class ToTxLocalItem : public TxItemBase {
 public:
     ToTxLocalItem(
-            const pools::protobuf::TxMessage* msg,
+            pools::protobuf::TxMessage* msg,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<ContractGasPrepayment>& gas_prepayment,
             std::shared_ptr<block::AccountManager>& account_mgr,

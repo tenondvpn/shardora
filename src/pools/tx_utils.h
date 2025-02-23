@@ -45,7 +45,7 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(const pools::protobuf::TxMessage* tx_ptr, protos::AddressInfoPtr& addr_info)
+    TxItem(pools::protobuf::TxMessage* tx_ptr, protos::AddressInfoPtr& addr_info)
             : prev_consensus_tm_us(0),
             gas_price(tx_ptr->gas_price()),
             tx_info(tx_ptr),
@@ -84,7 +84,7 @@ public:
     int32_t step = pools::protobuf::kNormalFrom;
     std::string unique_tx_hash;
     std::string prio_key;
-    const pools::protobuf::TxMessage* tx_info;
+    pools::protobuf::TxMessage* tx_info;
     protos::AddressInfoPtr address_info;
     bool is_consensus_add_tx;
 };

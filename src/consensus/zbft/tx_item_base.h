@@ -13,7 +13,7 @@ namespace consensus {
 class TxItemBase : public pools::TxItem {
 protected:
     TxItemBase(
-        const pools::protobuf::TxMessage* tx,
+        pools::protobuf::TxMessage* tx,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)

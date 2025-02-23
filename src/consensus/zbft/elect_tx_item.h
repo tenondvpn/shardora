@@ -33,7 +33,7 @@ typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
 class ElectTxItem : public TxItemBase {
 public:
     ElectTxItem(
-        const pools::protobuf::TxMessage* msg,
+        pools::protobuf::TxMessage* msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         std::shared_ptr<protos::PrefixDb>& prefix_db,

@@ -993,7 +993,7 @@ void BlockManager::HandleElectTx(
 
             AddMiningToken(view_block.qc().view_block_hash(), elect_block);
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
-                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info.gid() == tx.gid()) {
+                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info->gid() == tx.gid()) {
                     shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
                     ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
                 }
@@ -1362,7 +1362,7 @@ void BlockManager::HandleStatisticBlock(
         shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
         shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
         shard_elect_tx->tx_ptr->unique_tx_hash = pools::GetTxMessageHash(
-            shard_elect_tx->tx_ptr->tx_info);
+            *shard_elect_tx->tx_ptr->tx_info);
         shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
         shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
         shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
@@ -1434,7 +1434,7 @@ pools::TxItemPtr BlockManager::GetToTx(
         }
         
         auto tx_ptr = iter->second;
-        tx_ptr->tx_info.set_gid(gid);
+        tx_ptr->tx_info->set_gid(gid);
         ZJC_DEBUG("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
             ProtobufToJson(tx_ptr->tx_info).c_str(),
             common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(), 

@@ -15,7 +15,7 @@ public:
     ContractCreateByRootFromTxItem(
             std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<db::Db>& db,
-            const pools::protobuf::TxMessage* msg,
+            pools::protobuf::TxMessage* msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr,
             protos::AddressInfoPtr& addr_info)
