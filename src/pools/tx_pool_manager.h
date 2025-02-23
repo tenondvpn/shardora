@@ -327,6 +327,10 @@ private:
     std::weak_ptr<block::AccountManager> acc_mgr_;
     volatile uint32_t now_max_tx_count_ = 0;
 
+    // tps received
+    uint64_t prev_tps_time_ms_  = 0;
+    uint64_t prev_tps_count_ = 0;
+
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
 
