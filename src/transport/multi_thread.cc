@@ -58,11 +58,6 @@ void ThreadHandler::HandleMessage() {
                 thread_idx, 
                 (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)));
             if (!msg_ptr) {
-                auto etime = common::TimeUtils::TimestampUs();
-                if (etime - btime > 200000) {
-                    std::string t;
-                    ZJC_INFO("0 over handle thread: %d use: %lu us, all: %s", thread_idx, (etime - btime), t.c_str());
-                }
                 break;
             }
 
@@ -81,7 +76,7 @@ void ThreadHandler::HandleMessage() {
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 2000000lu) {
+            if (etime - btime > 200000lu) {
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
                     // if (diff_time > 1000000lu) {
