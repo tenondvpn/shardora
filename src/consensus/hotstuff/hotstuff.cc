@@ -1050,21 +1050,22 @@ Status Hotstuff::VerifyFollower(const transport::MessagePtr& msg_ptr) {
         return Status::kError;
     }
 
-    std::string ecdh_key;
-    if (crypto_->security()->GetEcdhKey(
-            member->pubkey,
-            &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify follower get ecdh key failed: %s", 
-            common::Encode::HexEncode(member->id).c_str());
-        return Status::kError;
+    if (member->backup_ecdh_key.empty()) {
+        if (crypto_->security()->GetEcdhKey(
+                member->pubkey,
+                &member->backup_ecdh_key) != security::kSecuritySuccess) {
+            ZJC_DEBUG("verify follower get ecdh key failed: %s", 
+                common::Encode::HexEncode(member->id).c_str());
+            return Status::kError;
+        }
     }
-
+    
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
         msg_ptr->header);
     std::string decrypt_msg;
     if (crypto_->security()->Decrypt(
             msg_ptr->header.ecdh_encrypt(), 
-            ecdh_key, 
+            member->backup_ecdh_key, 
             &decrypt_msg) != security::kSecuritySuccess) {
         ZJC_DEBUG("verify follower encrypt failed: %s", 
             common::Encode::HexEncode(member->id).c_str());
@@ -2100,13 +2101,14 @@ Status Hotstuff::SendMsgToLeader(
     header_msg.set_des_dht_key(dht_key.StrKey());
     header_msg.set_type(common::kHotstuffMessage);
     transport::TcpTransport::Instance()->SetMessageHash(header_msg);
-    std::string ecdh_key;
-    if (crypto_->security()->GetEcdhKey(
-            leader->pubkey,
-            &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", 
-            common::Encode::HexEncode(leader->id).c_str());
-        return Status::kError;
+    if (leader->leader_ecdh_key.empty()) {
+        if (crypto_->security()->GetEcdhKey(
+                leader->pubkey,
+                &leader->leader_ecdh_key) != security::kSecuritySuccess) {
+            ZJC_DEBUG("verify leader sign failed: %s", 
+                common::Encode::HexEncode(leader->id).c_str());
+            return Status::kError;
+        }
     }
 
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(
@@ -2114,7 +2116,7 @@ Status Hotstuff::SendMsgToLeader(
     std::string crypt_msg;
     if (crypto_->security()->Encrypt(
             msg_hash, 
-            ecdh_key, 
+            leader->leader_ecdh_key, 
             &crypt_msg)!= security::kSecuritySuccess) {
         ZJC_DEBUG("send to leader encrypt failed: %s", 
             common::Encode::HexEncode(leader->id).c_str());
