@@ -189,15 +189,6 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
         common::Encode::HexEncode(GetBlockHash(*queue_item_ptr->view_block_ptr)).c_str());
 }
 
-// Status BlockAcceptor::AddTxs(transport::MessagePtr msg_ptr, const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) {
-//     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-//     std::shared_ptr<ViewBlockChain> chain = nullptr;
-//     // TODO: check valid
-//     BalanceMap now_balance_map;
-//     zjcvm::ZjchainHost zjc_host;
-//     return addTxsToPool(msg_ptr, chain, "", txs, false, txs_ptr, now_balance_map, zjc_host);
-// };
-
 Status BlockAcceptor::addTxsToPool(
         transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,
@@ -263,13 +254,13 @@ Status BlockAcceptor::addTxsToPool(
         switch (tx->step()) {
         case pools::protobuf::kNormalFrom:
             tx_ptr = std::make_shared<consensus::FromTxItem>(
-                    *tx, account_mgr_, security_ptr_, address_info);
+                    msg_ptr, i, account_mgr_, security_ptr_, address_info);
             // ADD_TX_DEBUG_INFO((const_cast<pools::protobuf::TxMessage*>(tx)));
             break;
         case pools::protobuf::kRootCreateAddress:
             tx_ptr = std::make_shared<consensus::RootToTxItem>(
                     elect_info_->max_consensus_sharding_id(),
-                    *tx,
+                    msg_ptr, i,
                     vss_mgr_,
                     account_mgr_,
                     security_ptr_,
@@ -279,7 +270,7 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
                     contract_mgr_, 
                     db_, 
-                    *tx, 
+                    msg_ptr, i, 
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
@@ -290,7 +281,7 @@ Status BlockAcceptor::addTxsToPool(
                     contract_mgr_, 
                     gas_prepayment_, 
                     db_, 
-                    *tx,
+                    msg_ptr, i,
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
@@ -299,7 +290,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kContractGasPrepayment:
             tx_ptr = std::make_shared<consensus::ContractUserCall>(
                     db_, 
-                    *tx,
+                    msg_ptr, i,
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
@@ -307,7 +298,7 @@ Status BlockAcceptor::addTxsToPool(
             break;
         case pools::protobuf::kConsensusLocalTos:
             tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
-                    *tx, 
+                    msg_ptr, i, 
                     db_, 
                     gas_prepayment_, 
                     account_mgr_, 
@@ -323,7 +314,7 @@ Status BlockAcceptor::addTxsToPool(
             }
 
             if (directly_user_leader_txs) {
-                tx_ptr = std::make_shared<consensus::ToTxItem>(*tx, account_mgr_, security_ptr_, address_info);
+                tx_ptr = std::make_shared<consensus::ToTxItem>(msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
                 auto gid = tx_pools_->GetToTxGid();
                 if (view_block_chain->CheckTxGidValid(gid, parent_hash)) {
@@ -344,7 +335,7 @@ Status BlockAcceptor::addTxsToPool(
             ZJC_WARN("add tx now get statistic tx: %u", pool_idx());
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
-                    *tx, account_mgr_, security_ptr_, address_info);
+                    msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
                 auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), tx->gid());
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
@@ -368,7 +359,7 @@ Status BlockAcceptor::addTxsToPool(
             if (directly_user_leader_txs) {
                 std::shared_ptr<bls::BlsManager> bls_mgr;
                 tx_ptr = std::make_shared<consensus::ElectTxItem>(
-                    *tx,
+                    msg_ptr, i,
                     account_mgr_,
                     security_ptr_,
                     prefix_db_,
@@ -394,7 +385,7 @@ Status BlockAcceptor::addTxsToPool(
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::TimeBlockTx>(
-                    *tx, account_mgr_, security_ptr_, address_info);
+                    msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
                 auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false);
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
@@ -406,7 +397,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kRootCross:
         {
             tx_ptr = std::make_shared<consensus::RootCrossTxItem>(
-                *tx, 
+                msg_ptr, i, 
                 account_mgr_, 
                 security_ptr_, 
                 address_info);
@@ -416,7 +407,7 @@ Status BlockAcceptor::addTxsToPool(
         {
             auto keypair = bls::AggBls::Instance()->GetKeyPair();
             tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
-                *tx, 
+                msg_ptr, i, 
                 account_mgr_, 
                 security_ptr_, 
                 prefix_db_, 
@@ -431,7 +422,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kPoolStatisticTag:
         {
             tx_ptr = std::make_shared<consensus::PoolStatisticTag>(
-                *tx, 
+                msg_ptr, i, 
                 account_mgr_, 
                 security_ptr_, 
                 address_info);
@@ -460,19 +451,11 @@ Status BlockAcceptor::addTxsToPool(
         if (tx_ptr != nullptr) {
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
-            if (pools::IsUserTransaction(tx_ptr->tx_info.step())) {
+            if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
                 if (security_ptr_->Verify(
                         tx_ptr->unique_tx_hash,
-                        tx_ptr->tx_info.pubkey(),
-                        tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
-                    ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-                        "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
-                        tx_ptr->address_info->balance(),
-                        tx_ptr->tx_info.amount(),
-                        tx_ptr->tx_info.contract_prepayment(),
-                        consensus::kCallContractDefaultUseGas,
-                        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-                        tx_ptr->tx_info.step());
+                        tx_ptr->tx_info->pubkey(),
+                        tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                     assert(false);
                 } else {
                     valid_txs.push_back(tx_ptr);

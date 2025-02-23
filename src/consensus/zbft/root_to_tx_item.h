@@ -16,7 +16,8 @@ class RootToTxItem : public TxItemBase {
 public:
     RootToTxItem(
         uint32_t max_consensus_sharding_id,
-        const pools::protobuf::TxMessage& msg,
+        const transport::MessagePtr& msg_ptr,
+        int32_t tx_index,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,

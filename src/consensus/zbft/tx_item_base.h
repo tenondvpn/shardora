@@ -13,11 +13,12 @@ namespace consensus {
 class TxItemBase : public pools::TxItem {
 protected:
     TxItemBase(
-        const pools::protobuf::TxMessage& tx,
+        const transport::MessagePtr& msg_ptr,
+        int32_t tx_index,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)
-        : pools::TxItem(tx, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        : pools::TxItem(msg_ptr, tx_index, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
 
     virtual ~TxItemBase() {}
 
