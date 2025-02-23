@@ -97,14 +97,14 @@ public:
     void RecoverTx(const std::string& gid);
     bool GidValid(const std::string& gid);
 
-    uint32_t all_tx_size() const {
+    uint32_t all_tx_size()  {
         return added_txs_.size();
-        return gid_map_.size();
+        // return gid_map_.size();
     }
 
-    uint32_t tx_size() const {        
+    uint32_t tx_size()  {        
         return added_txs_.size();
-        return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
+        // return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
     uint64_t oldest_timestamp() const {
