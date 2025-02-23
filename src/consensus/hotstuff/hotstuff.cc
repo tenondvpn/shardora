@@ -99,6 +99,7 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
+    auto btime = common::TimeUtils::TimestampMs();
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
         ZJC_DEBUG("pool %u not has prev view block.", pool_idx_);
@@ -135,6 +136,7 @@ Status Hotstuff::Propose(
         }
     }
 
+    auto t1 = common::TimeUtils::TimestampMs();
     if (latest_leader_propose_message_ && 
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
@@ -185,6 +187,7 @@ Status Hotstuff::Propose(
         return Status::kError;
     }
 
+    auto t2 = common::TimeUtils::TimestampMs();
     ZJC_INFO("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -201,6 +204,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
+    auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
@@ -217,6 +221,7 @@ Status Hotstuff::Propose(
         auto broadcast = header.mutable_broadcast();
     }
 
+    auto t4 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
@@ -248,6 +253,7 @@ Status Hotstuff::Propose(
 #else
     header.set_debug(std::to_string(common::TimeUtils::TimestampMs()));
 #endif
+    auto t5 = common::TimeUtils::TimestampMs();
     s = crypto()->SignMessage(tmp_msg_ptr);
     if (s != Status::kSuccess) {
         ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
@@ -268,10 +274,11 @@ Status Hotstuff::Propose(
     ZJC_INFO("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
+    auto t6 = common::TimeUtils::TimestampMs();
     ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
-        "qc_view: %lu, hash64: %lu, propose_debug: %s",
+        "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -282,7 +289,14 @@ Status Hotstuff::Propose(
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
-        "ProtobufToJson(consensus_debug).c_str()");
+        "ProtobufToJson(consensus_debug).c_str()",
+        (t1 - btime),
+        (t2 - btime),
+        (t3 - btime),
+        (t4 - btime),
+        (t5 - btime),
+        (t6 - btime)
+        );
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
         ZJC_INFO("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
