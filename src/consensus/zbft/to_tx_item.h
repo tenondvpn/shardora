@@ -24,7 +24,7 @@ public:
             block::protobuf::BlockTx* block_tx) {
         ZJC_DEBUG("to tx consensus coming: %s, gid: %s", 
             "common::Encode::HexEncode(tx_info.value()).c_str()", 
-            common::Encode::HexEncode(tx_info.gid()).c_str());
+            common::Encode::HexEncode(tx_infogid()).c_str());
         DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty() ||
