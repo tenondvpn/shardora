@@ -337,6 +337,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kVssMessage:
     case common::kBlsMessage:
     case common::kInitMessage:
+    case common::kPoolsMessage:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     case common::kConsensusMessage:
         if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
@@ -344,8 +345,6 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         }
 
         ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
-        return common::kMaxThreadCount;
-    case common::kPoolsMessage:
         return common::kMaxThreadCount;
     case common::kHotstuffSyncMessage:
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
