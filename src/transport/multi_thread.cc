@@ -171,7 +171,7 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<securi
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     security_ = security;
-    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
+    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 1;
     consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     TRANSPORT_INFO("MultiThreadHandler::Init() ...");
     if (inited_) {
@@ -332,8 +332,9 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kVssMessage:
     case common::kBlsMessage:
     case common::kInitMessage:
-    case common::kPoolsMessage:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
+    case common::kPoolsMessage:
+        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_ + 1);
     case common::kConsensusMessage:
         if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
