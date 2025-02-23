@@ -210,6 +210,7 @@ void TxPool::GetTxSyncToLeader(
         auto tmp_iter = gid_map_.find(iter->second->tx_info->gid());
         assert(tmp_iter != gid_map_.end());
         gid_map_.erase(tmp_iter);
+        ZJC_INFO("1 remove tx now: %u", gid_map_.size());
         iter = prio_map_.erase(iter);
     }
     assert(gid_map_.size() == tx_size());
@@ -266,6 +267,7 @@ void TxPool::GetTxIdempotently(
         auto tmp_iter = gid_map_.find(iter->second->tx_info->gid());
         assert(tmp_iter != gid_map_.end());
         gid_map_.erase(tmp_iter);
+        ZJC_INFO("2 remove tx now: %u", gid_map_.size());
         iter = src_prio_map.erase(iter);
     }
     
@@ -321,6 +323,7 @@ void TxPool::GetTxByHash(
     gid_map_.erase(miter);
     iter = src_prio_map.erase(iter);
     assert(gid_map_.size() == tx_size());
+    ZJC_INFO("0 remove tx now: %u", gid_map_.size());
 }
 
 void TxPool::CheckTimeoutTx() {
