@@ -1640,7 +1640,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunct
             return false;
         }
 
-        if (!gid_valid_fn(iter->second->tx_ptr->tx_info.gid())) {
+        if (!gid_valid_fn(iter->second->tx_ptr->tx_info->gid())) {
             return false;
         }
 
@@ -1663,13 +1663,13 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckGidValidFunction 
             continue;
         }
 
-        if (!gid_valid_fn(shard_elect_tx_[i]->tx_ptr->tx_info.gid())) {
+        if (!gid_valid_fn(shard_elect_tx_[i]->tx_ptr->tx_info->gid())) {
             return false;
         }
         
         ZJC_DEBUG("has elect %u, tx gid: %s", 
             pool_index, 
-            common::Encode::HexEncode(shard_elect_tx_[i]->tx_ptr->tx_info.gid()).c_str());
+            common::Encode::HexEncode(shard_elect_tx_[i]->tx_ptr->tx_info->gid()).c_str());
         return true;
     }
 
@@ -1703,7 +1703,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             break;
         }
 
-        if (iter->second->tx_ptr->tx_info.gid() == tx_gid) {
+        if (iter->second->tx_ptr->tx_info->gid() == tx_gid) {
             shard_statistic_tx = iter->second;
             break;
         }
@@ -1759,7 +1759,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         shard_statistic_tx->tx_ptr->address_info =
             account_mgr_->pools_address_info(pool_index);
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
-        tx.set_to(shard_statistic_tx->tx_ptr->address_info->addr());
+        tx->set_to(shard_statistic_tx->tx_ptr->address_info->addr());
         ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
