@@ -589,40 +589,6 @@ void NetworkInit::InitLocalNetworkId() {
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
-void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
-    auto n = common::GlobalInfo::Instance()->each_shard_max_members();
-    auto t = common::GetSignerCount(n);
-    libBLS::Dkg dkg_instance(t, n);
-    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
-    bls::protobuf::LocalPolynomial local_poly;
-    for (uint32_t i = 0; i < polynomial.size(); ++i) {
-        local_poly.add_polynomial(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
-    }
-
-    auto g2_vec = dkg_instance.VerificationVector(polynomial);
-    for (uint32_t i = 0; i < t; ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-
-    }
-    
-    auto str = bls_verify_req->SerializeAsString();
-    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), *bls_verify_req);
-    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
-}
-
 int NetworkInit::InitSecurity() {
     std::string prikey;
     if (!conf_.Get("zjchain", "prikey", prikey)) {
@@ -1169,7 +1135,6 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     // gas_prepayment_->NewBlock(*view_block, db_batch);
-    zjcvm::Execution::Instance()->NewBlock(*view_block, db_batch);
     // one block must be one consensus pool
     // const auto& tx_list = block->tx_list();
     // for (int32_t i = 0; i < tx_list.size(); ++i) {

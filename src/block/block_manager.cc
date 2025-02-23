@@ -4,20 +4,21 @@
 #include "block/account_manager.h"
 #include "block/block_proto.h"
 #include "common/encode.h"
+#include "common/log.h"
 #include "common/time_utils.h"
 #include "consensus/hotstuff/hotstuff_manager.h"
 #include "db/db.h"
+#include "db/db_utils.h"
 #include "network/dht_manager.h"
 #include "network/route.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
+#include "protos/pools.pb.h"
+#include "protos/tx_storage_key.h"
 #include "transport/processor.h"
-#include <common/log.h>
-#include <protos/pools.pb.h>
-#include <protos/tx_storage_key.h>
-#include "db/db_utils.h"
+#include "zjcvm/execution.h"
 
 namespace shardora {
 
@@ -757,6 +758,7 @@ void BlockManager::AddNewBlock(
 
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
     to_txs_pool_->NewBlock(view_block_item, db_batch);
+    zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (view_block_item->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
             view_block_item->qc().network_id() + network::kConsensusWaitingShardOffset !=
