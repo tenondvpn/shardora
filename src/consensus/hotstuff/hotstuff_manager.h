@@ -256,7 +256,7 @@ private:
                 prefix_db_, 
                 elect_mgr_, 
                 msg_ptr->address_info,
-                msg_ptr->header.mutable_tx_proto().pubkey(),
+                msg_ptr->header.tx_proto().pubkey(),
                 keypair->pk(),
                 keypair->proof());
     }
