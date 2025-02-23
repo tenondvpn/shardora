@@ -457,8 +457,9 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    pools_msg_queue_.push(msg_ptr);
-    pop_tx_con_.notify_one();
+    HandlePoolsMessage(msg_ptr);
+    // pools_msg_queue_.push(msg_ptr);
+    // pop_tx_con_.notify_one();
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
@@ -522,6 +523,7 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
 }
 
 void TxPoolManager::PopPoolsMessage() {
+    return;
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         while (!destroy_) {
