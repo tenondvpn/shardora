@@ -457,29 +457,29 @@ Status BlockAcceptor::addTxsToPool(
             }
         }
         
-        // if (tx_ptr != nullptr) {
-        //     tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-        //     txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
-        //     if (pools::IsUserTransaction(tx_ptr->tx_info.step())) {
-        //         if (security_ptr_->Verify(
-        //                 tx_ptr->unique_tx_hash,
-        //                 tx_ptr->tx_info.pubkey(),
-        //                 tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
-        //             ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-        //                 "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
-        //                 tx_ptr->address_info->balance(),
-        //                 tx_ptr->tx_info.amount(),
-        //                 tx_ptr->tx_info.contract_prepayment(),
-        //                 consensus::kCallContractDefaultUseGas,
-        //                 common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-        //                 tx_ptr->tx_info.step());
-        //             assert(false);
-        //         } else {
-        //             valid_txs.push_back(tx_ptr);
-        //             pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
-        //         }
-        //     }
-        // }
+        if (tx_ptr != nullptr) {
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
+            txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
+            if (pools::IsUserTransaction(tx_ptr->tx_info.step())) {
+                if (security_ptr_->Verify(
+                        tx_ptr->unique_tx_hash,
+                        tx_ptr->tx_info.pubkey(),
+                        tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+                    ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
+                        "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
+                        tx_ptr->address_info->balance(),
+                        tx_ptr->tx_info.amount(),
+                        tx_ptr->tx_info.contract_prepayment(),
+                        consensus::kCallContractDefaultUseGas,
+                        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+                        tx_ptr->tx_info.step());
+                    assert(false);
+                } else {
+                    valid_txs.push_back(tx_ptr);
+                    // pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
+                }
+            }
+        }
     }
 
     if (txs_ptr != nullptr) {
