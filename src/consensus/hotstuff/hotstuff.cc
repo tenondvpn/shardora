@@ -159,10 +159,9 @@ Status Hotstuff::Propose(
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
-#ifndef NDEBUG
-        transport::protobuf::ConsensusDebug cons_debug;
-        cons_debug.ParseFromString(header.debug());
-        ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+        // transport::protobuf::ConsensusDebug cons_debug;
+        // cons_debug.ParseFromString(header.debug());
+        ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
             pool_idx_,
             header.hotstuff().pool_index(),
@@ -171,10 +170,9 @@ Status Hotstuff::Propose(
             common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
             view_block_chain()->HighViewBlock()->qc().view(),
             header.hash64(),
-            ProtobufToJson(cons_debug).c_str(),
+            "ProtobufToJson(cons_debug).c_str()",
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
-#endif
         // HandleProposeMsg(latest_leader_propose_message_);
         return s;
     }
@@ -270,8 +268,7 @@ Status Hotstuff::Propose(
     ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
-#ifndef NDEBUG
-    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
         "qc_view: %lu, hash64: %lu, propose_debug: %s",
@@ -286,7 +283,6 @@ Status Hotstuff::Propose(
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
         ProtobufToJson(consensus_debug).c_str());
-#endif
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
         ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
