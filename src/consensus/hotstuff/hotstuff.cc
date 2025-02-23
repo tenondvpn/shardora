@@ -96,6 +96,9 @@ Status Hotstuff::Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
+    if (pool_idx_ != 15) {
+        return Status::kError;
+    }
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
