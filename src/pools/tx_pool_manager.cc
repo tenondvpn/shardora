@@ -490,23 +490,23 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
     std::vector<pools::TxItemPtr> valid_txs;
     for (uint32_t i = 0; i < txs.size(); ++i) {
         auto tx_ptr = txs[i];
-        if (tx_ptr->tx_info.pubkey().empty() || tx_ptr->tx_info.sign().empty()) {
+        if (tx_ptr->tx_info->pubkey().empty() || tx_ptr->tx_info->sign().empty()) {
             valid_txs.push_back(tx_ptr);
             continue;
         }
 
         if (security_->Verify(
                 tx_ptr->unique_tx_hash,
-                tx_ptr->tx_info.pubkey(),
-                tx_ptr->tx_info.sign()) != security::kSecuritySuccess) {
+                tx_ptr->tx_info->pubkey(),
+                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
             ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
                 "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
                 tx_ptr->address_info->balance(),
-                tx_ptr->tx_info.amount(),
-                tx_ptr->tx_info.contract_prepayment(),
+                tx_ptr->tx_info->amount(),
+                tx_ptr->tx_info->contract_prepayment(),
                 consensus::kCallContractDefaultUseGas,
-                common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
-                tx_ptr->tx_info.step());
+                common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
+                tx_ptr->tx_info->step());
             assert(false);
             continue;
         }
@@ -1210,7 +1210,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         pool_index,
         msg_ptr->header.tx_proto().step(),
         common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-        common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str(),
+        common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
