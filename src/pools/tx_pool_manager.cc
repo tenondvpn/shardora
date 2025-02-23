@@ -452,7 +452,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
         ZJC_DEBUG("header.has_sync_heights()");
-        HandleSyncPoolsMaxHeight(msg_ptr);
+        // HandleSyncPoolsMaxHeight(msg_ptr);
         return;
     }
 
