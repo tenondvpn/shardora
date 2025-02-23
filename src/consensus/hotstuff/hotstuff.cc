@@ -262,10 +262,12 @@ Status Hotstuff::Propose(
     }
 
     latest_leader_propose_message_ = tmp_msg_ptr;
-    SaveLatestProposeMessage();
+    auto t6 = common::TimeUtils::TimestampMs();
+    // SaveLatestProposeMessage();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_INFO("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
+    auto t7 = common::TimeUtils::TimestampMs();
     auto old_last_leader_propose_view_ = last_leader_propose_view_;
     last_leader_propose_view_ = std::max<uint64_t>(
         hotstuff_msg->pro_msg().view_item().qc().view(), 
@@ -274,11 +276,11 @@ Status Hotstuff::Propose(
     ZJC_INFO("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
-    auto t6 = common::TimeUtils::TimestampMs();
+    auto t8 = common::TimeUtils::TimestampMs();
     ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
-        "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu",
+        "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu, t7: %lu, t8: %lu",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -295,7 +297,9 @@ Status Hotstuff::Propose(
         (t3 - btime),
         (t4 - btime),
         (t5 - btime),
-        (t6 - btime)
+        (t6 - btime),
+        (t7 - btime),
+        (t8 - btime)
         );
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
