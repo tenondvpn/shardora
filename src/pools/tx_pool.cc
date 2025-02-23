@@ -131,7 +131,6 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
-    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
     if (gid_map_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend %u, %u, all valid: %u", 
@@ -144,6 +143,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
+    added_txs_.push(tx_ptr);
+    return kPoolsSuccess;
+
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
     assert(tx_ptr != nullptr);
     if (tx_ptr->tx_info->step() == pools::protobuf::kCreateLibrary) {
         universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
@@ -194,6 +197,7 @@ void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto iter = prio_map_.begin();
     while (iter != prio_map_.end() && txs->size() < (int32_t)count) {
@@ -246,6 +250,17 @@ void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func) {
+    TxItemPtr tx_ptr;
+    while (added_txs_.pop(&tx_ptr) && res_map.size() < count) {
+        if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+            continue;
+        }
+
+        res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+    }
+
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto iter = src_prio_map.begin();
     while (iter != src_prio_map.end() && res_map.size() < count) {
@@ -281,6 +296,8 @@ void TxPool::GetTxIdempotently(
 void TxPool::GetTxByIds(
         const std::vector<std::string>& gids,
         std::map<std::string, TxItemPtr>& res_map) {
+    assert(false);
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
     for (const auto& gid : gids) {
@@ -312,6 +329,8 @@ void TxPool::GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
         const std::string& hash,
         TxItemPtr& tx) {
+    assert(false);
+    return;
     auto iter = src_prio_map.find(hash);
     if (iter == src_prio_map.end()) {
         return;
@@ -817,6 +836,8 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
 }
 
 void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
+    assert(false);
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     if (!pools::IsUserTransaction(tx->tx_info->step())) {
         ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
@@ -839,8 +860,9 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
 }
 
 void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
+    assert(false);
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
-    if (all_tx_size())
     for (uint32_t i = 0; i < txs.size(); ++i) {
         if (!pools::IsUserTransaction(txs[i]->tx_info->step())) {
             ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
