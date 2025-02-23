@@ -108,14 +108,14 @@ Status Hotstuff::Propose(
     auto dht_ptr = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     if (!dht_ptr) {
-        ZJC_INFO("pool %u not has dht ptr.", pool_idx_);
+        ZJC_WARN("pool %u not has dht ptr.", pool_idx_);
         return Status::kError;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     if (readobly_dht->size() < 2) {
-        ZJC_INFO("pool %u not has readobly_dht->size() < 2", pool_idx_);
+        ZJC_WARN("pool %u not has readobly_dht->size() < 2", pool_idx_);
         return Status::kError;
     }
 
@@ -151,7 +151,7 @@ Status Hotstuff::Propose(
         auto s = crypto()->SignMessage(tmp_msg_ptr);
         auto& header = tmp_msg_ptr->header;
         if (s != Status::kSuccess) {
-            ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+            ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
                 pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
             return s;
         }
@@ -161,7 +161,7 @@ Status Hotstuff::Propose(
         network::Route::Instance()->Send(tmp_msg_ptr);
         // transport::protobuf::ConsensusDebug cons_debug;
         // cons_debug.ParseFromString(header.debug());
-        ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+        ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
             pool_idx_,
             header.hotstuff().pool_index(),
@@ -178,7 +178,7 @@ Status Hotstuff::Propose(
     }
 
     if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
-        ZJC_INFO("pool: %d construct propose msg failed, %d, "
+        ZJC_WARN("pool: %d construct propose msg failed, %d, "
             "max_view(): %lu last_leader_propose_view_: %lu",
             pool_idx_, Status::kError,
             max_view(), last_leader_propose_view_);
@@ -196,7 +196,7 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_INFO("pool: %d construct propose msg failed, %d",
+        ZJC_WARN("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
         return s;
     }
@@ -204,7 +204,7 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
+        ZJC_WARN("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
         return s;
     }
@@ -250,7 +250,7 @@ Status Hotstuff::Propose(
 #endif
     s = crypto()->SignMessage(tmp_msg_ptr);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+        ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
         return s;
     }
