@@ -423,7 +423,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             if (tx_pool_[address_info->pool_index()].all_tx_size() >= 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-                ZJC_INFO("add failed extend %u, %u, all valid: %u", 
+                ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
                     tx_pool_[address_info->pool_index()].all_tx_size(), 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
                     tx_pool_[address_info->pool_index()].tx_size());
