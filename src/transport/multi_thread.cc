@@ -40,7 +40,7 @@ void ThreadHandler::HandleMessage() {
     static const uint32_t kMaxHandleMessageCount = 1024u;
     uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
-    ZJC_DEBUG("thread handler thread index coming thread_idx: %d, "
+    ZJC_INFO("thread handler thread index coming thread_idx: %d, "
         "maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, 
         common::GlobalInfo::Instance()->message_handler_thread_count());
