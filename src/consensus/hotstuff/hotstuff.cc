@@ -282,7 +282,7 @@ Status Hotstuff::Propose(
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
-        ProtobufToJson(consensus_debug).c_str());
+        "ProtobufToJson(consensus_debug).c_str()");
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
         ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
