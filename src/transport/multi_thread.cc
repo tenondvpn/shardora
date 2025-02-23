@@ -171,8 +171,8 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<securi
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     security_ = security;
-    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 1;
-    consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
+    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
+    consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 2;
     TRANSPORT_INFO("MultiThreadHandler::Init() ...");
     if (inited_) {
         TRANSPORT_WARN("MultiThreadHandler::Init() before");
