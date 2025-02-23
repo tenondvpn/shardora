@@ -1412,12 +1412,14 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+#ifndef MOCK_SIGN
     if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
         ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
             commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
         return false;
     }
+#endif
 
     ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s",
         commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
