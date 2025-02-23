@@ -66,6 +66,9 @@ public:
     // Commit a block
     virtual void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     // Add txs to local pool
+    // virtual Status AddTxs(
+    //     transport::MessagePtr msg_ptr, 
+    //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) = 0;
     // Return block txs to pool
     virtual Status Return(const std::shared_ptr<view_block::protobuf::ViewBlockItem>&) = 0;
     // Handle Synced Block From KeyValueSyncer
@@ -107,6 +110,9 @@ public:
     // Commit a block and execute its txs.
     void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // Add txs from hotstuff msg to local pool
+    // Status AddTxs(
+    //     transport::MessagePtr msg_ptr, 
+    //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
     void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
     // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
     void MarkBlockTxsAsUsed(const block::protobuf::Block&) override;

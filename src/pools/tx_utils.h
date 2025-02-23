@@ -45,10 +45,10 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(pools::protobuf::TxMessage* tx_ptr, protos::AddressInfoPtr& addr_info)
+    TxItem(const pools::protobuf::TxMessage& tx, protos::AddressInfoPtr& addr_info)
             : prev_consensus_tm_us(0),
-            gas_price(tx_ptr->gas_price()),
-            tx_info(tx_ptr),
+            gas_price(tx.gas_price()),
+            tx_info(tx),
             address_info(addr_info),
             is_consensus_add_tx(false) {
         uint64_t now_tm = common::TimeUtils::TimestampUs();
@@ -58,7 +58,6 @@ public:
 #endif // ZJC_UNITTEST
         timeout = now_tm + kTxPoolTimeoutUs;
         remove_timeout = timeout + kTxPoolTimeoutUs;
-        auto& tx = *tx_ptr;
         if (tx.has_step()) {
             step = tx.step();
         }
@@ -84,7 +83,7 @@ public:
     int32_t step = pools::protobuf::kNormalFrom;
     std::string unique_tx_hash;
     std::string prio_key;
-    pools::protobuf::TxMessage* tx_info;
+    pools::protobuf::TxMessage tx_info;
     protos::AddressInfoPtr address_info;
     bool is_consensus_add_tx;
 };

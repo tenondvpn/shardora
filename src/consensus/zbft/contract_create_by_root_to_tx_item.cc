@@ -108,7 +108,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		from_prepayment -= gas_used * block_tx.gas_price();
 		gas_used = 0;
 		for (int i = 0; i < block_tx.storages_size(); i++) {
-			gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) * consensus::kKeyValueStorageEachBytes;
+			gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) * consensus::kKeyValueStorageEachBytes;
 		}
 
 		if (block_tx.gas_limit() < gas_used) {

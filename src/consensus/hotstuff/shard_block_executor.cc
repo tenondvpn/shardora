@@ -27,7 +27,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
         auto& tx_info = iter->second->tx_info;
         auto& block_tx = *tx_list->Add();
-        int res = iter->second->TxToBlockTx(*tx_info, &block_tx);
+        int res = iter->second->TxToBlockTx(tx_info, &block_tx);
         if (res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
             ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, gid: %s, res: %d",
@@ -42,7 +42,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
 
         if (block_tx.step() == pools::protobuf::kContractExcute) {
             block_tx.set_from(security_ptr_->GetAddress(
-                iter->second->tx_info->pubkey()));
+                iter->second->tx_info.pubkey()));
         } else {
             block_tx.set_from(iter->second->address_info->addr());
         }

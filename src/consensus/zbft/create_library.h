@@ -12,7 +12,7 @@ namespace consensus {
 class CreateLibrary : public TxItemBase {
 public:
     CreateLibrary(
-        pools::protobuf::TxMessage* msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)
@@ -41,7 +41,7 @@ public:
             for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                 // TODO(): check key exists and reserve gas
                 gas_used += network::kConsensusWaitingShardOffset * (
-                    block_tx.storages(i).key().size() + tx_info->value().size()) *
+                    block_tx.storages(i).key().size() + tx_info.value().size()) *
                     consensus::kKeyValueStorageEachBytes;
             }
 

@@ -11,7 +11,7 @@ namespace consensus {
 class ToTxItem : public TxItemBase {
 public:
     ToTxItem(
-        pools::protobuf::TxMessage* msg,
+        const pools::protobuf::TxMessage& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)
@@ -24,7 +24,7 @@ public:
             block::protobuf::BlockTx* block_tx) {
         ZJC_DEBUG("to tx consensus coming: %s, gid: %s", 
             "common::Encode::HexEncode(tx_info.value()).c_str()", 
-            common::Encode::HexEncode(tx_infogid()).c_str());
+            common::Encode::HexEncode(tx_info.gid()).c_str());
         DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty() ||

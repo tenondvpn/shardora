@@ -20,7 +20,7 @@ public:
     ContractUserCreateCall(
             std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<db::Db>& db,
-            pools::protobuf::TxMessage* msg,
+            const pools::protobuf::TxMessage& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr,
             protos::AddressInfoPtr& addr_info)

@@ -12,7 +12,7 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         zjcvm::ZjchainHost& zjc_host) {
     if (txs_ptr->txs.size() == 1) {
         auto& tx = *txs_ptr->txs.begin()->second;
-        switch (tx.tx_info->step()) {
+        switch (tx.tx_info.step()) {
         case pools::protobuf::kConsensusRootElectShard:
             RootCreateElectConsensusShardBlock(txs_ptr, view_block, balance_map, zjc_host);
             break;
@@ -92,7 +92,7 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     }
 
     auto iter = tx_map.begin();
-    if (iter->second->tx_info->step() != pools::protobuf::kConsensusRootElectShard) {
+    if (iter->second->tx_info.step() != pools::protobuf::kConsensusRootElectShard) {
         assert(false);
         return;
     }
@@ -100,7 +100,7 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(*iter->second->tx_info, &tx);
+    iter->second->TxToBlockTx(iter->second->tx_info, &tx);
     int do_tx_res = iter->second->HandleTx(
         *view_block,
         zjc_host,
