@@ -403,11 +403,11 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u, gid: %s",
         msg_ptr->header.hash64(),
         thread_idx,
-        pools_msg_queue_[thread_idx].size(),
+        pools_msg_queue_.size(),
         common::GlobalInfo::Instance()->pools_each_thread_max_messages(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (pools_msg_queue_[thread_idx].size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
+    if (pools_msg_queue_.size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
         return;
     }
 
@@ -430,13 +430,14 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
 
+            msg_ptr->address_info = address_info;
 // #ifndef NDEBUG
             auto now_tm = common::TimeUtils::TimestampMs();
             ++prev_tps_count_;
             uint64_t dur = 1000lu;
             if (now_tm > prev_show_tm_ms_ + dur) {
                 ZJC_INFO("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
-                        thread_idx, pools_msg_queue_[thread_idx].size(),
+                        thread_idx, pools_msg_queue_.size(),
                         address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
                         tx_pool_[address_info->pool_index()].tx_size(),
@@ -456,8 +457,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    assert(thread_idx < common::kMaxThreadCount);
-    pools_msg_queue_[thread_idx].push(msg_ptr);
+    pools_msg_queue_.push(msg_ptr);
     pop_tx_con_.notify_one();
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
@@ -524,17 +524,24 @@ void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools
 void TxPoolManager::PopPoolsMessage() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
-        for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
-            auto count = 0;
-            while (!destroy_) {
-                transport::MessagePtr msg_ptr = nullptr;
-                if (!pools_msg_queue_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
-                    break;
-                }
-
-                ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
-                HandlePoolsMessage(msg_ptr);
+        while (!destroy_) {
+            transport::MessagePtr msg_ptr = nullptr;
+            if (!pools_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
+                break;
             }
+
+            auto now_tm = common::TimeUtils::TimestampMs();
+            ++add_prev_tps_count_;
+            uint64_t dur = 1000lu;
+            if (now_tm > add_prev_tps_time_ms_ + dur) {
+                ZJC_INFO("pools add tx tps: %lu", 
+                    (prev_tps_count_/(dur / 1000lu)));
+                add_prev_tps_time_ms_ = now_tm;
+                add_prev_tps_count_ = 0;
+            }
+            
+            ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
+            HandlePoolsMessage(msg_ptr);
         }
 
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
