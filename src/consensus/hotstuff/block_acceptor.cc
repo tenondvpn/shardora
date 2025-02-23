@@ -233,13 +233,13 @@ Status BlockAcceptor::addTxsToPool(
 
         protos::AddressInfoPtr address_info = nullptr;
         std::string from_id;
-        if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+        if (pools::IsUserTransaction(tx->step())) {
             from_id = security_ptr_->GetAddress(tx->pubkey());
         }
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {
-            if (security_ptr_->IsValidPublicKey(tx->pubkey())) {
+            if (pools::IsUserTransaction(tx->step())) {
                 address_info = account_mgr_->GetAccountInfo(from_id);
             } else {
                 address_info = account_mgr_->pools_address_info(pool_idx());
