@@ -42,7 +42,7 @@ public:
             for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                 // TODO(): check key exists and reserve gas
                 gas_used += network::kConsensusWaitingShardOffset * (
-                    block_tx.storages(i).key().size() + tx_info.value().size()) *
+                    block_tx.storages(i).key().size() + tx_info->value().size()) *
                     consensus::kKeyValueStorageEachBytes;
             }
 
