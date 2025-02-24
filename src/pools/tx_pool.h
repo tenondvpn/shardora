@@ -202,7 +202,7 @@ private:
     uint64_t prev_check_tx_timeout_tm_ = 0;
     std::thread::id local_thread_id_;
     uint64_t local_thread_id_count_ = 0;
-    common::ThreadSafeQueue<TxItemPtr, 102400> added_txs_;
+    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;
