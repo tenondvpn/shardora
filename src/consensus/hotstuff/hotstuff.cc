@@ -5,6 +5,7 @@
 #include <common/defer.h>
 #include <common/time_utils.h>
 #include <consensus/hotstuff/hotstuff.h>
+#include "consensus/hotstuff/hotstuff_namager.h"
 #include <consensus/hotstuff/types.h>
 #include <protos/hotstuff.pb.h>
 #include <protos/pools.pb.h>
@@ -1109,6 +1110,10 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
     // acceptor()->AddTxs(msg_ptr, vote_msg.txs());
+    if (vote_msg.txs_size() > 0) {
+        hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
+    }
+
     if (prefix_db_->BlockExists(vote_msg.view_block_hash())) {
         return;
     }
@@ -1406,13 +1411,11 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     ZJC_WARN("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
 #endif
 
-    // if (pre_rst_timer_msg.txs_size() > 0) {
-    //     Status s = acceptor()->AddTxs(msg_ptr, pre_rst_timer_msg.txs());
-    //     if (s != Status::kSuccess) {
-    //         ZJC_WARN("reset timer failed, add txs failed");
-    //         return;
-    //     }
-    // }
+    if (pre_rst_timer_msg.txs_size() > 0) {
+        if (vote_msg.txs_size() > 0) {
+            hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
+        }
+    }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO: Flow Control

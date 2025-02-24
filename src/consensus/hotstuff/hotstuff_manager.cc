@@ -427,8 +427,15 @@ void HotstuffManager::PopPoolsMessage() {
                 break;
             }
             
-            auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
-            auto& txs = vote_msg.txs();
+            const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
+            if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg()) {
+                txs_ptr = &msg_ptr->header.hotstuff().pre_reset_timer_msg().txs();
+            } else {
+                auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+                txs_ptr = &vote_msg.txs();
+            }
+
+            auto& txs = *txs_ptr;
             ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
             for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
                 auto* tx = &txs[i];
