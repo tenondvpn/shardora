@@ -39,9 +39,6 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    pop_message_thread_ = std::make_shared<std::thread>(
-        &TxPoolManager::PopPoolsMessage, 
-        this);
     // 每 10ms 会共识一次时间块
     tools_tick_.CutOff(
         10000lu,
@@ -54,7 +51,6 @@ TxPoolManager::TxPoolManager(
 
 TxPoolManager::~TxPoolManager() {
     destroy_ = true;
-    pop_message_thread_->join();
     FlushHeightTree();
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
@@ -467,17 +463,6 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
-
-int TxPoolManager::BackupConsensusAddTxs(
-        transport::MessagePtr msg_ptr,
-        uint32_t pool_index, 
-        const std::vector<pools::TxItemPtr>& valid_txs) {
-    ZJC_DEBUG("success add consensus tx size: %u", valid_txs.size());
-    tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    return kPoolsSuccess;
-}
-
 int TxPoolManager::BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index, 
@@ -493,66 +478,6 @@ int TxPoolManager::BackupConsensusAddTxs(
     }
 
     return kPoolsSuccess;
-}
-
-void TxPoolManager::ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs) {
-    std::vector<pools::TxItemPtr> valid_txs;
-    for (uint32_t i = 0; i < txs.size(); ++i) {
-        auto tx_ptr = txs[i];
-        if (tx_ptr->tx_info->pubkey().empty() || tx_ptr->tx_info->sign().empty()) {
-            valid_txs.push_back(tx_ptr);
-            continue;
-        }
-
-        if (security_->Verify(
-                tx_ptr->unique_tx_hash,
-                tx_ptr->tx_info->pubkey(),
-                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-            ZJC_DEBUG("verify signature failed address balance: %lu, transfer amount: %lu, "
-                "prepayment: %lu, default call contract gas: %lu, txid: %s, step: %d",
-                tx_ptr->address_info->balance(),
-                tx_ptr->tx_info->amount(),
-                tx_ptr->tx_info->contract_prepayment(),
-                consensus::kCallContractDefaultUseGas,
-                common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
-                tx_ptr->tx_info->step());
-            assert(false);
-            continue;
-        }
-
-        valid_txs.push_back(tx_ptr);
-    }
-    
-    tx_pool_[pool_index].ConsensusAddTxs(valid_txs);
-}
-
-void TxPoolManager::PopPoolsMessage() {
-    return;
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    while (!destroy_) {
-        while (!destroy_) {
-            transport::MessagePtr msg_ptr = nullptr;
-            if (!pools_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
-                break;
-            }
-
-            auto now_tm = common::TimeUtils::TimestampMs();
-            ++add_prev_tps_count_;
-            uint64_t dur = 1000lu;
-            if (now_tm > add_prev_tps_time_ms_ + dur) {
-                ZJC_INFO("pools add tx tps: %lu", 
-                    (prev_tps_count_/(dur / 1000lu)));
-                add_prev_tps_time_ms_ = now_tm;
-                add_prev_tps_count_ = 0;
-            }
-            
-            ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
-            HandlePoolsMessage(msg_ptr);
-        }
-
-        std::unique_lock<std::mutex> lock(pop_tx_mu_);
-        pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
-    }
 }
 
 void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {

@@ -838,58 +838,40 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
     return factor;
 }
 
-void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx) {
-    assert(false);
-    return;
-    common::AutoSpinLock auto_lock(tx_pool_mutex_);
-    if (!pools::IsUserTransaction(tx->tx_info->step())) {
-        ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
-            tx->tx_info->step(),
-            common::Encode::HexEncode(tx->tx_info->gid()).c_str());
+void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
+    CheckThreadIdValid();
+    if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+        ZJC_WARN("add failed extend %u, %u, all valid: %u", 
+            added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
         return;
     }
 
-    gid_map_[tx->tx_info->gid()] = tx;
+    if (tx_ptr->unique_tx_hash.empty()) {
+        ZJC_WARN("add failed unique hash empty: %d", tx_ptr->tx_info->step());
+        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
+    }
+
+    added_txs_.push(tx_ptr);
+    return;
+    common::AutoSpinLock auto_lock(tx_pool_mutex_);
+    if (!pools::IsUserTransaction(tx_ptr->tx_info->step())) {
+        ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
+            tx_ptr->tx_info->step(),
+            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+        return;
+    }
+
+    gid_map_[tx_ptr->tx_info->gid()] = tx_ptr;
     CHECK_MEMORY_SIZE_WITH_MESSAGE(
         gid_map_, 
         (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
-    tx->is_consensus_add_tx = true;
-    consensus_tx_map_[tx->unique_tx_hash] = tx;
+    tx_ptr->is_consensus_add_tx = true;
+    consensus_tx_map_[tx_ptr->unique_tx_hash] = tx_ptr;
     CHECK_MEMORY_SIZE_WITH_MESSAGE(
         consensus_tx_map_, 
         (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
     ZJC_DEBUG("success add consensus tx gid: %s",
-        common::Encode::HexEncode(tx->tx_info->gid()).c_str());
-}
-
-void TxPool::ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs) {
-    assert(false);
-    return;
-    common::AutoSpinLock auto_lock(tx_pool_mutex_);
-    for (uint32_t i = 0; i < txs.size(); ++i) {
-        if (!pools::IsUserTransaction(txs[i]->tx_info->step())) {
-            ZJC_DEBUG("invalid tx add to consensus tx map: %d, gid: %s",
-                txs[i]->tx_info->step(),
-                common::Encode::HexEncode(txs[i]->tx_info->gid()).c_str());
-            continue;
-        }
-
-        gid_map_[txs[i]->tx_info->gid()] = txs[i];
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(
-            gid_map_, 
-            (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
-        txs[i]->is_consensus_add_tx = true;
-        consensus_tx_map_[txs[i]->unique_tx_hash] = txs[i];
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(
-            consensus_tx_map_, 
-            (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
-        ZJC_DEBUG("pool: %d, success add tx step: %d, to: %s, gid: %s, txhash: %s", 
-            pool_index_,
-            txs[i]->tx_info->step(), 
-            common::Encode::HexEncode(txs[i]->tx_info->to()).c_str(),
-            common::Encode::HexEncode(txs[i]->tx_info->gid()).c_str(),
-            common::Encode::HexEncode(txs[i]->unique_tx_hash).c_str());
-    }
+        common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
 }
 
 }  // namespace pools

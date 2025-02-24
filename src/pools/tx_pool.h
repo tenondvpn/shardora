@@ -80,7 +80,6 @@ public:
     void CheckTimeoutTx();
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
-    void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs);
     void ConsensusAddTxs(const pools::TxItemPtr& tx);
     void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs);
     void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash);
@@ -203,6 +202,7 @@ private:
     std::thread::id local_thread_id_;
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
+    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensys_added_txs_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;

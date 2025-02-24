@@ -72,12 +72,7 @@ public:
     int BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index, 
-        const std::vector<pools::TxItemPtr>& valid_txs);
-    int BackupConsensusAddTxs(
-        transport::MessagePtr msg_ptr, 
-        uint32_t pool_index, 
         const pools::TxItemPtr& valid_tx);
-    void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
 
     uint32_t all_tx_size(uint32_t pool_index) const {
@@ -266,7 +261,6 @@ private:
         std::string* new_hash);
     void SyncCrossPool();
     void FlushHeightTree();
-    void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
     uint32_t GetTxPoolIndex(const transport::MessagePtr& msg_ptr);
@@ -313,7 +307,6 @@ private:
     common::Tick tools_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
-    std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
