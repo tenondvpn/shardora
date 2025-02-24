@@ -414,7 +414,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     transport::protobuf::ConsensusDebug cons_debug;
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     cons_debug.ParseFromString(msg_ptr->header.debug());
-    ZJC_DEBUG("handle propose called hash: %lu, %u_%u_%lu, "
+    ZJC_INFO("handle propose called hash: %lu, %u_%u_%lu, "
         "view block hash: %s, sign x: %s, propose_debug: %s", 
         msg_ptr->header.hash64(), 
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().network_id(), 
