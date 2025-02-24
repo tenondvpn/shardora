@@ -197,6 +197,17 @@ void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
+    TxItemPtr tx_ptr;
+    while (added_txs_.pop(&tx_ptr) && txs->size() < count) {
+        if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+            continue;
+        }
+
+        auto* tx = txs->Add();
+        *tx = *tx_ptr->tx_info;
+    }
+    
     return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto iter = prio_map_.begin();
