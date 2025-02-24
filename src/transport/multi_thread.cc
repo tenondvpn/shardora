@@ -86,8 +86,8 @@ void ThreadHandler::HandleMessage() {
                 //             msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx, (etime - btime));
                 //     // }
                 // }
-                ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d", 
-                    msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type());
+                ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
+                    msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime));
             }
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
