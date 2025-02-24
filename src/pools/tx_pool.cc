@@ -400,6 +400,7 @@ void TxPool::CheckTimeoutTx() {
 }
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto miter = gid_map_.find(iter->first);
@@ -422,6 +423,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 }
 
 void TxPool::RecoverTx(const std::string& gid) {
+    return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto miter = gid_map_.find(gid);
     if (miter != gid_map_.end()) {
@@ -441,6 +443,7 @@ void TxPool::RecoverTx(const std::string& gid) {
 }
 
 bool TxPool::GidValid(const std::string& gid) {
+    return true;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
