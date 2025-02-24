@@ -296,7 +296,7 @@ void TxPool::GetTxIdempotently(
 void TxPool::GetTxByIds(
         const std::vector<std::string>& gids,
         std::map<std::string, TxItemPtr>& res_map) {
-    assert(false);
+    // assert(false);
     return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     CheckThreadIdValid();
