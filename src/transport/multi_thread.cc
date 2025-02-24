@@ -75,7 +75,7 @@ void ThreadHandler::HandleMessage() {
                 msg_ptr->header.hash64(), thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            // auto etime = common::TimeUtils::TimestampUs();
+            auto etime = common::TimeUtils::TimestampUs();
             // if (etime - btime > 200000lu) {
             //     // for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
             //     //     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
