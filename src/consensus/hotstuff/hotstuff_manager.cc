@@ -531,6 +531,7 @@ void HotstuffManager::PopPoolsMessage() {
                 }
             }
         }
+        if (consensus_tx_count > 0)
         ZJC_INFO("success add consensus_tx_count: %lu", consensus_tx_count);
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
         pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
