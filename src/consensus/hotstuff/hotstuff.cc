@@ -5,7 +5,7 @@
 #include <common/defer.h>
 #include <common/time_utils.h>
 #include <consensus/hotstuff/hotstuff.h>
-#include "consensus/hotstuff/hotstuff_namager.h"
+#include "consensus/hotstuff/hotstuff_manager.h"
 #include <consensus/hotstuff/types.h>
 #include <protos/hotstuff.pb.h>
 #include <protos/pools.pb.h>
