@@ -558,6 +558,7 @@ void TxPoolManager::PopPoolsMessage() {
 void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     uint32_t pool_index = common::kInvalidPoolIndex;
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
@@ -636,7 +637,9 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             pool_index = msg_ptr->address_info->pool_index();
         }
 
+        TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
         DispatchTx(pool_index, msg_ptr);
+        TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     }
 }
 
@@ -1077,12 +1080,14 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (!UserTxValid(msg_ptr)) {
 //         assert(false);
         return;
     }
 
     // 验证账户余额是否足够
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
@@ -1097,6 +1102,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_TX_DEBUG_INFO(msg_ptr->header.mutable_tx_proto());
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
@@ -1196,6 +1202,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
         ZJC_DEBUG("gid invalid pop tx gid: %s, step: %d",
             common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
@@ -1214,6 +1221,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         return;
     }
 
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
     if (tx_ptr == nullptr) {
         assert(false);
@@ -1222,7 +1230,9 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
 
     tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
         pool_index,
         msg_ptr->header.tx_proto().step(),
