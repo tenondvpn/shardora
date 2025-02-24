@@ -859,13 +859,13 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     }
 
     auto msg_hash = pools::GetTxMessageHash(tx_msg);
-    if (security_->Verify(
-            msg_hash,
-            tx_msg.pubkey(),
-            tx_msg.sign()) != security::kSecuritySuccess) {
-        ZJC_WARN("kElectJoin verify signature failed!");
-        return;
-    }
+    // if (security_->Verify(
+    //         msg_hash,
+    //         tx_msg.pubkey(),
+    //         tx_msg.sign()) != security::kSecuritySuccess) {
+    //     ZJC_WARN("kElectJoin verify signature failed!");
+    //     return;
+    // }
 
     bls::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(tx_msg.value())) {
@@ -992,21 +992,21 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     // }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    auto pool_index = msg_ptr->address_info->pool_index();
-    if (security_->Verify(
-            msg_ptr->msg_hash,
-            tx_msg.pubkey(),
-            tx_msg.sign()) != security::kSecuritySuccess) {
-        ZJC_ERROR("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu, txid: %s",
-            msg_ptr->address_info->balance(),
-            tx_msg.amount(),
-            tx_msg.contract_prepayment(),
-            consensus::kCallContractDefaultUseGas,
-            common::Encode::HexEncode(tx_msg.gid()).c_str());
-        assert(false);
-        return;
-    }
+    // auto pool_index = msg_ptr->address_info->pool_index();
+    // if (security_->Verify(
+    //         msg_ptr->msg_hash,
+    //         tx_msg.pubkey(),
+    //         tx_msg.sign()) != security::kSecuritySuccess) {
+    //     ZJC_ERROR("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+    //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
+    //         msg_ptr->address_info->balance(),
+    //         tx_msg.amount(),
+    //         tx_msg.contract_prepayment(),
+    //         consensus::kCallContractDefaultUseGas,
+    //         common::Encode::HexEncode(tx_msg.gid()).c_str());
+    //     assert(false);
+    //     return;
+    // }
 }
 
 void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr) {
