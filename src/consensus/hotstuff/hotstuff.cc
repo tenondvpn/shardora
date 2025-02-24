@@ -1412,9 +1412,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 #endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
-        if (vote_msg.txs_size() > 0) {
-            hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
-        }
+        hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
