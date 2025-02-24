@@ -397,6 +397,7 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
     // just one thread
     // ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -449,6 +450,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
     }
 
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
         ZJC_DEBUG("header.has_sync_heights()");
@@ -456,10 +458,12 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     HandlePoolsMessage(msg_ptr);
     // pools_msg_queue_.push(msg_ptr);
     // pop_tx_con_.notify_one();
+    TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 

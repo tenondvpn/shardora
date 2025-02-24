@@ -91,7 +91,7 @@ void ThreadHandler::HandleMessage() {
                 if (thread_idx == 6)
                     ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
                         msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime),
-                        ProtobufToJson(msg_ptr->header).c_str());
+                        "ProtobufToJson(msg_ptr->header).c_str()");
             }
 
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
