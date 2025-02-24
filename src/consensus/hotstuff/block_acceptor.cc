@@ -459,7 +459,7 @@ Status BlockAcceptor::addTxsToPool(
                     assert(false);
                 } else {
                     valid_txs.push_back(tx_ptr);
-                    pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
+                    // pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
                 }
             }
         }

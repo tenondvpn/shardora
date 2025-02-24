@@ -36,6 +36,8 @@ enum MsgType {
   PRE_RESET_TIMER,
 };
 
+class HotstuffManager;
+
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
 typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
 typedef hotstuff::protobuf::VoteMsg pb_VoteMsg;
@@ -51,6 +53,7 @@ class Hotstuff {
 public:
     Hotstuff() = default;
     Hotstuff(
+            HotstuffManager& hotstuff_mgr,
             std::shared_ptr<sync::KeyValueSync>& kv_sync,
             const uint32_t& pool_idx,
             const std::shared_ptr<LeaderRotation>& lr,
@@ -65,6 +68,7 @@ public:
 #endif
             const std::shared_ptr<ElectInfo>& elect_info,
             std::shared_ptr<db::Db>& db) :
+        hotstuff_mgr_(hotstuff_mgr),
         kv_sync_(kv_sync),
         pool_idx_(pool_idx),
         crypto_(crypto),
@@ -392,6 +396,7 @@ private:
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
+    HotstuffManager& hotstuff_mgr_;
     
 };
 

@@ -176,12 +176,18 @@ public:
         return hf->wrapper();   
     }
 
+    void ConsensusAddTxsMessage(transport::MessagePtr& msg_ptr) {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        consensus_add_tx_msgs_[thread_idx].push(msg_ptr);
+        pop_tx_con_.notify_one();
+    }
+
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
     Status VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock);
-
+    void PopPoolsMessage();
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
                 msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
@@ -346,7 +352,11 @@ private:
     uint64_t prev_check_timer_single_tm_ms_[common::kImmutablePoolSize] = {0};
     uint64_t first_timeblock_timestamp_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-
+    common::ThreadSafeQueue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
+    std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
+    volatile bool destroy_ = false;
+    std::condition_variable pop_tx_con_;
+    std::mutex pop_tx_mu_;
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };

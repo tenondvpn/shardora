@@ -132,7 +132,7 @@ public:
         return Status::kSuccess;
     }
 
-private:
+    private:
     Status addTxsToPool(
         transport::MessagePtr msg_ptr,
         std::shared_ptr<ViewBlockChain>& view_block_chain,

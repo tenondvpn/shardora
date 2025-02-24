@@ -238,7 +238,6 @@ public:
         return tx_pool_[pool_index].is_next_block_checked(height, hash);
     }
 
-
 private:
     void DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
@@ -307,8 +306,6 @@ private:
     common::Tick tools_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
-    std::condition_variable pop_tx_con_;
-    std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     uint32_t min_valid_tx_count_ = 1;

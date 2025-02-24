@@ -51,6 +51,7 @@ TxPoolManager::TxPoolManager(
 
 TxPoolManager::~TxPoolManager() {
     destroy_ = true;
+    pop_message_thread_->join();
     FlushHeightTree();
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
