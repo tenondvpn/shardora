@@ -176,7 +176,7 @@ public:
         return hf->wrapper();   
     }
 
-    void ConsensusAddTxsMessage(transport::MessagePtr& msg_ptr) {
+    void ConsensusAddTxsMessage(const transport::MessagePtr& msg_ptr) {
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         consensus_add_tx_msgs_[thread_idx].push(msg_ptr);
         pop_tx_con_.notify_one();
