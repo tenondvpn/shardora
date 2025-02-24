@@ -78,7 +78,7 @@ struct Construct {
     } \
 }
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
     if (data_map.size() >= 22020) { \
         ZJC_INFO("data size: %u", data_map.size()); \
@@ -90,10 +90,10 @@ struct Construct {
         ZJC_INFO("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
     } \
 }
-#else
-#define CHECK_MEMORY_SIZE(data_map)
-#define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
-#endif
+// #else
+// #define CHECK_MEMORY_SIZE(data_map)
+// #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg)
+// #endif
 
 #ifndef NDEBUG
 // #define ADD_TX_DEBUG_INFO(tx_proto)

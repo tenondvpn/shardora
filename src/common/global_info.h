@@ -272,7 +272,7 @@ private:
     volatile bool global_stoped_ = false;
     volatile bool main_inited_success_ = false;
     uint32_t pools_each_thread_max_messages_ = 2048u;
-    uint32_t each_tx_pool_max_txs_ = 202400u;
+    uint32_t each_tx_pool_max_txs_ = 20240u;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
