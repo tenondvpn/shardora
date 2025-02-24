@@ -260,6 +260,15 @@ void TxPool::GetTxIdempotently(
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
     }
 
+    while (consensus_added_txs_.pop(&tx_ptr) && res_map.size() < count) {
+        if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+            continue;
+        }
+
+        res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+    }
+
     return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     auto iter = src_prio_map.begin();
@@ -840,9 +849,9 @@ double TxPool::CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint3
 
 void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
     CheckThreadIdValid();
-    if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+    if (consensus_added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend %u, %u, all valid: %u", 
-            added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
+            consensus_added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
         return;
     }
 
@@ -851,7 +860,7 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
-    added_txs_.push(tx_ptr);
+    consensus_added_txs_.push(tx_ptr);
     return;
     common::AutoSpinLock auto_lock(tx_pool_mutex_);
     if (!pools::IsUserTransaction(tx_ptr->tx_info->step())) {

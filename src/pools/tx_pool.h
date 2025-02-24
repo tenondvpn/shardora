@@ -97,12 +97,12 @@ public:
     bool GidValid(const std::string& gid);
 
     uint32_t all_tx_size() const {
-        return added_txs_.size();
+        return added_txs_.size() + consensus_added_txs_.size();
         // return gid_map_.size();
     }
 
     uint32_t tx_size() const {        
-        return added_txs_.size();
+        return added_txs_.size() + consensus_added_txs_.size();
         // return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
@@ -202,7 +202,7 @@ private:
     std::thread::id local_thread_id_;
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
-    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensys_added_txs_;
+    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;
