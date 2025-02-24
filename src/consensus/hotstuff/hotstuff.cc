@@ -1127,7 +1127,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     cons_debug.ParseFromString(msg_ptr->header.debug());
     // cons_debug.add_timestamps(
     //     b - cons_debug.timestamps(0));
-    ZJC_INFO("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
+    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
