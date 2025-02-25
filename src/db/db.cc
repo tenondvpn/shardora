@@ -83,8 +83,13 @@ bool Db::Init(const std::string& db_path) {
     }
 
     rocksdb::Options options;
+    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.IncreaseParallelism();
+    options.OptimizeLevelStyleCompaction();
+    // create the DB if it's not already present
+    options.create_if_missing = true;
     // options.compaction_style = rocksdb::kCompactionStyleUniversal;
-    options.write_buffer_size = 67108864 / 64; // 64MB
+    // options.write_buffer_size = 67108864 / 64; // 64MB
     // options.max_write_buffer_number = 3 / 3;
     // options.target_file_size_base = 67108864 / 64; // 64MB
     // options.max_background_compactions = 2;
