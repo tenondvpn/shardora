@@ -55,9 +55,15 @@ public:
         if (tx_info_index < 0) {
             tx_info = msg_ptr->header.mutable_tx_proto();
         } else {
-            auto* tx_propose = msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_tx_propose();
-            if (tx_info_index < tx_propose->txs_size()) {
-                tx_info = tx_propose->mutable_txs(tx_info_index);
+            const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
+            if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg() &&
+                    tx_info_idx < msg_ptr->header.hotstuff().pre_reset_timer_msg().txs_size()) {
+                tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pre_reset_timer_msg()->mutable_txs(tx_info_idx);
+            } else {
+                auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+                if (tx_info_idx < vote_msg.txs_size()) {
+                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
+                }
             }
         }
 
