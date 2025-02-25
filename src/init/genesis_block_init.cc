@@ -1843,7 +1843,6 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
     for (uint32_t i = 0; i < shard_config["accounts"].size(); i++) {
         std::string account_id = shard_config["accounts"][i].as<std::string>();
         pool_index_map.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
-        ZJC_INFO("add account sk: %s, id: %s", common::Encode::HexEncode(shard_config["accounts"]))
     }
     return pool_index_map;
 }
