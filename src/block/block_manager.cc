@@ -18,7 +18,14 @@
 #include "protos/pools.pb.h"
 #include "protos/tx_storage_key.h"
 #include "transport/processor.h"
+
 #include "zjcvm/execution.h"
+#include <common/log.h>
+#include <common/utils.h>
+#include <protos/pools.pb.h>
+#include <protos/tx_storage_key.h>
+#include "db/db_utils.h"
+
 
 namespace shardora {
 
@@ -1233,12 +1240,25 @@ void BlockManager::CreateStatisticTx() {
     pools::protobuf::ElectStatistic elect_statistic;
     uint64_t timeblock_height = prev_timeblock_height_;
     ZJC_DEBUG("StatisticWithHeights called!");
+
+    // Some nodes will receive statistic block ahead of timeblock.
+    // This happens accasionally, making statistic tx failed to be found
+    // So we should make sure that one timeblock can only gathered statistic info for once
+    if (IsTimeblockHeightStatisticDone(timeblock_height)) {
+        ZJC_DEBUG("repeat StatisticWithHeights, %lu, latest: %lu",
+            timeblock_height, latest_statistic_timeblock_height_);
+        return;
+    }
+    
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
             timeblock_height) != pools::kPoolsSuccess) {
         ZJC_DEBUG("failed StatisticWithHeights!");
         return;
     }
+
+    // 对应 timeblock_height 的 elect_statistic 已经收集，不会进行重复收集
+    MarkDoneTimeblockHeightStatistic(timeblock_height);
 
     // TODO: fix invalid hash
     std::string statistic_hash = common::Hash::keccak256(elect_statistic.SerializeAsString());
@@ -1267,15 +1287,15 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            // ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
-            //     "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
-            //     "gid: %s, timeblock_height: %lu",
-            //     common::Encode::HexEncode(statistic_hash).c_str(),
-            //     0,
-            //     "", tx_ptr->timeout,
-            //     kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
-            //     common::Encode::HexEncode(gid).c_str(),
-            //     timeblock_height);
+            ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
+                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
+                "gid: %s, timeblock_height: %lu",
+                common::Encode::HexEncode(statistic_hash).c_str(),
+                0,
+                "", tx_ptr->timeout,
+                kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
+                common::Encode::HexEncode(gid).c_str(),
+                timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
             CHECK_MEMORY_SIZE(shard_statistics_map_);
 
@@ -1713,6 +1733,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         ZJC_DEBUG("shard_statistic_tx == nullptr, tx_gid: %s, is leader: %d",
             common::Encode::HexEncode(tx_gid).c_str(),
             leader);
+        if (pool_index == common::kRootChainPoolIndex) {
+            assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
+        }
         return nullptr;
     }
 

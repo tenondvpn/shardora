@@ -187,10 +187,6 @@ void KeyValueSync::CheckSyncItem() {
 
                 sync_req->clear_keys();
                 sync_req->clear_heights();
-                if (sended_neigbors.size() > kSyncNeighborCount) {
-                    stop = true;
-                    break;
-                }
             }
 
             ++(item->sync_times);
@@ -201,6 +197,10 @@ void KeyValueSync::CheckSyncItem() {
                 stop = true;
                 break;
             }
+            if (sended_neigbors.size() > kSyncNeighborCount) {
+                stop = true;
+                break;
+            }            
         }
 
         if (stop) {

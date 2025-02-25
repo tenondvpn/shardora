@@ -587,6 +587,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
             last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
             pacemaker()->CurView());
         if (last_vote_view_ == view_item.qc().view()) {
+            // return Status::kSuccess;
             auto iter = voted_msgs_.find(view_item.qc().view());
             if (iter != voted_msgs_.end()) {
                 ZJC_DEBUG("pool: %d has voted: %lu, last_vote_view_: %u, "
@@ -886,16 +887,17 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     auto btime = common::TimeUtils::TimestampMs();
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *pro_msg_wrap->zjc_host_ptr;
-    if (acceptor()->Accept(
+    Status s = acceptor()->Accept(
             view_block_chain_, 
             pro_msg_wrap, 
             true, 
             false, 
             balance_map,
-            zjc_host) != Status::kSuccess) {
+            zjc_host);
+    if (s  != Status::kSuccess) {
 #ifndef NDEBUG
         ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block failed, "
-            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
+            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, status: %d",
             pool_idx_,
             proto_msg.view_item().qc().view(),
             common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
@@ -1235,7 +1237,10 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.sign_x(),
         vote_msg.sign_y(),
         reconstructed_sign);
-    assert(ret != Status::kInvalidOpposedCount);
+    if (ret == Status::kInvalidOpposedCount) {
+        ZJC_WARN("invalid opposed count: %u_%u_%lu", qc_item.network_id(), qc_item.pool_index(), qc_item.view());
+    }
+    // assert(ret != Status::kInvalidOpposedCount); 有可能由于状态不一致临时出现
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             ZJC_INFO("kBlsWaiting pool: %d, view: %lu, hash64: %lu",

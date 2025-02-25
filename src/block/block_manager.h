@@ -159,6 +159,14 @@ private:
     void CreateStatisticTx();
     void PopTxTicker();
 
+    inline bool IsTimeblockHeightStatisticDone(uint64_t timeblock_height) {
+        return latest_statistic_timeblock_height_ >= timeblock_height;
+    }
+
+    inline void MarkDoneTimeblockHeightStatistic(uint64_t timeblock_height) {
+        latest_statistic_timeblock_height_ = timeblock_height;
+    }
+
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
     static const uint64_t kStatisticTimeoutMs = 20000lu;
@@ -214,6 +222,7 @@ private:
     std::shared_ptr<std::thread> handle_consensus_block_thread_;
     std::mutex wait_mutex_;
     std::condition_variable wait_con_;
+    uint64_t latest_statistic_timeblock_height_ = 0; // memorize the latest timeblock height that has gathered statistic
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
