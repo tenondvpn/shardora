@@ -135,7 +135,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
     }
 
-    db_->CompactRange("", "");
+    // db_->CompactRange("", "");
     if (net_type == GenisisNetworkType::RootNetwork) {
         FILE* fd = fopen("./bls_pk", "w");
         auto str = bls_pk_json_.dump();
