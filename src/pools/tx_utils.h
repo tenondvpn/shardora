@@ -55,16 +55,22 @@ public:
         if (tx_info_index < 0) {
             tx_info = msg_ptr->header.mutable_tx_proto();
         } else {
-            const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
             if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg() &&
                     tx_info_idx < msg_ptr->header.hotstuff().pre_reset_timer_msg().txs_size()) {
                 tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pre_reset_timer_msg()->mutable_txs(tx_info_idx);
-            } else {
+            } else if (msg_ptr->header.hotstuff().pro_msg().has_tx_propose()) {
+                auto& propose_msg = msg_ptr->header.hotstuff().pro_msg().tx_propose();
+                if (tx_info_idx < propose_msg.txs_size()) {
+                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_txs(tx_info_idx);
+                }
+            } else if (msg_ptr->header.hotstuff().has_vote_msg()) {
                 auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
                 if (tx_info_idx < vote_msg.txs_size()) {
                     tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
                 }
-            }
+            } else {
+                assert(false)
+;            }
         }
 
         if (tx_info == nullptr) {
