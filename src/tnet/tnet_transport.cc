@@ -111,6 +111,7 @@ bool TnetTransport::Init() {
         }
 
         event_loop_vec_.push_back(event_loop);
+        ZJC_DEBUG("success add event loop: %d", i);
     }
 
     if (i == thread_count_) {

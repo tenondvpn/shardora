@@ -107,30 +107,46 @@ void AccountManager::InitLoadAllAddress() {
 }
 
 protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    thread_valid_[thread_idx] = true;
-    while (true) {
-        std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[thread_idx], (std::string("pop thread index: ") + std::to_string(thread_idx)).c_str())
-        if (!thread_valid_accounts_queue_[thread_idx].pop(&address_info)) {
-            break;
-        }
+    // thread_valid_[thread_idx] = true;
+    // while (true) {
+    //     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
+    //     CHECK_MEMORY_SIZE_WITH_MESSAGE(
+    //         thread_valid_accounts_queue_[thread_idx], (std::string("pop thread index: ") + 
+    //         std::to_string(thread_idx)).c_str());
+    //     if (!thread_valid_accounts_queue_[thread_idx].pop(&address_info)) {
+    //         break;
+    //     }
 
-        thread_address_map_[thread_idx][address_info->addr()] = address_info;
-        CHECK_MEMORY_SIZE(thread_address_map_[thread_idx]);
-    }
+    //     thread_address_map_[thread_idx][address_info->addr()] = address_info;
+    //     CHECK_MEMORY_SIZE(thread_address_map_[thread_idx]);
+    // }
    
-    if (addr.empty()) {
-        return nullptr;
+    // if (addr.empty()) {
+    //     return nullptr;
+    // }
+
+    // auto iter = thread_address_map_[thread_idx].find(addr);
+    // if (iter != thread_address_map_[thread_idx].end()) {
+    //     return iter->second;
+    // }
+    
+    protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
+    if (addr_info != nullptr) {
+        return addr_info;
     }
 
-    auto iter = thread_address_map_[thread_idx].find(addr);
-    if (iter != thread_address_map_[thread_idx].end()) {
-        return iter->second;
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    addr_info = GetAcountInfoFromDb(addr);
+    if (!addr_info) {
+        BLOCK_DEBUG(
+            "get account failed[%s] in thread_idx:%d", 
+            common::Encode::HexEncode(addr).c_str(), thread_idx);
+    } else {
+        thread_update_accounts_queue_[thread_idx].push(addr_info);
+        update_acc_con_.notify_one();
     }
-    
-    BLOCK_DEBUG("get account failed[%s] in thread_idx:%d", common::Encode::HexEncode(addr).c_str(), thread_idx);
-    return nullptr;
+
+    return addr_info;
 }
 
 protos::AddressInfoPtr AccountManager::GetContractInfoByAddress(
@@ -242,6 +258,11 @@ void AccountManager::HandleContractPrepayment(
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
     auto& account_id = GetTxValidAddress(tx);
+    ZJC_DEBUG("HandleContractPrepayment address coming from: %s, to: %s, amount:%lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        common::Encode::HexEncode(tx.to()).c_str(),
+        tx.amount(),
+        tx.balance());
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
         assert(false);
@@ -292,8 +313,12 @@ void AccountManager::HandleLocalToTx(
     }
 
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
+        if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2 &&
+                to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
             //assert(false);
+            ZJC_DEBUG("invalid address coming to: %s, balance: %lu",
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
+                to_txs.tos(i).balance());
             continue;
         }
 
@@ -306,7 +331,12 @@ void AccountManager::HandleLocalToTx(
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(view_block.qc().pool_index());
             account_info->set_addr(to_txs.tos(i).to());
-            account_info->set_type(address::protobuf::kNormal);
+            if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
+                account_info->set_type(address::protobuf::kContractPrepayment);
+            } else {
+                account_info->set_type(address::protobuf::kNormal);
+            }
+
             account_info->set_sharding_id(view_block.qc().network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
@@ -380,6 +410,11 @@ void AccountManager::HandleCreateContract(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     // handle from
+    ZJC_DEBUG("HandleCreateContract address coming from: %s, to: %s, amount:%lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        common::Encode::HexEncode(tx.to()).c_str(),
+        tx.amount(),
+        tx.balance());
     auto& block = view_block.block_info();
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     {
@@ -467,10 +502,9 @@ void AccountManager::HandleCreateContractByRootFrom(
         account_info->set_addr(account_id);
         account_info->set_type(address::protobuf::kNormal);
         account_info->set_sharding_id(view_block.qc().network_id());
-        account_info->set_latest_height(block.height());
-        account_info->set_balance(tx.balance());
-        prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
-        return;
+        // account_info->set_latest_height(block.height());
+        // account_info->set_balance(tx.balance());
+        // return;
     }
 
     if (account_info->latest_height() > block.height()) {
@@ -480,6 +514,7 @@ void AccountManager::HandleCreateContractByRootFrom(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    UpdateContractPrepayment(view_block, tx, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
@@ -487,6 +522,48 @@ void AccountManager::HandleCreateContractByRootFrom(
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), view_block.qc().pool_index());
 }
+
+void AccountManager::UpdateContractPrepayment(
+        const view_block::protobuf::ViewBlockItem& view_block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    auto& block = view_block.block_info();
+    auto account_id = tx.to() + tx.from();
+    auto account_info = GetAccountInfo(account_id);
+    if (account_info == nullptr) {
+        ZJC_INFO("0 get address info failed create new address to this id: %s,"
+            "shard: %u, local shard: %u",
+            common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
+            common::GlobalInfo::Instance()->network_id());
+        account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pool_index(view_block.qc().pool_index());
+        account_info->set_addr(account_id);
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(view_block.qc().network_id());
+        // account_info->set_latest_height(block.height());
+        // account_info->set_balance(tx.balance());
+        // return;
+    }
+
+    if (account_info->latest_height() > block.height()) {
+        return;
+    }
+    
+    account_info->set_latest_height(block.height());
+    if (tx.has_contract_prepayment() && tx.contract_prepayment() > 0) {
+        account_info->set_balance(tx.contract_prepayment());
+    } else {
+        account_info->set_balance(tx.balance());
+    }
+
+    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    thread_update_accounts_queue_[thread_idx].push(account_info);
+    ZJC_INFO("contract create by root from new balance %s: %lu, height: %lu, pool: %u",
+        common::Encode::HexEncode(account_id).c_str(), tx.balance(),
+        block.height(), view_block.qc().pool_index());
+}
+
 
 void AccountManager::HandleContractExecuteTx(
         const view_block::protobuf::ViewBlockItem& view_block,
@@ -497,6 +574,11 @@ void AccountManager::HandleContractExecuteTx(
         return;
     }
 
+    ZJC_DEBUG("HandleContractExecuteTx address coming from: %s, to: %s, amount:%lu, balance: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(),
+        common::Encode::HexEncode(tx.to()).c_str(),
+        tx.amount(),
+        tx.balance());
     auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(account_id);
     if (account_info == nullptr) {
@@ -518,11 +600,16 @@ void AccountManager::HandleContractExecuteTx(
     // amount is contract 's new balance
     account_info->set_balance(tx.amount());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    UpdateContractPrepayment(view_block, tx, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("contract call address new balance %s: %lu",
-        common::Encode::HexEncode(account_id).c_str(), tx.amount());
+    ZJC_INFO("contract call address new balance %s, from: %s, to: %s, balance: %lu, amount: %lu",
+        common::Encode::HexEncode(account_id).c_str(), 
+        common::Encode::HexEncode(tx.from()).c_str(), 
+        common::Encode::HexEncode(tx.to()).c_str(), 
+        tx.balance(),
+        tx.amount());
 }
 
 void AccountManager::HandleRootCreateAddressTx(
@@ -653,6 +740,7 @@ void AccountManager::HandleJoinElectTx(
 
 void AccountManager::RunUpdateAccounts() {
     {
+        // new thread with thread index
         auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
         // std::unique_lock<std::mutex> lock(thread_wait_mutex_);
         thread_wait_conn_.notify_one();
@@ -675,29 +763,42 @@ void AccountManager::UpdateAccountsThread() {
                 break;
             }
 
-            updates_accounts_.push(account_info);
+            ZJC_DEBUG("success add address info thread index: %d, id: %s, balance: %lu",
+                    i, 
+                    common::Encode::HexEncode(account_info->addr()).c_str(), 
+                    account_info->balance());
+            account_lru_map_.insert(account_info);
         }
     }
 
-    while (true) {
-        protos::AddressInfoPtr account_info = nullptr;
-        updates_accounts_.pop(&account_info);
-        if (account_info == nullptr) {
-            break;
-        }
+    // while (true) {
+    //     protos::AddressInfoPtr account_info = nullptr;
+    //     updates_accounts_.pop(&account_info);
+    //     if (account_info == nullptr) {
+    //         break;
+    //     }
         
-        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            if (thread_valid_accounts_queue_[i].size() >= 1024 && !thread_valid_[i]) {
-                continue;
-            }
+    //     for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+    //         // TODO: check it
+    //         // if (thread_valid_accounts_queue_[i].size() >= 1024 && !thread_valid_[i]) {
+    //         //     ZJC_DEBUG("failed add address info thread index: %d, id: %s, balance: %lu",
+    //         //         i, common::Encode::HexEncode(account_info->addr()).c_str(), account_info->balance());
+    //         //     continue;
+    //         // }
 
-            CHECK_MEMORY_SIZE_WITH_MESSAGE(thread_valid_accounts_queue_[i], (std::string("push thread index: ") + std::to_string(i)).c_str())
-            thread_valid_accounts_queue_[i].push(account_info);
-            if (thread_valid_accounts_queue_[i].size() >= 2024) {
-                thread_valid_[i] = false;
-            }
-        }
-    }
+    //         CHECK_MEMORY_SIZE_WITH_MESSAGE(
+    //             thread_valid_accounts_queue_[i], 
+    //             (std::string("push thread index: ") + std::to_string(i)).c_str())
+    //         thread_valid_accounts_queue_[i].push(account_info);
+    //         ZJC_DEBUG("success add address info thread index: %d, id: %s, balance: %lu",
+    //                 i, 
+    //                 common::Encode::HexEncode(account_info->addr()).c_str(), 
+    //                 account_info->balance());
+    //         // if (thread_valid_accounts_queue_[i].size() >= 2024) {
+    //         //     thread_valid_[i] = false;
+    //         // }
+    //     }
+    // }
 }
 
 void AccountManager::NewBlockWithTx(

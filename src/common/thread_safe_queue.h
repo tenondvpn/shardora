@@ -50,7 +50,7 @@ public:
         return res;
     }
 
-    size_t size() {
+    size_t size() const {
         return rw_queue_.size_approx();
     }
 

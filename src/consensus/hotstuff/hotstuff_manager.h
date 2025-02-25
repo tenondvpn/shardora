@@ -176,42 +176,48 @@ public:
         return hf->wrapper();   
     }
 
+    void ConsensusAddTxsMessage(const transport::MessagePtr& msg_ptr) {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        consensus_add_tx_msgs_[thread_idx].push(msg_ptr);
+        pop_tx_con_.notify_one();
+    }
+
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
     void RegisterCreateTxCallbacks();
     Status VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock);
-
+    void PopPoolsMessage();
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateToTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxItem>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateStatisticTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<StatisticTxItem>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxLocalItem>(
-                msg_ptr->header.tx_proto(), db_, gas_prepayment_, 
+                msg_ptr, -1, db_, gas_prepayment_, 
                 account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateTimeblockTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<TimeBlockTx>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateRootToTxItem(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<RootToTxItem>(
                 elect_info()->max_consensus_sharding_id(),
-                msg_ptr->header.tx_proto(),
+                msg_ptr, -1,
                 vss_mgr_,
                 account_mgr_,
                 security_ptr_,
@@ -220,7 +226,7 @@ private:
 
     pools::TxItemPtr CreateLibraryTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<CreateLibrary>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
@@ -230,7 +236,7 @@ private:
         }
 
         return std::make_shared<ElectTxItem>(
-                msg_ptr->header.tx_proto(),
+                msg_ptr, -1,
                 account_mgr_,
                 security_ptr_,
                 prefix_db_,
@@ -250,7 +256,7 @@ private:
         }
 
         return std::make_shared<JoinElectTxItem>(
-                msg_ptr->header.tx_proto(), 
+                msg_ptr, -1, 
                 account_mgr_, 
                 security_ptr_, 
                 prefix_db_, 
@@ -263,19 +269,19 @@ private:
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<CrossTxItem>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateRootCrossTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<RootCrossTxItem>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCreateCall>(
                 contract_mgr_, 
                 db_, 
-                msg_ptr->header.tx_proto(), 
+                msg_ptr, -1, 
                 account_mgr_, 
                 security_ptr_, 
                 msg_ptr->address_info);
@@ -285,7 +291,7 @@ private:
         return std::make_shared<ContractCreateByRootFromTxItem>(
                 contract_mgr_, 
                 db_, 
-                msg_ptr->header.tx_proto(), 
+                msg_ptr, -1, 
                 account_mgr_, 
                 security_ptr_, 
                 msg_ptr->address_info);
@@ -295,7 +301,7 @@ private:
         return std::make_shared<ContractCreateByRootToTxItem>(
                 contract_mgr_, 
                 db_, 
-                msg_ptr->header.tx_proto(), 
+                msg_ptr, -1, 
                 account_mgr_, 
                 security_ptr_, 
                 msg_ptr->address_info);
@@ -303,7 +309,7 @@ private:
 
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCall>(
-                db_, msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                db_, msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
@@ -311,7 +317,7 @@ private:
                 contract_mgr_, 
                 gas_prepayment_, 
                 db_, 
-                msg_ptr->header.tx_proto(), 
+                msg_ptr, -1, 
                 account_mgr_, 
                 security_ptr_, 
                 msg_ptr->address_info);
@@ -319,7 +325,7 @@ private:
 
     pools::TxItemPtr CreatePoolStatisticTagTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<PoolStatisticTag>(
-                msg_ptr->header.tx_proto(), account_mgr_, security_ptr_, msg_ptr->address_info);
+                msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     static const uint64_t kHandleTimerPeriodMs = 3000lu;
@@ -346,7 +352,11 @@ private:
     uint64_t prev_check_timer_single_tm_ms_[common::kImmutablePoolSize] = {0};
     uint64_t first_timeblock_timestamp_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-
+    common::ThreadSafeQueue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
+    std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
+    volatile bool destroy_ = false;
+    std::condition_variable pop_tx_con_;
+    std::mutex pop_tx_mu_;
 
     DISALLOW_COPY_AND_ASSIGN(HotstuffManager);
 };

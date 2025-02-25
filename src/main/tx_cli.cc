@@ -18,7 +18,7 @@ static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13001;
 static int shardnum = 3;
-static const int delayus = 500;
+static const int delayus = 5000;
 static const bool multi_pool = true;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey =
@@ -258,9 +258,10 @@ int tx_main(int argc, char** argv) {
     uint32_t count = 0;
     uint32_t step_num = 1000;
     std::string gid = common::Random::RandomString(32);
+    uint64_t random_u64 = common::Random::RandomUint64();
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
-        gid_int[0] = pos;
+        gid_int[0] = pos + random_u64;
         if (g_pri_addrs_map[from_prikey] == to) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
@@ -292,19 +293,19 @@ int tx_main(int argc, char** argv) {
             1,
             shardnum);
 
-        
-        if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
+         
+        if (transport::TcpTransport::Instance()->Send("192.168.0.2", (13001 + (pos % 1)), tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
 
-        if (multi_pool && pos % 10000 == 0) {
-            ++prikey_pos;
+        if (count % 1000 == 0) {
+            //++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            std::cout << "from: " << common::Encode::HexEncode(security->GetAddress())
-                      << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;
             //usleep(10000);
+            
+            usleep(30000lu);
         }
 
         count++;
@@ -315,8 +316,8 @@ int tx_main(int argc, char** argv) {
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
         }
+        //usleep(50);
 
-        usleep(delayus_a);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {

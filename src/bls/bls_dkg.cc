@@ -50,6 +50,7 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage() {
+    return;
 #ifdef USE_AGG_BLS
     return;
 #endif

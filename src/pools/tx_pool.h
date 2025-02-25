@@ -25,16 +25,17 @@
 #include "sync/key_value_sync.h"
 
 #ifndef NDEBUG
-#define CheckThreadIdValid() { \
-    auto now_thread_id = std::this_thread::get_id(); \
-     \
-    if (local_thread_id_count_ >= 1) { \
-        assert(local_thread_id_ == now_thread_id); \
-    } else { \
-        local_thread_id_ = now_thread_id; \
-    } \
-    if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; } \
-}
+#define CheckThreadIdValid()
+// #define CheckThreadIdValid() { \
+//     auto now_thread_id = std::this_thread::get_id(); \
+//      \
+//     if (local_thread_id_count_ >= 1) { \
+//         assert(local_thread_id_ == now_thread_id); \
+//     } else { \
+//         local_thread_id_ = now_thread_id; \
+//     } \
+//     if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; } \
+// }
 #else
 #define CheckThreadIdValid()
 #endif
@@ -47,7 +48,7 @@ namespace pools {
 class TxPoolManager;
 struct TxItemPriOper {
     bool operator() (TxItemPtr& a, TxItemPtr& b) {
-        return a->gas_price < b->gas_price;
+        return a->tx_info->gas_price() < b->tx_info->gas_price();
     }
 };
 
@@ -79,7 +80,6 @@ public:
     void CheckTimeoutTx();
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void RemoveTx(const std::string& gid);
-    void ConsensusAddTxs(const std::vector<pools::TxItemPtr>& txs);
     void ConsensusAddTxs(const pools::TxItemPtr& tx);
     void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs);
     void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash);
@@ -97,11 +97,13 @@ public:
     bool GidValid(const std::string& gid);
 
     uint32_t all_tx_size() const {
-        return gid_map_.size();
+        return added_txs_.size() + consensus_added_txs_.size();
+        // return gid_map_.size();
     }
 
     uint32_t tx_size() const {        
-        return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
+        return added_txs_.size() + consensus_added_txs_.size();
+        // return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
     uint64_t oldest_timestamp() const {
@@ -199,6 +201,11 @@ private:
     uint64_t prev_check_tx_timeout_tm_ = 0;
     std::thread::id local_thread_id_;
     uint64_t local_thread_id_count_ = 0;
+    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
+    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
+
+    // TODO: check it
+    common::SpinMutex tx_pool_mutex_;
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;

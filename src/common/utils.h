@@ -58,25 +58,39 @@ struct Construct {
         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
-        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 50000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 1000000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+        msg_ptr->times[msg_ptr->times_idx] = btime; \
+        msg_ptr->times_idx++; \
+    } \
+}
+
+#define TMP_ADD_DEBUG_PROCESS_TIMESTAMP() { \
+    if (msg_ptr) { \
+        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
+        auto btime = common::TimeUtils::TimestampUs(); \
+        uint64_t diff_time = 0; \
+        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 10000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
         msg_ptr->times[msg_ptr->times_idx] = btime; \
         msg_ptr->times_idx++; \
     } \
 }
 #else
 #define ADD_DEBUG_PROCESS_TIMESTAMP()
+#define TMP_ADD_DEBUG_PROCESS_TIMESTAMP()
 #endif
+
+
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    if (data_map.size() >= 42020) { \
-        ZJC_DEBUG("data size: %u", data_map.size()); \
+    if (data_map.size() >= 22020) { \
+        ZJC_INFO("data size: %u", data_map.size()); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
-    if (data_map.size() >= 42020) { \
-        ZJC_DEBUG("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
+    if (data_map.size() >= 22020) { \
+        ZJC_INFO("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
     } \
 }
 #else

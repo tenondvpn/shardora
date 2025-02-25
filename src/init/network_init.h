@@ -83,7 +83,6 @@ private:
     void HandleAddrReq(const transport::MessagePtr& msg_ptr);
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId();
-    void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     void BroadcastInvalidPools(
         std::shared_ptr<LeaderRotationInfo> leader_rotation,
         int32_t mod_num);

@@ -63,12 +63,13 @@ Status BlockWrapper::Wrap(
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
-        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
+        ZJC_ERROR("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
             s, pool_idx_, 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
-            (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
+            (txs_ptr != nullptr ? txs_ptr->txs.size() : 0),
+            pools_mgr_->all_tx_size(pool_idx_));
         return s;
     }
 
@@ -83,9 +84,9 @@ Status BlockWrapper::Wrap(
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
-            *tx_info = it->second->tx_info;
+            *tx_info = *it->second->tx_info;
             assert(tx_info->gid().size() == 32);
-            ADD_TX_DEBUG_INFO(tx_info);
+            // ADD_TX_DEBUG_INFO(tx_info);
             // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
             //     "step: %d, to: %s, gid: %s, tx info: %s",
             //     view_block->qc().pool_index(),

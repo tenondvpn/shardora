@@ -155,16 +155,16 @@ bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::Base
         return false;
     }
 
-    auto store_member_index = common::Hash::Hash32(header_ptr->msg_hash) % members->size();
-    if ((*members)[store_member_index]->id != sec_ptr_->GetAddress()) {
-        dht::DhtKeyManager dht_key(
-            header_ptr->address_info->sharding_id(), 
-            (*members)[store_member_index]->id);
-        header.set_des_dht_key(dht_key.StrKey());
-        dht_ptr->SendToClosestNode(header_ptr);
-        // ZJC_DEBUG("pools message check route coming not this node.");
-        return false;
-    }
+    // auto store_member_index = common::Hash::Hash32(header_ptr->msg_hash) % members->size();
+    // if ((*members)[store_member_index]->id != sec_ptr_->GetAddress()) {
+    //     dht::DhtKeyManager dht_key(
+    //         header_ptr->address_info->sharding_id(), 
+    //         (*members)[store_member_index]->id);
+    //     header.set_des_dht_key(dht_key.StrKey());
+    //     dht_ptr->SendToClosestNode(header_ptr);
+    //     // ZJC_DEBUG("pools message check route coming not this node.");
+    //     return false;
+    // }
 
     // ZJC_DEBUG("pools message check route coming success this node.");
     return true;

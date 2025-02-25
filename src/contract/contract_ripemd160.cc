@@ -5,6 +5,7 @@
 #include "common/string_utils.h"
 #include "contract/contract_pairing.h"
 #include "contract/contract_pki.h"
+#include "contract/contract_cl.h"
 #include "contract/contract_reencryption.h"
 #include "pbc/pbc.h"
 #include "zjcvm/zjc_host.h"
@@ -52,11 +53,14 @@ int Ripemd160::call(
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res) try {
-    CONTRACT_ERROR("abe contract called decode: %s, src: %s",
+    CONTRACT_DEBUG("abe contract called decode: %s, src: %s",
         common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
     if (param.data.empty()) {
         return kContractError;
     }
+
+    CONTRACT_DEBUG("0 1 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
 
     if (param.data.substr(0, 3) == "add") {
         return AddParams(param, gas, origin_address, res);
@@ -73,6 +77,8 @@ int Ripemd160::call(
     if (param.data.substr(0, 5) == "readd") {
         return AddReEncryptionParam(param, gas, origin_address, res);
     }
+    CONTRACT_DEBUG("0 2 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
 
     // proxy reencryption
     if (param.data.substr(0, 6) == "tpinit") {
@@ -102,6 +108,8 @@ int Ripemd160::call(
         proxy_reenc.ReEncryptUserMessage(param, key, val);
         DEFAULT_CALL_RESULT();
     }
+    CONTRACT_DEBUG("0 2 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
 
     if (param.data.substr(0, 6) == "mprenc") {
         GET_KEY_VALUE_FROM_PARAM();
@@ -110,6 +118,7 @@ int Ripemd160::call(
         DEFAULT_CALL_RESULT();
     }
 
+    // pki
     if (param.data.substr(0, 6) == "pkipki") {
         GET_KEY_VALUE_FROM_PARAM();
         ContractPki pki;
@@ -148,6 +157,55 @@ int Ripemd160::call(
     if (param.data.substr(0, 6) == "pkidec") {
         GET_KEY_VALUE_FROM_PARAM();
         ContractPki pki;
+        pki.Dec(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    // pki cl
+    CONTRACT_DEBUG("0 abe contract called decode: %s, src: %s",
+        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
+    if (param.data.substr(0, 6) == "clipki") {
+        CONTRACT_DEBUG("1 abe contract called decode: %s, src: %s",
+            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.PkiExtract(param, key, val);
+        CONTRACT_DEBUG("2 abe contract called decode: %s, src: %s",
+            common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clipib") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.IbExtract(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "cliege") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.EncKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clidge") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.DecKeyGen(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clienc") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
+        pki.Enc(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "clidec") {
+        GET_KEY_VALUE_FROM_PARAM();
+        ContractCl pki;
         pki.Dec(param, key, val);
         DEFAULT_CALL_RESULT();
     }

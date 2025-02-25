@@ -168,11 +168,11 @@ public:
         return db_->Delete(write_opt, DbSlice(key));
     }
 
-    void CompactRange(const std::string& start_key, const std::string& end_key) {
-        auto s = DbSlice(start_key);
-        auto e = DbSlice(end_key);
-        db_->CompactRange(&s, &e);
-    }
+    // void CompactRange(const std::string& start_key, const std::string& end_key) {
+    //     auto s = DbSlice(start_key);
+    //     auto e = DbSlice(end_key);
+    //     db_->CompactRange(&s, &e);
+    // }
 
     void ClearPrefix(const std::string& prefix) {
         DbReadOptions option;

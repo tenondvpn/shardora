@@ -34,6 +34,7 @@ ClickHouseClient::~ClickHouseClient() {
 }
 
 bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
+    return true;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     block_queues_[thread_idx].push(view_block_item);
 // #ifndef NDEBUG
@@ -128,6 +129,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
         date->Append(common::MicTimestampToDate(block_item->timestamp()));
         gid->Append(common::Encode::HexEncode(tx.gid()));
+        ZJC_DEBUG("success add gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
         from->Append(common::Encode::HexEncode(tx.from()));
         from_pubkey->Append("");
         from_sign->Append("");
@@ -423,6 +425,13 @@ void ClickHouseClient::FlushToCkWithData() try {
             trans.AppendColumn("bls_agg_sign_y", bls_agg_sign_y);
             trans.AppendColumn("commit_bitmap", commit_bitmap);
             trans.AppendColumn("gid", gid);
+
+// #ifndef NDEBUG
+//             for (int32_t test_i = 0; test_i < gid->Size(); ++test_i) {
+//                 ZJC_DEBUG("success flush gid to db: %s", gid->At(test_i).data());
+//             }
+// #endif
+
             trans.AppendColumn("from", from);
             trans.AppendColumn("from_pubkey", from_pubkey);
             trans.AppendColumn("from_sign", from_sign);

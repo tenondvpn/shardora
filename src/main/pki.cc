@@ -107,8 +107,15 @@ int test_cpabe(int argc, char** argv) {
 }
 
 int test_pki_cl_agka(int argc, char** argv) {
-    pkicl::PkiClAgka pkicl(pkicl::kTypeA);
-    pkicl.Simulate();
+{
+    pkicl::PkiClAgka pkicl(pkicl::kTypeA, "79a31ee3205870b7ef3d7aa7d7dc0ae17ce3de24", "0efe323469954d466f958fd2ef66d624b6180be09a8315084278e13cd3903dd8affd0696e3cd829ff7cd010bbd70c2135821ac485dca8ec55bfef92e59164f06283e21a5104844d2b605331efea6e8673ef9d3af502d63a5ab17ad416e393bb8a66200e08c071e0353b094308c1fd8470e7d0c355af41cd66cb531223972c1ab");
+    pkicl.Simulate(true);
+
+}
+{
+    pkicl::PkiClAgka pkicl(pkicl::kTypeA, "79a31ee3205870b7ef3d7aa7d7dc0ae17ce3de24", "0efe323469954d466f958fd2ef66d624b6180be09a8315084278e13cd3903dd8affd0696e3cd829ff7cd010bbd70c2135821ac485dca8ec55bfef92e59164f06283e21a5104844d2b605331efea6e8673ef9d3af502d63a5ab17ad416e393bb8a66200e08c071e0353b094308c1fd8470e7d0c355af41cd66cb531223972c1ab");
+    pkicl.Simulate(false);
+}
     return 0;
 }
 

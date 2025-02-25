@@ -61,9 +61,11 @@ public:
 
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
 
-    void MergeAllPrevStorageMap(
+    bool GetPrevStorageKeyValue(
             const std::string& parent_hash, 
-            zjcvm::ZjchainHost& zjc_host) {
+            const std::string& id, 
+            const std::string& key, 
+            std::string* val) {
         std::string phash = parent_hash;
         // TODO: check valid
         while (true) {
@@ -71,25 +73,25 @@ public:
                 break;
             }
 
-            ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+            // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
             auto it = view_blocks_info_.find(phash);
             if (it == view_blocks_info_.end()) {
                 break;
             }
 
+            ZJC_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
+                "stored_to_db_view_: %lu, %s%s", 
+                3, pool_index_, it->second->view_block->qc().view(), 
+                stored_to_db_view_, common::Encode::HexEncode(id).c_str(), 
+                common::Encode::HexEncode(key).c_str());
             if (it->second->view_block->qc().view() <= stored_to_db_view_) {
                 break;
             }
 
             if (it->second->zjc_host_ptr) {
-                auto& prev_storages_map = it->second->zjc_host_ptr->prev_storages_map();
-                for (auto iter = prev_storages_map.begin(); iter != prev_storages_map.end(); ++iter) {
-                    zjc_host.SavePrevStorages(iter->first, iter->second, false);
-                    // if (iter->first.size() > 40)
-                    // ZJC_DEBUG("%s, merge success prev storage key: %s, value: %s",
-                    //     common::Encode::HexEncode(phash).c_str(), 
-                    //     common::Encode::HexEncode(iter->first).c_str(),
-                    //     common::Encode::HexEncode(iter->second).c_str());
+                auto res = it->second->zjc_host_ptr->GetCachedKeyValue(id, key, val);
+                if (res == zjcvm::kZjcvmSuccess) {
+                    return true;
                 }
             }
 
@@ -99,6 +101,50 @@ public:
             
             phash = it->second->view_block->parent_hash();
         }
+        return false;
+    }
+
+    evmc::bytes32 GetPrevStorageBytes32KeyValue(
+        const std::string& parent_hash, 
+        const evmc::address& addr,
+        const evmc::bytes32& key) {
+    std::string phash = parent_hash;
+    // TODO: check valid
+    while (true) {
+        if (phash.empty()) {
+            break;
+        }
+
+        // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+        auto it = view_blocks_info_.find(phash);
+        if (it == view_blocks_info_.end()) {
+            break;
+        }
+    
+        if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+            break;
+        }
+
+        if (it->second->zjc_host_ptr) {
+            auto res = it->second->zjc_host_ptr->get_cached_storage(addr, key);
+            if (res) {
+                return res;
+            }
+        }
+
+        if (!it->second->view_block) {
+            break;
+        }
+        
+        phash = it->second->view_block->parent_hash();
+    }
+
+    evmc::bytes32 tmp_val;
+    return tmp_val;
+}
+
+    bool GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance) {
+        return false;
     }
 
     void MergeAllPrevBalanceMap(
@@ -147,7 +193,6 @@ public:
 
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
         std::string phash = parent_hash;
-        uint32_t count = 0;
         while (true) {
             if (phash.empty()) {
                 break;
@@ -158,17 +203,16 @@ public:
                 break;
             }
 
+            if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+                break;
+            }
+
             auto iter = it->second->added_txs.find(gid);
             if (iter != it->second->added_txs.end()) {
                 ZJC_DEBUG("failed check tx gid: %s, phash: %s",
                     common::Encode::HexEncode(gid).c_str(),
                     common::Encode::HexEncode(phash).c_str());
                 return false;
-            }
-
-            ++count;
-            if (count >= 4) {
-                break;
             }
 
             if (!it->second->view_block) {
@@ -421,11 +465,6 @@ private:
             common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
             view_block_info->view_block->block_info().tx_list_size(),
             String().c_str());
-        auto& zjc_host_prev_storages = view_block_info->zjc_host_ptr->prev_storages_map();
-        for (auto iter = zjc_host_prev_storages.begin(); iter != zjc_host_prev_storages.end(); ++iter) {
-            ZJC_DEBUG("success add prev storage key: %s",
-                common::Encode::HexEncode(iter->first).c_str());
-        }
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(

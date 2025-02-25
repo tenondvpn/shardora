@@ -13,11 +13,12 @@ namespace consensus {
 class TxItemBase : public pools::TxItem {
 protected:
     TxItemBase(
-        const pools::protobuf::TxMessage& tx,
+        const transport::MessagePtr& msg_ptr,
+        int32_t tx_index,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)
-        : pools::TxItem(tx, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        : pools::TxItem(msg_ptr, tx_index, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
 
     virtual ~TxItemBase() {}
 
@@ -109,12 +110,16 @@ protected:
 
             acc_balance_map[id] = acc_info->balance();
             *balance = acc_info->balance();
+            // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
+            //     common::Encode::HexEncode(id).c_str(), *balance);
         } else {
             if (iter->second == -1) {
                 return consensus::kConsensusAccountNotExists;
             }
 
             *balance = iter->second;
+            // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
+            //     common::Encode::HexEncode(id).c_str(), *balance);
         }
 
         return kConsensusSuccess;

@@ -82,7 +82,7 @@ int ContractUserCreateCall::HandleTx(
         gas_used = 0;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             ZJC_DEBUG("create contract key: %s, value: %s", 
                 block_tx.storages(i).key().c_str(), 
@@ -191,7 +191,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_value(zjc_host.create_bytes_code_);
-    zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
+    // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
@@ -203,7 +203,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
-            zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -218,7 +218,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
-            zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *

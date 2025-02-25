@@ -29,7 +29,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
         gas_used = consensus::kTransferGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
@@ -81,7 +81,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
 		auto storage = block_tx.add_storages();
 		storage->set_key(protos::kCreateContractBytesCode);
 		storage->set_value(block_tx.contract_code());
-        zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code(), true);
+        // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code(), true);
 	}
 
     acc_balance_map[from] = from_balance;
