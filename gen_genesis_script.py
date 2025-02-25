@@ -259,9 +259,9 @@ then
         if net_id == 2:
             continue
         arg_str = '-S ' + str(net_id)
-        code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain {arg_str} &\n"
+        code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain {arg_str}\n"
 
-    code_str += "    wait\nfi\n"
+    code_str += "fi\n"
 
     for net_id in net_ids:
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)
