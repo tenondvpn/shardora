@@ -30,7 +30,7 @@ public:
             return nullptr;
         }
 
-        auto index = pool_idx_ % members->size();
+        auto index = 0; // pool_idx_ % members->size();
         return (*members)[index];
     }
 
