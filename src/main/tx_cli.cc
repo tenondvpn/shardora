@@ -294,18 +294,18 @@ int tx_main(int argc, char** argv) {
             shardnum);
 
          
-        if (transport::TcpTransport::Instance()->Send(ip, (13001 + (pos % 4)), tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send("192.168.0.2", (13001 + (pos % 1)), tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
 
         if (count % 1000 == 0) {
-            ++prikey_pos;
+            //++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
             
-            usleep(20000lu);
+            usleep(30000lu);
         }
 
         count++;
