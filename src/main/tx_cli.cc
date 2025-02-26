@@ -19,7 +19,7 @@ static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13001;
 static int shardnum = 3;
 static const int delayus = 5000;
-static const bool multi_pool = true;
+static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey =
     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
