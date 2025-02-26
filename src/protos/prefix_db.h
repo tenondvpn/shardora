@@ -805,6 +805,7 @@ public:
     }
 
     bool JustCheckCommitedGidExists(const std::string& gid) {
+        return false;
         // TODO: perf test
         std::string key = kCommitedGidPrefix + gid;
         if (db_->Exist(key)) {
@@ -815,6 +816,7 @@ public:
     }
 
     bool CheckAndSaveGidExists(const std::string& gid) {
+        return false;
         // TODO: perf test
         std::string key = kGidPrefix + gid;
         if (db_->Exist(key)) {
