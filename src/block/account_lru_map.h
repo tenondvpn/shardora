@@ -40,7 +40,7 @@ public:
 
     bool get(const std::string& key, AccountPtr& item_ptr) {
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
-        AccountPtr item_ptr = index_data_map_[index];
+        item_ptr = index_data_map_[index];
         if (item_ptr != nullptr && item_ptr->addr() == key) {
             return true;
         }
