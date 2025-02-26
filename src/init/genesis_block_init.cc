@@ -10,7 +10,7 @@
 
 #define private public
 #define protected public
-#include "common/def.h"
+#include "common/defer.h"
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/random.h"
