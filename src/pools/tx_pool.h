@@ -102,7 +102,7 @@ public:
     }
 
     uint32_t tx_size() const {        
-        return added_txs_.size() + consensus_added_txs_.size();
+        return added_txs_.size();
         // return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
