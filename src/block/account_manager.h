@@ -100,7 +100,6 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void UpdateAccountsThread();
-    void InitLoadAllAddress();
     void RunUpdateAccounts();
     void UpdateContractPrepayment(
         const view_block::protobuf::ViewBlockItem& view_block,
@@ -123,7 +122,6 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
     std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
-    std::unordered_map<std::string, protos::AddressInfoPtr> thread_address_map_[common::kMaxThreadCount];
     common::ThreadSafeQueue<protos::AddressInfoPtr> thread_update_accounts_queue_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> merge_update_accounts_thread_ = nullptr;
     // common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];

@@ -36,7 +36,6 @@ int AccountManager::Init(
         std::shared_ptr<pools::TxPoolManager>& pools_mgr) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    InitLoadAllAddress();
     pools_mgr_ = pools_mgr;
     CreatePoolsAddressInfo();
     inited_ = true;
@@ -97,39 +96,7 @@ protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& ad
     return prefix_db_->GetAddressInfo(addr);
 }
 
-void AccountManager::InitLoadAllAddress() {
-    std::unordered_map<std::string, protos::AddressInfoPtr> addr_map;
-    prefix_db_->GetAllAddressInfo(&addr_map);
-    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        thread_address_map_[i] = addr_map;
-        CHECK_MEMORY_SIZE(thread_address_map_[i]);
-    }
-}
-
 protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
-    // thread_valid_[thread_idx] = true;
-    // while (true) {
-    //     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-    //     CHECK_MEMORY_SIZE_WITH_MESSAGE(
-    //         thread_valid_accounts_queue_[thread_idx], (std::string("pop thread index: ") + 
-    //         std::to_string(thread_idx)).c_str());
-    //     if (!thread_valid_accounts_queue_[thread_idx].pop(&address_info)) {
-    //         break;
-    //     }
-
-    //     thread_address_map_[thread_idx][address_info->addr()] = address_info;
-    //     CHECK_MEMORY_SIZE(thread_address_map_[thread_idx]);
-    // }
-   
-    // if (addr.empty()) {
-    //     return nullptr;
-    // }
-
-    // auto iter = thread_address_map_[thread_idx].find(addr);
-    // if (iter != thread_address_map_[thread_idx].end()) {
-    //     return iter->second;
-    // }
-    
     protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
     if (addr_info != nullptr) {
         return addr_info;
