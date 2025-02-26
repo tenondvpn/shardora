@@ -203,7 +203,7 @@ void ToTxsPools::HandleContractExecute(
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
         // 如果需要 root 创建则此时没有 addr info 
-        auto addr_info = acc_mgr_->GetAccountInfo(tx.contract_txs(i).to());
+        protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.contract_txs(i).to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
         }
@@ -239,7 +239,7 @@ void ToTxsPools::HandleContractGasPrepayment(
     if (tx.contract_prepayment() > 0) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
-        auto addr_info = acc_mgr_->GetAccountInfo(tx.to());
+        protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
             ZJC_DEBUG("success get contract address: %s, from: %s, gid: %s, "
@@ -279,7 +279,7 @@ void ToTxsPools::HandleNormalFrom(
 
     uint32_t sharding_id = common::kInvalidUint32;
     uint32_t pool_index = -1;
-    auto addr_info = acc_mgr_->GetAccountInfo(tx.to());
+    protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.to());
     if (addr_info != nullptr) {
         sharding_id = addr_info->sharding_id();
     }
@@ -296,7 +296,7 @@ void ToTxsPools::HandleCreateContractUserCall(
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
-        auto addr_info = acc_mgr_->GetAccountInfo(tx.contract_txs(i).to());
+        protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.contract_txs(i).to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
         }
@@ -840,7 +840,7 @@ int ToTxsPools::CreateToTxWithHeights(
                         uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
                         uint32_t step = tmp_data[0];
                         std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                        auto account_info = acc_mgr_->GetAccountInfo(to);
+                        protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to);
                         if (account_info == nullptr) {
                             if (sharding_id != network::kRootCongressNetworkId) {
                                 continue;
@@ -925,7 +925,7 @@ int ToTxsPools::CreateToTxWithHeights(
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractCreate) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            auto account_info = acc_mgr_->GetAccountInfo(to);
+            protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to);
             if (account_info == nullptr) {
                 to_tx.mutable_tos()->ReleaseLast();
                 continue;

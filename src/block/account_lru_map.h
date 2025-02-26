@@ -38,14 +38,14 @@ public:
         }
     }
 
-    bool get(const std::string& key, AccountPtr& item_ptr) {
+    AccountPtr get(const std::string& key) {
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
-        item_ptr = index_data_map_[index];
+        AccountPtr item_ptr = index_data_map_[index];
         if (item_ptr != nullptr && item_ptr->addr() == key) {
-            return true;
+            return item_ptr;
         }
         
-        return false;
+        return nullptr;
     }
 
 private:

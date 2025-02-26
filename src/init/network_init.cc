@@ -436,7 +436,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
-    auto account_info = account_mgr_->GetAccountInfo(
+    protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(
         msg_ptr->header.init_proto().addr_req().id());
     if (account_info == nullptr) {
         return;

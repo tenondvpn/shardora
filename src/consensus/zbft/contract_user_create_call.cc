@@ -25,7 +25,7 @@ int ContractUserCreateCall::HandleTx(
         return kConsensusSuccess;
     }
 
-    auto contract_info = account_mgr_->GetAccountInfo(block_tx.to());
+    protos::AddressInfoPtr contract_info = account_mgr_->GetAccountInfo(block_tx.to());
     if (contract_info != nullptr) {
         block_tx.set_status(kConsensusAccountExists);
         return kConsensusSuccess;

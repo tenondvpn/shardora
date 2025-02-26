@@ -413,7 +413,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         auto& tx_msg = header.tx_proto();
         if (IsUserTransaction(tx_msg.step())) {
             auto tmp_acc_ptr = acc_mgr_.lock();
-            auto address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+            protos::AddressInfoPtr address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
             if (!address_info) {
                 return;
             }
@@ -1062,7 +1062,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
 
     ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     auto tmp_acc_ptr = acc_mgr_.lock();
-    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    protos::AddressInfoPtr contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info != nullptr) {
         ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;

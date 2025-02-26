@@ -146,7 +146,6 @@ void BlockManager::ConsensusAddBlock(
 
 void BlockManager::HandleAllConsensusBlocks() {
     while (!common::GlobalInfo::Instance()->global_stoped()) {
-        account_mgr_->GetAccountInfo("");
         auto now_tm = common::TimeUtils::TimestampUs();
         // ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
         //     prev_create_statistic_tx_tm_us_, now_tm);
@@ -495,7 +494,7 @@ void BlockManager::HandleLocalNormalToTx(
             addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
         }
         
-        auto account_info = account_mgr_->GetAccountInfo(addr);
+        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(addr);
         // ZJC_DEBUG("0 handle local to has_library_bytes: %d, des: %s, gid: %s, addr: %s, "
         //     "not has addr: %d, to_tx.sharding_id(): %d, addr sharding id: %d", 
         //     to_tx.has_library_bytes(),
@@ -1076,7 +1075,7 @@ void BlockManager::AddMiningToken(
         }
 
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
-        auto account_info = account_mgr_->GetAccountInfo(id);
+        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(id);
         if (account_info == nullptr ||
                 account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
