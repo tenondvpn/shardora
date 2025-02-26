@@ -71,9 +71,8 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 if test $NO_BUILD = 0
 then
     cd /root/zjnodes/zjchain && ./zjchain -U
-    cd /root/zjnodes/zjchain && ./zjchain -S 3 &
-    cd /root/zjnodes/zjchain && ./zjchain -S 4 &
-    wait
+    cd /root/zjnodes/zjchain && ./zjchain -S 3
+    cd /root/zjnodes/zjchain && ./zjchain -S 4
 fi
 
 #for node in "${root[@]}"; do
