@@ -10,6 +10,7 @@
 
 #define private public
 #define protected public
+#include "common/def.h"
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/random.h"
@@ -1676,7 +1677,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 break;
             }
         }
-        
+
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
