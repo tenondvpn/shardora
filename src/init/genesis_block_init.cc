@@ -1240,7 +1240,10 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 common::Encode::HexEncode(address).c_str());
         }
 
-        all_balance += account_ptr->balance();        
+        all_balance += account_ptr->balance();
+        ZJC_INFO("new address %s, genesis balance: %lu",
+            common::Encode::HexEncode(account_ptr->addr()).c_str(), 
+            account_ptr->balance());
 
     }
 
@@ -1605,6 +1608,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             return kInitError;
         }
         all_balance += account_ptr->balance();
+        ZJC_INFO("new address %s, genesis balance: %lu",
+            common::Encode::HexEncode(account_ptr->addr()).c_str(), 
+            account_ptr->balance());
     }
 
     if (all_balance != expect_all_balance) {
@@ -1652,16 +1658,28 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
+    auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
+    defer({
+        fclose(fd);
+    });
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (auto iter = pool_acc_map.begin(); iter != pool_acc_map.end(); ++iter, ++idx) {
-        if (iter->first >= common::kInvalidPoolIndex) {
-            break;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i, ++idx) {
+        std::string address;
+        while (true) {
+            auto private_key = common::Random::RandomString(32);
+            security::Ecdsa ecdsa;
+            ecdsa.SetPrivateKey(private_key);
+            address = ecdsa.GetAddress();
+            if (common::GetAddressPoolIndex(address) == i) {
+                auto data = common::Encode::HexEncode(private_key) + "\n";
+                fwrite(data.c_str(), 1, data.size(), fd);
+                break;
+            }
         }
-
+        
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
-        std::string address = iter->second;
         
         // from
         {
@@ -1772,7 +1790,10 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             }
         }
 
-        all_balance += account_ptr->balance();    
+        all_balance += account_ptr->balance();
+        ZJC_INFO("new address %s, genesis balance: %lu",
+            common::Encode::HexEncode(account_ptr->addr()).c_str(), 
+            account_ptr->balance());  
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {

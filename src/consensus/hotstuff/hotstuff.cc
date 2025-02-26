@@ -1101,11 +1101,6 @@ Status Hotstuff::VerifyFollower(const transport::MessagePtr& msg_ptr) {
 void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto b = common::TimeUtils::TimestampMs();
-    defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_INFO("pool: %d handle vote duration: %lu ms", pool_idx_, e-b);
-        });
-
     if (VerifyFollower(msg_ptr) != Status::kSuccess) {
         return;
     }
@@ -1114,6 +1109,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     // acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     if (vote_msg.txs_size() > 0) {
         hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
+        ZJC_DEBUG("tps vote from follower tx size: %u", vote_msg.txs_size());
     }
 
     if (prefix_db_->BlockExists(vote_msg.view_block_hash())) {
@@ -1417,6 +1413,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 #endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
+        ZJC_DEBUG("tps reset from follower tx size: %u", pre_rst_timer_msg.txs_size());
         hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
     }
 
@@ -1973,12 +1970,13 @@ Status Hotstuff::ConstructVoteMsg(
     if (!msg_ptr->is_leader) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
         auto* txs = vote_msg->mutable_txs();
-        ZJC_DEBUG("now vote message get tx sync to leader.");
         wrapper()->GetTxSyncToLeader(
             v_block->qc().leader_idx(), 
             view_block_chain_, 
             view_block_chain_->HighQC().view_block_hash(), 
             txs);
+        if (txs->size() > 0)
+        ZJC_DEBUG("tps now vote message get tx sync to leader: %d", txs->size());
         ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     
@@ -2278,6 +2276,8 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
     
+    if (txs->size() > 0)
+    ZJC_DEBUG("tps now vote message get tx sync to leader: %d", txs->size());
     auto elect_item = elect_info_->GetElectItemWithShardingId(
         common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {

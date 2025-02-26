@@ -439,7 +439,7 @@ void HotstuffManager::PopPoolsMessage() {
 
                 auto& txs = *txs_ptr;
                 consensus_tx_count += txs.size();
-                ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
+                ZJC_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
                 for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
                     auto* tx = &txs[i];
                     protos::AddressInfoPtr address_info = nullptr;
@@ -532,7 +532,7 @@ void HotstuffManager::PopPoolsMessage() {
             }
         }
         if (consensus_tx_count > 0)
-        ZJC_INFO("success add consensus_tx_count: %lu", consensus_tx_count);
+        ZJC_INFO("tps success add consensus_tx_count: %lu", consensus_tx_count);
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
         pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
