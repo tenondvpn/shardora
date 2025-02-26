@@ -1636,21 +1636,11 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();
-    std::map<uint32_t, std::string> pool_acc_map;
-    auto iter = net_pool_index_map_.find(net_id);
-    if (iter != net_pool_index_map_.end()) {
-        pool_acc_map = iter->second;
-    } else {
-        return kInitError;
-    }
-     
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
     // if (net_id == network::kConsensusShardBeginNetworkId) {
     genesis_account_balance = common::kGenesisFoundationMaxZjc / common::kImmutablePoolSize; // 两个分片
     // }
-    pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
-    
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
@@ -1663,10 +1653,11 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     defer({
         fclose(fd);
     });
+
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i, ++idx) {
-        std::string address;
-        while (true) {
+    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
+        std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
+        while (i < common::kImmutablePoolSize) {
             auto private_key = common::Random::RandomString(32);
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(private_key);
@@ -1724,7 +1715,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_from("");
             tx_info->set_to(address);
 
-            if (net_id == network::kConsensusShardBeginNetworkId && iter->first == common::kImmutablePoolSize - 1) {
+            if (net_id == network::kConsensusShardBeginNetworkId && i == common::kImmutablePoolSize - 1) {
                 genesis_account_balance += common::kGenesisFoundationMaxZjc % common::kImmutablePoolSize;
             }
 
@@ -1740,8 +1731,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         view_block_ptr->set_parent_hash("");
         if (CreateAllQc(
                 net_id,
-                iter->first,
-                vb_latest_view[iter->first]++, 
+                i,
+                vb_latest_view[i]++, 
                 cons_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
@@ -1749,8 +1740,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         // 更新所有 pool 的 prehash
-        pool_prev_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
-        pool_prev_vb_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
+        pool_prev_hash_map[i] = view_block_ptr->qc().view_block_hash();
+        pool_prev_vb_hash_map[i] = view_block_ptr->qc().view_block_hash();
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
@@ -1792,7 +1783,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         all_balance += account_ptr->balance();
-        ZJC_INFO("new address %s, genesis balance: %lu",
+        ZJC_INFO("net: %d, new address %s, net genesis balance: %lu",
+            net_id,
             common::Encode::HexEncode(account_ptr->addr()).c_str(), 
             account_ptr->balance());  
     }
