@@ -130,7 +130,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     //     return iter->second;
     // }
     
-    protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
+    protos::AddressInfoPtr addr_info = nullptr;//account_lru_map_.get(addr);
     if (addr_info != nullptr) {
         return addr_info;
     }
