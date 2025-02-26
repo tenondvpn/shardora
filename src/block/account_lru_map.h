@@ -20,7 +20,7 @@ class AccountLruMap {
 public:
     ~AccountLruMap() {}
 
-    void insert(const AccountPtr& value) {
+    void insert(AccountPtr value) {
         auto& key = value->addr();
         if (item_map_.count(key)) {
             item_list_.erase(item_map_[key]);

@@ -142,8 +142,8 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
             "get account failed[%s] in thread_idx:%d", 
             common::Encode::HexEncode(addr).c_str(), thread_idx);
     } else {
-        // thread_update_accounts_queue_[thread_idx].push(addr_info);
-        // update_acc_con_.notify_one();
+        thread_update_accounts_queue_[thread_idx].push(addr_info);
+        update_acc_con_.notify_one();
     }
 
     return addr_info;
