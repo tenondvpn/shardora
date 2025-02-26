@@ -145,8 +145,8 @@ static std::unordered_map<std::string, std::string> g_pri_addrs_map;
 static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
-static void LoadAllAccounts() {
-    FILE* fd = fopen("../addrs", "r");
+static void LoadAllAccounts(int32_t shardnum=3) {
+    FILE* fd = fopen((std::string("../addrs") + std::to_string(shardnum)).c_str(), "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
@@ -207,7 +207,7 @@ int tx_main(int argc, char** argv) {
 
     std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
     
-    LoadAllAccounts();
+    LoadAllAccounts(shardnum);
     SignalRegister();
     WriteDefaultLogConf();
     log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
@@ -247,7 +247,7 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
     
-    std::string prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
+    std::string prikey = g_prikeys[0];// common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -294,13 +294,13 @@ int tx_main(int argc, char** argv) {
             shardnum);
 
          
-        if (transport::TcpTransport::Instance()->Send("192.168.0.2", (13001 + (pos % 1)), tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
 
         if (count % 1000 == 0) {
-            //++prikey_pos;
+            ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
