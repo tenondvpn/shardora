@@ -40,10 +40,10 @@ public:
 
         
         if (!event_handler_->Valid()) {
-            event_handler_->Stoped();
+            event_handler_->Stop();
             return;
         }
-        
+
         bool rc = true;
         if ((type_ & kEventRead) == kEventRead) {
             rc = event_handler_->OnRead();
@@ -54,7 +54,7 @@ public:
         }
 
         if (event_handler_->CheckShouldStop()) {
-            event_handler_->Stoped();
+            event_handler_->Stop();
         }
     }
 
