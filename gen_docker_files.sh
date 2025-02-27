@@ -18,7 +18,6 @@ cp -rf ./zjnodes/zjchain/conf/log4cpp.properties ./docker_files/node/conf
 cp -rf ./cbuild_$target/zjchain ./docker_files/node
 cp -f ./conf/genesis.yml ./docker_files/node/genesis.yml
 cp -f ./run_container_node.sh ./docker_files/node/run_container_node.sh
-cp -rf /usr/local/gcc-8.3.0/lib64/ ./docker_files/lib64
 
 # 复制 _db 文件到 docker_files
 cp -rf /root/zjnodes/zjchain/root_db ./docker_files/node/

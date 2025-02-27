@@ -3,6 +3,10 @@
 # 修改配置文件
 # 确保服务器安装了 sshpass
 echo "==== STEP1: START DEPLOY ===="
+rm -rf zjnodes
+cp -rf zjnodes_local zjnodes
+rm -rf nodes_conf
+cp -rf nodes_conf_local nodes_conf
 server0=127.0.0.1
 target=$1
 no_build=$2
