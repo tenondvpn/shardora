@@ -133,7 +133,7 @@ private:
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
+    std::unordered_map<uint64_t, uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> valided_heights_[common::kInvalidPoolIndex];
     uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;

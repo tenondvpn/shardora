@@ -78,7 +78,9 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
 #endif
     StatisticToInfo(*view_block_ptr, db_batch);
-    added_heights_[pool_idx].insert(block.height());
+    added_heights_[pool_idx].insert(std::make_pair<>(
+        block.height(), 
+        view_block_ptr->block_info().timestamp()));
     CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
     valided_heights_[pool_idx].insert(block.height());
 }
@@ -575,7 +577,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
         while (cons_height > 0) {
             auto exist_iter = added_heights_[i].find(cons_height);
             if (exist_iter != added_heights_[i].end()) {
-                if (exist_iter->second->block_info().timestamp() + 5000lu > timeout) {
+                if (exist_iter->second + 5000lu > timeout) {
                     --cons_height;
                     continue;
                 }
