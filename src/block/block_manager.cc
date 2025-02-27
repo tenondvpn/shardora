@@ -145,6 +145,7 @@ void BlockManager::ConsensusAddBlock(
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
+    common::GlobalInfo::Instance()->get_thread_index();
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         auto now_tm = common::TimeUtils::TimestampUs();
         // ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
