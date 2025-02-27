@@ -452,16 +452,16 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
-                if (security_ptr_->Verify(
-                        tx_ptr->unique_tx_hash,
-                        tx_ptr->tx_info->pubkey(),
-                        tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                    assert(false);
-                    return Status::kError;
-                } else {
+                // if (security_ptr_->Verify(
+                //         tx_ptr->unique_tx_hash,
+                //         tx_ptr->tx_info->pubkey(),
+                //         tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                //     assert(false);
+                //     return Status::kError;
+                // } else {
                     valid_txs.push_back(tx_ptr);
                     // pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
-                }
+                // }
             }
         }
     }
