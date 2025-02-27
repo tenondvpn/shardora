@@ -2196,12 +2196,16 @@ Status Hotstuff::SendMsgToLeader(
     return ret;
 }
 
-void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
+void Hotstuff::TryRecoverFromStuck(
+        const transport::MessagePtr& msg_ptr, 
+        bool has_user_tx, 
+        bool has_system_tx) {
     // if (!latest_qc_item_ptr_) {
     //     ZJC_WARN("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
     //     return;
     // }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (has_user_tx) {
         has_user_tx_tag_ = true;
     }
@@ -2240,7 +2244,9 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader && leader->index == local_idx) {
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         Propose(latest_qc_item_ptr_, nullptr, nullptr);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
         if (latest_qc_item_ptr_) {
             ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
                 local_idx,
@@ -2258,6 +2264,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
         return;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("now timeout reset get tx sync to leader.");
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
@@ -2290,11 +2297,13 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     hotstuff_msg->set_type(PRE_RESET_TIMER);
     hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     hotstuff_msg->set_pool_index(pool_idx_);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     SendMsgToLeader(leader, trans_msg, PRE_RESET_TIMER);
     ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
         leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),
         trans_msg->header.hash64());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 uint32_t Hotstuff::GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block) {
