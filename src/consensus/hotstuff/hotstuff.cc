@@ -2245,7 +2245,7 @@ void Hotstuff::TryRecoverFromStuck(
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader && leader->index == local_idx) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        Propose(latest_qc_item_ptr_, nullptr, nullptr);
+        Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (latest_qc_item_ptr_) {
             ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
