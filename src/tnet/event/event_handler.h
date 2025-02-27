@@ -23,8 +23,31 @@ public:
         event_type_ = type;
     }
 
+    bool Valid() const {
+        return !should_stop_ && !stoped_;
+    }
+
+    bool CheckShouldStop() const {
+        return should_stop_;
+    }
+
+    bool CheckStoped() const {
+        return stoped_;
+    }
+
+    void ShouldStop() {
+        should_stop_ = true;
+    }
+
+    void Stop() {
+        stoped_ = true;
+    }
+
 private:
     int32_t event_type_{ 0 };
+    volatile bool should_stop_ = false;
+    volatile bool stoped_ = false;
+
 };
 
 }  // namespace tnet

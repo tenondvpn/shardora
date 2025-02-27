@@ -39,7 +39,7 @@ public:
 private:
     virtual bool ImplResourceInit();
     virtual void ImplResourceDestroy();
-    std::shared_ptr<TcpConnection> CreateTcpConnection(
+    std::shared_ptr<TcpConnection> CreateTcpServerConnection(
             EventLoop& evnetLoop,
             ServerSocket& socket);
     void ReleaseByIOThread();
@@ -60,7 +60,7 @@ private:
     PacketFactory* packet_factory_{ nullptr };
     EventLoop& event_loop_;
     std::vector<EventLoop*> event_loops_;
-    std::atomic<uint32_t> destroy_{ 0 };
+    volatile bool destroy_ = false;
     std::unordered_map<std::string, std::shared_ptr<TcpConnection>> conn_map_;
     common::ThreadSafeQueue<std::shared_ptr<TcpConnection>> in_check_queue_;
     common::ThreadSafeQueue<std::shared_ptr<TcpConnection>> out_check_queue_;

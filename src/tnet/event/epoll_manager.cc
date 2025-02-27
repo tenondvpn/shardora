@@ -148,24 +148,28 @@ int EpollManager::GetEvents(IoEvent* events, int expire) {
         IoEvent& event = events[i];
         event.Reset();
         void* ptr = epoll_events[i].data.ptr;
-        int events = epoll_events[i].events;
+        int type_events = epoll_events[i].events;
         if (ptr == this) {
             HandleWakeup();
             continue;
         }
 
         EventHandler* handler = reinterpret_cast<EventHandler*>(ptr);
-        if ((events & (EPOLLERR | EPOLLHUP)) != 0 && (events & (EPOLLIN | EPOLLOUT)) == 0) {
-            events |= EPOLLIN | EPOLLOUT;
+        if (!handler->Valid()) {
+            continue;
+        }
+        
+        if ((type_events & (EPOLLERR | EPOLLHUP)) != 0 && (type_events & (EPOLLIN | EPOLLOUT)) == 0) {
+            type_events |= EPOLLIN | EPOLLOUT;
         }
 
         int flags = 0;
         int eventType = handler->event_type();
-        if ((events & EPOLLIN) == EPOLLIN && (eventType & kEventRead) == kEventRead) {
+        if ((type_events & EPOLLIN) == EPOLLIN && (eventType & kEventRead) == kEventRead) {
             flags |= kEventRead;
         }
 
-        if ((events & EPOLLOUT) == EPOLLOUT && (eventType & kEventWrite) == kEventWrite) {
+        if ((type_events & EPOLLOUT) == EPOLLOUT && (eventType & kEventWrite) == kEventWrite) {
             flags |= kEventWrite;
         }
 
