@@ -394,7 +394,7 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
+    auto thread_idx = 0;  //common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
     // just one thread
     // ADD_DEBUG_PROCESS_TIMESTAMP();
     // ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u, gid: %s",
@@ -413,7 +413,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         auto& tx_msg = header.tx_proto();
         if (IsUserTransaction(tx_msg.step())) {
             auto tmp_acc_ptr = acc_mgr_.lock();
-            auto address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+            protos::AddressInfoPtr address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
             if (!address_info) {
                 return;
             }
@@ -434,7 +434,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             uint64_t dur = 1000lu;
             if (now_tm > prev_show_tm_ms_ + dur) {
                 ZJC_INFO("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
-                        thread_idx, pools_msg_queue_.size(),
+                        -1, pools_msg_queue_.size(),
                         address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
                         tx_pool_[address_info->pool_index()].tx_size(),
@@ -469,7 +469,7 @@ int TxPoolManager::BackupConsensusAddTxs(
         const pools::TxItemPtr& valid_tx) {
     if (tx_pool_[pool_index].all_tx_size() >= 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
+        ZJC_WARN("add failed extend %u, %u, all valid: %u", 
             tx_pool_[pool_index].all_tx_size(), 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
             tx_pool_[pool_index].tx_size());
@@ -1062,7 +1062,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
 
     ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     auto tmp_acc_ptr = acc_mgr_.lock();
-    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    protos::AddressInfoPtr contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info != nullptr) {
         ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;

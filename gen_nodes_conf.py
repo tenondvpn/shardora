@@ -40,7 +40,7 @@ def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, root_node_num, s
         'nodes': nodes,
     }    
 
-    with open(f"nodes_conf_n{node_num_per_shard}_s{shard_num}_m{len(servers)}.yml", "w") as f:
+    with open(f"./nodes_confs/nodes_conf_n{node_num_per_shard}_s{shard_num}_m{len(servers)}.yml", "w") as f:
         yaml.dump(content, f)
 
     return

@@ -38,7 +38,7 @@ private:
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, 1, tx_vec, gid_vlid_func);
         } else {
-            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, kMaxTxCount, tx_vec, gid_vlid_func);
+            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, common::kMaxTxCount, tx_vec, gid_vlid_func);
         }
 
         ADD_DEBUG_PROCESS_TIMESTAMP();

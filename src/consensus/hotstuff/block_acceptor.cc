@@ -457,6 +457,7 @@ Status BlockAcceptor::addTxsToPool(
                         tx_ptr->tx_info->pubkey(),
                         tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                     assert(false);
+                    return Status::kError;
                 } else {
                     valid_txs.push_back(tx_ptr);
                     // pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);

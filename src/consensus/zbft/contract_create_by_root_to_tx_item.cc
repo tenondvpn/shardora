@@ -51,7 +51,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
-	auto contract_info = account_mgr_->GetAccountInfo(block_tx.to());
+	protos::AddressInfoPtr contract_info = account_mgr_->GetAccountInfo(block_tx.to());
 	if (contract_info != nullptr) {
 		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);

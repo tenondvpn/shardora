@@ -53,7 +53,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
 }
 
 bool Execution::IsAddressExists(const std::string& addr) {
-    auto address_info = acc_mgr_->GetAccountInfo(addr);
+    protos::AddressInfoPtr address_info = acc_mgr_->GetAccountInfo(addr);
     if (address_info != nullptr) {
         return true;
     }

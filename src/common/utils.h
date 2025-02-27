@@ -84,13 +84,13 @@ struct Construct {
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
     if (data_map.size() >= 22020) { \
-        ZJC_INFO("data size: %u", data_map.size()); \
+        ZJC_DEBUG("data size: %u", data_map.size()); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
     if (data_map.size() >= 22020) { \
-        ZJC_INFO("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
+        ZJC_DEBUG("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
     } \
 }
 #else
@@ -192,6 +192,7 @@ enum VipLevel {
 };
 
 static const uint32_t kImmutablePoolSize = 16u;
+static const uint32_t kMaxTxCount = 2048u;
 static const uint32_t kRootChainPoolIndex = kImmutablePoolSize;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;

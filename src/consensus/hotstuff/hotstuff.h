@@ -370,7 +370,7 @@ private:
     void SaveLatestProposeMessage();
     void LoadLatestProposeMessage();
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 3000lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 300lu;
 
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS

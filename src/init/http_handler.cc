@@ -342,7 +342,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     uint64_t height = 0;
 
     auto contract_prepayment_id = contract_addr + from;
-    auto addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+    protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
     if (!addr_info) {
         addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
     }
@@ -515,7 +515,7 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
             continue;
         }
 
-        auto addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+        protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
         if (addr_info == nullptr) {
             std::string res = "get address failed from db: " + addr;
             addr_info = prefix_db->GetAddressInfo(addr);
@@ -633,7 +633,7 @@ static void PrepaymentsValid(evhtp_request_t* req, void* data) {
         uint64_t height = 0;
         uint64_t tmp_balance = 0;
         auto contract_prepayment_id = contract_addr + addr;
-        auto addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+        protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
         if (addr_info == nullptr) {
             std::string res = "get address failed from db: " + contract_prepayment_id;
             addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
