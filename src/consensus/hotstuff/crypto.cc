@@ -166,44 +166,6 @@ Status Crypto::ReconstructAndVerifyThresSign(
 
         all_signs.push_back(*collection_item->partial_signs[i]);
         idx_vec.push_back(i+1);
-// #ifndef NDEBUG
-//         auto part_sign_x = libBLS::ThresholdUtils::fieldElementToString(
-//             collection_item->partial_signs[i]->X);
-//         auto part_sign_y = libBLS::ThresholdUtils::fieldElementToString(
-//             collection_item->partial_signs[i]->Y);
-//         ZJC_DEBUG("hash: %s, valid index: %d, x: %s, y: %s", 
-//             common::Encode::HexEncode(msg_hash).c_str(),
-//             i, part_sign_x.c_str(), part_sign_y.c_str());
-//         if (idx_vec.size() >= elect_item->t()) {
-//             break;
-//         }
-
-//         libff::alt_bn128_G1 g1_hash;
-//         GetG1Hash(msg_hash, &g1_hash);
-//         std::string verify_hash;
-//         auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-//             (*elect_item->Members())[i]->bls_publick_key.X.c0);
-//         auto v_res = bls_mgr_->Verify(
-//             elect_item->t(),
-//             elect_item->n(), 
-//             (*elect_item->Members())[i]->bls_publick_key, 
-//             *collection_item->partial_signs[i], 
-//             g1_hash, 
-//             &verify_hash);
-//         if (v_res != 0) {
-//             ZJC_DEBUG("invalid bls parial sign t: %u, n: %u, index: %u, "
-//                 "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
-//                 elect_item->t(),
-//                 elect_item->n(),
-//                 i,
-//                 member_bls_pk.c_str(),
-//                 part_sign_x.c_str(),
-//                 part_sign_y.c_str(),
-//                 common::Encode::HexEncode(msg_hash).c_str(),
-//                 elect_height);
-//             assert(false);
-//         }
-// #endif
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -258,7 +220,6 @@ Status Crypto::VerifyThresSign(
         uint64_t elect_height, 
         const HashStr &msg_hash,
         const libff::alt_bn128_G1& reconstructed_sign) {
-    return Status::kSuccess;
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
