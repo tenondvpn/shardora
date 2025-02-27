@@ -450,10 +450,6 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
-                if (msg_ptr->is_leader) {
-                    ZJC_INFO("leader not verified!");
-                }
-                
                 if (!msg_ptr->is_leader && security_ptr_->Verify(
                         tx_ptr->unique_tx_hash,
                         tx_ptr->tx_info->pubkey(),
