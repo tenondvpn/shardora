@@ -75,6 +75,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     if (pool_index == common::kRootChainPoolIndex) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
+        ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        if (txs_item && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
+            txs_item = nullptr;
+        }
+        
         ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
     }
 
@@ -101,11 +106,17 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         
         txs_item = GetStatisticTx(pool_index, "");
         ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        if (txs_item && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
+            txs_item = nullptr;
+        }
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         txs_item = GetElectTx(pool_index, "");
+        if (txs_item && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
+            txs_item = nullptr;
+        }
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();

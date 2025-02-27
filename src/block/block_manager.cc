@@ -1504,12 +1504,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
         return nullptr;
     }
 
-    // 聚合不同 to shard 的交易
-    if (!to_txs_pool_->StatisticTos(heights)) {
-        ZJC_DEBUG("statistic tos failed!");
-        return nullptr;
-    }
-
     pools::protobuf::AllToTxMessage all_to_txs;
     std::string gid = common::Hash::keccak256("0000");
     auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];

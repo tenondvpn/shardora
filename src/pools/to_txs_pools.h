@@ -36,12 +36,12 @@ public:
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::ToTxMessage& to_tx);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
-    bool StatisticTos(const pools::protobuf::ShardToTxItem& to_heights);
 
 private:
     void HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx_info);
+        const block::protobuf::BlockTx& tx_info,
+        db::DbWriteBatch& db_batch);
     void LoadLatestHeights();
     void HandleNormalFrom(
         const view_block::protobuf::ViewBlockItem& view_block,
@@ -78,10 +78,6 @@ private:
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
-    bool PreStatisticTos(
-        uint32_t pool_idx, 
-        uint64_t min_height, 
-        uint64_t max_height);
     void HandleCrossShard(
         bool is_root,
         const view_block::protobuf::ViewBlockItem& view_block,
@@ -94,7 +90,24 @@ private:
             added_heights_[pool_idx].erase(iter);
             CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
         }
+
+        auto siter = network_txs_pools_.find(pool_idx);
+        if (siter != network_txs_pools_.end()) {
+            auto hiter = siter->second.find(height);
+            if (hiter != siter->second.end()) {
+                siter->second.erase(hiter);
+            }
+        }
+
+        auto citer = cross_sharding_map_[pool_idx].find(height);
+        if (citer != cross_sharding_map_[pool_idx].end()) {
+            cross_sharding_map_[pool_idx].erase(citer);
+        }
     }
+
+    void StatisticToInfo(
+        const view_block::protobuf::ViewBlockItem& view_block, 
+        db::DbWriteBatch& db_batch);
 
     struct ToAddressItemInfo {
         uint64_t amount;
@@ -120,14 +133,18 @@ private:
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::unordered_map<uint64_t, std::shared_ptr<view_block::protobuf::ViewBlockItem>> added_heights_[common::kInvalidPoolIndex];
+    std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> valided_heights_[common::kInvalidPoolIndex];
     uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::unordered_map<uint64_t, std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>> cross_sharding_map_[common::kInvalidPoolIndex];
+    std::unordered_map<
+        uint64_t, 
+        std::unordered_map<
+            uint32_t, 
+            std::unordered_set<CrossItem, CrossItemRecordHash>>> cross_sharding_map_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };
