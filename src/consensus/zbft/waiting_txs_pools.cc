@@ -75,7 +75,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     if (pool_index == common::kRootChainPoolIndex) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
-        ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        ZJC_INFO("GetStatisticTx: %d, %s, %d", 
+            (txs_item != nullptr),
+            (txs_item != nullptr ? 
+                common::Encode::HexEncode(txs_item->txs[0]->tx_info->gid()).c_str() : ""),
+                (gid_vlid_func != nullptr));
         if (txs_item && !txs_item->txs.empty() && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
             txs_item = nullptr;
         }
