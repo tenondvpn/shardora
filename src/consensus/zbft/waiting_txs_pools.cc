@@ -75,18 +75,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     if (pool_index == common::kRootChainPoolIndex) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
-        if (txs_item != nullptr) {
-            assert(txs_item->txs.size() > 0);
-            assert(txs_item->txs[0] != nullptr);
-            assert(txs_item->txs[0]->tx_info != nullptr);
-        }
-        ZJC_INFO("GetStatisticTx: %d, %s, %d", 
-            (txs_item != nullptr),
-            (txs_item != nullptr ? 
-                common::Encode::HexEncode(txs_item->txs[0]->tx_info->gid()).c_str() : ""),
-                (gid_vlid_func != nullptr));
-        if (txs_item && !txs_item->txs.empty() && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
-            txs_item = nullptr;
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
         }
 
         ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
@@ -115,16 +108,22 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         
         txs_item = GetStatisticTx(pool_index, "");
         ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
-        if (txs_item && !txs_item->txs.empty() && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
-            txs_item = nullptr;
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
         }
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         txs_item = GetElectTx(pool_index, "");
-        if (txs_item && !txs_item->txs.empty() && !gid_vlid_func(txs_item->txs[0]->tx_info->gid())) {
-            txs_item = nullptr;
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
         }
     }
 
