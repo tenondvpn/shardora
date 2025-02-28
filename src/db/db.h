@@ -136,6 +136,7 @@ public:
             return db::DbStatus();
         }
 
+        ZJC_INFO("write to db datasize: %u", db_batch.ApproximateSize());
         DbWriteOptions write_opt;
         auto st = db_->Write(write_opt, &db_batch.db_batch_);
         db_batch.Clear();
