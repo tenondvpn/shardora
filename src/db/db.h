@@ -118,6 +118,7 @@ public:
     bool Exist(const std::string& key) {
         DbReadOptions read_opt;
         std::string val;
+        read_opt.fill_cache = false;
         auto status = db_->Get(read_opt, key, &val);
         return status.ok(); 
         // DbIterator* it = db_->NewIterator(DbReadOptions());
