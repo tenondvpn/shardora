@@ -81,7 +81,7 @@ void ToTxsPools::NewBlock(
     added_heights_[pool_idx].insert(std::make_pair<>(
         block.height(), 
         view_block_ptr->block_info().timestamp()));
-    CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
+    CHECK_MEMORY_SIZE_WITH_MESSAGE(added_heights_[pool_idx], std::to_string(pool_idx).c_str());
     valided_heights_[pool_idx].insert(block.height());
 }
 
