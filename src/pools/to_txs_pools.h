@@ -83,31 +83,6 @@ private:
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
-
-    void RemoveCacheBlock() {
-        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-            auto iter = added_heights_[pool_idx].find(height);
-            if (iter != added_heights_[pool_idx].end()) {
-                added_heights_[pool_idx].erase(iter);
-                CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
-            }
-
-            auto siter = network_txs_pools_.find(pool_idx);
-            if (siter != network_txs_pools_.end()) {
-                auto hiter = siter->second.find(height);
-                if (hiter != siter->second.end()) {
-                    siter->second.erase(hiter);
-                }
-            }
-
-            auto citer = cross_sharding_map_[pool_idx].find(height);
-            if (citer != cross_sharding_map_[pool_idx].end()) {
-                cross_sharding_map_[pool_idx].erase(citer);
-            }
-        }
-        
-    }
-
     void StatisticToInfo(
         const view_block::protobuf::ViewBlockItem& view_block, 
         db::DbWriteBatch& db_batch);
