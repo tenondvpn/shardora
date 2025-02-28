@@ -133,13 +133,13 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     CheckThreadIdValid();
     if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        ZJC_WARN("add failed extend %u, %u, all valid: %u", 
+        ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
             added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
         return kPoolsError;
     }
 
     if (tx_ptr->unique_tx_hash.empty()) {
-        ZJC_WARN("add failed unique hash empty: %d", tx_ptr->tx_info->step());
+        ZJC_DEBUG("add failed unique hash empty: %d", tx_ptr->tx_info->step());
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 

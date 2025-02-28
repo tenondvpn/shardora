@@ -12,6 +12,8 @@
 #include "common/log.h"
 #include <algorithm>
 
+#define USE_AGG_BLS
+
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
         TypeName(const TypeName&); \
@@ -193,7 +195,7 @@ enum VipLevel {
 };
 
 static const uint32_t kImmutablePoolSize = 16u;
-static const uint32_t kMaxTxCount = 2048u;
+static const uint32_t kMaxTxCount = 64u;
 static const uint32_t kRootChainPoolIndex = kImmutablePoolSize;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;
