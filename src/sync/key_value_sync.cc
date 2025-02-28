@@ -399,11 +399,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             auto view_block_ptr = hotstuff_mgr_->GetViewBlock(
                 req_height.pool_idx(), 
                 req_height.height());
-            if (view_block_ptr->qc().agg_sig().sign_x().empty()) {
-                continue;
-            }
-
-            if (view_block_ptr != nullptr) {
+            if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
                 auto res = sync_res->add_res();
                 res->set_network_id(network_id);
                 res->set_pool_idx(req_height.pool_idx());
