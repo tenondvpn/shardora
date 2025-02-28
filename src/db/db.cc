@@ -88,6 +88,8 @@ bool Db::Init(const std::string& db_path) {
     options.OptimizeLevelStyleCompaction();
     // create the DB if it's not already present
     options.create_if_missing = true;
+    options.setMaxBytesForLevelMultiplier(5);
+    options.setLevelCompactionDynamicLevelBytes(true);
     // options.compaction_style = rocksdb::kCompactionStyleUniversal;
     // options.write_buffer_size = 67108864 / 64; // 64MB
     // options.max_write_buffer_number = 3 / 3;
