@@ -1566,22 +1566,29 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     return tx_ptr;
 }
 
-bool BlockManager::HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
+bool BlockManager::HasSingleTx(
+        const transport::MessagePtr& msg_ptr,
+        uint32_t pool_index,
+        pools::CheckGidValidFunction gid_valid_fn) {
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (HasToTx(pool_index, gid_valid_fn)) {
         // ZJC_DEBUG("success check has to tx.");
         return true;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (HasStatisticTx(pool_index, gid_valid_fn)) {
         // ZJC_DEBUG("success check has statistic tx.");
         return true;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (HasElectTx(pool_index, gid_valid_fn)) {
         // ZJC_DEBUG("success check has elect tx.");
         return true;
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return false;
 }
 

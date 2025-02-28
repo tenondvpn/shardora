@@ -383,7 +383,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
                 prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
-                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
+                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, gid_valid_func);
             }
 
             ADD_DEBUG_PROCESS_TIMESTAMP();

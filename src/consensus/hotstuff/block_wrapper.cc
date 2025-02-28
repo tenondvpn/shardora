@@ -122,8 +122,10 @@ Status BlockWrapper::Wrap(
     return Status::kSuccess;
 }
 
-bool BlockWrapper::HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) {
-    return txs_pools_->HasSingleTx(pool_idx_, gid_valid_fn);
+bool BlockWrapper::HasSingleTx(
+        const transport::MessagePtr& msg_ptr, 
+        pools::CheckGidValidFunction gid_valid_fn) {
+    return txs_pools_->HasSingleTx(msg_ptr, pool_idx_, gid_valid_fn);
 }
         
 }
