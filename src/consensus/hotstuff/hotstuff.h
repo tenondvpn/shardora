@@ -279,7 +279,10 @@ public:
         return pacemaker()->CurView();
     }
 
-    void TryRecoverFromStuck(bool has_new_tx, bool has_system_tx);
+    void TryRecoverFromStuck(
+        const transport::MessagePtr& msg_ptr, 
+        bool has_new_tx, 
+        bool has_system_tx);
 
 private:
     void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);

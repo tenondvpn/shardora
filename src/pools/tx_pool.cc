@@ -133,13 +133,13 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     CheckThreadIdValid();
     if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        ZJC_WARN("add failed extend %u, %u, all valid: %u", 
+        ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
             added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
         return kPoolsError;
     }
 
     if (tx_ptr->unique_tx_hash.empty()) {
-        ZJC_WARN("add failed unique hash empty: %d", tx_ptr->tx_info->step());
+        ZJC_DEBUG("add failed unique hash empty: %d", tx_ptr->tx_info->step());
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
@@ -150,14 +150,14 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
     if (tx_ptr->tx_info->step() == pools::protobuf::kCreateLibrary) {
         universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
-        CHECK_MEMORY_SIZE(universal_prio_map_);
+        // CHECK_MEMORY_SIZE(universal_prio_map_);
     } else {
         prio_map_[tx_ptr->prio_key] = tx_ptr;
-        CHECK_MEMORY_SIZE(prio_map_);
+        // CHECK_MEMORY_SIZE(prio_map_);
     }
 
     gid_map_[tx_ptr->tx_info->gid()] = tx_ptr;
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    // CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
 #ifdef LATENCY
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tx_count_tm_us_ == 0) {
@@ -170,11 +170,11 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_start_time_map_[tx_ptr->tx_info->gid()] = common::TimeUtils::TimestampUs();
-    CHECK_MEMORY_SIZE(gid_start_time_map_);
+    // CHECK_MEMORY_SIZE(gid_start_time_map_);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
 #endif
     // timeout_txs_.push(tx_ptr->tx_info->gid());
-    // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
+    // // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
     if (pool_index_ == common::kImmutablePoolSize) {
         ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
             pool_index_, 
@@ -378,7 +378,7 @@ void TxPool::CheckTimeoutTx() {
     //     auto iter = gid_map_.find(gid);
     //     if (iter == gid_map_.end()) {
     //         timeout_txs_.pop();
-    //         CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
+    //         // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
     //         continue;
     //     }
 
@@ -390,9 +390,9 @@ void TxPool::CheckTimeoutTx() {
     //     }
 
     //     timeout_txs_.pop();
-    //     CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
+    //     // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs pop");
     //     timeout_remove_txs_.push(gid);
-    //     CHECK_MEMORY_SIZE(timeout_remove_txs_);
+    //     // CHECK_MEMORY_SIZE(timeout_remove_txs_);
     // }
 
     // count = 0;
@@ -412,7 +412,7 @@ void TxPool::CheckTimeoutTx() {
 
     //     RemoveTx(gid);
     //     timeout_remove_txs_.pop();
-    //     CHECK_MEMORY_SIZE(timeout_remove_txs_);
+    //     // CHECK_MEMORY_SIZE(timeout_remove_txs_);
     //     ZJC_DEBUG("timeout remove gid: %s, tx hash: %s",
     //         common::Encode::HexEncode(gid).c_str(),
     //         common::Encode::HexEncode(iter->second->unique_tx_hash).c_str());
@@ -427,16 +427,16 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
         if (miter != gid_map_.end()) {
             if (miter->second->is_consensus_add_tx) {
                 consensus_tx_map_[miter->second->unique_tx_hash] = miter->second;
-                CHECK_MEMORY_SIZE(consensus_tx_map_);
+                // CHECK_MEMORY_SIZE(consensus_tx_map_);
                 continue;
             }
 
             if (iter->second->tx_info->step() == pools::protobuf::kCreateLibrary) {
                 universal_prio_map_[miter->second->prio_key] = miter->second;
-                CHECK_MEMORY_SIZE(universal_prio_map_);
+                // CHECK_MEMORY_SIZE(universal_prio_map_);
             } else {
                 prio_map_[miter->second->prio_key] = miter->second;
-                CHECK_MEMORY_SIZE(prio_map_);
+                // CHECK_MEMORY_SIZE(prio_map_);
             }
         }
     }
@@ -449,15 +449,15 @@ void TxPool::RecoverTx(const std::string& gid) {
     if (miter != gid_map_.end()) {
         if (miter->second->is_consensus_add_tx) {
             consensus_tx_map_[miter->second->unique_tx_hash] = miter->second;
-            CHECK_MEMORY_SIZE(consensus_tx_map_);
+            // CHECK_MEMORY_SIZE(consensus_tx_map_);
             return;
         }
         if (miter->second->tx_info->step() == pools::protobuf::kCreateLibrary) {
             universal_prio_map_[miter->second->prio_key] = miter->second;
-            CHECK_MEMORY_SIZE(universal_prio_map_);
+            // CHECK_MEMORY_SIZE(universal_prio_map_);
         } else {
             prio_map_[miter->second->prio_key] = miter->second;
-            CHECK_MEMORY_SIZE(prio_map_);
+            // CHECK_MEMORY_SIZE(prio_map_);
         }        
     }
 }
@@ -468,7 +468,7 @@ bool TxPool::GidValid(const std::string& gid) {
     CheckThreadIdValid();
     auto tmp_res = added_gids_.insert(gid);
     ZJC_DEBUG("check gid valid called: %s", common::Encode::HexEncode(gid).c_str());
-    CHECK_MEMORY_SIZE(added_gids_);
+    // CHECK_MEMORY_SIZE(added_gids_);
     if (tmp_res.second) {
         if (prefix_db_->CheckAndSaveGidExists(gid)) {
             return false;
@@ -546,7 +546,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 //             // ZJC_INFO("tx latency gid: %s, us: %llu",
 //             //     common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
 //             gid_start_time_map_.erase(gid);
-//             CHECK_MEMORY_SIZE(gid_start_time_map_);
+//             // CHECK_MEMORY_SIZE(gid_start_time_map_);
 //         }
 
 //         if (latencys_us_.size() > 10) {
@@ -685,7 +685,7 @@ void TxPool::AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash
     auto iter = change_leader_invalid_hashs_.find(height);
     if (iter == change_leader_invalid_hashs_.end()) {
         change_leader_invalid_hashs_[height] = std::set<std::string>();
-        CHECK_MEMORY_SIZE(change_leader_invalid_hashs_);
+        // CHECK_MEMORY_SIZE(change_leader_invalid_hashs_);
         iter = change_leader_invalid_hashs_.find(height);
     } else {
         auto exists_iter = iter->second.find(hash);
@@ -729,7 +729,7 @@ void TxPool::InitGetTempBftInvalidHashs() {
     prefix_db_->GetTempHeightInvalidHashs(network_id, pool_index_, latest_height_ + 1, &hashs);
     if (!hashs.empty()) {
         change_leader_invalid_hashs_[latest_height_ + 1] = hashs;
-        CHECK_MEMORY_SIZE(change_leader_invalid_hashs_);
+        // CHECK_MEMORY_SIZE(change_leader_invalid_hashs_);
     }
 }
 
@@ -764,7 +764,7 @@ uint64_t TxPool::UpdateLatestInfo(
 
     if (height > synced_height_) {
         checked_height_with_prehash_[height] = prehash;
-        CHECK_MEMORY_SIZE(checked_height_with_prehash_);
+        // CHECK_MEMORY_SIZE(checked_height_with_prehash_);
     }
 
     if (synced_height_ + 1 == height) {
@@ -882,14 +882,10 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->tx_info->gid()] = tx_ptr;
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(
-        gid_map_, 
-        (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    // CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
     tx_ptr->is_consensus_add_tx = true;
     consensus_tx_map_[tx_ptr->unique_tx_hash] = tx_ptr;
-    CHECK_MEMORY_SIZE_WITH_MESSAGE(
-        consensus_tx_map_, 
-        (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
+    // CHECK_MEMORY_SIZE_WITH_MESSAGE(consensus_tx_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
     ZJC_DEBUG("success add consensus tx gid: %s",
         common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
 }

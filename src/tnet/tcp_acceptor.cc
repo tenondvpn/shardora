@@ -106,11 +106,8 @@ bool TcpAcceptor::Stop() {
 }
 
 void TcpAcceptor::Destroy() {
-    uint32_t tmp_val = 0;
-    uint32_t new_val = 1;
-    if (destroy_.compare_exchange_strong(tmp_val, new_val)) {
-        event_loop_.PostTask(std::bind(&TcpAcceptor::ReleaseByIOThread, this));
-    }
+    destroy_ = true;
+    event_loop_.PostTask(std::bind(&TcpAcceptor::ReleaseByIOThread, this));
 }
 
 bool TcpAcceptor::SetListenSocket(Socket& socket) {
@@ -162,7 +159,7 @@ bool TcpAcceptor::OnRead() {
             ZJC_ERROR("set send buffer size failed");
         }
         EventLoop& event_loop = GetNextEventLoop();
-        auto conn = CreateTcpConnection(event_loop, *socket);
+        auto conn = CreateTcpServerConnection(event_loop, *socket);
         if (conn == nullptr) {
             ZJC_ERROR("create connection failed, close socket[%d]",
                 socket->GetFd());
@@ -188,7 +185,7 @@ bool TcpAcceptor::OnRead() {
         conn_map_[from_ip + std::to_string(from_port)] = conn;
         CHECK_MEMORY_SIZE(conn_map_);
         in_check_queue_.push(conn);
-        while (destroy_ == 0) {
+        while (!destroy_) {
             std::shared_ptr<TcpConnection> out_conn = nullptr;
             if (!out_check_queue_.pop(&out_conn) || out_conn == nullptr) {
                 break;
@@ -199,7 +196,7 @@ bool TcpAcceptor::OnRead() {
             if (iter != conn_map_.end()) {
                 conn_map_.erase(iter);
                 CHECK_MEMORY_SIZE(conn_map_);
-                ZJC_DEBUG("remove accept connection: %s", key.c_str());
+                ZJC_INFO("remove accept connection: %s", key.c_str());
             }
         }
     }
@@ -208,7 +205,7 @@ bool TcpAcceptor::OnRead() {
 }
 
 void TcpAcceptor::CheckConnectionValid() {
-    while (destroy_ == 0) {
+    while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {
             break;
@@ -219,11 +216,12 @@ void TcpAcceptor::CheckConnectionValid() {
 
     uint32_t length = waiting_check_queue_.size();
     uint32_t check_count = 0;
-    while (check_count < kEachCheckConnectionCount && check_count < length && destroy_ == 0) {
+    while (check_count < kEachCheckConnectionCount && check_count < length && !destroy_) {
         ++check_count;
         auto conn = waiting_check_queue_.front();
         waiting_check_queue_.pop_front();
-        if (conn->ShouldReconnect()) {
+        conn->ShouldReconnect();
+        if (conn->CheckStoped()) {
             out_check_queue_.push(conn);
         } else {
             waiting_check_queue_.push_back(conn);
@@ -248,7 +246,7 @@ void TcpAcceptor::ImplResourceDestroy()
 {
 }
 
-std::shared_ptr<TcpConnection> TcpAcceptor::CreateTcpConnection(
+std::shared_ptr<TcpConnection> TcpAcceptor::CreateTcpServerConnection(
         EventLoop& event_loop,
         ServerSocket& socket) {
     auto conn = std::make_shared<TcpConnection>(event_loop);

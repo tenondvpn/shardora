@@ -57,6 +57,7 @@ public:
 
 private:
     std::shared_ptr<WaitingTxsItem> GetSingleTx(
+        const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_vlid_func);
 

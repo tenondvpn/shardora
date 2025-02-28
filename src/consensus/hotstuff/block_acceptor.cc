@@ -209,9 +209,7 @@ Status BlockAcceptor::addTxsToPool(
     // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
     //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    std::vector<pools::TxItemPtr> valid_txs;
-    valid_txs.reserve(txs.size());
-    std::map<std::string, pools::TxItemPtr> txs_map;
+    std::map<std::string, pools::TxItemPtr>& txs_map = txs_ptr->txs;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
@@ -452,35 +450,18 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
-                if (security_ptr_->Verify(
+                if (!msg_ptr->is_leader && security_ptr_->Verify(
                         tx_ptr->unique_tx_hash,
                         tx_ptr->tx_info->pubkey(),
                         tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                     assert(false);
                     return Status::kError;
-                } else {
-                    valid_txs.push_back(tx_ptr);
-                    // pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), tx_ptr);
                 }
             }
         }
     }
 
-    if (txs_ptr != nullptr) {
-        txs_ptr->txs = txs_map;
-    }
-
-    // 放入交易池并弹出（避免重复打包）
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // ZJC_DEBUG("success add txs size: %u", txs_map.size());
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // int res = pools_mgr_->BackupConsensusAddTxs(msg_ptr, pool_idx(), valid_txs);
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (res != pools::kPoolsSuccess) {
-    //     ZJC_ERROR("invalid consensus, txs invalid.");
-    //     return Status::kError;
-    // }
-
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 

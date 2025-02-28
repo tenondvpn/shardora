@@ -386,13 +386,11 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
             }
 
-            // ADD_DEBUG_PROCESS_TIMESTAMP();
-            // pools_mgr_->PopTxs(pool_idx, false, &has_user_tx, &has_system_tx);
-            // ADD_DEBUG_PROCESS_TIMESTAMP();
-            // pools_mgr_->CheckTimeoutTx(pool_idx);
-            // ADD_DEBUG_PROCESS_TIMESTAMP();
-            
-            hotstuff(pool_idx)->TryRecoverFromStuck(pools_mgr_->all_tx_size(pool_idx) > 0, has_system_tx);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+            hotstuff(pool_idx)->TryRecoverFromStuck(
+                msg_ptr, 
+                pools_mgr_->all_tx_size(pool_idx) > 0, 
+                has_system_tx);
             ADD_DEBUG_PROCESS_TIMESTAMP();
         }
     }
@@ -411,7 +409,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (tps >= 0.000001) {
-            ZJC_ERROR("tps: %.2f", tps);
+            ZJC_WARN("tps: %.2f", tps);
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();

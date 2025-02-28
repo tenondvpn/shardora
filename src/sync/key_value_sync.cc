@@ -372,6 +372,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 continue;
             }
+
+            if (pb_view_block.qc().agg_sig().sign_x().empty()) {
+                continue;
+            }
             
             auto res = sync_res->add_res();
             res->set_network_id(network_id);
@@ -395,7 +399,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             auto view_block_ptr = hotstuff_mgr_->GetViewBlock(
                 req_height.pool_idx(), 
                 req_height.height());
-            if (view_block_ptr != nullptr) {
+            if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
                 auto res = sync_res->add_res();
                 res->set_network_id(network_id);
                 res->set_pool_idx(req_height.pool_idx());
@@ -458,7 +462,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 continue;
             }
 
-            if (!pb_vblock->has_qc()) {
+            if (!pb_vblock->has_qc() || pb_vblock->qc().agg_sig().sign_x().empty()) {
                 ZJC_ERROR("pb vblock has no qc");
                 assert(false);
                 continue;

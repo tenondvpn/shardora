@@ -136,6 +136,7 @@ public:
             }
             auto sig_x_str = libBLS::ThresholdUtils::fieldElementToString(sig.signature().X);
             ZJC_WARN("agg sig verify failed, sig.x is %s, msg_hash: %s, member: %d", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str(), member_idx);
+            assert(false);
             return Status::kBlsVerifyFailed;
         }
 
@@ -152,11 +153,15 @@ public:
             return Status::kError;
         }
 
-        auto verified = bls::AggBls::FastAggregateVerify(
+        if (!bls::AggBls::FastAggregateVerify(
                 pks,
                 msg_hash,
-                sig.signature());
-        return verified ? Status::kSuccess : Status::kBlsVerifyFailed; 
+                sig.signature())) {
+            assert(false);
+            return Status::kBlsVerifyFailed;
+        }
+        
+        return Status::kSuccess;
     }    
     
 private:

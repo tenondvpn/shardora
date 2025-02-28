@@ -26,7 +26,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     #ifdef TEST_NO_CROSS
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     #else
-    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index, gid_vlid_func);
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(msg_ptr, pool_index, gid_vlid_func);
     #endif
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -66,16 +66,26 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
+        const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
         pools::CheckGidValidFunction gid_vlid_func) {
     ZJC_DEBUG("get single tx pool: %u", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pool_index == common::kRootChainPoolIndex) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
+        }
+
         ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr && pool_index == common::kImmutablePoolSize) {
         auto gid = GetToTxGid();
         if (gid_vlid_func(gid)) {
@@ -88,6 +98,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         //     if (pool_index == common::kRootChainPoolIndex) {
@@ -97,12 +108,26 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         
         txs_item = GetStatisticTx(pool_index, "");
         ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
+        }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         txs_item = GetElectTx(pool_index, "");
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
+        }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return txs_item;
 }
 
