@@ -12,8 +12,6 @@
 #include "common/log.h"
 #include <algorithm>
 
-#define USE_AGG_BLS
-
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
         TypeName(const TypeName&); \
