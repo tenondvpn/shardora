@@ -84,25 +84,28 @@ private:
         const block::protobuf::BlockTx& tx,
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
 
-    void RemoveCacheBlock(uint32_t pool_idx, uint64_t height) {
-        auto iter = added_heights_[pool_idx].find(height);
-        if (iter != added_heights_[pool_idx].end()) {
-            added_heights_[pool_idx].erase(iter);
-            CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
-        }
+    void RemoveCacheBlock() {
+        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+            auto iter = added_heights_[pool_idx].find(height);
+            if (iter != added_heights_[pool_idx].end()) {
+                added_heights_[pool_idx].erase(iter);
+                CHECK_MEMORY_SIZE(added_heights_[pool_idx]);
+            }
 
-        auto siter = network_txs_pools_.find(pool_idx);
-        if (siter != network_txs_pools_.end()) {
-            auto hiter = siter->second.find(height);
-            if (hiter != siter->second.end()) {
-                siter->second.erase(hiter);
+            auto siter = network_txs_pools_.find(pool_idx);
+            if (siter != network_txs_pools_.end()) {
+                auto hiter = siter->second.find(height);
+                if (hiter != siter->second.end()) {
+                    siter->second.erase(hiter);
+                }
+            }
+
+            auto citer = cross_sharding_map_[pool_idx].find(height);
+            if (citer != cross_sharding_map_[pool_idx].end()) {
+                cross_sharding_map_[pool_idx].erase(citer);
             }
         }
-
-        auto citer = cross_sharding_map_[pool_idx].find(height);
-        if (citer != cross_sharding_map_[pool_idx].end()) {
-            cross_sharding_map_[pool_idx].erase(citer);
-        }
+        
     }
 
     void StatisticToInfo(
@@ -126,8 +129,8 @@ private:
     // destination shard -> pool -> height -> items
     typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
-    typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
-    PoolMap network_txs_pools_;
+    HeightMap network_txs_pools_[common::kInvalidPoolIndex];
+    common::SpinMutex network_txs_pools_mutex_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::string local_id_;

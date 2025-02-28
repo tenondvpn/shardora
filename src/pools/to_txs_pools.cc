@@ -21,10 +21,6 @@ ToTxsPools::ToTxsPools(
         std::shared_ptr<block::AccountManager>& acc_mgr)
         : db_(db), local_id_(local_id), pools_mgr_(pools_mgr), acc_mgr_(acc_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        network_txs_pools_[i] = HeightMap();
-    }
-
     if (pools_mgr_ != nullptr) {
         LoadLatestHeights();
     }
@@ -78,9 +74,28 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
 #endif
     StatisticToInfo(*view_block_ptr, db_batch);
+
     added_heights_[pool_idx].insert(std::make_pair<>(
         block.height(), 
         view_block_ptr->block_info().timestamp()));
+    auto added_heights_iter = added_heights_[pool_idx].begin();
+    while (added_heights_iter != added_heights_[pool_idx].end()) {
+        if (added_heights_iter->first > erased_max_heights_[pool_idx]) {
+            break;
+        }
+
+        added_heights_iter = added_heights_[pool_idx].erase(added_heights_iter);
+    }
+
+    auto cross_map_iter = cross_sharding_map_[pool_idx].begin();
+    while (cross_map_iter != cross_sharding_map_[pool_idx].end()) {
+        if (cross_map_iter->first > erased_max_heights_[pool_idx]) {
+            break;
+        }
+
+        cross_map_iter = cross_sharding_map_[pool_idx].erase(cross_map_iter);
+    }
+
     CHECK_MEMORY_SIZE_WITH_MESSAGE(added_heights_[pool_idx], std::to_string(pool_idx).c_str());
     valided_heights_[pool_idx].insert(block.height());
 }
@@ -353,18 +368,13 @@ void ToTxsPools::AddTxToMap(
     memcpy(tmp_to_data + 4, in_to.c_str(), in_to.size());
     uint32_t* tmp_data = (uint32_t*)tmp_to_data;
     tmp_data[0] = type;
-    auto pool_iter = network_txs_pools_.find(view_block.qc().pool_index());
-    if (pool_iter == network_txs_pools_.end()) {
-        HeightMap height_map;
-        network_txs_pools_[view_block.qc().pool_index()] = height_map;
-        pool_iter = network_txs_pools_.find(view_block.qc().pool_index());
-    }
-
-    auto height_iter = pool_iter->second.find(view_block.block_info().height());
-    if (height_iter == pool_iter->second.end()) {
+    common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
+    auto& height_map = network_txs_pools_[view_block.qc().pool_index()];
+    auto height_iter = height_map.find(view_block.block_info().height());
+    if (height_iter == height_map.end()) {
         TxMap tx_map;
-        pool_iter->second[view_block.block_info().height()] = tx_map;
-        height_iter = pool_iter->second.find(view_block.block_info().height());
+        height_map[view_block.block_info().height()] = tx_map;
+        height_iter = height_map.find(view_block.block_info().height());
         ZJC_DEBUG("success add block pool: %u, height: %lu",
             view_block.qc().pool_index(), view_block.block_info().height());
     }
@@ -453,7 +463,6 @@ void ToTxsPools::HandleNormalToTx(
                 valided_heights_[i].erase(erase_height);
             }
 
-            erased_max_heights_[i] = heights.heights(i) + 1;
             if (heights.heights(i) > pool_consensus_heihgts_[i]) {
                 pool_consensus_heihgts_[i] = heights.heights(i);
                 for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
@@ -462,21 +471,22 @@ void ToTxsPools::HandleNormalToTx(
                 }
             }
 
-            auto pool_iter = network_txs_pools_.find(i);
-            if (pool_iter == network_txs_pools_.end()) {
-                continue;
-            }
-
-            auto height_iter = pool_iter->second.begin();
-            while (height_iter != pool_iter->second.end()) {
-                if (height_iter->first > heights.heights(i)) {
-                    break;
+            {
+                common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
+                auto& height_map = network_txs_pools_[i];
+                auto height_iter = height_map.begin();
+                while (height_iter != height_map.end()) {
+                    if (height_iter->first > heights.heights(i)) {
+                        break;
+                    }
+    
+                    ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
+                        i, height_iter->first, heights.sharding_id(), i, height_iter->first);
+                    height_map.erase(height_iter++);
                 }
-
-                ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
-                    i, height_iter->first, heights.sharding_id(), i, height_iter->first);
-                pool_iter->second.erase(height_iter++);
             }
+
+            erased_max_heights_[i] = heights.heights(i) + 1;
         }
 
         prev_to_heights_ = heights_ptr;
@@ -740,12 +750,6 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        auto pool_iter = network_txs_pools_.find(pool_idx);
-        if (pool_iter == network_txs_pools_.end()) {
-            ZJC_DEBUG("failed find pool index: %u", pool_idx);
-            return kPoolsError;
-        }
-
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
             ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx,
@@ -754,90 +758,80 @@ int ToTxsPools::CreateToTxWithHeights(
             return kPoolsError;
         }
 
-        // for (auto height = min_height; height <= max_height; ++height) {
-        //     auto cross_iter = cross_sharding_map_[pool_idx].find(height);
-        //     if (cross_iter != cross_sharding_map_[pool_idx].end()) {
-        //         auto item_iter = cross_iter->second.find(sharding_id);
-        //         if (item_iter != cross_iter->second.end()) {
-        //             cross_set.insert(item_iter->second.begin(), item_iter->second.end());
-        //         }
-        //     }
-        // }
+        common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
+        auto& height_map = network_txs_pools_[pool_idx];
+        for (auto height = min_height; height <= max_height; ++height) {
+            auto hiter = height_map.find(height);
+            if (hiter == height_map.end()) {
+//                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
+                continue;
+            }
 
-        if (pool_iter != network_txs_pools_.end()) {
-            for (auto height = min_height; height <= max_height; ++height) {
-                auto hiter = pool_iter->second.find(height);
-                if (hiter == pool_iter->second.end()) {
-    //                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
-                    continue;
-                }
-
-                for (auto to_iter = hiter->second.begin();
-                        to_iter != hiter->second.end(); ++to_iter) {
-                    auto des_sharding_id = to_iter->second.sharding_id;
+            for (auto to_iter = hiter->second.begin();
+                    to_iter != hiter->second.end(); ++to_iter) {
+                auto des_sharding_id = to_iter->second.sharding_id;
 #ifndef NDEBUG
+                uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
+                uint32_t step = tmp_data[0];
+                std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
+                ZJC_DEBUG("statistic shard: %u, new tx coming sharding id: %u, to: %s, step: %u, pool: %u, min height: %lu, max height: %lu",
+                    sharding_id, des_sharding_id, common::Encode::HexEncode(to).c_str(), step, pool_idx, min_height, max_height);
+#endif
+                if (to_iter->second.sharding_id == common::kInvalidUint32) {
                     uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
                     uint32_t step = tmp_data[0];
                     std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                    ZJC_DEBUG("statistic shard: %u, new tx coming sharding id: %u, to: %s, step: %u, pool: %u, min height: %lu, max height: %lu",
-                        sharding_id, des_sharding_id, common::Encode::HexEncode(to).c_str(), step, pool_idx, min_height, max_height);
-#endif
-                    if (to_iter->second.sharding_id == common::kInvalidUint32) {
-                        uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
-                        uint32_t step = tmp_data[0];
-                        std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                        protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to);
-                        if (account_info == nullptr) {
-                            if (sharding_id != network::kRootCongressNetworkId) {
-                                continue;
-                            }
-                            // 找不到账户，则将聚合 Tos 交易发送给 root
-                            des_sharding_id = network::kRootCongressNetworkId;
-                        } else {
-                            to_iter->second.sharding_id = account_info->sharding_id();
-                            des_sharding_id = to_iter->second.sharding_id;
+                    protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to);
+                    if (account_info == nullptr) {
+                        if (sharding_id != network::kRootCongressNetworkId) {
+                            continue;
                         }
-                    }
-
-                    if (des_sharding_id != sharding_id) {
-                        ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed id: %s, amount: %lu",
-                            pool_idx, height, des_sharding_id,
-                            sharding_id, common::Encode::HexEncode(to_iter->first).c_str(),
-                            to_iter->second.amount);
-                        continue;
-                    }
-                   
-                    auto amount_iter = acc_amount_map.find(to_iter->first);
-                    if (amount_iter == acc_amount_map.end()) {
-                        ZJC_DEBUG("len: %u, addr: %s",
-                            to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
-                        acc_amount_map[to_iter->first] = to_iter->second;
-                        if (!to_iter->second.elect_join_g2_value.empty()) {
-                            HandleElectJoinVerifyVec(
-                                to_iter->second.elect_join_g2_value,
-                                acc_amount_map[to_iter->first].verify_reqs);
-                        }
-
-                        ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
-                            "transfer amount height: %lu, id: %s, amount: %lu",
-                            pool_idx, height,
-                            height, common::Encode::HexEncode(to_iter->first).c_str(),
-                            to_iter->second.amount);
+                        // 找不到账户，则将聚合 Tos 交易发送给 root
+                        des_sharding_id = network::kRootCongressNetworkId;
                     } else {
-                        amount_iter->second.amount += to_iter->second.amount;
-                        if (!to_iter->second.elect_join_g2_value.empty()) {
-                            HandleElectJoinVerifyVec(
-                                to_iter->second.elect_join_g2_value,
-                                amount_iter->second.verify_reqs);
-                        }
-
-                        ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
-                            "transfer amount height: %lu, id: %s, amount: %lu, all: %lu",
-                            pool_idx, height,
-                            height, common::Encode::HexEncode(to_iter->first).c_str(),
-                            to_iter->second.amount,
-                            amount_iter->second.amount);
+                        to_iter->second.sharding_id = account_info->sharding_id();
+                        des_sharding_id = to_iter->second.sharding_id;
                     }
+                }
+
+                if (des_sharding_id != sharding_id) {
+                    ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed id: %s, amount: %lu",
+                        pool_idx, height, des_sharding_id,
+                        sharding_id, common::Encode::HexEncode(to_iter->first).c_str(),
+                        to_iter->second.amount);
+                    continue;
+                }
+                
+                auto amount_iter = acc_amount_map.find(to_iter->first);
+                if (amount_iter == acc_amount_map.end()) {
+                    ZJC_DEBUG("len: %u, addr: %s",
+                        to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
+                    acc_amount_map[to_iter->first] = to_iter->second;
+                    if (!to_iter->second.elect_join_g2_value.empty()) {
+                        HandleElectJoinVerifyVec(
+                            to_iter->second.elect_join_g2_value,
+                            acc_amount_map[to_iter->first].verify_reqs);
+                    }
+
+                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                        "transfer amount height: %lu, id: %s, amount: %lu",
+                        pool_idx, height,
+                        height, common::Encode::HexEncode(to_iter->first).c_str(),
+                        to_iter->second.amount);
+                } else {
+                    amount_iter->second.amount += to_iter->second.amount;
+                    if (!to_iter->second.elect_join_g2_value.empty()) {
+                        HandleElectJoinVerifyVec(
+                            to_iter->second.elect_join_g2_value,
+                            amount_iter->second.verify_reqs);
+                    }
+
+                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                        "transfer amount height: %lu, id: %s, amount: %lu, all: %lu",
+                        pool_idx, height,
+                        height, common::Encode::HexEncode(to_iter->first).c_str(),
+                        to_iter->second.amount,
+                        amount_iter->second.amount);
                 }
             }
         }
