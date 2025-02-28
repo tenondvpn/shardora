@@ -117,9 +117,9 @@ public:
     void Destroy();
     bool Exist(const std::string& key) {
         DbReadOptions read_opt;
-        std::string val;
-        auto status = db_->Get(read_opt, key, &val);
-        return status.ok(); 
+        // std::string val;
+        auto status = db_->Get(read_opt, key, nullptr);
+        return !status.IsNotFound(); 
         // DbIterator* it = db_->NewIterator(DbReadOptions());
         // it->Seek(key);
         // bool res = false;
