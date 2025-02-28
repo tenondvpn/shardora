@@ -20,6 +20,7 @@
 #include "rocksdb/write_batch.h"
 #include "rocksdb/filter_policy.h"
 #include "rocksdb/db.h"
+#include "rocksdb/table.h"
 #endif
 
 namespace shardora {

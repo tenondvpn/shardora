@@ -90,6 +90,9 @@ bool Db::Init(const std::string& db_path) {
     options.create_if_missing = true;
     options.max_bytes_for_level_multiplier = 5;
     options.level_compaction_dynamic_level_bytes = true;
+    rocksdb::BlockBasedTableOptions table_option;
+    table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
+    options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
     // options.compaction_style = rocksdb::kCompactionStyleUniversal;
     // options.write_buffer_size = 67108864 / 64; // 64MB
     // options.max_write_buffer_number = 3 / 3;
