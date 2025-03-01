@@ -27,6 +27,20 @@ void Hotstuff::Init() {
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         InitAddNewViewBlock(latest_view_block);
+        auto parent_hash = latest_view_block->parent_hash();
+        while (true) {
+            ViewBlock view_block;
+            if (!prefix_db_->GetBlock(parent_hash, &view_block)) {
+                ZJC_FATAL("failed get parent hash: %s", 
+                    common::Encode::HexEncode(parent_hash).c_str());
+            }
+
+            if (view_block.qc().view() <= 0 || latest_view_block->qc().view() >= view_block.qc().view() + 2) {
+                break;
+            }
+
+            parent_hash = view_block.parent_hash();
+        }
         // LoadAllViewBlockWithLatestCommitedBlock(latest_view_block);
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
@@ -1492,9 +1506,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
-        if (qc.view() > 1) {
-            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
-        }
+        kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
         return nullptr;
     }
 
@@ -1528,10 +1540,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.network_id(), 
             qc.pool_index(), 
             v_block1->block_info().height());
-        if (qc.view() > 3) {
-            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
-        }
-
+        kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
         return nullptr;
     }
     
