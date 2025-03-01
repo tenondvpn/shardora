@@ -145,7 +145,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
     }
 
     // 由于验签很占资源，再检查一下数据库，避免重复同步
-    if (prefix_db_->HasViewBlockInfo(pb_vblock.qc().view_block_hash())) {
+    if (prefix_db_->BlockExists(pb_vblock.qc().view_block_hash())) {
         ZJC_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
             pb_vblock.qc().network_id(),
             pb_vblock.qc().pool_index(),
