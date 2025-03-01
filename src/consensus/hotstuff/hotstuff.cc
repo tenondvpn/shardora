@@ -1672,7 +1672,6 @@ Status Hotstuff::VerifyQC(const QC& qc) {
     }
 
     if (qc.view() <= view_block_chain()->HighViewBlock()->qc().view()) {        
-        assert(false);
         return Status::kError;
     }
 
