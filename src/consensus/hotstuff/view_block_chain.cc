@@ -183,6 +183,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
         }
     }
 
+    ZJC_DEBUG("failed get pool: %u view: %lu", pool_index_, view);
     return nullptr;
 }
 

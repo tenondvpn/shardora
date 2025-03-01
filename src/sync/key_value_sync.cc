@@ -394,8 +394,9 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 break;
             }
         } else if(req_height.tag() == kViewHeight) {
-            ZJC_DEBUG("get view block request coming: %u_%u_%lu",
-                network_id, req_height.pool_idx(), req_height.height());
+            ZJC_DEBUG("get view block request coming: %u_%u_%lu, hash: %lu",
+                network_id, req_height.pool_idx(), req_height.height(),
+                msg_ptr->header.hash64());
             auto view_block_ptr = hotstuff_mgr_->GetViewBlock(
                 req_height.pool_idx(), 
                 req_height.height());
@@ -416,6 +417,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                         msg_ptr->header.hash64());
                     break;
                 }
+            } else {
+                ZJC_DEBUG("failed get view block request coming: %u_%u_%lu, hash: %lu",
+                    network_id, req_height.pool_idx(), req_height.height(),
+                    msg_ptr->header.hash64());
             }
         } else {
             assert(false);

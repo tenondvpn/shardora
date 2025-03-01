@@ -1706,7 +1706,7 @@ Status Hotstuff::VerifyViewBlock(
         return Status::kError;
     }
 
-    // hotstuff condition
+    // fast hotstuff condition
     auto qc_view_block_info = view_block_chain->Get(v_block.parent_hash());
     if (!qc_view_block_info) {
         ZJC_ERROR("get qc prev view block message is error: %s, sync parent view: %u_%u_%lu",
