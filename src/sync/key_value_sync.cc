@@ -336,6 +336,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     uint32_t add_size = 0;
     for (int32_t i = 0; i < sync_msg.sync_value_req().keys_size(); ++i) {
         const std::string& key = sync_msg.sync_value_req().keys(i);
+        ZJC_DEBUG("now handle sync view bock hash key: %s", 
+            common::Encode::HexEncode(key).c_str());
         if (key.size() != 34) {
             continue;
         }
