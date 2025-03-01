@@ -236,6 +236,12 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     }
 
     auto view_block_hash = GetQCMsgHash(vblock.qc());
+    ZJC_DEBUG("view block hash: %s, get hash: %s, now check bls sign: x: %s, y: %s, z: %s", 
+        common::Encode::HexEncode(vblock.qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block_hash).c_str(),
+        vblock.qc().sign_x().c_str(),
+        vblock.qc().sign_y().c_str(),
+        vblock.qc().sign_z().c_str());
     auto hf = hotstuff(vblock.qc().pool_index());
     Status s = hf->crypto()->VerifyThresSign(
         vblock.qc().network_id(), 

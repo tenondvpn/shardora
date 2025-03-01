@@ -468,7 +468,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
         do {
             ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d",
-                msg_ptr->header.hash64(), key.c_str(), iter->tag());
+                msg_ptr->header.hash64(), 
+                (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
+                iter->tag());
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
                 ZJC_ERROR("pb vblock parse failed");
@@ -489,7 +491,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
     
             ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s",
-                msg_ptr->header.hash64(), key.c_str(), iter->tag(),
+                msg_ptr->header.hash64(), 
+                (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
+                iter->tag(),
                 pb_vblock->qc().sign_x().c_str());
             int res = view_block_synced_callback_(*pb_vblock);
             if (res == 1) {
@@ -503,7 +507,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->qc().pool_index(),
                     pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
-                    key.c_str());
+                    (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
                 vblock_queues_[thread_idx].push(pb_vblock);
             }  
