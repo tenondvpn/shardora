@@ -316,8 +316,7 @@ int tx_main(int argc, char** argv) {
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
         }
-        //usleep(50);
-
+        usleep(delayus_a);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
