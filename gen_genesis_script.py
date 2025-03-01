@@ -55,11 +55,6 @@ def keccak256_bytes(b: bytes) -> str:
     h.update(b)
     return h.hexdigest()
 
-def keccak256(s: str) -> str:
-    k = sha3.keccak_256()
-    k.update(bytes(s, 'utf-8'))
-    return k.hexdigest()
-
 def random_sk():
     # 生成 32 字节的随机数作为私钥
     sk = SigningKey.generate(curve=SECP256k1)
@@ -75,36 +70,51 @@ def _get_node_sks_from_server_conf(server_conf, net_id):
     node_names = [n['name'] for n in server_conf['nodes'] if n['net'] == net_id]
     return [gen_node_sk(n, server_conf) for n in node_names]
 
-def _gen_accounts_with_server_conf(server_conf, net_id):
+
+def _gen_account_sks(server_conf, net_id):
     account_sks = server_conf.get('account_sks', {})
     account_sks_from_server_conf = account_sks.get(net_id, [])
     num = 256 - len(account_sks_from_server_conf)
     random_sks = gen_account_sks(net_id, num)
-    accounts = [sk2account(sk) for sk in account_sks_from_server_conf + random_sks]
-    return accounts
+    return account_sks_from_server_conf + random_sks
+
+
+def _gen_accounts_with_server_conf(server_conf, net_id):
+    sks = _gen_account_sks(server_conf, net_id)
+    accounts = [sk2account(sk) for sk in sks]
+    return accounts, sks
  
 
 def gen_genesis_yaml_file(server_conf: dict, file_path: str):
+    root_accounts, _ = _gen_accounts_with_server_conf(server_conf, 2) 
     root = {
         'net_id': 2,
         'sks': _get_node_sks_from_server_conf(server_conf, 2),
-        'accounts': _gen_accounts_with_server_conf(server_conf, 2),
+        'accounts': root_accounts,
     }
     shards = []
     net_ids = list(set([node['net'] for node in server_conf['nodes']]))
     shard_ids = [net_id for net_id in net_ids if net_id != 2]
     for shard_id in shard_ids:
+        sks = _get_node_sks_from_server_conf(server_conf, shard_id)
+        accounts, account_sks = _gen_accounts_with_server_conf(server_conf, shard_id)
         shards.append({
             'net_id': shard_id,
-            'sks': _get_node_sks_from_server_conf(server_conf, shard_id),
-            'accounts': _gen_accounts_with_server_conf(server_conf, shard_id),
+            'sks': sks,
+            'accounts': accounts,
         })
+        # 顺便生成一个 addrs{net_id} 文件用于压测
+        with open(f"./addrs{shard_id}", 'w') as f:
+            for sk in account_sks:
+                f.write(sk + '\n')
+        
     genesis_conf = {
         'root': root,
         'shards': shards,
     }
     with open(file_path, 'w') as f:
         yaml.dump(genesis_conf, f)
+            
 
 def _get_bootstrap_str(node_name, server_conf: dict) -> str:
     for node in server_conf['nodes']:
@@ -291,6 +301,9 @@ clickhouse-client -q "drop table bls_block_info"
     with open(file_path, 'w') as f:
         f.write(code_str)
 
+
+def gen_addrs_file(server_conf: dict):
+    pass
 
 def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag, datadir='/root', medium_server_num=-1):
     code_str = """
@@ -611,6 +624,7 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
+    gen_addrs_file(server_conf)
     gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir, medium_server_num=args.medium_num)
     modify_shard_num_in_src_code(server_conf)
 

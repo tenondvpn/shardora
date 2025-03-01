@@ -176,7 +176,7 @@ static void LoadAllAccounts(int32_t shardnum=3) {
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
-    if (g_prikeys.size() != common::kImmutablePoolSize) {
+    if (g_prikeys.size() < common::kImmutablePoolSize) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
     }
