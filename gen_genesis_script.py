@@ -1,6 +1,6 @@
 import argparse
 from eth_keys import keys, datatypes
-import sha3
+import hashlib
 from secp256k1 import PrivateKey, PublicKey
 from eth_utils import decode_hex, encode_hex
 from ecdsa import SigningKey, SECP256k1
@@ -50,14 +50,14 @@ def pubkey_to_account(pub_key_bytes: bytes) -> str:
     return addr[len(addr)-40:len(addr)]
 
 def keccak256_bytes(b: bytes) -> str:
-    k = sha3.keccak_256()
-    k.update(b)
-    return k.hexdigest()
+    # 这里使用 hashlib.sha3_256()，它是 FIPS 标准的 SHA3-256
+    h = hashlib.sha3_256()
+    h.update(b)
+    return h.hexdigest()
 
 def keccak256(s: str) -> str:
-    k = sha3.keccak_256()
-    k.update(bytes(s, 'utf-8'))
-    return k.hexdigest()
+    # 直接将字符串编码为 utf-8 后计算
+    return keccak256_bytes(s.encode('utf-8'))
 
 def random_sk():
     # 生成 32 字节的随机数作为私钥
@@ -140,7 +140,7 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
                 'net_id': node['net'],
                 'prikey': sk,
                 'show_cmd': 0,
-                'for_ck': True
+                'for_ck': False
             },
             'tx_block': {
                 'network_id': node['net']
@@ -261,7 +261,7 @@ then
         arg_str = '-S ' + str(net_id)
         code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain {arg_str}\n"
 
-    code_str += "    \nfi\n"
+    code_str += "fi\n"
 
     for net_id in net_ids:
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)
