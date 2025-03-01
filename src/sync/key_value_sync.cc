@@ -352,6 +352,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             continue;
         }
 
+        ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
+            common::GlobalInfo::Instance()->network_id(),
+            pool_index_arr[0],
+            common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
+            msg_ptr->header.hash64());
         auto view_block_ptr = view_block_info_ptr->view_block;
         if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
             auto res = sync_res->add_res();
@@ -359,7 +364,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_pool_idx(view_block_ptr->qc().pool_index());
             res->set_height(view_block_ptr->qc().view());
             res->set_value(view_block_ptr->SerializeAsString());
-            res->set_tag(kViewHeight);
+            res->set_key(key);
+            res->set_tag(kViewHash);
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
                 ZJC_DEBUG("handle sync value view add_size failed request hash: %lu, "
@@ -415,33 +421,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 break;
             }
-        } else if(req_height.tag() == kViewHeight) {
-            ZJC_DEBUG("get view block request coming: %u_%u_%lu, hash: %lu",
-                network_id, req_height.pool_idx(), req_height.height(),
-                msg_ptr->header.hash64());
-            std::shared_ptr<hotstuff::ViewBlock> view_block_ptr = nullptr;
-            if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
-                auto res = sync_res->add_res();
-                res->set_network_id(network_id);
-                res->set_pool_idx(req_height.pool_idx());
-                res->set_height(req_height.height());
-                res->set_value(view_block_ptr->SerializeAsString());
-                res->set_tag(kViewHeight);
-                add_size += 16 + res->value().size();
-                if (add_size >= kSyncPacketMaxSize) {
-                    ZJC_DEBUG("handle sync value view add_size failed request hash: %lu, "
-                        "net: %u, pool: %u, height: %lu",
-                        network_id,
-                        req_height.pool_idx(),
-                        req_height.height(),
-                        msg_ptr->header.hash64());
-                    break;
-                }
-            } else {
-                ZJC_DEBUG("failed get view block request coming: %u_%u_%lu, hash: %lu",
-                    network_id, req_height.pool_idx(), req_height.height(),
-                    msg_ptr->header.hash64());
-            }
         } else {
             assert(false);
             continue;
@@ -470,39 +449,38 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     ZJC_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
-        if (iter->has_height()) {
+        if (iter->tag() == kBlockHeight) {
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
-            if (iter->tag() == kViewHeight) {
-                key += "_" + std::to_string(iter->tag());
-            }
+        }
 
+        do {
             ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d",
                 msg_ptr->header.hash64(), key.c_str(), iter->tag());
             auto pb_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>();
             if (!pb_vblock->ParseFromString(iter->value())) {
                 ZJC_ERROR("pb vblock parse failed");
                 assert(false);
-                continue;
+                break;
             }
-
+    
             if (!pb_vblock->has_qc() || pb_vblock->qc().agg_sig().sign_x().empty()) {
                 ZJC_ERROR("pb vblock has no qc");
                 assert(false);
-                continue;
+                break;
             }
-
+    
             if (!view_block_synced_callback_) {
                 ZJC_ERROR("no view block synced callback inited");
                 assert(false);
-                continue;
+                break;
             }
-
+    
             int res = view_block_synced_callback_(*pb_vblock);
             if (res == 1) {
                 assert(false);
-                continue;
+                break;
             }
                 
             if (res == 0) {
@@ -514,8 +492,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     key.c_str());
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
                 vblock_queues_[thread_idx].push(pb_vblock);
-            }       
-        }
+            }  
+        } while (0);
 
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {

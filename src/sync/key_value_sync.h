@@ -38,17 +38,15 @@ namespace sync {
 using ViewBlockSyncedCallback = std::function<int(const view_block::protobuf::ViewBlockItem& pb_vblock)>;
 
 enum SyncItemTag : uint32_t {
-    kKeyValue = 0,
     kBlockHeight = 1,
-    kViewHeight = 2,
-    kViewHash = 3,
+    kViewHash = 2,
 };
 
 struct SyncItem {
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
             : network_id(net_id), key(in_key), 
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
-        tag = kKeyValue;
+        tag = kViewHash;
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
@@ -58,15 +56,6 @@ struct SyncItem {
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
         tag = kBlockHeight;
-    }
-
-    SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri, uint32_t in_tag)
-            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), 
-            priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64), tag(in_tag) {
-        key = std::to_string(network_id) + "_" +
-            std::to_string(pool_idx) + "_" +
-            std::to_string(height) + "_" +
-            std::to_string(in_tag);
     }
 
     uint32_t network_id{ 0 };
