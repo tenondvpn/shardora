@@ -1671,10 +1671,14 @@ Status Hotstuff::VerifyQC(const QC& qc) {
         return Status::kError;
     }
 
-    if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {        
-        if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
-            return Status::kError; 
-        }
+    if (qc.view() <= view_block_chain()->HighViewBlock()->qc().view()) {        
+        assert(false);
+        return Status::kError;
+    }
+
+    if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
+        assert(false);
+        return Status::kError; 
     }
 
     return Status::kSuccess;

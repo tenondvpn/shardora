@@ -228,9 +228,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
             sign.Y = libff::alt_bn128_Fq(vblock.qc().sign_y().c_str());
         }
 
-        if (vblock.qc().sign_z() != "") {
-            sign.Z = libff::alt_bn128_Fq(vblock.qc().sign_z().c_str());
-        }
+        sign.Z = libff::alt_bn128_Fq::one();
     } catch (...) {
         return Status::kInvalidArgument;
     }
