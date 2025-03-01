@@ -143,14 +143,6 @@ void KeyValueSync::CheckSyncItem() {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
             CHECK_MEMORY_SIZE(prio_sync_queue_[i]);
-            if (item->pool_idx < common::kInvalidPoolIndex) {
-                auto& block_map = net_with_pool_blocks_[item->network_id].pool_blocks[item->pool_idx];
-                auto block_iter = block_map.find(item->height);
-                if (block_iter != block_map.end()) {
-                    continue;
-                }
-            }
-            
             if (synced_map_.find(item->key) != synced_map_.end()) {
                 continue;
             }

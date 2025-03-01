@@ -167,7 +167,6 @@ private:
     std::unordered_set<std::string> synced_keys_;
     std::deque<std::string> timeout_queue_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
-    PoolWithBlocks net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];  
