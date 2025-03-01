@@ -348,10 +348,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlock(
             std::string(key.c_str() + 2, 32));
         if (view_block_ptr) {
-            assert(!view_block_ptr->qc().agg_sig().sign_x().empty());
+            assert(!view_block_ptr->qc().sign_x().empty());
         }
         
-        if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
+        if (view_block_ptr != nullptr && !view_block_ptr->qc().sign_x().empty()) {
             ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
                 common::GlobalInfo::Instance()->network_id(),
                 pool_index_arr[0],
@@ -412,7 +412,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 continue;
             }
 
-            if (pb_view_block.qc().agg_sig().sign_x().empty()) {
+            if (pb_view_block.qc().sign_x().empty()) {
                 continue;
             }
             
@@ -476,7 +476,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 break;
             }
     
-            if (!pb_vblock->has_qc() || pb_vblock->qc().agg_sig().sign_x().empty()) {
+            if (!pb_vblock->has_qc() || pb_vblock->qc().sign_x().empty()) {
                 ZJC_ERROR("pb vblock has no qc");
                 assert(false);
                 break;
