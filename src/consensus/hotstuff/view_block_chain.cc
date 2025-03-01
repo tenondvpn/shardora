@@ -150,7 +150,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlock(const HashStr& hash) {
 
     auto view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
-    if (prefix_db_->GetViewBlockInfo(hash, view_block)) {
+    if (prefix_db_->GetBlock(hash, &view_block)) {
         return view_block_ptr;
     }
 
