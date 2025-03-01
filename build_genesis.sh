@@ -1,7 +1,7 @@
 
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
-LOCAL_PATH=`pwd`
+
 # $1 = Debug/Release
 TARGET=Release
 if test $1 = "Debug"
@@ -73,7 +73,6 @@ then
     cd /root/zjnodes/zjchain && ./zjchain -U
     cd /root/zjnodes/zjchain && ./zjchain -S 3
     cd /root/zjnodes/zjchain && ./zjchain -S 4
-    
 fi
 
 #for node in "${root[@]}"; do
@@ -100,5 +99,3 @@ clickhouse-client -q "drop table zjc_ck_statistic_table"
 clickhouse-client -q "drop table zjc_ck_transaction_table"
 clickhouse-client -q "drop table bls_elect_info"
 clickhouse-client -q "drop table bls_block_info"
-killall -9 txcli
-cd $LOCAL_PATH && rm -rf addrs* && cp /root/zjnodes/zjchain/addrs* ./
