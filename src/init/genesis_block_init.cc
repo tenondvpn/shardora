@@ -1636,6 +1636,13 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();
+    std::map<uint32_t, std::string> pool_acc_map;
+    auto iter = net_pool_index_map_.find(net_id);
+    if (iter != net_pool_index_map_.end()) {
+        pool_acc_map = iter->second;
+    } else {
+        return kInitError;
+    }    
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
     // if (net_id == network::kConsensusShardBeginNetworkId) {
@@ -1649,29 +1656,35 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
-    auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
-    defer({
-        fclose(fd);
-    });
+    // auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
+    // defer({
+    //     fclose(fd);
+    // });
 
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
-        std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
-        while (i < common::kImmutablePoolSize) {
-            auto private_key = common::Random::RandomString(32);
-            security::Ecdsa ecdsa;
-            ecdsa.SetPrivateKey(private_key);
-            address = ecdsa.GetAddress();
-            if (common::GetAddressPoolIndex(address) == i) {
-                auto data = common::Encode::HexEncode(private_key) + "\n";
-                fwrite(data.c_str(), 1, data.size(), fd);
-                break;
-            }
+    // for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
+    //     std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
+    //     while (i < common::kImmutablePoolSize) {
+    //         auto private_key = common::Random::RandomString(32);
+    //         security::Ecdsa ecdsa;
+    //         ecdsa.SetPrivateKey(private_key);
+    //         address = ecdsa.GetAddress();
+    //         if (common::GetAddressPoolIndex(address) == i) {
+    //             auto data = common::Encode::HexEncode(private_key) + "\n";
+    //             fwrite(data.c_str(), 1, data.size(), fd);
+    //             break;
+    //         }
+    //     }
+
+    for (auto iter = pool_acc_map.begin(); iter != pool_acc_map.end(); ++iter, ++idx) {
+        if (iter->first >= common::kInvalidPoolIndex) {
+            break;
         }
 
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
+        std::string address = iter->second;
         
         // from
         {
