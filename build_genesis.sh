@@ -45,8 +45,8 @@ then
 	sudo mv -f /mnt/zjchain /root/zjnodes/
 fi
 root=("r1" "r2" "r3")
-shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
+shard3=("s3_1" "s3_2" "s3_3" "s3_4")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
