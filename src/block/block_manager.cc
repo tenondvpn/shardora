@@ -739,6 +739,7 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: fix
+    assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
@@ -792,10 +793,12 @@ void BlockManager::AddNewBlock(
         //     tx_list[i].status(),
         //     tx_list[i].step());
         // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
+#ifdef SAVE_GID_WITH_BLOCK
         prefix_db_->SaveGidWithBlockHash(
             tx_list[i].gid(), 
             view_block_item->qc().view_block_hash(), 
             db_batch);
+#endif
         if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
             account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
         }

@@ -145,7 +145,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
     }
 
     // 由于验签很占资源，再检查一下数据库，避免重复同步
-    if (prefix_db_->HasViewBlockInfo(pb_vblock.qc().view_block_hash())) {
+    if (prefix_db_->BlockExists(pb_vblock.qc().view_block_hash())) {
         ZJC_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
             pb_vblock.qc().network_id(),
             pb_vblock.qc().pool_index(),
@@ -228,14 +228,18 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
             sign.Y = libff::alt_bn128_Fq(vblock.qc().sign_y().c_str());
         }
 
-        if (vblock.qc().sign_z() != "") {
-            sign.Z = libff::alt_bn128_Fq(vblock.qc().sign_z().c_str());
-        }
+        sign.Z = libff::alt_bn128_Fq::one();
     } catch (...) {
         return Status::kInvalidArgument;
     }
 
     auto view_block_hash = GetQCMsgHash(vblock.qc());
+    ZJC_DEBUG("view block hash: %s, get hash: %s, now check bls sign: x: %s, y: %s, z: %s", 
+        common::Encode::HexEncode(vblock.qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block_hash).c_str(),
+        vblock.qc().sign_x().c_str(),
+        vblock.qc().sign_y().c_str(),
+        vblock.qc().sign_z().c_str());
     auto hf = hotstuff(vblock.qc().pool_index());
     Status s = hf->crypto()->VerifyThresSign(
         vblock.qc().network_id(), 

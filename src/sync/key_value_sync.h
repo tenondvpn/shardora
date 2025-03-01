@@ -38,16 +38,15 @@ namespace sync {
 using ViewBlockSyncedCallback = std::function<int(const view_block::protobuf::ViewBlockItem& pb_vblock)>;
 
 enum SyncItemTag : uint32_t {
-    kKeyValue = 0,
     kBlockHeight = 1,
-    kViewHeight = 2,
+    kViewHash = 2,
 };
 
 struct SyncItem {
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
             : network_id(net_id), key(in_key), 
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
-        tag = kKeyValue;
+        tag = kViewHash;
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
@@ -57,15 +56,6 @@ struct SyncItem {
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
         tag = kBlockHeight;
-    }
-
-    SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri, uint32_t in_tag)
-            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), 
-            priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64), tag(in_tag) {
-        key = std::to_string(network_id) + "_" +
-            std::to_string(pool_idx) + "_" +
-            std::to_string(height) + "_" +
-            std::to_string(in_tag);
     }
 
     uint32_t network_id{ 0 };
@@ -90,10 +80,10 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
-    void AddSyncViewHeight(
-        uint32_t network_id,
+    void AddSyncViewHash(
+        uint32_t network_id, 
         uint32_t pool_idx,
-        uint64_t height,
+        const std::string& view_hash, 
         uint32_t priority);
     void Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
@@ -166,7 +156,6 @@ private:
     std::unordered_set<std::string> synced_keys_;
     std::deque<std::string> timeout_queue_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
-    PoolWithBlocks net_with_pool_blocks_[network::kConsensusShardEndNetworkId];
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];  

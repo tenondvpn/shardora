@@ -38,7 +38,8 @@ public:
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> Get(uint64_t view);
+    std::shared_ptr<ViewBlock> GetViewBlock(const HashStr& hash);
+    // std::shared_ptr<ViewBlock> Get(uint64_t view);
     uint64_t GetMaxHeight() {
         if (latest_committed_block_->has_block_info()) {
             return latest_committed_block_->block_info().height();
@@ -305,7 +306,7 @@ public:
             return Status::kSuccess;
         }
 
-        if (prefix_db_->HasViewBlockInfo(v_block->qc().view_block_hash())) {
+        if (prefix_db_->BlockExists(v_block->qc().view_block_hash())) {
             ZJC_DEBUG("has in db, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
                 pool_index_, test_index, v_block->block_info().tx_list_size(),
                 v_block->qc().network_id(),
@@ -315,12 +316,12 @@ public:
             return Status::kSuccess;
         }        
         
-        prefix_db_->SaveViewBlockInfo(
-            v_block->qc().network_id(),
-            v_block->qc().pool_index(),
-            v_block->block_info().height(),
-            *v_block,
-            db_batch);
+        // prefix_db_->SaveViewBlockInfo(
+        //     v_block->qc().network_id(),
+        //     v_block->qc().pool_index(),
+        //     v_block->block_info().height(),
+        //     *v_block,
+        //     db_batch);
         ZJC_DEBUG("success pool: %u, StoreToDb 3, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
             pool_index_, test_index, v_block->block_info().tx_list_size(),
             v_block->qc().network_id(),

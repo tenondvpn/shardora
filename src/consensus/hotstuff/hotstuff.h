@@ -92,9 +92,9 @@ public:
 
     void Init();
     
-    std::shared_ptr<ViewBlock> GetViewBlock(uint64_t view) {
-        return view_block_chain_->Get(view);
-    }
+    // std::shared_ptr<ViewBlock> GetViewBlock(uint64_t view) {
+    //     return view_block_chain_->Get(view);
+    // }
 
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         sync_pool_fn_ = sync_fn;
@@ -285,7 +285,7 @@ public:
         bool has_system_tx);
 
 private:
-    void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
+    // void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
     void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
 
     void InitHandleProposeMsgPipeline() {
