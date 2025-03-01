@@ -451,6 +451,7 @@ public:
         std::string block_str;
         auto st = db_->Get(key, &block_str);
         if (!st.ok()) {
+            ZJC_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
             return false;
         }
 
