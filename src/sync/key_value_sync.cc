@@ -71,7 +71,7 @@ void KeyValueSync::AddSyncViewHash(
     memcpy(key + 2, view_hash.c_str(), view_hash.size());
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(
-        network_id, std::string(key, sizeof(key)), priority, kViewHash);
+        network_id, std::string(key, sizeof(key)), priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_INFO("block height add new sync item key: %s, priority: %u",
