@@ -172,20 +172,20 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     return nullptr;    
 }
 
-std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
-    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end(); ++iter) {
-        if (!iter->second->view_block) {
-            continue;
-        }
+// std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
+//     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end(); ++iter) {
+//         if (!iter->second->view_block) {
+//             continue;
+//         }
 
-        if (iter->second->view_block->qc().view() == view && iter->second->view_block->qc().has_sign_x()) {
-            return iter->second->view_block;
-        }
-    }
+//         if (iter->second->view_block->qc().view() == view && iter->second->view_block->qc().has_sign_x()) {
+//             return iter->second->view_block;
+//         }
+//     }
 
-    ZJC_DEBUG("failed get pool: %u view: %lu", pool_index_, view);
-    return nullptr;
-}
+//     ZJC_DEBUG("failed get pool: %u view: %lu", pool_index_, view);
+//     return nullptr;
+// }
 
 
 bool ViewBlockChain::Has(const HashStr& hash) {
