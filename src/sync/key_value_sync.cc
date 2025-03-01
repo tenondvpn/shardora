@@ -341,8 +341,18 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         }
 
         uint16_t* pool_index_arr = (uint16_t*)key.c_str();
-        auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->Get(
-            std::string(key.c_str() + 2, 32))->view_block;
+        auto view_block_info_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->Get(
+            std::string(key.c_str() + 2, 32));
+        if (!view_block_info_ptr) {
+            ZJC_DEBUG("failed get view block request coming: %u_%u view block hash: %s, hash: %lu",
+                common::GlobalInfo::Instance()->network_id(),
+                pool_index_arr[0],
+                common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
+                msg_ptr->header.hash64());
+            continue;
+        }
+
+        auto view_block_ptr = view_block_info_ptr->view_block;
         if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
             auto res = sync_res->add_res();
             res->set_network_id(view_block_ptr->qc().network_id());
@@ -360,12 +370,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 break;
             }
-        } else {
-            ZJC_DEBUG("failed get view block request coming: %u_%u view block hash: %s, hash: %lu",
-                common::GlobalInfo::Instance()->network_id(),
-                pool_index_arr[0],
-                common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
-                msg_ptr->header.hash64());
         }
     }
 
