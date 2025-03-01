@@ -52,7 +52,10 @@ public:
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    bool HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    bool HasSingleTx(
+        const transport::MessagePtr& msg_ptr,
+        uint32_t pool_index, 
+        pools::CheckGidValidFunction gid_valid_fn);
     std::string GetToTxGid();
 
 private:

@@ -88,6 +88,19 @@ bool Db::Init(const std::string& db_path) {
     options.OptimizeLevelStyleCompaction();
     // create the DB if it's not already present
     options.create_if_missing = true;
+    options.max_bytes_for_level_multiplier = 5;
+    options.level_compaction_dynamic_level_bytes = true;
+    rocksdb::BlockBasedTableOptions table_option;
+    table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
+    options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
+    options.compression = rocksdb::kSnappyCompression;
+    options.bottommost_compression = rocksdb::kZlibCompression;
+    options.compaction_style = rocksdb::kCompactionStyleUniversal;
+    options.compaction_options_universal.size_ratio = 20;
+    options.level0_file_num_compaction_trigger = 4;
+    options.max_bytes_for_level_base = 64 * 1024 * 1024;
+    options.write_buffer_size = 128 * 1024 * 1024;
+    options.max_write_buffer_number = 4;
     // options.compaction_style = rocksdb::kCompactionStyleUniversal;
     // options.write_buffer_size = 67108864 / 64; // 64MB
     // options.max_write_buffer_number = 3 / 3;

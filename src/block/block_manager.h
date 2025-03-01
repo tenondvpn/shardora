@@ -83,7 +83,10 @@ public:
         db::DbWriteBatch& db_batch);
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    bool HasSingleTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    bool HasSingleTx(
+        const transport::MessagePtr& msg_ptr,
+        uint32_t pool_index, 
+        pools::CheckGidValidFunction gid_valid_fn);
     std::string GetToTxGid();
 
     void SetMaxConsensusShardingId(uint32_t sharding_id) {

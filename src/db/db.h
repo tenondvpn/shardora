@@ -20,6 +20,7 @@
 #include "rocksdb/write_batch.h"
 #include "rocksdb/filter_policy.h"
 #include "rocksdb/db.h"
+#include "rocksdb/table.h"
 #endif
 
 namespace shardora {
@@ -117,6 +118,7 @@ public:
     bool Exist(const std::string& key) {
         DbReadOptions read_opt;
         std::string val;
+        read_opt.fill_cache = false;
         auto status = db_->Get(read_opt, key, &val);
         return status.ok(); 
         // DbIterator* it = db_->NewIterator(DbReadOptions());
@@ -136,7 +138,11 @@ public:
             return db::DbStatus();
         }
 
+        ZJC_INFO("write to db datasize: %u", db_batch.ApproximateSize());
         DbWriteOptions write_opt;
+#ifndef LEVELDB
+        write_opt.disableWAL = true;
+#endif
         auto st = db_->Write(write_opt, &db_batch.db_batch_);
         db_batch.Clear();
         return st;
