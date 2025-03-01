@@ -26,7 +26,7 @@ Status AggCrypto::PartialSign(
             msg_hash,
             &g1_sig);
 
-    ZJC_WARN("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
+    ZJC_DEBUG("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
         libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(bls::AggBls::Instance()->agg_sk()).c_str(),
         common::Encode::HexEncode(msg_hash).c_str(),
@@ -43,11 +43,11 @@ Status AggCrypto::VerifyAndAggregateSig(
         const HashStr& msg_hash,
         const AggregateSignature& partial_sig,
         AggregateSignature& agg_sig) {
-    auto s = Verify(partial_sig, msg_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
-    if (s != Status::kSuccess) {
-        assert(false);
-        return s;
-    }
+    // auto s = Verify(partial_sig, msg_hash, common::GlobalInfo::Instance()->network_id(), elect_height);
+    // if (s != Status::kSuccess) {
+    //     assert(false);
+    //     return s;
+    // }
 
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
@@ -95,7 +95,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     for (auto partial_sig : collection_item->partial_sigs) {
         partial_sigs.push_back(std::make_shared<AggregateSignature>(partial_sig));
     }
-    s = AggregateSigs(partial_sigs, &agg_sig);
+    auto s = AggregateSigs(partial_sigs, &agg_sig);
     if (s == Status::kSuccess) {
         collection_item->agg_sig = &agg_sig;
         bls_collection_->handled = true;

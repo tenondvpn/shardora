@@ -72,12 +72,7 @@ public:
     int BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index, 
-        const std::vector<pools::TxItemPtr>& valid_txs);
-    int BackupConsensusAddTxs(
-        transport::MessagePtr msg_ptr, 
-        uint32_t pool_index, 
         const pools::TxItemPtr& valid_tx);
-    void ConsensusAddTxs(uint32_t pool_index, const std::vector<pools::TxItemPtr>& txs);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
 
     uint32_t all_tx_size(uint32_t pool_index) const {
@@ -243,9 +238,8 @@ public:
         return tx_pool_[pool_index].is_next_block_checked(height, hash);
     }
 
-
 private:
-    void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
+    void DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
     void HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
@@ -266,9 +260,9 @@ private:
         std::string* new_hash);
     void SyncCrossPool();
     void FlushHeightTree();
-    void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
+    uint32_t GetTxPoolIndex(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
@@ -310,11 +304,8 @@ private:
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tools_tick_;
-    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
-    std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
-    std::condition_variable pop_tx_con_;
-    std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     uint32_t min_valid_tx_count_ = 1;
@@ -325,6 +316,13 @@ private:
     uint64_t prev_msgs_show_tm_ms_ = 0;
     std::weak_ptr<block::AccountManager> acc_mgr_;
     volatile uint32_t now_max_tx_count_ = 0;
+
+    // tps received
+    uint64_t prev_tps_count_ = 0;
+
+    // tps add tps
+    uint64_t add_prev_tps_time_ms_  = 0;
+    uint64_t add_prev_tps_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

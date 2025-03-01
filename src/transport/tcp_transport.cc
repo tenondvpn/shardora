@@ -380,17 +380,22 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
             return from_iter->second;
         }
 
-        from_conn_map_.erase(from_iter);
-        CHECK_MEMORY_SIZE(from_conn_map_);
+        if (from_iter->second->CheckStoped()) {
+            from_conn_map_.erase(from_iter);
+            CHECK_MEMORY_SIZE(from_conn_map_);
+        }
     }
 
     auto iter = conn_map_.find(peer_spec);
     if (iter != conn_map_.end()) {
-        if (iter->second->ShouldReconnect()) {
+        if (!iter->second->ShouldReconnect()) {
+            ZJC_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
+            return iter->second;
+        }
+
+        if (iter->second->CheckStoped()) {
             conn_map_.erase(iter);
             CHECK_MEMORY_SIZE(conn_map_);
-        } else {
-            return iter->second;
         }
     }
 
@@ -444,7 +449,8 @@ void TcpTransport::CheckConnectionValid() {
         ++check_count;
         auto conn = waiting_check_queue_.front();
         waiting_check_queue_.pop_front();
-        if (conn->ShouldReconnect()) {
+        conn->ShouldReconnect();
+        if (conn->CheckStoped()) {
             out_check_queue_.push(conn);
         } else {
             waiting_check_queue_.push_back(conn);

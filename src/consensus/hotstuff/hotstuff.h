@@ -27,6 +27,10 @@ namespace contract {
 class ContractManager;
 };
 
+namespace consensus {
+    class HotstuffManager;
+}
+
 namespace hotstuff {
 
 enum MsgType {
@@ -35,6 +39,7 @@ enum MsgType {
   NEWVIEW,
   PRE_RESET_TIMER,
 };
+
 
 typedef hotstuff::protobuf::ProposeMsg  pb_ProposeMsg;
 typedef hotstuff::protobuf::HotstuffMessage  pb_HotstuffMessage;
@@ -51,6 +56,7 @@ class Hotstuff {
 public:
     Hotstuff() = default;
     Hotstuff(
+            consensus::HotstuffManager& hotstuff_mgr,
             std::shared_ptr<sync::KeyValueSync>& kv_sync,
             const uint32_t& pool_idx,
             const std::shared_ptr<LeaderRotation>& lr,
@@ -65,6 +71,7 @@ public:
 #endif
             const std::shared_ptr<ElectInfo>& elect_info,
             std::shared_ptr<db::Db>& db) :
+        hotstuff_mgr_(hotstuff_mgr),
         kv_sync_(kv_sync),
         pool_idx_(pool_idx),
         crypto_(crypto),
@@ -272,7 +279,10 @@ public:
         return pacemaker()->CurView();
     }
 
-    void TryRecoverFromStuck(bool has_new_tx, bool has_system_tx);
+    void TryRecoverFromStuck(
+        const transport::MessagePtr& msg_ptr, 
+        bool has_new_tx, 
+        bool has_system_tx);
 
 private:
     void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
@@ -326,7 +336,8 @@ private:
         std::shared_ptr<block::BlockToDbItem>&);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
-    Status VerifyLeader(const uint32_t& leader_idx);
+    Status VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
+    Status VerifyFollower(const transport::MessagePtr& msg_ptr);
     Status VerifyQC(const QC& qc);
     Status VerifyTC(const TC& tc);
     Status VerifyViewBlock(
@@ -350,7 +361,10 @@ private:
             pb_VoteMsg* pb_vote_msg,
             pb_NewViewMsg* pb_nv_msg,
             pb_HotstuffMessage* pb_hf_msg);
-    Status SendMsgToLeader(std::shared_ptr<transport::TransportMessage>& hotstuff_msg, const MsgType msg_type);
+    Status SendMsgToLeader(
+        common::BftMemberPtr leader, 
+        std::shared_ptr<transport::TransportMessage>& hotstuff_msg, 
+        const MsgType msg_type);
     // 是否允许空交易
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
     Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
@@ -359,7 +373,7 @@ private:
     void SaveLatestProposeMessage();
     void LoadLatestProposeMessage();
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 100lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 300lu;
 
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS
@@ -388,6 +402,7 @@ private:
     std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
+    consensus::HotstuffManager& hotstuff_mgr_;
     
 };
 

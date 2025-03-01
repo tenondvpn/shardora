@@ -37,7 +37,12 @@ namespace consensus {
 
 HotstuffManager::HotstuffManager() {}
 
-HotstuffManager::~HotstuffManager() {}
+HotstuffManager::~HotstuffManager() {
+    destroy_ = true;
+    if (pop_message_thread_) {
+        pop_message_thread_->join();
+    }
+}
 
 int HotstuffManager::Init(
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
@@ -67,6 +72,10 @@ int HotstuffManager::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
+    pop_message_thread_ = std::make_shared<std::thread>(
+        &HotstuffManager::PopPoolsMessage, 
+        this);
+
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
 #ifdef USE_AGG_BLS
         auto crypto = std::make_shared<AggCrypto>(pool_idx, elect_info_, bls_mgr);
@@ -97,6 +106,7 @@ int HotstuffManager::Init(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
+                *this,
                 kv_sync, pool_idx, leader_rotation, chain,
                 acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
         pool_hotstuff_[pool_idx]->Init();
@@ -351,7 +361,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    account_mgr_->GetAccountInfo("");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
@@ -374,15 +383,14 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
                 prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
-                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(gid_valid_func);
+                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, gid_valid_func);
             }
 
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            pools_mgr_->PopTxs(pool_idx, false, &has_user_tx, &has_system_tx);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            pools_mgr_->CheckTimeoutTx(pool_idx);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            hotstuff(pool_idx)->TryRecoverFromStuck(has_user_tx, has_system_tx);
+            hotstuff(pool_idx)->TryRecoverFromStuck(
+                msg_ptr, 
+                pools_mgr_->all_tx_size(pool_idx) > 0, 
+                has_system_tx);
             ADD_DEBUG_PROCESS_TIMESTAMP();
         }
     }
@@ -401,10 +409,131 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (tps >= 0.000001) {
-            ZJC_ERROR("tps: %.2f", tps);
+            ZJC_WARN("tps: %.2f", tps);
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
+}
+
+
+void HotstuffManager::PopPoolsMessage() {
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    while (!destroy_) {
+        auto consensus_tx_count = 0;
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            while (!destroy_) {
+                transport::MessagePtr msg_ptr = nullptr;
+                if (!consensus_add_tx_msgs_[i].pop(&msg_ptr) || msg_ptr == nullptr) {
+                    break;
+                }
+                
+                const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
+                if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg()) {
+                    txs_ptr = &msg_ptr->header.hotstuff().pre_reset_timer_msg().txs();
+                } else {
+                    auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+                    txs_ptr = &vote_msg.txs();
+                }
+
+                auto& txs = *txs_ptr;
+                consensus_tx_count += txs.size();
+                ZJC_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
+                for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
+                    auto* tx = &txs[i];
+                    protos::AddressInfoPtr address_info = nullptr;
+                    std::string from_id;
+                    if (!pools::IsUserTransaction(tx->step())) {
+                        continue;
+                    }
+                        
+                    from_id = security_ptr_->GetAddress(tx->pubkey());
+                    if (tx->step() == pools::protobuf::kContractExcute) {
+                        address_info = account_mgr_->GetAccountInfo(tx->to());
+                    } else {
+                        address_info = account_mgr_->GetAccountInfo(from_id);
+                    }
+            
+                    if (!address_info) {
+                        ZJC_WARN("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
+                        continue;
+                    }
+            
+                    std::string contract_prepayment_id;
+                    pools::TxItemPtr tx_ptr = nullptr;
+                    switch (tx->step()) {
+                    case pools::protobuf::kNormalFrom:
+                        tx_ptr = std::make_shared<consensus::FromTxItem>(
+                                msg_ptr, i, account_mgr_, security_ptr_, address_info);
+                        // ADD_TX_DEBUG_INFO((const_cast<pools::protobuf::TxMessage*>(tx)));
+                        break;
+                    case pools::protobuf::kContractCreate:
+                        tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
+                                contract_mgr_, 
+                                db_, 
+                                msg_ptr, i, 
+                                account_mgr_, 
+                                security_ptr_, 
+                                address_info);
+                        contract_prepayment_id = tx->to() + from_id;
+                        break;
+                    case pools::protobuf::kContractExcute:
+                        tx_ptr = std::make_shared<consensus::ContractCall>(
+                                contract_mgr_, 
+                                gas_prepayment_, 
+                                db_, 
+                                msg_ptr, i,
+                                account_mgr_, 
+                                security_ptr_, 
+                                address_info);
+                        contract_prepayment_id = tx->to() + from_id;
+                        break;
+                    case pools::protobuf::kContractGasPrepayment:
+                        tx_ptr = std::make_shared<consensus::ContractUserCall>(
+                                db_, 
+                                msg_ptr, i,
+                                account_mgr_, 
+                                security_ptr_, 
+                                address_info);
+                        contract_prepayment_id = tx->to() + from_id;
+                        break;
+                    case pools::protobuf::kJoinElect:
+                    {
+                        auto keypair = bls::AggBls::Instance()->GetKeyPair();
+                        tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
+                            msg_ptr, i, 
+                            account_mgr_, 
+                            security_ptr_, 
+                            prefix_db_, 
+                            elect_mgr_, 
+                            address_info,
+                            (*tx).pubkey(),
+                            keypair->pk(),
+                            keypair->proof());
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                    
+                    if (tx_ptr != nullptr) {
+                        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
+                        if (security_ptr_->Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                        } else {
+                            pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                        }
+                    }
+                }
+            }
+        }
+        if (consensus_tx_count > 0)
+        ZJC_INFO("tps success add consensus_tx_count: %lu", consensus_tx_count);
+        std::unique_lock<std::mutex> lock(pop_tx_mu_);
+        pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
+    }
 }
 
 void HotstuffManager::RegisterCreateTxCallbacks() {

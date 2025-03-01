@@ -10,6 +10,7 @@
 #include "common/tick.h"
 #include "common/limit_heap.h"
 #include "common/limit_hash_set.h"
+#include "block/account_lru_map.h"
 #include "block/block_utils.h"
 #include "db/db.h"
 #include "pools/tx_pool_manager.h"
@@ -99,8 +100,11 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void UpdateAccountsThread();
-    void InitLoadAllAddress();
     void RunUpdateAccounts();
+    void UpdateContractPrepayment(
+        const view_block::protobuf::ViewBlockItem& view_block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
 
     inline bool isContractCreateTx(const block::protobuf::BlockTx& tx) {
         return tx.has_contract_code();
@@ -118,10 +122,9 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
     std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
-    std::unordered_map<std::string, protos::AddressInfoPtr> thread_address_map_[common::kMaxThreadCount];
     common::ThreadSafeQueue<protos::AddressInfoPtr> thread_update_accounts_queue_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> merge_update_accounts_thread_ = nullptr;
-    common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];
+    // common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];
     volatile bool destroy_ = false;
     std::condition_variable update_acc_con_;
     std::mutex update_acc_mutex_;
@@ -129,6 +132,7 @@ private:
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
     volatile bool thread_valid_[common::kMaxThreadCount] = {false};
+    AccountLruMap<102400> account_lru_map_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

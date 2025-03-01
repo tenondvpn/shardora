@@ -42,12 +42,11 @@ contract Exchange {
     mapping(bytes32 => ItemInfo) public item_map;
     mapping(uint256 => bytes32) public id_with_hash_map;
     mapping(bytes => bool) public purchase_map;
+    mapping(address => bytes32[]) public owner_with_hash_map;
     bytes32[] all_hashes;
 
     function CreateNewItem(bytes32 hash, bytes memory info, uint256 price, uint256 start, uint256 end) public payable {
-        emit DebugEvent(0);
         require(!item_map[hash].exists);
-        emit DebugEvent(1);
         ItemInfo storage item = item_map[hash];
         item.id = global_id++;
         item.hash = hash;
@@ -61,48 +60,35 @@ contract Exchange {
         item.buyer = payable(0x0000000000000000000000000000000000000000);
         item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
         item.exists = true;
-        emit DebugEvent(2);
         all_hashes.push(hash);
-        emit DebugEvent(all_hashes.length);
-        bytes[] memory all_bytes = new bytes[](2);
-        all_bytes[0] = Bytes32toBytes(hash);
-        all_bytes[1] = toBytes(0x0000000000000000000000000000000000000000);
-        purchase_map[bytesConcat(all_bytes, 2)] = true;
         id_with_hash_map[item.id] = hash;
+        owner_with_hash_map[msg.sender].push(hash);
     }
 
     function PurchaseItem(bytes32 hash) public payable {
-        emit DebugEvent(3);
         require(item_map[hash].exists);
-        emit DebugEvent(4);
         require(item_map[hash].owner != msg.sender);
         emit DebugEvent(5);
         bytes[] memory all_bytes = new bytes[](2);
         all_bytes[0] = Bytes32toBytes(hash);
         all_bytes[1] = toBytes(msg.sender);
-
         bytes memory key = bytesConcat(all_bytes, 2);
         require(!purchase_map[key]);
-        emit DebugEvent(6);
         ItemInfo storage item = item_map[hash];
         require(item_map[hash].price <= msg.value);
         item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
         purchase_map[key] = true;
-        emit DebugEvent(7);
+        emit DebugEvent(99999900000000000 + msg.value);
     }
 
     function ConfirmPurchase(bytes32 hash) public payable {
-        emit DebugEvent(8);
         require(item_map[hash].exists);
-        emit DebugEvent(9);
         require(item_map[hash].owner == msg.sender);
-        emit DebugEvent(10);
         require(item_map[hash].selled == 0);
-        emit DebugEvent(11);
         ItemInfo storage item = item_map[hash];
-        uint256 max_price = 0;
-        address payable max_buyer;
-        for (uint256 i = 0; i < item.buyers.length; ++i) {
+        uint256 max_price = item.buyers[0].price;
+        address payable max_buyer = item.buyers[0].buyer;
+        for (uint256 i = 1; i < item.buyers.length; ++i) {
             if (item.buyers[i].price > max_price) {
                 max_price = item.buyers[i].price;
                 max_buyer = item.buyers[i].buyer;
@@ -119,8 +105,6 @@ contract Exchange {
                 payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
             }
         }
-
-        emit DebugEvent(12);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
@@ -219,9 +203,9 @@ contract Exchange {
         uint validLen = 1;
         bytes[] memory all_bytes = new bytes[](buyers.length + 2);
         all_bytes[0] = '[';
-        uint arrayLength = buyers.length;
+        uint arrayLength = buyers.length-1;
         for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetBuyerJson(buyers[i], (i == arrayLength - 1));
+            all_bytes[i + 1] = GetBuyerJson(buyers[i+1], (i == arrayLength - 1));
             ++validLen;
         }
 
@@ -268,12 +252,38 @@ contract Exchange {
         bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = all_hashes.length;
+        uint start_idx = 0;
         for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
-            all_bytes[i + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1));
+            all_bytes[start_idx + 1] = GetItemJson(item_map[all_hashes[i]], (i == arrayLength - 1 || validLen == len));
             ++validLen;
+            ++start_idx;
         }
 
         all_bytes[validLen] = ']';
+        return bytesConcat(all_bytes, validLen + 1);
+    }
+
+    function GetOwnerItemJson(uint256 start_pos, uint256 len, address owner) public view returns(bytes memory) {
+        uint validLen = 1;
+        bytes32[] memory hash_array = owner_with_hash_map[owner];
+        bytes[] memory all_bytes = new bytes[](hash_array.length + 2);
+        all_bytes[0] = '[';
+        uint arrayLength = hash_array.length;
+        uint start_idx = 0;
+        for (uint i=start_pos; i<arrayLength && validLen <= len; i++) {
+            all_bytes[start_idx + 1] = GetItemJson(item_map[hash_array[i]], (i == arrayLength - 1 || validLen == len));
+            ++validLen;
+            ++start_idx;
+        }
+
+        all_bytes[validLen] = ']';
+        return bytesConcat(all_bytes, validLen + 1);
+    }
+
+    function GetSellDetail(bytes32 hash) public view returns(bytes memory) {
+        uint validLen = 1;
+        bytes[] memory all_bytes = new bytes[](all_hashes.length + 2);
+        all_bytes[0] = GetItemJson(item_map[hash], true);
         return bytesConcat(all_bytes, validLen + 1);
     }
 }

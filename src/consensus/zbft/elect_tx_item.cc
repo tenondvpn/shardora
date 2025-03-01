@@ -439,7 +439,7 @@ void ElectTxItem::GetIndexNodes(
         }
 
         auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
-        auto account_info = account_mgr_->GetAccountInfo(
+        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(
             id);
         if (account_info == nullptr) {
             assert(false);
@@ -508,7 +508,7 @@ void ElectTxItem::MiningToken(
     if (!stop_mining_) {
         for (uint32_t i = 0; i < valid_nodes.size(); ++i) {
             auto id = sec_ptr_->GetAddress(valid_nodes[i]->pubkey);
-            auto account_info = account_mgr_->GetAccountInfo(id);
+            protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(id);
             if (account_info == nullptr) {
                 ZJC_DEBUG("get account info failed: %s",
                           common::Encode::HexEncode(id).c_str());
@@ -737,7 +737,7 @@ int ElectTxItem::CheckWeedout(
             }
         }
         // 构建节点信息，并更新全局最小节点距离
-        auto account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
+        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
         if (account_info == nullptr) {
             ZJC_ERROR("get account info failed: %s",
                       common::Encode::HexEncode((*members)[member_idx]->id).c_str());

@@ -5,6 +5,7 @@
 
 #include <common/hash.h>
 #include <common/log.h>
+#include "common/node_members.h"
 #include <consensus/hotstuff/types.h>
 #include <protos/block.pb.h>
 #include <protos/hotstuff.pb.h>
@@ -29,6 +30,7 @@ struct ProposeMsgWrapper {
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     Breakpoint breakpoint; // 断点位置
     int tried_times;
+    common::BftMemberPtr leader;
 
     ProposeMsgWrapper(const transport::MessagePtr& mptr) 
         : msg_ptr(mptr), breakpoint(0), tried_times(0) {}

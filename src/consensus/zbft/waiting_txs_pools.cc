@@ -26,13 +26,13 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     #ifdef TEST_NO_CROSS
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     #else
-    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index, gid_vlid_func);
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(msg_ptr, pool_index, gid_vlid_func);
     #endif
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item != nullptr) {
         for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
-            if (!gid_vlid_func(iter->second->tx_info.gid())) {
+            if (!gid_vlid_func(iter->second->tx_info->gid())) {
                 txs_item = nullptr;
                 break;
             }
@@ -53,8 +53,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
             ZJC_DEBUG("success leader get single txs coming thread: %d, "
                 "pool index: %d, tx count: %d, gid: %s, step: %d", 
                 thread_id, pool_index, txs_item->txs.size(), 
-                common::Encode::HexEncode(first_tx->tx_info.gid()).c_str(), 
-                first_tx->tx_info.step());
+                common::Encode::HexEncode(first_tx->tx_info->gid()).c_str(), 
+                first_tx->tx_info->step());
         }
     } else {
         ZJC_DEBUG("failed leader get txs coming thread: %d, pool index: %d, tx count: %d", 
@@ -66,16 +66,26 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
+        const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
         pools::CheckGidValidFunction gid_vlid_func) {
     ZJC_DEBUG("get single tx pool: %u", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pool_index == common::kRootChainPoolIndex) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
+        }
+
         ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr && pool_index == common::kImmutablePoolSize) {
         auto gid = GetToTxGid();
         if (gid_vlid_func(gid)) {
@@ -88,6 +98,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         //     if (pool_index == common::kRootChainPoolIndex) {
@@ -97,23 +108,38 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         
         txs_item = GetStatisticTx(pool_index, "");
         ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
+        }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         txs_item = GetElectTx(pool_index, "");
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            if (iter == txs_item->txs.end() || !gid_vlid_func(iter->second->tx_info->gid())) {
+                txs_item = nullptr;
+            }
+        }
     }
 
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     return txs_item;
 }
 
 bool WaitingTxsPools::HasSingleTx(
+        const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_valid_fn) {
     if (timeblock_mgr_->HasTimeblockTx(pool_index, gid_valid_fn)) {
         return true;
     }
 
-    if (block_mgr_->HasSingleTx(pool_index, gid_valid_fn)) {
+    if (block_mgr_->HasSingleTx(msg_ptr, pool_index, gid_valid_fn)) {
         return true;
     }
 
@@ -148,7 +174,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
         txs_item->tx_type = pools::protobuf::kConsensusRootElectShard;
         ZJC_DEBUG("single tx success to get elect tx: tx hash: %s, gid: %s",
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         return txs_item;
     }
 
@@ -166,14 +192,14 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         if (tx_ptr->unique_tx_hash.empty()) {
-            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
         }
         
         txs_item->txs[tx_ptr->unique_tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
         ZJC_DEBUG("single tx success to get timeblock tx: tx hash: %s, gid: %s",
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(), 
-            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         return txs_item;
     }
 
@@ -207,7 +233,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         }
 
         if (tx_ptr->unique_tx_hash.empty()) {
-            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(tx_ptr->tx_info);
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
         }
         
         auto txs_item = std::make_shared<WaitingTxsItem>();
@@ -217,7 +243,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         ZJC_DEBUG("single tx success get statistic tx %u, %d, txhash: %s, gid: %s", 
             pool_index, leader, 
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         return txs_item;
     }
 
@@ -245,7 +271,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         ZJC_DEBUG("single tx success get to tx %u, is leader: %d, txhash: %s, gid: %s", 
             pool_index, leader, 
             common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-            common::Encode::HexEncode(tx_ptr->tx_info.gid()).c_str());
+            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         return txs_item;
     } else {
         if (leader) {

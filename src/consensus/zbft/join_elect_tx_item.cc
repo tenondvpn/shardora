@@ -38,7 +38,7 @@ int JoinElectTxItem::HandleTx(
         gas_used = consensus::kJoinElectGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) *
+            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
                 if (!join_info.ParseFromString(block_tx.storages(i).value())) {

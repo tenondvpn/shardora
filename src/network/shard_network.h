@@ -124,7 +124,7 @@ template<class DhtType>
 int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
     if (!(sharding_id_ >= network::kRootCongressNetworkId &&
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
-        auto account_info = acc_mgr_->GetAccountInfo(node->id);
+        protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(node->id);
         if (account_info == nullptr) {
             ZJC_INFO("get address: %s failed!", common::Encode::HexEncode(node->id).c_str());
             return dht::kDhtError;

@@ -10,6 +10,7 @@
 
 #define private public
 #define protected public
+#include "common/defer.h"
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/random.h"
@@ -135,7 +136,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
     }
 
-    db_->CompactRange("", "");
+    // db_->CompactRange("", "");
     if (net_type == GenisisNetworkType::RootNetwork) {
         FILE* fd = fopen("./bls_pk", "w");
         auto str = bls_pk_json_.dump();
@@ -1240,7 +1241,10 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 common::Encode::HexEncode(address).c_str());
         }
 
-        all_balance += account_ptr->balance();        
+        all_balance += account_ptr->balance();
+        ZJC_INFO("new address %s, genesis balance: %lu",
+            common::Encode::HexEncode(account_ptr->addr()).c_str(), 
+            account_ptr->balance());
 
     }
 
@@ -1412,12 +1416,14 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+#ifndef MOCK_SIGN
     if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
         ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
             commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
         return false;
     }
+#endif
 
     ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s",
         commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
@@ -1603,6 +1609,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             return kInitError;
         }
         all_balance += account_ptr->balance();
+        ZJC_INFO("new address %s, genesis balance: %lu",
+            common::Encode::HexEncode(account_ptr->addr()).c_str(), 
+            account_ptr->balance());
     }
 
     if (all_balance != expect_all_balance) {

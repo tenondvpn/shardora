@@ -19,9 +19,6 @@ namespace zjcvm {
 Execution::Execution() {}
 
 Execution::~Execution() {
-    if (storage_map_ != nullptr) {
-        delete[] storage_map_;
-    }
 }
 
 Execution* Execution::Instance() {
@@ -52,11 +49,11 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
 //         return;
 //     }
 
-    storage_map_ = new common::LimitHashMap<std::string, std::string, 1024>[common::kMaxThreadCount];
+    // storage_map_ = new common::LimitHashMap<std::string, std::string, 1024>[common::kMaxThreadCount];
 }
 
 bool Execution::IsAddressExists(const std::string& addr) {
-    auto address_info = acc_mgr_->GetAccountInfo(addr);
+    protos::AddressInfoPtr address_info = acc_mgr_->GetAccountInfo(addr);
     if (address_info != nullptr) {
         return true;
     }
@@ -65,24 +62,17 @@ bool Execution::IsAddressExists(const std::string& addr) {
 }
 
 bool Execution::AddressWarm(const evmc::address& addr) {
-    auto str_addr = std::string((char*)addr.bytes, sizeof(addr.bytes));
-    if (acc_mgr_->AccountExists(str_addr)) {
-        return true;
-    }
-
     return false;
 }
 
 bool Execution::StorageKeyWarm(
         const evmc::address& addr,
         const evmc::bytes32& key) {
-    auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
-        std::string((char*)key.bytes, sizeof(key.bytes));
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    return storage_map_[thread_idx].KeyExists(str_key);
+    return false;
 }
 
 void Execution::NewBlockWithTx(
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     if (tx.step() != pools::protobuf::kContractCreate &&
@@ -97,6 +87,12 @@ void Execution::NewBlockWithTx(
         }
 
         UpdateStorage(tx.storages(i).key(), tx.storages(i).value(), db_batch);
+        ZJC_DEBUG("UpdateStoredToDbView %u_%u_%lu, update storage: %s, %s", 
+            view_block.qc().network_id(),
+            view_block.qc().pool_index(),
+            view_block.qc().view(),
+            common::Encode::HexEncode(tx.storages(i).key()).c_str(), 
+            common::Encode::HexEncode(tx.storages(i).value()).c_str());
     }
 }
 
@@ -105,9 +101,8 @@ void Execution::UpdateStorage(
         const std::string& val,
         db::DbWriteBatch& db_batch) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    storage_map_[thread_idx].Insert(key, val);
+    storage_map_[thread_idx].insert(key, val);
     prefix_db_->SaveTemporaryKv(key, val, db_batch);
-    ZJC_WARN("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
 }
 
 bool Execution::GetStorage(
@@ -122,9 +117,7 @@ bool Execution::GetStorage(
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
-       if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-            storage_map_[thread_idx].Insert(str_key, val);
-       } 
+        prefix_db_->GetTemporaryKv(str_key, &val);
         // if (!storage_map_[thread_idx].Get(str_key, &val)) {
         //     // get from db and add to memory cache
         //     if (prefix_db_->GetTemporaryKv(str_key, &val)) {
@@ -171,16 +164,17 @@ bool Execution::GetStorage(
     if (thread_idx >= thread_count) {
         prefix_db_->GetTemporaryKv(str_key, val);
     } else {
-        if (!storage_map_[thread_idx].Get(str_key, val)) {
-            // get from db and add to memory cache
-            res = prefix_db_->GetTemporaryKv(str_key, val);
-            if (res) {
-                storage_map_[thread_idx].Insert(str_key, *val);
-            }
-        }
+        prefix_db_->GetTemporaryKv(str_key, val);
+        // if (!storage_map_[thread_idx].Get(str_key, val)) {
+        //     // get from db and add to memory cache
+        //     res = prefix_db_->GetTemporaryKv(str_key, val);
+        //     if (res) {
+        //         storage_map_[thread_idx].Insert(str_key, *val);
+        //     }
+        // }
     }
 
-    ZJC_WARN("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
+    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
     return res;
 }
         
@@ -196,12 +190,12 @@ int Execution::execute(
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* out_res) {
+    auto btime = common::TimeUtils::TimestampMs();
     const size_t code_size = bytes_code.size();
     if (code_size <= kContractHead.size() ||
             from_address.size() != security::kUnicastAddressLength ||
             to_address.size() != security::kUnicastAddressLength ||
-            depth >= kContractCallMaxDepth ||
-            gas_limit <= 0) {
+            depth >= kContractCallMaxDepth) {
         ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
             "to size: %u, depth: %u, gas_limit: %lu",
             code_size, from_address.size(), to_address.size(), depth, gas_limit);
@@ -272,9 +266,16 @@ int Execution::execute(
         exec_code_size = bytes_code.size();
     }
 
+    auto src_gas_left = out_res->gas_left;
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
-    ZJC_DEBUG("execute res: %d, gas_limit: %lu gas_left: %lu, gas_refund: %lu",
-        out_res->status_code, gas, out_res->gas_left, out_res->gas_refund);
+    auto etime = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("execute res: %d, from: %s, to: %s, gas_limit: %lu, "
+        "src_gas_left: %lu, gas_left: %lu, gas_refund: %lu, use time: %lu",
+        out_res->status_code, 
+        common::Encode::HexEncode(from_address).c_str(),
+        common::Encode::HexEncode(to_address).c_str(),
+        src_gas_left,
+        gas, out_res->gas_left, out_res->gas_refund, (etime - btime));
     return kZjcvmSuccess;
 }
 

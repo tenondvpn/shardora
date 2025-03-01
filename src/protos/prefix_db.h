@@ -91,6 +91,7 @@ static const std::string kViewBlockParentHashKeyPrefix = "av\x01";
 static const std::string kLatestLeaderProposeMessage = "aw\x01";
 static const std::string kAggBlsPrivateKeyPrefix = "ax\x01";
 static const std::string kCommitedGidPrefix = "ay\x01";
+static const std::string kGidWithBlockHash = "az\x01";
 
 class PrefixDb {
 public:
@@ -162,24 +163,6 @@ public:
         }
 
         return addr_info;
-    }
-
-    
-    void GetAllAddressInfo(std::unordered_map<std::string, protos::AddressInfoPtr>* addr_map_ptr) {
-        std::string key;
-        key.reserve(128);
-        key.append(kAddressPrefix);
-        std::map<std::string, std::string> str_addr_map;
-        db_->GetAllPrefix(key, str_addr_map);
-        auto& addr_map = *addr_map_ptr;
-        for (auto iter = str_addr_map.begin(); iter != str_addr_map.end(); ++iter) {
-            auto addr_ptr = std::make_shared<address::protobuf::AddressInfo>();
-            if (!addr_ptr->ParseFromString(iter->second)) {
-                continue;
-            }
-
-            addr_map[addr_ptr->addr()] = addr_ptr;
-        }
     }
 
     void SaveSwapKey(
@@ -433,6 +416,31 @@ public:
             batch);
         batch.Put(key, view_block.SerializeAsString());
         return true;
+    }
+
+    void SaveGidWithBlockHash(
+            const std::string& gid, 
+            const std::string& hash, 
+            db::DbWriteBatch& batch) {
+        std::string key;
+        key.reserve(48);
+        key.append(kGidWithBlockHash);
+        key.append(gid);
+        batch.Put(key, hash);
+    }
+
+    bool GetBlockWithGid(const std::string& gid, view_block::protobuf::ViewBlockItem* block) {
+        std::string key;
+        key.reserve(48);
+        key.append(kGidWithBlockHash);
+        key.append(gid);
+        std::string hash;
+        auto st = db_->Get(key, &hash);
+        if (!st.ok()) {
+            return false;
+        }
+
+        return GetBlock(hash, block);
     }
 
     bool GetBlock(const std::string& block_hash, view_block::protobuf::ViewBlockItem* block) {
@@ -797,6 +805,8 @@ public:
     }
 
     bool JustCheckCommitedGidExists(const std::string& gid) {
+        // TODO: perf test
+        return false;
         std::string key = kCommitedGidPrefix + gid;
         if (db_->Exist(key)) {
             return true;
@@ -806,6 +816,8 @@ public:
     }
 
     bool CheckAndSaveGidExists(const std::string& gid) {
+        // TODO: perf test
+        return false;
         std::string key = kGidPrefix + gid;
         if (db_->Exist(key)) {
             return true;

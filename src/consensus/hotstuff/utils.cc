@@ -5,7 +5,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
+std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std::string& phash) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
     message.append(tx_info.gid());
@@ -29,14 +29,15 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).value());
-        ZJC_DEBUG("add tx key: %s, %s, val: %s",
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
-            common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
+        // ZJC_DEBUG("add tx key: %s, %s, val: %s",
+        //     tx_info.storages(i).key().c_str(),
+        //     common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
+        //     common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
-    // ZJC_DEBUG("gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
+    // ZJC_DEBUG("phash: %s, gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
     //     "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
+    //     common::Encode::HexEncode(phash).c_str(),
     //     common::Encode::HexEncode(tx_info.gid()).c_str(),
     //     common::Encode::HexEncode(tx_info.from()).c_str(),
     //     common::Encode::HexEncode(tx_info.to()).c_str(),
@@ -45,7 +46,6 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     //     status,
     //     common::Encode::HexEncode(common::Hash::keccak256(message)).c_str(),
     //     common::Encode::HexEncode(message).c_str());
-
     return common::Hash::keccak256(message);
 }
 
@@ -54,7 +54,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     auto& block = view_block.block_info();
     msg.reserve(block.tx_list_size() * 32 + 256);
     for (int32_t i = 0; i < block.tx_list_size(); i++) {
-        msg.append(GetTxMessageHash(block.tx_list(i)));
+        msg.append(GetTxMessageHash(block.tx_list(i), view_block.parent_hash()));
     }
 
     // ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
@@ -86,16 +86,16 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         }
     }
 
-    auto hash = common::Hash::keccak256(msg);
-    ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
-        "parent_hash: %s, vss_random: %lu, height: %lu, "
-        "timeblock_height: %lu, timestamp: %lu, msg: %s",
-        common::Encode::HexEncode(hash).c_str(),
-        sharding_id, pool_index, 
-        common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
-        vss_random, height, timeblock_height, timestamp,
-        "common::Encode::HexEncode(msg).c_str()");
-    return hash;
+    // auto hash = common::Hash::keccak256(msg);
+    // ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
+    //     "phash: %s, vss_random: %lu, height: %lu, "
+    //     "timeblock_height: %lu, timestamp: %lu, msg: %s",
+    //     common::Encode::HexEncode(hash).c_str(),
+    //     sharding_id, pool_index, 
+    //     common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
+    //     vss_random, height, timeblock_height, timestamp,
+    //     common::Encode::HexEncode(msg).c_str());
+    return common::Hash::keccak256(msg);
 }
 
 } // namespace consensus

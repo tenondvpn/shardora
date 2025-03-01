@@ -436,7 +436,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
-    auto account_info = account_mgr_->GetAccountInfo(
+    protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(
         msg_ptr->header.init_proto().addr_req().id());
     if (account_info == nullptr) {
         return;
@@ -587,40 +587,6 @@ void NetworkInit::InitLocalNetworkId() {
 
     auto waiting_network_id = got_sharding_id + network::kConsensusWaitingShardOffset;
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
-}
-
-void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
-    auto n = common::GlobalInfo::Instance()->each_shard_max_members();
-    auto t = common::GetSignerCount(n);
-    libBLS::Dkg dkg_instance(t, n);
-    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
-    bls::protobuf::LocalPolynomial local_poly;
-    for (uint32_t i = 0; i < polynomial.size(); ++i) {
-        local_poly.add_polynomial(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
-    }
-
-    auto g2_vec = dkg_instance.VerificationVector(polynomial);
-    for (uint32_t i = 0; i < t; ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-
-    }
-    
-    auto str = bls_verify_req->SerializeAsString();
-    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), *bls_verify_req);
-    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
 }
 
 int NetworkInit::InitSecurity() {
@@ -1164,35 +1130,40 @@ void NetworkInit::AddBlockItemToCache(
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
     }
 
-    // one block must be one consensus pool
-    const auto& tx_list = block->tx_list();
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        // if (tx_list[i].status() != consensus::kConsensusSuccess) {
-        //     continue;
-        // }
-
-        switch (tx_list[i].step()) {
-        case pools::protobuf::kNormalFrom:
-        case pools::protobuf::kRootCreateAddress:
-        case pools::protobuf::kJoinElect:
-        case pools::protobuf::kContractGasPrepayment:
-        case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            break;
-        case pools::protobuf::kConsensusLocalTos:
-        case pools::protobuf::kContractCreate:
-        case pools::protobuf::kContractCreateByRootTo:
-        case pools::protobuf::kContractExcute:
-        case pools::protobuf::kNormalTo:
-            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-            // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
-            zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
-            break;
-        default:
-            break;
-        }
+    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
+        return;
     }
+
+    // gas_prepayment_->NewBlock(*view_block, db_batch);
+    // one block must be one consensus pool
+    // const auto& tx_list = block->tx_list();
+    // for (int32_t i = 0; i < tx_list.size(); ++i) {
+    //     // if (tx_list[i].status() != consensus::kConsensusSuccess) {
+    //     //     continue;
+    //     // }
+
+    //     switch (tx_list[i].step()) {
+    //     case pools::protobuf::kNormalFrom:
+    //     case pools::protobuf::kRootCreateAddress:
+    //     case pools::protobuf::kJoinElect:
+    //     case pools::protobuf::kContractGasPrepayment:
+    //     case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
+    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         break;
+    //     case pools::protobuf::kConsensusLocalTos:
+    //     case pools::protobuf::kContractCreate:
+    //     case pools::protobuf::kContractCreateByRootTo:
+    //     case pools::protobuf::kContractExcute:
+    //     case pools::protobuf::kNormalTo:
+    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
+    //         zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    // }
 }
 
 // pool tx thread, thread safe

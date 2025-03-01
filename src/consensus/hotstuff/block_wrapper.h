@@ -30,7 +30,9 @@ public:
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) = 0;
-    virtual bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) = 0;
+    virtual bool HasSingleTx(
+        const transport::MessagePtr& msg_ptr,
+        pools::CheckGidValidFunction gid_valid_fn) = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -57,7 +59,9 @@ public:
         std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
     // 是否存在内置交易
-    bool HasSingleTx(pools::CheckGidValidFunction gid_valid_fn) override;
+    bool HasSingleTx(
+        const transport::MessagePtr& msg_ptr, 
+        pools::CheckGidValidFunction gid_valid_fn) override;
     void GetTxSyncToLeader(
             uint32_t leader_idx, 
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
@@ -75,14 +79,6 @@ private:
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             pools::CheckGidValidFunction gid_vlid_func) {
-        if (pools_mgr_->tx_size(pool_idx_) <= consensus::kMaxTxCount) {
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            pools_mgr_->PopTxs(pool_idx_, false, nullptr, nullptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            pools_mgr_->CheckTimeoutTx(pool_idx_);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-        }
-
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, gid_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;

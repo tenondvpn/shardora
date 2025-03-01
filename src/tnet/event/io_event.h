@@ -38,6 +38,12 @@ public:
             return;
         }
 
+        
+        if (!event_handler_->Valid()) {
+            event_handler_->Stop();
+            return;
+        }
+
         bool rc = true;
         if ((type_ & kEventRead) == kEventRead) {
             rc = event_handler_->OnRead();
@@ -45,6 +51,10 @@ public:
 
         if (rc && (type_ & kEventWrite) == kEventWrite) {
             event_handler_->OnWrite();
+        }
+
+        if (event_handler_->CheckShouldStop()) {
+            event_handler_->Stop();
         }
     }
 

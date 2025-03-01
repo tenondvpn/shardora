@@ -51,7 +51,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
-	auto contract_info = account_mgr_->GetAccountInfo(block_tx.to());
+	protos::AddressInfoPtr contract_info = account_mgr_->GetAccountInfo(block_tx.to());
 	if (contract_info != nullptr) {
 		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);
@@ -108,7 +108,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		from_prepayment -= gas_used * block_tx.gas_price();
 		gas_used = 0;
 		for (int i = 0; i < block_tx.storages_size(); i++) {
-			gas_used += (block_tx.storages(i).key().size() + tx_info.value().size()) * consensus::kKeyValueStorageEachBytes;
+			gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) * consensus::kKeyValueStorageEachBytes;
 		}
 
 		if (block_tx.gas_limit() < gas_used) {
@@ -185,7 +185,8 @@ int ContractCreateByRootToTxItem::HandleTx(
 
 		from_prepayment = tmp_from_balance;
 		
-		acc_balance_map["pre_" + block_tx.from()] = from_prepayment;
+    auto preppayment_id = block_tx.to() + block_tx.from();
+    acc_balance_map[preppayment_id] = from_prepayment;
 		acc_balance_map[block_tx.to()] = block_tx.amount();
 		
 		block_tx.set_contract_prepayment(from_prepayment);
@@ -238,7 +239,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_value(zjc_host.create_bytes_code_);
-    zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
+    // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
     for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
@@ -250,7 +251,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
             kv->set_value(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
-            zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -265,7 +266,7 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 sizeof(account_iter->first.bytes)) + storage_iter->first;
             kv->set_key(str_key);
             kv->set_value(storage_iter->second.str_val);
-            zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *

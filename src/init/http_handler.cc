@@ -340,9 +340,14 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
     std::string input = common::Encode::HexDecode(tmp_input);
     uint64_t height = 0;
-    uint64_t prepayment = 0;
-    auto res = prefix_db->GetContractUserPrepayment(contract_addr, from, &height, &prepayment);
-    if (!res) {
+
+    auto contract_prepayment_id = contract_addr + from;
+    protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+    if (!addr_info) {
+        addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+    }
+
+    if (!addr_info) {
         std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
@@ -350,6 +355,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
+    uint64_t prepayment = addr_info->balance();
     auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
@@ -396,7 +402,9 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         zjc_host,
         &result);
     if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
-        std::string res = "query contract failed: " + std::to_string(result.status_code);
+        std::string res = "query contract failed: " + 
+            std::to_string(result.status_code) + 
+            ", exec_res: " + std::to_string(exec_res);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract error: %s.", res.c_str());
@@ -441,7 +449,6 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
 
     std::string addr = common::Encode::HexDecode(tmp_addr);
     auto addr_info = prefix_db->GetAddressInfo(addr);
-
     if (addr_info == nullptr) {
         std::string res = "get address failed from db: " + addr;
         addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
@@ -468,6 +475,225 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     return;
 }
 
+static void AccountsValid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* balance = evhtp_kv_find(req->uri->query, "balance");
+    uint64_t balance_val = 0;
+    if (!common::StringUtil::ToUint64(std::string(balance), &balance_val)) {
+        std::string res = std::string("balance not integer: ") + balance;
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
+    if (tmp_addrs == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["addrs"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string addr = common::Encode::HexDecode(addrs_splits[i]);
+        if (addr.length() < 20) {
+            continue;
+        }
+
+        protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+        if (addr_info == nullptr) {
+            std::string res = "get address failed from db: " + addr;
+            addr_info = prefix_db->GetAddressInfo(addr);
+        }
+
+        if (addr_info != nullptr && addr_info->balance() >= balance_val) {
+            res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+        } else {
+            ZJC_DEBUG("invalid addr: %s, balance: %lu",
+                addrs_splits[i], 
+                (addr_info ? addr_info->balance() : 0));
+        }
+    }
+
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
+static void GetBlockWithGid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* gid = evhtp_kv_find(req->uri->query, "gid");
+    if (gid == nullptr) {
+        std::string res = std::string("gid not exists.");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    view_block::protobuf::ViewBlockItem view_block;
+    
+    bool res = prefix_db->GetBlockWithGid(common::Encode::HexDecode(gid), &view_block);
+    if (res) {
+        res_json["block"]["height"] = view_block.block_info().height();
+        res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());
+        res_json["block"]["parent_hash"] = common::Encode::HexEncode(view_block.parent_hash());
+        res_json["block"]["timestamp"] = view_block.block_info().timestamp();
+        res_json["block"]["no"] = view_block.qc().view();
+    }
+       
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
+static void PrepaymentsValid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* balance = evhtp_kv_find(req->uri->query, "balance");
+    if (balance == nullptr) {
+        std::string res = std::string("balance not exists.");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    uint64_t balance_val = 0;
+    if (!common::StringUtil::ToUint64(std::string(balance), &balance_val)) {
+        std::string res = std::string("balance not integer: ") + balance;
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* contract = evhtp_kv_find(req->uri->query, "contract");
+    if (contract == nullptr) {
+        std::string res = std::string("contract not exists.");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    auto contract_addr = common::Encode::HexDecode(contract);
+    const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
+    if (tmp_addrs == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["prepayments"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string addr = common::Encode::HexDecode(addrs_splits[i]);
+        if (addr.length() < 20) {
+            continue;
+        }
+
+        uint64_t height = 0;
+        uint64_t tmp_balance = 0;
+        auto contract_prepayment_id = contract_addr + addr;
+        protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+        if (addr_info == nullptr) {
+            std::string res = "get address failed from db: " + contract_prepayment_id;
+            addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+        }
+
+        if (addr_info != nullptr && addr_info->balance() >= balance_val) {
+            res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("valid prepayment: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+        } else {
+            ZJC_DEBUG("invalid prepayment: %s, balance: %lu",
+                addrs_splits[i], 
+                (addr_info ? addr_info->balance() : 0));
+        }
+    }
+
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
+
+static void GidsValid(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* tmp_gids = evhtp_kv_find(req->uri->query, "gids");
+    if (tmp_gids == nullptr) {
+        std::string res = common::StringUtil::Format("param gids is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["gids"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_gids, '_');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string gid = common::Encode::HexDecode(addrs_splits[i]);
+        if (gid.length() < 32) {
+            continue;
+        }
+
+        auto res = prefix_db->JustCheckCommitedGidExists(gid);
+        if (res) {
+            res_json["gids"][invalid_addr_index++] = addrs_splits[i];
+        }
+    }
+
+    auto json_str = res_json.dump();
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+}
 
 static void GetProxyReencInfo(evhtp_request_t* req, void* data) {
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
@@ -760,6 +986,10 @@ void HttpHandler::Init(
     http_server.AddCallback("/query_init", QueryInit);
     http_server.AddCallback("/get_proxy_reenc_info", GetProxyReencInfo);
     http_server.AddCallback("/ars_create_sec_keys", ArsCreateSecKeys);
+    http_server.AddCallback("/accounts_valid", AccountsValid);
+    http_server.AddCallback("/commit_gid_valid", GidsValid);
+    http_server.AddCallback("/prepayment_valid", PrepaymentsValid);
+    http_server.AddCallback("/get_block_with_gid", GetBlockWithGid);
 }
 
 };  // namespace init

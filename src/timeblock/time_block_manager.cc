@@ -81,7 +81,7 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (!gid_valid_fn(tmblock_tx_ptr_->tx_info.gid())) {
+        if (!gid_valid_fn(tmblock_tx_ptr_->tx_info->gid())) {
             return false;
         }
         
@@ -116,10 +116,10 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
 
         u64_data[0] = new_time_block_tm;
         u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
-        tx_info.set_value(std::string(data, sizeof(data)));
+        tx_info->set_value(std::string(data, sizeof(data)));
         // pool_index 一定是 256
         auto account_info = account_mgr_->pools_address_info(pool_index);
-        tx_info.set_to(account_info->addr());
+        tx_info->set_to(account_info->addr());
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
         ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d",
             u64_data[0], u64_data[1], leader);

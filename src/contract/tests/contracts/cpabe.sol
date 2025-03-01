@@ -28,23 +28,23 @@ contract Exchange {
     bytes32[] all_hashes;
 
     function AddUserPublicKey(bytes32 hash, bytes memory public_key) public {
-        emit DebugEvent(0);
+        // emit DebugEvent(0);
         require(!public_keys[hash].exists);
-        emit DebugEvent(1);
+        // emit DebugEvent(1);
         UserInfo storage item = public_keys[hash];
         item.hash = hash;
         item.public_key = public_key;
         item.exists = true;
-        emit DebugEvent(2);
+        // emit DebugEvent(2);
         all_hashes.push(hash);
-        emit DebugEvent(all_hashes.length);
+        // emit DebugEvent(all_hashes.length);
     }
 
     function EncryptMessage(bytes32 hash, bytes memory cipher_str) public {
-        emit DebugEvent(3);
+        // emit DebugEvent(3);
         require(public_keys[hash].exists);
         public_keys[hash].cipher_str = cipher_str;
-        emit DebugEvent(7);
+        // emit DebugEvent(7);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
