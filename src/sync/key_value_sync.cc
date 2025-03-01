@@ -488,6 +488,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 break;
             }
     
+            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s",
+                msg_ptr->header.hash64(), key.c_str(), iter->tag(),
+                pb_vblock->qc().sign_x().c_str());
             int res = view_block_synced_callback_(*pb_vblock);
             if (res == 1) {
                 assert(false);
