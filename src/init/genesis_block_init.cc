@@ -1400,14 +1400,15 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
 
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < t; ++i) {
-        threads.emplace_back(sign_task, i);
-        if (threads.size() >= 1 || i == t - 1) {
-            for (uint32_t i = 0; i < threads.size(); ++i) {
-                threads[i].join();
-            }
+        sign_task(i);
+        // threads.emplace_back(sign_task, i);
+        // if (threads.size() >= 1 || i == t - 1) {
+        //     for (uint32_t i = 0; i < threads.size(); ++i) {
+        //         threads[i].join();
+        //     }
 
-            threads.clear();
-        }        
+        //     threads.clear();
+        // }        
     }
 
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
