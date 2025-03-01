@@ -1,6 +1,6 @@
 import argparse
 from eth_keys import keys, datatypes
-import sha3
+import hashlib
 from secp256k1 import PrivateKey, PublicKey
 from eth_utils import decode_hex, encode_hex
 from ecdsa import SigningKey, SECP256k1
@@ -50,9 +50,10 @@ def pubkey_to_account(pub_key_bytes: bytes) -> str:
     return addr[len(addr)-40:len(addr)]
 
 def keccak256_bytes(b: bytes) -> str:
-    k = sha3.keccak_256()
-    k.update(b)
-    return k.hexdigest()
+    # 这里使用 hashlib.sha3_256()，它是 FIPS 标准的 SHA3-256
+    h = hashlib.sha3_256()
+    h.update(b)
+    return h.hexdigest()
 
 def keccak256(s: str) -> str:
     k = sha3.keccak_256()

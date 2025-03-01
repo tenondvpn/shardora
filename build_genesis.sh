@@ -1,7 +1,7 @@
 
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
-LOCAL_PATH=`pwd`
+
 # $1 = Debug/Release
 TARGET=Release
 if test $1 = "Debug"
@@ -45,9 +45,8 @@ then
 	sudo mv -f /mnt/zjchain /root/zjnodes/
 fi
 root=("r1" "r2" "r3")
-shard3=("s3_1" "s3_2" "s3_3" "s3_4")
-shard4=("s4_1" "s4_2" "s4_3" "s4_4")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s4_1" "s4_2" "s4_3" "s4_4")
+shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s3_7" "s3_8" "s3_9" "s3_10")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
@@ -72,7 +71,6 @@ if test $NO_BUILD = 0
 then
     cd /root/zjnodes/zjchain && ./zjchain -U
     cd /root/zjnodes/zjchain && ./zjchain -S 3
-    cd /root/zjnodes/zjchain && ./zjchain -S 4
     
 fi
 
@@ -86,11 +84,6 @@ fi
 #done
 
 
-#for node in "${shard4[@]}"; do
-#	cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/${node}/db
-#done
-
-
 # 压缩 zjnodes/zjchain，便于网络传输
 
 clickhouse-client -q "drop table zjc_ck_account_key_value_table"
@@ -100,5 +93,3 @@ clickhouse-client -q "drop table zjc_ck_statistic_table"
 clickhouse-client -q "drop table zjc_ck_transaction_table"
 clickhouse-client -q "drop table bls_elect_info"
 clickhouse-client -q "drop table bls_block_info"
-killall -9 txcli
-cd $LOCAL_PATH && rm -rf addrs* && cp /root/zjnodes/zjchain/addrs* ./
