@@ -776,8 +776,8 @@ int GenesisBlockInit::CreateAllQc(
 
     commit_qc->set_sign_x(libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
     commit_qc->set_sign_y(libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
-    ZJC_DEBUG("success create qc: %u_%u_%lu",
-        network_id, pool_index, view_block_ptr->block_info().height());
+    ZJC_DEBUG("success create qc: %u_%u_%lu, agg sign x: %s",
+        network_id, pool_index, view_block_ptr->qc().view(), commit_qc->sign_x());
     return kInitSuccess;
 }
 
