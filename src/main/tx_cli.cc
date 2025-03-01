@@ -19,7 +19,7 @@ static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13001;
 static int shardnum = 3;
 static const int delayus = 5000;
-static const bool multi_pool = true;
+static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey =
     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
@@ -176,7 +176,7 @@ static void LoadAllAccounts(int32_t shardnum=3) {
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
-    if (g_prikeys.size() != common::kImmutablePoolSize) {
+    if (g_prikeys.size() < common::kImmutablePoolSize) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
     }
@@ -248,6 +248,9 @@ int tx_main(int argc, char** argv) {
     }
     
     std::string prikey = g_prikeys[0];// common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
+    if (!multi_pool) {
+        prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
+    }
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -299,7 +302,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 1000 == 0) {
+        if (multi_pool && count % 1000 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
@@ -316,7 +319,7 @@ int tx_main(int argc, char** argv) {
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
         }
-        //usleep(50);
+        usleep(delayus_a);
 
     }
 
