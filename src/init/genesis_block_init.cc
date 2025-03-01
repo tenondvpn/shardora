@@ -1426,10 +1426,11 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
     }
 #endif
 
-    ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s",
-        commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
     agg_sign->to_affine_coordinates();
+    ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s, sign x: %s",
+        commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(agg_sign->X).c_str());
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("catch bls exception: %s", e.what());
