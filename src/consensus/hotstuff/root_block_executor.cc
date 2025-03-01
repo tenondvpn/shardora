@@ -60,7 +60,7 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
         if (tx.step() == pools::protobuf::kRootCreateAddress) {
             if (!tx.has_contract_code() && tx.amount() <= 0) {
                 ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
-                    tx.step(), tx.amount(), src_tx.step(), src_tx.amount());
+                    tx.step(), tx.amount(), src_tx->step(), src_tx->amount());
                 tx_list->RemoveLast();
                 assert(false);
                 continue;    
