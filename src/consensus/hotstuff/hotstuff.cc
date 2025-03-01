@@ -28,13 +28,14 @@ void Hotstuff::Init() {
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         InitAddNewViewBlock(latest_view_block);
         auto parent_hash = latest_view_block->parent_hash();
-        while (true) {
+        while (!parent_hash.empty()) {
             ViewBlock view_block;
             if (!prefix_db_->GetBlock(parent_hash, &view_block)) {
                 ZJC_FATAL("failed get parent hash: %s", 
                     common::Encode::HexEncode(parent_hash).c_str());
             }
 
+            ZJC_DEBUG("success get parent hash: %s", common::Encode::HexEncode(parent_hash).c_str());
             if (view_block.qc().view() <= 0 || latest_view_block->qc().view() >= view_block.qc().view() + 2) {
                 break;
             }
