@@ -41,6 +41,7 @@ enum SyncItemTag : uint32_t {
     kKeyValue = 0,
     kBlockHeight = 1,
     kViewHeight = 2,
+    kViewHash = 3,
 };
 
 struct SyncItem {
@@ -90,10 +91,10 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
-    void AddSyncViewHeight(
-        uint32_t network_id,
+    void AddSyncViewHash(
+        uint32_t network_id, 
         uint32_t pool_idx,
-        uint64_t height,
+        const std::string& view_hash, 
         uint32_t priority);
     void Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,

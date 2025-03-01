@@ -1476,7 +1476,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
 
-        kv_sync_->AddSyncViewHeight(qc.network_id(), qc.pool_index(), qc.view(), 0);
+        kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
         // assert(false);
         return nullptr;
     }
@@ -1493,7 +1493,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     if (!v_block2_info) {
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
         if (qc.view() > 1) {
-            kv_sync_->AddSyncViewHeight(qc.network_id(), qc.pool_index(), qc.view() - 1, 0);
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
         }
         return nullptr;
     }
@@ -1529,7 +1529,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.pool_index(), 
             v_block1->block_info().height());
         if (qc.view() > 2) {
-            kv_sync_->AddSyncViewHeight(qc.network_id(), qc.pool_index(), qc.view() - 2, 0);
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
         }
 
         return nullptr;
@@ -1591,10 +1591,10 @@ Status Hotstuff::Commit(
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block_info == nullptr) {
             if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
-                kv_sync_->AddSyncViewHeight(
+                kv_sync_->AddSyncViewHash(
                     tmp_block->qc().network_id(), 
                     tmp_block->qc().pool_index(), 
-                    tmp_block->qc().view() - 1, 
+                    tmp_block->parent_hash(), 
                     0);
             }
 
@@ -1715,10 +1715,10 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().pool_index(), 
             v_block.qc().view() - 1);
         if (view_block_chain->HighQC().view() < v_block.qc().view() + 16) {
-            kv_sync_->AddSyncViewHeight(
+            kv_sync_->AddSyncViewHash(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 
-                v_block.qc().view() - 1,
+                v_block.parent_hash(),
                 0);
         } else {
             kv_sync_->AddSyncHeight(
