@@ -142,6 +142,21 @@ Status ViewBlockChain::Store(
     return Status::kSuccess;
 }
 
+std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlock(const HashStr& hash) {
+    auto view_block_info_ptr = Get(hash);
+    if (view_block_info_ptr) {
+        return view_block_info_ptr->view_block;
+    }
+
+    auto view_block_ptr = std::make_shared<ViewBlock>();
+    auto& view_block = *view_block_ptr;
+    if (prefix_db_->GetViewBlockInfo(hash, view_block)) {
+        return view_block_ptr;
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end()) {

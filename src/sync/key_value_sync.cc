@@ -345,24 +345,14 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         }
 
         uint16_t* pool_index_arr = (uint16_t*)key.c_str();
-        auto view_block_info_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->Get(
+        auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlock(
             std::string(key.c_str() + 2, 32));
-        if (!view_block_info_ptr) {
-            ZJC_DEBUG("failed get view block request coming: %u_%u view block hash: %s, hash: %lu",
+        if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
+            ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
                 common::GlobalInfo::Instance()->network_id(),
                 pool_index_arr[0],
                 common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
                 msg_ptr->header.hash64());
-            continue;
-        }
-
-        ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
-            common::GlobalInfo::Instance()->network_id(),
-            pool_index_arr[0],
-            common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
-            msg_ptr->header.hash64());
-        auto view_block_ptr = view_block_info_ptr->view_block;
-        if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
             auto res = sync_res->add_res();
             res->set_network_id(view_block_ptr->qc().network_id());
             res->set_pool_idx(view_block_ptr->qc().pool_index());
@@ -371,6 +361,13 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_key(key);
             res->set_tag(kViewHash);
             add_size += 16 + res->value().size();
+            ZJC_DEBUG("handle sync value view add add_size: %u request hash: %lu, "
+                "net: %u, pool: %u, height: %lu",
+                add_size,
+                msg_ptr->header.hash64(),
+                res->network_id(),
+                res->pool_idx(),
+                res->height());
             if (add_size >= kSyncPacketMaxSize) {
                 ZJC_DEBUG("handle sync value view add_size failed request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
@@ -380,6 +377,12 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     msg_ptr->header.hash64());
                 break;
             }
+        } else {
+            ZJC_DEBUG("failed get view block request coming: %u_%u view block hash: %s, hash: %lu",
+                common::GlobalInfo::Instance()->network_id(),
+                pool_index_arr[0],
+                common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
+                msg_ptr->header.hash64());
         }
     }
 
