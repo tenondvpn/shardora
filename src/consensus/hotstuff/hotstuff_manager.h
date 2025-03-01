@@ -101,9 +101,9 @@ public:
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
-    std::shared_ptr<ViewBlock> GetViewBlock(uint32_t pool_index, uint64_t view) {
-        return pool_hotstuff_[pool_index]->GetViewBlock(view);
-    }
+    // std::shared_ptr<ViewBlock> GetViewBlock(uint32_t pool_index, uint64_t view) {
+    //     return pool_hotstuff_[pool_index]->GetViewBlock(view);
+    // }
 
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
