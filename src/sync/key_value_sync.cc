@@ -75,7 +75,7 @@ void KeyValueSync::AddSyncViewHash(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
     ZJC_INFO("block height add new sync item key: %s, priority: %u",
-        item->key.c_str(), item->priority);
+        common::Encode::HexEncode(item->key).c_str(), item->priority);
 }
 
 void KeyValueSync::ConsensusTimerMessage() {
@@ -172,6 +172,8 @@ void KeyValueSync::CheckSyncItem() {
                 //     item->network_id, item->pool_idx, item->height, item->tag);
             } else {
                 sync_req->add_keys(item->key);
+                ZJC_DEBUG("success add to sync key: %s", 
+                    common::Encode::HexEncode(item->key).c_str());
             }
 
             if (sync_req->keys_size() + sync_req->heights_size() >
