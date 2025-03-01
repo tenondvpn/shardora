@@ -397,9 +397,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             ZJC_DEBUG("get view block request coming: %u_%u_%lu, hash: %lu",
                 network_id, req_height.pool_idx(), req_height.height(),
                 msg_ptr->header.hash64());
-            auto view_block_ptr = hotstuff_mgr_->GetViewBlock(
-                req_height.pool_idx(), 
-                req_height.height());
+            std::shared_ptr<hotstuff::ViewBlock> view_block_ptr = nullptr;
             if (view_block_ptr != nullptr && !view_block_ptr->qc().agg_sig().sign_x().empty()) {
                 auto res = sync_res->add_res();
                 res->set_network_id(network_id);
