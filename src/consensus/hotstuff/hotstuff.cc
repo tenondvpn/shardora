@@ -1528,7 +1528,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.network_id(), 
             qc.pool_index(), 
             v_block1->block_info().height());
-        if (qc.view() > 2) {
+        if (qc.view() > 3) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
         }
 
