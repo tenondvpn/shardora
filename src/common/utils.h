@@ -239,7 +239,7 @@ static const uint32_t kInvalidUint32 = (std::numeric_limits<uint32_t>::max)();
 static const uint32_t kInvalidUint8 = (std::numeric_limits<uint8_t>::max)();
 static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
-static const uint8_t kMaxThreadCount = 32;
+static const uint8_t kMaxThreadCount = 16;
 
 static const uint32_t kSingleBlockMaxMBytes = 2u;
 static const uint32_t kVpnShareStakingPrice = 1u;
