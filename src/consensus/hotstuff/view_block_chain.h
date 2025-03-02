@@ -4,7 +4,6 @@
 #include <queue>
 
 #include "block/account_manager.h"
-#include "common/range_set.h"
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/hotstuff_utils.h>

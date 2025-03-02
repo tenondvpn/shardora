@@ -284,17 +284,24 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
                 iter->second->view_block->qc().view() <= stored_to_db_view_) {
-            // if (!iter->second->valid) {
-            //     forked_blockes.push_back(iter->second->view_block);
-            //     ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
-            //         iter->second->view_block->qc().network_id(), 
-            //         iter->second->view_block->qc().pool_index(), 
-            //         iter->second->view_block->qc().view(), 
-            //         iter->second->view_block->block_info().tx_list_size());
-            // }
+            if (prefix_db_->ViewBlockIsValidView(
+                    iter->second->view_block->qc().network_id(),
+                    iter->second->view_block->qc().pool_index(), 
+                    iter->second->view_block->qc().view())) {
+                // if (!iter->second->valid) {
+                //     forked_blockes.push_back(iter->second->view_block);
+                //     ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
+                //         iter->second->view_block->qc().network_id(), 
+                //         iter->second->view_block->qc().pool_index(), 
+                //         iter->second->view_block->qc().view(), 
+                //         iter->second->view_block->block_info().tx_list_size());
+                // }
 
-            iter = view_blocks_info_.erase(iter);
-            CHECK_MEMORY_SIZE(view_blocks_info_);
+                iter = view_blocks_info_.erase(iter);
+                CHECK_MEMORY_SIZE(view_blocks_info_);
+            } else {
+                ++iter;
+            }
         } else {
             ++iter;
         }

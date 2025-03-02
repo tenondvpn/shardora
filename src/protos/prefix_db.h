@@ -93,6 +93,7 @@ static const std::string kAggBlsPrivateKeyPrefix = "ax\x01";
 static const std::string kCommitedGidPrefix = "ay\x01";
 static const std::string kGidWithBlockHash = "az\x01";
 static const std::string kViewBlockVaildParentHash = "ba\x01";
+static const std::string kViewBlockVaildView = "bb\x01";
 
 class PrefixDb {
 public:
@@ -416,7 +417,32 @@ public:
             view_block.qc().view_block_hash(),
             batch);
         batch.Put(key, view_block.SerializeAsString());
+        std::string view_key;
+        view_key.reserve(48);
+        view_key.append(kViewBlockVaildView);
+        char key_data[16];
+        uint32_t *u32_arr = (uint32_t*)key_data;
+        u32_arr[0] = view_block.qc().network_id();
+        u32_arr[1] = view_block.qc().pool_index();
+        uint64_t* u64_arr = (uint64_t*)(key_data + 8);
+        u64_arr[0] = view_block.qc().view();
+        view_key.append(std::string(key_data, sizeof(key_data)));
+        batch.Put(view_key, "1");
         return true;
+    }
+
+    bool ViewBlockIsValidView(uint32_t network_id, uint32_t pool_index, uint64_t view) {
+        std::string view_key;
+        view_key.reserve(48);
+        view_key.append(kViewBlockVaildView);
+        char key_data[16];
+        uint32_t *u32_arr = (uint32_t*)key_data;
+        u32_arr[0] = network_id;
+        u32_arr[1] = pool_index;
+        uint64_t* u64_arr = (uint64_t*)(key_data + 8);
+        u64_arr[0] = view;
+        view_key.append(std::string(key_data, sizeof(key_data)));
+        return db_->Exist(view_key);
     }
 
     void SaveGidWithBlockHash(
