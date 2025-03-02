@@ -182,6 +182,8 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
 }
 
 void HotstuffSyncer::HandleSyncedBlocks() {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    ZJC_DEBUG("now call HandleSyncedBlocks thread_idx: %d, thread: %u", thread_idx, std::this_thread::get_id());
     auto& block_queue = kv_sync_->vblock_queue();
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
     while (block_queue.pop(&pb_vblock)) {
