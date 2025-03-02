@@ -31,8 +31,9 @@ void Hotstuff::Init() {
         while (!parent_hash.empty()) {
             ViewBlock view_block;
             if (!prefix_db_->GetBlock(parent_hash, &view_block)) {
-                ZJC_FATAL("failed get parent hash: %s", 
+                ZJC_ERROR("failed get parent hash: %s", 
                     common::Encode::HexEncode(parent_hash).c_str());
+                break;
             }
 
             ZJC_DEBUG("success get parent hash: %s", common::Encode::HexEncode(parent_hash).c_str());
