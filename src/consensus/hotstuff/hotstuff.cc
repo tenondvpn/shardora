@@ -1582,11 +1582,11 @@ Status Hotstuff::Commit(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto v_block = v_block_info->view_block;
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-    if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
-        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
-            latest_committed_block->qc().view(), v_block->qc().view());
-        return Status::kSuccess;
-    }
+    // if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
+    //     ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
+    //         latest_committed_block->qc().view(), v_block->qc().view());
+    //     return Status::kSuccess;
+    // }
     
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
