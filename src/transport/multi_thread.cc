@@ -99,6 +99,9 @@ void ThreadHandler::HandleMessage() {
 
         auto btime = common::TimeUtils::TimestampUs();
         if (maping_thread_idx < (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+            ZJC_DEBUG("now call timer maping_thread_idx: %d, thread_idx: %d, thread id: %u", 
+                maping_thread_idx, thread_idx, std::this_thread::get_id());
             // HotstuffSyncTimerMessage
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
