@@ -100,7 +100,7 @@ private:
         return kSyncTimerCycleUs;
     }
 
-    void HandleSyncedBlocks();
+    void HandleSyncedBlocks(const transport::MessagePtr& msg_ptr);
     void SyncAllPools();
     Status Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg);
     Status SendRequest(

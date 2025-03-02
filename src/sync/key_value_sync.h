@@ -112,8 +112,8 @@ public:
         return bft_block_queues_[thread_idx];
     }
 
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
-        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue(uint32_t pool_index) {
+        auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
         return vblock_queues_[thread_idx];
     }
 
