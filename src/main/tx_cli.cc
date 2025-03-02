@@ -299,13 +299,13 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 1000 == 0) {
+        if (count % 100 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
             
-            usleep(30000lu);
+            usleep(100000lu);
         }
 
         count++;

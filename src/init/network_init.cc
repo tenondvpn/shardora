@@ -157,6 +157,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     ZJC_DEBUG("init 0 6");
+    net_handler_.Start();
     ZJC_DEBUG("init 0 7");
     int transport_res = transport::TcpTransport::Instance()->Init(
         common::GlobalInfo::Instance()->config_local_ip() + ":" +
@@ -274,7 +275,6 @@ int NetworkInit::Init(int argc, char** argv) {
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     AddCmds();
-    net_handler_.Start();
     transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");
     if (InitHttpServer() != kInitSuccess) {

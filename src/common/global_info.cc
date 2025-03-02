@@ -75,7 +75,7 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "pools_each_thread_max_messages", pools_each_thread_max_messages_);
     config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
 
-    auto bft_thread = message_handler_thread_count_ - 2;
+    auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
@@ -117,7 +117,6 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    assert(thread_idx < common::kMaxThreadCount);
     return thread_idx;
 }
 
