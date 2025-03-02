@@ -2290,6 +2290,7 @@ void Hotstuff::TryRecoverFromStuck(
         view_block_chain_, 
         view_block_chain_->HighQC().view_block_hash(), 
         txs);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs->empty()) {
         ZJC_WARN("pool: %u txs.empty().", pool_idx_);
         return;
