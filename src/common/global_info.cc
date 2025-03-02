@@ -117,6 +117,7 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    assert(thread_idx < common::kMaxThreadCount);
     return thread_idx;
 }
 
