@@ -708,6 +708,7 @@ void AccountManager::HandleJoinElectTx(
 void AccountManager::RunUpdateAccounts() {
     {
         // new thread with thread index
+        auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
         // std::unique_lock<std::mutex> lock(thread_wait_mutex_);
         thread_wait_conn_.notify_one();
     }
