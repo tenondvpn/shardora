@@ -1592,10 +1592,7 @@ Status Hotstuff::Commit(
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
         view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        if (!CommitInner(msg_ptr, tmp_block, test_index, queue_item_ptr)) {
-            break;
-        }
-
+        acceptor()->Commit(msg_ptr, queue_item_ptr);
         tmp_block_info->valid = true;
         ADD_DEBUG_PROCESS_TIMESTAMP();
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
@@ -1777,82 +1774,6 @@ Status Hotstuff::VerifyViewBlock(
     // }   
 
     // return ret;
-}
-
-bool Hotstuff::CommitInner(
-        const transport::MessagePtr& msg_ptr,
-        const std::shared_ptr<ViewBlock>& v_block, 
-        uint64_t test_index, 
-        std::shared_ptr<block::BlockToDbItem>& queue_block_item) {
-#ifndef NDEBUG
-    transport::protobuf::ConsensusDebug cons_debug;
-    cons_debug.ParseFromString(v_block->debug());
-#endif
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto& block_info = v_block->block_info();
-    // ZJC_WARN("NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
-    //     "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu, propose_debug: %s",
-    //     pool_idx_, 0, v_block->qc().view(),
-    //     v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
-    //     view_block_chain()->String().c_str(),
-    //     test_index,
-    //     v_block->debug().c_str());
-    auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-    if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
-        // ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
-        //     "vb view: %lu, %u_%u_%lu, latest_committed_block: %d, "
-        //     "latest_committed_block->view: %lu, v_block->view: %lu, propose_debug: %s",
-        //     pool_idx_, 0, v_block->qc().view(),
-        //     v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
-        //     (latest_committed_block != nullptr),
-        //     latest_committed_block->qc().view(),
-        //     v_block->qc().view(),
-        //     v_block->debug().c_str());
-        return false;
-    }
-
-    if (!latest_committed_block && v_block->qc().view() == GenesisView) {
-#ifndef NDEBUG
-        ZJC_DEBUG("NEW BLOCK CommitInner coming pool: %d, commit failed s: %d, "
-            "vb view: %lu, %u_%u_%lu, propose_debug: %s",
-            pool_idx_, 0, v_block->qc().view(),
-            v_block->qc().network_id(), v_block->qc().pool_index(), 
-            block_info.height(), ProtobufToJson(cons_debug).c_str());
-#endif
-        return false;
-    }
-
-    // ZJC_DEBUG("1 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
-    //     "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu, propose_debug: %s",
-    //     pool_idx_, 0, v_block->qc().view(),
-    //     v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
-    //     view_block_chain()->String().c_str(),
-    //     test_index, v_block->debug().c_str());
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    acceptor()->Commit(msg_ptr, queue_block_item);
-    // ZJC_DEBUG("2 NEW BLOCK CommitInner coming pool: %d, commit coming s: %d, "
-    //     "vb view: %lu, %u_%u_%lu, cur chain: %s, test_index: %lu",
-    //     pool_idx_, 0, v_block->qc().view(),
-    //     v_block->qc().network_id(), v_block->qc().pool_index(), block_info.height(),
-    //     view_block_chain()->String().c_str(),
-    //     test_index);
-
-    // 提交 v_block->consensus_stat 共识数据
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto elect_item = elect_info()->GetElectItem(
-            v_block->qc().network_id(),
-            v_block->qc().elect_height());
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (elect_item && elect_item->IsValid()) {
-        elect_item->consensus_stat(pool_idx_)->Commit(v_block);
-    }    
-    
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("pool: %d consensus stat, leader: %lu, succ: %lu, test_index: %lu",
-        pool_idx_, v_block->qc().leader_idx(),
-        0,
-        test_index);
-    return true;
 }
 
 Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {
