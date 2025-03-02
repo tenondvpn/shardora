@@ -161,7 +161,6 @@ public:
             vblock->qc().pool_index(),
             vblock->qc().view(),
             vblock->block_info().height());
-        view_block_chain()->StoreToDb(vblock, 99999999lu, db_batch);
         if (network::IsSameToLocalShard(vblock->qc().network_id())) {
             auto elect_item = elect_info()->GetElectItem(
                     vblock->qc().network_id(),

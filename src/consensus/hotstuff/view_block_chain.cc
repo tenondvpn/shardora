@@ -263,20 +263,35 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
     return Status::kSuccess;
 }
 
+
+bool ViewBlockChain::ViewBlockIsCheckedParentHash(const std::string& hash) {
+    auto iter = valid_parent_block_hash_.find(hash);
+    if (iter != valid_parent_block_hash_.end()) {
+        return true;
+    }
+
+    return prefix_db_->ParentHashExists(hash);
+}
+
+void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_t view) {
+    valid_parent_block_hash_[hash] = view;
+}
+
+
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
 Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
     ZJC_DEBUG("pool: %u, now PruneTo: %lu", pool_index_, stored_to_db_view_);
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
                 iter->second->view_block->qc().view() <= stored_to_db_view_) {
-            if (!iter->second->valid) {
-                forked_blockes.push_back(iter->second->view_block);
-                ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
-                    iter->second->view_block->qc().network_id(), 
-                    iter->second->view_block->qc().pool_index(), 
-                    iter->second->view_block->qc().view(), 
-                    iter->second->view_block->block_info().tx_list_size());
-            }
+            // if (!iter->second->valid) {
+            //     forked_blockes.push_back(iter->second->view_block);
+            //     ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
+            //         iter->second->view_block->qc().network_id(), 
+            //         iter->second->view_block->qc().pool_index(), 
+            //         iter->second->view_block->qc().view(), 
+            //         iter->second->view_block->block_info().tx_list_size());
+            // }
 
             iter = view_blocks_info_.erase(iter);
             CHECK_MEMORY_SIZE(view_blocks_info_);
@@ -601,51 +616,6 @@ bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& 
     return true;
 }
 
-Status ViewBlockChain::StoreToDb(
-        const std::shared_ptr<ViewBlock>& v_block,
-        uint64_t test_index,
-        std::shared_ptr<db::DbWriteBatch>& db_batch) {        
-    // 持久化已经生成 qc 的 ViewBlock
-    if (v_block == nullptr) {
-        return Status::kInvalidArgument;
-    }
-
-
-    if (!IsQcTcValid(v_block->qc())) {            
-        ZJC_DEBUG("not has signature, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
-            pool_index_, test_index, v_block->block_info().tx_list_size(),
-            v_block->qc().network_id(),
-            v_block->qc().pool_index(),
-            v_block->qc().view(),
-            common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str());
-        return Status::kSuccess;
-    }
-
-    if (prefix_db_->BlockExists(v_block->qc().view_block_hash())) {
-        ZJC_DEBUG("has in db, pool: %u, StoreToDb 0, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
-            pool_index_, test_index, v_block->block_info().tx_list_size(),
-            v_block->qc().network_id(),
-            v_block->qc().pool_index(),
-            v_block->qc().view(),
-            common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str());
-        return Status::kSuccess;
-    }        
-    
-    // prefix_db_->SaveViewBlockInfo(
-    //     v_block->qc().network_id(),
-    //     v_block->qc().pool_index(),
-    //     v_block->block_info().height(),
-    //     *v_block,
-    //     db_batch);
-    ZJC_DEBUG("success pool: %u, StoreToDb 3, test_index: %lu, tx size: %u, %u_%u_%lu, hash: %s",
-        pool_index_, test_index, v_block->block_info().tx_list_size(),
-        v_block->qc().network_id(),
-        v_block->qc().pool_index(),
-        v_block->qc().view(),
-        common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str());
-    return Status::kSuccess;
-}
-
 void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
     auto view_block_ptr_info = Get(qc_item.view_block_hash());
     if (!view_block_ptr_info) {
@@ -662,7 +632,6 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
         auto db_bach = std::make_shared<db::DbWriteBatch>();
-        StoreToDb(view_block_ptr, 999999, db_bach);
         auto st = db_->Put(*db_bach);
         if (!st.ok()) {
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());

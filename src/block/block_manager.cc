@@ -866,6 +866,12 @@ void BlockManager::AddNewBlock(
         }
     }
 
+    prefix_db_->SaveValidViewBlockParentHash(
+        view_block_item->parent_hash(), 
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        db_batch);
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());

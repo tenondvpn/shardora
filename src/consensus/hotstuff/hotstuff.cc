@@ -1496,6 +1496,10 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
+    if (view_block_chain_->ViewBlockIsCheckedParentHash(qc.view_block_hash())) {
+        return v_block1_info;
+    }
+
     auto v_block1 = v_block1_info->view_block;
 // #ifndef NDEBUG
 //     transport::protobuf::ConsensusDebug cons_debug;
@@ -1590,9 +1594,11 @@ Status Hotstuff::Commit(
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto tmp_block = tmp_block_info->view_block;
         auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
-        view_block_chain()->StoreToDb(tmp_block, test_index, db_batch);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         acceptor()->Commit(msg_ptr, queue_item_ptr);
+        view_block_chain()->SaveBlockCheckedParentHash(
+            tmp_block_info->view_block->parent_hash(), 
+            tmp_block_info->view_block->qc().view());
         tmp_block_info->valid = true;
         ADD_DEBUG_PROCESS_TIMESTAMP();
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
@@ -1757,23 +1763,6 @@ Status Hotstuff::VerifyViewBlock(
         v_block.qc().view(), qc_view_block->qc().view());
 
     return Status::kError;
-    // if (!view_block_chain->Extends(v_block, *qc_view_block)) {
-    //     ZJC_ERROR("extents qc view block message is error.");
-    //     return Status::kError;
-    // }
-
-    // // fast-hotstuff
-    // if (view_block_chain->LatestLockedBlock() &&
-    //     !view_block_chain->Extends(v_block, *view_block_chain->LatestLockedBlock()) && 
-    //         v_block.qc().view() <= view_block_chain->LatestLockedBlock()->qc().view()) {
-    //     ZJC_ERROR("pool: %d, block view message is error. %lu, %lu, %s, %s",
-    //         pool_idx_, v_block.qc().view(), view_block_chain->LatestLockedBlock()->qc().view(),
-    //         common::Encode::HexEncode(view_block_chain->LatestLockedBlock()->qc().view_block_hash()).c_str(),
-    //         common::Encode::HexEncode(v_block.parent_hash()).c_str());
-    //     return Status::kError;
-    // }   
-
-    // return ret;
 }
 
 Status Hotstuff::VerifyVoteMsg(const hotstuff::protobuf::VoteMsg& vote_msg) {

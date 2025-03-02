@@ -4,6 +4,7 @@
 #include <queue>
 
 #include "block/account_manager.h"
+#include "common/range_set.h"
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/hotstuff_utils.h>
@@ -56,16 +57,14 @@ public:
             const std::string& parent_hash, 
             BalanceMap& acc_balance_map);
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash);
-    Status StoreToDb(
-            const std::shared_ptr<ViewBlock>& v_block,
-            uint64_t test_index,
-            std::shared_ptr<db::DbWriteBatch>& db_batch);
     // If a chain is valid
     bool IsValid();
     void Print() const;
     void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
     std::string String() const;
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
+    bool ViewBlockIsCheckedParentHash(const std::string& hash);
+    void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
     
     void UpdateStoredToDbView(View view) {
         if (stored_to_db_view_ < view) {
@@ -249,6 +248,7 @@ private:
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     volatile View stored_to_db_view_ = 0llu;
+    std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
 };
 
 // from db
