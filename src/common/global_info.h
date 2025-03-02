@@ -188,7 +188,7 @@ public:
         for (uint8_t i = 0; i < bft_thread; ++i) {
             if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
                 consensus_thread_index_map_[i] = thread_idx;
-                if (i == message_handler_thread_count_ - 1) {
+                if (i == message_handler_thread_count_ - 2) {
                     uint32_t tmp_pools_with_thread[common::kInvalidPoolIndex] = { 0 };
                     for (uint8_t src_thread_idx = 0; src_thread_idx < i; ++src_thread_idx) {
                         std::string tmp_str;
