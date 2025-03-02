@@ -98,7 +98,7 @@ void ThreadHandler::HandleMessage() {
         }
 
         auto btime = common::TimeUtils::TimestampUs();
-        if (maping_thread_idx <= (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
+        if (maping_thread_idx < (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
             // HotstuffSyncTimerMessage
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
