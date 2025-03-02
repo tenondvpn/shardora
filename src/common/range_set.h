@@ -51,7 +51,7 @@ public:
             }
         }
     }
-    ​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
+    
     bool contains(uint64_t x) const {
         // 查找第一个开始值不小于x的区间
         auto it = ranges.lower_bound({x, 0});
