@@ -135,63 +135,7 @@ public:
     }
 
     void HandleSyncedViewBlock(
-            std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
-        if (view_block_chain_->Has(vblock->qc().view_block_hash())) {
-            ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu",
-                vblock->qc().network_id(), 
-                vblock->qc().pool_index(), 
-                vblock->qc().view(), 
-                vblock->block_info().height());
-            return;
-        }
-
-        if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
-            ZJC_DEBUG("block db exists %u_%u_%lu, height: %lu",
-                vblock->qc().network_id(), 
-                vblock->qc().pool_index(), 
-                vblock->qc().view(), 
-                vblock->block_info().height());
-            return;
-        }
-        
-        auto db_batch = std::make_shared<db::DbWriteBatch>();
-        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock, db_batch);
-        ZJC_DEBUG("now handle synced view block %u_%u_%lu, height: %lu",
-            vblock->qc().network_id(),
-            vblock->qc().pool_index(),
-            vblock->qc().view(),
-            vblock->block_info().height());
-        if (network::IsSameToLocalShard(vblock->qc().network_id())) {
-            auto elect_item = elect_info()->GetElectItem(
-                    vblock->qc().network_id(),
-                    vblock->qc().elect_height());
-            if (elect_item && elect_item->IsValid()) {
-                elect_item->consensus_stat(pool_idx_)->Commit(vblock);
-            }
-            
-            pacemaker_->NewQcView(vblock->qc().view());
-            // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-            // if (!latest_committed_block ||
-            //         latest_committed_block->qc().view() < vblock->qc().view()) {
-            //     view_block_chain()->SetLatestCommittedBlock(vblock);        
-            // }
-
-            // TODO: fix balance map and storage map
-            view_block_chain()->UpdateHighViewBlock(vblock->qc());
-            view_block_chain()->Store(vblock, true, nullptr, nullptr);
-            transport::MessagePtr msg_ptr;
-            TryCommit(msg_ptr, vblock->qc(), 99999999lu);
-            if (latest_qc_item_ptr_ == nullptr ||
-                    vblock->qc().view() >= latest_qc_item_ptr_->view()) {
-
-                if (IsQcTcValid(vblock->qc())) {
-                    latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
-                }
-            }
-        } else {
-            acceptor()->CommitSynced(queue_item_ptr);
-        }
-    }
+            std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock);
 
     // 已经投票
     inline bool HasVoted(const View& view) {

@@ -30,10 +30,6 @@ Status ViewBlockChain::Store(
     if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
         return Status::kSuccess;
     }
-    
-    if (prune_height_ != 0 && view_block->qc().view() <= prune_height_) {
-        return Status::kSuccess;
-    }
 
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
@@ -93,9 +89,7 @@ Status ViewBlockChain::Store(
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr, zjc_host_ptr);
     if (!start_block_) {
         start_block_ = view_block;
-        //view_blocks_[view_block->hash] = view_block;
         SetViewBlockToMap(block_info_ptr);
-        prune_height_ = view_block->qc().view();
         return Status::kSuccess;
     }
 

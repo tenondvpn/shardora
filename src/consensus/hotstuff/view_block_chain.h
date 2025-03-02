@@ -81,7 +81,6 @@ public:
 
     inline void Clear() {
         view_blocks_info_.clear();
-        prune_height_ = View(1);
         // latest_committed_block_ = nullptr;
         // latest_locked_block_ = nullptr;
         start_block_ = nullptr;        
@@ -237,7 +236,6 @@ private:
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
-    View prune_height_ = 0;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
