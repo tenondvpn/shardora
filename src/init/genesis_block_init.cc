@@ -1642,6 +1642,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
     uint32_t test_addr_count = 1024;//common::kImmutablePoolSize;
+    assert(test_addr_count >= common::kImmutablePoolSize);
     // if (net_id == network::kConsensusShardBeginNetworkId) {
     genesis_account_balance = common::kGenesisFoundationMaxZjc / test_addr_count; // 两个分片
     // }
