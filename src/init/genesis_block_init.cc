@@ -1641,15 +1641,16 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     InitShardGenesisAccount();
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
+    uint32_t test_addr_count = 1024;//common::kImmutablePoolSize;
     // if (net_id == network::kConsensusShardBeginNetworkId) {
-    genesis_account_balance = common::kGenesisFoundationMaxZjc / common::kImmutablePoolSize; // 两个分片
+    genesis_account_balance = common::kGenesisFoundationMaxZjc / test_addr_count; // 两个分片
     // }
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
+    hotstuff::View vb_latest_view[test_addr_count+1] = {0};
     
     uint32_t idx = 0;
     auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
@@ -1658,9 +1659,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     });
 
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (uint32_t i = 0; i < 1024; ++i, ++idx) {
+    for (uint32_t i = 0; i < test_addr_count + 1; ++i, ++idx) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
-        while (i < common::kImmutablePoolSize) {
+        while (i < test_addr_count) {
             auto private_key = common::Random::RandomString(32);
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(private_key);
@@ -1682,7 +1683,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
             // TODO 这里不用区分啊，一样的，后面修改看看
-            if (idx < common::kImmutablePoolSize) {
+            if (idx < test_addr_count) {
                 tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             } else {
                 // 单独创建 0x000...000
@@ -1699,7 +1700,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            if (idx < common::kImmutablePoolSize) {
+            if (idx < test_addr_count) {
                 tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             } else {
                 tx_info->set_from(address);
@@ -1712,14 +1713,14 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
-        if (idx < common::kImmutablePoolSize) {
+        if (idx < test_addr_count) {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
             tx_info->set_to(address);
 
-            if (net_id == network::kConsensusShardBeginNetworkId && i == common::kImmutablePoolSize - 1) {
-                genesis_account_balance += common::kGenesisFoundationMaxZjc % common::kImmutablePoolSize;
+            if (net_id == network::kConsensusShardBeginNetworkId && i == test_addr_count - 1) {
+                genesis_account_balance += common::kGenesisFoundationMaxZjc % test_addr_count;
             }
 
             tx_info->set_amount(genesis_account_balance);
@@ -1773,7 +1774,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             return kInitError;
         }
 
-        if (idx < common::kImmutablePoolSize) {
+        if (idx < test_addr_count) {
             if (account_ptr->balance() != genesis_account_balance) {
                 ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
                 return kInitError;
