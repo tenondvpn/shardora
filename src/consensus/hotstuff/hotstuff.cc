@@ -1591,7 +1591,7 @@ Status Hotstuff::Commit(
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
         auto tmp_block = tmp_block_info->view_block;
-        if (!tmp_block_info->valid && !view_block_chan()->view_commited(
+        if (!tmp_block_info->valid && !view_block_chain_->view_commited(
                 tmp_block_info->view_block->qc().network_id(), 
                 tmp_block_info->view_block->qc().view())) {
             ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
@@ -1631,7 +1631,8 @@ Status Hotstuff::Commit(
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    view_block_chain()->SetLatestCommittedBlock(v_block_info->view_block);
+    auto& v_block = v_block_info->view_block;
+    view_block_chain()->SetLatestCommittedBlock(v_block);
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
