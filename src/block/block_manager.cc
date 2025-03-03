@@ -800,7 +800,10 @@ void BlockManager::AddNewBlock(
         account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
         //}
 
-        ZJC_INFO("====9 address: %s, balance: %lu, amount: %lu", common::Encode::HexEncode(tx_list[i].from()).c_str(), tx_list[i].balance(), tx_list[i].amount());
+        ZJC_INFO("====9 from: %s, to: %s, balance: %lu, amount: %lu",
+            common::Encode::HexEncode(tx_list[i].from()).c_str(),
+            common::Encode::HexEncode(tx_list[i].to()).c_str(),
+            tx_list[i].balance(), tx_list[i].amount());
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
