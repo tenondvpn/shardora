@@ -1556,7 +1556,11 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 // #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug3;
     cons_debug3.ParseFromString(v_block2->debug());
-    ZJC_DEBUG("success get v block hash: %s, %s, %s, %s, now: %s, propose_debug: %s",
+    ZJC_DEBUG("success get v block views: %lu, %lu, %lu, hash: %s, %s, %s, %s, %s, now: %s, propose_debug: %s",
+        v_block1->qc().view(),
+        v_block2->qc().view(),
+        v_block3->qc().view(),
+        common::Encode::HexEncode(v_block1->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
         common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block2->parent_hash()).c_str(),
