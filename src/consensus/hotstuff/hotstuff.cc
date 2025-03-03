@@ -1598,23 +1598,26 @@ Status Hotstuff::Commit(
     
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
-        ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
-            tmp_block_info->view_block->qc().network_id(), 
-            tmp_block_info->view_block->qc().pool_index(), 
-            tmp_block_info->view_block->qc().view(),
-            common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
-            common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str());
-        ADD_DEBUG_PROCESS_TIMESTAMP();
-        auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto tmp_block = tmp_block_info->view_block;
-        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
-        ADD_DEBUG_PROCESS_TIMESTAMP();
-        acceptor()->Commit(msg_ptr, queue_item_ptr);
-        view_block_chain()->SaveBlockCheckedParentHash(
-            tmp_block_info->view_block->parent_hash(), 
-            tmp_block_info->view_block->qc().view());
-        tmp_block_info->valid = true;
-        ADD_DEBUG_PROCESS_TIMESTAMP();
+        if (!tmp_block_info->valid) {
+            ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
+                tmp_block_info->view_block->qc().network_id(), 
+                tmp_block_info->view_block->qc().pool_index(), 
+                tmp_block_info->view_block->qc().view(),
+                common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str());
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+            auto db_batch = std::make_shared<db::DbWriteBatch>();
+            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+            acceptor()->Commit(msg_ptr, queue_item_ptr);
+            view_block_chain()->SaveBlockCheckedParentHash(
+                tmp_block_info->view_block->parent_hash(), 
+                tmp_block_info->view_block->qc().view());
+            tmp_block_info->valid = true;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+        }
+
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block_info == nullptr) {
             if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
