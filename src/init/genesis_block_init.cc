@@ -1743,6 +1743,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 tx_info->set_balance(genesis_account_balance);
                 tx_info->set_gas_limit(0);
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+                all_balance += genesis_account_balance;
             }
         }            
         
@@ -1774,12 +1775,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
-
-
-        // if (net_id != network::kConsensusShardBeginNetworkId) {
-        //     all_balance = common::kGenesisFoundationMaxZjc;
-        // }
-        
         auto* heights_item = init_heights.add_heights();
         heights_item->set_min_height(0);
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
@@ -1803,7 +1798,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             }
         }
 
-        all_balance += account_ptr->balance();
         ZJC_INFO("net: %d, new address %s, net genesis balance: %lu",
             net_id,
             common::Encode::HexEncode(account_ptr->addr()).c_str(), 
