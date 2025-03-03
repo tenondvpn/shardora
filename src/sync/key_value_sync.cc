@@ -490,6 +490,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
                 iter->tag(),
                 pb_vblock->qc().sign_x().c_str());
+            assert(!pb_vblock->qc().sign_x().empty());
             int res = view_block_synced_callback_(*pb_vblock);
             if (res == 1) {
                 assert(false);

@@ -107,18 +107,15 @@ private:
             uint32_t network_id,
             view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
             int32_t node_num);
-    
     Status ReplyMsg(
             uint32_t network_id,
             const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
             const transport::MessagePtr& msg_ptr);
-
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     // void SyncChains();
     Status processRequest(const transport::MessagePtr&);
     Status processResponse(const transport::MessagePtr&);
     Status processRequestSingle(const transport::MessagePtr&);
-
     Status processResponseQcTc(
             const uint32_t& pool_idx,
             const view_block::protobuf::ViewBlockSyncResponse& view_block_res);
