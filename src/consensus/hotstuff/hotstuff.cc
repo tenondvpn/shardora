@@ -418,6 +418,7 @@ void Hotstuff::NewView(
         pacemaker()->HighTC()->view(),
         header.hash64());
     HandleNewViewMsg(msg_ptr);
+    latest_leader_propose_message_ = nullptr;
     return;    
 }
 
