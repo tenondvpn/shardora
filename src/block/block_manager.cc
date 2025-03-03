@@ -802,6 +802,7 @@ void BlockManager::AddNewBlock(
         if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
             account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
         }
+        
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
