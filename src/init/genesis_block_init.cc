@@ -1659,18 +1659,25 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     });
 
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
+    bool valid_pool_addr[common::kImmutablePoolSize] = {false};
     for (uint32_t i = 0; i < test_addr_count + 1; ++i, ++idx) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
-        while (i < common::kImmutablePoolSize) {
+        while (true) {
             auto private_key = common::Random::RandomString(32);
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(private_key);
             address = ecdsa.GetAddress();
-            if (common::GetAddressPoolIndex(address) == i) {
-                auto data = common::Encode::HexEncode(private_key) + "\n";
-                fwrite(data.c_str(), 1, data.size(), fd);
+            if (!valid_pool_addr[i % common::kImmutablePoolSize]) {
+                if (common::GetAddressPoolIndex(address) == (i % common::kImmutablePoolSize)) {
+                    auto data = common::Encode::HexEncode(private_key) + "\n";
+                    fwrite(data.c_str(), 1, data.size(), fd);
+                    valid_pool_addr[i % common::kImmutablePoolSize] = true;
+                    break;
+                }
+            } else {
                 break;
             }
+            
         }
 
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
