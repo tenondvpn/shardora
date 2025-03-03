@@ -1598,6 +1598,12 @@ Status Hotstuff::Commit(
     
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
+        ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
+            tmp_block_info->view_block->qc().network_id(), 
+            tmp_block_info->view_block->qc().pool_index(), 
+            tmp_block_info->view_block->qc().view(),
+            common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str());
         ADD_DEBUG_PROCESS_TIMESTAMP();
         auto db_batch = std::make_shared<db::DbWriteBatch>();
         auto tmp_block = tmp_block_info->view_block;

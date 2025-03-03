@@ -142,8 +142,6 @@ void BlockManager::ConsensusAddBlock(
     assert(!block_item->view_block_ptr->qc().sign_x().empty());
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
-    ZJC_DEBUG("queue size thread_idx: %d consensus_block_queues_: %d",
-        thread_idx, consensus_block_queues_[thread_idx].size());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
