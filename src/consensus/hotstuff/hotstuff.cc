@@ -23,7 +23,7 @@ void Hotstuff::Init() {
     // 从 db 中获取最后一个有 QC 的 ViewBlock
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
-        view_block_chain_->Store(latest_view_block, false, nullptr, nullptr);
+        view_block_chain_->Store(latest_view_block, false, nullptr, nullptr, true);
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         InitAddNewViewBlock(latest_view_block);
@@ -77,7 +77,7 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         latest_view_block->qc().view());
     // 初始状态，使用 db 中最后一个 view_block 初始化视图链
     // TODO: check valid
-    view_block_chain_->Store(latest_view_block, true, nullptr, nullptr);
+    view_block_chain_->Store(latest_view_block, true, nullptr, nullptr, true);
     view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
     StopVoting(latest_view_block->qc().view());
     // 开启第一个视图
@@ -857,7 +857,12 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kNotExpectHash;
     }
 
-    Status s = view_block_chain()->Store(pro_msg_wrap->view_block_ptr, true, balance_map_ptr, zjc_host_ptr);
+    Status s = view_block_chain()->Store(
+        pro_msg_wrap->view_block_ptr, 
+        true, 
+        balance_map_ptr, 
+        zjc_host_ptr, 
+        false);
     ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
@@ -964,7 +969,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         pro_msg_wrap->view_block_ptr, 
         false, 
         pro_msg_wrap->acc_balance_map_ptr,
-        pro_msg_wrap->zjc_host_ptr);
+        pro_msg_wrap->zjc_host_ptr,
+        false);
 #ifndef NDEBUG
     ZJC_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u, propose_debug: %s",
         pool_idx_, 
@@ -1349,7 +1355,7 @@ Status Hotstuff::StoreVerifiedViewBlock(
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block->parent_hash()).c_str());
     // TODO: check valid
-    return view_block_chain()->Store(v_block, true, nullptr, nullptr);
+    return view_block_chain()->Store(v_block, true, nullptr, nullptr, false);
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
@@ -1724,7 +1730,7 @@ void Hotstuff::HandleSyncedViewBlock(
 
         // TODO: fix balance map and storage map
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
-        view_block_chain()->Store(vblock, true, nullptr, nullptr);
+        view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         transport::MessagePtr msg_ptr;
         TryCommit(msg_ptr, vblock->qc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
