@@ -1668,6 +1668,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             if (common::GetAddressPoolIndex(address) == i) {
                 auto data = common::Encode::HexEncode(private_key) + "\n";
                 fwrite(data.c_str(), 1, data.size(), fd);
+                std::cout << "use private key: " << common::Encode::HexEncode(private_key) << std::endl;
                 break;
             }
         }
