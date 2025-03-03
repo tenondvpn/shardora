@@ -64,11 +64,24 @@ public:
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
     bool ViewBlockIsCheckedParentHash(const std::string& hash);
     void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
+    bool view_commited(uint32_t network_id, View view) {
+        if (commited_view_.find(view) != commited_view_.end()) {
+            return true;
+        }
+
+        if (prefix_db_->ViewBlockIsValidView(network_id, pool_index_, view)) {
+            return true;
+        }
+
+        return false;
+    }
     
     void UpdateStoredToDbView(View view) {
         if (stored_to_db_view_ < view) {
             stored_to_db_view_ = view;
         }
+
+        stored_view_queue_.push(view);
     }
 
     uint64_t GetMaxHeight() {
@@ -246,6 +259,8 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     volatile View stored_to_db_view_ = 0llu;
     std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
+    std::unordered_set<uint64_t> commited_view_;
+    common::ThreadSafeQueue<View> stored_view_queue_;
 };
 
 // from db

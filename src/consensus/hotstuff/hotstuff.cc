@@ -1588,18 +1588,12 @@ Status Hotstuff::Commit(
         const QC& commit_qc,
         uint64_t test_index) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto v_block = v_block_info->view_block;
-    auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-    // if (latest_committed_block && latest_committed_block->qc().view() >= v_block->qc().view()) {
-    //     ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
-    //         latest_committed_block->qc().view(), v_block->qc().view());
-    //     return Status::kSuccess;
-    // }
-    
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
         auto tmp_block = tmp_block_info->view_block;
-        if (!tmp_block_info->valid) {
+        if (!tmp_block_info->valid && !view_block_chan()->view_commited(
+                tmp_block_info->view_block->qc().network_id(), 
+                tmp_block_info->view_block->qc().view())) {
             ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
                 tmp_block_info->view_block->qc().network_id(), 
                 tmp_block_info->view_block->qc().pool_index(), 
@@ -1620,6 +1614,7 @@ Status Hotstuff::Commit(
 
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block_info == nullptr) {
+            auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
             if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
                 kv_sync_->AddSyncViewHash(
                     tmp_block->qc().network_id(), 
@@ -1636,7 +1631,7 @@ Status Hotstuff::Commit(
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    view_block_chain()->SetLatestCommittedBlock(v_block);
+    view_block_chain()->SetLatestCommittedBlock(v_block_info->view_block);
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;

@@ -31,6 +31,10 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
+    if (view_commited(view_block->qc().network_id(), view_block->qc().view())) {
+        return Status::kSuccess;
+    }
+
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(view_block->debug());
@@ -269,11 +273,16 @@ bool ViewBlockChain::ViewBlockIsCheckedParentHash(const std::string& hash) {
 
 void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_t view) {
     valid_parent_block_hash_[hash] = view;
+    commited_view_.insert(view);
 }
-
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
 Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
+    View tmp_view = 0;
+    while (stored_view_queue_.pop(&tmp_view)) {
+        commited_view_.erase(tmp_view);
+    }
+
     ZJC_DEBUG("pool: %u, now PruneTo: %lu", pool_index_, stored_to_db_view_);
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
