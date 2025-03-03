@@ -1652,7 +1652,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
-    auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
+    auto fd = fopen((std::string("/root/shardora/addrs") + std::to_string(net_id)).c_str(), "w");
     defer({
         fclose(fd);
     });
