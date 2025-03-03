@@ -703,10 +703,12 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
 
-    ZJC_DEBUG("HandleProposeMsgStep_VerifyQC called hash: %lu, view_block_hash: %s, propose_debug: %s",
+    ZJC_DEBUG("HandleProposeMsgStep_VerifyQC called hash: %lu, "
+        "view_block_hash: %s, propose_debug: %s, sign x: %s",
         msg_ptr->header.hash64(), 
         common::Encode::HexEncode(pro_msg.tc().view_block_hash()).c_str(),
-        ProtobufToJson(cons_debug).c_str());
+        ProtobufToJson(cons_debug).c_str(),
+        common::Encode::HexEncode(pro_msg.tc().sign_x()).c_str());
 #endif
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && IsQcTcValid(pro_msg.tc())) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
