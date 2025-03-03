@@ -92,6 +92,8 @@ static const std::string kLatestLeaderProposeMessage = "aw\x01";
 static const std::string kAggBlsPrivateKeyPrefix = "ax\x01";
 static const std::string kCommitedGidPrefix = "ay\x01";
 static const std::string kGidWithBlockHash = "az\x01";
+static const std::string kViewBlockVaildParentHash = "ba\x01";
+static const std::string kViewBlockVaildView = "bb\x01";
 
 class PrefixDb {
 public:
@@ -415,7 +417,32 @@ public:
             view_block.qc().view_block_hash(),
             batch);
         batch.Put(key, view_block.SerializeAsString());
+        std::string view_key;
+        view_key.reserve(48);
+        view_key.append(kViewBlockVaildView);
+        char key_data[16];
+        uint32_t *u32_arr = (uint32_t*)key_data;
+        u32_arr[0] = view_block.qc().network_id();
+        u32_arr[1] = view_block.qc().pool_index();
+        uint64_t* u64_arr = (uint64_t*)(key_data + 8);
+        u64_arr[0] = view_block.qc().view();
+        view_key.append(std::string(key_data, sizeof(key_data)));
+        batch.Put(view_key, "1");
         return true;
+    }
+
+    bool ViewBlockIsValidView(uint32_t network_id, uint32_t pool_index, uint64_t view) {
+        std::string view_key;
+        view_key.reserve(48);
+        view_key.append(kViewBlockVaildView);
+        char key_data[16];
+        uint32_t *u32_arr = (uint32_t*)key_data;
+        u32_arr[0] = network_id;
+        u32_arr[1] = pool_index;
+        uint64_t* u64_arr = (uint64_t*)(key_data + 8);
+        u64_arr[0] = view;
+        view_key.append(std::string(key_data, sizeof(key_data)));
+        return db_->Exist(view_key);
     }
 
     void SaveGidWithBlockHash(
@@ -670,97 +697,6 @@ public:
             common::Encode::HexEncode(pool_info->hash()).c_str());        
         return true;
     }
-
-    // void SaveViewBlockInfo(
-    //         uint32_t sharding_id,
-    //         uint32_t pool_index,
-    //         uint64_t block_height,
-    //         const view_block::protobuf::ViewBlockItem& pb_view_block,
-    //         std::shared_ptr<db::DbWriteBatch>& db_batch) {
-    //     std::string hash_key;
-    //     hash_key.append(kViewBlockHashKeyPrefix);
-    //     hash_key.append(pb_view_block.qc().view_block_hash());
-    //     db_batch->Put(hash_key, pb_view_block.SerializeAsString());
-    //     std::string pre_hash_key;
-    //     auto* view_block = &pb_view_block;
-    //     if (pb_view_block.qc().view() > 0) {
-    //         if (pb_view_block.parent_hash().empty()) {
-    //             ZJC_FATAL("success save view block, init load view block %u_%u_%lu, "
-    //                 "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
-    //                 view_block->qc().network_id(), view_block->qc().pool_index(), 
-    //                 view_block->qc().view(), view_block->block_info().height(),
-    //                 common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-    //                 common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-    //                 common::Encode::HexEncode(pre_hash_key).c_str(),
-    //                 common::Encode::HexEncode(hash_key).c_str());
-    //         }
-
-    //         pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-    //         pre_hash_key.append(pb_view_block.parent_hash());
-    //         pre_hash_key.append(pb_view_block.qc().view_block_hash());
-    //         db_batch->Put(pre_hash_key, hash_key);
-    //     }
-        
-    //     ZJC_DEBUG("success save view block, init load view block %u_%u_%lu, "
-    //         "%lu, hash: %s, phash: %s, prefix: %s, hash key: %s",
-    //         view_block->qc().network_id(), view_block->qc().pool_index(), 
-    //         view_block->qc().view(), view_block->block_info().height(),
-    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-    //         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-    //         common::Encode::HexEncode(pre_hash_key).c_str(),
-    //         common::Encode::HexEncode(hash_key).c_str());
-    // }
-
-    // void GetChildrenViewBlock(
-    //         const std::string& parent_hash,
-    //         std::vector<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& res_vec) {
-    //     std::string pre_hash_key;
-    //     pre_hash_key.append(kViewBlockParentHashKeyPrefix);
-    //     pre_hash_key.append(parent_hash);
-    //     std::map<std::string, std::string> view_block_map;
-    //     db_->GetAllPrefix(pre_hash_key, view_block_map);
-    //     ZJC_DEBUG("now get parent hash: %s, prefix: %s, get size: %u", 
-    //         common::Encode::HexEncode(parent_hash).c_str(),
-    //         common::Encode::HexEncode(pre_hash_key).c_str(),
-    //         view_block_map.size());
-    //     for (auto iter = view_block_map.begin(); iter != view_block_map.end(); ++iter) {
-    //         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
-    //         auto& view_block = *view_block_ptr;
-    //         if (!GetViewBlockInfo(iter->second, view_block)) {
-    //             ZJC_DEBUG("invalid view block");
-    //             // assert(false);
-    //             continue;
-    //         }
-
-    //         res_vec.push_back(view_block_ptr);
-    //     }
-    // }
-
-    // bool GetViewBlockInfo(
-    //         const std::string& hash_key, 
-    //         view_block::protobuf::ViewBlockItem& view_block) {
-    //     ZJC_DEBUG("now get view block hash: %s", common::Encode::HexEncode(hash_key).c_str());
-    //     std::string val;
-    //     auto st = db_->Get(hash_key, &val);
-    //     if (!st.ok()) {
-    //         assert(false);
-    //         return false;
-    //     }
-
-    //     if (!view_block.ParseFromString(val)) {
-    //         assert(false);
-    //         return false;
-    //     }
-
-    //     return true;
-    // }
-
-    // bool HasViewBlockInfo(const std::string& view_block_hash) {
-    //     std::string hash_key;
-    //     hash_key.append(kViewBlockHashKeyPrefix);
-    //     hash_key.append(view_block_hash);
-    //     return db_->Exist(hash_key);
-    // }
 
     void SaveHeightTree(
             uint32_t net_id,
@@ -2115,7 +2051,34 @@ public:
 
         *bls_prikey = libff::alt_bn128_Fr(prikey_str.c_str());
         return true;
-    }  
+    }
+
+    bool ParentHashExists(const std::string& hash) {
+        std::string key;
+        key.reserve(48);
+        key.append(kViewBlockVaildParentHash);
+        key.append(hash);
+        return db_->Exist(key);
+    }
+
+    void SaveValidViewBlockParentHash(
+            const std::string& parent_hash, 
+            uint32_t network_id, 
+            uint32_t pool_index, 
+            uint64_t view,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(48);
+        key.append(kViewBlockVaildParentHash);
+        key.append(parent_hash);
+        char value[16] = {0};
+        uint32_t *u32_arr = (uint32_t*)value;
+        u32_arr[0] = network_id;
+        u32_arr[1] = pool_index;
+        uint64_t* u64_arr = (uint64_t*)(value + 8);
+        u64_arr[0] = view;
+        db_batch.Put(key, std::string(value, sizeof(value)));
+    }
 
 private:
     static const uint32_t kSaveElectHeightCount = 4u;

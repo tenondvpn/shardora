@@ -79,7 +79,8 @@ int BlockManager::Init(
     bool genesis = false;
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
     leader_prev_get_to_tx_tm_ = common::TimeUtils::TimestampMs();
-    handle_consensus_block_thread_ = std::make_shared<std::thread>(std::bind(&BlockManager::HandleAllConsensusBlocks, this));
+    handle_consensus_block_thread_ = std::make_shared<std::thread>(
+        std::bind(&BlockManager::HandleAllConsensusBlocks, this));
     return kBlockSuccess;
 }
 
@@ -138,10 +139,9 @@ void BlockManager::GenesisNewBlock(
 
 void BlockManager::ConsensusAddBlock(
         const BlockToDbItemPtr& block_item) {
+    assert(!block_item->view_block_ptr->qc().sign_x().empty());
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
-    ZJC_DEBUG("queue size thread_idx: %d consensus_block_queues_: %d",
-        thread_idx, consensus_block_queues_[thread_idx].size());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
@@ -867,6 +867,12 @@ void BlockManager::AddNewBlock(
         }
     }
 
+    prefix_db_->SaveValidViewBlockParentHash(
+        view_block_item->parent_hash(), 
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        db_batch);
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
