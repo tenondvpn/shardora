@@ -269,8 +269,6 @@ int tx_main(int argc, char** argv) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            std::cout << "from: " << common::Encode::HexEncode(security->GetAddress())
-                      << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;
         }
 
         if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
@@ -307,7 +305,8 @@ int tx_main(int argc, char** argv) {
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);            
-            
+            std::cout << "from: " << common::Encode::HexEncode(security->GetAddress())
+                      << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;           
             usleep(30000lu);
         }
 
