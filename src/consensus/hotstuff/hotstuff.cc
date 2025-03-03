@@ -224,7 +224,7 @@ Status Hotstuff::Propose(
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
-    if (s != Status::kSuccess) {
+    if (s != Status::kSuccess && tc == nullptr) {
         ZJC_INFO("pool: %d, view: %lu, construct hotstuff msg failed",
             pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
         return s;
@@ -1321,7 +1321,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
-        NewView(nullptr, qc_item_ptr, nullptr);
+        // NewView(nullptr, qc_item_ptr, nullptr);
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
