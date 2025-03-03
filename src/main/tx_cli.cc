@@ -186,11 +186,12 @@ static void LoadAllAccounts(int32_t shardnum=3) {
 }
 
 int tx_main(int argc, char** argv) {
-    // ./txcli 0 $net_id $pool_id $ip $port $delay_us
+    // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool
     uint32_t pool_id = -1;
     auto ip = kBroadcastIp;
     auto port = kBroadcastPort;
     auto delayus_a = delayus;
+    auto multi = multi_pool;
     if (argc >= 4) {
         shardnum = std::stoi(argv[2]);
         pool_id = std::stoi(argv[3]);
@@ -203,6 +204,10 @@ int tx_main(int argc, char** argv) {
     
     if (argc >= 7) {
         delayus_a = std::stoi(argv[6]);
+    }
+
+    if (argc >= 8) {
+        multi = std::stoi(argv[7]);
     }    
 
     std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
@@ -248,7 +253,7 @@ int tx_main(int argc, char** argv) {
     }
     
     std::string prikey = g_prikeys[0];
-    if (!multi_pool) {
+    if (!multi) {
         prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
     }
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
@@ -300,7 +305,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (multi_pool && count % 1000 == 0) {
+        if (multi && count % 1000 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
