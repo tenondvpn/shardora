@@ -796,9 +796,9 @@ void BlockManager::AddNewBlock(
             tx_list[i].gid(), 
             view_block_item->qc().view_block_hash(), 
             db_batch);
-        //if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
-        account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
-        //}
+        if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
+            account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+        }
 
         ZJC_INFO("====9 from: %s, to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(tx_list[i].from()).c_str(),

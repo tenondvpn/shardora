@@ -19,7 +19,7 @@ static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13001;
 static int shardnum = 3;
 static const int delayus = 5000;
-static const bool multi_pool = false;
+static const bool multi_pool = true;
 static const std::string db_path = "./txclidb";
 static const std::string from_prikey =
     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
@@ -170,9 +170,9 @@ static void LoadAllAccounts(int32_t shardnum=3) {
         std::string addr = security->GetAddress();
         g_pri_addrs_map[prikey] = addr;
         g_addrs.push_back(addr);
-        // if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
-        //     break;
-        // }
+        if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
+            break;
+        }
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
@@ -273,11 +273,11 @@ int tx_main(int argc, char** argv) {
                       << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;
         }
 
-        // if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
-        //     ++prikey_pos;
-        //     from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-        //     security->SetPrivateKey(from_prikey);
-        // }
+        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
+            ++prikey_pos;
+            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+            security->SetPrivateKey(from_prikey);
+        }
 
         // uint32_t* tmp_data = (uint32_t*)to.c_str();
         // if (common::Random::RandomInt32() % 10 < 3) {
@@ -306,9 +306,7 @@ int tx_main(int argc, char** argv) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            //usleep(10000);
-            std::cout << "change from: " << common::Encode::HexEncode(security->GetAddress())
-                      << "to sk: " << common::Encode::HexEncode(from_prikey) << std::endl;            
+            //usleep(10000);            
             
             usleep(30000lu);
         }
