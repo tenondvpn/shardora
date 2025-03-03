@@ -253,10 +253,10 @@ Status Hotstuff::Propose(
         header.hash64(),
         propose_debug_index_++,
         pb_pro_msg->tx_propose().txs_size());
-    propose_debug_str += ", tx gids: ";
-    for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-        propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
-    }
+    // propose_debug_str += ", tx gids: ";
+    // for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+    //     propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+    // }
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
