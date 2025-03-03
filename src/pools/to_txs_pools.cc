@@ -105,14 +105,6 @@ void ToTxsPools::StatisticToInfo(
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
     const auto& tx_list = block.tx_list();
-#ifndef ENABLE_HOTSTUFF
-    if (tx_list.empty()) {
-        assert(false);
-        ZJC_DEBUG("tx list empty!");
-        return;
-    }
-#endif
-
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>> cross_map;

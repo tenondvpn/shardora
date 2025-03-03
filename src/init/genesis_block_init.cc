@@ -20,10 +20,8 @@
 #include "block/block_manager.h"
 #include "bls/bls_sign.h"
 #include "consensus/consensus_utils.h"
-// #ifndef ENABLE_HOTSTUFF
 #include "consensus/zbft/zbft_utils.h"
 #include "protos/zbft.pb.h"
-// #endif
 #include "elect/elect_utils.h"
 #include "network/network_utils.h"
 #include "init/init_utils.h"

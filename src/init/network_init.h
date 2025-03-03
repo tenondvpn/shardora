@@ -7,15 +7,12 @@
 #include "common/config.h"
 #include "common/parse_args.h"
 #include "common/tick.h"
-// #ifdef ENABLE_HOTSTUFF
 #include "consensus/hotstuff/hotstuff_manager.h"
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/hotstuff_syncer.h>
-// #else
 #include "consensus/zbft/contract_gas_prepayment.h"
-// #endif
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
@@ -35,8 +32,6 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <protos/prefix_db.h>
 #include <yaml-cpp/node/node.h>
-
-// #define ENABLE_HOTSTUFF 1
 
 namespace shardora {
 
