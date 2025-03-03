@@ -9,8 +9,20 @@ import os
 import yaml
 import toml
 import re
+import xxhash
 
 node_sk_map = {}
+
+# 请根据实际情况设置种子值
+kHashSeedU32 = 0  # 示例种子，可以修改为你需要的值
+kImmutablePoolSize = 256
+
+def hash32(s: str) -> int:
+    data = s.encode('utf-8')
+    return xxhash.xxh32(data, seed=kHashSeedU32).intdigest()
+
+def get_address_pool_index(addr: str) -> int:
+    return hash32(addr) % kImmutablePoolSize
 
 def input2sk(input: str) -> str:
     sk_str = node_sk_map.get(input)
@@ -73,7 +85,7 @@ def _get_node_sks_from_server_conf(server_conf, net_id):
 def _gen_account_sks(server_conf, net_id):
     account_sks = server_conf.get('account_sks', {})
     account_sks_from_server_conf = account_sks.get(net_id, [])
-    num = 256 - len(account_sks_from_server_conf)
+    num = kImmutablePoolSize - len(account_sks_from_server_conf)
     random_sks = gen_account_sks(net_id, num)
     return account_sks_from_server_conf + random_sks
 
