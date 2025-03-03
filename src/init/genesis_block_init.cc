@@ -1660,7 +1660,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     });
 
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    bool valid_pool_addr[common::kImmutablePoolSize] = {false};
     for (uint32_t i = 0; i < test_addr_count + 1; ++i, ++idx) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
         while (true) {
@@ -1668,17 +1667,11 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(private_key);
             address = ecdsa.GetAddress();
-            if (!valid_pool_addr[i % common::kImmutablePoolSize]) {
-                if (common::GetAddressPoolIndex(address) == (i % common::kImmutablePoolSize)) {
-                    auto data = common::Encode::HexEncode(private_key) + "\n";
-                    fwrite(data.c_str(), 1, data.size(), fd);
-                    valid_pool_addr[i % common::kImmutablePoolSize] = true;
-                    break;
-                }
-            } else {
+            if (common::GetAddressPoolIndex(address) == (i % common::kImmutablePoolSize)) {
+                auto data = common::Encode::HexEncode(private_key) + "\n";
+                fwrite(data.c_str(), 1, data.size(), fd);
                 break;
             }
-            
         }
 
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
@@ -1743,8 +1736,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         view_block_ptr->set_parent_hash("");
         if (CreateAllQc(
                 net_id,
-                i,
-                vb_latest_view[i]++, 
+                i % common::kImmutablePoolSize,
+                vb_latest_view[i % common::kImmutablePoolSize]++, 
                 cons_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
@@ -1752,8 +1745,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         // 更新所有 pool 的 prehash
-        pool_prev_hash_map[i] = view_block_ptr->qc().view_block_hash();
-        pool_prev_vb_hash_map[i] = view_block_ptr->qc().view_block_hash();
+        pool_prev_hash_map[i % common::kImmutablePoolSize] = view_block_ptr->qc().view_block_hash();
+        pool_prev_vb_hash_map[i % common::kImmutablePoolSize] = view_block_ptr->qc().view_block_hash();
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
