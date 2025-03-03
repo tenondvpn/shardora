@@ -295,6 +295,8 @@ clickhouse-client -q "drop table zjc_ck_statistic_table"
 clickhouse-client -q "drop table zjc_ck_transaction_table"
 clickhouse-client -q "drop table bls_elect_info"
 clickhouse-client -q "drop table bls_block_info"
+
+killall -9 txcli
 """
 
     with open(file_path, 'w') as f:
