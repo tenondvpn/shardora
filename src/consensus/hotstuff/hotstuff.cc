@@ -193,7 +193,7 @@ Status Hotstuff::Propose(
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
         // HandleProposeMsg(latest_leader_propose_message_);
-        return s;
+        return Status::kSuccess;
     }
 
     if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
