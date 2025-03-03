@@ -1640,10 +1640,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // InitGenesisAccount();
     InitShardGenesisAccount();
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
-    uint64_t genesis_account_balance = 0;
-    // if (net_id == network::kConsensusShardBeginNetworkId) {
-    genesis_account_balance = common::kGenesisFoundationMaxZjc / common::kImmutablePoolSize; // 两个分片
-    // }
+    uint32_t all_address_count = 1024;
+    uint32_t each_pool_address_count = all_address_count / common::kImmutablePoolSize;
+    uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / all_address_count; // 两个分片
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
@@ -1657,6 +1656,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         fclose(fd);
     });
 
+    uint32_t address_count_now = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
@@ -1714,19 +1714,36 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         if (idx < common::kImmutablePoolSize) {
-            auto tx_info = tx_list->Add();
-            tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from("");
-            tx_info->set_to(address);
+            for (uint32_t addr_idx = 0; addr_idx < each_pool_address_count; ++addr_idx) {
+                if (addr_idx != 0) {
+                    while (true) {
+                        auto private_key = common::Random::RandomString(32);
+                        security::Ecdsa ecdsa;
+                        ecdsa.SetPrivateKey(private_key);
+                        address = ecdsa.GetAddress();
+                        if (common::GetAddressPoolIndex(address) == i) {
+                            auto data = common::Encode::HexEncode(private_key) + "\n";
+                            fwrite(data.c_str(), 1, data.size(), fd);
+                            std::cout << "use private key: " << common::Encode::HexEncode(private_key) << std::endl;
+                            break;
+                        }
+                    }
+                }
 
-            if (net_id == network::kConsensusShardBeginNetworkId && i == common::kImmutablePoolSize - 1) {
-                genesis_account_balance += common::kGenesisFoundationMaxZjc % common::kImmutablePoolSize;
+                address_count_now++;
+                auto tx_info = tx_list->Add();
+                tx_info->set_gid(common::CreateGID(""));
+                tx_info->set_from("");
+                tx_info->set_to(address);
+                if (net_id == network::kConsensusShardBeginNetworkId && address_count_now == all_address_count - 1) {
+                    genesis_account_balance += common::kGenesisFoundationMaxZjc % all_address_count;
+                }
+
+                tx_info->set_amount(genesis_account_balance);
+                tx_info->set_balance(genesis_account_balance);
+                tx_info->set_gas_limit(0);
+                tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
             }
-
-            tx_info->set_amount(genesis_account_balance);
-            tx_info->set_balance(genesis_account_balance);
-            tx_info->set_gas_limit(0);
-            tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }            
         
         tenon_block->set_version(common::kTransactionVersion);
