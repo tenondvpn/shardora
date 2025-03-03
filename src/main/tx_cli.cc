@@ -170,9 +170,9 @@ static void LoadAllAccounts(int32_t shardnum=3) {
         std::string addr = security->GetAddress();
         g_pri_addrs_map[prikey] = addr;
         g_addrs.push_back(addr);
-        if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
-            break;
-        }
+        // if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
+        //     break;
+        // }
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
@@ -247,7 +247,7 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
     
-    std::string prikey = g_prikeys[0];// common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
+    std::string prikey = g_prikeys[0];
     if (!multi_pool) {
         prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
     }
@@ -255,7 +255,7 @@ int tx_main(int argc, char** argv) {
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
-    std::cout << "from: " << common::Encode::HexEncode(security->GetAddress())
+    std::cout << "init from: " << common::Encode::HexEncode(security->GetAddress())
               << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;    
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
@@ -273,11 +273,11 @@ int tx_main(int argc, char** argv) {
                       << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;
         }
 
-        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
-            ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-        }
+        // if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
+        //     ++prikey_pos;
+        //     from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
+        //     security->SetPrivateKey(from_prikey);
+        // }
 
         // uint32_t* tmp_data = (uint32_t*)to.c_str();
         // if (common::Random::RandomInt32() % 10 < 3) {
@@ -307,6 +307,8 @@ int tx_main(int argc, char** argv) {
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
+            std::cout << "change from: " << common::Encode::HexEncode(security->GetAddress())
+                      << "to sk: " << common::Encode::HexEncode(from_prikey) << std::endl;            
             
             usleep(30000lu);
         }
