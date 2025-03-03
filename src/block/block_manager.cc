@@ -79,7 +79,8 @@ int BlockManager::Init(
     bool genesis = false;
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
     leader_prev_get_to_tx_tm_ = common::TimeUtils::TimestampMs();
-    handle_consensus_block_thread_ = std::make_shared<std::thread>(std::bind(&BlockManager::HandleAllConsensusBlocks, this));
+    handle_consensus_block_thread_ = std::make_shared<std::thread>(
+        std::bind(&BlockManager::HandleAllConsensusBlocks, this));
     return kBlockSuccess;
 }
 
@@ -138,6 +139,7 @@ void BlockManager::GenesisNewBlock(
 
 void BlockManager::ConsensusAddBlock(
         const BlockToDbItemPtr& block_item) {
+    assert(!block_item->view_block_ptr->qc().sign_x().empty());
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
     ZJC_DEBUG("queue size thread_idx: %d consensus_block_queues_: %d",
