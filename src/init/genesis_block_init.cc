@@ -1659,27 +1659,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
-    auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
-    defer({
-        fclose(fd);
-    });
-
-    // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
-        std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
-        while (i < common::kImmutablePoolSize) {
-            auto private_key = common::Random::RandomString(32);
-            security::Ecdsa ecdsa;
-            ecdsa.SetPrivateKey(private_key);
-            address = ecdsa.GetAddress();
-            if (common::GetAddressPoolIndex(address) == i) {
-                auto data = common::Encode::HexEncode(private_key) + "\n";
-                fwrite(data.c_str(), 1, data.size(), fd);
-                break;
-            }
-        }
-    }
-
     
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (auto iter = pool_acc_map.begin(); iter != pool_acc_map.end(); ++iter, ++idx) {
@@ -1829,6 +1808,28 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         net_id, init_consensus_height.c_str());
     // 通过文件同步 RootSingleBlock
     // 包含 root 网络中的 root pool 账户、选举块和时间块
+
+    auto fd = fopen((std::string("./addrs") + std::to_string(net_id)).c_str(), "w");
+    defer({
+        fclose(fd);
+    });
+
+    // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
+    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
+        std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
+        while (i < common::kImmutablePoolSize) {
+            auto private_key = common::Random::RandomString(32);
+            security::Ecdsa ecdsa;
+            ecdsa.SetPrivateKey(private_key);
+            address = ecdsa.GetAddress();
+            if (common::GetAddressPoolIndex(address) == i) {
+                auto data = common::Encode::HexEncode(private_key) + "\n";
+                fwrite(data.c_str(), 1, data.size(), fd);
+                break;
+            }
+        }
+    }
+    
     return GenerateShardSingleBlock(net_id);
 }
 
