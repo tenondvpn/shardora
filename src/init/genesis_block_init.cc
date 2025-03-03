@@ -1666,7 +1666,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             ecdsa.SetPrivateKey(private_key);
             address = ecdsa.GetAddress();
             if (common::GetAddressPoolIndex(address) == i) {
-                auto data = common::Encode::HexEncode(private_key) + "\n";
+                auto data = common::Encode::HexEncode(private_key) + "\t" + common::Encode::HexEncode(ecdsa.GetPublicKey()) + "\n";
                 fwrite(data.c_str(), 1, data.size(), fd);
                 std::cout << "use private key: " << common::Encode::HexEncode(private_key) << std::endl;
                 break;
@@ -1722,7 +1722,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                         ecdsa.SetPrivateKey(private_key);
                         address = ecdsa.GetAddress();
                         if (common::GetAddressPoolIndex(address) == i) {
-                            auto data = common::Encode::HexEncode(private_key) + "\n";
+                            auto data = common::Encode::HexEncode(private_key) + "\t" + common::Encode::HexEncode(ecdsa.GetPublicKey()) + "\n";
                             fwrite(data.c_str(), 1, data.size(), fd);
                             std::cout << "use private key: " << common::Encode::HexEncode(private_key) << std::endl;
                             break;
