@@ -485,13 +485,14 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 break;
             }
     
-            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s",
+            int res = view_block_synced_callback_(*pb_vblock);
+            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s, res: %d",
                 msg_ptr->header.hash64(), 
                 (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
                 iter->tag(),
-                pb_vblock->qc().sign_x().c_str());
+                pb_vblock->qc().sign_x().c_str(),
+                res);
             assert(!pb_vblock->qc().sign_x().empty());
-            int res = view_block_synced_callback_(*pb_vblock);
             if (res == 1) {
                 assert(false);
                 break;

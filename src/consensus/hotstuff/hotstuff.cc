@@ -1607,6 +1607,7 @@ Status Hotstuff::Commit(
                 tmp_block_info->view_block->qc().view(),
                 common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str());
+            assert(!tmp_block_info->view_block->qc().sign_x().empty());
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto db_batch = std::make_shared<db::DbWriteBatch>();
             auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
