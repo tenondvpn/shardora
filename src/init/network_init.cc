@@ -1035,15 +1035,11 @@ void NetworkInit::GetNetworkNodesFromConf(
         std::string& sk = root_sks[i];
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(sk);
-        auto data = common::Encode::HexEncode(sk) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
-        fwrite(data.c_str(), 1, data.size(), fd);
         auto node_ptr = std::make_shared<GenisisNodeInfo>();
         node_ptr->prikey = sk;
         node_ptr->pubkey = secptr->GetPublicKey();
         node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-
         InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
-        
         auto keypair = bls::AggBls::Instance()->GetKeyPair();
         node_ptr->agg_bls_pk = keypair->pk();
         node_ptr->agg_bls_pk_proof = keypair->proof();
