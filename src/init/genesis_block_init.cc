@@ -1641,7 +1641,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     InitShardGenesisAccount();
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / net_pool_index_map_addr_count_; // 两个分片
-    uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
@@ -1649,7 +1648,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
-    uint32_t address_count_now = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
@@ -1674,29 +1672,20 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
-        for (auto shard_iter = net_pool_index_map_.begin(); shard_iter != net_pool_index_map_.end(); ++shard_iter) {
-            auto& pool_map = shard_iter->second;
-            uint32_t net_id = shard_iter->first;
-            auto pool_iter = pool_map.find(i);
-            if (pool_iter != pool_map.end()) {
-                for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
-                    ++address_count_now;
-                    if (address_count_now >= net_pool_index_map_addr_count_) {
-                        genesis_account_balance += genesis_account_balance % net_pool_index_map_addr_count_;
-                    }
-
-                    std::string shard_acc_address = *addr_iter;
-                    // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
-                    auto tx_info = tx_list->Add();
-                    tx_info->set_gid(common::CreateGID(""));
-                    tx_info->set_from("");
-                    tx_info->set_to(shard_acc_address);
-                    tx_info->set_amount(genesis_account_balance);
-                    tx_info->set_balance(genesis_account_balance);
-                    tx_info->set_gas_limit(0);
-                    tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                    all_balance += genesis_account_balance;
-                }
+        auto& pool_map = net_pool_index_map_[net_id];
+        auto pool_iter = pool_map.find(i);
+        if (pool_iter != pool_map.end()) {
+            for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
+                std::string shard_acc_address = *addr_iter;
+                // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
+                auto tx_info = tx_list->Add();
+                tx_info->set_gid(common::CreateGID(""));
+                tx_info->set_from("");
+                tx_info->set_to(shard_acc_address);
+                tx_info->set_amount(genesis_account_balance);
+                tx_info->set_balance(genesis_account_balance);
+                tx_info->set_gas_limit(0);
+                tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
             }
         }
         
@@ -1732,12 +1721,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         heights_item->set_min_height(0);
         StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
-    }
-
-    if (all_balance != common::kGenesisFoundationMaxZjc) {
-        ZJC_FATAL("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
-            all_balance, common::kGenesisFoundationMaxZjc);
-        return kInitError;
     }
 
     CreateShardNodesBlocks(
