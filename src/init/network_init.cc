@@ -571,6 +571,9 @@ void NetworkInit::InitLocalNetworkId() {
         auto& in = block_ptr->in();
         for (int32_t member_idx = 0; member_idx < in.size(); ++member_idx) {
             auto id = security_->GetAddress(in[member_idx].pubkey());
+            ZJC_DEBUG("network: %d get member id: %s, local id: %s",
+                sharding_id, comon::Encode::HexEncode(id).c_str(),
+                comon::Encode::HexEncode(security_->GetAddress()).c_str());
             // 如果本 node pubkey 与 elect block 当中记录的相同，则分配到对应的 sharding
             if (id == security_->GetAddress()) {
                 ZJC_DEBUG("should join network: %u", sharding_id);
