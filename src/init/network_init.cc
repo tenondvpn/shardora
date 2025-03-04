@@ -548,7 +548,7 @@ void NetworkInit::InitLocalNetworkId() {
     if (!prefix_db_->GetJoinShard(&got_sharding_id, &des_sharding_id_)) {
         auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
         if (local_node_account_info == nullptr) {
-            ZJC_DEBUG("fai;ed get local account info id: %s",
+            ZJC_DEBUG("failed get local account info id: %s",
                 common::Encode::HexEncode(security_->GetAddress()).c_str());
             return;
         }
@@ -1011,7 +1011,6 @@ void NetworkInit::GetNetworkNodesFromConf(
         fwrite(data.c_str(), 1, data.size(), rfd);
         auto node_ptr = std::make_shared<GenisisNodeInfo>();
         node_ptr->prikey = sk;
-        secptr->SetPrivateKey(node_ptr->prikey);
         node_ptr->pubkey = secptr->GetPublicKey();
         node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
 
@@ -1020,7 +1019,10 @@ void NetworkInit::GetNetworkNodesFromConf(
         auto keypair = bls::AggBls::Instance()->GetKeyPair();
         node_ptr->agg_bls_pk = keypair->pk();
         node_ptr->agg_bls_pk_proof = keypair->proof();
-        root_genesis_nodes.push_back(node_ptr);                    
+        root_genesis_nodes.push_back(node_ptr);
+        ZJC_DEBUG("root private key: %s, id: %s", 
+            common::Encode::HexEncode(sk).c_str(), 
+            common::Encode::HexEncode(node_ptr->id).c_str());
     }
     //     }
     // }
@@ -1048,8 +1050,6 @@ void NetworkInit::GetNetworkNodesFromConf(
             fwrite(data.c_str(), 1, data.size(), sfd);
             auto node_ptr = std::make_shared<GenisisNodeInfo>();
             node_ptr->prikey = common::Encode::HexDecode(sk);
-            secptr->SetPrivateKey(node_ptr->prikey);
-            
             node_ptr->pubkey = secptr->GetPublicKey();
             node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
             
@@ -1057,7 +1057,11 @@ void NetworkInit::GetNetworkNodesFromConf(
             auto keypair = bls::AggBls::Instance()->GetKeyPair();
             node_ptr->agg_bls_pk = keypair->pk();
             node_ptr->agg_bls_pk_proof = keypair->proof();
-            cons_genesis_nodes.push_back(node_ptr);        
+            cons_genesis_nodes.push_back(node_ptr);   
+            ZJC_DEBUG("shard: %d private key: %s, id: %s", 
+                net_i,
+                common::Encode::HexEncode(sk).c_str(), 
+                common::Encode::HexEncode(node_ptr->id).c_str());     
         }
         
         cons_genesis_nodes_of_shards[net_i-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
