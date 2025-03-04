@@ -987,61 +987,75 @@ void NetworkInit::GetNetworkNodesFromConf(
         std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         const std::shared_ptr<db::Db>& db) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
-    if (genesis_config["root"]) {
-        auto root_config = genesis_config["root"];
-        if (root_config["sks"]) {
-            uint32_t n = root_config["sk"].size();
-            uint32_t t = common::GetSignerCount(n);
-            for (uint32_t i = 0; i < root_config["sks"].size(); i++) {
-                std::string sk = root_config["sks"][i].as<std::string>();
-                auto node_ptr = std::make_shared<GenisisNodeInfo>();
-                node_ptr->prikey = common::Encode::HexDecode(sk);
-                std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-                secptr->SetPrivateKey(node_ptr->prikey);
-                node_ptr->pubkey = secptr->GetPublicKey();
-                node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+    // if (genesis_config["root"]) {
+    //     auto root_config = genesis_config["root"];
+    //     if (root_config["sks"]) {
+    //         uint32_t n = root_config["sk"].size();
+    //         uint32_t t = common::GetSignerCount(n);
+    auto rfd = fopen("root/shardora/root_nodes", "w");
+    defer({
+        fclose(rfd);
+    });
+    for (uint32_t i = 0; i < 3; i++) {
+        std::string sk = common::Random::RandomString(32);
+        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+        secptr->SetPrivateKey(sk);
+        auto data = common::Encode::HexEncode(sk) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
+        fwrite(data.c_str(), 1, data.size(), rfd);
+        auto node_ptr = std::make_shared<GenisisNodeInfo>();
+        node_ptr->prikey = sk;
+        secptr->SetPrivateKey(node_ptr->prikey);
+        node_ptr->pubkey = secptr->GetPublicKey();
+        node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
 
-                InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
-                
-                auto keypair = bls::AggBls::Instance()->GetKeyPair();
-                node_ptr->agg_bls_pk = keypair->pk();
-                node_ptr->agg_bls_pk_proof = keypair->proof();
-                root_genesis_nodes.push_back(node_ptr);                    
-            }
-        }
+        InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
+        
+        auto keypair = bls::AggBls::Instance()->GetKeyPair();
+        node_ptr->agg_bls_pk = keypair->pk();
+        node_ptr->agg_bls_pk_proof = keypair->proof();
+        root_genesis_nodes.push_back(node_ptr);                    
     }
+    //     }
+    // }
     
     uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;        
-    if (genesis_config["shards"]) {
-        ZJC_DEBUG("shards size = %u", genesis_config["shards"].size());
-        assert(genesis_config["shards"].size() == shard_num);
+    // if (genesis_config["shards"]) {
+    //     ZJC_DEBUG("shards size = %u", genesis_config["shards"].size());
+    //     assert(genesis_config["shards"].size() == shard_num);
         
-        for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
-            auto shard_config = genesis_config["shards"][net_i];
-            std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
-            uint32_t net_id = shard_config["net_id"].as<uint32_t>();
-            uint32_t n = shard_config["sks"].size();
-            uint32_t t = common::GetSignerCount(n);
-            for (uint32_t i = 0; i < shard_config["sks"].size(); i++) {        
-                std::string sk = shard_config["sks"][i].as<std::string>();
-                auto node_ptr = std::make_shared<GenisisNodeInfo>();
-                node_ptr->prikey = common::Encode::HexDecode(sk);
-                std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-                secptr->SetPrivateKey(node_ptr->prikey);
-                
-                node_ptr->pubkey = secptr->GetPublicKey();
-                node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                
-                InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
-                auto keypair = bls::AggBls::Instance()->GetKeyPair();
-                node_ptr->agg_bls_pk = keypair->pk();
-                node_ptr->agg_bls_pk_proof = keypair->proof();
-                cons_genesis_nodes.push_back(node_ptr);        
-            }
+    uint32_t n = 4;
+    uint32_t t = common::GetSignerCount(n);
+    for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < network::kConsensusShardEndNetworkId; net_i++) {
+        auto sfd = fopen((std::string("root/shardora/shards") + std::to_string(net_i)).c_str(), "w");
+        defer({
+            fclose(sfd);
+        });
+
+        std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
+        for (uint32_t i = 0; i < n; i++) {        
+            std::string sk = common::Random::RandomString(32);
+            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+            secptr->SetPrivateKey(sk);
+            auto data = common::Encode::HexEncode(sk) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
+            fwrite(data.c_str(), 1, data.size(), sfd);
+            auto node_ptr = std::make_shared<GenisisNodeInfo>();
+            node_ptr->prikey = common::Encode::HexDecode(sk);
+            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+            secptr->SetPrivateKey(node_ptr->prikey);
             
-            cons_genesis_nodes_of_shards[net_id-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
+            node_ptr->pubkey = secptr->GetPublicKey();
+            node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+            
+            InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
+            auto keypair = bls::AggBls::Instance()->GetKeyPair();
+            node_ptr->agg_bls_pk = keypair->pk();
+            node_ptr->agg_bls_pk_proof = keypair->proof();
+            cons_genesis_nodes.push_back(node_ptr);        
         }
+        
+        cons_genesis_nodes_of_shards[net_i-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
     }
+    // }
 }
 
 void NetworkInit::InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& secptr, std::shared_ptr<protos::PrefixDb>& prefix_db) {
