@@ -1690,12 +1690,13 @@ Status Hotstuff::Commit(
 
 void Hotstuff::HandleSyncedViewBlock(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
-    if (view_block_chain_->Has(vblock->qc().view_block_hash())) {
-        ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu",
+    if (view_block_chain_->ReplaceExist(vblock)) {
+        ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu, hash: %s",
             vblock->qc().network_id(), 
             vblock->qc().pool_index(), 
             vblock->qc().view(), 
-            vblock->block_info().height());
+            vblock->block_info().height(),
+            common::Encode::HexEncode(vblock->qc().view_block_hash()).c_str());
         return;
     }
 

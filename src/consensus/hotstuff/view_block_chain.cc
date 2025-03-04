@@ -199,6 +199,22 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
 //     return nullptr;
 // }
 
+bool ViewBlockChain::ReplaceExist(const std::shared_ptr<ViewBlock>& block) {
+    auto it = view_blocks_info_.find(block->qc().view_block_hash());
+    if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
+        if (!it->second->view_block->qc().has_sign_x()) {
+            it->second->view_block = block;
+        }
+        
+        return true;
+    }
+
+    // if (prefix_db_->BlockExists(hash)) {
+    //     return true;
+    // }
+
+    return false;
+}
 
 bool ViewBlockChain::Has(const HashStr& hash) {
     auto it = view_blocks_info_.find(hash);

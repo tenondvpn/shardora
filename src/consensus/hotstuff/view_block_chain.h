@@ -36,6 +36,7 @@ public:
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
+    bool ReplaceExist(const std::shared_ptr<ViewBlock>& block);
     // if in the same branch
     bool Extends(const ViewBlock& block, const ViewBlock& target);
     // prune from last prune height to target view block
