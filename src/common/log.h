@@ -109,7 +109,7 @@
 #define DEBUG(fmt, ...)
 #define ZJC_DEBUG(fmt, ...)
 #else
-#define DEBUG(fmt, ...)
+// #define DEBUG(fmt, ...)
 // #define ZJC_DEBUG(fmt, ...)
 
 #define DEBUG(fmt, ...)  do {\
