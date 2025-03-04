@@ -1025,11 +1025,8 @@ void NetworkInit::GetNetworkNodesFromConf(
         }
     };
         
-    auto rfd = fopen("/root/shardora/root_nodes", "rw");
+    auto rfd = fopen("/root/shardora/root_nodes", (reuse_root ? "r" : "w"));
     assert(rfd != nullptr);
-    defer({
-        fclose(rfd);
-    });
     std::vector<std::string> root_sks;
     get_sks_func(rfd, root_sks, 3);
     for (uint32_t i = 0; i < root_sks.size(); i++) {
@@ -1049,7 +1046,8 @@ void NetworkInit::GetNetworkNodesFromConf(
             common::Encode::HexEncode(sk).c_str(), 
             common::Encode::HexEncode(node_ptr->id).c_str());
     }
-    //     }
+    fclose(rfd);
+        //     }
     // }
     
     uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;        
@@ -1060,12 +1058,8 @@ void NetworkInit::GetNetworkNodesFromConf(
     uint32_t n = 4;
     uint32_t t = common::GetSignerCount(n);
     for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < network::kConsensusShardEndNetworkId; net_i++) {
-        auto sfd = fopen((std::string("/root/shardora/shards") + std::to_string(net_i)).c_str(), "rw");
+        auto sfd = fopen((std::string("/root/shardora/shards") + std::to_string(net_i)).c_str(), (reuse_root ? "r" : "w"));
         assert(sfd != nullptr);
-        defer({
-            fclose(sfd);
-        });
-
         std::vector<std::string> shard_sks;
         get_sks_func(sfd, shard_sks, n);
         std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
@@ -1089,6 +1083,7 @@ void NetworkInit::GetNetworkNodesFromConf(
         }
         
         cons_genesis_nodes_of_shards[net_i-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
+        fclose(sfd);
     }
     // }
 }
