@@ -913,12 +913,12 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        // genesis_block.SetGenesisConfig(genesis_config);
+        genesis_block.SetGenesisConfig(genesis_config);
         
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
-        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
+        GetNetworkNodesFromConf(root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
@@ -959,12 +959,12 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        // genesis_block.SetGenesisConfig(genesis_config);
+        genesis_block.SetGenesisConfig(genesis_config);
 
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
         
-        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
+        GetNetworkNodesFromConf(root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
@@ -981,7 +981,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 }
 
 void NetworkInit::GetNetworkNodesFromConf(
-        const YAML::Node& genesis_config,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         const std::shared_ptr<db::Db>& db,
