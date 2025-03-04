@@ -71,7 +71,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     if (root_iter != valid_net_ids_set.end()) {
         real_root_genesis_nodes = root_genesis_nodes;
     }
-    
+
     for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
         uint32_t shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
         auto shard_iter = valid_net_ids_set.find(shard_node_net_id);
@@ -1208,6 +1208,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         // 这里将 block 中涉及的账户信息，在不同的 network 中创建
         // 其实和 CraeteShartGenesisBlocks 中对于 shard 创世账户的持久化部分重复了，但由于是 kv 所以没有影响
+        assert(tx2net_map_for_account.size() <= 1024);
         for (auto it = tx2net_map_for_account.begin(); it != tx2net_map_for_account.end(); ++it) {
             auto tx = it->first;
             uint32_t net_id = it->second;
