@@ -1685,8 +1685,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 tx_info->set_balance(genesis_account_balance);
                 tx_info->set_gas_limit(0);
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                ZJC_DEBUG("success add address: %s, balance: %lu",
-                    common::Encode::HexEncode(*addr_iter).c_str(), genesis_account_balance);
+                ZJC_DEBUG("net_id: %d, success add address: %s, balance: %lu",
+                    net_id, common::Encode::HexEncode(*addr_iter).c_str(), genesis_account_balance);
             }
         }
         
@@ -1775,6 +1775,8 @@ void GenesisBlockInit::InitShardGenesisAccount() {
             auto pool_idx = common::GetAddressPoolIndex(secptr->GetAddress());
             pool_index_map[pool_idx].insert(secptr->GetAddress());
             ++net_pool_index_map_addr_count_;
+            ZJC_DEBUG("success add address net: %d, pool: %d, addr: %s", 
+                net_id, pool_idx, common::Encode::HexEncode(secptr->GetAddress()).c_str());
         }
 
         net_pool_index_map_.insert(std::make_pair(net_id, pool_index_map));
