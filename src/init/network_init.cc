@@ -1002,7 +1002,7 @@ void NetworkInit::GetNetworkNodesFromConf(
     auto get_sks_func = [](FILE *fd, std::vector<std::string>& sks, int32_t count) {
         if (reuse_root) {
             char dara[1024*1024];
-            fread(data, 1, sizeof(data), rfd);
+            fread(data, 1, sizeof(data), fd);
             auto lines = common::Split<>(data, '\n');
             for (uint32_t i = 0; i < lines.Count(); ++i) {
                 auto items = common::Split<>(lines[i], '\t');
@@ -1018,11 +1018,11 @@ void NetworkInit::GetNetworkNodesFromConf(
                 sks.push_back(common::Random::RandomString(32));
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(sks[i]);
-                auto data = common::Encode::HexEncode(sk) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
+                auto data = common::Encode::HexEncode(sks[i]) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
                 fwrite(data.c_str(), 1, data.size(), fd);
             }
         }
-    }
+    };
         
     auto rfd = fopen("/root/shardora/root_nodes", "rw");
     assert(rfd != nullptr);
@@ -1036,7 +1036,7 @@ void NetworkInit::GetNetworkNodesFromConf(
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(sk);
         auto data = common::Encode::HexEncode(sk) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
-        fwrite(data.c_str(), 1, data.size(), rfd);
+        fwrite(data.c_str(), 1, data.size(), fd);
         auto node_ptr = std::make_shared<GenisisNodeInfo>();
         node_ptr->prikey = sk;
         node_ptr->pubkey = secptr->GetPublicKey();
