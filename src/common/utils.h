@@ -4,8 +4,9 @@
 #include <string.h>
 #include <time.h>
 
-#include <string>
 #include <chrono>
+#include <filesystem>
+#include <string>
 #include <thread>
 
 #include "common/encode.h"
@@ -426,6 +427,10 @@ bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... 
         std::this_thread::sleep_for(delay);
     }
     return false;
+}
+
+bool isFileExist(const std::string& path) {
+    return std::filesystem::exists(path);
 }
 
 #ifndef NDEBUG
