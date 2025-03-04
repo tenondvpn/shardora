@@ -565,6 +565,7 @@ void NetworkInit::InitLocalNetworkId() {
             sharding_id < network::kConsensusShardEndNetworkId; ++sharding_id) {
         auto block_ptr = elect_block_mgr.GetLatestElectBlock(sharding_id);
         if (block_ptr == nullptr) {
+            ZJC_DEBUG("failed get elect block shard: %d", sharding_id);
             break;
         }
 
