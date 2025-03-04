@@ -1011,8 +1011,8 @@ void NetworkInit::GetNetworkNodesFromConf(
                 }
 
                 sks.push_back(common::Encode::HexDecode(items[0]));
+                ZJC_DEBUG("reuse private key: %s", items[0]);
             }
-
         } else {
             for (uint32_t i = 0; i < count; i++) {
                 sks.push_back(common::Random::RandomString(32));
@@ -1020,6 +1020,7 @@ void NetworkInit::GetNetworkNodesFromConf(
                 secptr->SetPrivateKey(sks[i]);
                 auto data = common::Encode::HexEncode(sks[i]) + "\t" + common::Encode::HexEncode(secptr->GetPublicKey()) + "\n";
                 fwrite(data.c_str(), 1, data.size(), fd);
+                ZJC_DEBUG("random private key: %s", common::Encode::HexEncode(sks[i]).c_str());
             }
         }
     };
