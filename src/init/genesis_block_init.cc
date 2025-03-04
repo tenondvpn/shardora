@@ -71,6 +71,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     if (root_iter != valid_net_ids_set.end()) {
         real_root_genesis_nodes = root_genesis_nodes;
     }
+    
     for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
         uint32_t shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
         auto shard_iter = valid_net_ids_set.find(shard_node_net_id);
@@ -78,7 +79,6 @@ int GenesisBlockInit::CreateGenesisBlocks(
             real_cons_genesis_nodes_of_shards[i] = cons_genesis_nodes_of_shards[i]; 
         }
     }
-    
 
     if (net_type == GenisisNetworkType::RootNetwork) { // 构造 root 创世网络
         // 生成节点私有数据，如 bls

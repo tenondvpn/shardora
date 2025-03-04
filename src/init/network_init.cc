@@ -1068,7 +1068,7 @@ void NetworkInit::GetNetworkNodesFromConf(
             std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(sk);
             auto node_ptr = std::make_shared<GenisisNodeInfo>();
-            node_ptr->prikey = common::Encode::HexDecode(sk);
+            node_ptr->prikey = sk;
             node_ptr->pubkey = secptr->GetPublicKey();
             node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
             InitAggBlsForGenesis(node_ptr->id, secptr, prefix_db);
