@@ -992,7 +992,8 @@ void NetworkInit::GetNetworkNodesFromConf(
     //     if (root_config["sks"]) {
     //         uint32_t n = root_config["sk"].size();
     //         uint32_t t = common::GetSignerCount(n);
-    auto rfd = fopen("root/shardora/root_nodes", "w");
+    auto rfd = fopen("/root/shardora/root_nodes", "w");
+    assert(rfd != nullptr);
     defer({
         fclose(rfd);
     });
@@ -1026,7 +1027,8 @@ void NetworkInit::GetNetworkNodesFromConf(
     uint32_t n = 4;
     uint32_t t = common::GetSignerCount(n);
     for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < network::kConsensusShardEndNetworkId; net_i++) {
-        auto sfd = fopen((std::string("root/shardora/shards") + std::to_string(net_i)).c_str(), "w");
+        auto sfd = fopen((std::string("/root/shardora/shards") + std::to_string(net_i)).c_str(), "w");
+        assert(sfd != nullptr);
         defer({
             fclose(sfd);
         });
