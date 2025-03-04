@@ -1647,9 +1647,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // view 从 0 开始
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
-    uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
+    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i) {
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -1658,14 +1657,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
-            // TODO 这里不用区分啊，一样的，后面修改看看
-            if (idx < common::kImmutablePoolSize) {
-                tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
-            } else {
-                // 单独创建 0x000...000
-                tx_info->set_to(address);
-            }
-            
+            tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -1763,7 +1755,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         char data[1024 * 1024];
         fread(data, 1, sizeof(data), fd);
         auto lines = common::Split<>(data, '\n');
-        std::map<uint32_t, std::set<std::string>> pool_index_map;
+        std::map<uint32_t, std::set<std::string>>& pool_index_map = net_pool_index_map_[net_id];
         for (int32_t i = 0; i < lines.Count(); ++i) {
             auto items = common::Split<>(lines[i], '\t');
             if (items.Count() != 2) {
@@ -1779,7 +1771,6 @@ void GenesisBlockInit::InitShardGenesisAccount() {
                 net_id, pool_idx, common::Encode::HexEncode(secptr->GetAddress()).c_str());
         }
 
-        net_pool_index_map_.insert(std::make_pair(net_id, pool_index_map));
         fclose(fd);
     };
 
