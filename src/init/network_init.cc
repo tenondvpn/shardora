@@ -961,8 +961,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             consensus_shard_node_count, 
             root_genesis_nodes, 
             cons_genesis_nodes_of_shards, 
-            db, 
-            true);
+            db);
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
                 root_genesis_nodes,
@@ -1011,8 +1010,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             consensus_shard_node_count, 
             root_genesis_nodes, 
             cons_genesis_nodes_of_shards, 
-            db, 
-            true);
+            db);
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
                 root_genesis_nodes,
