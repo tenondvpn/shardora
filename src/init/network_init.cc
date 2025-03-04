@@ -548,6 +548,8 @@ void NetworkInit::InitLocalNetworkId() {
     if (!prefix_db_->GetJoinShard(&got_sharding_id, &des_sharding_id_)) {
         auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
         if (local_node_account_info == nullptr) {
+            ZJC_DEBUG("fai;ed get local account info id: %s",
+                common::Encode::HexEncode(security_->GetAddress()).c_str());
             return;
         }
 
