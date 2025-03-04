@@ -929,6 +929,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
     }
     
+    ZJC_DEBUG("now consensus_shard_node_count: %u", consensus_shard_node_count);
     std::set<uint32_t> valid_net_ids_set;
     std::string valid_arg_i_value;
     YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");

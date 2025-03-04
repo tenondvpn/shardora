@@ -1471,6 +1471,7 @@ Status Hotstuff::TryCommit(
     auto v_block_to_commit_info = CheckCommit(commit_qc);
     if (v_block_to_commit_info) {
         auto v_block_to_commit = v_block_to_commit_info->view_block;
+        assert(!v_block_to_commit->qc().sign_x().empty());
 // #ifndef NDEBUG
 //         transport::protobuf::ConsensusDebug cons_debug;
 //         cons_debug.ParseFromString(v_block_to_commit->debug());
@@ -1722,12 +1723,6 @@ void Hotstuff::HandleSyncedViewBlock(
         }
         
         pacemaker_->NewQcView(vblock->qc().view());
-        // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-        // if (!latest_committed_block ||
-        //         latest_committed_block->qc().view() < vblock->qc().view()) {
-        //     view_block_chain()->SetLatestCommittedBlock(vblock);        
-        // }
-
         // TODO: fix balance map and storage map
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
