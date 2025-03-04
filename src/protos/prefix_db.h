@@ -878,9 +878,10 @@ public:
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
+        ZJC_DEBUG("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
             sharding_id,
-            common::Encode::HexEncode(node_addr).c_str());
+            common::Encode::HexEncode(node_addr).c_str(),
+            bls_prikey.c_str());
     }
 
     bool GetBlsPrikey(
