@@ -1599,15 +1599,15 @@ Status Hotstuff::Commit(
     while (tmp_block_info != nullptr) {
         auto tmp_block = tmp_block_info->view_block;
         if (!tmp_block_info->valid && !view_block_chain_->view_commited(
-                tmp_block_info->view_block->qc().network_id(), 
-                tmp_block_info->view_block->qc().view())) {
+                    tmp_block_info->view_block->qc().network_id(), 
+                    tmp_block_info->view_block->qc().view()) &&
+                !tmp_block_info->view_block->qc().sign_x().empty()) {
             ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
                 tmp_block_info->view_block->qc().network_id(), 
                 tmp_block_info->view_block->qc().pool_index(), 
                 tmp_block_info->view_block->qc().view(),
                 common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str());
-            assert(!tmp_block_info->view_block->qc().sign_x().empty());
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto db_batch = std::make_shared<db::DbWriteBatch>();
             auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
