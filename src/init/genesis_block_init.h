@@ -130,7 +130,8 @@ private:
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
 
-    std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
+    std::map<uint32_t, std::map<uint32_t, std::set<std::string>>> net_pool_index_map_; // net => (pool => addr)
+    uint32_t net_pool_index_map_addr_count_ = 0;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
     common::Bitmap shard_bitmap_{ common::kEachShardMaxNodeCount };
