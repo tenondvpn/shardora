@@ -56,6 +56,7 @@ private:
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void AddCmds();
     void GetNetworkNodesFromConf(
+        const YAML::Node&, 
         std::vector<GenisisNodeInfoPtr>&, 
         std::vector<GenisisNodeInfoPtrVector>&, 
         const std::shared_ptr<db::Db>&,

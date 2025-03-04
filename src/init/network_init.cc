@@ -897,15 +897,15 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     
     std::set<uint32_t> valid_net_ids_set;
     std::string valid_arg_i_value;
-    // YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
+    YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
 
     if (parser_arg.Has("U")) {
         net_name = "root2";
         valid_net_ids_set.clear();
         valid_net_ids_set.insert(network::kRootCongressNetworkId);
-        // for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
-        //     valid_net_ids_set.insert(genesis_config["shards"][net_i]["net_id"].as<uint32_t>());
-        // }
+        for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
+            valid_net_ids_set.insert(genesis_config["shards"][net_i]["net_id"].as<uint32_t>());
+        }
 
         if (valid_net_ids_set.size() == 0) {
             return kInitError;
@@ -920,12 +920,12 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        // genesis_block.SetGenesisConfig(genesis_config);
+        genesis_block.SetGenesisConfig(genesis_config);
         
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
 
-        GetNetworkNodesFromConf(root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
+        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
@@ -966,12 +966,12 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        // genesis_block.SetGenesisConfig(genesis_config);
+        genesis_block.SetGenesisConfig(genesis_config);
 
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
         
-        GetNetworkNodesFromConf(root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
+        GetNetworkNodesFromConf(genesis_config, root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
 
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
@@ -988,11 +988,17 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 }
 
 void NetworkInit::GetNetworkNodesFromConf(
+        const YAML::Node& genesis_config,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         const std::shared_ptr<db::Db>& db,
         bool reuse_root) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
+    // if (genesis_config["root"]) {
+    //     auto root_config = genesis_config["root"];
+    //     if (root_config["sks"]) {
+    //         uint32_t n = root_config["sk"].size();
+    //         uint32_t t = common::GetSignerCount(n);
     auto get_sks_func = [reuse_root](FILE *fd, std::vector<std::string>& sks, int32_t count) {
         if (reuse_root) {
             char data[1024*1024];
@@ -1045,6 +1051,10 @@ void NetworkInit::GetNetworkNodesFromConf(
     // }
     
     uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;        
+    // if (genesis_config["shards"]) {
+    //     ZJC_DEBUG("shards size = %u", genesis_config["shards"].size());
+    //     assert(genesis_config["shards"].size() == shard_num);
+        
     uint32_t n = 4;
     uint32_t t = common::GetSignerCount(n);
     for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < network::kConsensusShardEndNetworkId; net_i++) {
