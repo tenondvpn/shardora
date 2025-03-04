@@ -1031,16 +1031,15 @@ void NetworkInit::GetNetworkNodesFromConf(
         uint32_t cons_shard_node_count,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-        const std::shared_ptr<db::Db>& db,
-        bool reuse_root) {
+        const std::shared_ptr<db::Db>& db) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     // if (genesis_config["root"]) {
     //     auto root_config = genesis_config["root"];
     //     if (root_config["sks"]) {
     //         uint32_t n = root_config["sk"].size();
     //         uint32_t t = common::GetSignerCount(n);
-    auto get_sks_func = [reuse_root](FILE *fd, std::vector<std::string>& sks, int32_t count) {
-        if (reuse_root) {
+    auto get_sks_func = [](FILE *fd, std::vector<std::string>& sks, int32_t count, bool reuse) {
+        if (reuse) {
             char data[1024*1024];
             fread(data, 1, sizeof(data), fd);
             auto lines = common::Split<>(data, '\n');
@@ -1065,10 +1064,11 @@ void NetworkInit::GetNetworkNodesFromConf(
         }
     };
         
+    bool reuse_root = common::isFileExist("/root/shardora/root_nodes");
     auto rfd = fopen("/root/shardora/root_nodes", (reuse_root ? "r" : "w"));
     assert(rfd != nullptr);
     std::vector<std::string> root_sks;
-    get_sks_func(rfd, root_sks, 3);
+    get_sks_func(rfd, root_sks, 3, reuse_root);
     for (uint32_t i = 0; i < root_sks.size(); i++) {
         std::string& sk = root_sks[i];
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
@@ -1098,10 +1098,12 @@ void NetworkInit::GetNetworkNodesFromConf(
     uint32_t n = cons_shard_node_count;
     uint32_t t = common::GetSignerCount(n);
     for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < network::kConsensusShardEndNetworkId; net_i++) {
-        auto sfd = fopen((std::string("/root/shardora/shards") + std::to_string(net_i)).c_str(), (reuse_root ? "r" : "w"));
+        auto filename = std::string("/root/shardora/shards") + std::to_string(net_i);
+        bool reuse_shard = common::isFileExist(filename);
+        auto sfd = fopen(filename.c_str(), (reuse_shard ? "r" : "w"));
         assert(sfd != nullptr);
         std::vector<std::string> shard_sks;
-        get_sks_func(sfd, shard_sks, n);
+        get_sks_func(sfd, shard_sks, n, reuse_shard);
         std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
         for (uint32_t i = 0; i < n; i++) {        
             std::string& sk = shard_sks[i];

@@ -59,8 +59,7 @@ private:
         uint32_t cons_shard_node_count,
         std::vector<GenisisNodeInfoPtr>&, 
         std::vector<GenisisNodeInfoPtrVector>&, 
-        const std::shared_ptr<db::Db>&,
-        bool reuse_root);
+        const std::shared_ptr<db::Db>&);
     void InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& security_ptr, std::shared_ptr<protos::PrefixDb>&);
     void GetAggBlsSkFromFile(const std::string& node_id, libff::alt_bn128_Fr* agg_bls_sk);
     void WriteAggBlsSkToFile(const std::string& node_id, const libff::alt_bn128_Fr& agg_bls_sk);
