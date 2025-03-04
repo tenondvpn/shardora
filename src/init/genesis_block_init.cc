@@ -1676,16 +1676,17 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto pool_iter = pool_map.find(i);
         if (pool_iter != pool_map.end()) {
             for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
-                std::string shard_acc_address = *addr_iter;
                 // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
                 auto tx_info = tx_list->Add();
                 tx_info->set_gid(common::CreateGID(""));
                 tx_info->set_from("");
-                tx_info->set_to(shard_acc_address);
+                tx_info->set_to(*addr_iter);
                 tx_info->set_amount(genesis_account_balance);
                 tx_info->set_balance(genesis_account_balance);
                 tx_info->set_gas_limit(0);
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+                ZJC_DEBUG("success add address: %s, balance: %lu",
+                    common::Encode::HexEncode(*addr_iter).c_str(), genesis_account_balance);
             }
         }
         

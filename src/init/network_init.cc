@@ -900,12 +900,11 @@ void NetworkInit::CreateInitAddress(uint32_t net_id) {
     uint32_t address_count_now = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
         while (true) {
             auto private_key = common::Random::RandomString(32);
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(private_key);
-            address = ecdsa.GetAddress();
+            auto address = ecdsa.GetAddress();
             if (common::GetAddressPoolIndex(address) == i) {
                 auto data = common::Encode::HexEncode(private_key) + "\t" + common::Encode::HexEncode(ecdsa.GetPublicKey()) + "\n";
                 fwrite(data.c_str(), 1, data.size(), fd);
