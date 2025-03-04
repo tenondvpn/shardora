@@ -922,7 +922,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         return -1;
     }
 
-    uint32_t consensus_shard_node_count = 4;
+    int consensus_shard_node_count = 4;
     if (parser_arg.Has("N")) {
         if (parser_arg.Get("N", consensus_shard_node_count) != common::kParseSuccess) {
             return -1;
