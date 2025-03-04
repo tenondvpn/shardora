@@ -1040,7 +1040,6 @@ void NetworkInit::GetNetworkNodesFromConf(
             fwrite(data.c_str(), 1, data.size(), sfd);
             auto node_ptr = std::make_shared<GenisisNodeInfo>();
             node_ptr->prikey = common::Encode::HexDecode(sk);
-            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(node_ptr->prikey);
             
             node_ptr->pubkey = secptr->GetPublicKey();
