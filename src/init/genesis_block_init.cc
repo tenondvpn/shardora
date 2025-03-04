@@ -1841,6 +1841,7 @@ uint32_t GenesisBlockInit::GetNetworkIdOfGenesisAddress(const std::string& addre
 
 // InitShardGenesisAccount 初始化所有 shard 所有 pool 的创世账号，共 64 x 256 个
 void GenesisBlockInit::InitShardGenesisAccount() {
+    assert(false);
     // Execute once
     static bool hasRunOnce = false;
 
@@ -1880,6 +1881,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 }
 
 void GenesisBlockInit::GenerateRootAccounts() {
+    assert(false);
     for (uint32_t i = 0; i < genesis_config_["root"]["accounts"].size(); i++) {
         std::string account_id = genesis_config_["root"]["accounts"][i].as<std::string>();
         root_account_with_pool_index_map_.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
