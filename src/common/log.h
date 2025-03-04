@@ -22,10 +22,10 @@
 #define LOG_INS log4cpp::Category::getInstance(std::string("sub1"))
 #ifdef _WIN32
 
-// #ifdef NDEBUG
-// #define DEBUG(fmt, ...)
-// #define ZJC_DEBUG(fmt, ...)
-// #else
+#ifdef NDEBUG
+#define DEBUG(fmt, ...)
+#define ZJC_DEBUG(fmt, ...)
+#else
 // #define DEBUG(fmt, ...)
 // #define ZJC_DEBUG(fmt, ...)
 
@@ -36,7 +36,7 @@
 #define ZJC_DEBUG(fmt, ...)  do {\
     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
-// #endif
+#endif
 
 #define ZJC_INFO(fmt, ...)  do {\
     LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
@@ -58,10 +58,10 @@
 } while (0)
 #else
 
-// #ifdef NDEBUG
-// #define DEBUG(fmt, ...)
-// #define ZJC_DEBUG(fmt, ...)
-// #else
+#ifdef NDEBUG
+#define DEBUG(fmt, ...)
+#define ZJC_DEBUG(fmt, ...)
+#else
 // #define DEBUG(fmt, ...)
 // #define ZJC_DEBUG(fmt, ...)
 #define DEBUG(fmt, ...)  do {\
@@ -70,7 +70,7 @@
 #define ZJC_DEBUG(fmt, ...)  do {\
     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
-// #endif
+#endif
 // #define ZJC_INFO(fmt, ...)
 // #define ZJC_WARN(fmt, ...)
 #define ZJC_INFO(fmt, ...)  do {\
@@ -105,10 +105,10 @@
 #undef ZJC_WARN
 #undef ZJC_ERROR
 
-// #ifdef NDEBUG
-// #define DEBUG(fmt, ...)
-// #define ZJC_DEBUG(fmt, ...)
-// #else
+#ifdef NDEBUG
+#define DEBUG(fmt, ...)
+#define ZJC_DEBUG(fmt, ...)
+#else
 // #define DEBUG(fmt, ...)
 // #define ZJC_DEBUG(fmt, ...)
 
@@ -118,7 +118,7 @@
 #define ZJC_DEBUG(fmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
-// #endif
+#endif
 
 #define ZJC_INFO(fmt, ...)  do {\
     printf("[INFO][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
