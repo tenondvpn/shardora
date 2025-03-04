@@ -999,7 +999,7 @@ void NetworkInit::GetNetworkNodesFromConf(
     //     if (root_config["sks"]) {
     //         uint32_t n = root_config["sk"].size();
     //         uint32_t t = common::GetSignerCount(n);
-    auto get_sks_func = [](FILE *fd, std::vector<std::string>& sks, int32_t count) {
+    auto get_sks_func = [reuse_root](FILE *fd, std::vector<std::string>& sks, int32_t count) {
         if (reuse_root) {
             char dara[1024*1024];
             fread(data, 1, sizeof(data), fd);
