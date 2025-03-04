@@ -890,6 +890,29 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     return kInitSuccess;
 }
 
+void NetworkInit::CreateInitAddress(uint32_t net_id) {
+    uint32_t idx = 0;
+    auto fd = fopen((std::string("/root/shardora/init_accounts") + std::to_string(net_id)).c_str(), "w");
+    uint32_t address_count_now = 0;
+    // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
+    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
+        std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
+        while (i < common::kImmutablePoolSize) {
+            auto private_key = common::Random::RandomString(32);
+            security::Ecdsa ecdsa;
+            ecdsa.SetPrivateKey(private_key);
+            address = ecdsa.GetAddress();
+            if (common::GetAddressPoolIndex(address) == i) {
+                auto data = common::Encode::HexEncode(private_key) + "\t" + common::Encode::HexEncode(ecdsa.GetPublicKey()) + "\n";
+                fwrite(data.c_str(), 1, data.size(), fd);
+                break;
+            }
+        }
+    }
+
+    fclose(fd);
+}
+
 int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name) {
     if (!parser_arg.Has("U") && !parser_arg.Has("S")) {
         return -1;
@@ -898,6 +921,11 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     std::set<uint32_t> valid_net_ids_set;
     std::string valid_arg_i_value;
     YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
+
+    for (uint32_t net_id = network::kConsensusShardBeginNetworkId; 
+            net_id < network::kConsensusShardEndNetworkId; ++net_id) {
+        CreateInitAddress(net_id);
+    }
 
     if (parser_arg.Has("U")) {
         net_name = "root2";
@@ -916,10 +944,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         // genesis_block.SetGenesisConfig(genesis_config);
         
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
-        std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
-
+        std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
+            network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
         GetNetworkNodesFromConf(root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
-
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
                 root_genesis_nodes,
@@ -962,10 +989,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         // genesis_block.SetGenesisConfig(genesis_config);
 
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
-        std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
-        
+        std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
+            network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
         GetNetworkNodesFromConf(root_genesis_nodes, cons_genesis_nodes_of_shards, db, true);
-
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
                 root_genesis_nodes,
