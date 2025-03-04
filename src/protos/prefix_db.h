@@ -912,9 +912,11 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("get bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
+        ZJC_DEBUG("get bls success: %lu, %u, %s, private key: %s, src: %s, bls_prikey: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
+            common::Encode::HexEncode(val).c_str(),
+            common::Encode::HexEncode(security_ptr->GetPrikey()).c_str(),
             bls_prikey->c_str());
         return true;
     }
