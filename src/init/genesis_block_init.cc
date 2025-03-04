@@ -793,7 +793,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         return kInitError;
     }
 
-    GenerateRootAccounts();
+    // GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
     hotstuff::View root_single_block_view = 0;
     // for root single block chain
@@ -1035,7 +1035,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
     // 256 个 root 创世账号
-    GenerateRootAccounts();
+    // GenerateRootAccounts();
     // 256 x shard_num 个 shard 创世账号
     InitShardGenesisAccount();
     uint64_t genesis_account_balance = 0llu;

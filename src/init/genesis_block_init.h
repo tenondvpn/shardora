@@ -74,7 +74,7 @@ private:
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
     const std::map<uint32_t, std::string> GetGenesisAccount(uint32_t net_id);
     void InitShardGenesisAccount();
-    void GenerateRootAccounts();
+    // void GenerateRootAccounts();
     int GenerateRootSingleBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         FILE* root_gens_init_block_file,
