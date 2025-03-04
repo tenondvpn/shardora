@@ -1647,7 +1647,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
     uint32_t idx = 0;
-    auto fd = fopen((std::string("/root/shardora/addrs") + std::to_string(net_id)).c_str(), "w");
+    auto fd = fopen((std::string("/root/shardora/init_accounts") + std::to_string(net_id)).c_str(), "w");
     char data[1024*1024];
     std::vector<std::string> sks;
     fread(data, 1, sizeof(data), fd);
