@@ -1001,7 +1001,7 @@ void NetworkInit::GetNetworkNodesFromConf(
     //         uint32_t t = common::GetSignerCount(n);
     auto get_sks_func = [reuse_root](FILE *fd, std::vector<std::string>& sks, int32_t count) {
         if (reuse_root) {
-            char dara[1024*1024];
+            char data[1024*1024];
             fread(data, 1, sizeof(data), fd);
             auto lines = common::Split<>(data, '\n');
             for (uint32_t i = 0; i < lines.Count(); ++i) {
