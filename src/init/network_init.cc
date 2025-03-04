@@ -891,7 +891,6 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
 }
 
 void NetworkInit::CreateInitAddress(uint32_t net_id) {
-    uint32_t idx = 0;
     auto file_name = std::string("/root/shardora/init_accounts") + std::to_string(net_id);
     if (common::isFileExist(file_name)) {
         return;
@@ -900,9 +899,9 @@ void NetworkInit::CreateInitAddress(uint32_t net_id) {
     auto fd = fopen(file_name.c_str(), "w");
     uint32_t address_count_now = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i, ++idx) {
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
-        while (i < common::kImmutablePoolSize) {
+        while (true) {
             auto private_key = common::Random::RandomString(32);
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(private_key);
