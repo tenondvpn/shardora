@@ -1874,6 +1874,8 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
         std::string account_id = shard_config["accounts"][i].as<std::string>();
         pool_index_map.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
     }
+    ZJC_DEBUG("pool_index_map size: %u", pool_index_map.size());
+    assert(pool_index_map.empty());
     return pool_index_map;
 }
 
@@ -1882,6 +1884,9 @@ void GenesisBlockInit::GenerateRootAccounts() {
         std::string account_id = genesis_config_["root"]["accounts"][i].as<std::string>();
         root_account_with_pool_index_map_.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
     }
+
+    ZJC_DEBUG("root_account_with_pool_index_map_ size: %u", root_account_with_pool_index_map_.size());
+    assert(root_account_with_pool_index_map_.empty());
 }
 
 };  // namespace init

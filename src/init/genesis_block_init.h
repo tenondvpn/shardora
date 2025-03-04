@@ -47,9 +47,6 @@ public:
         genesis_config_ = genesis_config;
     }
 
-    const YAML::Node GenesisConfig() const {
-        return genesis_config_;
-    }
 private:
     std::unordered_map<std::string, uint64_t> GetGenesisAccountBalanceMap(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
