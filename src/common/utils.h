@@ -429,7 +429,7 @@ bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... 
     return false;
 }
 
-bool isFileExist(const std::string& path) {
+static inline bool isFileExist(const std::string& path) {
     return std::filesystem::exists(path);
 }
 
