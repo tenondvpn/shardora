@@ -347,27 +347,27 @@ std::string ViewBlockChain::String() const {
     return "";
 #endif
 
-    std::vector<std::shared_ptr<ViewBlock>> view_blocks;
+    std::vector<std::shared_ptr<ViewBlockInfo>> view_blocks;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
-        if (it->second->view_block) {
-            view_blocks.push_back(it->second->view_block);
-        }
+        view_blocks.push_back(it->second);
     }
 
     std::sort(
             view_blocks.begin(), 
             view_blocks.end(), 
-            [](const std::shared_ptr<ViewBlock>& a, const std::shared_ptr<ViewBlock>& b) {
-        return a->qc().view() < b->qc().view();
+            [](const std::shared_ptr<ViewBlockInfo>& a, const std::shared_ptr<ViewBlockInfo>& b) {
+        return a->view_block->qc().view() < b->view_block->qc().view();
     });
 
     std::string ret;
     std::string block_height_str;
     std::set<uint64_t> height_set;
     for (const auto& vb : view_blocks) {
-        ret += "," + std::to_string(vb->qc().view());
-        block_height_str += "," + std::to_string(vb->qc().view()) + ":" + std::to_string(vb->qc().sign_x().empty());
-        height_set.insert(vb->qc().view());
+        ret += "," + std::to_string(vb->view_block->qc().view());
+        block_height_str += ", " + std::to_string(vb->view_block->qc().view()) + ":" + 
+            std::to_string(vb->view_block->qc().sign_x().empty()) + ":" + 
+            std::to_string(vb->block_chain_choosed);
+        height_set.insert(vb->view_block->qc().view());
     }
 
     ZJC_DEBUG("get chain pool: %u, views: %s, block_height_str: %s",
