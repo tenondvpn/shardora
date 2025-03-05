@@ -89,21 +89,21 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
     
-    if (!directly_store) {
-        // 父块必须存在
-        auto it = view_blocks_info_.find(view_block->parent_hash());
-        if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
-            if (latest_committed_block_ == nullptr ||
-                    latest_committed_block_->qc().view_block_hash() != view_block->parent_hash()) {
-                ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
-                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-                    common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-                    view_block->qc().view(), pool_index_);
-                assert(false);
-                return Status::kLackOfParentBlock;
-            }
-        }
-    }
+    // if (!directly_store) {
+    //     // 父块必须存在
+    //     auto it = view_blocks_info_.find(view_block->parent_hash());
+    //     if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
+    //         if (latest_committed_block_ == nullptr ||
+    //                 latest_committed_block_->qc().view_block_hash() != view_block->parent_hash()) {
+    //             ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
+    //                 common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+    //                 common::Encode::HexEncode(view_block->parent_hash()).c_str(),
+    //                 view_block->qc().view(), pool_index_);
+    //             assert(false);
+    //             return Status::kLackOfParentBlock;
+    //         }
+    //     }
+    // }
 
     // 如果有 qc，则 qc 指向的块必须存在
     // if (view_block->has_qc() && !view_block->qc().view_block_hash().empty() && !QCRef(*view_block)) {
