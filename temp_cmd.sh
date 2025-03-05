@@ -7,7 +7,6 @@ echo "new node: $local_ip $start_pos $node_count"
 exit 0
 shard3_node_count=`wc -l /root/pkg/shards3 | awk -F' ' '{print $1}'`
 root_node_count=`wc -l /root/pkg/root_nodes | awk -F' ' '{print $1}'`
-echo $bootstrap
 end_pos=$((start_pos + node_count))
 for ((i=$start_pos; i<=$end_pos;i++)); do
     prikey=`sed -n "$i""p" /root/pkg/shards3 | awk -F'\t' '{print $1}'`
@@ -15,7 +14,7 @@ for ((i=$start_pos; i<=$end_pos;i++)); do
     echo $prikey
     cp -rf /root/zjnodes/temp /root/zjnodes/s3_$i
     sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
-    sed -i 's/LOCAL_IP/127.0.0.1/g' /root/zjnodes/s3_$i/conf/zjchain.conf
+    sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     if ((i>=100)); then
         sed -i 's/HTTP_PORT/23'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
