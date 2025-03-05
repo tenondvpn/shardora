@@ -333,7 +333,7 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
 std::string ViewBlockChain::String() const {
-#ifndef NDEBUG
+#ifdef NDEBUG
     return "";
 #endif
 
