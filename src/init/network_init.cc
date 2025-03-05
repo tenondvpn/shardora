@@ -310,20 +310,6 @@ int NetworkInit::Init(int argc, char** argv) {
 
     });
 
-    cmd_.AddCommand("sph", [this](const std::vector<std::string>& args) {
-        if (args.size() < 2) {
-            return;
-        }
-        uint32_t shard_id = std::stoi(args[0]);
-        uint64_t elect_height = std::stoull(args[1]);
-        std::string con_addr = "";
-        auto plege_addr = elect::ElectPlege::gen_elect_plege_contract_addr(shard_id);
-        db::DbWriteBatch db_batch;
-        prefix_db_->AddNowElectHeight2Plege(plege_addr, elect_height, db_batch);
-        db_->Put(db_batch);
-
-    });
-
     cmd_.Run();
     // std::this_thread::sleep_for(std::chrono::seconds(120));
     return kInitSuccess;

@@ -49,7 +49,9 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && 
+            balane_map_ptr == nullptr && 
+            view_block->has_block_info()) {
         balane_map_ptr = std::make_shared<BalanceMap>();
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
@@ -62,25 +64,6 @@ Status ViewBlockChain::Store(
             
         }
     }
-
-    // if (!zjc_host_ptr) {
-    //     zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
-    //     for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-    //         auto& tx = view_block->block_info().tx_list(i);
-    //         ZJC_DEBUG("store success prev storage key tx step: %d", tx.step());
-    //         for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
-    //             zjc_host_ptr->SavePrevStorages(
-    //                 tx.storages(s_idx).key(), 
-    //                 tx.storages(s_idx).value(),
-    //                 true);
-    //             if (tx.storages(s_idx).key().size() > 40)
-    //             ZJC_DEBUG("store success prev storage key: %s, value: %s",
-    //                 common::Encode::HexEncode(tx.storages(s_idx).key()).c_str(),
-    //                 common::Encode::HexEncode(tx.storages(s_idx).value()).c_str());
-
-    //         }
-    //     }
-    // }
 
 #ifndef NDEBUG
     ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
@@ -615,6 +598,9 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             qc_item.pool_index(), 
             qc_item.view(), 
             common::Encode::HexEncode(qc_item.view_block_hash()).c_str());
+        auto view_block_ptr = std::make_shared<ViewBlock>();
+        *view_block_ptr->mutable_qc() = qc_item;
+        Store(view_block_ptr, false, nullptr, nullptr, false);
         return;
     }
 
@@ -622,11 +608,6 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     if (!IsQcTcValid(view_block_ptr->qc())) {
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
-        auto db_bach = std::make_shared<db::DbWriteBatch>();
-        auto st = db_->Put(*db_bach);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
     }
 
     if (high_view_block_ == nullptr ||

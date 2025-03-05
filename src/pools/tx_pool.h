@@ -94,7 +94,6 @@ public:
     void SyncBlock();
     double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count);
     void RecoverTx(const std::string& gid);
-    bool GidValid(const std::string& gid);
 
     uint32_t all_tx_size() const {
         return added_txs_.size() + consensus_added_txs_.size();

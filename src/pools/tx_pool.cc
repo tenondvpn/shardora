@@ -462,36 +462,6 @@ void TxPool::RecoverTx(const std::string& gid) {
     }
 }
 
-bool TxPool::GidValid(const std::string& gid) {
-    return true;
-    common::AutoSpinLock auto_lock(tx_pool_mutex_);
-    CheckThreadIdValid();
-    auto tmp_res = added_gids_.insert(gid);
-    ZJC_DEBUG("check gid valid called: %s", common::Encode::HexEncode(gid).c_str());
-    // CHECK_MEMORY_SIZE(added_gids_);
-    if (tmp_res.second) {
-        if (prefix_db_->CheckAndSaveGidExists(gid)) {
-            return false;
-        }
-
-        std::string key = protos::kGidPrefix + gid;
-        added_gids_batch_.Put(key, "1");
-        if (added_gids_.size() >= 1024) {
-            auto st = db_->Put(added_gids_batch_);
-            if (!st.ok()) {
-                ZJC_FATAL("write data to db failed!");
-            }
-
-            added_gids_batch_ = db::DbWriteBatch();
-            added_gids_.clear();
-        }
-
-        return true;
-    }
-   
-    return false;
-}
-
 void TxPool::RemoveTx(const std::string& gid) {
     // CheckThreadIdValid();
     // auto added_gid_iter = added_gids_.find(gid);

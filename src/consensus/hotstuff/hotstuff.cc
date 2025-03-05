@@ -104,7 +104,6 @@ Status Hotstuff::Start() {
         ZJC_ERROR("Get Leader is error.");
     } else if (leader->index == local_member->index) {
         ZJC_DEBUG("ViewBlock start propose");
-        Propose(nullptr, nullptr, nullptr);
     }
     return Status::kSuccess;
 }
@@ -223,13 +222,7 @@ Status Hotstuff::Propose(
 
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
-    if (s != Status::kSuccess && tc == nullptr) {
-        ZJC_INFO("pool: %d, view: %lu, construct hotstuff msg failed",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        return s;
-    }
-
+    ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (tc != nullptr) {
         *pb_pro_msg->mutable_tc() = *tc;
     }
@@ -385,13 +378,7 @@ void Hotstuff::NewView(
         *pb_newview_msg->mutable_tc() = *tc;
     }
 
-    Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        return;
-    }
-    
+    ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
     if (!header.has_broadcast()) {
         auto broadcast = header.mutable_broadcast();
@@ -1046,13 +1033,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     }
     // Construct HotstuffMessage and send
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, ConstructHotstuffMsg error %d, hash64: %lu",
-            pool_idx_, s, pro_msg_wrap->msg_ptr->header.hash64());
-        return Status::kError;
-    }
-    
+    ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (SendMsgToLeader(pro_msg_wrap->leader, trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
@@ -1471,12 +1452,15 @@ Status Hotstuff::TryCommit(
     auto v_block_to_commit_info = CheckCommit(commit_qc);
     if (v_block_to_commit_info) {
         auto v_block_to_commit = v_block_to_commit_info->view_block;
-        if (v_block_to_commit->qc().sign_x().empty()) {
+        if (v_block_to_commit->qc().sign_x().empty() || !v_block_to_commit->has_block_info()) {
             kv_sync_->AddSyncViewHash(
                 v_block_to_commit->qc().network_id(), 
                 v_block_to_commit->qc().pool_index(), 
                 v_block_to_commit->qc().view_block_hash(), 
                 0);
+        }
+
+        if (v_block_to_commit->qc().sign_x().empty()) {
             return Status::kSuccess;
         }
 // #ifndef NDEBUG
@@ -1518,13 +1502,13 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     }
 
     auto v_block1 = v_block1_info->view_block;
-// #ifndef NDEBUG
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(v_block1->debug());
     ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
         common::Encode::HexEncode(qc.view_block_hash()).c_str(),
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
-// #endif
+#endif
     assert(v_block1->parent_hash() != qc.view_block_hash());
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
@@ -1605,7 +1589,9 @@ Status Hotstuff::Commit(
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
         auto tmp_block = tmp_block_info->view_block;
-        if (!tmp_block_info->valid && !view_block_chain_->view_commited(
+        if (!tmp_block_info->block_chain_choosed && 
+                tmp_block->has_block_info() &&
+                !view_block_chain_->view_commited(
                     tmp_block_info->view_block->qc().network_id(), 
                     tmp_block_info->view_block->qc().view()) &&
                 !tmp_block_info->view_block->qc().sign_x().empty()) {
@@ -1623,8 +1609,16 @@ Status Hotstuff::Commit(
             view_block_chain()->SaveBlockCheckedParentHash(
                 tmp_block_info->view_block->parent_hash(), 
                 tmp_block_info->view_block->qc().view());
-            tmp_block_info->valid = true;
+            tmp_block_info->block_chain_choosed = true;
             ADD_DEBUG_PROCESS_TIMESTAMP();
+        }
+
+        if (!tmp_block->has_block_info()) {
+            kv_sync_->AddSyncViewHash(
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view_block_hash(), 
+                0);
         }
 
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
@@ -1733,7 +1727,6 @@ void Hotstuff::HandleSyncedViewBlock(
         
         pacemaker_->NewQcView(vblock->qc().view());
         // TODO: fix balance map and storage map
-        view_block_chain()->UpdateHighViewBlock(vblock->qc());
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         transport::MessagePtr msg_ptr;
         TryCommit(msg_ptr, vblock->qc(), 99999999lu);
@@ -2099,7 +2092,7 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
     return false;
 }
 
-Status Hotstuff::ConstructHotstuffMsg(
+void Hotstuff::ConstructHotstuffMsg(
         const MsgType msg_type, 
         pb_ProposeMsg* pb_pro_msg, 
         pb_VoteMsg* pb_vote_msg,
@@ -2108,7 +2101,6 @@ Status Hotstuff::ConstructHotstuffMsg(
     pb_hotstuff_msg->set_type(msg_type);
     pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     pb_hotstuff_msg->set_pool_index(pool_idx_);
-    return Status::kSuccess;
 }
 
 Status Hotstuff::SendMsgToLeader(

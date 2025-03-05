@@ -82,13 +82,13 @@ struct ViewBlockInfo {
     std::unordered_set<std::string> added_txs;
     BalanceMapPtr acc_balance_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
-    bool valid;
+    bool block_chain_choosed;
 
     ViewBlockInfo() : 
         view_block(nullptr), 
         status(ViewBlockStatus::Unknown), 
         qc(nullptr),
-        valid(false) {}
+        block_chain_choosed(false) {}
 };
 
 class Pipeline {
