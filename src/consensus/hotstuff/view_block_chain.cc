@@ -356,7 +356,7 @@ std::string ViewBlockChain::String() const {
     std::set<uint64_t> height_set;
     for (const auto& vb : view_blocks) {
         ret += "," + std::to_string(vb->qc().view());
-        block_height_str += "," + std::to_string(vb->block_info().height());
+        block_height_str += "," + std::to_string(vb->block_info().height()) + ":" + common::Encode::HexEncode(vb->qc().view_block_hash());
         height_set.insert(vb->block_info().height());
     }
 
