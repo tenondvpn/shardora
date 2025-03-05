@@ -1471,7 +1471,14 @@ Status Hotstuff::TryCommit(
     auto v_block_to_commit_info = CheckCommit(commit_qc);
     if (v_block_to_commit_info) {
         auto v_block_to_commit = v_block_to_commit_info->view_block;
-        assert(!v_block_to_commit->qc().sign_x().empty());
+        if (v_block_to_commit->qc().sign_x().empty()) {
+            kv_sync_->AddSyncViewHash(
+                v_block_to_commit->qc().network_id(), 
+                v_block_to_commit->qc().pool_index(), 
+                v_block_to_commit->qc().view_block_hash(), 
+                0);
+            return Status::kSuccess;
+        }
 // #ifndef NDEBUG
 //         transport::protobuf::ConsensusDebug cons_debug;
 //         cons_debug.ParseFromString(v_block_to_commit->debug());
