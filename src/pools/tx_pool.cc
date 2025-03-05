@@ -313,38 +313,6 @@ void TxPool::GetTxIdempotently(
     assert(gid_map_.size() == tx_size());
 }
 
-void TxPool::GetTxByIds(
-        const std::vector<std::string>& gids,
-        std::map<std::string, TxItemPtr>& res_map) {
-    // assert(false);
-    return;
-    common::AutoSpinLock auto_lock(tx_pool_mutex_);
-    CheckThreadIdValid();
-    for (const auto& gid : gids) {
-        auto it = gid_map_.find(gid);
-        if (it == gid_map_.end()) {
-            continue;
-        }
-        auto hash = it->second->unique_tx_hash;
-        TxItemPtr tx = nullptr;
-        GetTxByHash(universal_prio_map_, hash, tx);
-        if (tx) {
-            res_map[tx->unique_tx_hash] = tx;
-            continue;
-        }
-        GetTxByHash(prio_map_, hash, tx);
-        if (tx) {
-            res_map[tx->unique_tx_hash] = tx;
-            continue;
-        }
-        GetTxByHash(consensus_tx_map_, hash, tx);
-        if (tx) {
-            res_map[tx->unique_tx_hash] = tx;
-            continue;
-        }
-    }
-}
-
 void TxPool::GetTxByHash(
         std::map<std::string, TxItemPtr>& src_prio_map,
         const std::string& hash,

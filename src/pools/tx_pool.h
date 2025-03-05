@@ -72,9 +72,6 @@ public:
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func);
-    void GetTxByIds(
-            const std::vector<std::string>& gids,
-            std::map<std::string, TxItemPtr>& res_map);    
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     void CheckTimeoutTx();

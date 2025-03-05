@@ -367,7 +367,9 @@ std::string ViewBlockChain::String() const {
         block_height_str += ", " + std::to_string(vb->view_block->qc().view()) + ":" + 
             std::to_string(vb->view_block->qc().sign_x().empty()) + ":" + 
             std::to_string(vb->block_chain_choosed);
-        height_set.insert(vb->view_block->qc().view());
+        if (!vb->block_chain_choosed) {
+            height_set.insert(vb->view_block->qc().view());
+        }
     }
 
     ZJC_DEBUG("get chain pool: %u, views: %s, block_height_str: %s",

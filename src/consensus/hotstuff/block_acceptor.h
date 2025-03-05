@@ -109,13 +109,7 @@ public:
     Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) override;
     // Commit a block and execute its txs.
     void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
-    // Add txs from hotstuff msg to local pool
-    // Status AddTxs(
-    //     transport::MessagePtr msg_ptr, 
-    //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
     void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
-    // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
-    void MarkBlockTxsAsUsed(const block::protobuf::Block&) override;
 
     inline double Tps() override {
         return cur_tps_;

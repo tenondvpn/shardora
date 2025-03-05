@@ -530,18 +530,6 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     return true;
 }
 
-void BlockAcceptor::MarkBlockTxsAsUsed(const block::protobuf::Block& block) {
-    // mark txs as used
-    std::vector<std::string> gids;
-    for (uint32_t i = 0; i < uint32_t(block.tx_list().size()); i++) {
-        auto& gid = block.tx_list(i).gid();
-        gids.push_back(gid);
-    }
-
-    std::map<std::string, pools::TxItemPtr> res_map;
-    pools_mgr_->GetTxByGids(pool_idx(), gids, res_map);    
-}
-
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,

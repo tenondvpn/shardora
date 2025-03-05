@@ -873,8 +873,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kError;
     }
 
-    // 成功接入链中，标记交易占用
-    acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
+    TryCommit(pro_msg_wrap->msg_ptr, pro_msg_wrap->view_block_ptr->qc(), 0);
     return Status::kSuccess;    
 }
 
@@ -987,8 +986,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         return Status::kError;
     }
 
-    // 成功接入链中，标记交易占用
-    acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
+    TryCommit(pro_msg_wrap->msg_ptr, pro_msg_wrap->view_block_ptr->qc(), 0);
     return Status::kSuccess;
 }
 
@@ -1330,13 +1328,14 @@ Status Hotstuff::StoreVerifiedViewBlock(
     }
 
     transport::MessagePtr msg_ptr;
+    view_block_chain()->Store(v_block, true, nullptr, nullptr, false);
     TryCommit(msg_ptr, *qc, 99999999lu);
     ZJC_DEBUG("success store v block pool: %u, hash: %s, prehash: %s",
         pool_idx_,
         common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block->parent_hash()).c_str());
     // TODO: check valid
-    return view_block_chain()->Store(v_block, true, nullptr, nullptr, false);
+    return Status::kSuccess;    
 }
 
 void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {

@@ -1189,13 +1189,6 @@ void TxPoolManager::GetTxIdempotently(
     tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
 
-void TxPoolManager::GetTxByGids(
-        uint32_t pool_index, 
-        std::vector<std::string> gids, 
-        std::map<std::string, pools::TxItemPtr>& res_map) {
-    tx_pool_[pool_index].GetTxByIds(gids, res_map);
-}
-
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
     assert(pool_index < common::kInvalidPoolIndex);
     return tx_pool_[pool_index].TxRecover(recover_txs);
