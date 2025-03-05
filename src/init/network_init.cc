@@ -1041,7 +1041,7 @@ void NetworkInit::GetNetworkNodesFromConf(
         if (reuse) {
             char data[1024*1024];
             fread(data, 1, sizeof(data), fd);
-            auto lines = common::Split<>(data, '\n');
+            auto lines = common::Split<1024>(data, '\n');
             for (uint32_t i = 0; i < lines.Count(); ++i) {
                 auto items = common::Split<>(lines[i], '\t');
                 if (items.Count() != 2) {
