@@ -1,4 +1,7 @@
-echo "hello world."
+local_ip=$1
+start_pos=$2
+node_count=$3
+echo "new node: $local_ip $start_pos $node_count"
 exit 0
 shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
 root_node_count=`wc -l /root/shardora/root_nodes | awk -F' ' '{print $1}'`

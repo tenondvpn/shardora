@@ -1,5 +1,6 @@
+nodes_count=$1
+node_ips=$2
 init() {
-    node_ips=$2
     if [ "$node_ips" == "" ]; then
         echo "just use local single node."
         node_ips='127.0.0.1'
@@ -26,12 +27,11 @@ init() {
     sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
 
     sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    nodes_count=$1
     if [[ "$nodes_count" -eq "" ]]; then
-    nodes_count=4 
+        nodes_count=4 
     fi
-    shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
 
+    shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
         rm -rf /root/shardora/shards*
@@ -91,8 +91,9 @@ scp_package() {
 run_command() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
+    start_pos=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $nodes_count" &
         run_cmd_count=$((run_cmd_count + i))
         if [ $run_cmd_count -ge 10 ]; then
             check_cmd_finished
