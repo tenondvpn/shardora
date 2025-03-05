@@ -49,6 +49,15 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
+    auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
+    if (it != view_blocks_info_.end()) {
+        if (it->second->view_block && !it->second->view_block->qc().sign_x().empty()) {
+            return Status::kSuccess;
+        }
+            
+        view_blocks_info_.erase(it);
+    }
+
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && 
             balane_map_ptr == nullptr && 
             view_block->has_block_info()) {
