@@ -146,7 +146,7 @@ static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
 static void LoadAllAccounts(int32_t shardnum=3) {
-    FILE* fd = fopen((std::string("../addrs") + std::to_string(shardnum)).c_str(), "r");
+    FILE* fd = fopen((std::string("../init_accounts") + std::to_string(shardnum)).c_str(), "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
@@ -305,7 +305,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 100 == 0) {
+        if (count % 1 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
