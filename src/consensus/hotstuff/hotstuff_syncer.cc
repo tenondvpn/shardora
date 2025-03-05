@@ -608,6 +608,7 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
 Status HotstuffSyncer::processResponseChain(
         const uint32_t& pool_idx,
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
+    assert(false);
     auto& view_block_items = view_block_res.view_block_items();
     if (view_block_items.size() <= 0) {
         return Status::kSuccess;
@@ -671,10 +672,10 @@ Status HotstuffSyncer::processResponseChain(
     ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
         pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
 
-    if (!tmp_chain->IsValid()) {
-        ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
-        return Status::kSuccess;
-    }
+    // if (!tmp_chain->IsValid()) {
+    //     ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
+    //     return Status::kSuccess;
+    // }
 
     return MergeChain(pool_idx, chain, tmp_chain, *high_commit_view_block);
 }

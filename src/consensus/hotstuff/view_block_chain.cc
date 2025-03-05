@@ -179,21 +179,6 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     return nullptr;    
 }
 
-// std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
-//     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end(); ++iter) {
-//         if (!iter->second->view_block) {
-//             continue;
-//         }
-
-//         if (iter->second->view_block->qc().view() == view && iter->second->view_block->qc().has_sign_x()) {
-//             return iter->second->view_block;
-//         }
-//     }
-
-//     ZJC_DEBUG("failed get pool: %u view: %lu", pool_index_, view);
-//     return nullptr;
-// }
-
 bool ViewBlockChain::ReplaceExist(const std::shared_ptr<ViewBlock>& block) {
     auto it = view_blocks_info_.find(block->qc().view_block_hash());
     if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
@@ -290,13 +275,14 @@ void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
 Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
-    View tmp_view = 0;
-    while (stored_view_queue_.pop(&tmp_view)) {
-        commited_view_.erase(tmp_view);
-    }
-
     ZJC_DEBUG("pool: %u, now PruneTo: %lu", pool_index_, stored_to_db_view_);
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+        auto commited_view_iter = commited_view_.find(iter->second->view_block->qc().view());
+        if (commited_view_iter != commited_view_.end()) {
+            iter = view_blocks_info_.erase(iter);
+            continue;
+        }
+
         if (iter->second->view_block &&
                 iter->second->view_block->qc().view() <= stored_to_db_view_) {
             if (prefix_db_->ViewBlockIsValidView(
@@ -322,6 +308,11 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
         }
     }
 
+    View tmp_view = 0;
+    while (stored_view_queue_.pop(&tmp_view)) {
+        commited_view_.erase(tmp_view);
+    }
+
     return Status::kSuccess;
 }
 
@@ -333,28 +324,6 @@ Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_
 
     children = it->second->children;
     return Status::kSuccess;
-}
-
-bool ViewBlockChain::IsValid() {
-    if (Size() == 0) {
-        return false;
-    }
-
-    // 有且只有一个节点不存在父节点
-    uint32_t num = 0;
-    for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
-        auto& vb = it->second->view_block;
-        if (!vb) {
-            continue;
-        }
-
-        auto parent_info = Get(vb->parent_hash());
-        if (parent_info == nullptr) {
-            num++;
-        }
-    }    
-
-    return num == 1;
 }
 
 void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
@@ -376,6 +345,10 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
 std::string ViewBlockChain::String() const {
+#ifdef NDEBUG
+    return "";
+#endif
+
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
@@ -545,10 +518,6 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
 
     evmc::bytes32 tmp_val;
     return tmp_val;
-}
-
-bool ViewBlockChain::GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance) {
-    return false;
 }
 
 void ViewBlockChain::MergeAllPrevBalanceMap(

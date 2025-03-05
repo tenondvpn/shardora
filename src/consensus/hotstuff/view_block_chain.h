@@ -53,13 +53,11 @@ public:
             const std::string& parent_hash, 
             const evmc::address& addr,
             const evmc::bytes32& key);
-    bool GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance);
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
             BalanceMap& acc_balance_map);
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash);
     // If a chain is valid
-    bool IsValid();
     void Print() const;
     void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
     std::string String() const;
