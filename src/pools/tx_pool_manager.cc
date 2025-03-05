@@ -1128,12 +1128,12 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
-        ZJC_DEBUG("gid invalid pop tx gid: %s, step: %d",
-            common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
-            msg_ptr->header.tx_proto().step());
-        return;
-    }
+    // if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
+    //     ZJC_DEBUG("gid invalid pop tx gid: %s, step: %d",
+    //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
+    //         msg_ptr->header.tx_proto().step());
+    //     return;
+    // }
 
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
