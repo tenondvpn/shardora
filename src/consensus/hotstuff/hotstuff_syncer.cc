@@ -787,8 +787,6 @@ Status HotstuffSyncer::onRecViewBlock(
         return s;
     }
 
-    // 标记交易占用
-    hotstuff->acceptor()->MarkBlockTxsAsUsed(view_block.block_info());
     return Status::kSuccess;
 }
 
