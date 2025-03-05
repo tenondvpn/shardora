@@ -40,22 +40,32 @@ Status ViewBlockChain::Store(
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(view_block->debug());
 #endif
-    if (Has(view_block->qc().view_block_hash())) {
+
+    auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
+    if (it != view_blocks_info_.end()) {
+        if (it->second->view_block && !it->second->view_block->qc().sign_x().empty()) {
 #ifndef NDEBUG
         ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
             ProtobufToJson(cons_debug).c_str());        
 #endif
-        return Status::kSuccess;
-    }
-
-    auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
-    if (it != view_blocks_info_.end()) {
-        if (it->second->view_block && !it->second->view_block->qc().sign_x().empty()) {
             return Status::kSuccess;
         }
             
         view_blocks_info_.erase(it);
+    }
+
+    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end(); ) {
+        if (iter->second->view_block->qc().view() == view_block->qc().view()) {
+            if (iter->second->view_block->qc().sign_x().empty()) {
+                if (!view_block->qc().sign_x().empty()) {
+                    iter = view_blocks_info_.erase(iter);
+                    continue;
+                }
+            }
+        }
+
+        ++iter;
     }
 
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && 
