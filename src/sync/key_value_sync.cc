@@ -344,7 +344,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         }
 
         uint16_t* pool_index_arr = (uint16_t*)key.c_str();
-        auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlock(
+        auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlockFromDb(
             std::string(key.c_str() + 2, 32));
         if (view_block_ptr != nullptr && !view_block_ptr->qc().sign_x().empty()) {
             ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",

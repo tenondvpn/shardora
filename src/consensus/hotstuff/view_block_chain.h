@@ -32,7 +32,7 @@ public:
         bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> GetViewBlock(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockFromDb(const HashStr& hash);
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
