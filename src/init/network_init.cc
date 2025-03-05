@@ -1104,7 +1104,8 @@ void NetworkInit::GetNetworkNodesFromConf(
         std::vector<std::string> shard_sks;
         get_sks_func(sfd, shard_sks, n, reuse_shard);
         std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
-        for (uint32_t i = 0; i < n; i++) {        
+        for (uint32_t i = 0; i < n; i++) {
+            ZJC_DEBUG("use private key: %d, %s", i, common::Encode::HexEncode(shard_sks[i]).c_str());
             std::string& sk = shard_sks[i];
             std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(sk);
