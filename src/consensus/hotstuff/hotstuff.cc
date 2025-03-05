@@ -166,14 +166,14 @@ Status Hotstuff::Propose(
             *pb_pro_msg->mutable_tc() = *tc;
         }
 
-        // transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-        // auto s = crypto()->SignMessage(tmp_msg_ptr);
+        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        auto s = crypto()->SignMessage(tmp_msg_ptr);
         auto& header = tmp_msg_ptr->header;
-        // if (s != Status::kSuccess) {
-        //     ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-        //         pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        //     return s;
-        // }
+        if (s != Status::kSuccess) {
+            ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            return s;
+        }
 
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_INFO("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
