@@ -77,16 +77,12 @@ Status ViewBlockChain::Store(
     auto block_info_ptr = GetViewBlockInfo(view_block, balane_map_ptr, zjc_host_ptr);
     if (!start_block_) {
         start_block_ = view_block;
-        SetViewBlockToMap(block_info_ptr);
-        return Status::kSuccess;
     }
 
     // 当 view_block 是 start_block_ 的父块，允许添加
     if (start_block_->parent_hash() == view_block->qc().view_block_hash()) {
-        SetViewBlockToMap(block_info_ptr);
         // 更新 start_block_
         start_block_ = view_block;
-        return Status::kSuccess;
     }
     
     // if (!directly_store) {
@@ -328,7 +324,7 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
 std::string ViewBlockChain::String() const {
-#ifdef NDEBUG
+#ifndef NDEBUG
     return "";
 #endif
 
