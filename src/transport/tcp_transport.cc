@@ -186,7 +186,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
-    // ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
+    ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
     if (!conn->is_client() && added_conns_.Push(conn)) {
