@@ -6,10 +6,10 @@ start_shard=$5
 end_shard=$6
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
-rm -f /root/zjnodes/
+rm -rf /root/zjnodes/
 mkdir -p /root/zjnodes/
 
-end_pos=$((start_pos + node_count))
+end_pos=$(($start_pos + node_count))
 for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
     shard_node_count=`wc -l /root/shardora/shards$shard_id | awk -F' ' '{print $1}'`
     for ((i=$start_pos; i<=$end_pos;i++)); do
