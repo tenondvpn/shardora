@@ -105,6 +105,27 @@ check_cmd_finished() {
     done
 }
 
+clear_command() {
+    node_ips_array=(${node_ips//,/ })
+    run_cmd_count=0
+    start_pos=1
+    for ip in "${node_ips_array[@]}"; do 
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg* zjnodes" &
+        run_cmd_count=$((run_cmd_count + 1))
+        if ((start_pos==1)); then
+            sleep 3
+        fi
+
+        if (($run_cmd_count >= 10)); then
+            check_cmd_finished
+            run_cmd_count=0
+        fi
+        start_pos=$(($start_pos+$each_nodes_count))
+    done
+
+    check_cmd_finished
+}
+
 scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
@@ -143,6 +164,7 @@ run_command() {
 
 init
 make_package
+clear_command
 scp_package
 get_bootstrap
 echo $bootstrap
