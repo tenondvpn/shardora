@@ -36,6 +36,11 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
+    if (view_block->qc().view_block_hash().empty()) {
+        assert(false);
+        return Status::kNotExpectHash;
+    }
+    
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(view_block->debug());
