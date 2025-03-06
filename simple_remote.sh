@@ -1,4 +1,4 @@
-nodes_count=$1
+each_nodes_count=$1
 node_ips=$2
 bootstrap=""
 end_shard=$3
@@ -35,9 +35,15 @@ init() {
     sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
 
     sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    if [[ "$nodes_count" -eq "" ]]; then
-        nodes_count=4 
+    if [[ "$each_nodes_count" -eq "" ]]; then
+        each_nodes_count=4 
     fi
+
+    node_ips_array=(${node_ips//,/ })
+    nodes_count=0
+    for ip in "${node_ips_array[@]}"; do
+        nodes_count=$(($nodes_count + $tmp_node_count))
+    done
 
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
@@ -120,17 +126,17 @@ run_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $nodes_count $bootstrap 2 $end_shard" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $each_nodes_count $bootstrap 2 $end_shard" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
         fi
-        
+
         if (($run_cmd_count >= 10)); then
             check_cmd_finished
             run_cmd_count=0
         fi
-        start_pos=$(($start_pos+$nodes_count))
+        start_pos=$(($start_pos+$each_nodes_count))
     done
 
     check_cmd_finished
