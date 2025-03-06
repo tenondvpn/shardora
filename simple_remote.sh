@@ -41,7 +41,7 @@ init() {
     node_ips_array=(${node_ips//,/ })
     nodes_count=0
     for ip in "${node_ips_array[@]}"; do
-        nodes_count=$(($nodes_count + $tmp_node_count))
+        nodes_count=$(($nodes_count + $each_nodes_count))
     done
 
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
