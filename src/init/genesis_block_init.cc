@@ -1135,7 +1135,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             }
         }
 
-        for (uint32_t k = 0; k < 1; k++) {
+        for (uint32_t k = 0; k < cons_genesis_nodes_of_shards.size(); k++) {
             uint32_t net_id = k + network::kConsensusShardBeginNetworkId;
             auto cons_genesis_nodes = cons_genesis_nodes_of_shards[k];
             for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
