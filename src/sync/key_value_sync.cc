@@ -91,6 +91,11 @@ void KeyValueSync::ConsensusTimerMessage() {
         CheckSyncTimeout();
     }
 
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        hotstuff_mgr_->chain(i)->GetViewBlockWithHash("");
+        hotstuff_mgr_->chain(i)->GetViewBlockWithHeight(0, 0);
+    }
+
     auto now_tm_ms3 = common::TimeUtils::TimestampMs();
     auto etime = common::TimeUtils::TimestampMs();
     if (etime - now_tm_ms >= 10000lu) {
@@ -353,7 +358,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         }
 
         uint16_t* pool_index_arr = (uint16_t*)key.c_str();
-        auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlockFromDb(
+        auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlockWithHash(
             std::string(key.c_str() + 2, 32));
         if (view_block_ptr != nullptr && !view_block_ptr->qc().sign_x().empty()) {
             ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
@@ -399,11 +404,9 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         auto& req_height = sync_msg.sync_value_req().heights(i);
         if (req_height.tag() == kBlockHeight) {
             view_block::protobuf::ViewBlockItem pb_view_block;
-            if (!prefix_db_->GetBlockWithHeight(
-                    network_id,
-                    req_height.pool_idx(),
-                    req_height.height(),
-                    &pb_view_block)) {
+            auto view_block_ptr = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHeight(
+                network_id, req_height.height());
+            if (!view_block_ptr) {
                 ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
                     network_id, 

@@ -32,7 +32,8 @@ public:
         bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> GetViewBlockFromDb(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockWithHash(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockWithHeight(uint32_t network_id, uint64_t height);
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
@@ -142,7 +143,8 @@ public:
         return latest_locked_block_;
     }
 
-    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
+        auto& view_block = view_block_info->view_block;
         if (latest_committed_block_ &&
                 (view_block->qc().network_id() !=
                 latest_committed_block_->qc().network_id() ||
@@ -157,6 +159,7 @@ public:
             view_block->qc().pool_index(), 
             view_block->block_info().height(),
             view_block->qc().view());
+        commited_block_queue_.push(view_block_info);
         latest_committed_block_ = view_block;
         auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
         if (it != view_blocks_info_.end()) {
@@ -268,11 +271,18 @@ private:
     std::unordered_set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
-    std::map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
+    std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
     std::priority_queue<
         std::shared_ptr<ViewBlockInfo>, 
         std::vector<std::shared_ptr<ViewBlockInfo>>,
         ViewBlockInfoCmp> cached_pri_queue_;
+    std::priority_queue<
+        std::shared_ptr<ViewBlockInfo>, 
+        std::vector<std::shared_ptr<ViewBlockInfo>>,
+        ViewBlockInfoCmp> cached_pri_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
+    std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
+    std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
 };
 
 // from db

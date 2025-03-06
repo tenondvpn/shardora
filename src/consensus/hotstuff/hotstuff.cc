@@ -1651,7 +1651,7 @@ Status Hotstuff::Commit(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& v_block = v_block_info->view_block;
-    view_block_chain()->SetLatestCommittedBlock(v_block);
+    view_block_chain()->SetLatestCommittedBlock(v_block_info);
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
