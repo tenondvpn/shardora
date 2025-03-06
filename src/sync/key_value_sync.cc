@@ -82,16 +82,25 @@ void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     PopKvMessage();
+    auto now_tm_ms1 = common::TimeUtils::TimestampMs();
     PopItems();
+    auto now_tm_ms2 = common::TimeUtils::TimestampMs();
     CheckSyncItem();
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
         prev_sync_tmout_us_ = now_tm_us;
         CheckSyncTimeout();
     }
 
+    auto now_tm_ms3 = common::TimeUtils::TimestampMs();
     auto etime = common::TimeUtils::TimestampMs();
-    if (etime - now_tm_ms >= 10) {
-        ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_ms));
+    if (etime - now_tm_ms >= 10000lu) {
+        ZJC_DEBUG("KeyValueSync handle message use time: %lu, "
+            "PopKvMessage: %lu, PopItems: %lu, CheckSyncItem: %lu", 
+            (etime - now_tm_ms), 
+            (now_tm_ms1 - now_tm_ms),
+            (now_tm_ms2 - now_tm_ms1),
+            (now_tm_ms3 - now_tm_ms2));
+        assert(false);
     }
 
     kv_tick_.CutOff(
