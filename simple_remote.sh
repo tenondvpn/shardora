@@ -78,7 +78,7 @@ get_bootstrap() {
         bootstrap=$node_info","$bootstrap
     done
 
-    for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
+    for ((shard_id=3; shard_id<=$end_shard; shard_id++)); do
         i=1
         for ip in "${node_ips_array[@]}"; do 
             tmppubkey=`sed -n "$i""p" /root/shardora/shards$shard_id| awk -F'\t' '{print $2}'`
