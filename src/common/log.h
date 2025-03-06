@@ -141,6 +141,9 @@
 #endif
 
 static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
+#ifndef NDEBUG
+    return "";
+#endif
     std::string json_str;
     google::protobuf::util::JsonPrintOptions options;
     options.add_whitespace = pretty_print;

@@ -119,7 +119,7 @@ Status Hotstuff::Propose(
     auto btime = common::TimeUtils::TimestampMs();
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
-        ZJC_INFO("pool %u not has prev view block.", pool_idx_);
+        ZJC_DEBUG("pool %u not has prev view block.", pool_idx_);
         return Status::kError;
     }
 
@@ -176,7 +176,7 @@ Status Hotstuff::Propose(
         }
 
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-        ZJC_INFO("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
+        ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
@@ -205,7 +205,7 @@ Status Hotstuff::Propose(
     }
 
     auto t2 = common::TimeUtils::TimestampMs();
-    ZJC_INFO("1 now ontime called propose: %d", pool_idx_);
+    ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = tmp_msg_ptr->header;
@@ -216,7 +216,7 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_INFO("pool: %d construct propose msg failed, %d",
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
         return s;
     }
@@ -260,7 +260,7 @@ Status Hotstuff::Propose(
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
-    ZJC_INFO("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
+    ZJC_DEBUG("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
 #else
     header.set_debug(std::to_string(common::TimeUtils::TimestampMs()));
 #endif
@@ -276,7 +276,7 @@ Status Hotstuff::Propose(
     auto t6 = common::TimeUtils::TimestampMs();
     // SaveLatestProposeMessage();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-    ZJC_INFO("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
+    ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
     auto t7 = common::TimeUtils::TimestampMs();
     auto old_last_leader_propose_view_ = last_leader_propose_view_;
@@ -284,11 +284,11 @@ Status Hotstuff::Propose(
         hotstuff_msg->pro_msg().view_item().qc().view(), 
         hotstuff_msg->pro_msg().tc().view());
 
-    ZJC_INFO("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
+    ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
     auto t8 = common::TimeUtils::TimestampMs();
-    ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
         "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu, t7: %lu, t8: %lu",
@@ -1131,7 +1131,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     cons_debug.ParseFromString(msg_ptr->header.debug());
     // cons_debug.add_timestamps(
     //     b - cons_debug.timestamps(0));
-    ZJC_INFO("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
+    ZJC_DEBUG("====2.0 pool: %d, onVote, hash: %s, view: %lu, "
         "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -1143,12 +1143,12 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         followers_gids.c_str());
 #endif
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
-        ZJC_INFO("vote message is error: hash64: %lu", msg_ptr->header.hash64());
+        ZJC_DEBUG("vote message is error: hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_INFO("====2.1 pool: %d, onVote, hash: %s, view: %lu, hash64: %lu",
+    ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s, view: %lu, hash64: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         vote_msg.view(),
@@ -1185,7 +1185,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
             agg_sig);
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
-            ZJC_INFO("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
+            ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
                 pool_idx_, vote_msg.view(), msg_ptr->header.hash64());
             return;
         }
@@ -1193,7 +1193,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         return;
     }    
 
-    ZJC_INFO("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         agg_sig.IsValid(),
@@ -1204,7 +1204,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.replica_idx());
     qc_item.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());
     // 切换视图
-    ZJC_INFO("success new set qc view: %lu, %u_%u_%lu",
+    ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
         qc_item.view(),
         qc_item.network_id(),
         qc_item.pool_index(),
@@ -1221,7 +1221,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(vote_msg.leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
-    ZJC_INFO("success set view block hash: %s, qc_hash: %s, %u_%u_%lu",
+    ZJC_DEBUG("success set view block hash: %s, qc_hash: %s, %u_%u_%lu",
         common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
         common::Encode::HexEncode(qc_hash).c_str(),
         qc_item.network_id(),
@@ -1243,19 +1243,19 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     // assert(ret != Status::kInvalidOpposedCount); 有可能由于状态不一致临时出现
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
-            ZJC_INFO("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
+            ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
                 pool_idx_, vote_msg.view(), msg_ptr->header.hash64());
             return;
         }
 
-        ZJC_INFO("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
+        ZJC_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
             pool_idx_, vote_msg.view(), msg_ptr->header.hash64());
         return;
     }
 
 #ifndef NDEBUG
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_INFO("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
+    ZJC_DEBUG("====2.2 pool: %d, onVote, hash: %s, %d, view: %lu, qc_hash: %s, hash64: %lu, propose_debug: %s, replica: %lu, ",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         reconstructed_sign == nullptr,
@@ -1299,10 +1299,12 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
+#ifndef NDEBUG
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
-    ZJC_INFO("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
+    ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(),
         ProtobufToJson(cons_debug).c_str());
+#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
