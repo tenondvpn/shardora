@@ -135,4 +135,6 @@ init
 make_package
 scp_package
 get_bootstrap
+echo $bootstrap
+bootstrap="bootstrap"
 run_command
