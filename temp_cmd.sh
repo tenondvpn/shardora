@@ -9,7 +9,7 @@ echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
 rm -rf /root/zjnodes/
 mkdir -p /root/zjnodes/
 
-end_pos=$(($start_pos + node_count))
+end_pos=$(($start_pos + $node_count))
 for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
     shard_node_count=`wc -l /root/pkg/shards$shard_id | awk -F' ' '{print $1}'`
     for ((i=$start_pos; i<=$end_pos;i++)); do
@@ -35,9 +35,10 @@ for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
             sed -i 's/LOCAL_PORT/1'$shard_id00$i'/g' /root/zjnodes/s$shard_id_$i/conf/zjchain.conf 
         fi
 
+        echo /root/zjnodes/s$shard_id_$i/zjchain
         ln /root/pkg/zjchain /root/zjnodes/s$shard_id_$i/zjchain
-        ln /root/pkg/conf/GeoLite2-City.mmdb /root/zjnodes/s$shard_id_$i/conf/GeoLite2-City.mmdb
-        ln /root/pkg/conf/log4cpp.properties /root/zjnodes/s$shard_id_$i/conf/log4cpp.properties
+        ln /root/pkg/GeoLite2-City.mmdb /root/zjnodes/s$shard_id_$i/conf/GeoLite2-City.mmdb
+        ln /root/pkg/log4cpp.properties /root/zjnodes/s$shard_id_$i/conf/log4cpp.properties
         mkdir -p /root/zjnodes/s$shard_id_$i/log
         cp -rf /root/pkg/shard_db_$shard_id /root/zjnodes/s$shard_id_$i/db
         #cd /root/zjnodes/s$shard_id_$i/ && nohup ./zjchain -f 0 -g 0 s$shard_id_$i &
