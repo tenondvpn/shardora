@@ -85,17 +85,19 @@ void KeyValueSync::AddSyncViewHash(
 
 void KeyValueSync::ConsensusTimerMessageThread() {
     while (!destroy_) {
-        ConsensusTimerMessage();
-        std::unique_lock<std::mutex> lock(wait_mutex_);
-        wait_con_.wait_for(lock, std::chrono::milliseconds(10));
+        auto count = ConsensusTimerMessage();
+        if (count < kEachTimerHandleCount) {
+            std::unique_lock<std::mutex> lock(wait_mutex_);
+            wait_con_.wait_for(lock, std::chrono::milliseconds(10));
+        }
     }
 }
 
-void KeyValueSync::ConsensusTimerMessage() {
+uint32_t KeyValueSync::ConsensusTimerMessage() {
     ZJC_DEBUG("now handle kv sync timer.");
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    PopKvMessage();
+    auto count = PopKvMessage();
     auto now_tm_ms1 = common::TimeUtils::TimestampMs();
     PopItems();
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
@@ -122,9 +124,7 @@ void KeyValueSync::ConsensusTimerMessage() {
         assert(false);
     }
 
-    // kv_tick_.CutOff(
-    //     100000lu,
-    //     std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+    return count;
 }
 
 void KeyValueSync::PopItems() {
@@ -333,9 +333,9 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
-void KeyValueSync::PopKvMessage() {
-    int32_t count = 0;
-    while (count++ < 64) {
+uint32_t KeyValueSync::PopKvMessage() {
+    uint32_t count = 0;
+    while (count++ < kEachTimerHandleCount) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!kv_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
@@ -343,6 +343,8 @@ void KeyValueSync::PopKvMessage() {
 
         HandleKvMessage(msg_ptr);
     }
+
+    return count;
 }
 
 void KeyValueSync::HandleKvMessage(const transport::MessagePtr& msg_ptr) {

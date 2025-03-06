@@ -127,8 +127,8 @@ private:
     void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
-    void ConsensusTimerMessage();
-    void PopKvMessage();
+    uint32_t ConsensusTimerMessage();
+    uint32_t PopKvMessage();
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(
         uint32_t network_id,
@@ -140,6 +140,7 @@ private:
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
+    static const uint32_t kEachTimerHandleCount = 64u;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
     std::unordered_map<std::string, SyncItemPtr> synced_map_;
