@@ -1545,6 +1545,10 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     }
 
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
+    if (v_block3_info && v_block3_info->view_block->view() == 0) {
+        return v_block3_info;
+    }
+    
     if (!v_block3_info || 
             v_block3_info->view_block->parent_hash().empty() || 
             !v_block3_info->view_block->has_block_info()) {
