@@ -189,9 +189,12 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
 
 bool ViewBlockChain::ReplaceExist(const std::shared_ptr<ViewBlock>& block) {
     auto it = view_blocks_info_.find(block->qc().view_block_hash());
-    if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
-        if (!it->second->view_block->qc().has_sign_x()) {
-            it->second->view_block = block;
+    if (it != view_blocks_info_.end()) {
+        if (!it->second->view_block->qc().has_sign_x() || 
+                it->second->view_block->parent_hash().empty() || 
+                !it->second->view_block->has_block_info()) {
+            view_blocks_info_.erase(it);
+            return false;
         }
 
         return true;
