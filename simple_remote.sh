@@ -3,6 +3,7 @@ node_ips=$2
 bootstrap=""
 end_shard=$3
 PASSWORD="Xf4aGbTaf!"
+TARGET=Debug
 
 init() {
     if [ "$node_ips" == "" ]; then
@@ -17,7 +18,6 @@ init() {
     killall -9 zjchain
     killall -9 txcli
 
-    TARGET=Debug
     sh build.sh a $TARGET
     rm -rf /root/zjnodes
     cp -rf /root/shardora/zjnodes_local /root/zjnodes
@@ -103,7 +103,7 @@ clear_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg zjnodes" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg zjnodes && killall -9 zjchain" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
