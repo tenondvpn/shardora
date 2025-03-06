@@ -109,7 +109,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz /root/ &
+        sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
         run_cmd_count=$((run_cmd_count + i))
         if [ $run_cmd_count -ge 10 ]; then
             check_cmd_finished
