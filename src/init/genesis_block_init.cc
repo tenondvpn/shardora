@@ -1196,7 +1196,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             db_batch);
         // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
         fputs(
-            (common::Encode::HexEncode(tenon_block_ptr->SerializeAsString()) + "\n").c_str(), 
+            (common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(), 
             root_gens_init_block_file);
         AddBlockItemToCache(view_block_ptr, db_batch);
         // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
