@@ -28,6 +28,7 @@ public:
         for (uint32_t i = network::kRootCongressNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
             elect::protobuf::ElectBlock block;
             if (!prefix_db_->GetLatestElectBlock(i, &block)) {
+                assert(false);
                 break;
             }
 

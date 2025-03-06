@@ -935,7 +935,11 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
     std::cout << "root_blocks size: " << file_size << std::endl;
 
-    char data[file_size + 1];
+    char* data = new char[file_size + 1];
+    defer({
+        delete[] data;
+    });
+    
     uint32_t block_count = 0;
     auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
     auto& db_batch = *db_batch_ptr;
@@ -954,6 +958,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         auto pb_v_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto str = common::Encode::HexDecode(block_str);
         if (!pb_v_block->ParseFromString(str)) {
+            assert(false);
             return kInitError;
         }
 
