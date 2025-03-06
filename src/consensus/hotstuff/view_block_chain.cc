@@ -178,6 +178,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t netwo
         return view_block_ptr;
     }
 
+    ZJC_DEBUG("now get block with height from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
@@ -218,6 +219,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
         return view_block_ptr;
     }
 
+    ZJC_DEBUG("now get block with hash from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlock(hash, &view_block)) {
