@@ -737,7 +737,6 @@ int GenesisBlockInit::CreateElectBlock(
     AddBlockItemToCache(view_block_ptr, db_batch);
     block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
     block_mgr_->GenesisNewBlock(view_block_ptr);
-    StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
     root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
     root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
     db_->Put(db_batch);
@@ -842,7 +841,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t pool_height = 0;
         uint64_t tm_height;
         uint64_t tm_with_block_height;
-        StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
         root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
         db_->Put(db_batch);
@@ -916,9 +914,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         uint64_t pool_height = 0;
         uint64_t tm_height;
         uint64_t tm_with_block_height;
-
-        StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
-
         root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
         root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
         db_->Put(db_batch);
@@ -997,7 +992,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 }
             }
         }
-        StoreViewBlockWithCommitQC(pb_v_block, db_batch_ptr);
     }
     fclose(root_gens_init_block_file);
     // flush 磁盘
@@ -1052,6 +1046,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
     uint32_t address_count_now = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
+    FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
         while (true) {
@@ -1200,6 +1195,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             view_block_ptr,
             db_batch);
         // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
+        fputs(
+            (common::Encode::HexEncode(tenon_block_ptr->SerializeAsString()) + "\n").c_str(), 
+            root_gens_init_block_file);
         AddBlockItemToCache(view_block_ptr, db_batch);
         // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
         // 包括 root 创世账户，shard 创世账户，root 和 shard 节点账户
@@ -1227,8 +1225,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto* height_info = init_heights.add_heights();
         height_info->set_min_height(0);
         // init_heights.add_heights(0);
-        // 保存 ViewBlock
-        StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
          // 获取该 pool 对应的 root 账户，做一些余额校验，这里 root 账户中余额其实是 0
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
@@ -1251,7 +1247,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
     // 选举 root leader，选举 shard leader
     // 每次 ElectBlock 出块会生效前一个选举块
-    FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
     if (CreateElectBlock(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
@@ -1598,8 +1593,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         
         auto* height_item = init_heights.mutable_heights(pool_index);
         height_item->set_min_height(tenon_block->height());
-        // init_heights.set_heights(pool_index, tenon_block->height());
-        StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
@@ -1712,7 +1705,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
         auto* heights_item = init_heights.add_heights();
         heights_item->set_min_height(0);
-        StoreViewBlockWithCommitQC(view_block_ptr, db_batch_ptr);
         db_->Put(db_batch);
     }
 

@@ -111,18 +111,6 @@ private:
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::BlockTx& block_tx);
     void SaveGenisisPoolHeights(uint32_t shard_id);
-    void StoreViewBlockWithCommitQC(
-            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-            std::shared_ptr<db::DbWriteBatch>& db_batch) {
-        // assert(view_block->qc().view() < 100);
-        // prefix_db_->SaveViewBlockInfo(
-        //     view_block->qc().network_id(),
-        //     view_block->qc().pool_index(),
-        //     view_block->block_info().height(),
-        //     *view_block,
-        //     db_batch);
-    }
-
     int CreateAllQc(
         uint32_t  network_id,
         uint32_t  pool_index,
