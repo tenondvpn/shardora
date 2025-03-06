@@ -1702,6 +1702,11 @@ Status Hotstuff::Commit(
 
 void Hotstuff::HandleSyncedViewBlock(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
+    if (VerifyQC(vblock->qc()) != Status::kSuccess) {
+        assert(false);
+        return;
+    }
+
     if (view_block_chain_->ReplaceExist(vblock)) {
         ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu, hash: %s",
             vblock->qc().network_id(), 
