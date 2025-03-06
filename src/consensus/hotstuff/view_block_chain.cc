@@ -160,7 +160,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t netwo
         view_block_ptr = iter->second->view_block;
     }
 
-    if (commited_pri_queue_.size() >= 256) {
+    if (commited_pri_queue_.size() >= kCachedViewBlockCount) {
         auto temp_height = commited_pri_queue_.top();
         auto temp_iter = commited_block_map_.find(temp_height);
         if (temp_iter != commited_block_map_.end()) {
@@ -201,7 +201,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
         view_block_ptr = iter->second->view_block;
     }
 
-    if (cached_pri_queue_.size() >= 256) {
+    if (cached_pri_queue_.size() >= kCachedViewBlockCount) {
         auto temp_ptr = cached_pri_queue_.top();
         auto temp_iter = cached_block_map_.find(temp_ptr->view_block->qc().view_block_hash());
         if (temp_iter != cached_block_map_.end()) {

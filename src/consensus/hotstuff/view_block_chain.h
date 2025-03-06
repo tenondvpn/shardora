@@ -256,6 +256,7 @@ private:
 
     // prune the branch starting from view_block
     // Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
+    static const uint32_t kCachedViewBlockCount = 64u;
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
