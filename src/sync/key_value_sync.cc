@@ -534,12 +534,12 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             //     pb_vblock->qc().sign_x().c_str(),
             //     res);
             assert(!pb_vblock->qc().sign_x().empty());
-            if (res == 1) {
-                assert(false);
-                break;
-            }
+            // if (res == 1) {
+            //     assert(false);
+            //     break;
+            // }
                 
-            if (res == 0) {
+            // if (res == 0) {
                 ZJC_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
                     pb_vblock->qc().network_id(),
                     pb_vblock->qc().pool_index(),
@@ -548,7 +548,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
                 vblock_queues_[thread_idx].push(pb_vblock);
-            }  
+            // }  
         } while (0);
 
         auto tmp_iter = synced_map_.find(key);
