@@ -89,6 +89,14 @@ struct ViewBlockInfo {
         status(ViewBlockStatus::Unknown), 
         qc(nullptr),
         block_chain_choosed(false) {}
+
+    bool operator<(const ViewBlockInfo& other) const {
+        return view_block->qc().view() > other.view_block->qc().view();
+    }
+};
+
+auto ViewBlockInfoCmp = [](std::shared_ptr<ViewBlockInfo>& a, std::shared_ptr<ViewBlockInfo>& b) { 
+    return a->view_block->qc().view() > b->view_block->qc().view(); 
 };
 
 class Pipeline {

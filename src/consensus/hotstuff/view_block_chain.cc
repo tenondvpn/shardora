@@ -148,7 +148,33 @@ Status ViewBlockChain::Store(
 }
 
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockFromDb(const HashStr& hash) {
-    auto view_block_ptr = std::make_shared<ViewBlock>();
+    std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
+    while (cached_block_queue_.pop(&view_block_info_ptr)) {
+        cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;
+        cached_pri_queue_.push(view_block_info_ptr);
+    }
+
+    std::shared_ptr<ViewBlock> view_block_ptr;
+    auto iter = cached_block_map_.find(hash);
+    if (iter != cached_block_map_.end()) {
+        view_block_ptr = iter->second->view_block;
+    }
+
+    if (cached_pri_queue_.size() >= 256) {
+        auto temp_ptr = cached_pri_queue_.top();
+        auto temp_iter = cached_block_map_.find(temp_ptr->view_block->qc().view_block_hash());
+        if (temp_iter != cached_block_map_.end()) {
+            cached_block_map_.erase(temp_iter);
+        }
+
+        cached_pri_queue_.pop();
+    }
+
+    if (view_block_ptr) {
+        return view_block_ptr;
+    }
+    
+    view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlock(hash, &view_block)) {
         return view_block_ptr;
@@ -638,6 +664,11 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     if (!IsQcTcValid(view_block_ptr->qc())) {
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
+        if (!view_block_ptr_info->view_block->qc().sign_x().empty() && 
+                view_block_ptr_info->view_block->has_block_info() && 
+                !view_block_ptr_info->view_block->parent_hash().empty()) {
+            cached_block_queue_.push(view_block_ptr_info);
+        }
     }
 
     if (high_view_block_ == nullptr ||

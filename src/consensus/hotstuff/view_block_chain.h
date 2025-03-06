@@ -205,6 +205,12 @@ private:
         // }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+        if (!view_block_info->view_block->qc().sign_x().empty() && 
+                view_block_info->view_block->has_block_info() && 
+                !view_block_info->view_block->parent_hash().empty()) {
+            cached_block_queue_.push(view_block_info);
+        }
+
         CHECK_MEMORY_SIZE(view_blocks_info_);
         ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
@@ -261,6 +267,12 @@ private:
     std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
     std::unordered_set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
+    std::map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
+    std::priority_queue<
+        std::shared_ptr<ViewBlockInfo>, 
+        std::vector<std::shared_ptr<ViewBlockInfo>>, 
+        decltype(ViewBlockInfoCmp)> cached_pri_queue_;
 };
 
 // from db
