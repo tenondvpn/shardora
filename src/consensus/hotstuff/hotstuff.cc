@@ -1531,14 +1531,18 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
-// #ifndef NDEBUG
+    if (view_block_chain_->ViewBlockIsCheckedParentHash(v_block2->qc.view_block_hash())) {
+        return v_block2_info;
+    }
+
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug2;
     cons_debug2.ParseFromString(v_block2->debug());
     ZJC_DEBUG("success get v block 2: %s, %u_%u_%lu, propose_debug: %s",
         common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
         v_block2->qc().network_id(), v_block2->qc().pool_index(), 
         v_block2->qc().view(), ProtobufToJson(cons_debug2).c_str());
-// #endif
+#endif
     if (!view_block_chain()->LatestLockedBlock() ||
             v_block2->qc().view() > view_block_chain()->LatestLockedBlock()->qc().view()) {
         view_block_chain()->SetLatestLockedBlock(v_block2);
@@ -1562,7 +1566,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     }
     
     auto v_block3 = v_block3_info->view_block;
-// #ifndef NDEBUG
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug3;
     cons_debug3.ParseFromString(v_block2->debug());
     ZJC_DEBUG("success get v block views: %lu, %lu, %lu, hash: %s, %s, %s, %s, %s, now: %s, propose_debug: %s",
@@ -1576,7 +1580,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         common::Encode::HexEncode(v_block3->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(qc.view_block_hash()).c_str(),
         ProtobufToJson(cons_debug3).c_str());
-// #endif
+#endif
     // fast hotstuff
     if (v_block3->qc().view() + 1 != v_block2->qc().view()) {
         ZJC_DEBUG("Failed get v block 2 ref: %s, "
