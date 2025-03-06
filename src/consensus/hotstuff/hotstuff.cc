@@ -1486,7 +1486,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     // fast hotstuff
     assert(!qc.view_block_hash().empty());
     auto v_block1_info = view_block_chain()->Get(qc.view_block_hash());
-    if (!v_block1_info) {
+    if (!v_block1_info || 
+            v_block1_info->view_block->parent_hash().empty() || 
+            !v_block1_info->view_block->has_block_info()) {
         ZJC_DEBUG("Failed get v block 1: %s, %u_%u_%lu",
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
@@ -1510,7 +1512,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #endif
     assert(v_block1->parent_hash() != qc.view_block_hash());
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
-    if (!v_block2_info) {
+    if (!v_block2_info || 
+            v_block2_info->view_block->parent_hash().empty() || 
+            !v_block2_info->view_block->has_block_info()) {
         assert(!v_block1->parent_hash().empty());
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
         kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
@@ -1541,7 +1545,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     }
 
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
-    if (!v_block3_info) {
+    if (!v_block3_info || 
+            v_block3_info->view_block->parent_hash().empty() || 
+            !v_block3_info->view_block->has_block_info()) {
         ZJC_DEBUG("Failed get v block 3 block hash: %s, %u_%u_%lu", 
             common::Encode::HexEncode(v_block2->parent_hash()).c_str(), 
             qc.network_id(), 

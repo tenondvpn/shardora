@@ -41,10 +41,10 @@ Status ViewBlockChain::Store(
         return Status::kNotExpectHash;
     }
 
-    if (!init && view_block->parent_hash().empty()) {
-        assert(false);
-        return Status::kNotExpectHash;
-    }
+    // if (!init && view_block->parent_hash().empty()) {
+    //     assert(false);
+    //     return Status::kNotExpectHash;
+    // }
 
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
