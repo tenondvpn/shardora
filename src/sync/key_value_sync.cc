@@ -79,6 +79,7 @@ void KeyValueSync::AddSyncViewHash(
 }
 
 void KeyValueSync::ConsensusTimerMessage() {
+    ZJC_DEBUG("now handle kv sync timer.");
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     PopKvMessage();
