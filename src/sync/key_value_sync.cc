@@ -133,6 +133,9 @@ uint32_t KeyValueSync::ConsensusTimerMessage() {
         assert(false);
     }
 
+    kv_tick_.CutOff(
+        10000lu,
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this));
     return count;
 }
 
