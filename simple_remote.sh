@@ -2,7 +2,7 @@ each_nodes_count=$1
 node_ips=$2
 bootstrap=""
 end_shard=$3
-
+PASSWORD="Xf4aGbTaf!"
 
 init() {
     if [ "$node_ips" == "" ]; then
@@ -17,7 +17,6 @@ init() {
     killall -9 zjchain
     killall -9 txcli
 
-    PASSWORD="1"
     TARGET=Debug
     sh build.sh a $TARGET
     sudo rm -rf /root/zjnodes
