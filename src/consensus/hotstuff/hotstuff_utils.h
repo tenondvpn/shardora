@@ -77,7 +77,7 @@ enum class ViewBlockStatus : int {
 struct ViewBlockInfo {
     std::shared_ptr<ViewBlock> view_block;
     ViewBlockStatus status;
-    std::vector<std::shared_ptr<ViewBlock>> children;
+    // std::vector<std::shared_ptr<ViewBlock>> children;
     std::shared_ptr<QC> qc;
     std::unordered_set<std::string> added_txs;
     BalanceMapPtr acc_balance_map_ptr;

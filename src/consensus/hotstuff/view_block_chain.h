@@ -200,9 +200,9 @@ private:
             return;
         }
 
-        if (it != view_blocks_info_.end()) {
-            view_block_info->children = it->second->children;
-        }
+        // if (it != view_blocks_info_.end()) {
+        //     view_block_info->children = it->second->children;
+        // }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
         CHECK_MEMORY_SIZE(view_blocks_info_);
@@ -246,7 +246,7 @@ private:
     }
 
     // prune the branch starting from view_block
-    Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
+    // Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
