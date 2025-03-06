@@ -25,7 +25,9 @@ KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {
     destroy_ = true;
-    check_timer_thread_->join();
+    if (check_timer_thread_) {
+        check_timer_thread_->join();
+    }
 }
 
 void KeyValueSync::Init(
