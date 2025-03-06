@@ -1,9 +1,17 @@
 nodes_count=$1
 node_ips=$2
+bootstrap=""
+end_shard=$3
+
+
 init() {
     if [ "$node_ips" == "" ]; then
         echo "just use local single node."
         node_ips='127.0.0.1'
+    fi  
+
+    if [ "$end_shard" == "" ]; then
+        end_shard=3
     fi  
 
     killall -9 zjchain
@@ -54,12 +62,31 @@ make_package() {
     cp /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/zjchain/pkg
     cp /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/pkg
     cp /root/shardora/shards3 /root/zjnodes/zjchain/pkg
-    cp /root/shardora/root_nodes /root/zjnodes/zjchain/pkg
+    cp /root/shardora/root_nodes /root/zjnodes/zjchain/pkg/shards2
     cp /root/shardora/temp_cmd.sh /root/zjnodes/zjchain/pkg
-    cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg
+    cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
     cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg
+}
+
+get_bootstrap() {
+    node_ips_array=(${node_ips//,/ })
+    for ((i=1; i<=3;i++)); do
+        tmppubkey=`sed -n "$i""p" /root/shardora/root_nodes | awk -F'\t' '{print $2}'`
+        node_info=$tmppubkey":127.0.0.1:1200"$i
+        bootstrap=$node_info","$bootstrap
+    done
+
+    for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
+        i=1
+        for ip in "${node_ips_array[@]}"; do 
+            tmppubkey=`sed -n "$i""p" /root/shardora/shards$shard_id| awk -F'\t' '{print $2}'`
+            node_info=$tmppubkey":"$ip":1"$shard_id"00"$i
+            bootstrap=$node_info","$bootstrap
+            i=$((i+1))
+        done
+    done
 }
 
 check_cmd_finished() {
@@ -93,7 +120,7 @@ run_command() {
     run_cmd_count=0
     start_pos=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $nodes_count" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $nodes_count $bootstrap 2 $end_shard" &
         run_cmd_count=$((run_cmd_count + i))
         if [ $run_cmd_count -ge 10 ]; then
             check_cmd_finished
@@ -107,4 +134,5 @@ run_command() {
 init
 make_package
 scp_package
+get_bootstrap
 run_command
