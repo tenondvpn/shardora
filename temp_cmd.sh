@@ -12,8 +12,9 @@ mkdir -p /root/zjnodes/
 end_pos=$(($start_pos + $node_count - 1))
 for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
     shard_node_count=`wc -l /root/pkg/shards$shard_id | awk -F' ' '{print $1}'`
+    echo /root/pkg/shards$shard_id $shard_node_count
     for ((i=$start_pos; i<=$end_pos;i++)); do
-        if [ $i -ge $shard_node_count ]; then
+        if [ $i -g $shard_node_count ]; then
             break
         fi
 

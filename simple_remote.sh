@@ -126,7 +126,7 @@ run_command() {
             check_cmd_finished
             run_cmd_count=0
         fi
-        start_pos=$(($start_pos+$node_count))
+        start_pos=$(($start_pos+$nodes_count))
     done
 
     check_cmd_finished
