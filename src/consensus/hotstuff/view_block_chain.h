@@ -271,8 +271,8 @@ private:
     std::map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
     std::priority_queue<
         std::shared_ptr<ViewBlockInfo>, 
-        std::vector<std::shared_ptr<ViewBlockInfo>>, 
-        decltype(ViewBlockInfoCmp)> cached_pri_queue_;
+        std::vector<std::shared_ptr<ViewBlockInfo>>,
+        ViewBlockInfoCmp> cached_pri_queue_;
 };
 
 // from db
