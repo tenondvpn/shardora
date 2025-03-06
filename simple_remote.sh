@@ -19,21 +19,14 @@ init() {
 
     TARGET=Debug
     sh build.sh a $TARGET
-    sudo rm -rf /root/zjnodes
-    sudo cp -rf ./zjnodes_local /root/zjnodes
-    sudo cp -rf ./deploy /root
-    sudo cp ./fetch.sh /root
+    rm -rf /root/zjnodes
+    cp -rf /root/shardora/zjnodes_local /root/zjnodes
     rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
-    cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
-    cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
+    cp -rf /root/shardora/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
+    cp -rf /root/shardora/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
     mkdir -p /root/zjnodes/zjchain/log
-
-
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+    cp -rf /root/shardora/cbuild_$TARGET/zjchain /root/zjnodes/zjchain
     if [[ "$each_nodes_count" -eq "" ]]; then
         each_nodes_count=4 
     fi
@@ -72,7 +65,7 @@ make_package() {
     cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
-    cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg
+    cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg && mv ./pkg.tar.gz /root/src_pkg.tar.gz
 }
 
 get_bootstrap() {
@@ -130,7 +123,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
+        sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no /root/src_pkg.tar.gz root@$ip:/root/pkg.tar.gz &
         run_cmd_count=$((run_cmd_count + i))
         if [ $run_cmd_count -ge 10 ]; then
             check_cmd_finished
