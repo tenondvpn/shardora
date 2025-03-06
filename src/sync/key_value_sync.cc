@@ -44,7 +44,7 @@ void KeyValueSync::Init(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
     check_timer_thread_ = std::make_shared<std::thread>(
-        std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+        std::bind(&KeyValueSync::ConsensusTimerMessageThread, this));
     // kv_tick_.CutOff(
     //     100000lu,
     //     std::bind(&KeyValueSync::ConsensusTimerMessage, this));
