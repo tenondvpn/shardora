@@ -23,7 +23,10 @@ namespace sync {
 
 KeyValueSync::KeyValueSync() {}
 
-KeyValueSync::~KeyValueSync() {}
+KeyValueSync::~KeyValueSync() {
+    destroy_ = true;
+    check_timer_thread_->join();
+}
 
 void KeyValueSync::Init(
         const std::shared_ptr<block::BlockManager>& block_mgr,
@@ -38,9 +41,11 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    kv_tick_.CutOff(
-        100000lu,
+    check_timer_thread_ = std::make_shared<std::thread>(
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+    // kv_tick_.CutOff(
+    //     100000lu,
+    //     std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
 
 int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
@@ -78,6 +83,14 @@ void KeyValueSync::AddSyncViewHash(
         common::Encode::HexEncode(item->key).c_str(), item->priority);
 }
 
+void KeyValueSync::ConsensusTimerMessageThread() {
+    while (!destroy_) {
+        ConsensusTimerMessage();
+        std::unique_lock<std::mutex> lock(wait_mutex_);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(10));
+    }
+}
+
 void KeyValueSync::ConsensusTimerMessage() {
     ZJC_DEBUG("now handle kv sync timer.");
     auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -109,9 +122,9 @@ void KeyValueSync::ConsensusTimerMessage() {
         assert(false);
     }
 
-    kv_tick_.CutOff(
-        100000lu,
-        std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+    // kv_tick_.CutOff(
+    //     100000lu,
+    //     std::bind(&KeyValueSync::ConsensusTimerMessage, this));
 }
 
 void KeyValueSync::PopItems() {
@@ -316,12 +329,13 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     kv_msg_queue_.push(msg_ptr);
     ZJC_DEBUG("queue size kv_msg_queue_: %d, hash: %lu",
         kv_msg_queue_.size(), msg_ptr->header.hash64());
-    
+    wait_con_.notify_one();
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void KeyValueSync::PopKvMessage() {
-    while (true) {
+    int32_t count = 0;
+    while (count++ < 64) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!kv_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;

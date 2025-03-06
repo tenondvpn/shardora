@@ -136,6 +136,7 @@ private:
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res,
         uint32_t& add_size);
+    void ConsensusTimerMessageThread();
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
@@ -160,6 +161,10 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];  
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
+    std::shared_ptr<std::thread> check_timer_thread_;
+    volatile bool destroy_ = false;
+    std::mutex wait_mutex_;
+    std::condition_variable wait_con_;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
