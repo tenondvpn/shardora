@@ -25,7 +25,8 @@ void Hotstuff::Init() {
     if (s == Status::kSuccess) {
         view_block_chain_->Store(latest_view_block, false, nullptr, nullptr, true);
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
-        view_block_chain_->SetLatestCommittedBlock(latest_view_block);
+        auto temp_ptr = view_block_chain_->Get(latest_view_block->qc().view_block_hash());
+        view_block_chain_->SetLatestCommittedBlock(temp_ptr);
         InitAddNewViewBlock(latest_view_block);
         auto parent_hash = latest_view_block->parent_hash();
         while (!parent_hash.empty()) {
