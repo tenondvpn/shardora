@@ -1702,9 +1702,14 @@ Status Hotstuff::Commit(
 
 void Hotstuff::HandleSyncedViewBlock(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
-    if (VerifyQC(vblock->qc()) != Status::kSuccess) {
+    if (crypto()->VerifyQC(vblock->qc().network_id(), vblock->qc()) != Status::kSuccess) {
+        ZJC_ERROR("verify qc failed: %u_%u_%lu, hash: %s", 
+            vblock->qc().network_id(), 
+            vblock->qc().pool_index(), 
+            vblock->qc().view(), 
+            common::Encode::HexEncode(vblock->qc().view_block_hash()).c_str());
         assert(false);
-        return;
+        return; 
     }
 
     if (view_block_chain_->ReplaceExist(vblock)) {
