@@ -220,11 +220,13 @@ Status Crypto::VerifyThresSign(
         uint64_t elect_height, 
         const HashStr &msg_hash,
         const libff::alt_bn128_G1& reconstructed_sign) {
-    auto b = common::TimeUtils::TimestampMs();
+#ifndef NDEBUG
+auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
         ZJC_DEBUG("sharding_id: %d VerifyThresSign duration: %lu ms", sharding_id, e-b);
     });
+#endif
 
 #ifdef HOTSTUFF_TEST
     return Status::kSuccess;
@@ -268,27 +270,26 @@ Status Crypto::VerifyThresSign(
             elect_height,
             val.c_str(),
             agg_sign_str.c_str());
-        assert(false);
         return Status::kBlsVerifyFailed;
     }
 
-// #ifndef NDEBUG
-//     auto elect_item = GetElectItem(sharding_id, elect_height);
-//     auto val = libBLS::ThresholdUtils::fieldElementToString(
-//         elect_item->common_pk().X.c0);
-//     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-//         reconstructed_sign.X);
-//     ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
-//             "elect height: %lu, common PK: %s, agg sign: %s", 
-//             common::Encode::HexEncode(verify_hash_a).c_str(),
-//             common::Encode::HexEncode(verify_hash_b).c_str(),
-//             common::Encode::HexEncode(msg_hash).c_str(),
-//             sharding_id, 
-//             pool_idx_,
-//             elect_height,
-//             val.c_str(),
-//             agg_sign_str.c_str());
-// #endif
+#ifndef NDEBUG
+    auto elect_item = GetElectItem(sharding_id, elect_height);
+    auto val = libBLS::ThresholdUtils::fieldElementToString(
+        elect_item->common_pk().X.c0);
+    auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
+        reconstructed_sign.X);
+    ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
+            "elect height: %lu, common PK: %s, agg sign: %s", 
+            common::Encode::HexEncode(verify_hash_a).c_str(),
+            common::Encode::HexEncode(verify_hash_b).c_str(),
+            common::Encode::HexEncode(msg_hash).c_str(),
+            sharding_id, 
+            pool_idx_,
+            elect_height,
+            val.c_str(),
+            agg_sign_str.c_str());
+#endif
     return Status::kSuccess;
 }
 

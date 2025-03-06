@@ -1753,6 +1753,11 @@ Status Hotstuff::VerifyQC(const QC& qc) {
     }
 
     if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
+        ZJC_ERROR("verify qc failed: %u_%u_%lu, hash: %s", 
+            qc.network_id(), 
+            qc.pool_index(), 
+            qc.view(), 
+            common::Encode::HexEncode(qc.view_block_hash()).c_str());
         assert(false);
         return Status::kError; 
     }
