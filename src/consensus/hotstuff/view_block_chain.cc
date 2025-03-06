@@ -41,7 +41,7 @@ Status ViewBlockChain::Store(
         return Status::kNotExpectHash;
     }
 
-    if (view_block->parent_hash().empty()) {
+    if (!init && view_block->parent_hash().empty()) {
         assert(false);
         return Status::kNotExpectHash;
     }
