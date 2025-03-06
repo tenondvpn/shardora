@@ -1135,31 +1135,31 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             }
         }
 
-        for (uint32_t k = 0; k < cons_genesis_nodes_of_shards.size(); k++) {
-            uint32_t net_id = k + network::kConsensusShardBeginNetworkId;
-            auto cons_genesis_nodes = cons_genesis_nodes_of_shards[k];
-            for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
-                // 同理，shard 节点的选举交易也打包到对应的 pool 块中
-                if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
-                    auto join_elect_tx_info = tx_list->Add();
-                    join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
-                    join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
-                    join_elect_tx_info->set_to("");
-                    join_elect_tx_info->set_amount(0);
-                    join_elect_tx_info->set_gas_limit(0);
-                    join_elect_tx_info->set_gas_used(0);
-                    join_elect_tx_info->set_balance(0);
-                    join_elect_tx_info->set_status(0);
-                    auto storage = join_elect_tx_info->add_storages();
-                    storage->set_key(protos::kJoinElectVerifyG2);
-                    bls::protobuf::JoinElectInfo join_info;
-                    assert(join_info.ParseFromString(cons_genesis_nodes[member_idx]->g2_val));
-                    storage->set_value(cons_genesis_nodes[member_idx]->g2_val);
-                    // 选举交易涉及账户分配到对应 shard
-                    tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
-                }
-            }
-        }
+        // for (uint32_t k = 0; k < cons_genesis_nodes_of_shards.size(); k++) {
+        //     uint32_t net_id = k + network::kConsensusShardBeginNetworkId;
+        //     auto cons_genesis_nodes = cons_genesis_nodes_of_shards[k];
+        //     for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
+        //         // 同理，shard 节点的选举交易也打包到对应的 pool 块中
+        //         if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
+        //             auto join_elect_tx_info = tx_list->Add();
+        //             join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+        //             join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
+        //             join_elect_tx_info->set_to("");
+        //             join_elect_tx_info->set_amount(0);
+        //             join_elect_tx_info->set_gas_limit(0);
+        //             join_elect_tx_info->set_gas_used(0);
+        //             join_elect_tx_info->set_balance(0);
+        //             join_elect_tx_info->set_status(0);
+        //             auto storage = join_elect_tx_info->add_storages();
+        //             storage->set_key(protos::kJoinElectVerifyG2);
+        //             bls::protobuf::JoinElectInfo join_info;
+        //             assert(join_info.ParseFromString(cons_genesis_nodes[member_idx]->g2_val));
+        //             storage->set_value(cons_genesis_nodes[member_idx]->g2_val);
+        //             // 选举交易涉及账户分配到对应 shard
+        //             tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
+        //         }
+        //     }
+        // }
 
         tenon_block->set_version(common::kTransactionVersion);
         // 为此 shard 的此 pool 打包一个块，这个块中有某些创世账户的生成交易，有某些root和shard节点的选举交易
@@ -1195,9 +1195,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             view_block_ptr,
             db_batch);
         // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
-        // fputs(
-        //     (common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(), 
-        //     root_gens_init_block_file);
+        fputs(
+            (common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(), 
+            root_gens_init_block_file);
         AddBlockItemToCache(view_block_ptr, db_batch);
         // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
         // 包括 root 创世账户，shard 创世账户，root 和 shard 节点账户
