@@ -253,9 +253,6 @@ int tx_main(int argc, char** argv) {
     }
     
     std::string prikey = g_prikeys[0];
-    if (!multi) {
-        prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
-    }
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -322,10 +319,6 @@ int tx_main(int argc, char** argv) {
             std::cout << "tps: " << tps << std::endl;
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
-        }
-
-        if (delayus_a != 0) {
-            usleep(delayus_a);
         }
     }
 
