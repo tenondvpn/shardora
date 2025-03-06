@@ -41,7 +41,10 @@ for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
         ln /root/pkg/log4cpp.properties /root/zjnodes/s$shard_id'_'$i/conf/log4cpp.properties
         mkdir -p /root/zjnodes/s$shard_id'_'$i/log
         cp -rf /root/pkg/shard_db_$shard_id /root/zjnodes/s$shard_id'_'$i/db
-        #cd /root/zjnodes/s$shard_id'_'$i/ && nohup ./zjchain -f 0 -g 0 s$shard_id'_'$i &
-        sleep 1
+        cd /root/zjnodes/s$shard_id'_'$i/ && nohup ./zjchain -f 0 -g 0 s$shard_id'_'$i &
+        if ((shard_id==2 && i==start_pos)); then
+            sleep 3
+        fi
+        sleep 0.5
     done
 done
