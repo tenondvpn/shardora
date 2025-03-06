@@ -1531,10 +1531,6 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
-    if (view_block_chain_->ViewBlockIsCheckedParentHash(v_block2->qc.view_block_hash())) {
-        return v_block2_info;
-    }
-
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug2;
     cons_debug2.ParseFromString(v_block2->debug());
