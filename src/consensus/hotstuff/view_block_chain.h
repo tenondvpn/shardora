@@ -276,10 +276,6 @@ private:
         std::shared_ptr<ViewBlockInfo>, 
         std::vector<std::shared_ptr<ViewBlockInfo>>,
         ViewBlockInfoCmp> cached_pri_queue_;
-    std::priority_queue<
-        std::shared_ptr<ViewBlockInfo>, 
-        std::vector<std::shared_ptr<ViewBlockInfo>>,
-        ViewBlockInfoCmp> cached_pri_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
     std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
     std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
