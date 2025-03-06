@@ -104,5 +104,5 @@ for ((i=1; i<=$shard3_node_count;i++)); do
     mkdir -p /root/zjnodes/s3_$i/log
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s3_$i/db
     cd /root/zjnodes/s3_$i/ && nohup ./zjchain -f 0 -g 0 s3_$i &
-    sleep 1
+    sleep 0.3
 done
