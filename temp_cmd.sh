@@ -1,6 +1,6 @@
 local_ip=$1
 start_pos=$2
-node_count=$$shard_id
+node_count=$3
 bootstrap=$4
 start_shard=$5
 end_shard=$6
