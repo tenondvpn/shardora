@@ -89,6 +89,11 @@ void KeyValueSync::AddSyncViewHash(
 
 void KeyValueSync::ConsensusTimerMessageThread() {
     while (!destroy_) {
+        if (!common::GlobalInfo::Instance()->main_inited_success()) {
+            usleep(10000lu);
+            continue;
+        }
+        
         auto count = ConsensusTimerMessage();
         if (count < kEachTimerHandleCount) {
             std::unique_lock<std::mutex> lock(wait_mutex_);
