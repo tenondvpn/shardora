@@ -456,7 +456,7 @@ std::string ViewBlockChain::String() const {
 
     ZJC_DEBUG("get chain pool: %u, views: %s, block_height_str: %s",
         pool_index_, ret.c_str(), block_height_str.c_str());
-    assert(height_set.size() < 64);
+    assert(height_set.size() < kCachedViewBlockCount);
     return ret;
 }
 
@@ -708,11 +708,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     if (!IsQcTcValid(view_block_ptr->qc())) {
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
-        auto db_bach = std::make_shared<db::DbWriteBatch>();
-        auto st = db_->Put(*db_bach);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
+        cached_block_queue_.push(view_block_ptr_info);
     }
 
     if (high_view_block_ == nullptr ||

@@ -144,7 +144,8 @@ public:
         return latest_locked_block_;
     }
 
-    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
+        auto view_block = view_block_info->view_block;
         if (latest_committed_block_ &&
                 (view_block->qc().network_id() !=
                 latest_committed_block_->qc().network_id() ||
@@ -160,6 +161,7 @@ public:
             view_block->block_info().height(),
             view_block->qc().view());
         latest_committed_block_ = view_block;
+        commited_block_queue_.push(view_block_info);
         auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
         if (it != view_blocks_info_.end()) {
             it->second->status = ViewBlockStatus::Committed;
@@ -207,6 +209,7 @@ private:
         }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+        cached_block_queue_.push(view_block_info);
         CHECK_MEMORY_SIZE(view_blocks_info_);
         ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
             common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
@@ -250,8 +253,8 @@ private:
     // prune the branch starting from view_block
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     
-    static const uint32_t kCachedViewBlockCount = 64u;
-    
+    static const uint32_t kCachedViewBlockCount = 256u;
+
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
