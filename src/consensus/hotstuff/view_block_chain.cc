@@ -138,20 +138,86 @@ Status ViewBlockChain::Store(
 #endif
     return Status::kSuccess;
 }
-
-std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlock(const HashStr& hash) {
-    auto view_block_info_ptr = Get(hash);
-    if (view_block_info_ptr) {
-        return view_block_info_ptr->view_block;
+std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
+    std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
+    while (commited_block_queue_.pop(&view_block_info_ptr)) {
+        commited_block_map_[view_block_info_ptr->view_block->block_info().height()] = view_block_info_ptr;
+        commited_pri_queue_.push(view_block_info_ptr->view_block->block_info().height());
     }
 
-    auto view_block_ptr = std::make_shared<ViewBlock>();
+    std::shared_ptr<ViewBlock> view_block_ptr;
+    auto iter = commited_block_map_.find(height);
+    if (iter != commited_block_map_.end()) {
+        view_block_ptr = iter->second->view_block;
+    }
+
+    if (commited_pri_queue_.size() >= kCachedViewBlockCount) {
+        auto temp_height = commited_pri_queue_.top();
+        auto temp_iter = commited_block_map_.find(temp_height);
+        if (temp_iter != commited_block_map_.end()) {
+            commited_block_map_.erase(temp_iter);
+        }
+
+        commited_pri_queue_.pop();
+    }
+
+    if (network_id == 0) {
+        return nullptr;
+    }
+
+    if (view_block_ptr) {
+        return view_block_ptr;
+    }
+
+    ZJC_DEBUG("now get block with height from db.");
+    view_block_ptr = std::make_shared<ViewBlock>();
+    auto& view_block = *view_block_ptr;
+    if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
+        return view_block_ptr;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& hash) {
+    std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
+    while (cached_block_queue_.pop(&view_block_info_ptr)) {
+        cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;
+        cached_pri_queue_.push(view_block_info_ptr);
+    }
+
+    std::shared_ptr<ViewBlock> view_block_ptr;
+    auto iter = cached_block_map_.find(hash);
+    if (iter != cached_block_map_.end()) {
+        view_block_ptr = iter->second->view_block;
+    }
+
+    if (cached_pri_queue_.size() >= kCachedViewBlockCount) {
+        auto temp_ptr = cached_pri_queue_.top();
+        auto temp_iter = cached_block_map_.find(temp_ptr->view_block->qc().view_block_hash());
+        if (temp_iter != cached_block_map_.end()) {
+            cached_block_map_.erase(temp_iter);
+        }
+
+        cached_pri_queue_.pop();
+    }
+
+    if (hash.empty()) {
+        return nullptr;
+    }
+
+    if (view_block_ptr) {
+        return view_block_ptr;
+    }
+
+    ZJC_DEBUG("now get block with hash from db.");
+    view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlock(hash, &view_block)) {
         return view_block_ptr;
     }
 
-    return nullptr;
+    return nullptr;    
 }
 
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {

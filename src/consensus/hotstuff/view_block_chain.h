@@ -32,7 +32,8 @@ public:
         bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> GetViewBlock(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockWithHash(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockWithHeight(uint32_t network_id, uint64_t height);
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
@@ -249,6 +250,8 @@ private:
     // prune the branch starting from view_block
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     
+    static const uint32_t kCachedViewBlockCount = 64u;
+    
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
@@ -262,6 +265,15 @@ private:
     std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
     std::unordered_set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
+    std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
+    std::priority_queue<
+        std::shared_ptr<ViewBlockInfo>, 
+        std::vector<std::shared_ptr<ViewBlockInfo>>,
+        ViewBlockInfoCmp> cached_pri_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
+    std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
+    std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
 };
 
 // from db

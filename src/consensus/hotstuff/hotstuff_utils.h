@@ -91,6 +91,12 @@ struct ViewBlockInfo {
         valid(false) {}
 };
 
+struct ViewBlockInfoCmp {
+    bool operator()(std::shared_ptr<ViewBlockInfo>& a, std::shared_ptr<ViewBlockInfo>& b) {
+        return a->view_block->qc().view() > b->view_block->qc().view(); 
+    }
+};
+
 } // namespace consensus
 
 } // namespace shardora

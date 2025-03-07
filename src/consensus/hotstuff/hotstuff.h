@@ -267,7 +267,7 @@ private:
         const transport::MessagePtr& msg_ptr, 
         ViewBlock* view_block,
         hotstuff::protobuf::TxPropose* tx_propose);
-    Status ConstructHotstuffMsg(
+    void ConstructHotstuffMsg(
             const MsgType msg_type, 
             pb_ProposeMsg* pb_pro_msg, 
             pb_VoteMsg* pb_vote_msg,

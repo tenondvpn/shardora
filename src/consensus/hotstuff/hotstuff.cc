@@ -202,13 +202,7 @@ Status Hotstuff::Propose(
 
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    s = ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
-    if (s != Status::kSuccess && tc == nullptr) {
-        ZJC_INFO("pool: %d, view: %lu, construct hotstuff msg failed",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        return s;
-    }
-
+    ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (tc != nullptr) {
         *pb_pro_msg->mutable_tc() = *tc;
     }
@@ -364,13 +358,7 @@ void Hotstuff::NewView(
         *pb_newview_msg->mutable_tc() = *tc;
     }
 
-    Status s = ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, view: %lu, construct hotstuff msg failed",
-            pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        return;
-    }
-    
+    ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
     if (!header.has_broadcast()) {
         auto broadcast = header.mutable_broadcast();
@@ -1016,13 +1004,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
     }
     // Construct HotstuffMessage and send
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    s = ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, ConstructHotstuffMsg error %d, hash64: %lu",
-            pool_idx_, s, pro_msg_wrap->msg_ptr->header.hash64());
-        return Status::kError;
-    }
-    
+    ConstructHotstuffMsg(VOTE, nullptr, vote_msg, nullptr, hotstuff_msg);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (SendMsgToLeader(pro_msg_wrap->leader, trans_msg, VOTE) != Status::kSuccess) {
         ZJC_ERROR("pool: %d, Send vote message is error.",
@@ -2065,7 +2047,7 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
     return false;
 }
 
-Status Hotstuff::ConstructHotstuffMsg(
+void Hotstuff::ConstructHotstuffMsg(
         const MsgType msg_type, 
         pb_ProposeMsg* pb_pro_msg, 
         pb_VoteMsg* pb_vote_msg,
@@ -2074,7 +2056,6 @@ Status Hotstuff::ConstructHotstuffMsg(
     pb_hotstuff_msg->set_type(msg_type);
     pb_hotstuff_msg->set_net_id(common::GlobalInfo::Instance()->network_id());
     pb_hotstuff_msg->set_pool_index(pool_idx_);
-    return Status::kSuccess;
 }
 
 Status Hotstuff::SendMsgToLeader(
