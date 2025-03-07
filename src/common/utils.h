@@ -60,6 +60,7 @@ struct Construct {
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 200000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+        msg_ptr->debug_str[msg_ptr->times_idx] = std::string(ZJC_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
         msg_ptr->times[msg_ptr->times_idx] = btime; \
         msg_ptr->times_idx++; \
     } \
@@ -71,6 +72,7 @@ struct Construct {
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 10000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+        msg_ptr->debug_str[msg_ptr->times_idx] = std::string(ZJC_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
         msg_ptr->times[msg_ptr->times_idx] = btime; \
         msg_ptr->times_idx++; \
     } \
