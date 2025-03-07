@@ -1449,7 +1449,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(v_block1->debug());
-    ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s, signx: %s",
+    ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
         common::Encode::HexEncode(qc.view_block_hash()).c_str(),
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
 #endif
