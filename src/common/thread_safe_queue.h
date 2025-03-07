@@ -4,7 +4,6 @@
 
 #include <condition_variable>
 #include <mutex>
-#include <queue>
 
 #include "common/global_info.h"
 #include "common/log.h"
@@ -13,7 +12,7 @@ namespace shardora {
 
 namespace common {
 
-template<class T, uint32_t kMaxCount=128>
+template<class T, uint32_t kMaxCount=1024>
 class ThreadSafeQueue {
 public:
     ThreadSafeQueue() {}
@@ -22,27 +21,7 @@ public:
 
     void push(T e) {
         // auto btime = common::TimeUtils::TimestampUs();
-        while (!temp_queue_.empty()) {
-            if (rw_queue_.size_approx() >= kMaxCount) {
-                break;
-            }
-
-            if (!rw_queue_.try_enqueue(temp_queue_.front())) {
-                break;
-            }
-            
-            temp_queue_.pop();
-        }
-
-        if (temp_queue_.empty()) {
-            if (!rw_queue_.try_enqueue(e)) {
-                temp_queue_.push(e);
-            }
-        } else {
-            temp_queue_.push(e);
-        }
-
-        // rw_queue_.enqueue(e);
+        rw_queue_.enqueue(e);
         auto& tmp_item = *this;
         // assert(size() < 1204);
         CHECK_MEMORY_SIZE(tmp_item);
@@ -72,7 +51,7 @@ public:
     }
 
     size_t size() const {
-        return rw_queue_.size_approx() + temp_queue_.size();
+        return rw_queue_.size_approx();
     }
 
 private:
@@ -81,7 +60,6 @@ private:
     moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
     std::condition_variable con_;
     std::mutex mutex_;
-    std::queue<T> temp_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };
