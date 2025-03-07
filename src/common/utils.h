@@ -56,7 +56,7 @@ struct Construct {
 #ifndef NDEBUG
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
     if (msg_ptr) { \
-        assert(msg_ptr->times_idx < 128); \
+        assert(msg_ptr->times_idx < 64); \
         auto btime = common::TimeUtils::TimestampUs(); \
         uint64_t diff_time = 0; \
         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 200000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
