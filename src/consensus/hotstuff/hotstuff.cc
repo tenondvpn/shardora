@@ -1545,7 +1545,8 @@ Status Hotstuff::Commit(
         auto tmp_block = tmp_block_info->view_block;
         if (!tmp_block_info->valid && !view_block_chain()->view_commited(
                 tmp_block_info->view_block->qc().network_id(), 
-                tmp_block_info->view_block->qc().view())) {
+                tmp_block_info->view_block->qc().view()) &&
+                !tmp_block_info->view_block->qc().sign_x().empty()) {
             ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
                 tmp_block_info->view_block->qc().network_id(), 
                 tmp_block_info->view_block->qc().pool_index(), 
@@ -1568,7 +1569,7 @@ Status Hotstuff::Commit(
             if (min_commited_view_ < tmp_block->qc().view()) {
                 min_commited_view_ = tmp_block->qc().view();
             }
-            
+
             break;
         }
 
