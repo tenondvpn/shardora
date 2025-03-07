@@ -764,6 +764,12 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
 #ifdef TEST_NOT_PUT_BLOCK
+    if (hotstuff_mgr_ && network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+        hotstuff_mgr_->UpdateStoredToDbView(
+            view_block_item->qc().pool_index(), 
+            view_block_item->qc().view());
+    }
+
     if (view_block_item->qc().view() > 64) {
         return;
     }
