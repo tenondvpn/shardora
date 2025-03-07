@@ -1624,15 +1624,6 @@ Status Hotstuff::Commit(
         v_block->qc().view(), 
         v_block->block_info().height(),
         view_block_chain()->String().c_str());
-    // 归还分支交易
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    for (const auto& forked_block : forked_blockes) {
-        s = acceptor()->Return(forked_block);
-        if (s != Status::kSuccess) {
-            return s;
-        }
-    }
-
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
