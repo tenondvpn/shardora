@@ -257,6 +257,7 @@ void KeyValueSync::CheckSyncItem() {
                 sended_neigbors);
             if (choose_node != 0) {
                 sended_neigbors.insert(choose_node);
+                break;
             }
         }
     }
@@ -326,8 +327,10 @@ uint64_t KeyValueSync::SendSyncRequest(
     *msg.mutable_sync_proto() = sync_msg;
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d, hash64: %lu",
-        node->public_ip.c_str(), node->public_port, msg.hash64());
+    ZJC_DEBUG("sync new from %s:%d, hash64: %lu, key size: %u, height size: %u",
+        node->public_ip.c_str(), node->public_port, msg.hash64(),
+        sync_msg.sync_value_req().keys_size(),
+        sync_msg.sync_value_req().heights_size());
     return node->id_hash;
 }
 
@@ -371,13 +374,16 @@ void KeyValueSync::HandleKvMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("handle sync value request hash: %lu", msg_ptr->header.hash64());
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_req());
     transport::protobuf::Header msg;
     protobuf::SyncMessage& res_sync_msg = *msg.mutable_sync_proto();
     auto sync_res = res_sync_msg.mutable_sync_value_res();
     uint32_t add_size = 0;
+    ZJC_DEBUG("handle sync value request hash: %lu, key size: %u, height size: %u", 
+        msg_ptr->header.hash64(), 
+        sync_msg.sync_value_req().keys_size(),
+        sync_msg.sync_value_req().heights_size());
     for (int32_t i = 0; i < sync_msg.sync_value_req().keys_size(); ++i) {
         const std::string& key = sync_msg.sync_value_req().keys(i);
         ZJC_DEBUG("now handle sync view bock hash key: %s", 
