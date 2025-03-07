@@ -1631,8 +1631,8 @@ Status Hotstuff::Commit(
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-#ifndef NDEBUG
     auto v_block = tmp_block_info->view_block;
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug3;
     cons_debug3.ParseFromString(v_block->debug());
     ZJC_DEBUG("success commit view block %u_%u_%lu, "
