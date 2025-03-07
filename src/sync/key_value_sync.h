@@ -127,7 +127,7 @@ private:
     void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
-    uint32_t ConsensusTimerMessage();
+    void ConsensusTimerMessage();
     uint32_t PopKvMessage();
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(
