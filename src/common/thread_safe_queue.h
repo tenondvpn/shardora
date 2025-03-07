@@ -13,7 +13,7 @@ namespace shardora {
 
 namespace common {
 
-template<class T, uint32_t kMaxCount=1024>
+template<class T, uint32_t kMaxCount=128>
 class ThreadSafeQueue {
 public:
     ThreadSafeQueue() {}
