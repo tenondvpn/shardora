@@ -1531,7 +1531,10 @@ Status Hotstuff::Commit(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
-        msg_ptr->times_idx = 0;
+        if (msg_ptr) {
+            msg_ptr->times_idx = 0;
+        }
+        
         auto tmp_block = tmp_block_info->view_block;
         if (!tmp_block_info->valid && !view_block_chain()->view_commited(
                 tmp_block_info->view_block->qc().network_id(), 
