@@ -23,7 +23,7 @@ public:
     void push(T e) {
         // auto btime = common::TimeUtils::TimestampUs();
         while (!temp_queue_.empty()) {
-            if (rw_queue_.try_enqueue(temp_queue_.top())) {
+            if (rw_queue_.try_enqueue(temp_queue_.front())) {
                 temp_queue_.pop();
             } else {
                 break;
