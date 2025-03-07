@@ -1609,6 +1609,10 @@ Status Hotstuff::Commit(
         ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     
+    if (!v_block_info->valid) {
+        return Status::kError
+    }
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     view_block_chain()->SetLatestCommittedBlock(v_block_info);
     // 剪枝

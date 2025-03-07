@@ -461,6 +461,15 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             }
 
             if (view_block_ptr->qc().sign_x().empty()) {
+                ZJC_DEBUG("empty sign sync key value %u_%u_%lu, handle sync value failed request "
+                    "net: %u, pool: %u, height: %lu, hash: %lu",
+                    network_id, 
+                    req_height.pool_idx(),
+                    req_height.height(),
+                    network_id, 
+                    req_height.pool_idx(),
+                    req_height.height(),
+                    msg_ptr->header.hash64());
                 assert(false);
                 continue;
             }
