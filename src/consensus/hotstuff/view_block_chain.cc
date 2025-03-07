@@ -431,6 +431,9 @@ void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const s
 void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
 std::string ViewBlockChain::String() const {
+#ifdef NDEBUG
+    return "";
+#endif
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {

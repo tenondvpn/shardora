@@ -72,6 +72,7 @@ void KeyValueSync::AddSyncViewHash(
         uint32_t pool_idx,
         const std::string& view_hash, 
         uint32_t priority) {
+    assert(!view_hash.empty());
     char key[2 + view_hash.size()] = {0};
     uint16_t* pools = (uint16_t*)(key);
     pools[0] = pool_idx;
@@ -103,7 +104,6 @@ void KeyValueSync::ConsensusTimerMessageThread() {
 }
 
 uint32_t KeyValueSync::ConsensusTimerMessage() {
-    ZJC_DEBUG("now handle kv sync timer.");
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     auto count = PopKvMessage();
