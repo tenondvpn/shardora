@@ -1449,7 +1449,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(v_block1->debug());
-    ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
+    ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s, signx: %s",
         common::Encode::HexEncode(qc.view_block_hash()).c_str(),
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
 #endif
@@ -1565,14 +1565,6 @@ Status Hotstuff::Commit(
             ADD_DEBUG_PROCESS_TIMESTAMP();
         }
 
-        if (tmp_block->qc().view() <= min_commited_view_ + 1) {
-            if (min_commited_view_ < tmp_block->qc().view()) {
-                min_commited_view_ = tmp_block->qc().view();
-            }
-
-            break;
-        }
-
         if (tmp_block->qc().sign_x().empty()) {
             if (tmp_block->qc().view() > 0 && !view_block_chain()->view_commited(
                     tmp_block->qc().network_id(), tmp_block->qc().view())) {
@@ -1582,6 +1574,14 @@ Status Hotstuff::Commit(
                     tmp_block->qc().view_block_hash(), 
                     0);
             }
+        }
+
+        if (tmp_block->qc().view() <= min_commited_view_ + 1) {
+            if (min_commited_view_ < tmp_block->qc().view()) {
+                min_commited_view_ = tmp_block->qc().view();
+            }
+
+            break;
         }
 
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
