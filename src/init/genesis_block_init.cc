@@ -1637,14 +1637,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();
-    std::map<uint32_t, std::string> pool_acc_map;
-    auto iter = net_pool_index_map_.find(net_id);
-    if (iter != net_pool_index_map_.end()) {
-        pool_acc_map = iter->second;
-    } else {
-        return kInitError;
-    }
-     
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
 
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / net_pool_index_map_addr_count_; // 两个分片
