@@ -347,7 +347,6 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
     // 存在交点时，仅同步交点之后的
     if (cross_vb) {
         vb_to_sync.clear();
-        // chain->GetRecursiveChildren(cross_vb->qc().view_block_hash(), vb_to_sync);
         // cross_vb 也同步回去，保证是一条合法的链
         vb_to_sync.push_back(cross_vb);
     } else {

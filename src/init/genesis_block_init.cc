@@ -1637,14 +1637,25 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();
+    std::map<uint32_t, std::string> pool_acc_map;
+    auto iter = net_pool_index_map_.find(net_id);
+    if (iter != net_pool_index_map_.end()) {
+        pool_acc_map = iter->second;
+    } else {
+        return kInitError;
+    }
+     
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
+
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / net_pool_index_map_addr_count_; // 两个分片
+
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
     
+
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i) {
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
@@ -1686,8 +1697,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         view_block_ptr->set_parent_hash("");
         if (CreateAllQc(
                 net_id,
-                i,
-                vb_latest_view[i]++, 
+                iter->first,
+                vb_latest_view[iter->first]++, 
                 cons_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
@@ -1695,8 +1706,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         // 更新所有 pool 的 prehash
-        pool_prev_hash_map[i] = view_block_ptr->qc().view_block_hash();
-        pool_prev_vb_hash_map[i] = view_block_ptr->qc().view_block_hash();
+        pool_prev_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
+        pool_prev_vb_hash_map[iter->first] = view_block_ptr->qc().view_block_hash();
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
@@ -1711,6 +1722,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto* heights_item = init_heights.add_heights();
         heights_item->set_min_height(0);
         db_->Put(db_batch);
+
     }
 
     CreateShardNodesBlocks(
