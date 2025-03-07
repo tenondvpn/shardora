@@ -902,7 +902,7 @@ void BlockManager::AddNewBlock(
             view_block_item->qc().view());
     }
 
-    ZJC_BLOCK_DEBUG("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
+    ZJC_INFO("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
