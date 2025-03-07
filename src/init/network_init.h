@@ -7,15 +7,12 @@
 #include "common/config.h"
 #include "common/parse_args.h"
 #include "common/tick.h"
-// #ifdef ENABLE_HOTSTUFF
 #include "consensus/hotstuff/hotstuff_manager.h"
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/hotstuff_syncer.h>
-// #else
 #include "consensus/zbft/contract_gas_prepayment.h"
-// #endif
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
@@ -35,8 +32,6 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <protos/prefix_db.h>
 #include <yaml-cpp/node/node.h>
-
-// #define ENABLE_HOTSTUFF 1
 
 namespace shardora {
 
@@ -60,7 +55,11 @@ private:
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void AddCmds();
-    void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&, const std::shared_ptr<db::Db>&);
+    void GetNetworkNodesFromConf(
+        uint32_t cons_shard_node_count,
+        std::vector<GenisisNodeInfoPtr>&, 
+        std::vector<GenisisNodeInfoPtrVector>&, 
+        const std::shared_ptr<db::Db>&);
     void InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& security_ptr, std::shared_ptr<protos::PrefixDb>&);
     void GetAggBlsSkFromFile(const std::string& node_id, libff::alt_bn128_Fr* agg_bls_sk);
     void WriteAggBlsSkToFile(const std::string& node_id, const libff::alt_bn128_Fr& agg_bls_sk);
@@ -89,6 +88,7 @@ private:
     void RegisterFirewallCheck();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     int InitWsServer();
+    void CreateInitAddress(uint32_t net_id);
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
