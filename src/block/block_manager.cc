@@ -347,6 +347,14 @@ void BlockManager::HandleNormalToTx(
             to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
             tx.step());
+
+        auto& heights = *to_txs.mutable_to_heights();
+        heights.set_block_height(view_block.block_info().height());
+        ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s",
+            view_block.block_info().height(), 
+            heights.sharding_id(), 
+            ProtobufToJson(to_txs).c_str());
+        prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
         if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
                 ZJC_WARN("sharding invalid: %u, %u",
@@ -764,6 +772,7 @@ void BlockManager::AddNewBlock(
         return;
     }
 
+    statistic_mgr_->OnNewBlock(view_block_item);
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
     to_txs_pool_->NewBlock(view_block_item, db_batch);
     zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);

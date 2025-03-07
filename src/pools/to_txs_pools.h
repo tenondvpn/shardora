@@ -28,8 +28,7 @@ public:
         std::shared_ptr<block::AccountManager>& acc_mgr);
     ~ToTxsPools();
     void NewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr, 
-        db::DbWriteBatch& db_batch);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     int CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
@@ -40,8 +39,7 @@ public:
 private:
     void HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx_info);
     void LoadLatestHeights();
     void HandleNormalFrom(
         const view_block::protobuf::ViewBlockItem& view_block,
@@ -84,8 +82,7 @@ private:
         const block::protobuf::BlockTx& tx,
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
     void StatisticToInfo(
-        const view_block::protobuf::ViewBlockItem& view_block, 
-        db::DbWriteBatch& db_batch);
+        const view_block::protobuf::ViewBlockItem& view_block);
 
     struct ToAddressItemInfo {
         uint64_t amount;

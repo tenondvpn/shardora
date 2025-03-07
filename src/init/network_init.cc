@@ -1238,7 +1238,6 @@ bool NetworkInit::DbNewBlockCallback(
         }
     }
 
-    shard_statistic_->OnNewBlock(view_block);
     return true;
 }
 

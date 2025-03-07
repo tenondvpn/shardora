@@ -29,8 +29,7 @@ ToTxsPools::ToTxsPools(
 ToTxsPools::~ToTxsPools() {}
 
 void ToTxsPools::NewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
-        db::DbWriteBatch& db_batch) {
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
 #ifdef TEST_NO_CROSS
     return;
 #endif
@@ -73,7 +72,7 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
 #endif
-    StatisticToInfo(*view_block_ptr, db_batch);
+    StatisticToInfo(*view_block_ptr);
 
     added_heights_[pool_idx].insert(std::make_pair<>(
         block.height(), 
@@ -101,8 +100,7 @@ void ToTxsPools::NewBlock(
 }
 
 void ToTxsPools::StatisticToInfo(
-        const view_block::protobuf::ViewBlockItem& view_block, 
-        db::DbWriteBatch& db_batch) {
+        const view_block::protobuf::ViewBlockItem& view_block) {
     auto& block = view_block.block_info();
     const auto& tx_list = block.tx_list();
 #ifndef ENABLE_HOTSTUFF
@@ -133,7 +131,7 @@ void ToTxsPools::StatisticToInfo(
         //     common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list[i].step());
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalTo:
-            HandleNormalToTx(view_block, tx_list[i], db_batch);
+            HandleNormalToTx(view_block, tx_list[i]);
             break;
         case pools::protobuf::kContractCreate:
             HandleCreateContractUserCall(view_block, tx_list[i]);
@@ -413,8 +411,7 @@ void ToTxsPools::AddTxToMap(
 
 void ToTxsPools::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx_info) {
     if (tx_info.storages_size() <= 0) {
         assert(false);
         return;
@@ -452,7 +449,6 @@ void ToTxsPools::HandleNormalToTx(
             view_block.block_info().height(), 
             heights.sharding_id(), 
             ProtobufToJson(to_tx).c_str());
-        prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
         for (int32_t i = 0; i < heights.heights_size(); ++i) {
             if (heights.heights(i) > has_statistic_height_[i]) {
                 has_statistic_height_[i] = heights.heights(i);
@@ -531,7 +527,6 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
-    db::DbWriteBatch db_batch;
     for (uint32_t i = 0; i <= max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
         if (pool_latest_height == common::kInvalidUint64) {
@@ -547,7 +542,7 @@ void ToTxsPools::LoadLatestHeights() {
                     common::GlobalInfo::Instance()->network_id(), i, height, &view_block)) {
                 consensus_stop = true;
             } else {
-                NewBlock(view_block_ptr, db_batch);
+                NewBlock(view_block_ptr);
             }
 
             if (!consensus_stop) {
