@@ -26,12 +26,13 @@ Status ViewBlockChain::Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
         BalanceMapPtr balane_map_ptr,
-        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
+        bool init) {
     if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
         return Status::kSuccess;
     }
 
-    if (view_commited(view_block->qc().network_id(), view_block->qc().view())) {
+    if (!init && view_commited(view_block->qc().network_id(), view_block->qc().view())) {
         return Status::kSuccess;
     }
 

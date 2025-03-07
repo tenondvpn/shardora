@@ -28,7 +28,8 @@ public:
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
         BalanceMapPtr balane_map_ptr,
-        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
+        bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
     std::shared_ptr<ViewBlock> GetViewBlock(const HashStr& hash);
