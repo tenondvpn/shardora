@@ -323,7 +323,6 @@ uint64_t TxPool::UpdateLatestInfo(
         latest_height_ = height;
         latest_hash_ = hash;
         latest_timestamp_ = timestamp;
-        InitGetTempBftInvalidHashs();
     }
 
     if (to_sync_max_height_ == common::kInvalidUint64 || to_sync_max_height_ < latest_height_) {
