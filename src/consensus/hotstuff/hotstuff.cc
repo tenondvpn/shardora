@@ -1434,7 +1434,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         ZJC_DEBUG("Failed get v block 1: %s, %u_%u_%lu",
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
-        kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
+        if (!view_block_chain()->view_commited(qc.network_id(), qc.view())) {
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
+        }
         // assert(false);
         return nullptr;
     }
@@ -1455,7 +1457,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
-        if (v_block1->qc().view() > 0) {
+        if (v_block1->qc().view() > 0 && !view_block_chain()->view_commited(
+                v_block1->qc().network_id(), v_block1->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
         }
         return nullptr;
@@ -1491,7 +1494,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.network_id(), 
             qc.pool_index(), 
             v_block1->block_info().height());
-        if (v_block2->qc().view() > 0) {
+        if (v_block2->qc().view() > 0 && !view_block_chain()->view_commited(
+                v_block2->qc().network_id(), v_block2->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
         }
         return nullptr;
@@ -1564,7 +1568,8 @@ Status Hotstuff::Commit(
         if (parent_block_info == nullptr) {
             auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
             if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
-                if (tmp_block->qc().view() > 0) {
+                if (tmp_block->qc().view() > 0 && !view_block_chain()->view_commited(
+                        tmp_block->qc().network_id(), tmp_block->qc().view() - 1)) {
                     kv_sync_->AddSyncViewHash(
                         tmp_block->qc().network_id(), 
                         tmp_block->qc().pool_index(), 
@@ -1753,13 +1758,16 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().pool_index(), 
             v_block.qc().view() - 1);
         if (view_block_chain->HighQC().view() < (v_block.qc().view() + db_stored_view_) && 
-                v_block.qc().view() > 0) {
+                v_block.qc().view() > 0 && 
+                !view_block_chain->view_commited(
+                    v_block.qc().network_id(), v_block.qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 
                 v_block.parent_hash(),
                 0);
-        } else {
+        } else if (!view_block_chain->view_commited(
+                v_block.qc().network_id(), v_block.qc().view() - 1)) {
             kv_sync_->AddSyncHeight(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 

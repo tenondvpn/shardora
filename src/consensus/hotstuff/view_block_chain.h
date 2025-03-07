@@ -66,7 +66,7 @@ public:
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
     bool ViewBlockIsCheckedParentHash(const std::string& hash);
     void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
-    bool view_commited(uint32_t network_id, View view) {
+    bool view_commited(uint32_t network_id, View view) const {
         if (commited_view_.find(view) != commited_view_.end()) {
             return true;
         }
@@ -186,6 +186,9 @@ public:
         }
         return it->second->status;        
     } 
+
+    bool IsViewCommited(View view) {
+    }
 
 private:
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {

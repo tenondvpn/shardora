@@ -354,9 +354,8 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
                 iter->second->view_block->qc().view() <= stored_to_db_view_) {
-            if (prefix_db_->ViewBlockIsValidView(
+            if (view_commited(
                     iter->second->view_block->qc().network_id(),
-                    iter->second->view_block->qc().pool_index(), 
                     iter->second->view_block->qc().view())) {
                 // if (!iter->second->valid) {
                 //     forked_blockes.push_back(iter->second->view_block);
