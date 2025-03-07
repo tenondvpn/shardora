@@ -527,7 +527,6 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
         return s;
     }
     // 同步之后尝试消费之前消费失败的 Block
-    hotstuff_mgr_->hotstuff(pool_idx)->TryWaitingProposeMsgs();
     return Status::kSuccess;
 }
 
