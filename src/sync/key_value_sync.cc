@@ -445,7 +445,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
         auto& req_height = sync_msg.sync_value_req().heights(i);
         if (req_height.tag() == kBlockHeight) {
-            view_block::protobuf::ViewBlockItem pb_view_block;
             auto view_block_ptr = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHeight(
                 network_id, req_height.height());
             if (!view_block_ptr) {
@@ -461,7 +460,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 continue;
             }
 
-            if (pb_view_block.qc().sign_x().empty()) {
+            if (view_block_ptr->qc().sign_x().empty()) {
                 assert(false);
                 continue;
             }
@@ -470,7 +469,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_network_id(network_id);
             res->set_pool_idx(req_height.pool_idx());
             res->set_height(req_height.height());
-            res->set_value(pb_view_block.SerializeAsString());
+            res->set_value(view_block_ptr->SerializeAsString());
             res->set_tag(kBlockHeight);
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
