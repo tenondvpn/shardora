@@ -43,33 +43,12 @@ void Hotstuff::Init() {
 
             parent_hash = view_block.parent_hash();
         }
-        // LoadAllViewBlockWithLatestCommitedBlock(latest_view_block);
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }
 
-    InitHandleProposeMsgPipeline();
     LoadLatestProposeMessage();
 }
-
-// void Hotstuff::LoadAllViewBlockWithLatestCommitedBlock(
-//         std::shared_ptr<ViewBlock>& view_block) {
-//     std::vector<std::shared_ptr<ViewBlock>> children_view_blocks;
-//     prefix_db_->GetChildrenViewBlock(
-//         view_block->qc().view_block_hash(), 
-//         children_view_blocks);
-//     ZJC_DEBUG("init load view block %u_%u_%lu, %lu, hash: %s, phash: %s, size: %u",
-//         view_block->qc().network_id(), view_block->qc().pool_index(), 
-//         view_block->qc().view(), view_block->block_info().height(),
-//         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-//         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-//         children_view_blocks.size());
-//     for (auto iter = children_view_blocks.begin(); iter != children_view_blocks.end(); ++iter) {
-//         assert(!view_block_chain_->Has((*iter)->qc().view_block_hash()));
-//         InitAddNewViewBlock(*iter);
-//         LoadAllViewBlockWithLatestCommitedBlock(*iter);
-//     }
-// }
     
 void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block) {
     ZJC_DEBUG("pool: %d, latest vb from db, vb view: %lu",
