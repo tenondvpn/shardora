@@ -195,9 +195,10 @@ void BlockManager::HandleAllConsensusBlocks() {
                         db_item_ptr->view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height());
                 }
-                
+
                 if (count >= kEachTimeHandleBlocksCount) {
                     no_sleep = true;
+                    ZJC_INFO("pool index: %d, has block count: %u", i, consensus_block_queues_[i].size());
                 }
             }
         }
