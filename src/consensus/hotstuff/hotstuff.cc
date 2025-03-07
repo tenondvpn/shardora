@@ -1434,7 +1434,6 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         ZJC_DEBUG("Failed get v block 1: %s, %u_%u_%lu",
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
-
         kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
         // assert(false);
         return nullptr;
@@ -1456,7 +1455,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
         ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
-        kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
+        if (v_block1->qc().view() > 0) {
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
+        }
         return nullptr;
     }
 
@@ -1490,7 +1491,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.network_id(), 
             qc.pool_index(), 
             v_block1->block_info().height());
-        kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
+        if (v_block2->qc().view() > 0) {
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
+        }
         return nullptr;
     }
     
@@ -1534,7 +1537,7 @@ Status Hotstuff::Commit(
         if (msg_ptr) {
             msg_ptr->times_idx = 0;
         }
-        
+
         auto tmp_block = tmp_block_info->view_block;
         if (!tmp_block_info->valid && !view_block_chain()->view_commited(
                 tmp_block_info->view_block->qc().network_id(), 
@@ -1561,11 +1564,13 @@ Status Hotstuff::Commit(
         if (parent_block_info == nullptr) {
             auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
             if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
-                kv_sync_->AddSyncViewHash(
-                    tmp_block->qc().network_id(), 
-                    tmp_block->qc().pool_index(), 
-                    tmp_block->parent_hash(), 
-                    0);
+                if (tmp_block->qc().view() > 0) {
+                    kv_sync_->AddSyncViewHash(
+                        tmp_block->qc().network_id(), 
+                        tmp_block->qc().pool_index(), 
+                        tmp_block->parent_hash(), 
+                        0);
+                }
             }
 
             break;
@@ -1747,7 +1752,8 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().network_id(), 
             v_block.qc().pool_index(), 
             v_block.qc().view() - 1);
-        if (view_block_chain->HighQC().view() < v_block.qc().view() + 16) {
+        if (view_block_chain->HighQC().view() < (v_block.qc().view() + db_stored_view_) && 
+                v_block.qc().view() > 0) {
             kv_sync_->AddSyncViewHash(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 
