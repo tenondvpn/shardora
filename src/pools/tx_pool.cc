@@ -145,52 +145,6 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     added_txs_.push(tx_ptr);
     return kPoolsSuccess;
-
-    common::AutoSpinLock auto_lock(tx_pool_mutex_);
-    assert(tx_ptr != nullptr);
-    if (tx_ptr->tx_info->step() == pools::protobuf::kCreateLibrary) {
-        universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
-        // CHECK_MEMORY_SIZE(universal_prio_map_);
-    } else {
-        prio_map_[tx_ptr->prio_key] = tx_ptr;
-        // CHECK_MEMORY_SIZE(prio_map_);
-    }
-
-    gid_map_[tx_ptr->tx_info->gid()] = tx_ptr;
-    // CHECK_MEMORY_SIZE_WITH_MESSAGE(gid_map_, (std::string("pool index: ") + std::to_string(pool_index_)).c_str());
-#ifdef LATENCY
-    auto now_tm_us = common::TimeUtils::TimestampUs();
-    if (prev_tx_count_tm_us_ == 0) {
-        prev_tx_count_tm_us_ = now_tm_us;
-    }
-
-    if (now_tm_us > prev_tx_count_tm_us_ + 3000000lu) {
-        ZJC_INFO("waiting_tx_count pool: %d: tx: %llu", pool_index_, gid_map_.size());
-        prev_tx_count_tm_us_ = now_tm_us;
-    }
-
-    gid_start_time_map_[tx_ptr->tx_info->gid()] = common::TimeUtils::TimestampUs();
-    // CHECK_MEMORY_SIZE(gid_start_time_map_);
-    oldest_timestamp_ = prio_map_.begin()->second->time_valid;
-#endif
-    // timeout_txs_.push(tx_ptr->tx_info->gid());
-    // // CHECK_MEMORY_SIZE_WITH_MESSAGE(timeout_txs_, "timeout txs push");
-    if (pool_index_ == common::kImmutablePoolSize) {
-        ZJC_DEBUG("pool: %d, success add tx step: %d, gid: %s", 
-            pool_index_, 
-            tx_ptr->tx_info->step(),
-            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
-    }
-    
-    ZJC_DEBUG("success add tx pool: %d, gid: %s, tx size: %u, gid: %u, cons: %u, prio: %u, uni: %u", 
-        pool_index_, 
-        common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
-        tx_size(),
-        gid_map_.size(),
-        consensus_tx_map_.size(), prio_map_.size(), universal_prio_map_.size());
-    assert(gid_map_.size() == tx_size());
-    ADD_TX_DEBUG_INFO((tx_ptr->tx_info));
-    return kPoolsSuccess;
 }
 
 void TxPool::GetTxSyncToLeader(
