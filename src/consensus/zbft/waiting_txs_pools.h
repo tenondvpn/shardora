@@ -29,12 +29,6 @@ public:
     uint64_t latest_timestamp(uint32_t pool_index) const {
         return pool_mgr_->latest_timestamp(pool_index);
     }
-    void GetHeightInvalidChangeLeaderHashs(
-            uint32_t pool_index,
-            uint64_t height,
-            std::vector<std::string>& hashs) {
-        return pool_mgr_->GetHeightInvalidChangeLeaderHashs(pool_index, height, hashs);
-    }
 
     void GetTxSyncToLeader(
             uint32_t pool_index,

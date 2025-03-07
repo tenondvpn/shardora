@@ -231,40 +231,6 @@ void TxPoolManager::ConsensusTimerMessage() {
         std::bind(&TxPoolManager::ConsensusTimerMessage, this));
 }
 
-void TxPoolManager::CheckLeaderValid(
-        const std::vector<double>& factors,
-        std::vector<int32_t>* invalid_pools) {
-    double average = 0.0;
-    for (uint32_t i = 0; i < factors.size(); ++i) {
-        average += factors[i];
-    }
-
-    if (average <= 0.0) {
-        // all leader invalid
-        if (latest_leader_count_ <= 2) {
-            invalid_pools->push_back(-1);
-        }
-
-        return;
-    }
-
-    average /= factors.size();
-    double variance = 0.0;
-    for (uint32_t i = 0; i < factors.size(); ++i) {
-        variance += (factors[i] - average) * (factors[i] - average);
-    }
-
-    variance = sqrt(variance / (factors.size() - 1));
-    for (uint32_t i = 0; i < factors.size(); ++i) {
-        double grubbs = abs(factors[i] - average) / variance;
-        if (grubbs > kGrubbsValidFactor && factors[i] < kInvalidLeaderRatio) {
-            // invalid leader
-            ZJC_DEBUG("invalid pool found grubbs: %f, %d", grubbs, i);
-            invalid_pools->push_back(i);
-        }
-    }
-}
-
 void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
     if (root_cross_pools_ == nullptr) {
         return;
@@ -806,49 +772,10 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
             return;
         }
     }
-
-    // std::string new_hash;
-    // if (!SaveNodeVerfiyVec(msg_ptr->address_info->addr(), join_info, &new_hash)) {
-    //     assert(false);
-    //     return;
-    // }
-    // tx_msg.set_key(protos::kJoinElectVerifyG2);
-    // tx_msg.set_value(new_hash);
     
     ZJC_DEBUG("elect tx msg hash is %s", 
         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
     msg_ptr->msg_hash = msg_hash;
-}
-
-bool TxPoolManager::SaveNodeVerfiyVec(
-        const std::string& id,
-        const bls::protobuf::JoinElectInfo& join_info,
-        std::string* new_hash) {
-    int32_t t = common::GetSignerCount(common::GlobalInfo::Instance()->each_shard_max_members());
-    if (join_info.g2_req().verify_vec_size() > 0 && join_info.g2_req().verify_vec_size() != t) {
-        return false;
-    }
-
-    std::string str_for_hash;
-    str_for_hash.reserve(join_info.g2_req().verify_vec_size() * 4 * 64 + 8);
-    uint32_t shard_id = join_info.shard_id();
-    uint32_t mem_idx = join_info.member_idx();
-    str_for_hash.append((char*)&shard_id, sizeof(shard_id));
-    str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
-    for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
-        auto& item = join_info.g2_req().verify_vec(i);
-        str_for_hash.append(item.x_c0());
-        str_for_hash.append(item.x_c1());
-        str_for_hash.append(item.y_c0());
-        str_for_hash.append(item.y_c1());
-        str_for_hash.append(item.z_c0());
-        str_for_hash.append(item.z_c1());
-    }
-
-    *new_hash = common::Hash::keccak256(str_for_hash);
-    auto str = join_info.SerializeAsString();
-    prefix_db_->SaveTemporaryKv(*new_hash, str);
-    return true;
 }
 
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
@@ -1128,13 +1055,6 @@ void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx,
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (!tx_pool_[msg_ptr->address_info->pool_index()].GidValid(msg_ptr->header.tx_proto().gid())) {
-        ZJC_DEBUG("gid invalid pop tx gid: %s, step: %d",
-            common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
-            msg_ptr->header.tx_proto().step());
-        return;
-    }
-
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
         return;
@@ -1187,25 +1107,6 @@ void TxPoolManager::GetTxIdempotently(
     }
 
     tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
-}
-
-void TxPoolManager::GetTxByGids(
-        uint32_t pool_index, 
-        std::vector<std::string> gids, 
-        std::map<std::string, pools::TxItemPtr>& res_map) {
-    tx_pool_[pool_index].GetTxByIds(gids, res_map);
-}
-
-void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
-    assert(pool_index < common::kInvalidPoolIndex);
-    return tx_pool_[pool_index].TxRecover(recover_txs);
-}
-
-void TxPoolManager::TxOver(
-        uint32_t pool_index,
-        const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
-    assert(pool_index < common::kInvalidPoolIndex);
-    return tx_pool_[pool_index].TxOver(tx_list);
 }
 
 void TxPoolManager::GetMinValidTxCount() {

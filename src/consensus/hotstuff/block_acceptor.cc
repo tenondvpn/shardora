@@ -598,8 +598,6 @@ void BlockAcceptor::commit(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
         if (block->tx_list_size() > 0) {
-            pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
-            ADD_DEBUG_PROCESS_TIMESTAMP();
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
             ADD_DEBUG_PROCESS_TIMESTAMP();
         } else {

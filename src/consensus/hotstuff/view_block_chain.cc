@@ -237,34 +237,8 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
         }
     }
 
-    // if (latest_committed_block_ && latest_committed_block_->qc().view_block_hash() == hash) {
-    //     ZJC_DEBUG("now use latest commited block: %s, %u_%u_%lu, height: %lu",
-    //         common::Encode::HexEncode(hash).c_str(),
-    //         latest_committed_block_->qc().network_id(),
-    //         latest_committed_block_->qc().pool_index(),
-    //         latest_committed_block_->qc().view(),
-    //         latest_committed_block_->block_info().height());
-    //     return latest_committed_block_;
-    // }
-
     return nullptr;    
 }
-
-// std::shared_ptr<ViewBlock> ViewBlockChain::Get(uint64_t view) {
-//     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end(); ++iter) {
-//         if (!iter->second->view_block) {
-//             continue;
-//         }
-
-//         if (iter->second->view_block->qc().view() == view && iter->second->view_block->qc().has_sign_x()) {
-//             return iter->second->view_block;
-//         }
-//     }
-
-//     ZJC_DEBUG("failed get pool: %u view: %lu", pool_index_, view);
-//     return nullptr;
-// }
-
 
 bool ViewBlockChain::Has(const HashStr& hash) {
     auto it = view_blocks_info_.find(hash);
@@ -340,9 +314,12 @@ bool ViewBlockChain::ViewBlockIsCheckedParentHash(const std::string& hash) {
 
 void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_t view) {
     valid_parent_block_hash_[hash] = view;
-    commited_view_.insert(view);
-    if (commited_view_.size() > kCachedViewBlockCount * 10) {
-        commited_view_.erase(commited_view_.begin());
+    View tmp_view;
+    while (stored_view_queue_.pop(&tmp_view)) {
+        commited_view_.insert(tmp_view);
+        if (commited_view_.size() > kCachedViewBlockCount * 10) {
+            commited_view_.erase(commited_view_.begin());
+        }
     }
 }
 

@@ -50,10 +50,6 @@ public:
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func);
-    void TxOver(
-        uint32_t pool_index,
-        const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
-    void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void PopTxs(
         uint32_t pool_index, 
         bool pop_all, 
@@ -62,13 +58,6 @@ public:
     void InitCrossPools();
     void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    bool GidValid(uint32_t pool_index, const std::string& gid) {
-        return tx_pool_[pool_index].GidValid(gid);
-    }
-    void GetTxByGids(
-        uint32_t pool_index,
-        std::vector<std::string> gids,
-        std::map<std::string, pools::TxItemPtr>& res_map);
     int BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index, 
@@ -82,10 +71,6 @@ public:
     uint32_t tx_size(uint32_t pool_index) const {
         return tx_pool_[pool_index].tx_size();
     }
-
-    void RecoverTx(uint32_t pool_index, const std::string& gid) {
-        tx_pool_[pool_index].RecoverTx(gid);
-    }    
 
     void OnNewCrossBlock(
             const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
@@ -223,21 +208,6 @@ public:
         tx_pool_[pool_index].CheckTimeoutTx();
     }
 
-    void AddChangeLeaderInvalidHash(uint32_t pool_index, uint64_t height, const std::string& hash) {
-        tx_pool_[pool_index].AddChangeLeaderInvalidHash(height, hash);
-    }
-
-    void GetHeightInvalidChangeLeaderHashs(
-            uint32_t pool_index,
-            uint64_t height,
-            std::vector<std::string>& hashs) {
-        tx_pool_[pool_index].GetHeightInvalidChangeLeaderHashs(height, hashs);
-    }
-
-    bool is_next_block_checked(uint32_t pool_index, uint64_t height, const std::string& hash) {
-        return tx_pool_[pool_index].is_next_block_checked(height, hash);
-    }
-
 private:
     void DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
@@ -253,11 +223,6 @@ private:
     void SyncMinssingRootHeights(uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
     void SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t height);
-    void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
-    bool SaveNodeVerfiyVec(
-        const std::string& id,
-        const bls::protobuf::JoinElectInfo& join_info,
-        std::string* new_hash);
     void SyncCrossPool();
     void FlushHeightTree();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);

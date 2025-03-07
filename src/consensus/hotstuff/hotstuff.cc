@@ -1583,6 +1583,8 @@ Status Hotstuff::Commit(
 
         tmp_block_info = parent_block_info;
         ADD_DEBUG_PROCESS_TIMESTAMP();
+        // TODO check it
+        break;
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();

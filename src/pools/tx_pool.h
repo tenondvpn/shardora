@@ -72,29 +72,14 @@ public:
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func);
-    void GetTxByIds(
-            const std::vector<std::string>& gids,
-            std::map<std::string, TxItemPtr>& res_map);    
-    void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
-    void TxRecover(std::map<std::string, TxItemPtr>& txs);
-    void CheckTimeoutTx();
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
-    void RemoveTx(const std::string& gid);
     void ConsensusAddTxs(const pools::TxItemPtr& tx);
-    void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs);
-    void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash);
-    void SaveTempBftInvalidHashs(uint64_t height, const std::set<std::string>& hashs);
-    void InitGetTempBftInvalidHashs();
     uint64_t UpdateLatestInfo(
             uint64_t height,
             const std::string& hash,
             const std::string& prehash,
             const uint64_t timestamp);
-    bool is_next_block_checked(uint64_t height, const std::string& hash);
     void SyncBlock();
-    double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count);
-    void RecoverTx(const std::string& gid);
-    bool GidValid(const std::string& gid);
 
     uint32_t all_tx_size() const {
         return added_txs_.size() + consensus_added_txs_.size();
@@ -147,21 +132,12 @@ public:
     }
 
 private:
-    bool CheckJoinElectTxInfo(pools::protobuf::TxMessage& tx_msg);
-    bool SaveNodeVerfiyVec(
-            const std::string& id,
-            const bls::protobuf::JoinElectInfo& join_info,
-            std::string* new_hash);
     void GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func);    
-    void GetTxByHash(
-        std::map<std::string, TxItemPtr>& src_prio_map,
-        const std::string& hash,
-        pools::TxItemPtr& tx);
     void InitHeightTree();
     void InitLatestInfo();
     void UpdateSyncedHeight();
@@ -178,7 +154,6 @@ private:
     uint64_t latest_height_ = common::kInvalidUint64;
     std::string latest_hash_;
     uint64_t latest_timestamp_ = 0U;
-    std::unordered_map<uint64_t, std::set<std::string>> change_leader_invalid_hashs_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
