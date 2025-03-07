@@ -178,6 +178,7 @@ private:
     static const uint64_t kToValidTimeout = 1500lu;
     static const uint64_t kElectTimeout = 20000lu;
     static const uint64_t kElectValidTimeout = 3000000lu;
+    static const uint32_t kEachTimeHandleBlocksCount = 64u;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;

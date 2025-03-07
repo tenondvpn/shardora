@@ -162,37 +162,46 @@ void BlockManager::HandleAllConsensusBlocks() {
             CreateStatisticTx();
         }
 
-        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (true) {
-                BlockToDbItemPtr db_item_ptr = nullptr;
-                consensus_block_queues_[i].pop(&db_item_ptr);
-                if (db_item_ptr == nullptr) {
-                    break;
+        bool no_sleep = true;
+        while (no_sleep) {
+            no_sleep = false;
+            for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+                int32_t count = 0;
+                while (count++ < kEachTimeHandleBlocksCount) {
+                    BlockToDbItemPtr db_item_ptr = nullptr;
+                    consensus_block_queues_[i].pop(&db_item_ptr);
+                    if (db_item_ptr == nullptr) {
+                        break;
+                    }
+    
+                    auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
+                    ZJC_BLOCK_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                        db_item_ptr->view_block_ptr->qc().network_id(),
+                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        block_ptr->height(),
+                        block_ptr->tx_list_size(),
+                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        block_ptr->timeblock_height());
+                    AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
+                    ZJC_BLOCK_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                        db_item_ptr->view_block_ptr->qc().network_id(),
+                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        block_ptr->height(),
+                        block_ptr->tx_list_size(),
+                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        block_ptr->timeblock_height());
                 }
-
-                auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
-                ZJC_BLOCK_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                    db_item_ptr->view_block_ptr->qc().network_id(),
-                    db_item_ptr->view_block_ptr->qc().pool_index(),
-                    block_ptr->height(),
-                    block_ptr->tx_list_size(),
-                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                    db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height());
-                AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
-                ZJC_BLOCK_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                    db_item_ptr->view_block_ptr->qc().network_id(),
-                    db_item_ptr->view_block_ptr->qc().pool_index(),
-                    block_ptr->height(),
-                    block_ptr->tx_list_size(),
-                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                    db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height());
+                
+                if (count >= kEachTimeHandleBlocksCount) {
+                    no_sleep = true;
+                }
             }
         }
-
+        
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
