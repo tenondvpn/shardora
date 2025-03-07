@@ -406,7 +406,7 @@ void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
         transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
         uint32_t priority = GetPriority(new_msg_ptr);
         threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
-        assert(new_msg_ptr->times_idx < 16);
+        assert(new_msg_ptr->times_idx < 128);
         wait_con_[queue_idx % all_thread_count_].notify_one();
     }
 }
