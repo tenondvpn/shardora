@@ -23,7 +23,7 @@ void Hotstuff::Init() {
     // 从 db 中获取最后一个有 QC 的 ViewBlock
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
-        view_block_chain_->Store(latest_view_block, false, nullptr, nullptr);
+        view_block_chain_->Store(latest_view_block, false, nullptr, nullptr, true);
         view_block_chain_->SetLatestLockedBlock(latest_view_block);
         view_block_chain_->SetLatestCommittedBlock(latest_view_block);
         InitAddNewViewBlock(latest_view_block);
