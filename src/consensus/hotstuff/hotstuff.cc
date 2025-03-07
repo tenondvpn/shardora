@@ -1564,6 +1564,14 @@ Status Hotstuff::Commit(
             ADD_DEBUG_PROCESS_TIMESTAMP();
         }
 
+        if (tmp_block->qc().view() <= min_commited_view_ + 1) {
+            if (min_commited_view_ < tmp_block->qc().view()) {
+                min_commited_view_ = tmp_block->qc().view();
+            }
+            
+            break;
+        }
+
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block_info == nullptr) {
             auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
@@ -1578,13 +1586,15 @@ Status Hotstuff::Commit(
                 }
             }
 
+            if (tmp_block_info->valid) {
+                min_commited_view_ = tmp_block->qc().view();
+            }
+
             break;
         }
 
         tmp_block_info = parent_block_info;
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        // TODO check it
-        break;
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();

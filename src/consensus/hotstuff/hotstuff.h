@@ -106,6 +106,10 @@ public:
         if (view > db_stored_view_) {
             db_stored_view_ = view;
         }
+
+        if (view > min_commited_view_) {
+            min_commited_view_ = view;
+        }
         view_block_chain_->UpdateStoredToDbView(view);
     }
     
@@ -315,7 +319,8 @@ private:
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
-    View db_stored_view_ = 0llu;
+    volatile View db_stored_view_ = 0llu;
+    volatile View min_commited_view_ = 0llu;
     
 };
 
