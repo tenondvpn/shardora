@@ -23,11 +23,15 @@ public:
     void push(T e) {
         // auto btime = common::TimeUtils::TimestampUs();
         while (!temp_queue_.empty()) {
-            if (rw_queue_.try_enqueue(temp_queue_.front())) {
-                temp_queue_.pop();
-            } else {
+            if (rw_queue_.size_approx() >= kMaxCount) {
                 break;
             }
+
+            if (!rw_queue_.try_enqueue(temp_queue_.front())) {
+                break;
+            }
+            
+            temp_queue_.pop();
         }
 
         if (temp_queue_.empty()) {
@@ -68,7 +72,7 @@ public:
     }
 
     size_t size() const {
-        return rw_queue_.size_approx();
+        return rw_queue_.size_approx() + temp_queue_.size();
     }
 
 private:
