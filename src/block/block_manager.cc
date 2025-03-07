@@ -763,6 +763,11 @@ void BlockManager::createContractCreateByRootToTxs(
 void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
+#ifdef TEST_NOT_PUT_BLOCK
+    if (view_block_item->qc().view() > 64) {
+        return;
+    }
+#endif
     // TODO: fix
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
