@@ -116,6 +116,7 @@ private:
     uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
+    common::SpinMutex prev_to_heights_mutex_;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
     std::unordered_map<

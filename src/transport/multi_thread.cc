@@ -304,6 +304,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
+    assert(msg_ptr->times_idx < 128);
     wait_con_[thread_index % all_thread_count_].notify_one();
     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
         "priority: %d, thread queue size: %u, net: %u, type: %d, from: %s:%d",
@@ -405,6 +406,7 @@ void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
         transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
         uint32_t priority = GetPriority(new_msg_ptr);
         threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
+        assert(new_msg_ptr->times_idx < 16);
         wait_con_[queue_idx % all_thread_count_].notify_one();
     }
 }

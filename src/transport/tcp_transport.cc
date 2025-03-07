@@ -31,6 +31,7 @@ TcpTransport::~TcpTransport() {}
 void TcpTransport::AddLocalMessage(transport::MessagePtr msg_ptr) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     local_messages_[thread_idx].push(msg_ptr);
+    assert(msg_ptr->times_idx < 128);
 }
 
 int TcpTransport::Init(

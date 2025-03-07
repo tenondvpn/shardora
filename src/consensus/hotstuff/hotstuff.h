@@ -282,8 +282,6 @@ private:
     Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
-    void SaveLatestProposeMessage();
-    void LoadLatestProposeMessage();
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 300lu;
 

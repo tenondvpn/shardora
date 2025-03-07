@@ -47,8 +47,6 @@ void Hotstuff::Init() {
     } else {
         ZJC_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
     }
-
-    LoadLatestProposeMessage();
 }
     
 void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block) {
@@ -146,14 +144,14 @@ Status Hotstuff::Propose(
             *pb_pro_msg->mutable_tc() = *tc;
         }
 
-        // transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-        // auto s = crypto()->SignMessage(tmp_msg_ptr);
+        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        auto s = crypto()->SignMessage(tmp_msg_ptr);
         auto& header = tmp_msg_ptr->header;
-        // if (s != Status::kSuccess) {
-        //     ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-        //         pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        //     return s;
-        // }
+        if (s != Status::kSuccess) {
+            ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            return s;
+        }
 
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_INFO("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
@@ -254,7 +252,6 @@ Status Hotstuff::Propose(
 
     latest_leader_propose_message_ = tmp_msg_ptr;
     auto t6 = common::TimeUtils::TimestampMs();
-    // SaveLatestProposeMessage();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_INFO("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
@@ -307,21 +304,6 @@ Status Hotstuff::Propose(
     // HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
-}
-
-void Hotstuff::SaveLatestProposeMessage() {
-    prefix_db_->SaveLatestLeaderProposeMessage(latest_leader_propose_message_->header);
-}
-
-void Hotstuff::LoadLatestProposeMessage() {
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    if (prefix_db_->GetLatestLeaderProposeMessage(
-            common::GlobalInfo::Instance()->network_id(), 
-            pool_idx_, 
-            &msg_ptr->header)) {
-        msg_ptr->is_leader = true;
-        latest_leader_propose_message_ = msg_ptr;
-    }
 }
 
 void Hotstuff::NewView(

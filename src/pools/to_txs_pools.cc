@@ -489,6 +489,7 @@ void ToTxsPools::HandleNormalToTx(
             erased_max_heights_[i] = heights.heights(i) + 1;
         }
 
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = heights_ptr;
         break;
     }
@@ -512,14 +513,17 @@ void ToTxsPools::LoadLatestHeights() {
         return;
     }
 
-    prev_to_heights_ = heights_ptr;
+    {
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
+        prev_to_heights_ = heights_ptr;
+    }
     uint32_t max_pool_index = common::kImmutablePoolSize;
     // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
     //     ++max_pool_index;
     // }
 
-    if (prev_to_heights_ != nullptr) {
-        auto& this_net_heights = prev_to_heights_->heights();
+    if (heights_ptr != nullptr) {
+        auto& this_net_heights = heights_ptr->heights();
         for (int32_t i = 0; i < this_net_heights.size(); ++i) {
             pool_consensus_heihgts_[i] = this_net_heights[i];
             has_statistic_height_[i] = this_net_heights[i];
@@ -745,8 +749,14 @@ int ToTxsPools::CreateToTxWithHeights(
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
     for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
-        if (prev_to_heights_ != nullptr) {
-            min_height = prev_to_heights_->heights(pool_idx) + 1;
+        std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
+        {
+            common::AutoSpinLock lock(prev_to_heights_mutex_);
+            prev_to_heights = prev_to_heights_;
+        }
+
+        if (prev_to_heights != nullptr) {
+            min_height = prev_to_heights->heights(pool_idx) + 1;
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
