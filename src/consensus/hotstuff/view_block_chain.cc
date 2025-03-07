@@ -242,6 +242,22 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     return nullptr;    
 }
 
+bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_block) {
+    auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
+    if (it != view_blocks_info_.end() && 
+            it->second->view_block != nullptr && 
+            !it->second->view_block->qc().sign_x().empty()) {
+        return false;
+    }
+
+    if (it == view_blocks_info_.end()) {
+        return false;
+    }
+    
+    view_blocks_info_.erase(it);
+    return true;
+}
+
 bool ViewBlockChain::Has(const HashStr& hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
