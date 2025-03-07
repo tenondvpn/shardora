@@ -200,14 +200,6 @@ public:
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
-    void CheckTimeoutTx(uint32_t pool_index) {
-        if (pool_index >= common::kInvalidPoolIndex) {
-            return;
-        }
-
-        tx_pool_[pool_index].CheckTimeoutTx();
-    }
-
 private:
     void DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);

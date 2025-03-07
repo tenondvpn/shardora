@@ -117,17 +117,6 @@ public:
     inline double Tps() override {
         return cur_tps_;
     }
-    
-    // Return expired or invalid block txs to pool
-    Status Return(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) override {
-        auto& block = view_block->block_info();
-        // return txs to the pool
-        for (uint32_t i = 0; i < uint32_t(block.tx_list().size()); i++) {
-            auto& gid = block.tx_list(i).gid();
-            pools_mgr_->RecoverTx(pool_idx_, gid);
-        }
-        return Status::kSuccess;
-    }
 
     private:
     Status addTxsToPool(
