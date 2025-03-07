@@ -368,6 +368,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        msg_ptr->times_idx = 0;
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             bool has_user_tx = false;
             bool has_system_tx = false;
