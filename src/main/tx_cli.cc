@@ -146,7 +146,7 @@ static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
 static void LoadAllAccounts(int32_t shardnum=3) {
-    FILE* fd = fopen((std::string("../addrs") + std::to_string(shardnum)).c_str(), "r");
+    FILE* fd = fopen((std::string("../init_accounts") + std::to_string(shardnum)).c_str(), "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
@@ -176,9 +176,9 @@ static void LoadAllAccounts(int32_t shardnum=3) {
         std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
     }
 
-    if (g_prikeys.size() < common::kImmutablePoolSize) {
-        std::cout << "invalid init acc file." << std::endl;
-        exit(1);
+    assert(!g_prikeys.empty());
+    while (g_prikeys.size() < common::kImmutablePoolSize) {
+        g_prikeys.push_back(g_prikeys[0]);
     }
 
     fclose(fd);
@@ -253,9 +253,6 @@ int tx_main(int argc, char** argv) {
     }
     
     std::string prikey = g_prikeys[0];
-    if (!multi) {
-        prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
-    }
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
@@ -305,7 +302,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 100 == 0) {
+        if (count % 1 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
@@ -322,10 +319,6 @@ int tx_main(int argc, char** argv) {
             std::cout << "tps: " << tps << std::endl;
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
-        }
-
-        if (delayus_a != 0) {
-            usleep(delayus_a);
         }
     }
 

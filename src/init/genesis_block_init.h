@@ -47,9 +47,6 @@ public:
         genesis_config_ = genesis_config;
     }
 
-    const YAML::Node GenesisConfig() const {
-        return genesis_config_;
-    }
 private:
     std::unordered_map<std::string, uint64_t> GetGenesisAccountBalanceMap(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
@@ -77,7 +74,7 @@ private:
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
     const std::map<uint32_t, std::string> GetGenesisAccount(uint32_t net_id);
     void InitShardGenesisAccount();
-    void GenerateRootAccounts();
+    // void GenerateRootAccounts();
     int GenerateRootSingleBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         FILE* root_gens_init_block_file,
@@ -114,18 +111,6 @@ private:
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::BlockTx& block_tx);
     void SaveGenisisPoolHeights(uint32_t shard_id);
-    void StoreViewBlockWithCommitQC(
-            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-            std::shared_ptr<db::DbWriteBatch>& db_batch) {
-        // assert(view_block->qc().view() < 100);
-        // prefix_db_->SaveViewBlockInfo(
-        //     view_block->qc().network_id(),
-        //     view_block->qc().pool_index(),
-        //     view_block->block_info().height(),
-        //     *view_block,
-        //     db_batch);
-    }
-
     int CreateAllQc(
         uint32_t  network_id,
         uint32_t  pool_index,
@@ -133,7 +118,8 @@ private:
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
 
-    std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
+    std::map<uint32_t, std::map<uint32_t, std::set<std::string>>> net_pool_index_map_; // net => (pool => addr)
+    uint32_t net_pool_index_map_addr_count_ = 0;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
     common::Bitmap shard_bitmap_{ common::kEachShardMaxNodeCount };
