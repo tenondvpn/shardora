@@ -73,7 +73,6 @@ public:
     virtual Status Return(const std::shared_ptr<view_block::protobuf::ViewBlockItem>&) = 0;
     // Handle Synced Block From KeyValueSyncer
     virtual void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
-    virtual void MarkBlockTxsAsUsed(const block::protobuf::Block&) = 0;
     virtual double Tps() = 0;
 };
 
@@ -114,8 +113,6 @@ public:
     //     transport::MessagePtr msg_ptr, 
     //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
     void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
-    // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
-    void MarkBlockTxsAsUsed(const block::protobuf::Block&) override;
 
     inline double Tps() override {
         return cur_tps_;

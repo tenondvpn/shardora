@@ -881,8 +881,6 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
         return Status::kError;
     }
 
-    // 成功接入链中，标记交易占用
-    acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
     return Status::kSuccess;    
 }
 
@@ -994,8 +992,6 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
         return Status::kError;
     }
 
-    // 成功接入链中，标记交易占用
-    acceptor()->MarkBlockTxsAsUsed(pro_msg_wrap->view_block_ptr->block_info());
     return Status::kSuccess;
 }
 
