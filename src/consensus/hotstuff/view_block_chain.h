@@ -269,7 +269,7 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     volatile View stored_to_db_view_ = 0llu;
     std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
-    std::unordered_set<uint64_t> commited_view_;
+    std::set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
