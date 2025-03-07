@@ -1610,7 +1610,7 @@ Status Hotstuff::Commit(
     }
     
     if (!v_block_info->valid) {
-        return Status::kError
+        return Status::kError;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
