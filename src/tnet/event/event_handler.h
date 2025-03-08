@@ -40,6 +40,7 @@ public:
     }
 
     void Stop() {
+        ZJC_DEBUG("network socket stopted.");
         stoped_ = true;
     }
 
