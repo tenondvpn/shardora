@@ -192,18 +192,18 @@ void TxPoolManager::ConsensusTimerMessage() {
     std::string test_str;
     uint32_t max_count = 0;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        // if (tx_pool_[i].tx_size() > max_count) {
-        //     max_count = tx_pool_[i].tx_size();
-        // }
-        test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
+        if (tx_pool_[i].tx_size() > max_count) {
+            max_count = tx_pool_[i].tx_size();
+        }
+        // test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
         // tx_count_queue.push(tx_pool_[i].tx_size());
         // if (tx_count_queue.size() > 2) {
         //     tx_count_queue.pop();
         // }
     }
 
-    now_max_tx_count_ = tx_count_queue.top() * 2 / 3;
-    ZJC_DEBUG("set max txcount: %u, test str: %s", tx_count_queue.top(), test_str.c_str());
+    now_max_tx_count_ = max_count * 2 / 3;
+    ZJC_DEBUG("set max txcount: %u, test str: %s", max_count, test_str.c_str());
 // #endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
