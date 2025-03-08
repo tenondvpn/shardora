@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "common/time_utils.h"
+
 namespace shardora {
 
 namespace tnet {
@@ -31,12 +33,22 @@ public:
         return should_stop_;
     }
 
-    bool CheckStoped() const {
+    bool CheckStoped() {
+        if (stoped_) {
+            return stoped_;
+        }
+
+        auto now_ms = common::TimeUtils::TimestampMs();
+        if (should_stop_timeout_ms_ > 0 && now_ms >= should_stop_timeout_ms_ + 60000lu) {
+            stoped_ = true;
+        }
+
         return stoped_;
     }
 
     void ShouldStop() {
         should_stop_ = true;
+        should_stop_timeout_ms_ = common::TimeUtils::TimestampMs();
     }
 
     void Stop() {
@@ -45,9 +57,11 @@ public:
     }
 
 private:
+    
     int32_t event_type_{ 0 };
     volatile bool should_stop_ = false;
     volatile bool stoped_ = false;
+    uint64_t should_stop_timeout_ms_ = 0;
 
 };
 
