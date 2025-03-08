@@ -82,7 +82,7 @@ static const uint64_t kMessagePeriodUs = 1500000lu;
 // TODO: check memory
 class TransportMessage {
 public:
-    static std::atomic<int32_t> testTransportMessageCount;
+    // static std::atomic<int32_t> testTransportMessageCount;
     TransportMessage() : conn(nullptr), retry(false), handled(false), is_leader(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
@@ -90,13 +90,13 @@ public:
         memset(times, 0, sizeof(times));
         times_idx = 0;
         thread_index = -1;
-        auto now_count = testTransportMessageCount.fetch_add(1);
-        ZJC_DEBUG("memory check create new transport message: %d", now_count);
+        // auto now_count = testTransportMessageCount.fetch_add(1);
+        // ZJC_DEBUG("memory check create new transport message: %d", now_count);
     }
 
     ~TransportMessage() {
-        auto now_count = testTransportMessageCount.fetch_sub(1);
-        ZJC_DEBUG("memory check remove transport message: %d", now_count);
+        // auto now_count = testTransportMessageCount.fetch_sub(1);
+        // ZJC_DEBUG("memory check remove transport message: %d", now_count);
     }
 
     protobuf::Header header;

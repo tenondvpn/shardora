@@ -21,7 +21,7 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
-        if (msg_queue_.size() > 10) {
+        if (msg_queue_.size() > 1000) {
             ZJC_DEBUG("msg queue size: %u", msg_queue_.size());
             return;
         }
