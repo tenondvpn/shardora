@@ -212,7 +212,6 @@ Status Hotstuff::Propose(
         auto broadcast = header.mutable_broadcast();
     }
 
-    return Status::kSuccess;
     auto t4 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
