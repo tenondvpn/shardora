@@ -91,7 +91,6 @@ Status Hotstuff::Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
-            return Status::kSuccess;
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
@@ -187,7 +186,6 @@ Status Hotstuff::Propose(
 
     auto t2 = common::TimeUtils::TimestampMs();
     ZJC_INFO("1 now ontime called propose: %d", pool_idx_);
-    return Status::kSuccess;
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = tmp_msg_ptr->header;
