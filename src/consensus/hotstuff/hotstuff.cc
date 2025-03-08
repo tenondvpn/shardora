@@ -201,7 +201,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    return 0;
+    return Status::kSuccess;
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
