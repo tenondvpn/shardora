@@ -41,7 +41,7 @@ void FilterBroadcast::Broadcasting(
     //     // ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
     //     LayerSend(dht_ptr, msg_ptr, nodes);
     // } else {
-        auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
+        auto nodes = GetRandomFilterNodes(dht_ptr, message);
         // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
         //     bloomfilter->insert((*iter)->id_hash);
         // }
@@ -134,7 +134,6 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
 
 std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         dht::BaseDhtPtr& dht_ptr,
-        std::shared_ptr<std::unordered_set<uint64_t>>& bloomfilter,
         const transport::protobuf::Header& message) {
     auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
     std::vector<uint32_t> pos_vec;
