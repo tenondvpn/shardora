@@ -348,7 +348,6 @@ void TxPool::SyncBlock() {
 }
 
 void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
-    return;
     CheckThreadIdValid();
     if (consensus_added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend %u, %u, all valid: %u", 
