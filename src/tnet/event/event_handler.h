@@ -39,7 +39,7 @@ public:
         }
 
         auto now_ms = common::TimeUtils::TimestampMs();
-        if (should_stop_timeout_ms_ > 0 && now_ms >= should_stop_timeout_ms_ + 60000lu) {
+        if (should_stop_timeout_ms_ > 0 && now_ms >= should_stop_timeout_ms_ + 120000lu) {
             stoped_ = true;
         }
 
