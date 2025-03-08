@@ -12,7 +12,7 @@ namespace shardora {
 
 namespace transport {
 
-std::atomic<uint32_t> TransportMessage::testTransportMessageCount = 0;
+std::atomic<int32_t> TransportMessage::testTransportMessageCount = 0;
 using namespace tnet;
 TcpTransport* TcpTransport::Instance() {
     TransportMessage::testTransportMessageCount.store(0);
