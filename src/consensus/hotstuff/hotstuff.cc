@@ -2175,7 +2175,6 @@ void Hotstuff::TryRecoverFromStuck(
         const transport::MessagePtr& msg_ptr, 
         bool has_user_tx, 
         bool has_system_tx) {
-    return;
     // if (!latest_qc_item_ptr_) {
     //     ZJC_WARN("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
     //     return;
