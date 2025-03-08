@@ -147,14 +147,14 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     std::vector<dht::NodePtr> nodes;
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
-        if (bloomfilter->find((*readobly_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            // ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
-            //     (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
-            //     (*readobly_dht)[pos_vec[i]]->public_port,
-            //     (*readobly_dht)[pos_vec[i]]->id_hash,
-            //     message.hash64());
-            continue;
-        }
+        // if (bloomfilter->find((*readobly_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
+        //     // ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+        //     //     (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
+        //     //     (*readobly_dht)[pos_vec[i]]->public_port,
+        //     //     (*readobly_dht)[pos_vec[i]]->id_hash,
+        //     //     message.hash64());
+        //     continue;
+        // }
 
         nodes.push_back((*readobly_dht)[pos_vec[i]]);
         // if (message.broadcast().ign_bloomfilter_hop() <= message.hop_count() + 1) {
