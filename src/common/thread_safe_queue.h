@@ -21,7 +21,7 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
-        std::unique_lock<std::mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         msg_queue_.push(e);
         // auto btime = common::TimeUtils::TimestampUs();
         // rw_queue_.enqueue(e);
@@ -40,7 +40,7 @@ public:
     }
 
     bool pop(T* e) {
-        std::unique_lock<std::mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         if (msg_queue_.empty()) {
             return false;
         }
