@@ -96,7 +96,9 @@ public:
     }
 
     ~TransportMessage() {
-        ZJC_DEBUG("memory check remove transport message: %d", testTransportMessageCount.fetch_sub(1));
+        auto now_count = testTransportMessageCount.fetch_sub(1);
+        assert(now_count >= 1);
+        ZJC_DEBUG("memory check remove transport message: %d", now_count);
     }
 
     protobuf::Header header;
