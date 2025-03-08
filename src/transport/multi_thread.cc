@@ -99,18 +99,17 @@ void ThreadHandler::HandleMessage() {
 
         auto btime = common::TimeUtils::TimestampUs();
         if (maping_thread_idx <= (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
-            // HotstuffSyncTimerMessage
-            // auto btime = common::TimeUtils::TimestampUs();
-            // auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            // msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
-            // msg_ptr->times[msg_ptr->times_idx++] = btime;
-            // Processor::Instance()->HandleMessage(msg_ptr);
-            // // PacemakerTimerMessage
-            // btime = common::TimeUtils::TimestampUs();
-            // msg_ptr = std::make_shared<transport::TransportMessage>();
-            // msg_ptr->header.set_type(common::kPacemakerTimerMessage);
-            // msg_ptr->times[msg_ptr->times_idx++] = btime;
-            // Processor::Instance()->HandleMessage(msg_ptr);
+            auto btime = common::TimeUtils::TimestampUs();
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
+            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            Processor::Instance()->HandleMessage(msg_ptr);
+            // PacemakerTimerMessage
+            btime = common::TimeUtils::TimestampUs();
+            msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->header.set_type(common::kPacemakerTimerMessage);
+            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            Processor::Instance()->HandleMessage(msg_ptr);
         }
 
         if (count >= kMaxHandleMessageCount) {
