@@ -7,6 +7,7 @@
 #include <unistd.h>
 #endif
 
+#include <atomic>
 #include <memory>
 #include <functional>
 
@@ -78,7 +79,9 @@ static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
 static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
-struct TransportMessage {
+// TODO: check memory
+std::atomic<uint32_t> testTransportMessageCount = 0;
+class TransportMessage {
     TransportMessage() : conn(nullptr), retry(false), handled(false), is_leader(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
@@ -86,6 +89,11 @@ struct TransportMessage {
         memset(times, 0, sizeof(times));
         times_idx = 0;
         thread_index = -1;
+        ZJC_DEBUG("memory check create new transport message: %u", testTransportMessageCount);
+    }
+
+    ~TransportMessage() {
+        ZJC_DEBUG("memory check remove transport message: %u", testTransportMessageCount);
     }
 
     protobuf::Header header;

@@ -156,6 +156,7 @@ Status Hotstuff::Propose(
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_INFO("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
+#ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
         ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
@@ -170,6 +171,7 @@ Status Hotstuff::Propose(
             ProtobufToJson(cons_debug).c_str(),
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView());
+#endif
         // HandleProposeMsg(latest_leader_propose_message_);
         return Status::kSuccess;
     }

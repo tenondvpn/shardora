@@ -23,7 +23,7 @@ ThreadHandler::ThreadHandler(
         : msg_handler_(msg_handler),
         wait_con_(wait_con),
         wait_mutex_(wait_mutex) {
-    thread_.reset(new std::thread(&ThreadHandler::HandleMessage, this));
+    thread_ = std::make_shared<std::thread>(&ThreadHandler::HandleMessage, this);
     thread_->detach();
 }
 
@@ -32,7 +32,7 @@ ThreadHandler::~ThreadHandler() {}
 void ThreadHandler::Join() {
     destroy_ = true;
     if (thread_) {
-        thread_ = nullptr;
+        thread_->join();
     }
 }
 
@@ -304,7 +304,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
-    assert(msg_ptr->times_idx < 128);
     wait_con_[thread_index % all_thread_count_].notify_one();
     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, "
         "priority: %d, thread queue size: %u, net: %u, type: %d, from: %s:%d",
