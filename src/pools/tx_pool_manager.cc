@@ -394,7 +394,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             msg_ptr->address_info = address_info;
-// #ifndef NDEBUG
+#ifndef NDEBUG
             auto now_tm = common::TimeUtils::TimestampMs();
             ++prev_tps_count_;
             uint64_t dur = 1000lu;
@@ -408,7 +408,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 prev_show_tm_ms_ = now_tm;
                 prev_tps_count_ = 0;
             }
-// #endif
+#endif
         }
     }
 
@@ -1076,7 +1076,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    tx_pool_[pool_index].AddTx(tx_ptr);
+    // tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
         pool_index,
