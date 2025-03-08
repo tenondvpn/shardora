@@ -61,38 +61,38 @@ void ThreadHandler::HandleMessage() {
                 break;
             }
 
-            // // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
-            // //     msg_ptr->header.hash64(), thread_idx);
-            // msg_ptr->times_idx = 0;
-            // msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
-            // if (msg_ptr->thread_index != -1) {
-            //     assert(msg_ptr->thread_index == thread_idx);
-            // } else {
-            //     msg_ptr->thread_index = thread_idx;
-            // }
-            // ADD_DEBUG_PROCESS_TIMESTAMP();
-            // ZJC_DEBUG("begin message handled msg hash: %lu, thread idx: %d", 
+            // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
             //     msg_ptr->header.hash64(), thread_idx);
-            // Processor::Instance()->HandleMessage(msg_ptr);
-            // ADD_DEBUG_PROCESS_TIMESTAMP();
-            // auto etime = common::TimeUtils::TimestampUs();
-            // if (etime - btime > 200000lu) {
-            // //     // for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-            // //     //     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
-            // //     //     // if (diff_time > 1000000lu) {
-            // //     //         ZJC_INFO("over handle message debug %lu timestamp: %lu, debug: %s, "
-            // //     //             "thread_idx: %d, maping_thread_idx: %d, all time: %lu",
-            // //     //             msg_ptr->header.hash64(), msg_ptr->times[i], 
-            // //     //             msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx, (etime - btime));
-            // //     //     // }
-            // //     // }
-            // //     ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
-            // //         msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime));
-            //     if (thread_idx == 6)
-            //         ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
-            //             msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime),
-            //             "ProtobufToJson(msg_ptr->header).c_str()");
-            // }
+            msg_ptr->times_idx = 0;
+            msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
+            if (msg_ptr->thread_index != -1) {
+                assert(msg_ptr->thread_index == thread_idx);
+            } else {
+                msg_ptr->thread_index = thread_idx;
+            }
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+            ZJC_DEBUG("begin message handled msg hash: %lu, thread idx: %d", 
+                msg_ptr->header.hash64(), thread_idx);
+            Processor::Instance()->HandleMessage(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
+            auto etime = common::TimeUtils::TimestampUs();
+            if (etime - btime > 200000lu) {
+            //     // for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+            //     //     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
+            //     //     // if (diff_time > 1000000lu) {
+            //     //         ZJC_INFO("over handle message debug %lu timestamp: %lu, debug: %s, "
+            //     //             "thread_idx: %d, maping_thread_idx: %d, all time: %lu",
+            //     //             msg_ptr->header.hash64(), msg_ptr->times[i], 
+            //     //             msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx, (etime - btime));
+            //     //     // }
+            //     // }
+            //     ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
+            //         msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime));
+                if (thread_idx == 6)
+                    ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
+                        msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime),
+                        "ProtobufToJson(msg_ptr->header).c_str()");
+            }
 
             // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
