@@ -136,7 +136,7 @@ Status Hotstuff::Propose(
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
         tmp_msg_ptr->times_idx = 0;
-        tmp_msg_ptr->header.release_broadcast();
+        // tmp_msg_ptr->header.release_broadcast();
         tmp_msg_ptr->header.set_broadcast(true);
         // auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
