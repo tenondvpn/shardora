@@ -203,7 +203,8 @@ Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessag
     header.set_hop_count(0);
     header.mutable_view_block_proto()->CopyFrom(view_block_msg);
     if (!header.broadcast()) {
-        auto broadcast = header.mutable_broadcast();
+        header.set_broadcast(true);
+        // auto broadcast = header.mutable_broadcast();
     }
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
