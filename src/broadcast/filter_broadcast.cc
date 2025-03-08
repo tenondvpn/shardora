@@ -48,7 +48,10 @@ void FilterBroadcast::Broadcasting(
 
         // ZJC_DEBUG("random Broadcasting: %lu, size: %u",
         //     msg_ptr->header.hash64(), nodes.size());
-        assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
+        if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
+            return;
+        }
+        
         Send(dht_ptr, msg_ptr, nodes);
     // }
 }

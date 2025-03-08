@@ -241,8 +241,6 @@ Status Hotstuff::Propose(
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
     ZJC_DEBUG("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
-#else
-    header.set_debug(std::to_string(common::TimeUtils::TimestampMs()));
 #endif
     auto t5 = common::TimeUtils::TimestampMs();
     s = crypto()->SignMessage(tmp_msg_ptr);
@@ -267,7 +265,7 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
     auto t8 = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
         "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu, t7: %lu, t8: %lu",
@@ -1373,7 +1371,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 #endif
 
     if (pre_rst_timer_msg.txs_size() > 0) {
-        ZJC_DEBUG("tps reset from follower tx size: %u", pre_rst_timer_msg.txs_size());
+        ZJC_INFO("tps reset from follower tx size: %u", pre_rst_timer_msg.txs_size());
         hotstuff_mgr_.ConsensusAddTxsMessage(msg_ptr);
     }
 
