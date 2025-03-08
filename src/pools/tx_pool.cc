@@ -142,7 +142,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
-    // added_txs_.push(tx_ptr);
+    added_txs_.push(tx_ptr);
     return kPoolsSuccess;
 }
 
@@ -150,6 +150,7 @@ void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
+    return;
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr) && txs->size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
@@ -192,6 +193,7 @@ void TxPool::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func) {
+    return;
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr) && res_map.size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
