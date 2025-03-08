@@ -105,14 +105,15 @@ void ThreadHandler::HandleMessage() {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
             // PacemakerTimerMessage
             btime = common::TimeUtils::TimestampUs();
             msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPacemakerTimerMessage);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
         }
 
         if (count >= kMaxHandleMessageCount) {
