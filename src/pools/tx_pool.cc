@@ -158,8 +158,8 @@ void TxPool::GetTxSyncToLeader(
             continue;
         }
 
-        auto* tx = txs->Add();
-        *tx = *tx_ptr->tx_info;
+        // auto* tx = txs->Add();
+        // *tx = *tx_ptr->tx_info;
     }
 }
 
