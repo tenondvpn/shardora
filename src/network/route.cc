@@ -63,7 +63,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
             auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-            assert(message.broadcast().bloomfilter_size() < 64);
+            // assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
             ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
             broadcast_queue_[thread_idx].push(msg_ptr);
@@ -270,17 +270,17 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
         src_net_id = header.src_sharding_id();
     }
 
-    if (src_net_id != des_net_id) {
-        auto* cast_msg = const_cast<transport::protobuf::Header*>(&header);
-        auto broad_param = cast_msg->mutable_broadcast();
-        if (!broad_param->net_crossed()) {
-            broad_param->set_net_crossed(true);
-            broad_param->clear_bloomfilter();
-            cast_msg->set_hop_count(0);
-        }
-    }
+    // if (src_net_id != des_net_id) {
+    //     auto* cast_msg = const_cast<transport::protobuf::Header*>(&header);
+    //     auto broad_param = cast_msg->mutable_broadcast();
+    //     if (!broad_param->net_crossed()) {
+    //         broad_param->set_net_crossed(true);
+    //         broad_param->clear_bloomfilter();
+    //         cast_msg->set_hop_count(0);
+    //     }
+    // }
 
-    assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
+    // assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
     ZJC_DEBUG("broadcast success: %lu", header.hash64());
     broadcast_->Broadcasting(des_dht, msg_ptr);
 }
