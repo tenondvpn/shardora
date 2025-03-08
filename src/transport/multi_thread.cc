@@ -73,9 +73,9 @@ void ThreadHandler::HandleMessage() {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             ZJC_DEBUG("begin message handled msg hash: %lu, thread idx: %d", 
                 msg_ptr->header.hash64(), thread_idx);
-            if (msg_ptr->header.type() != common::kPoolsMessage) {
-                continue;
-            }
+            // if (msg_ptr->header.type() != common::kPoolsMessage) {
+            //     continue;
+            // }
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
