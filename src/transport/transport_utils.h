@@ -88,7 +88,9 @@ public:
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
+#ifndef NDEBUG
         memset(times, 0, sizeof(times));
+#endif
         times_idx = 0;
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
@@ -105,8 +107,10 @@ public:
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
-    uint64_t times[256];
-    std::string debug_str[256];
+#ifndef NDEBUG
+    uint64_t times[64];
+    std::string debug_str[64];
+#endif
     uint32_t times_idx;
     uint64_t handle_timeout;
     uint64_t timeout;
