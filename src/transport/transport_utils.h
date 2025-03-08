@@ -90,11 +90,11 @@ public:
         memset(times, 0, sizeof(times));
         times_idx = 0;
         thread_index = -1;
-        ZJC_DEBUG("memory check create new transport message: %u", testTransportMessageCount);
+        ZJC_DEBUG("memory check create new transport message: %u", testTransportMessageCount.fetch_add(1));
     }
 
     ~TransportMessage() {
-        ZJC_DEBUG("memory check remove transport message: %u", testTransportMessageCount);
+        ZJC_DEBUG("memory check remove transport message: %u", testTransportMessageCount.fetch_sub(1));
     }
 
     protobuf::Header header;
