@@ -78,9 +78,11 @@ enum FirewallCheckStatus {
 static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
 static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
+static const uint32_t kEachMessagePoolMaxCount = 2048u;
 
 // TODO: check memory
-struct TransportMessage {
+class TransportMessage {
+public:
     // static std::atomic<int32_t> testTransportMessageCount;
     TransportMessage() : conn(nullptr), retry(false), handled(false), is_leader(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
@@ -103,8 +105,8 @@ struct TransportMessage {
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
-    uint64_t times[64];
-    std::string debug_str[64];
+    uint64_t times[256];
+    std::string debug_str[256];
     uint32_t times_idx;
     uint64_t handle_timeout;
     uint64_t timeout;

@@ -231,7 +231,7 @@ void TcpTransport::SetMessageHash(const transport::protobuf::Header& message) {
 int TcpTransport::Send(
         tnet::TcpInterface* tcp_conn,
         const transport::protobuf::Header& message) {
-    // assert(message.broadcast().bloomfilter_size() < 64);
+    assert(message.broadcast().bloomfilter_size() < 64);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     std::string msg;
@@ -264,7 +264,7 @@ int TcpTransport::Send(
     assert(des_port > 0);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
-    // assert(message.broadcast().bloomfilter_size() < 64);
+    assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message);
     }
@@ -273,7 +273,7 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
-    // if (message.broadcast()) {
+    // if (message.has_broadcast()) {
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
 
@@ -511,7 +511,7 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
-    // if (message.broadcast()) {
+    // if (message.has_broadcast()) {
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
 

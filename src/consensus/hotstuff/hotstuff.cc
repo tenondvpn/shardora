@@ -136,9 +136,8 @@ Status Hotstuff::Propose(
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
         tmp_msg_ptr->times_idx = 0;
-        // tmp_msg_ptr->header.release_broadcast();
-        tmp_msg_ptr->header.set_broadcast(true);
-        // auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+        tmp_msg_ptr->header.release_broadcast();
+        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
         if (tc != nullptr) {
             auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
@@ -209,9 +208,8 @@ Status Hotstuff::Propose(
         *pb_pro_msg->mutable_tc() = *tc;
     }
 
-    if (!header.broadcast()) {
-        // auto broadcast = header.mutable_broadcast();
-        header.set_broadcast(true);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
     }
 
     auto t4 = common::TimeUtils::TimestampMs();
@@ -346,17 +344,15 @@ void Hotstuff::NewView(
 
     ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
-    if (!header.broadcast()) {
-        // auto broadcast = header.mutable_broadcast();
-        header.set_broadcast(true);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
     }
     
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     transport::TcpTransport::Instance()->SetMessageHash(header);
     if (conn) {
-        header.set_broadcast(false);
-        // header.release_broadcast();
+        header.release_broadcast();
         transport::TcpTransport::Instance()->Send(conn.get(), msg_ptr->header);
     } else {
         network::Route::Instance()->Send(msg_ptr);

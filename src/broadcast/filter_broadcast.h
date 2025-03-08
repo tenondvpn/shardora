@@ -25,6 +25,7 @@ private:
         const transport::protobuf::Header& message);
     std::vector<dht::NodePtr> GetRandomFilterNodes(
         dht::BaseDhtPtr& dht_ptr,
+        std::shared_ptr<std::unordered_set<uint64_t>>& bloomfilter,
         const transport::protobuf::Header& message);
     uint32_t BinarySearch(const dht::Dht& dht, uint64_t val);
     void LayerSend(

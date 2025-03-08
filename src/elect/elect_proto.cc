@@ -34,8 +34,8 @@ bool ElectProto::CreateLeaderRotation(
     leader_rotation->set_leader_id(leader_id);
     leader_rotation->set_pool_mod_num(pool_mod_num);
 //     ec_msg.set_pubkey(security_ptr->GetPublicKey());
-    msg.set_broadcast(true);
-    // broad_param->set_hop_limit(10);
+    auto broad_param = msg.mutable_broadcast();
+    broad_param->set_hop_limit(10);
     std::string hash_str = leader_id + std::to_string(pool_mod_num);
     auto message_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
@@ -72,8 +72,8 @@ bool ElectProto::CreateElectWaitingNodes(
         balance_hash_256;
     waiting_nodes_msg->set_waiting_shard_id(waiting_shard_id);
 //     ec_msg.set_pubkey(security_ptr->GetPublicKey());
-    msg.set_broadcast(true);
-    // broad_param->set_hop_limit(10);
+    auto broad_param = msg.mutable_broadcast();
+    broad_param->set_hop_limit(10);
     auto message_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
     int sign_res = security_ptr->Sign(message_hash, &sign);
@@ -102,8 +102,8 @@ bool ElectProto::CreateWaitingHeartbeat(
     heartbeat_msg->set_network_id(waiting_shard_id);
     heartbeat_msg->set_timestamp_sec(common::TimeUtils::TimestampSeconds());
 //     ec_msg.set_pubkey(security_ptr->GetPublicKey());
-    msg.set_broadcast(true);
-    // broad_param->set_hop_limit(10);
+    auto broad_param = msg.mutable_broadcast();
+    broad_param->set_hop_limit(10);
     auto message_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
     int sign_res = security_ptr->Sign(message_hash, &sign);

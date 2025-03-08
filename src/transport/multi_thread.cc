@@ -220,6 +220,18 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         return;
     }
 
+    auto thread_index = GetThreadIndex(msg_ptr);
+    if (thread_index >= common::kMaxThreadCount) {
+        assert(false);
+        return;
+    }
+
+    if (msg_ptr->header.type() == common::kPoolsMessage && msg_ptr->header.has_tx_proto()) {
+        if (threads_message_queues_[thread_index][priority].size() >= kEachMessagePoolMaxCount) {
+            return;
+        }
+    }
+
     if (msg_ptr->header.hop_count() >= kMaxHops) {
         return;
     }
@@ -250,12 +262,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
             msg_ptr->header.zbft().bft_timeout() && 
             msg_ptr->header.zbft().leader_idx() != -1) {
         HandleSyncBftTimeout(msg_ptr);
-        return;
-    }
-
-    auto thread_index = GetThreadIndex(msg_ptr);
-    if (thread_index >= common::kMaxThreadCount) {
-        assert(false);
         return;
     }
 
