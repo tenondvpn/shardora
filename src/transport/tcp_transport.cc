@@ -15,7 +15,7 @@ namespace transport {
 std::atomic<int32_t> TransportMessage::testTransportMessageCount = 0;
 using namespace tnet;
 TcpTransport* TcpTransport::Instance() {
-    TransportMessage::testTransportMessageCount.store(0);
+    TransportMessage::testTransportMessageCount.store(1);
     static TcpTransport ins;
     return &ins;
 }
