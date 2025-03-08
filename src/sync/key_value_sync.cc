@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "sync/key_value_sync.h"
 
 #include "block/block_manager.h"
