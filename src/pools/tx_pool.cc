@@ -132,7 +132,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     CheckThreadIdValid();
-    if (added_txs_.size() >= 256) {
+    if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
             added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), tx_size());
         return kPoolsError;
