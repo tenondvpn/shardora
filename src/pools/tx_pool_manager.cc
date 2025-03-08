@@ -189,21 +189,21 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
 // #ifndef NDEBUG
-    std::string test_str;
-    uint32_t max_count = 0;
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        if (tx_pool_[i].tx_size() > max_count) {
-            max_count = tx_pool_[i].tx_size();
-        }
-        // test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
-        // tx_count_queue.push(tx_pool_[i].tx_size());
-        // if (tx_count_queue.size() > 2) {
-        //     tx_count_queue.pop();
-        // }
-    }
+    // std::string test_str;
+    // uint32_t max_count = 0;
+    // for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+    //     if (tx_pool_[i].tx_size() > max_count) {
+    //         max_count = tx_pool_[i].tx_size();
+    //     }
+    //     // test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
+    //     // tx_count_queue.push(tx_pool_[i].tx_size());
+    //     // if (tx_count_queue.size() > 2) {
+    //     //     tx_count_queue.pop();
+    //     // }
+    // }
 
-    now_max_tx_count_ = max_count * 2 / 3;
-    ZJC_DEBUG("set max txcount: %u, test str: %s", max_count, test_str.c_str());
+    // now_max_tx_count_ = max_count * 2 / 3;
+    // ZJC_DEBUG("set max txcount: %u, test str: %s", max_count, test_str.c_str());
 // #endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
@@ -1089,12 +1089,12 @@ void TxPoolManager::GetTxIdempotently(
         std::map<std::string, TxItemPtr>& res_map,
         pools::CheckGidValidFunction gid_vlid_func) {
     // TODO: check latency
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-            pool_index != common::kImmutablePoolSize) {
-        if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-            return;
-        }
-    }
+    // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+    //         pool_index != common::kImmutablePoolSize) {
+    //     if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
+    //         return;
+    //     }
+    // }
 
     tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
