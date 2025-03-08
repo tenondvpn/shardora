@@ -132,7 +132,7 @@ private:
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
     volatile bool thread_valid_[common::kMaxThreadCount] = {false};
-    AccountLruMap<102400> account_lru_map_;
+    AccountLruMap<1024> account_lru_map_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
