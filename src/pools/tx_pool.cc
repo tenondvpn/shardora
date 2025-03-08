@@ -142,7 +142,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
-    // added_txs_.push(tx_ptr);
+    added_txs_.push(tx_ptr);
     return kPoolsSuccess;
 }
 

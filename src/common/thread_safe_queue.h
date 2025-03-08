@@ -21,8 +21,9 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
-        if (msg_queue_.size() > 1000) {
+        if (msg_queue_.size() > 10) {
             ZJC_DEBUG("msg queue size: %u", msg_queue_.size());
+            return;
         }
 
         std::lock_guard<std::mutex> lock(mutex_);
