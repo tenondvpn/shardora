@@ -412,6 +412,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
     }
 
+    return;
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
