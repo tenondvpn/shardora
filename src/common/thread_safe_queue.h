@@ -21,6 +21,10 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
+        if (msg_queue_.size() > 10000) {
+            ZJC_DEBUG("msg queue size: %u", msg_queue_.size());
+        }
+        
         std::lock_guard<std::mutex> lock(mutex_);
         msg_queue_.push(e);
         // auto btime = common::TimeUtils::TimestampUs();
