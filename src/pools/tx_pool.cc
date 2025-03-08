@@ -150,7 +150,6 @@ void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
-    return;
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr) && txs->size() < count) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
