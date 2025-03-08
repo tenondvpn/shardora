@@ -80,7 +80,7 @@ static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
 // TODO: check memory
-static std::atomic<uint32_t> testTransportMessageCount = 0;
+static std::atomic<uint32_t> testTransportMessageCount(0);
 class TransportMessage {
 public:
     TransportMessage() : conn(nullptr), retry(false), handled(false), is_leader(false) {
