@@ -208,7 +208,7 @@ Status Hotstuff::Propose(
         *pb_pro_msg->mutable_tc() = *tc;
     }
 
-    if (!header.has_broadcast()) {
+    if (!header.broadcast()) {
         auto broadcast = header.mutable_broadcast();
     }
 
@@ -344,7 +344,7 @@ void Hotstuff::NewView(
 
     ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
     header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
-    if (!header.has_broadcast()) {
+    if (!header.broadcast()) {
         auto broadcast = header.mutable_broadcast();
     }
     

@@ -3291,7 +3291,7 @@ size_t Header::ByteSizeLong() const {
     }
 
     // optional bool broadcast = 7 [default = false];
-    if (has_broadcast()) {
+    if (broadcast()) {
       total_size += 1 + 1;
     }
 
@@ -3717,7 +3717,7 @@ OldHeader::OldHeader(const OldHeader& from)
   if (from.has_sign()) {
     sign_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sign_);
   }
-  if (from.has_broadcast()) {
+  if (from.broadcast()) {
     broadcast_ = new ::shardora::transport::protobuf::BroadcastParam(*from.broadcast_);
   } else {
     broadcast_ = NULL;
@@ -4841,7 +4841,7 @@ size_t OldHeader::ByteSizeLong() const {
     }
 
     // optional .shardora.transport.protobuf.BroadcastParam broadcast = 7;
-    if (has_broadcast()) {
+    if (broadcast()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *broadcast_);

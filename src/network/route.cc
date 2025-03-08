@@ -61,7 +61,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     }
 
     if (dht_ptr != nullptr) {
-        if (message.has_broadcast()) {
+        if (message.broadcast()) {
             auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
             // assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
@@ -126,7 +126,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
 bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr) {
     auto& header = header_ptr->header;
-    if (header.has_broadcast()) {
+    if (header.broadcast()) {
         assert(false);
         ZJC_DEBUG("pools message check route coming has broadcast.");
         return false;
@@ -252,7 +252,7 @@ Route::~Route() {
 
 void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    if (!header.has_broadcast() || !header.has_des_dht_key()) {
+    if (!header.broadcast() || !header.has_des_dht_key()) {
         ZJC_WARN("broadcast error: %lu", header.hash64());
         return;
     }
@@ -304,7 +304,7 @@ void Route::RouteByUniversal(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (header.has_broadcast()) {
+    if (header.broadcast()) {
         // choose limit nodes to broadcast from universal
         universal_dht->SendToDesNetworkNodes(msg_ptr);
     } else {

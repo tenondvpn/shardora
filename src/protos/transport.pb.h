@@ -966,7 +966,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void set_type(::google::protobuf::uint32 value);
 
   // optional bool broadcast = 7 [default = false];
-  bool has_broadcast() const;
+  bool broadcast() const;
   void clear_broadcast();
   static const int kBroadcastFieldNumber = 7;
   bool broadcast() const;
@@ -1250,7 +1250,7 @@ class OldHeader : public ::google::protobuf::Message /* @@protoc_insertion_point
   void set_allocated_sign(::std::string* sign);
 
   // optional .shardora.transport.protobuf.BroadcastParam broadcast = 7;
-  bool has_broadcast() const;
+  bool broadcast() const;
   void clear_broadcast();
   static const int kBroadcastFieldNumber = 7;
   private:
@@ -2424,7 +2424,7 @@ inline void Header::set_type(::google::protobuf::uint32 value) {
 }
 
 // optional bool broadcast = 7 [default = false];
-inline bool Header::has_broadcast() const {
+inline bool Header::broadcast() const {
   return (_has_bits_[0] & 0x80000000u) != 0;
 }
 inline void Header::set_has_broadcast() {
@@ -4114,7 +4114,7 @@ inline void OldHeader::set_type(::google::protobuf::uint32 value) {
 }
 
 // optional .shardora.transport.protobuf.BroadcastParam broadcast = 7;
-inline bool OldHeader::has_broadcast() const {
+inline bool OldHeader::broadcast() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void OldHeader::set_has_broadcast() {

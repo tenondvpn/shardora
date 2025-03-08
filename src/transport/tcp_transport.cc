@@ -273,7 +273,7 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
-    // if (message.has_broadcast()) {
+    // if (message.broadcast()) {
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
 
@@ -511,7 +511,7 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
-    // if (message.has_broadcast()) {
+    // if (message.broadcast()) {
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
 

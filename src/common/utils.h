@@ -43,7 +43,7 @@ struct Construct {
                 src_cons_key->net_id, \
                 des_cons_key->net_id, \
                 (message).id(), \
-                (message).has_broadcast(), \
+                (message).broadcast(), \
                 (message).universal(), \
                 (message).type(), \
                 (std::string(append)).c_str()); \
