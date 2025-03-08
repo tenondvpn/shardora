@@ -361,19 +361,6 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_idx = 0;  //common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
-    // just one thread
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u, max: %u, gid: %s",
-    //     msg_ptr->header.hash64(),
-    //     thread_idx,
-    //     pools_msg_queue_.size(),
-    //     common::GlobalInfo::Instance()->pools_each_thread_max_messages(),
-    //     common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (pools_msg_queue_.size() > common::GlobalInfo::Instance()->pools_each_thread_max_messages()) {
-    //     return;
-    // }
-
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();

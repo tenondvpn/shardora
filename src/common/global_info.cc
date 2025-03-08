@@ -72,7 +72,6 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_host", ck_host_);
     config.Get("zjchain", "ck_user", ck_user_);
     config.Get("zjchain", "ck_pass", ck_pass_);
-    config.Get("zjchain", "pools_each_thread_max_messages", pools_each_thread_max_messages_);
     config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
 
     auto bft_thread = message_handler_thread_count_ - 1;
