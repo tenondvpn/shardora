@@ -97,7 +97,7 @@ Status Hotstuff::Propose(
     auto btime = common::TimeUtils::TimestampMs();
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
-        ZJC_DEBUG("pool %u not has prev view block.", pool_idx_);
+        ZJC_INFO("pool %u not has prev view block.", pool_idx_);
         return Status::kError;
     }
 
@@ -154,7 +154,7 @@ Status Hotstuff::Propose(
         }
 
         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-        ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
+        ZJC_INFO("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
@@ -185,7 +185,7 @@ Status Hotstuff::Propose(
     }
 
     auto t2 = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
+    ZJC_INFO("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = tmp_msg_ptr->header;
@@ -196,7 +196,7 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
+        ZJC_INFO("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
         return s;
     }
@@ -240,7 +240,7 @@ Status Hotstuff::Propose(
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
-    ZJC_DEBUG("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
+    ZJC_INFO("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
 #endif
     auto t5 = common::TimeUtils::TimestampMs();
     s = crypto()->SignMessage(tmp_msg_ptr);
@@ -253,7 +253,7 @@ Status Hotstuff::Propose(
     latest_leader_propose_message_ = tmp_msg_ptr;
     auto t6 = common::TimeUtils::TimestampMs();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-    ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
+    ZJC_INFO("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
     auto t7 = common::TimeUtils::TimestampMs();
     auto old_last_leader_propose_view_ = last_leader_propose_view_;
@@ -261,7 +261,7 @@ Status Hotstuff::Propose(
         hotstuff_msg->pro_msg().view_item().qc().view(), 
         hotstuff_msg->pro_msg().tc().view());
 
-    ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
+    ZJC_INFO("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
     auto t8 = common::TimeUtils::TimestampMs();
@@ -2272,7 +2272,7 @@ void Hotstuff::TryRecoverFromStuck(
     hotstuff_msg->set_pool_index(pool_idx_);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SendMsgToLeader(leader, trans_msg, PRE_RESET_TIMER);
-    ZJC_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
+    ZJC_INFO("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
         leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),
         trans_msg->header.hash64());
