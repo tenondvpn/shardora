@@ -201,6 +201,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
+    return;
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
@@ -2252,6 +2253,8 @@ void Hotstuff::TryRecoverFromStuck(
         view_block_chain_, 
         view_block_chain_->HighQC().view_block_hash(), 
         txs);
+    return;
+    
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs->empty()) {
         ZJC_WARN("pool: %u txs.empty().", pool_idx_);
