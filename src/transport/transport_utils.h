@@ -90,7 +90,9 @@ public:
         memset(times, 0, sizeof(times));
         times_idx = 0;
         thread_index = -1;
-        ZJC_DEBUG("memory check create new transport message: %d", testTransportMessageCount.fetch_add(1));
+        auto now_count = testTransportMessageCount.fetch_add(1);
+        assert(now_count > 0);
+        ZJC_DEBUG("memory check create new transport message: %d", now_count);
     }
 
     ~TransportMessage() {
