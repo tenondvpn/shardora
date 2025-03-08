@@ -91,6 +91,7 @@ Status Hotstuff::Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
+            return Status::kSuccess;
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // TODO(HT): 打包的交易，超时后如何释放？
     // 打包参与共识中的交易，如何保证幂等
@@ -202,7 +203,6 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    return Status::kSuccess;
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
@@ -2175,6 +2175,7 @@ void Hotstuff::TryRecoverFromStuck(
         const transport::MessagePtr& msg_ptr, 
         bool has_user_tx, 
         bool has_system_tx) {
+    return;
     // if (!latest_qc_item_ptr_) {
     //     ZJC_WARN("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
     //     return;
@@ -2243,7 +2244,6 @@ void Hotstuff::TryRecoverFromStuck(
     ZJC_DEBUG("now timeout reset get tx sync to leader.");
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
-    return;
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& header = trans_msg->header;
     auto* hotstuff_msg = header.mutable_hotstuff();
