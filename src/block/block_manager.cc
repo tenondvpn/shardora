@@ -141,6 +141,8 @@ void BlockManager::ConsensusAddBlock(
     assert(!block_item->view_block_ptr->qc().sign_x().empty());
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
+    ZJC_INFO("add new block thread: %d, size: %u", 
+        thread_idx, consensus_block_queues_[thread_idx].size());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
@@ -176,16 +178,18 @@ void BlockManager::HandleAllConsensusBlocks() {
                         common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
                         db_item_ptr->view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height());
+                    auto btime = common::TimeUtils::TimestampMs();
                     AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
-                    ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                    ZJC_INFO("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu",
                         db_item_ptr->view_block_ptr->qc().network_id(),
                         db_item_ptr->view_block_ptr->qc().pool_index(),
                         block_ptr->height(),
                         block_ptr->tx_list_size(),
                         common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
                         db_item_ptr->view_block_ptr->qc().elect_height(),
-                        block_ptr->timeblock_height());
+                        block_ptr->timeblock_height(),
+                        (common::TimeUtils::TimestampMs() - btime));
                 }
 
                 if (count >= kEachTimeHandleBlocksCount) {
