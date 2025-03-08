@@ -112,7 +112,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         }
     }
 
-    if (header.has_broadcast()) {
+    if (header.broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();

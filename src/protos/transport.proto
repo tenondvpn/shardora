@@ -46,7 +46,7 @@ message Header {
     optional bytes debug = 4;
     optional uint64 hash64 = 5;
     optional uint32 type = 6;
-    optional BroadcastParam broadcast = 7;
+    optional bool broadcast = 7 [default=false]; 
     optional bytes sign = 8;
     optional int32 version = 9 [default=0];
     optional network.protobuf.NetworkMessage network_proto = 10;
