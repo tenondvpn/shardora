@@ -186,6 +186,7 @@ Status Hotstuff::Propose(
 
     auto t2 = common::TimeUtils::TimestampMs();
     ZJC_INFO("1 now ontime called propose: %d", pool_idx_);
+    return Status::kSuccess;
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = tmp_msg_ptr->header;
@@ -304,7 +305,6 @@ Status Hotstuff::Propose(
             tc->view());
     }
 
-    // HandleProposeMsg(tmp_msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
@@ -2243,6 +2243,7 @@ void Hotstuff::TryRecoverFromStuck(
     ZJC_DEBUG("now timeout reset get tx sync to leader.");
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
+    return;
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& header = trans_msg->header;
     auto* hotstuff_msg = header.mutable_hotstuff();
@@ -2253,7 +2254,6 @@ void Hotstuff::TryRecoverFromStuck(
         view_block_chain_, 
         view_block_chain_->HighQC().view_block_hash(), 
         txs);
-    return;
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs->empty()) {
