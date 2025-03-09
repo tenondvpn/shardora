@@ -183,7 +183,7 @@ void BlockManager::HandleAllConsensusBlocks() {
                     auto use_time = (common::TimeUtils::TimestampMs() - btime);
                     if (use_time >= 200)
                     ZJC_INFO("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu",
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, size: %u",
                         db_item_ptr->view_block_ptr->qc().network_id(),
                         db_item_ptr->view_block_ptr->qc().pool_index(),
                         block_ptr->height(),
@@ -191,7 +191,8 @@ void BlockManager::HandleAllConsensusBlocks() {
                         common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
                         db_item_ptr->view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height(),
-                        use_time);
+                        use_time,
+                        db_item_ptr->final_db_batch->ApproximateSize());
                 }
 
                 if (count >= kEachTimeHandleBlocksCount) {
