@@ -801,7 +801,6 @@ void BlockManager::AddNewBlock(
     statistic_mgr_->OnNewBlock(view_block_item);
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
     to_txs_pool_->NewBlock(view_block_item);
-#endif
     zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (view_block_item->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
@@ -903,7 +902,8 @@ void BlockManager::AddNewBlock(
         }
     }
 
-    prefix_db_->SaveValidViewBlockParentHash(
+#endif
+prefix_db_->SaveValidViewBlockParentHash(
         view_block_item->parent_hash(), 
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
