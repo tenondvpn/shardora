@@ -206,7 +206,9 @@ void BlockManager::HandleAllConsensusBlocks() {
                 ZJC_FATAL("write to db faield!");
             }
 
-            ZJC_DEBUG("write to db use time: %lu", (common::TimeUtils::TimestampMs() - btime));
+            ZJC_DEBUG("write to db use time: %lu, size: %u", 
+                (common::TimeUtils::TimestampMs() - btime), 
+                db_batch.ApproximateSize());
         }
         
         std::unique_lock<std::mutex> lock(wait_mutex_);
