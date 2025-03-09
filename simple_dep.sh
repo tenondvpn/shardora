@@ -2,6 +2,8 @@ killall -9 zjchain
 killall -9 txcli
 
 TARGET=Debug
+#VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
+VALGRIND=''
 sh build.sh a $TARGET
 sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes_local /root/zjnodes
@@ -103,6 +105,6 @@ for ((i=1; i<=$shard3_node_count;i++)); do
     ln /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/s3_$i/conf/log4cpp.properties
     mkdir -p /root/zjnodes/s3_$i/log
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s3_$i/db
-    cd /root/zjnodes/s3_$i/ && nohup ./zjchain -f 0 -g 0 s3_$i &
+    cd /root/zjnodes/s3_$i/ && nohup $VALGRIND ./zjchain -f 0 -g 0 s3_$i &
     sleep 0.3
 done
