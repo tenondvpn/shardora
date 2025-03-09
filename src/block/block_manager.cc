@@ -799,6 +799,7 @@ void BlockManager::AddNewBlock(
     }
 
     // TODO: test
+    const auto& tx_list = block_item->tx_list();
     {
         statistic_mgr_->OnNewBlock(view_block_item);
         // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
@@ -813,7 +814,6 @@ void BlockManager::AddNewBlock(
                 view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
         }
 
-        const auto& tx_list = block_item->tx_list();
         // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             // ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
