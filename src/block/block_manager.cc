@@ -159,7 +159,6 @@ void BlockManager::HandleAllConsensusBlocks() {
         bool no_sleep = true;
         while (no_sleep) {
             no_sleep = false;
-            db::DbWriteBatch db_batch;
             for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
                 int32_t count = 0;
                 while (count++ < kEachTimeHandleBlocksCount) {
@@ -180,10 +179,11 @@ void BlockManager::HandleAllConsensusBlocks() {
                         db_item_ptr->view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height());
                     auto btime = common::TimeUtils::TimestampMs();
-                    // db_batch.Append(*db_item_ptr->final_db_batch);
                     AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
+                    auto use_time = (common::TimeUtils::TimestampMs() - btime);
+                    if (use_time >= 200)
                     ZJC_INFO("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, add size: %u, all: %u",
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu",
                         db_item_ptr->view_block_ptr->qc().network_id(),
                         db_item_ptr->view_block_ptr->qc().pool_index(),
                         block_ptr->height(),
@@ -191,9 +191,7 @@ void BlockManager::HandleAllConsensusBlocks() {
                         common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
                         db_item_ptr->view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height(),
-                        (common::TimeUtils::TimestampMs() - btime),
-                        db_item_ptr->final_db_batch->ApproximateSize(),
-                        db_batch.ApproximateSize());
+                        use_time);
                 }
 
                 if (count >= kEachTimeHandleBlocksCount) {
