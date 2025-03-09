@@ -77,7 +77,7 @@ private:
 };
 
 // 合并两个 WriteBatch
-Status MergeWriteBatches(WriteBatch& target, const WriteBatch& source) {
+inline static Status MergeWriteBatches(WriteBatch& target, const WriteBatch& source) {
     BatchMerger merger(&target);
     return source.Iterate(&merger);
 }
