@@ -56,17 +56,17 @@ public:
     explicit BatchMerger(WriteBatch* target) : target_batch_(target) {}
 
     Status PutCF(uint32_t column_family_id, const Slice& key, const Slice& value) override {
-        target_batch_->Put(column_family_id, key, value);
+        target_batch_->Put(0, key, value);
         return Status::OK();
     }
 
     Status DeleteCF(uint32_t column_family_id, const Slice& key) override {
-        target_batch_->Delete(column_family_id, key);
+        target_batch_->Delete(0, key);
         return Status::OK();
     }
 
     Status MergeCF(uint32_t column_family_id, const Slice& key, const Slice& value) override {
-        target_batch_->Merge(column_family_id, key, value);
+        target_batch_->Merge(0, key, value);
         return Status::OK();
     }
 
@@ -80,67 +80,6 @@ private:
 Status MergeWriteBatches(WriteBatch& target, const WriteBatch& source) {
     BatchMerger merger(&target);
     return source.Iterate(&merger);
-}
-
-int main() {
-    // 配置 RocksDB
-    Options options;
-    options.create_if_missing = true;
-
-    // 打开数据库
-    DB* db;
-    Status status = DB::Open(options, "/tmp/rocksdb_test", &db);
-    if (!status.ok()) {
-        std::cerr << "Unable to open database: " << status.ToString() << std::endl;
-        return 1;
-    }
-
-    // 创建两个 WriteBatch
-    WriteBatch batch1;
-    WriteBatch batch2;
-
-    // 向 batch1 添加操作
-    batch1.Put("key1", "value1");
-    batch1.Delete("key2");
-
-    // 向 batch2 添加操作
-    batch2.Put("key3", "value3");
-    batch2.Put("key1", "value1_overwritten"); // 会覆盖 batch1 中的 key1
-
-    // 合并 batch2 到 batch1
-    status = MergeWriteBatches(batch1, batch2);
-    if (!status.ok()) {
-        std::cerr << "Merge failed: " << status.ToString() << std::endl;
-        return 1;
-    }
-
-    // 提交合并后的 batch1
-    status = db->Write(WriteOptions(), &batch1);
-    if (!status.ok()) {
-        std::cerr << "Write failed: " << status.ToString() << std::endl;
-        return 1;
-    }
-
-    // 验证结果
-    std::string value;
-    status = db->Get(ReadOptions(), "key1", &value);
-    if (status.ok()) {
-        std::cout << "key1: " << value << std::endl; // 应输出 "value1_overwritten"
-    }
-
-    status = db->Get(ReadOptions(), "key2", &value);
-    if (status.IsNotFound()) {
-        std::cout << "key2: deleted" << std::endl;
-    }
-
-    status = db->Get(ReadOptions(), "key3", &value);
-    if (status.ok()) {
-        std::cout << "key3: " << value << std::endl; // 应输出 "value3"
-    }
-
-    // 清理
-    delete db;
-    return 0;
 }
 
 #endif // LEVELDB
