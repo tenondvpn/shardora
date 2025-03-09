@@ -2,6 +2,8 @@
 
 #include <mutex>
 #include <memory>
+#include <iostream>
+#include <string>
 #include "common/utils.h"
 #include "common/log.h"
 
@@ -14,13 +16,13 @@
 #include "leveldb/filter_policy.h"
 #include "leveldb/db.h"
 #else
+#include "rocksdb/db.h"
+#include "rocksdb/filter_policy.h"
 #include "rocksdb/options.h"
 #include "rocksdb/slice.h"
 #include "rocksdb/status.h"
-#include "rocksdb/write_batch.h"
-#include "rocksdb/filter_policy.h"
-#include "rocksdb/db.h"
 #include "rocksdb/table.h"
+#include "rocksdb/write_batch.h"
 #endif
 
 namespace shardora {
@@ -43,6 +45,104 @@ namespace db {
     typedef rocksdb::ReadOptions DbReadOptions;
     typedef rocksdb::Slice DbSlice;
     typedef rocksdb::Iterator DbIterator;
+
+
+
+using namespace ROCKSDB_NAMESPACE;
+
+// 自定义 Handler 用于将一个 WriteBatch 的操作应用到另一个
+class BatchMerger : public WriteBatch::Handler {
+public:
+    explicit BatchMerger(WriteBatch* target) : target_batch_(target) {}
+
+    Status PutCF(uint32_t column_family_id, const Slice& key, const Slice& value) override {
+        target_batch_->Put(column_family_id, key, value);
+        return Status::OK();
+    }
+
+    Status DeleteCF(uint32_t column_family_id, const Slice& key) override {
+        target_batch_->Delete(column_family_id, key);
+        return Status::OK();
+    }
+
+    Status MergeCF(uint32_t column_family_id, const Slice& key, const Slice& value) override {
+        target_batch_->Merge(column_family_id, key, value);
+        return Status::OK();
+    }
+
+    // 如果需要支持其他操作（例如 SingleDelete），可以继续重写对应方法
+
+private:
+    WriteBatch* target_batch_;
+};
+
+// 合并两个 WriteBatch
+Status MergeWriteBatches(WriteBatch& target, const WriteBatch& source) {
+    BatchMerger merger(&target);
+    return source.Iterate(&merger);
+}
+
+int main() {
+    // 配置 RocksDB
+    Options options;
+    options.create_if_missing = true;
+
+    // 打开数据库
+    DB* db;
+    Status status = DB::Open(options, "/tmp/rocksdb_test", &db);
+    if (!status.ok()) {
+        std::cerr << "Unable to open database: " << status.ToString() << std::endl;
+        return 1;
+    }
+
+    // 创建两个 WriteBatch
+    WriteBatch batch1;
+    WriteBatch batch2;
+
+    // 向 batch1 添加操作
+    batch1.Put("key1", "value1");
+    batch1.Delete("key2");
+
+    // 向 batch2 添加操作
+    batch2.Put("key3", "value3");
+    batch2.Put("key1", "value1_overwritten"); // 会覆盖 batch1 中的 key1
+
+    // 合并 batch2 到 batch1
+    status = MergeWriteBatches(batch1, batch2);
+    if (!status.ok()) {
+        std::cerr << "Merge failed: " << status.ToString() << std::endl;
+        return 1;
+    }
+
+    // 提交合并后的 batch1
+    status = db->Write(WriteOptions(), &batch1);
+    if (!status.ok()) {
+        std::cerr << "Write failed: " << status.ToString() << std::endl;
+        return 1;
+    }
+
+    // 验证结果
+    std::string value;
+    status = db->Get(ReadOptions(), "key1", &value);
+    if (status.ok()) {
+        std::cout << "key1: " << value << std::endl; // 应输出 "value1_overwritten"
+    }
+
+    status = db->Get(ReadOptions(), "key2", &value);
+    if (status.IsNotFound()) {
+        std::cout << "key2: deleted" << std::endl;
+    }
+
+    status = db->Get(ReadOptions(), "key3", &value);
+    if (status.ok()) {
+        std::cout << "key3: " << value << std::endl; // 应输出 "value3"
+    }
+
+    // 清理
+    delete db;
+    return 0;
+}
+
 #endif // LEVELDB
 
 class DbWriteBatch {
@@ -98,8 +198,10 @@ public:
 
     void Append(DbWriteBatch& other) {
 #ifdef LEVELDB
-db_batch_.Append(other);
+        db_batch_.Append(other);
 #else
+    // 合并 batch2 到 batch1
+        MergeWriteBatches(db_batch_, other.db_batch_);
 #endif
     }
 
@@ -111,6 +213,7 @@ db_batch_.Append(other);
 #endif
     }
 
+    
     TmpDbWriteBatch db_batch_;
     uint32_t count_ = 0;
     // std::unordered_map<std::string, std::string> data_map_;
