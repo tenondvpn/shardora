@@ -133,9 +133,11 @@ Status Hotstuff::Propose(
 
     auto t1 = common::TimeUtils::TimestampMs();
     if (latest_leader_propose_message_ && 
-            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= pacemaker_->CurView()) {
-        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*latest_leader_propose_message_);
-        tmp_msg_ptr->times_idx = 0;
+            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= 
+            pacemaker_->CurView()) {
+        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+        tmp_msg_ptr->header.CopyFrom(latest_leader_propose_message_->header);
+        tmp_msg_ptr->is_leader = true;
         tmp_msg_ptr->header.release_broadcast();
         auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
@@ -153,7 +155,7 @@ Status Hotstuff::Propose(
             return s;
         }
 
-        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        // transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
