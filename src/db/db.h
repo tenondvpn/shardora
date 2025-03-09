@@ -99,7 +99,7 @@ public:
         //     CHECK_MEMORY_SIZE(data_map_);
         // }
 
-        db_batch_.Put(key, value);
+        db_batch_.Merge(key, value);
         ++count_;
     }
 
