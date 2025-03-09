@@ -137,7 +137,7 @@ public:
 
     void Append(DbWriteBatch& other) {
 #ifdef LEVELDB
-        db_batch_.Append(other);
+        db_batch_.Append(other.db_batch_);
 #else
     // 合并 batch2 到 batch1
         MergeWriteBatches(db_batch_, other.db_batch_);
