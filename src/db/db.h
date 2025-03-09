@@ -148,7 +148,7 @@ public:
         ZJC_INFO("write to db datasize: %u", db_batch.ApproximateSize());
         DbWriteOptions write_opt;
 #ifndef LEVELDB
-        write_opt.disableWAL = true;
+        // write_opt.disableWAL = true;
 #endif
         auto st = db_->Write(write_opt, &db_batch.db_batch_);
         db_batch.Clear();
