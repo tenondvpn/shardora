@@ -180,8 +180,8 @@ void BlockManager::HandleAllConsensusBlocks() {
                         db_item_ptr->view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height());
                     auto btime = common::TimeUtils::TimestampMs();
-                    db_batch.Append(*db_item_ptr->final_db_batch);
-                    AddNewBlock(db_item_ptr->view_block_ptr, db_batch);
+                    // db_batch.Append(*db_item_ptr->final_db_batch);
+                    AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
                     ZJC_INFO("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, add size: %u, all: %u",
                         db_item_ptr->view_block_ptr->qc().network_id(),
@@ -202,15 +202,15 @@ void BlockManager::HandleAllConsensusBlocks() {
                 }
             }
 
-            auto btime = common::TimeUtils::TimestampMs();
-            auto st = db_->Put(db_batch);
-            if (!st.ok()) {
-                ZJC_FATAL("write to db faield!");
-            }
+            // auto btime = common::TimeUtils::TimestampMs();
+            // auto st = db_->Put(db_batch);
+            // if (!st.ok()) {
+            //     ZJC_FATAL("write to db faield!");
+            // }
 
-            ZJC_DEBUG("write to db use time: %lu, size: %u", 
-                (common::TimeUtils::TimestampMs() - btime), 
-                db_batch.ApproximateSize());
+            // ZJC_DEBUG("write to db use time: %lu, size: %u", 
+            //     (common::TimeUtils::TimestampMs() - btime), 
+            //     db_batch.ApproximateSize());
         }
         
         std::unique_lock<std::mutex> lock(wait_mutex_);
@@ -911,10 +911,10 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         db_batch);
-    // auto st = db_->Put(db_batch);
-    // if (!st.ok()) {
-    //     ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
-    // }
+    auto st = db_->Put(db_batch);
+    if (!st.ok()) {
+        ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
+    }
 
     if (hotstuff_mgr_ && network::IsSameToLocalShard(view_block_item->qc().network_id())) {
         hotstuff_mgr_->UpdateStoredToDbView(
