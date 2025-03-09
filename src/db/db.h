@@ -97,7 +97,10 @@ public:
     }
 
     void Append(DbWriteBatch& other) {
-        db_batch_.Append(other);
+#ifdef LEVELDB
+db_batch_.Append(other);
+#else
+#endif
     }
 
     size_t ApproximateSize() const {
