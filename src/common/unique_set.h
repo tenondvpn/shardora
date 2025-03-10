@@ -13,7 +13,7 @@ template<class T, uint32_t BucketSize, uint8_t EachBucketSize>
 class UniqueSet {
 public:
     explicit UniqueSet() {
-        // ZJC_FATAL("Code is obsolete and unavailable");
+        ZJC_FATAL("Code is obsolete and unavailable");
         buckets_ = new common::FixedQueue<T, EachBucketSize>[BucketSize];
     }
 

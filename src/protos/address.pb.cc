@@ -200,11 +200,13 @@ const int AddressInfo::kDestructedFieldNumber;
 const int AddressInfo::kConsensusGapFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
+#include "common/global_info.h"
 AddressInfo::AddressInfo()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
   SharedCtor();
+  common::GlobalInfo::Instance()->AddSharedObj();
   // @@protoc_insertion_point(constructor:shardora.address.protobuf.AddressInfo)
 }
 AddressInfo::AddressInfo(const AddressInfo& from)
@@ -244,6 +246,7 @@ void AddressInfo::SharedCtor() {
 AddressInfo::~AddressInfo() {
   // @@protoc_insertion_point(destructor:shardora.address.protobuf.AddressInfo)
   SharedDtor();
+  common::GlobalInfo::Instance()->DecSharedObj();
 }
 
 void AddressInfo::SharedDtor() {
