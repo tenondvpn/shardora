@@ -13,6 +13,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+#include "common/global_info.h"
 // This is a temporary google only hack
 #ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
 #include "third_party/protobuf/version.h"
@@ -205,6 +206,7 @@ AddressInfo::AddressInfo()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
   SharedCtor();
+  common::GlobalInfo::Instance()->AddSharedObj();
   // @@protoc_insertion_point(constructor:shardora.address.protobuf.AddressInfo)
 }
 AddressInfo::AddressInfo(const AddressInfo& from)
@@ -244,6 +246,7 @@ void AddressInfo::SharedCtor() {
 AddressInfo::~AddressInfo() {
   // @@protoc_insertion_point(destructor:shardora.address.protobuf.AddressInfo)
   SharedDtor();
+  common::GlobalInfo::Instance()->DecSharedObj();
 }
 
 void AddressInfo::SharedDtor() {
