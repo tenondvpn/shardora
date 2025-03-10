@@ -428,6 +428,10 @@ std::string ViewBlockChain::String() const {
 #ifdef NDEBUG
     return "";
 #endif
+    if (view_blocks_info_.size() < (kCachedViewBlockCount / 2)) {
+        return "";
+    }
+
     std::vector<std::shared_ptr<ViewBlock>> view_blocks;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
