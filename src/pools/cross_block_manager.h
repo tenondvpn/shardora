@@ -126,10 +126,10 @@ private:
                             continue;
                         }
 
-                        ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                        ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                             sharding_id,
                             common::kRootChainPoolIndex,
-                            h);        
+                            h);
                         kv_sync_->AddSyncHeight(
                                 sharding_id,
                                 common::kRootChainPoolIndex,
@@ -185,11 +185,7 @@ private:
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height())) {
-                            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
-                                cross.src_shard(),
-                                cross.src_pool(),
-                                cross.height());
-                            ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                            ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height());

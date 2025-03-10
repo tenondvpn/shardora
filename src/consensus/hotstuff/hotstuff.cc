@@ -1783,6 +1783,10 @@ Status Hotstuff::VerifyViewBlock(
                 0);
         } else if (!view_block_chain->view_commited(
                 v_block.qc().network_id(), v_block.qc().view() - 1)) {
+            ZJC_DEBUG("now add sync height 0, %u_%u_%lu", 
+                v_block.qc().network_id(), 
+                v_block.qc().pool_index(), 
+                v_block.block_info().height() - 1);
             kv_sync_->AddSyncHeight(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 

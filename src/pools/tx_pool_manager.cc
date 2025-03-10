@@ -138,11 +138,7 @@ void TxPoolManager::SyncCrossPool() {
         if (ex_height != common::kInvalidUint64) {
             uint32_t count = 0;
             for (uint64_t i = ex_height; i < cross_synced_max_heights_[i] && count < 64; ++i, ++count) {
-                ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
-                    network::kRootCongressNetworkId,
-                    common::kRootChainPoolIndex,
-                    i);
-                ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                     network::kRootCongressNetworkId,
                     common::kRootChainPoolIndex,
                     i);
@@ -316,7 +312,7 @@ void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t heig
         return;
     }
 
-    ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+    ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
         network::kRootCongressNetworkId,
         pool_idx,
         height);
@@ -342,11 +338,7 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
         return;
     }
 
-    ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
-        net_id,
-        pool_idx,
-        height);
-    ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+    ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
         net_id,
         pool_idx,
         height);
