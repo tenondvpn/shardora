@@ -206,6 +206,7 @@ AddressInfo::AddressInfo()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
   SharedCtor();
+  common::GlobalInfo::Instance()->AddSharedObj();
   // @@protoc_insertion_point(constructor:shardora.address.protobuf.AddressInfo)
 }
 AddressInfo::AddressInfo(const AddressInfo& from)
@@ -245,6 +246,7 @@ void AddressInfo::SharedCtor() {
 AddressInfo::~AddressInfo() {
   // @@protoc_insertion_point(destructor:shardora.address.protobuf.AddressInfo)
   SharedDtor();
+  common::GlobalInfo::Instance()->DecSharedObj();
 }
 
 void AddressInfo::SharedDtor() {
