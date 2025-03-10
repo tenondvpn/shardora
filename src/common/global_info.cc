@@ -19,7 +19,7 @@ GlobalInfo* GlobalInfo::Instance() {
     return &ins;
 }
 
-GlobalInfo::GlobalInfo() {
+GlobalInfo::GlobalInfo() : shared_obj_count_(0) {
 }
 
 GlobalInfo::~GlobalInfo() {
