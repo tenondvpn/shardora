@@ -25,11 +25,11 @@ using BalanceMapPtr = std::shared_ptr<BalanceMap>;
 class ProposeMsgWrapper {
 public:
     ProposeMsgWrapper() {
-        common::GlobalInfo::Instance()->AddSharedObj();
+        assert(false);
     }
 
     ~ProposeMsgWrapper() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(2);
     }
 
     // Context
@@ -42,7 +42,9 @@ public:
     common::BftMemberPtr leader;
 
     ProposeMsgWrapper(const transport::MessagePtr& mptr) 
-        : msg_ptr(mptr), breakpoint(0), tried_times(0) {}
+        : msg_ptr(mptr), breakpoint(0), tried_times(0) {
+            common::GlobalInfo::Instance()->AddSharedObj(2);
+    }
 };
 
 struct CompareProposeMsg {
@@ -99,11 +101,11 @@ public:
         status(ViewBlockStatus::Unknown), 
         qc(nullptr),
         valid(false) {
-            common::GlobalInfo::Instance()->AddSharedObj();
+            common::GlobalInfo::Instance()->AddSharedObj(3);
     }
 
     ~ViewBlockInfo() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(3);
     }
 };
 

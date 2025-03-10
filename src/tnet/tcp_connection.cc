@@ -12,11 +12,11 @@ namespace tnet {
 
 TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {
     create_timestamp_ms_ = common::TimeUtils::TimestampMs();
-    common::GlobalInfo::Instance()->AddSharedObj();
+    common::GlobalInfo::Instance()->AddSharedObj(10);
 }
 
 TcpConnection::~TcpConnection() {
-    common::GlobalInfo::Instance()->DecSharedObj();
+    common::GlobalInfo::Instance()->DecSharedObj(10);
     if (socket_ != NULL) {
         socket_->Close();
         socket_->Free();

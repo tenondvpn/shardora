@@ -17,11 +17,11 @@ public:
             std::shared_ptr<security::Security>& sec_ptr,
             protos::AddressInfoPtr& addr_info)
             : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {
-        common::GlobalInfo::Instance()->AddSharedObj();
+        common::GlobalInfo::Instance()->AddSharedObj(4);
     }
 
     virtual ~FromTxItem() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(4);
     }
 
     virtual int HandleTx(

@@ -539,13 +539,14 @@ QcItem::QcItem()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fview_5fblock_2eproto::scc_info_QcItem.base);
   SharedCtor();
-  common::GlobalInfo::Instance()->AddSharedObj();
+  common::GlobalInfo::Instance()->AddSharedObj(7);
   // @@protoc_insertion_point(constructor:shardora.view_block.protobuf.QcItem)
 }
 QcItem::QcItem(const QcItem& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
+  common::GlobalInfo::Instance()->AddSharedObj(7);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_sign_x()) {
@@ -587,7 +588,7 @@ void QcItem::SharedCtor() {
 QcItem::~QcItem() {
   // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.QcItem)
   SharedDtor();
-  common::GlobalInfo::Instance()->DecSharedObj();
+  common::GlobalInfo::Instance()->DecSharedObj(7);
 }
 
 void QcItem::SharedDtor() {
@@ -1184,7 +1185,7 @@ ViewBlockItem::ViewBlockItem()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fview_5fblock_2eproto::scc_info_ViewBlockItem.base);
   SharedCtor();
-  common::GlobalInfo::Instance()->AddSharedObj();
+  common::GlobalInfo::Instance()->AddSharedObj(8);
 
   // @@protoc_insertion_point(constructor:shardora.view_block.protobuf.ViewBlockItem)
 }
@@ -1192,6 +1193,7 @@ ViewBlockItem::ViewBlockItem(const ViewBlockItem& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
+  common::GlobalInfo::Instance()->AddSharedObj(8);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   parent_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_parent_hash()) {
@@ -1230,7 +1232,7 @@ void ViewBlockItem::SharedCtor() {
 ViewBlockItem::~ViewBlockItem() {
   // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.ViewBlockItem)
   SharedDtor();
-  common::GlobalInfo::Instance()->DecSharedObj();
+  common::GlobalInfo::Instance()->DecSharedObj(8);
 
 }
 

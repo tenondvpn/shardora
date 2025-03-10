@@ -206,7 +206,7 @@ AddressInfo::AddressInfo()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
   SharedCtor();
-  common::GlobalInfo::Instance()->AddSharedObj();
+  common::GlobalInfo::Instance()->AddSharedObj(6);
   // @@protoc_insertion_point(constructor:shardora.address.protobuf.AddressInfo)
 }
 AddressInfo::AddressInfo(const AddressInfo& from)
@@ -214,6 +214,7 @@ AddressInfo::AddressInfo(const AddressInfo& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
       g2s_(from.g2s_) {
+  common::GlobalInfo::Instance()->AddSharedObj(6);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_pubkey()) {
@@ -246,7 +247,7 @@ void AddressInfo::SharedCtor() {
 AddressInfo::~AddressInfo() {
   // @@protoc_insertion_point(destructor:shardora.address.protobuf.AddressInfo)
   SharedDtor();
-  common::GlobalInfo::Instance()->DecSharedObj();
+  common::GlobalInfo::Instance()->DecSharedObj(6);
 }
 
 void AddressInfo::SharedDtor() {

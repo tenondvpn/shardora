@@ -59,11 +59,11 @@ class BlockTxsItem {
 public:
     BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false), leader_to_index(-1) {
             stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
-        common::GlobalInfo::Instance()->AddSharedObj();
+        common::GlobalInfo::Instance()->AddSharedObj(0);
     }
 
     ~BlockTxsItem() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(0);
     }
 
     pools::TxItemPtr tx_ptr;
@@ -82,11 +82,11 @@ class BlockToDbItem {
 public:
     BlockToDbItem(ViewBlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
             : view_block_ptr(bptr), final_db_batch(batch) {
-        common::GlobalInfo::Instance()->AddSharedObj();
+        common::GlobalInfo::Instance()->AddSharedObj(1);
     }
     
     ~BlockToDbItem() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(1);
     }
 
     ViewBlockPtr view_block_ptr;

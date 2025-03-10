@@ -96,14 +96,14 @@ public:
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
         // ZJC_DEBUG("memory check create new transport message: %d", now_count);
-         common::GlobalInfo::Instance()->AddSharedObj();
+         common::GlobalInfo::Instance()->AddSharedObj(11);
 
     }
 
     ~TransportMessage() {
         // auto now_count = testTransportMessageCount.fetch_sub(1);
         // ZJC_DEBUG("memory check remove transport message: %d", now_count);
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(11);
     }
 
     protobuf::Header header;
@@ -131,11 +131,11 @@ typedef std::function<int(transport::MessagePtr& message)> FirewallCheckCallback
 class ClientItem {
 public:
     ClientItem() {
-        common::GlobalInfo::Instance()->AddSharedObj();
+        common::GlobalInfo::Instance()->AddSharedObj(12);
     }
 
     ~ClientItem() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(12);
     }
 
     std::string des_ip;

@@ -226,12 +226,12 @@ public:
         return each_tx_pool_max_txs_;
     }
 
-    void AddSharedObj() {
-        shared_obj_count_.fetch_add(1);
+    void AddSharedObj(int32_t index) {
+        shared_obj_count_[index].fetch_add(1);
     }
 
-    void DecSharedObj() {
-        shared_obj_count_.fetch_sub(1);
+    void DecSharedObj(int32_t index) {
+        shared_obj_count_[index].fetch_sub(1);
     }
 
 private:
@@ -280,7 +280,7 @@ private:
     volatile bool main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
-    std::atomic<int32_t> shared_obj_count_ = 0;
+    std::atomic<int32_t> shared_obj_count_[64] = 0;
     std::shared_ptr<common::Tick> tick_ptr_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);

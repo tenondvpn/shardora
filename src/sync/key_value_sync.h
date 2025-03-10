@@ -48,7 +48,7 @@ public:
             : network_id(net_id), key(in_key), 
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
         tag = kViewHash;
-        common::GlobalInfo::Instance()->AddSharedObj();
+        common::GlobalInfo::Instance()->AddSharedObj(9);
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
@@ -58,13 +58,13 @@ public:
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
         tag = kBlockHeight;
-        common::GlobalInfo::Instance()->AddSharedObj();
+        common::GlobalInfo::Instance()->AddSharedObj(9);
     }
 
     ~SyncItem() {
-        common::GlobalInfo::Instance()->DecSharedObj();
+        common::GlobalInfo::Instance()->DecSharedObj(9);
     }
-    
+
     uint32_t network_id{ 0 };
     std::string key;
     uint32_t priority{ 0 };
