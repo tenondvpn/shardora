@@ -374,16 +374,6 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
     return Status::kSuccess;
 }
 
-Status ViewBlockChain::GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children) {
-    auto it = view_blocks_info_.find(hash);
-    if (it == view_blocks_info_.end()) {
-        return Status::kSuccess;
-    }
-
-    children = it->second->children;
-    return Status::kSuccess;
-}
-
 bool ViewBlockChain::IsValid() {
     if (Size() == 0) {
         return false;
@@ -405,24 +395,6 @@ bool ViewBlockChain::IsValid() {
 
     return num == 1;
 }
-
-void ViewBlockChain::PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent) const {
-    std::cout << indent << block->qc().view() << ":"
-              << common::Encode::HexEncode(block->qc().view_block_hash()).c_str() << "[status]:"
-              << static_cast<int>(GetViewBlockStatus(block)) << "[txs]:" 
-              << block->block_info().tx_list_size() << "\n";
-    auto childrenIt = view_blocks_info_.find(block->qc().view_block_hash());
-    if (childrenIt != view_blocks_info_.end()) {
-        std::string childIndent = indent + "  ";
-        for (const auto& child : childrenIt->second->children) {
-            std::cout << indent << "|\n";
-            std::cout << indent << "+--";
-            PrintBlock(child, childIndent);
-        }
-    }
-}
-
-void ViewBlockChain::Print() const { PrintBlock(start_block_); }
 
 std::string ViewBlockChain::String() const {
 #ifdef NDEBUG

@@ -61,8 +61,6 @@ public:
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash);
     // If a chain is valid
     bool IsValid();
-    void Print() const;
-    void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
     std::string String() const;
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
     bool ViewBlockIsCheckedParentHash(const std::string& hash);
@@ -278,9 +276,6 @@ private:
         view_blocks_info_[hash]->status = status;        
     }
 
-    // prune the branch starting from view_block
-    Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
-    
     static const uint32_t kCachedViewBlockCount = 16u;
 
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
