@@ -773,6 +773,10 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: fix
+    if (view_block_item->qc().view() >= 1024) {
+        return;
+    }
+    
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
@@ -804,7 +808,7 @@ void BlockManager::AddNewBlock(
         if (statistic_mgr_) {
             statistic_mgr_->OnNewBlock(view_block_item);
         }
-        
+
         // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
         to_txs_pool_->NewBlock(view_block_item);
         zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
