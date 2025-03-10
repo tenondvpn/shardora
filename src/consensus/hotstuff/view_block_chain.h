@@ -233,6 +233,7 @@ private:
         CHECK_MEMORY_SIZE(view_blocks_info_);
         auto strings = String();
         if (strings.empty()) {
+            if (view_map_[view_block_info->view_block->qc().view()] > 1)
             ZJC_INFO("success add view block: %s, %u_%u_%lu, height: %lu, "
                 "parent hash: %s, tx size: %u, view count: %u",
                 common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
@@ -244,6 +245,7 @@ private:
                 view_block_info->view_block->block_info().tx_list_size(),
                 view_map_[view_block_info->view_block->qc().view()]);
         } else {
+            if (view_map_[view_block_info->view_block->qc().view()] > 1)
             ZJC_INFO("success add view block: %s, %u_%u_%lu, height: %lu, "
                 "parent hash: %s, tx size: %u, strings: %s, view count: %u",
                 common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
