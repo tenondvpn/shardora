@@ -35,7 +35,12 @@ void GlobalInfo::Timer() {
             continue;
         }
 
-        ZJC_INFO("index %d get all shared object count now: %d", i, count);
+        if (count > shared_obj_max_count_[i]) {
+            shared_obj_max_count_[i] = count;
+        }
+
+        ZJC_INFO("index %d get all shared object count now: %d, max: %d", 
+            i, count, shared_obj_max_count_[i]);
     }
 
     tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));

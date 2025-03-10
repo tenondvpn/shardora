@@ -285,6 +285,7 @@ private:
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
     std::atomic<int32_t> shared_obj_count_[64] = {0};
+    int32_t shared_obj_max_count_[64] = {0};
     std::shared_ptr<common::Tick> tick_ptr_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
