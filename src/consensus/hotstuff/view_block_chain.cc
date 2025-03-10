@@ -251,7 +251,7 @@ bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_blo
     }
 
     if (it == view_blocks_info_.end()) {
-        return false;
+        return true;
     }
     
     view_blocks_info_.erase(it);
