@@ -30,9 +30,9 @@ GlobalInfo::~GlobalInfo() {
 
 void GlobalInfo::Timer() {
     for (uint32_t i = 0; i < 64; ++i) {
-        ZJC_DEBUG("get all shared object count now: %d", shared_obj_count_[i].fetch_add(0));
+        ZJC_DEBUG("index %d get all shared object count now: %d", i, shared_obj_count_[i].fetch_add(0));
     }
-    
+
     tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
 }
 
