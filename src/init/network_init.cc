@@ -376,7 +376,6 @@ void NetworkInit::AddCmds() {
                   << ",chainSize: " << chain->Size()
                   << ",commitView: " << chain->LatestCommittedBlock()->qc().view()
                   << ",CurView: " << pacemaker->CurView() << std::endl;
-        chain->Print();
     });
 }
 
