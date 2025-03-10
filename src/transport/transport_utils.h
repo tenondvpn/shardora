@@ -12,6 +12,7 @@
 #include <functional>
 
 #include "common/log.h"
+#include "common/global_info.h"
 #include "common/string_utils.h"
 #include "common/time_utils.h"
 #include "protos/address.pb.h"
@@ -95,11 +96,14 @@ public:
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
         // ZJC_DEBUG("memory check create new transport message: %d", now_count);
+         common::GlobalInfo::Instance()->AddSharedObj();
+
     }
 
     ~TransportMessage() {
         // auto now_count = testTransportMessageCount.fetch_sub(1);
         // ZJC_DEBUG("memory check remove transport message: %d", now_count);
+        common::GlobalInfo::Instance()->DecSharedObj();
     }
 
     protobuf::Header header;
@@ -124,17 +128,20 @@ typedef std::shared_ptr<TransportMessage> MessagePtr;
 typedef std::function<void(const transport::MessagePtr& message)> MessageProcessor;
 typedef std::function<int(transport::MessagePtr& message)> FirewallCheckCallback;
 
-struct ClientItem {
+class ClientItem {
+public:
+    ClientItem() {
+        common::GlobalInfo::Instance()->AddSharedObj();
+    }
+
+    ~ClientItem() {
+        common::GlobalInfo::Instance()->DecSharedObj();
+    }
+
     std::string des_ip;
     uint16_t port;
     std::string msg;
     uint64_t hash64;
-};
-
-struct ClientConnection {
-    std::string des_ip;
-    uint16_t port;
-    tnet::TcpConnection* conn;
 };
 
 static const uint32_t kMaxHops = 20u;

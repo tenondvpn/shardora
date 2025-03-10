@@ -42,11 +42,13 @@ enum SyncItemTag : uint32_t {
     kViewHash = 2,
 };
 
-struct SyncItem {
+class SyncItem {
+public:
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
             : network_id(net_id), key(in_key), 
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
         tag = kViewHash;
+        common::GlobalInfo::Instance()->AddSharedObj();
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
@@ -56,8 +58,13 @@ struct SyncItem {
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
         tag = kBlockHeight;
+        common::GlobalInfo::Instance()->AddSharedObj();
     }
 
+    ~SyncItem() {
+        common::GlobalInfo::Instance()->DecSharedObj();
+    }
+    
     uint32_t network_id{ 0 };
     std::string key;
     uint32_t priority{ 0 };

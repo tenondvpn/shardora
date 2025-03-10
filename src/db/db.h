@@ -86,11 +86,14 @@ inline static Status MergeWriteBatches(WriteBatch& target, const WriteBatch& sou
 
 class DbWriteBatch {
 public:
-    DbWriteBatch() {}
+    DbWriteBatch() {
+        common::GlobalInfo::Instance()->AddSharedObj();
+    }
     DbWriteBatch(const DbWriteBatch&) = default;
     DbWriteBatch& operator =(const DbWriteBatch&) = default;
     ~DbWriteBatch() {
         Clear();
+        common::GlobalInfo::Instance()->DecSharedObj();
     }
 
     void Put(const std::string& key, const std::string& value) {

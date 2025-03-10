@@ -22,7 +22,16 @@ using Breakpoint = int;
 using BalanceMap = std::unordered_map<std::string, int64_t>;
 using BalanceMapPtr = std::shared_ptr<BalanceMap>;
 
-struct ProposeMsgWrapper {
+class ProposeMsgWrapper {
+public:
+    ProposeMsgWrapper() {
+        common::GlobalInfo::Instance()->AddSharedObj();
+    }
+
+    ~ProposeMsgWrapper() {
+        common::GlobalInfo::Instance()->DecSharedObj();
+    }
+
     // Context
     transport::MessagePtr msg_ptr;
     std::shared_ptr<ViewBlock> view_block_ptr;
@@ -74,7 +83,8 @@ enum class ViewBlockStatus : int {
     Committed = 3,
 };
 
-struct ViewBlockInfo {
+class ViewBlockInfo {
+public:
     std::shared_ptr<ViewBlock> view_block;
     ViewBlockStatus status;
     std::vector<std::shared_ptr<ViewBlock>> children;
@@ -88,7 +98,13 @@ struct ViewBlockInfo {
         view_block(nullptr), 
         status(ViewBlockStatus::Unknown), 
         qc(nullptr),
-        valid(false) {}
+        valid(false) {
+            common::GlobalInfo::Instance()->AddSharedObj();
+    }
+
+    ~ViewBlockInfo() {
+        common::GlobalInfo::Instance()->DecSharedObj();
+    }
 };
 
 struct ViewBlockInfoCmp {

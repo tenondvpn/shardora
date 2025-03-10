@@ -55,9 +55,15 @@ static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecod
 
 static const uint64_t kStopConsensusTimeoutMs = 30000lu;
 
-struct BlockTxsItem {
+class BlockTxsItem {
+public:
     BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false), leader_to_index(-1) {
-        stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+            stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+        common::GlobalInfo::Instance()->AddSharedObj();
+    }
+
+    ~BlockTxsItem() {
+        common::GlobalInfo::Instance()->DecSharedObj();
     }
 
     pools::TxItemPtr tx_ptr;
@@ -72,9 +78,17 @@ struct BlockTxsItem {
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
 typedef std::shared_ptr<view_block::protobuf::ViewBlockItem> ViewBlockPtr;
 
-struct BlockToDbItem {
+class BlockToDbItem {
+public:
     BlockToDbItem(ViewBlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
-        : view_block_ptr(bptr), final_db_batch(batch) {}
+            : view_block_ptr(bptr), final_db_batch(batch) {
+        common::GlobalInfo::Instance()->AddSharedObj();
+    }
+    
+    ~BlockToDbItem() {
+        common::GlobalInfo::Instance()->DecSharedObj();
+    }
+
     ViewBlockPtr view_block_ptr;
     std::shared_ptr<db::DbWriteBatch> final_db_batch;
 };

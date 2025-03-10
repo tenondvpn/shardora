@@ -563,7 +563,8 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                     pool_idx_, view_item.qc().view(),
                     last_vote_view_, pro_msg_wrap->msg_ptr->header.hash64(),
                     common::Encode::HexEncode(iter->second->header.hotstuff().vote_msg().view_block_hash()).c_str());
-                auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>(*iter->second);
+                auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+                tmp_msg_ptr->header.CopyFrom(iter->second->header);
                 auto leader = leader_rotation_->GetLeader();
                 if (!leader || SendMsgToLeader(leader, tmp_msg_ptr, VOTE) != Status::kSuccess) {
                     ZJC_ERROR("pool: %d, Send vote message is error.",
@@ -1309,7 +1310,8 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
     assert(msg_ptr->header.hotstuff().pool_index() == pool_idx_);
     auto& newview_msg = msg_ptr->header.hotstuff().newview_msg();
     if (newview_msg.has_tc()) {
-        auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(newview_msg.tc());
+        auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>();
+        *tc_ptr.get() = newview_msg.tc();
         auto& tc = *tc_ptr;
         if (tc.view() > pacemaker()->HighTC()->view()) {
             if (!tc.has_view_block_hash()) {

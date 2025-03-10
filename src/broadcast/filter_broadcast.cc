@@ -42,16 +42,16 @@ void FilterBroadcast::Broadcasting(
     //     LayerSend(dht_ptr, msg_ptr, nodes);
     // } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
-        for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
-            bloomfilter->insert((*iter)->id_hash);
-        }
+        // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
+        //     bloomfilter->insert((*iter)->id_hash);
+        // }
 
         // ZJC_DEBUG("random Broadcasting: %lu, size: %u",
         //     msg_ptr->header.hash64(), nodes.size());
         if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
             return;
         }
-        
+
         Send(dht_ptr, msg_ptr, nodes);
     // }
 }
