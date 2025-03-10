@@ -282,9 +282,8 @@ private:
     volatile bool main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
-    volatile int32_t shared_obj_count_ = 0;
-    // common::SpinMutex shared_obj_count_mutex_;
-    common::Tick tick_;
+    std::atomic<int32_t> shared_obj_count_ = 0;
+    std::shared_ptr<common::Tick> tick_ptr_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
