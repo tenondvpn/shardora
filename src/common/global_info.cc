@@ -19,12 +19,19 @@ GlobalInfo* GlobalInfo::Instance() {
     return &ins;
 }
 
-GlobalInfo::GlobalInfo() {}
+GlobalInfo::GlobalInfo() {
+    tick_.CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
+}
 
 GlobalInfo::~GlobalInfo() {
     if (thread_with_pools_ != nullptr) {
         delete[] thread_with_pools_;
     }
+}
+
+void GlobalInfo::Timer() {
+    ZJC_DEBUG("get all shared object count now: %d", shared_obj_count_.fetch_add(0));
+    tick_.CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
 }
 
 int GlobalInfo::Init(const common::Config& config) {

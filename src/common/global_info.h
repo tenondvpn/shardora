@@ -12,6 +12,7 @@
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/time_utils.h"
+#include "common/tick.h"
 #include "common/utils.h"
 
 namespace shardora {
@@ -232,13 +233,14 @@ public:
         --shared_obj_count_;
     }
 
-    uint32_t GetSharedObj() {
+    int32_t GetSharedObj() {
         return shared_obj_count_.fetch_add(0);
     }
 
 private:
     GlobalInfo();
     ~GlobalInfo();
+    void Timer();
 
     static const uint32_t kDefaultTestNetworkShardId = 4u;
     static const uint32_t kTickThreadPoolCount = 1U;
@@ -281,7 +283,8 @@ private:
     volatile bool main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
-    std::atomic<uint32_t> shared_obj_count_ = 0;
+    std::atomic<int32_t> shared_obj_count_ = 0;
+    common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
