@@ -13,7 +13,6 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
-#include "common/global_info.h"
 // This is a temporary google only hack
 #ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
 #include "third_party/protobuf/version.h"
@@ -539,7 +538,6 @@ QcItem::QcItem()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fview_5fblock_2eproto::scc_info_QcItem.base);
   SharedCtor();
-  common::GlobalInfo::Instance()->AddSharedObj();
   // @@protoc_insertion_point(constructor:shardora.view_block.protobuf.QcItem)
 }
 QcItem::QcItem(const QcItem& from)
@@ -587,7 +585,6 @@ void QcItem::SharedCtor() {
 QcItem::~QcItem() {
   // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.QcItem)
   SharedDtor();
-  common::GlobalInfo::Instance()->DecSharedObj();
 }
 
 void QcItem::SharedDtor() {
@@ -1184,8 +1181,6 @@ ViewBlockItem::ViewBlockItem()
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fview_5fblock_2eproto::scc_info_ViewBlockItem.base);
   SharedCtor();
-  common::GlobalInfo::Instance()->AddSharedObj();
-
   // @@protoc_insertion_point(constructor:shardora.view_block.protobuf.ViewBlockItem)
 }
 ViewBlockItem::ViewBlockItem(const ViewBlockItem& from)
@@ -1230,8 +1225,6 @@ void ViewBlockItem::SharedCtor() {
 ViewBlockItem::~ViewBlockItem() {
   // @@protoc_insertion_point(destructor:shardora.view_block.protobuf.ViewBlockItem)
   SharedDtor();
-  common::GlobalInfo::Instance()->DecSharedObj();
-
 }
 
 void ViewBlockItem::SharedDtor() {
