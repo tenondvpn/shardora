@@ -29,7 +29,7 @@ GlobalInfo::~GlobalInfo() {
 }
 
 void GlobalInfo::Timer() {
-    ZJC_DEBUG("get all shared object count now: %d", shared_obj_count_);
+    ZJC_DEBUG("get all shared object count now: %d", shared_obj_count_.fetch_add(0));
     tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
 }
 
