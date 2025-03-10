@@ -35,7 +35,7 @@ void GlobalInfo::Timer() {
             continue;
         }
 
-        ZJC_DEBUG("index %d get all shared object count now: %d", i, count);
+        ZJC_INFO("index %d get all shared object count now: %d", i, count);
     }
 
     tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
