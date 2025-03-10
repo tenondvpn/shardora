@@ -227,13 +227,11 @@ public:
     }
 
     void AddSharedObj() {
-        // common::AutoSpinLock lock(shared_obj_count_mutex_);
-        ++shared_obj_count_;
+        shared_obj_count_.fetch_add(1);
     }
 
     void DecSharedObj() {
-        // common::AutoSpinLock lock(shared_obj_count_mutex_);
-        --shared_obj_count_;
+        shared_obj_count_.fetch_sub(1);
     }
 
 private:
