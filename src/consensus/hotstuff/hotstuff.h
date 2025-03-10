@@ -107,9 +107,6 @@ public:
             db_stored_view_ = view;
         }
 
-        if (view > min_commited_view_) {
-            min_commited_view_ = view;
-        }
         view_block_chain_->UpdateStoredToDbView(view);
     }
     
