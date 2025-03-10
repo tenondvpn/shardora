@@ -88,7 +88,6 @@ int GlobalInfo::Init(const common::Config& config) {
         pools_with_thread_[i] = thread_idx;
     }
 
-    tick_.CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
     return kCommonSuccess;
 }
 
