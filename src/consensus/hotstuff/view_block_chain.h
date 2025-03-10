@@ -233,7 +233,7 @@ private:
         CHECK_MEMORY_SIZE(view_blocks_info_);
         auto strings = String();
         if (strings.empty()) {
-            ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, "
+            ZJC_INFO("success add view block: %s, %u_%u_%lu, height: %lu, "
                 "parent hash: %s, tx size: %u, view count: %u",
                 common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
                 view_block_info->view_block->qc().network_id(),
@@ -244,7 +244,7 @@ private:
                 view_block_info->view_block->block_info().tx_list_size(),
                 view_map_[view_block_info->view_block->qc().view()]);
         } else {
-            ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, "
+            ZJC_INFO("success add view block: %s, %u_%u_%lu, height: %lu, "
                 "parent hash: %s, tx size: %u, strings: %s, view count: %u",
                 common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
                 view_block_info->view_block->qc().network_id(),
