@@ -455,8 +455,8 @@ std::string ViewBlockChain::String() const {
         height_set.insert(vb->block_info().height());
     }
 
-    ZJC_DEBUG("get chain pool: %u, views: %s, block_height_str: %s",
-        pool_index_, ret.c_str(), block_height_str.c_str());
+    ZJC_DEBUG("get chain pool: %u, views: %s, all size: %u, block_height_str: %s",
+        pool_index_, ret.c_str(), view_blocks_info_.size(), block_height_str.c_str());
     assert(height_set.size() < kCachedViewBlockCount);
     return ret;
 }

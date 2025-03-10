@@ -221,10 +221,6 @@ private:
             }
             return;
         }
-
-        if (it != view_blocks_info_.end()) {
-            view_block_info->children = it->second->children;
-        }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
         cached_block_queue_.push(view_block_info);
@@ -285,7 +281,7 @@ private:
     // prune the branch starting from view_block
     Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
     
-    static const uint32_t kCachedViewBlockCount = 256u;
+    static const uint32_t kCachedViewBlockCount = 16u;
 
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
