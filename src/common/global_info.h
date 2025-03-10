@@ -227,15 +227,14 @@ public:
     }
 
     void AddSharedObj() {
-        common::AutoSpinLock lock(shared_obj_count_mutex_);
+        // common::AutoSpinLock lock(shared_obj_count_mutex_);
         ++shared_obj_count_;
     }
 
     void DecSharedObj() {
-        common::AutoSpinLock lock(shared_obj_count_mutex_);
+        // common::AutoSpinLock lock(shared_obj_count_mutex_);
         --shared_obj_count_;
     }
-
 
 private:
     GlobalInfo();
@@ -284,7 +283,7 @@ private:
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
     volatile int32_t shared_obj_count_ = 0;
-    common::SpinMutex shared_obj_count_mutex_;
+    // common::SpinMutex shared_obj_count_mutex_;
     common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
