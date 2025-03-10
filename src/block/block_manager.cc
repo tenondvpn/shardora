@@ -773,10 +773,10 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: fix
-    if (view_block_item->qc().view() >= 1024) {
+    if (view_block_item->qc().view() >= 64) {
         return;
     }
-    
+
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
