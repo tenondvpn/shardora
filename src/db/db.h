@@ -4,8 +4,10 @@
 #include <memory>
 #include <iostream>
 #include <string>
-#include "common/utils.h"
+
+#include "common/global_info.h"
 #include "common/log.h"
+#include "common/utils.h"
 
 #ifdef LEVELDB
 #include "leveldb/options.h"
