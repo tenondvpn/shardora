@@ -255,6 +255,14 @@ bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_blo
         return true;
     }
     
+    auto view_map_iter = view_map_.find(it->second->view_block->qc().view());
+    if (view_map_iter != view_map_.end()) {
+        ++view_map_iter->second;
+        if (view_map_iter->second <= 0) {
+            view_map_.erase(view_map_iter);
+        }
+    }
+
     view_blocks_info_.erase(it);
     return true;
 }
@@ -361,6 +369,14 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
                 //         iter->second->view_block->block_info().tx_list_size());
                 // }
 
+                auto view_map_iter = view_map_.find(iter->second->view_block->qc().view());
+                if (view_map_iter != view_map_.end()) {
+                    ++view_map_iter->second;
+                    if (view_map_iter->second <= 0) {
+                        view_map_.erase(view_map_iter);
+                    }
+                }
+            
                 iter = view_blocks_info_.erase(iter);
                 CHECK_MEMORY_SIZE(view_blocks_info_);
             } else {

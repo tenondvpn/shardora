@@ -221,22 +221,20 @@ private:
         }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+
+        auto view_map_iter = view_map_.find(view_block_info->view_block->qc().view());
+        if (view_map_iter == view_map_.end()) {
+            view_map_[view_block_info->view_block->qc().view()] = 1;
+        } else {
+            ++view_map_iter->second;
+        }
+
         cached_block_queue_.push(view_block_info);
         CHECK_MEMORY_SIZE(view_blocks_info_);
         auto strings = String();
         if (strings.empty()) {
             ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, "
-                "parent hash: %s, tx size: %u",
-                common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
-                view_block_info->view_block->qc().network_id(),
-                view_block_info->view_block->qc().pool_index(),
-                view_block_info->view_block->qc().view(),
-                view_block_info->view_block->block_info().height(),
-                common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
-                view_block_info->view_block->block_info().tx_list_size());
-        } else {
-            ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, "
-                "parent hash: %s, tx size: %u, strings: %s",
+                "parent hash: %s, tx size: %u, view count: %u",
                 common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
                 view_block_info->view_block->qc().network_id(),
                 view_block_info->view_block->qc().pool_index(),
@@ -244,7 +242,19 @@ private:
                 view_block_info->view_block->block_info().height(),
                 common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
                 view_block_info->view_block->block_info().tx_list_size(),
-                String().c_str());
+                view_map_[view_block_info->view_block->qc().view()]);
+        } else {
+            ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, "
+                "parent hash: %s, tx size: %u, strings: %s, view count: %u",
+                common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
+                view_block_info->view_block->qc().network_id(),
+                view_block_info->view_block->qc().pool_index(),
+                view_block_info->view_block->qc().view(),
+                view_block_info->view_block->block_info().height(),
+                common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+                view_block_info->view_block->block_info().tx_list_size(),
+                String().c_str(),
+                view_map_[view_block_info->view_block->qc().view()]);
         }
     }
 
@@ -300,6 +310,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
     std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
     std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
+    std::unordered_map<uint64_t, uint32_t> view_map_;
 };
 
 // from db
