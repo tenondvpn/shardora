@@ -283,7 +283,7 @@ private:
     volatile bool main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
-    std::atomic<int32_t> shared_obj_count_ = 0;
+    std::atomic<int32_t> shared_obj_count_;
     common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
