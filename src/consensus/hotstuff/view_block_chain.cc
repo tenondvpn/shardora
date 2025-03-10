@@ -429,7 +429,7 @@ std::string ViewBlockChain::String() const {
 
     ZJC_DEBUG("get chain pool: %u, views: %s, all size: %u, block_height_str: %s",
         pool_index_, ret.c_str(), view_blocks_info_.size(), block_height_str.c_str());
-    assert(height_set.size() < kCachedViewBlockCount);
+    assert(height_set.size() < 256);
     return ret;
 }
 
