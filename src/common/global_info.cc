@@ -29,11 +29,12 @@ GlobalInfo::~GlobalInfo() {
 }
 
 void GlobalInfo::Timer() {
-    ZJC_DEBUG("get all shared object count now: %d", shared_obj_count_.fetch_add(0));
+    ZJC_DEBUG("get all shared object count now: %d", shared_obj_count_);
     tick_.CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
 }
 
 int GlobalInfo::Init(const common::Config& config) {
+    tick_.CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
     memset(consensus_thread_index_map_, common::kInvalidUint8, sizeof(consensus_thread_index_map_));
     begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 10000lu;
     message_handler_thread_count_ = 4;

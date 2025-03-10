@@ -11,6 +11,7 @@
 #include "common/config.h"
 #include "common/encode.h"
 #include "common/hash.h"
+#include "common/spin_mutex.h"
 #include "common/time_utils.h"
 #include "common/tick.h"
 #include "common/utils.h"
@@ -226,16 +227,15 @@ public:
     }
 
     void AddSharedObj() {
+        common::AutoSpinLock lock(shared_obj_count_mutex_);
         ++shared_obj_count_;
     }
 
     void DecSharedObj() {
+        common::AutoSpinLock lock(shared_obj_count_mutex_);
         --shared_obj_count_;
     }
 
-    int32_t GetSharedObj() {
-        return shared_obj_count_.fetch_add(0);
-    }
 
 private:
     GlobalInfo();
@@ -283,7 +283,8 @@ private:
     volatile bool main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
 
-    std::atomic<int32_t> shared_obj_count_;
+    volatile int32_t shared_obj_count_ = 0;
+    common::SpinMutex shared_obj_count_mutex_;
     common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
