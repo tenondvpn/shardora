@@ -1564,6 +1564,13 @@ Status Hotstuff::Commit(
                 tmp_block->qc().view());
             tmp_block_info->valid = true;
             ADD_DEBUG_PROCESS_TIMESTAMP();
+        } else {
+            ZJC_DEBUG("now ignore commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(tmp_block->parent_hash()).c_str());
         }
 
         if (tmp_block->qc().sign_x().empty()) {
@@ -1575,14 +1582,6 @@ Status Hotstuff::Commit(
                     tmp_block->qc().view_block_hash(), 
                     0);
             }
-        }
-
-        if (tmp_block->qc().view() <= min_commited_view_ + 1) {
-            if (min_commited_view_ < tmp_block->qc().view()) {
-                min_commited_view_ = tmp_block->qc().view();
-            }
-
-            break;
         }
 
         auto parent_block_info = view_block_chain()->Get(tmp_block->parent_hash());
@@ -1597,10 +1596,6 @@ Status Hotstuff::Commit(
                         tmp_block->parent_hash(), 
                         0);
                 }
-            }
-
-            if (tmp_block_info->valid) {
-                min_commited_view_ = tmp_block->qc().view();
             }
 
             break;

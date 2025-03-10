@@ -320,7 +320,6 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
     volatile View db_stored_view_ = 0llu;
-    volatile View min_commited_view_ = 0llu;
     
 };
 
