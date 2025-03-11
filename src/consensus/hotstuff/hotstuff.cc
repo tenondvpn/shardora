@@ -2047,11 +2047,15 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
 
     // fast hotstuff
     
-    // auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
-    // if (!v)
-    // if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-    //     return true;
-    // }
+    auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
+    if (!v_block3_info) {
+        return true;
+    }
+
+    auto v_block3 = v_block3_info->view_block;
+    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+        return true;
+    }
 
     // ZJC_DEBUG("failed check is empty block allowd block1: %u_%u_%lu, %s, block2: %u_%u_%lu, %s, block3: %u_%u_%lu, %s",
     //     v_block1->qc().network_id(),
