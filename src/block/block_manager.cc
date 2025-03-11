@@ -773,9 +773,9 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: fix
-    if (view_block_item->qc().view() >= 64) {
-        return;
-    }
+    // if (view_block_item->qc().view() >= 64) {
+    //     return;
+    // }
 
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
@@ -804,6 +804,7 @@ void BlockManager::AddNewBlock(
 
     // TODO: test
     const auto& tx_list = block_item->tx_list();
+#ifndef TEST_NO_CROSS
     {
         if (statistic_mgr_) {
             statistic_mgr_->OnNewBlock(view_block_item);
@@ -895,22 +896,23 @@ void BlockManager::AddNewBlock(
                 break;
             }
         }
-
-        if (new_block_callback_ != nullptr) {
-            // ZJC_DEBUG("new db callback called: %u_%u_%lu, %u_%u_%lu", 
-            //     view_block_item->qc().network_id(),
-            //     view_block_item->qc().pool_index(),
-            //     block_item->height(),
-            //     view_block_item->qc().network_id(),
-            //     view_block_item->qc().pool_index(),
-            //     view_block_item->qc().view());
-            if (!new_block_callback_(view_block_item, db_batch)) {
-                ZJC_DEBUG("block call back failed!");
-                assert(false);
-                return;
-            }
+    }
+#endif
+    if (new_block_callback_ != nullptr) {
+        // ZJC_DEBUG("new db callback called: %u_%u_%lu, %u_%u_%lu", 
+        //     view_block_item->qc().network_id(),
+        //     view_block_item->qc().pool_index(),
+        //     block_item->height(),
+        //     view_block_item->qc().network_id(),
+        //     view_block_item->qc().pool_index(),
+        //     view_block_item->qc().view());
+        if (!new_block_callback_(view_block_item, db_batch)) {
+            ZJC_DEBUG("block call back failed!");
+            assert(false);
+            return;
         }
     }
+
     prefix_db_->SaveValidViewBlockParentHash(
         view_block_item->parent_hash(), 
         view_block_item->qc().network_id(),

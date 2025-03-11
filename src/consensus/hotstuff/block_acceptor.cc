@@ -597,6 +597,7 @@ void BlockAcceptor::commit(
         *queue_item_ptr->final_db_batch);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
+#ifdef SAVE_COMMITTED_GIDS
         if (block->tx_list_size() > 0) {
             prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
             ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -611,7 +612,7 @@ void BlockAcceptor::commit(
                 ProtobufToJson(cons_debug).c_str());     
 #endif   
         }
-
+#endif
         // tps measurement
         ADD_DEBUG_PROCESS_TIMESTAMP();
         CalculateTps(block->tx_list_size());

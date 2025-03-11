@@ -160,7 +160,7 @@ public:
             view_block->block_info().height(),
             view_block->qc().view());
         latest_committed_block_ = view_block;
-        commited_block_queue_.push(view_block_info);
+        // commited_block_queue_.push(view_block_info);
         auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
         if (it != view_blocks_info_.end()) {
             it->second->status = ViewBlockStatus::Committed;
@@ -229,7 +229,7 @@ private:
             ++view_map_iter->second;
         }
 
-        cached_block_queue_.push(view_block_info);
+        // cached_block_queue_.push(view_block_info);
         CHECK_MEMORY_SIZE(view_blocks_info_);
         auto strings = String();
         if (strings.empty()) {
