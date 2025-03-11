@@ -1630,19 +1630,19 @@ bool BlockManager::HasSingleTx(
         return true;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (HasStatisticTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has statistic tx.");
-        return true;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (HasStatisticTx(pool_index, gid_valid_fn)) {
+    //     // ZJC_DEBUG("success check has statistic tx.");
+    //     return true;
+    // }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (HasElectTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has elect tx.");
-        return true;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (HasElectTx(pool_index, gid_valid_fn)) {
+    //     // ZJC_DEBUG("success check has elect tx.");
+    //     return true;
+    // }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
     return false;
 }
 
