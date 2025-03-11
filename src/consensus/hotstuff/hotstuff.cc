@@ -229,10 +229,10 @@ Status Hotstuff::Propose(
         header.hash64(),
         propose_debug_index_++,
         pb_pro_msg->tx_propose().txs_size());
-    // propose_debug_str += ", tx gids: ";
-    // for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-    //     propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
-    // }
+    propose_debug_str += ", tx gids: ";
+    for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+        propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+    }
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
@@ -2047,15 +2047,15 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
 
     // fast hotstuff
     
-    auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
-    if (!v_block3_info) {
-        return true;
-    }
+    // auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
+    // if (!v_block3_info) {
+    //     return true;
+    // }
 
-    auto v_block3 = v_block3_info->view_block;
-    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-        return true;
-    }
+    // auto v_block3 = v_block3_info->view_block;
+    // if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+    //     return true;
+    // }
 
     // ZJC_DEBUG("failed check is empty block allowd block1: %u_%u_%lu, %s, block2: %u_%u_%lu, %s, block3: %u_%u_%lu, %s",
     //     v_block1->qc().network_id(),
