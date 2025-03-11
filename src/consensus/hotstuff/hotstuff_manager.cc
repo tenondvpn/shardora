@@ -389,6 +389,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
                 prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, gid_valid_func);
+                ZJC_DEBUG("pool: %d check hash system tx: %d", pool_idx, has_system_tx);
             }
 
             ADD_DEBUG_PROCESS_TIMESTAMP();

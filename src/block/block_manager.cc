@@ -807,7 +807,7 @@ void BlockManager::AddNewBlock(
 #ifndef TEST_NO_CROSS
     {
         if (statistic_mgr_) {
-            statistic_mgr_->OnNewBlock(view_block_item);
+            // statistic_mgr_->OnNewBlock(view_block_item);
         }
 
         // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
@@ -1610,8 +1610,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kNormalTo);
-    
-
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
