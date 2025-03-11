@@ -155,7 +155,7 @@ Status Hotstuff::Propose(
             return s;
         }
 
-        // transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
@@ -229,10 +229,10 @@ Status Hotstuff::Propose(
         header.hash64(),
         propose_debug_index_++,
         pb_pro_msg->tx_propose().txs_size());
-    // propose_debug_str += ", tx gids: ";
-    // for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-    //     propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
-    // }
+    propose_debug_str += ", tx gids: ";
+    for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+        propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+    }
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
@@ -242,7 +242,7 @@ Status Hotstuff::Propose(
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
-    ZJC_DEBUG("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
+    ZJC_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
 #endif
     auto t5 = common::TimeUtils::TimestampMs();
     s = crypto()->SignMessage(tmp_msg_ptr);
@@ -281,7 +281,7 @@ Status Hotstuff::Propose(
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
-        "ProtobufToJson(consensus_debug).c_str()",
+        ProtobufToJson(consensus_debug).c_str(),
         (t1 - btime),
         (t2 - btime),
         (t3 - btime),
