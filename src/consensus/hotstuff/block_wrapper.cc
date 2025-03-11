@@ -60,6 +60,17 @@ Status BlockWrapper::Wrap(
         return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
     };
 
+    view_block->set_parent_hash(prev_view_block->qc().view_block_hash());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
+    if (!elect_item) {
+        return Status::kElectItemNotFound;
+    }
+    
+    view_block->mutable_qc()->set_elect_height(elect_item->ElectHeight());
+    view_block->mutable_qc()->set_leader_idx(leader_idx);
+    block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+    ADD_DEBUG_PROCESS_TIMESTAMP();
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
@@ -80,7 +91,6 @@ Status BlockWrapper::Wrap(
         view_block->qc().pool_index(), 
         view_block->qc().view(), 
         (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
-    view_block->set_parent_hash(prev_view_block->qc().view_block_hash());
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
@@ -100,15 +110,6 @@ Status BlockWrapper::Wrap(
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
-    if (!elect_item) {
-        return Status::kElectItemNotFound;
-    }
-    
-    view_block->mutable_qc()->set_elect_height(elect_item->ElectHeight());
-    view_block->mutable_qc()->set_leader_idx(leader_idx);
-    block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     ZJC_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
         "elect height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
         view_block->qc().network_id(), view_block->qc().pool_index(),
@@ -118,7 +119,6 @@ Status BlockWrapper::Wrap(
         view_block->qc().network_id(),
         view_block->qc().pool_index(),
         view_block->qc().view());
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
 
