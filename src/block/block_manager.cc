@@ -1666,6 +1666,11 @@ void BlockManager::PopTxTicker() {
 bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
         auto cur_time = common::TimeUtils::TimestampMs();
         auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) || 
+            pool_index != common::kImmutablePoolSize) {
+        return false;
+    }
+
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
         return false;
@@ -1678,9 +1683,9 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
         return false;
     }
 
-    // ZJC_DEBUG("has to tx %u, tx gid: %s", 
-    //     pool_index, 
-    //     common::Encode::HexEncode(GetToTxGid()).c_str());
+    ZJC_DEBUG("has to tx %u, tx gid: %s", 
+        pool_index, 
+        common::Encode::HexEncode(GetToTxGid()).c_str());
     return true;
 }
 
