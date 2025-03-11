@@ -1673,6 +1673,7 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
 
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
+        ZJC_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
         return false;
     }
 
