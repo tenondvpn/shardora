@@ -59,7 +59,7 @@ contract Exchange {
         item.selled = 0;
         item.selled_price = 0;
         item.buyer = payable(0x0000000000000000000000000000000000000000);
-        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0));
+        item.buyers.push(BuyerInfo(payable(0x0000000000000000000000000000000000000000), 0, 0));
         item.exists = true;
         all_hashes.push(hash);
         id_with_hash_map[item.id] = hash;
