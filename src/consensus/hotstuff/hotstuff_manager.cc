@@ -337,11 +337,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
-        case NEWVIEW: // 接收 tc 和 qc
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(msg_ptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            break;
         case PRE_RESET_TIMER:
             ADD_DEBUG_PROCESS_TIMESTAMP();
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
