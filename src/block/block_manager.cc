@@ -1677,9 +1677,9 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
     }
 
     if (!gid_valid_fn(GetToTxGid())) {
-        // ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
-        //     pool_index, 
-        //     common::Encode::HexEncode(GetToTxGid()).c_str());
+        ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
+            pool_index, 
+            common::Encode::HexEncode(GetToTxGid()).c_str());
         return false;
     }
 
