@@ -281,7 +281,11 @@ Status Hotstuff::Propose(
         common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
         view_block_chain()->HighViewBlock()->qc().view(),
         header.hash64(),
+#ifndef NDEBUG
         ProtobufToJson(consensus_debug).c_str(),
+#else
+        "",
+#endif
         (t1 - btime),
         (t2 - btime),
         (t3 - btime),
