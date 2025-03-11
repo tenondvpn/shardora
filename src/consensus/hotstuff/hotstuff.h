@@ -111,13 +111,8 @@ public:
     }
     
     void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
-    void HandleNewViewMsg(const transport::MessagePtr& msg_ptr);
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
-    void NewView(
-        std::shared_ptr<tnet::TcpInterface> conn,
-        std::shared_ptr<TC> tc,
-        std::shared_ptr<AggregateQC> qc);
     Status Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
@@ -243,7 +238,6 @@ private:
         return false;// pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().view_item().qc().view() > view_block_chain()->GetMaxHeight();
     }
 
-    Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
         const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlockInfo>& v_block,

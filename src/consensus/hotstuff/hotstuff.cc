@@ -136,7 +136,7 @@ Status Hotstuff::Propose(
     }
 
     auto t1 = common::TimeUtils::TimestampMs();
-    if (latest_leader_propose_message_ && 
+    if (!tc && latest_leader_propose_message_ && 
             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= 
             pacemaker_->CurView()) {
         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -202,13 +202,11 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
-        if (tc == nullptr || tc->view() <= max_view()) {
+        if (tc == nullptr) {
+            ZJC_DEBUG("pool: %d construct propose msg failed, %d",
+                pool_idx_, s);
             return s;
         }
-
-        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
-            pool_idx_, s);
-        return s;
     }
 
     auto t3 = common::TimeUtils::TimestampMs();
@@ -315,72 +313,6 @@ Status Hotstuff::Propose(
     return Status::kSuccess;
 }
 
-void Hotstuff::NewView(
-        std::shared_ptr<tnet::TcpInterface> conn,
-        std::shared_ptr<TC> tc,
-        std::shared_ptr<AggregateQC> qc) {
-    if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
-        assert(tc->pool_index() == pool_idx_);
-        assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-
-        if (IsQcTcValid(*tc)) {
-            latest_qc_item_ptr_ = tc;
-        }
-    }
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& header = msg_ptr->header;
-    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    header.set_type(common::kHotstuffMessage);
-    header.set_hop_count(0);
-    auto* hotstuff_msg = header.mutable_hotstuff();
-    auto* pb_newview_msg = hotstuff_msg->mutable_newview_msg();
-    auto elect_item = elect_info_->GetElectItemWithShardingId(
-            common::GlobalInfo::Instance()->network_id());
-    if (!elect_item || !elect_item->IsValid()) {
-        return;
-    }
-
-    pb_newview_msg->set_elect_height(elect_item->ElectHeight());
-    if (tc == nullptr) {
-        return;
-    }
-
-    if (tc != nullptr) {
-        *pb_newview_msg->mutable_tc() = *tc;
-    }
-
-    ConstructHotstuffMsg(NEWVIEW, nullptr, nullptr, pb_newview_msg, hotstuff_msg);
-    header.mutable_hotstuff()->CopyFrom(*hotstuff_msg);
-    if (!header.has_broadcast()) {
-        auto broadcast = header.mutable_broadcast();
-    }
-    
-    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
-    header.set_des_dht_key(dht_key.StrKey());
-    transport::TcpTransport::Instance()->SetMessageHash(header);
-    if (conn) {
-        header.release_broadcast();
-        transport::TcpTransport::Instance()->Send(conn.get(), msg_ptr->header);
-    } else {
-        network::Route::Instance()->Send(msg_ptr);
-    }
-
-    ZJC_DEBUG("pool: %d, msg pool: %d, newview, txs size: %lu, view: %lu, "
-        "hash: %s, qc_view: %lu, tc_view: %lu hash64: %lu",
-        pool_idx_,
-        hotstuff_msg->pool_index(),
-        hotstuff_msg->pro_msg().tx_propose().txs_size(),
-        hotstuff_msg->pro_msg().view_item().qc().view(),
-        common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-        view_block_chain()->HighViewBlock()->qc().view(),
-        pacemaker()->HighTC()->view(),
-        header.hash64());
-    HandleNewViewMsg(msg_ptr);
-    latest_leader_propose_message_ = nullptr;
-    return;    
-}
-
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     assert(msg_ptr->header.hotstuff().pro_msg().view_item().qc().view_block_hash().empty());
@@ -428,11 +360,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
 #else
     pro_msg_wrap->view_block_ptr->set_debug(msg_ptr->header.debug());
 #endif
-    assert(pro_msg_wrap->view_block_ptr->block_info().tx_list_size() == 0);
-    if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {
-        HandleTC(pro_msg_wrap);
-    }
-
+   
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& view_item = *pro_msg_wrap->view_block_ptr;
 #ifndef NDEBUG
@@ -612,46 +540,6 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
 
     if (view_item.qc().leader_idx() == local_idx) {
         pro_msg_wrap->msg_ptr->is_leader = true;
-    }
-
-    return Status::kSuccess;
-}
-
-Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    // 3 Verify TC
-#ifndef NDEBUG
-    transport::protobuf::ConsensusDebug cons_debug;
-    cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
-
-    ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s", 
-        pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(cons_debug).c_str());
-#endif
-    std::shared_ptr<TC> tc = nullptr;
-    auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
-    if (pro_msg.has_tc() && !pro_msg.tc().has_view_block_hash()) {
-        if (VerifyTC(pro_msg.tc()) != Status::kSuccess) {
-            ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg.view_item().qc().view());
-            assert(false);
-            return Status::kError;
-        }
-
-        auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
-        pacemaker()->NewTc(tc_ptr);
-        if (latest_qc_item_ptr_ == nullptr ||
-                tc_ptr->view() >= latest_qc_item_ptr_->view()) {
-            assert(IsQcTcValid(*tc_ptr));
-            latest_qc_item_ptr_ = tc_ptr;
-        }
-// #ifndef NDEBUG
-//         auto msg_hash = GetTCMsgHash(pro_msg.tc());
-//         ZJC_WARN("HandleTC success verify tc %u_%u_%lu, hash: %s called hash: %lu, propose_debug: %s",
-//             tc_ptr->network_id(), 
-//             tc_ptr->pool_index(), 
-//             tc_ptr->view(), 
-//             common::Encode::HexEncode(msg_hash).c_str(), 
-//             pro_msg_wrap->msg_ptr->header.hash64(), pro_msg_wrap->msg_ptr->header.debug().c_str());
-// #endif
     }
 
     return Status::kSuccess;
@@ -1262,18 +1150,13 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
 #endif
 
-    view_block_chain()->UpdateHighViewBlock(qc_item);
-    pacemaker()->NewQcView(qc_item.view());
+    // pacemaker()->NewQcView(qc_item.view());
     // 先单独广播新 qc，即是 leader 出不了块也不用额外同步 HighQC，这比 Gossip 的效率:q高很多
-    ZJC_DEBUG("NewView propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
+    ZJC_DEBUG("propose newview called pool: %u, qc_view: %lu, tc_view: %lu, propose_debug: %s",
         pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), pacemaker()->HighTC()->view(),
         "ProtobufToJson(cons_debug).c_str()");
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (s != Status::kSuccess) {
-        // NewView(nullptr, qc_item_ptr, nullptr);
-    }
+    Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
@@ -1303,68 +1186,6 @@ Status Hotstuff::StoreVerifiedViewBlock(
     return view_block_chain()->Store(v_block, true, nullptr, nullptr, false);
 }
 
-void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
-    auto b = common::TimeUtils::TimestampMs();
-    defer({
-            auto e = common::TimeUtils::TimestampMs();
-            ZJC_DEBUG("pool: %d HandleNewViewMsg duration: %lu ms, hash64: %lu",
-                pool_idx_, e-b, msg_ptr->header.hash64());
-        });
-
-    static uint64_t test_index = 0;
-    ++test_index;
-    ZJC_DEBUG("====3.1 pool: %d, newview, message pool: %d, hash64: %lu, test_index: %lu",
-        pool_idx_, msg_ptr->header.hotstuff().pool_index(), msg_ptr->header.hash64(), test_index);
-    assert(msg_ptr->header.hotstuff().pool_index() == pool_idx_);
-    auto& newview_msg = msg_ptr->header.hotstuff().newview_msg();
-    if (newview_msg.has_tc()) {
-        auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>();
-        *tc_ptr.get() = newview_msg.tc();
-        auto& tc = *tc_ptr;
-        if (tc.view() > pacemaker()->HighTC()->view()) {
-            if (!tc.has_view_block_hash()) {
-                auto tc_msg_hash = GetTCMsgHash(tc);
-                ZJC_DEBUG("newview now verify tc hash: %s, pool index: %u", 
-                    common::Encode::HexEncode(tc_msg_hash).c_str(), pool_idx_);                
-                if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
-                    ZJC_ERROR("VerifyTC error.");
-                    return;
-                }
-
-                pacemaker()->NewTc(tc_ptr);
-            } else {
-                auto& qc = tc;
-                if (qc.view() > view_block_chain()->HighViewBlock()->qc().view()) {
-                    if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
-                        ZJC_ERROR("VerifyQC error.");
-                        return;
-                    }
-
-                    ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
-                        qc.view(),
-                        qc.network_id(),
-                        qc.pool_index(),
-                        qc.view());
-                    pacemaker()->NewQcView(qc.view());
-                }
-            }
-        }
-            
-        if (tc.has_view_block_hash() && !tc.view_block_hash().empty()) {
-            auto& qc = tc;
-            pacemaker()->NewQcView(qc.view());
-            view_block_chain()->UpdateHighViewBlock(qc);
-            TryCommit(msg_ptr, qc, 99999999lu);
-            if (latest_qc_item_ptr_ == nullptr ||
-                    qc.view() >= latest_qc_item_ptr_->view()) {
-                if (IsQcTcValid(qc)) {
-                    latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(qc);
-                }
-            }
-        }
-    }
-}
-
 void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& pre_rst_timer_msg = msg_ptr->header.hotstuff().pre_reset_timer_msg();
@@ -1388,12 +1209,6 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    // TODO: Flow Control
-    if (latest_qc_item_ptr_ != nullptr) {
-        ZJC_DEBUG("reset timer propose message called view: %lu",
-            latest_qc_item_ptr_->view());
-    }
-
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
         ZJC_DEBUG("reset timer failed, now_tm_ms < latest_propose_msg_tm_ms_ + "
@@ -1709,7 +1524,6 @@ void Hotstuff::HandleSyncedViewBlock(
         TryCommit(msg_ptr, vblock->qc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 vblock->qc().view() >= latest_qc_item_ptr_->view()) {
-
             if (IsQcTcValid(vblock->qc())) {
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
@@ -2182,11 +1996,6 @@ void Hotstuff::TryRecoverFromStuck(
         const transport::MessagePtr& msg_ptr, 
         bool has_user_tx, 
         bool has_system_tx) {
-    // if (!latest_qc_item_ptr_) {
-    //     ZJC_WARN("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
-    //     return;
-    // }
-
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (has_user_tx) {
         has_user_tx_tag_ = true;
@@ -2229,15 +2038,6 @@ void Hotstuff::TryRecoverFromStuck(
         ADD_DEBUG_PROCESS_TIMESTAMP();
         Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        if (latest_qc_item_ptr_) {
-            ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
-                local_idx,
-                pool_idx_,
-                latest_qc_item_ptr_->network_id(), 
-                latest_qc_item_ptr_->pool_index(), 
-                latest_qc_item_ptr_->view());
-        }
-
         return;
     }
 
