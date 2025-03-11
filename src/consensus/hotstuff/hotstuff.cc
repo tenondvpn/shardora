@@ -118,16 +118,20 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
-        if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
-            assert(tc->pool_index() == pool_idx_);
-            assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-            assert(IsQcTcValid(*tc));
-            latest_qc_item_ptr_ = tc;
-        }
+        if (tc == latest_qc_item_ptr_) {
+            tc = nullptr;
+        } else {
+            if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
+                assert(tc->pool_index() == pool_idx_);
+                assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
+                assert(IsQcTcValid(*tc));
+                latest_qc_item_ptr_ = tc;
+            }
 
-        if (latest_leader_propose_message_ && 
-                latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
-            latest_leader_propose_message_ = nullptr;
+            if (latest_leader_propose_message_ && 
+                    latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+                latest_leader_propose_message_ = nullptr;
+            }
         }
     }
 
@@ -197,7 +201,11 @@ Status Hotstuff::Propose(
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
-    if (s != Status::kSuccess && tc == nullptr) {
+    if (s != Status::kSuccess) {
+        if (tc == nullptr || tc->view() <= max_view()) {
+            return s;
+        }
+
         ZJC_DEBUG("pool: %d construct propose msg failed, %d",
             pool_idx_, s);
         return s;
