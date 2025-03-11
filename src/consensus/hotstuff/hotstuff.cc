@@ -118,77 +118,73 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
-        if (tc == latest_qc_item_ptr_) {
-            tc = nullptr;
-        } else {
-            if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
-                assert(tc->pool_index() == pool_idx_);
-                assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
-                assert(IsQcTcValid(*tc));
-                latest_qc_item_ptr_ = tc;
-            }
-
-            if (latest_leader_propose_message_ && 
-                    latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
-                latest_leader_propose_message_ = nullptr;
-            }
+        if (latest_qc_item_ptr_ == nullptr || tc->view() >= latest_qc_item_ptr_->view()) {
+            assert(tc->pool_index() == pool_idx_);
+            assert(tc->network_id() == common::GlobalInfo::Instance()->network_id());
+            assert(IsQcTcValid(*tc));
+            latest_qc_item_ptr_ = tc;
         }
+
+        // if (latest_leader_propose_message_ && 
+        //         latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+        //     latest_leader_propose_message_ = nullptr;
+        // }
     }
 
     auto t1 = common::TimeUtils::TimestampMs();
-    if (!tc && latest_leader_propose_message_ && 
-            latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= 
-            pacemaker_->CurView()) {
-        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
-        tmp_msg_ptr->header.CopyFrom(latest_leader_propose_message_->header);
-        tmp_msg_ptr->is_leader = true;
-        tmp_msg_ptr->header.release_broadcast();
-        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
-        auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
-        if (tc != nullptr) {
-            auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-            *pb_pro_msg->mutable_tc() = *tc;
-        }
+//     if (!tc && latest_leader_propose_message_ && 
+//             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= 
+//             pacemaker_->CurView()) {
+//         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+//         tmp_msg_ptr->header.CopyFrom(latest_leader_propose_message_->header);
+//         tmp_msg_ptr->is_leader = true;
+//         tmp_msg_ptr->header.release_broadcast();
+//         auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+//         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
+//         if (tc != nullptr) {
+//             auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+//             *pb_pro_msg->mutable_tc() = *tc;
+//         }
 
-        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-        auto s = crypto()->SignMessage(tmp_msg_ptr);
-        auto& header = tmp_msg_ptr->header;
-        if (s != Status::kSuccess) {
-            ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-            return s;
-        }
+//         transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+//         auto s = crypto()->SignMessage(tmp_msg_ptr);
+//         auto& header = tmp_msg_ptr->header;
+//         if (s != Status::kSuccess) {
+//             ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+//                 pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+//             return s;
+//         }
 
-        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-        ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
-        network::Route::Instance()->Send(tmp_msg_ptr);
-#ifndef NDEBUG
-        transport::protobuf::ConsensusDebug cons_debug;
-        cons_debug.ParseFromString(header.debug());
-        ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
-            pool_idx_,
-            header.hotstuff().pool_index(),
-            hotstuff_msg->pro_msg().tx_propose().txs_size(),
-            hotstuff_msg->pro_msg().view_item().qc().view(),
-            common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
-            header.hash64(),
-            ProtobufToJson(cons_debug).c_str(),
-            tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-            pacemaker_->CurView());
-#endif
-        // HandleProposeMsg(latest_leader_propose_message_);
-        return Status::kSuccess;
-    }
+//         transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+//         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
+//         network::Route::Instance()->Send(tmp_msg_ptr);
+// #ifndef NDEBUG
+//         transport::protobuf::ConsensusDebug cons_debug;
+//         cons_debug.ParseFromString(header.debug());
+//         ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+//             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
+//             pool_idx_,
+//             header.hotstuff().pool_index(),
+//             hotstuff_msg->pro_msg().tx_propose().txs_size(),
+//             hotstuff_msg->pro_msg().view_item().qc().view(),
+//             common::Encode::HexEncode(hotstuff_msg->pro_msg().view_item().qc().view_block_hash()).c_str(),
+//             view_block_chain()->HighViewBlock()->qc().view(),
+//             header.hash64(),
+//             ProtobufToJson(cons_debug).c_str(),
+//             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
+//             pacemaker_->CurView());
+// #endif
+//         // HandleProposeMsg(latest_leader_propose_message_);
+//         return Status::kSuccess;
+//     }
 
-    if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
-        ZJC_WARN("pool: %d construct propose msg failed, %d, "
-            "max_view(): %lu last_leader_propose_view_: %lu",
-            pool_idx_, Status::kError,
-            max_view(), last_leader_propose_view_);
-        return Status::kError;
-    }
+    // if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
+    //     ZJC_WARN("pool: %d construct propose msg failed, %d, "
+    //         "max_view(): %lu last_leader_propose_view_: %lu",
+    //         pool_idx_, Status::kError,
+    //         max_view(), last_leader_propose_view_);
+    //     return Status::kError;
+    // }
 
     auto t2 = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
@@ -201,19 +197,17 @@ Status Hotstuff::Propose(
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
-    if (s != Status::kSuccess) {
-        if (tc == nullptr) {
-            ZJC_DEBUG("pool: %d construct propose msg failed, %d",
-                pool_idx_, s);
-            return s;
-        }
+    if (s != Status::kSuccess && !latest_qc_item_ptr_) {
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d",
+            pool_idx_, s);
+        return s;
     }
 
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
-    if (tc != nullptr) {
-        *pb_pro_msg->mutable_tc() = *tc;
+    if (latest_qc_item_ptr_ != nullptr) {
+        *pb_pro_msg->mutable_tc() = *latest_qc_item_ptr_;
     }
 
     if (!header.has_broadcast()) {
@@ -369,15 +363,11 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         pro_msg_wrap->msg_ptr->header.hash64(), last_vote_view_, view_item.qc().view(),
         ProtobufToJson(cons_debug).c_str());
 #endif
-    auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
-    if (st != Status::kSuccess) {
-        HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
-        return;
-    }
+    
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto propose_view = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view();
-    View handled_view = 0;
+    // auto propose_view = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view();
+    // View handled_view = 0;
     // for (auto iter = leader_view_with_propose_msgs_.begin();
     //         iter != leader_view_with_propose_msgs_.end();) {
     //     if (iter->first > propose_view) {
@@ -414,6 +404,17 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    auto st = HandleProposeMsgStep_HasVote(pro_msg_wrap);
+    if (st != Status::kSuccess) {
+        return;
+    }
+
+    if (pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose().txs_size() == 0) {
+        if (!IsEmptyBlockAllowed(*view_block_chain()->HighViewBlock())) {
+            return;
+        }
+    }
+
     st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
 #ifndef NDEBUG
@@ -1867,10 +1868,9 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
         return true;
     }
 
-    // fast hotstuff
     
     // auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
-    // if (!v)
+    // auto v_block3 = v_block3_info->view_block;
     // if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
     //     return true;
     // }
