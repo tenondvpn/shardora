@@ -14,6 +14,7 @@ contract Exchange {
     struct BuyerInfo {
         address payable buyer;
         uint256 price;
+        uint256 time;
     }
     
     struct ItemInfo {
@@ -65,7 +66,7 @@ contract Exchange {
         owner_with_hash_map[msg.sender].push(hash);
     }
 
-    function PurchaseItem(bytes32 hash) public payable {
+    function PurchaseItem(bytes32 hash, uint256 time) public payable {
         require(item_map[hash].exists);
         require(item_map[hash].owner != msg.sender);
         emit DebugEvent(5);
@@ -76,7 +77,7 @@ contract Exchange {
         require(!purchase_map[key]);
         ItemInfo storage item = item_map[hash];
         require(item_map[hash].price <= msg.value);
-        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value));
+        item.buyers.push(BuyerInfo(payable(msg.sender), msg.value, time));
         purchase_map[key] = true;
         emit DebugEvent(99999900000000000 + msg.value);
     }
@@ -190,6 +191,8 @@ contract Exchange {
         all_bytes[filedCount++] = ToHex(toBytes(item.buyer));
         all_bytes[filedCount++] = '","price":"';
         all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.price));
+        all_bytes[filedCount++] = '","time":"';
+        all_bytes[filedCount++] = NumberToHex(u256ToBytes(item.time));
 
         if (last) {
             all_bytes[filedCount++] = '"}';
