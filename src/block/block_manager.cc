@@ -1666,7 +1666,7 @@ void BlockManager::PopTxTicker() {
 bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
         auto cur_time = common::TimeUtils::TimestampMs();
         auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) || 
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && 
             pool_index != common::kImmutablePoolSize) {
         return false;
     }
