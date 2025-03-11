@@ -442,12 +442,12 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto propose_view = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tc().view();
     View handled_view = 0;
-    for (auto iter = leader_view_with_propose_msgs_.begin();
-            iter != leader_view_with_propose_msgs_.end();) {
-        if (iter->first > propose_view) {
-            // assert(false);
-            break;
-        }
+    // for (auto iter = leader_view_with_propose_msgs_.begin();
+    //         iter != leader_view_with_propose_msgs_.end();) {
+    //     if (iter->first > propose_view) {
+    //         // assert(false);
+    //         break;
+    //     }
 
         // auto& rehandle_view_item = *iter->second->view_block_ptr;
         // ZJC_WARN(
@@ -471,9 +471,9 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         //     "last_vote_view_: %lu, view_item.qc().view(): %lu, propose_debug: %s",
         //     iter->second->msg_ptr->header.hash64(), last_vote_view_, rehandle_view_item.qc().view(),
         //     iter->second->msg_ptr->header.debug().c_str());
-        iter = leader_view_with_propose_msgs_.erase(iter);
-        CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
-    }
+    //     iter = leader_view_with_propose_msgs_.erase(iter);
+    //     CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
+    // }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     HandleProposeMsgStep_VerifyQC(pro_msg_wrap);
@@ -485,18 +485,18 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.hash64(),
             ProtobufToJson(cons_debug).c_str());
 #endif
-        leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
-        CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
+        // leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
+        // CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
     } else {
-        for (auto iter = leader_view_with_propose_msgs_.begin();
-                iter != leader_view_with_propose_msgs_.end();) {
-            if (iter->first > propose_view) {
-                break;
-            }
+        // for (auto iter = leader_view_with_propose_msgs_.begin();
+        //         iter != leader_view_with_propose_msgs_.end();) {
+        //     if (iter->first > propose_view) {
+        //         break;
+        //     }
 
-            iter = leader_view_with_propose_msgs_.erase(iter);
-            CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
-        }
+        //     iter = leader_view_with_propose_msgs_.erase(iter);
+        //     CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
+        // }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
