@@ -189,6 +189,7 @@ Status Hotstuff::Propose(
     auto t2 = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+    tmp_msg_ptr->is_leader = true;
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = tmp_msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
