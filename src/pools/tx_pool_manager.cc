@@ -922,8 +922,9 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+        ZJC_DEBUG("address: %s balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu",
+            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
