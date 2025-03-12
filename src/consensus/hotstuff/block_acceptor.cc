@@ -597,22 +597,6 @@ void BlockAcceptor::commit(
         *queue_item_ptr->final_db_batch);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
-#ifdef SAVE_COMMITTED_GIDS
-        if (block->tx_list_size() > 0) {
-            prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-        } else {
-#ifndef NDEBUG
-            transport::protobuf::ConsensusDebug cons_debug;
-            cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
-            ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
-                queue_item_ptr->view_block_ptr->qc().network_id(),
-                queue_item_ptr->view_block_ptr->qc().pool_index(),
-                block->height(),
-                ProtobufToJson(cons_debug).c_str());     
-#endif   
-        }
-#endif
         // tps measurement
         ADD_DEBUG_PROCESS_TIMESTAMP();
         CalculateTps(block->tx_list_size());

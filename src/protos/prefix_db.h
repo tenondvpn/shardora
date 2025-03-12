@@ -765,13 +765,11 @@ public:
         return false;
     }
 
-    void SaveCommittedGids(
-            const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list, 
+    void SaveCommittedGid(
+            const block::protobuf::BlockTx& tx, 
             db::DbWriteBatch& db_batch) {
-        for (uint32_t i = 0; i < tx_list.size(); ++i) {
-            std::string key = kCommitedGidPrefix + tx_list[i].gid();
-            db_batch.Put(key, "1");
-        }
+        std::string key = kCommitedGidPrefix + tx.gid();
+        db_batch.Put(key, "1");
     }
 
     void SaveContractUserPrepayment(
