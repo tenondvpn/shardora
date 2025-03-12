@@ -156,6 +156,7 @@ void TxPool::GetTxSyncToLeader(
 
         auto* tx = txs->Add();
         *tx = *tx_ptr->tx_info;
+        ZJC_DEBUG("success to leader tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
     }
 }
 
