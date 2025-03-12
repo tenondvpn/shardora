@@ -1515,7 +1515,7 @@ pools::TxItemPtr BlockManager::GetToTx(
         ZJC_INFO("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
             "ProtobufToJson(*(tx_ptr->tx_info)).c_str()",
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(), 
-            common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str(),
+            common::Encode::HexEncode(tx_ptr->tx_info->value()).c_str(),
             ProtobufToJson(heights).c_str());
         return iter->second;
     }
