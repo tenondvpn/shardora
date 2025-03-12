@@ -838,12 +838,12 @@ void BlockManager::AddNewBlock(
             //     tx_list[i].status(),
             //     tx_list[i].step());
             // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
-    #ifdef SAVE_GID_WITH_BLOCK
+    // #ifdef SAVE_GID_WITH_BLOCK
             prefix_db_->SaveGidWithBlockHash(
                 tx_list[i].gid(), 
                 view_block_item->qc().view_block_hash(), 
                 db_batch);
-    #endif
+    // #endif
             prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
             if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
                 account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
