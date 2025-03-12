@@ -148,7 +148,7 @@ void TxPool::GetTxSyncToLeader(
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckGidValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
-    while (added_txs_.pop(&tx_ptr) && txs->size() < count) {
+    while (txs->size() < count && added_txs_.pop(&tx_ptr)) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
             ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
             continue;
@@ -172,15 +172,15 @@ void TxPool::GetTxIdempotently(
         prio_map_.size(),
         consensus_tx_map_.size());
     GetTxIdempotently(msg_ptr, universal_prio_map_, res_map, count, gid_vlid_func);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (!res_map.empty()) {
-        ZJC_DEBUG("pool index: %u, success get tx size: %d", pool_index_, res_map.size());
-        return;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (!res_map.empty()) {
+    //     ZJC_DEBUG("pool index: %u, success get tx size: %d", pool_index_, res_map.size());
+    //     return;
+    // }
 
-    GetTxIdempotently(msg_ptr, prio_map_, res_map, count, gid_vlid_func);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    GetTxIdempotently(msg_ptr, consensus_tx_map_, res_map, count, gid_vlid_func);    
+    // GetTxIdempotently(msg_ptr, prio_map_, res_map, count, gid_vlid_func);
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // GetTxIdempotently(msg_ptr, consensus_tx_map_, res_map, count, gid_vlid_func);    
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
@@ -191,7 +191,7 @@ void TxPool::GetTxIdempotently(
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
-    while (added_txs_.pop(&tx_ptr) && res_map.size() < count) {
+    while (res_map.size() < count && added_txs_.pop(&tx_ptr)) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
             ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
             continue;
@@ -201,7 +201,7 @@ void TxPool::GetTxIdempotently(
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
     }
 
-    while (consensus_added_txs_.pop(&tx_ptr) && res_map.size() < count) {
+    while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(tx_ptr->tx_info->gid())) {
             ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
             continue;
