@@ -357,22 +357,26 @@ void BlockManager::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("success handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
+            ZJC_DEBUG("x.storages(i).key() != protos::kNormalToShards handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
             continue;
         }
 
         pools::protobuf::ToTxMessage to_txs;
         if (!to_txs.ParseFromString(tx.storages(i).value())) {
             ZJC_WARN("parse to txs failed.");
+            ZJC_DEBUG("parse to txs failed. handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
             continue;
         }
 
-        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d",
+        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, gid: %s",
             to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
-            tx.step());
+            tx.step(),
+            common::Encode::HexEncode(tx.gid()).c_str());
 
         auto& heights = *to_txs.mutable_to_heights();
         heights.set_block_height(view_block.block_info().height());
