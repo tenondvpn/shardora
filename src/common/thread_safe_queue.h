@@ -39,11 +39,7 @@ public:
 
 private:
     static const int32_t kQueueCount = 1024;
-    std::queue<T> msg_queue_;
-
     moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
-    std::condition_variable con_;
-    std::mutex mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };

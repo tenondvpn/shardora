@@ -139,6 +139,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
+    ZJC_DEBUG("success add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
     return kPoolsSuccess;
 }
 
@@ -195,6 +196,7 @@ void TxPool::GetTxIdempotently(
             continue;
         }
 
+        ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
     }
 
@@ -204,6 +206,7 @@ void TxPool::GetTxIdempotently(
             continue;
         }
 
+        ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
     }
 }
