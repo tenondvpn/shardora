@@ -621,13 +621,13 @@ std::string http_ip = "0.0.0.0";
         http_handler_.Init(account_mgr_, &net_handler_, security_, prefix_db_, contract_mgr_, http_server_);
         http_server_.Start();
 
-        // http::HttpClient cli;
-        // std::string peer_ip = http_ip;
-        // if (peer_ip == "0.0.0.0") {
-        //     peer_ip = "127.0.0.1";
-        // }
+        http::HttpClient cli;
+        std::string peer_ip = http_ip;
+        if (peer_ip == "0.0.0.0") {
+            peer_ip = "127.0.0.1";
+        }
 
-        // cli.Request(peer_ip.c_str(), http_port, "ok", http_init_callback);
+        cli.Request(peer_ip.c_str(), http_port, "ok", http_init_callback);
         ZJC_DEBUG("http init wait response coming.");
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(1000));
