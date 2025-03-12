@@ -398,7 +398,7 @@ function InitC2cEnv(key, value) {
 
                 // 预设值合约调用币，并等待成功
                 var prikeys = [
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
+                    "b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330",
                 ];
                 for (var i = 0; i < prikeys.length; ++i)
                 {
