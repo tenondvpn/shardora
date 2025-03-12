@@ -626,7 +626,7 @@ void BlockManager::HandleLocalNormalToTx(
 
 void BlockManager::createConsensusLocalToTxs(
         const block::protobuf::BlockTx& to_tx,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map) {
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map) {
     // ZJC_DEBUG("addr_amount_map size: %lu", addr_amount_map.size());
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
@@ -644,9 +644,9 @@ void BlockManager::createConsensusLocalToTxs(
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second->amount);
 
-        // ZJC_DEBUG("success add local transfer to %s, %lu",
-        //     common::Encode::HexEncode(iter->first).c_str(),
-        //     iter->second->amount);
+        ZJC_DEBUG("success add local transfer to %s, %lu",
+            common::Encode::HexEncode(iter->first).c_str(),
+            iter->second->amount);
     }
 
     // 一个 pool 生成一个 Consensuslocaltos
@@ -680,15 +680,16 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success add local transfer tx tos hash: %s, gid: %s, src to tx gid: %s",
+        ZJC_DEBUG("success add local transfer tx tos hash: %s, gid: %s, src to tx gid: %s, val: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
             common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(to_tx.gid()).c_str());
+            common::Encode::HexEncode(to_tx.gid()).c_str(),
+            common::Encode::HexEncode(val).c_str());
     }
 }
 
 void BlockManager::createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos) {
+        std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos) {
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
     for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
         auto contract_create_tx = contract_create_tx_infos[i];

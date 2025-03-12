@@ -139,9 +139,9 @@ private:
         const block::protobuf::BlockTx& tx);
     void createConsensusLocalToTxs(
         const block::protobuf::BlockTx& tx,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map);
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map);
     void createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos);
+        std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos);
     void HandleJoinElectTx(
         const view_block::protobuf::ViewBlockItem& block,
         const block::protobuf::BlockTx& tx,
