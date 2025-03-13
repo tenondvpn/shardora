@@ -393,12 +393,13 @@ function InitC2cEnv(key, value) {
 
                 if (try_times >= 30) {
                     console.error(`create contract address failed!`);
-                    return;
+                    // return;
                 }
 
                 // 预设值合约调用币，并等待成功
                 var prikeys = [
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
+                    "6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350",
                 ];
                 for (var i = 0; i < prikeys.length; ++i)
                 {
