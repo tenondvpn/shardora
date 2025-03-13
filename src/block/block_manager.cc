@@ -811,7 +811,6 @@ void BlockManager::AddNewBlock(
     // TODO: test
     const auto& tx_list = block_item->tx_list();
 #ifndef TEST_NO_CROSS
-    {
         if (statistic_mgr_) {
             // statistic_mgr_->OnNewBlock(view_block_item);
         }
@@ -828,6 +827,7 @@ void BlockManager::AddNewBlock(
                 view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
         }
 
+        auto btime1 = common::TimeUtils::TimestampMs();
         // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
@@ -903,8 +903,8 @@ void BlockManager::AddNewBlock(
                 break;
             }
         }
-    }
 #endif
+    auto btime2 = common::TimeUtils::TimestampMs();
     if (new_block_callback_ != nullptr) {
         // ZJC_DEBUG("new db callback called: %u_%u_%lu, %u_%u_%lu", 
         //     view_block_item->qc().network_id(),
@@ -926,6 +926,7 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         db_batch);
+    auto btime3 = common::TimeUtils::TimestampMs();
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
@@ -938,8 +939,9 @@ void BlockManager::AddNewBlock(
     }
 
     auto etime = common::TimeUtils::TimestampMs();
+    if (etime - btime > 100000lu)
     ZJC_DEBUG("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
-        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu",
+        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, t1: %lu, t2: %lu, t3: %lu",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
@@ -947,7 +949,10 @@ void BlockManager::AddNewBlock(
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
         view_block_item->qc().elect_height(),
         block_item->timeblock_height(),
-        (etime - btime));
+        (etime - btime),
+        (btime1 - btime),
+        (btime2 - btime1),
+        (btime3 - btime2));
 
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
