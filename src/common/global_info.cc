@@ -96,7 +96,10 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_user", ck_user_);
     config.Get("zjchain", "ck_pass", ck_pass_);
     config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
-
+    if (each_tx_pool_max_txs_ < 10240) {
+        each_tx_pool_max_txs_ = 10240;
+    }
+    
     auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
