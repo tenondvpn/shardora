@@ -18,6 +18,8 @@ int ContractUserCreateCall::HandleTx(
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
     int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
+    ZJC_DEBUG("contract user call create called: %s, balance: %lu", 
+        common::Encode::HexEncode(from).c_str(), from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
