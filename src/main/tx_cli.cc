@@ -754,6 +754,11 @@ int contract_call(int argc, char** argv, bool more=false) {
 
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
+    security::Ecdsa ecdsa;
+    ecdsa.SetPrivateKey("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848");
+    std::cout << common::Encode::HexEncode(ecdsa.GetPublicKey()) << std::endl;
+    ecdsa.SetPrivateKey("6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350");
+    std::cout << common::Encode::HexEncode(ecdsa.GetPublicKey()) << std::endl;
     if (argc <= 1 || argv[1][0] == '0') {
         tx_main(argc, argv);
         transport::TcpTransport::Instance()->Stop();
