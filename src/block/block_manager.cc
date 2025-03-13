@@ -818,7 +818,7 @@ void BlockManager::AddNewBlock(
         // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
         to_txs_pool_->NewBlock(view_block_item);
         auto btime10 = common::TimeUtils::TimestampMs();
-        // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+        zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         // 当前节点和 block 分配的 shard 不同，要跨分片交易
         auto btime11 = common::TimeUtils::TimestampMs();
         if (view_block_item->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
