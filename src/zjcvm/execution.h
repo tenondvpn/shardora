@@ -95,7 +95,7 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    StorageLruMap<1024> storage_map_[common::kMaxThreadCount];
+    StorageLruMap<256> storage_map_[common::kMaxThreadCount];
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
