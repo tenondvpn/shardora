@@ -123,7 +123,7 @@ void KeyValueSync::ConsensusTimerMessage() {
 
     auto now_tm_ms3 = common::TimeUtils::TimestampMs();
     auto etime = common::TimeUtils::TimestampMs();
-    if (etime - now_tm_ms >= 10000lu) {
+    if (etime - now_tm_ms >= 1000000lu) {
         ZJC_DEBUG("KeyValueSync handle message use time: %lu, "
             "PopKvMessage: %lu, PopItems: %lu, CheckSyncItem: %lu", 
             (etime - now_tm_ms), 
