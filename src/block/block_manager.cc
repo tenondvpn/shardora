@@ -182,7 +182,7 @@ void BlockManager::HandleAllConsensusBlocks() {
                     AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
                     auto use_time = (common::TimeUtils::TimestampMs() - btime);
                     if (use_time >= 200)
-                    ZJC_INFO("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                    ZJC_INFO(" %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, size: %u",
                         db_item_ptr->view_block_ptr->qc().network_id(),
                         db_item_ptr->view_block_ptr->qc().pool_index(),
@@ -197,7 +197,7 @@ void BlockManager::HandleAllConsensusBlocks() {
 
                 if (count >= kEachTimeHandleBlocksCount) {
                     no_sleep = true;
-                    ZJC_INFO("pool index: %d, has block count: %u", i, consensus_block_queues_[i].size());
+                    ZJC_INFO("pool index: %d, has block over from consensus new block coming sharding id:count: %u", i, consensus_block_queues_[i].size());
                 }
             }
 
@@ -785,6 +785,7 @@ void BlockManager::AddNewBlock(
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
+    auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
         view_block_item->qc().network_id(),
@@ -936,15 +937,17 @@ void BlockManager::AddNewBlock(
             view_block_item->qc().view());
     }
 
+    auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
-        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         block_item->tx_list_size(),
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
         view_block_item->qc().elect_height(),
-        block_item->timeblock_height());
+        block_item->timeblock_height(),
+        (etime - btime));
 
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
