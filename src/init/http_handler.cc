@@ -655,7 +655,6 @@ static void PrepaymentsValid(evhtp_request_t* req, void* data) {
 }
 
 static void GidsValid(evhtp_request_t* req, void* data) {
-    ZJC_DEBUG("query account.");
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
     auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
     auto header3 = evhtp_header_new(
