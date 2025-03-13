@@ -770,6 +770,7 @@ public:
             db::DbWriteBatch& db_batch) {
         std::string key = kCommitedGidPrefix + tx.gid();
         db_batch.Put(key, "1");
+        ZJC_DEBUG("success save tx gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
     }
 
     void SaveContractUserPrepayment(

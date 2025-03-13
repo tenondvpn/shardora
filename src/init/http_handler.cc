@@ -683,9 +683,11 @@ static void GidsValid(evhtp_request_t* req, void* data) {
             continue;
         }
 
+        ZJC_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         auto res = prefix_db->JustCheckCommitedGidExists(gid);
         if (res) {
             res_json["gids"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
 
