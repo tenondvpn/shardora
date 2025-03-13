@@ -87,12 +87,12 @@ void Execution::NewBlockWithTx(
         }
 
         UpdateStorage(tx.storages(i).key(), tx.storages(i).value(), db_batch);
-        ZJC_DEBUG("UpdateStoredToDbView %u_%u_%lu, update storage: %s, %s", 
-            view_block.qc().network_id(),
-            view_block.qc().pool_index(),
-            view_block.qc().view(),
-            common::Encode::HexEncode(tx.storages(i).key()).c_str(), 
-            common::Encode::HexEncode(tx.storages(i).value()).c_str());
+        // ZJC_DEBUG("UpdateStoredToDbView %u_%u_%lu, update storage: %s, %s", 
+        //     view_block.qc().network_id(),
+        //     view_block.qc().pool_index(),
+        //     view_block.qc().view(),
+        //     common::Encode::HexEncode(tx.storages(i).key()).c_str(), 
+        //     common::Encode::HexEncode(tx.storages(i).value()).c_str());
     }
 }
 

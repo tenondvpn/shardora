@@ -817,8 +817,10 @@ void BlockManager::AddNewBlock(
 
         // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
         to_txs_pool_->NewBlock(view_block_item);
+        auto btime10 = common::TimeUtils::TimestampMs();
         zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         // 当前节点和 block 分配的 shard 不同，要跨分片交易
+        auto btime11 = common::TimeUtils::TimestampMs();
         if (view_block_item->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
                 view_block_item->qc().network_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id()) {
@@ -830,19 +832,19 @@ void BlockManager::AddNewBlock(
         auto btime1 = common::TimeUtils::TimestampMs();
         // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
-            ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
-                "tx size: %u, hash: %s, elect height: %lu, "
-                "tm height: %lu, gid: %s, status: %d, step: %d",
-                view_block_item->qc().network_id(),
-                view_block_item->qc().pool_index(),
-                block_item->height(),
-                block_item->tx_list_size(),
-                common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-                view_block_item->qc().elect_height(),
-                block_item->timeblock_height(),
-                common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-                tx_list[i].status(),
-                tx_list[i].step());
+            // ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
+            //     "tx size: %u, hash: %s, elect height: %lu, "
+            //     "tm height: %lu, gid: %s, status: %d, step: %d",
+            //     view_block_item->qc().network_id(),
+            //     view_block_item->qc().pool_index(),
+            //     block_item->height(),
+            //     block_item->tx_list_size(),
+            //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            //     view_block_item->qc().elect_height(),
+            //     block_item->timeblock_height(),
+            //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            //     tx_list[i].status(),
+            //     tx_list[i].step());
             // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
     // #ifdef SAVE_GID_WITH_BLOCK
             prefix_db_->SaveGidWithBlockHash(
@@ -927,6 +929,7 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().view(),
         db_batch);
     auto btime3 = common::TimeUtils::TimestampMs();
+    auto put_size = db_batch.ApproximateSize();
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
@@ -941,7 +944,7 @@ void BlockManager::AddNewBlock(
     auto etime = common::TimeUtils::TimestampMs();
     if (etime - btime > 100000lu)
     ZJC_DEBUG("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
-        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, t1: %lu, t2: %lu, t3: %lu",
+        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, t10: %lu, t11: %lu, t1: %lu, t2: %lu, t3: %lu",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
@@ -950,7 +953,9 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().elect_height(),
         block_item->timeblock_height(),
         (etime - btime),
-        (btime1 - btime),
+        (btime10 - btime),
+        (btime11 - btime10),
+        (btime1 - btime11),
         (btime2 - btime1),
         (btime3 - btime2));
 
