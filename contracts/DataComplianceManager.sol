@@ -25,6 +25,7 @@ contract DataComplianceManager {
     // 构造函数，设置管理员地址
     constructor() {
         admin = msg.sender;
+        emit OracleNodeAdded(admin);
     }
 
     // 修饰器：限制只有管理员可以调用
