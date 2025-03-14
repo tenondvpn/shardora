@@ -65,7 +65,7 @@ def transfer(
     return check_transaction_gid_valid(gid)
 
 def get_account_info(address):
-    return _post_data("http://{}:{}/query_account".format("127.0.0.1", 23001), {'address': address})
+    return _post_data("http://{}:{}/query_account".format(http_ip, 23001), {'address': address})
 
 
 def call_tx(gid, to, amount, gas_limit, sign_r, sign_s, sign_v, pkbytes_str, key, value):
@@ -95,13 +95,13 @@ def keccak256_str(s: str) -> str:
     return _keccak256_str(s)
 
 def check_accounts_valid(post_data: dict):
-    return _post_data("http://{}:{}/accounts_valid".format("127.0.0.1", 23001), post_data)
+    return _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
 
 def check_prepayments_valid(post_data: dict):
-    return _post_data("http://{}:{}/prepayment_valid".format("127.0.0.1", 23001), post_data)
+    return _post_data("http://{}:{}/prepayment_valid".format(http_ip, 23001), post_data)
 
 def check_gid_valid(post_data: dict):
-    return _post_data("http://{}:{}/commit_gid_valid".format("127.0.0.1", 23001), post_data)
+    return _post_data("http://{}:{}/commit_gid_valid".format(http_ip, 23001), post_data)
 
 def get_transfer_params(
         gid: str, 
