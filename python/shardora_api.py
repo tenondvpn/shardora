@@ -63,6 +63,10 @@ def transfer(
     
     return check_transaction_gid_valid(gid)
 
+def get_account_info(address):
+    return _post_data("http://{}:{}/query_account".format("127.0.0.1", 23001), {'address': address})
+
+
 def call_tx(gid, to, amount, gas_limit, sign_r, sign_s, sign_v, pkbytes_str, key, value):
     params = _get_tx_params(sign=sign,
                             pkbytes=pkbytes,

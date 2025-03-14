@@ -18,20 +18,36 @@ if __name__ == "__main__":
     args = parser.parse_args()
     private_key = None
     to = None
+    from_address = None
     amount = 99999
     with open("../init_accounts3", "r") as f:
         private_key = f.readline().strip().split("\t")[0]
         tmp_to_pk = f.readline().strip().split("\t")[0]
         to = shardora_api.get_keypair(bytes.fromhex(tmp_to_pk)).account_id
+        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
         
     if args.private_key:
         private_key = args.private_key
+        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
 
     if args.to:
         to = args.to
 
     if args.amount:
         amount = args.amount
+
+    # 获取转账前from和to的账户余额
+    res = shardora_api.get_account_info(from_address)
+    if res.status_code != 200:
+        print(f"get from info failed: {from_address}")
+    else:
+        print(f"before transfer get from info: {res.text}")
+
+    res = shardora_api.get_account_info(to)
+    if res.status_code != 200:
+        print(f"get to info failed: {to}")
+    else:
+        print(f"before transfer get to info: {res.text}")
 
     res = shardora_api.transfer(
         private_key,
@@ -49,6 +65,19 @@ if __name__ == "__main__":
     if not res:
         print(f"transfer failed: {res}")
         sys.exit(1)
+
+    # 获取转账后from和to的账户余额
+    res = shardora_api.get_account_info(from_address)
+    if res.status_code != 200:
+        print(f"get from info failed: {from_address}")
+    else:
+        print(f"after transfer get from info: {res.text}")
+
+    res = shardora_api.get_account_info(to)
+    if res.status_code != 200:
+        print(f"get to info failed: {to}")
+    else:
+        print(f"after transfer get to info: {res.text}")
 
     print(f"transfer success from {private_key} to {to} amount {amount}")
         
