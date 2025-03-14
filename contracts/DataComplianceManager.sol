@@ -27,9 +27,4 @@ contract DataComplianceManager {
         admin = msg.sender;
     }
 
-    // 修饰器：限制只有管理员可以调用
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Not an admin");
-        _;
-    }
 }
