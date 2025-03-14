@@ -82,7 +82,7 @@ if __name__ == "__main__":
             prepayment=prepayment,
             check_gid_valid=True)
         if contract_address is None:
-            print(f"contract call failed!")
+            print(f"contract create failed!")
             sys.exit(1)
         else:
             print("create contract success {contract_address}")
