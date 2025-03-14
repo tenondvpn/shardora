@@ -26,6 +26,7 @@ contract DataComplianceManager {
     constructor() {
         admin = msg.sender;
         emit OracleNodeAdded(admin);
+        emit OracleNodeAdded(admin);
     }
 
     // 修饰器：限制只有管理员可以调用
