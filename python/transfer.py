@@ -3,6 +3,7 @@
 #
 ###############################################################################
 
+import json
 import shardora_api
 import sys
 import time
@@ -42,13 +43,17 @@ if __name__ == "__main__":
     if res.status_code != 200:
         print(f"get from info failed: {from_address}")
     else:
-        print(f"before transfer get from info: {res.text}")
+        json_res = json.loads(res.text)
+        balance = json_res['balance']
+        print(f"before transfer get {from_address} balance: {balance}")
 
     res = shardora_api.get_account_info(to)
     if res.status_code != 200:
         print(f"get to info failed: {to}")
     else:
-        print(f"before transfer get to info: {res.text}")
+        json_res = json.loads(res.text)
+        balance = json_res['balance']
+        print(f"before transfer get {to} balance: {balance}")
 
     res = shardora_api.transfer(
         private_key,
@@ -73,13 +78,17 @@ if __name__ == "__main__":
     if res.status_code != 200:
         print(f"get from info failed: {from_address}")
     else:
-        print(f"after transfer get from info: {res.text}")
+        json_res = json.loads(res.text)
+        balance = json_res['balance']
+        print(f"after transfer get {from_address} balance: {balance}")
 
     res = shardora_api.get_account_info(to)
     if res.status_code != 200:
         print(f"get to info failed: {to}")
     else:
-        print(f"after transfer get to info: {res.text}")
+        json_res = json.loads(res.text)
+        balance = json_res['balance']
+        print(f"after transfer get {to} balance: {balance}")
 
     print(f"transfer success from {private_key} to {to} amount {amount}")
         
