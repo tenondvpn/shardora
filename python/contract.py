@@ -85,7 +85,7 @@ if __name__ == "__main__":
             print(f"contract create failed!")
             sys.exit(1)
         else:
-            print("create contract success {contract_address}")
+            print(f"create contract success {contract_address}")
     else:
         res = shardora_api.transfer(
             private_key,
