@@ -312,8 +312,10 @@ def check_transaction_gid_valid(in_gid):
         else:
             json_res = json.loads(res.text)
             print(json_res)
+            print(in_gid)
             if json_res["gids"] is not None:
                 for gid in json_res["gids"]:
+                    print(f"{in_gid} == {gid} : {in_gid == gid}")
                     if in_gid == gid:
                         return True
         time.sleep(1)
