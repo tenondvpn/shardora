@@ -75,11 +75,11 @@ if __name__ == "__main__":
     if function == "":
         contract_address = shardora_api.deploy_contract(
             private_key,
-            amount,
+            0,
             sol_file,
             function_types,
             function_args,
-            prepayment=prepayment,
+            prepayment=0,
             check_gid_valid=True)
         if contract_address is None:
             print(f"contract create failed!")

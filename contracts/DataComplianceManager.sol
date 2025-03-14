@@ -1,147 +1,106 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <0.9.0;
+// SPDX-License-Identifier: MIT
+// pragma solidity ^0.8.0;
+pragma solidity >= 0.8.17 < 0.9.0;
 
-// 1. The seller can sell at most coins equal to the pledged quantity
-// 2. The pledged currency can only be recovered by the seller
-// 3. The manager can forcefully cancel the transaction and return the pledged coins to the seller.
-// 4. If the transaction is reported and the seller cannot redeem it, it will be locked,
-//    and the manager can release it according to the situation
+contract DataComplianceManager {
+    // 管理员地址，用于管理预言机节点列表
+    address public admin;
 
-contract Ars {
-    bytes32 test_ripdmd_;
-    bytes32 enc_init_param_;
-    struct ArsInfo {
-        uint256 ring_size;
-        uint256 signer_count;
-        bytes32 id;
-        bytes32 res_info;
-        bool exists;
-    }
+    // 存储合法的预言机节点地址
+    mapping(address => bool) public oracleNodes;
 
-    event DebugEvent(
-       uint256 value
-    );
+    // 存储数据哈希与合规检测结果的键值对
+    mapping(bytes32 => string) public complianceResults;
 
-    event DebugEventBytes(
-       bytes value
-    );
+    // 存储数据哈希与上链时间戳的键值对
+    mapping(bytes32 => uint256) public complianceTimestamps;
 
-    mapping(bytes32 => ArsInfo) public ars_map;
-    bytes32[] all_ids;
+    // 事件：用于记录预言机节点的添加和删除
+    event OracleNodeAdded(address indexed oracleAddress);
+    event OracleNodeRemoved(address indexed oracleAddress);
 
-    // SetUp：初始化算法，需要用到pbc库
+    // 事件：用于记录合规检测结果的存储以及合规检测结果上链的时间
+    event ComplianceResultStored(bytes32 indexed dataHash, uint256 timestamp, string result);
+
+    // 构造函数，设置管理员地址
     constructor() {
+        admin = msg.sender;
     }
 
-    function call_proxy_reenc(bytes memory params) public {
-        test_ripdmd_ = ripemd160(params);
+    // 修饰器：限制只有管理员可以调用
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not an admin");
+        _;
     }
 
-    function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
-        emit DebugEvent(0);
-
-        require(!ars_map[id].exists);
-        emit DebugEvent(1);
-        bytes32 res = ripemd160(params);
-        ars_map[id] = ArsInfo({
-            ring_size: ring_size,
-            signer_count: signer_count,
-            id: id,
-            res_info: res,
-            exists: true
-        });
-        all_ids.push(id);
-        emit DebugEvent(2);
-        emit DebugEvent(all_ids.length);
+    // 修饰器：限制只有合法的预言机节点可以调用
+    modifier onlyOracle() {
+        require(oracleNodes[msg.sender], "Not an authorized oracle node");
+        _;
     }
 
-    function SingleSign(bytes32 id, bytes memory params) public {
-        emit DebugEvent(3);
-        require(ars_map[id].exists);
-        emit DebugEvent(4);
-        bytes32 res = ripemd160(params);
-        emit DebugEvent(5);
+    // 添加合法的预言机节点地址
+    function addOracleNode(address oracleAddress) external onlyAdmin {
+        require(!oracleNodes[oracleAddress], "Oracle node already exists");
+        oracleNodes[oracleAddress] = true;
+        emit OracleNodeAdded(oracleAddress);
     }
 
-    function AggSign(bytes32 id, bytes memory params) public {
-        emit DebugEvent(6);
-        require(ars_map[id].exists);
-        emit DebugEvent(7);
-        bytes32 res = ripemd160(params);
-        emit DebugEvent(8);
-    }
-
-    function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
-        uint len = 0;
-        for (uint i = 0; i < count; i++) {
-            len += arr[i].length;
+    // 批量添加合法的预言机节点地址
+    function addOracleNodes(address[] memory oracleAddresses) external onlyAdmin {
+        for (uint256 i = 0; i < oracleAddresses.length; i++) {
+            require(!oracleNodes[oracleAddresses[i]], "Oracle node already exists");
+            oracleNodes[oracleAddresses[i]] = true;
+            emit OracleNodeAdded(oracleAddresses[i]);
         }
+    }
 
-        bytes memory bret = new bytes(len);
-        uint k = 0;
-        for (uint i = 0; i < count; i++) {
-            for (uint j = 0; j < arr[i].length; j++) {
-                bret[k++] = arr[i][j];
-            }
+    // 删除合法的预言机节点地址
+    function removeOracleNode(address oracleAddress) external onlyAdmin {
+        require(oracleNodes[oracleAddress], "Oracle node does not exist");
+        oracleNodes[oracleAddress] = false;
+        emit OracleNodeRemoved(oracleAddress);
+    }
+
+    // 批量删除合法的预言机节点地址
+    function removeOracleNodes(address[] memory oracleAddresses) external onlyAdmin {
+        for (uint256 i = 0; i < oracleAddresses.length; i++) {
+            require(oracleNodes[oracleAddresses[i]], "Oracle node does not exist");
+            oracleNodes[oracleAddresses[i]] = false;
+            emit OracleNodeRemoved(oracleAddresses[i]);
         }
-
-        return bret;
     }
 
-    function ToHex(bytes memory buffer) public pure returns (bytes memory) {
-        bytes memory converted = new bytes(buffer.length * 2);
-        bytes memory _base = "0123456789abcdef";
-        for (uint256 i = 0; i < buffer.length; i++) {
-            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
-            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
-        }
+    // 接收预言机节点发送的数据哈希和合规检测结果
+    function storeComplianceResult(bytes32 dataHash, string memory result) external onlyOracle {
+        require(dataHash != bytes32(0), "Invalid data hash");
+        require(bytes(result).length > 0, "Invalid compliance result");
 
-        return converted;
+        // 存储合规检测结果
+        complianceResults[dataHash] = result;
+        complianceTimestamps[dataHash] = block.timestamp;
+        emit ComplianceResultStored(dataHash, block.timestamp, result);
     }
 
-    function toBytes(address a) public pure returns (bytes memory) {
-        return abi.encodePacked(a);
+    // 查询合规检测结果
+    function getComplianceResult(bytes32 dataHash) external view returns (string memory) {
+        require(dataHash != bytes32(0), "Invalid data hash");
+        require(bytes(complianceResults[dataHash]).length > 0, "Compliance result not found");
+
+        return complianceResults[dataHash];
     }
 
-    function u256ToBytes(uint256 x) public pure returns (bytes memory b) {
-        b = new bytes(32);
-        assembly { mstore(add(b, 32), x) }
+    // 查询合规检测结果的上链时间戳
+    function getComplianceTimestamp(bytes32 dataHash) external view returns (uint256) {
+        require(dataHash != bytes32(0), "Invalid data hash");
+        require(complianceTimestamps[dataHash] > 0, "Compliance timestamp not found");
+
+        return complianceTimestamps[dataHash];
     }
 
-    function Bytes32toBytes(bytes32 _data) public pure returns (bytes memory) {
-        return abi.encodePacked(_data);
-    }
-
-    function GetArsJson(ArsInfo memory ars, bool last) public pure returns (bytes memory) {
-        bytes[] memory all_bytes = new bytes[](100);
-        uint filedCount = 0;
-        all_bytes[filedCount++] = '{"ring_size":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.ring_size));
-        all_bytes[filedCount++] = '","signer_count":"';
-        all_bytes[filedCount++] = ToHex(u256ToBytes(ars.signer_count));
-        all_bytes[filedCount++] = '","id":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.id));
-        all_bytes[filedCount++] = '","res":"';
-        all_bytes[filedCount++] = ToHex(Bytes32toBytes(ars.res_info));
-        if (last) {
-            all_bytes[filedCount++] = '"}';
-        } else {
-            all_bytes[filedCount++] = '"},';
-        }
-        return bytesConcat(all_bytes, filedCount);
-    }
-
-    function GetAllArsJson() public view returns(bytes memory) {
-        uint validLen = 1;
-        bytes[] memory all_bytes = new bytes[](all_ids.length + 2);
-        all_bytes[0] = '[';
-        uint arrayLength = all_ids.length;
-        for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetArsJson(ars_map[all_ids[i]], (i == arrayLength - 1));
-            ++validLen;
-        }
-
-        all_bytes[validLen] = ']';
-        return bytesConcat(all_bytes, validLen + 1);
+    // 转移管理员权限
+    function transferAdmin(address newAdmin) external onlyAdmin {
+        require(newAdmin != address(0), "Invalid new admin address");
+        admin = newAdmin;
     }
 }
