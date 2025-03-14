@@ -14,7 +14,7 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='process args')
-    parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从../init_accounts3 获取第一个')
+    parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从./init_accounts3 获取第一个')
     parser.add_argument('--to', '-t', type=str, help='目标地址，默认随机值')
     parser.add_argument('--amount', '-a', type=int, help='转账金额默认99999')
     parser.add_argument('--prepayment', '-g', type=int, help='预置gas费默认10000000')
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     function_types = []
     function_args = []
     sol_file = None
-    with open("../init_accounts3", "r") as f:
+    with open("./init_accounts3", "r") as f:
         private_key = f.readline().strip().split("\t")[0]
         from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
         
