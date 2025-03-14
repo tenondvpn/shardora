@@ -79,7 +79,7 @@ if __name__ == "__main__":
             sol_file,
             function_types,
             function_args,
-            prepayment=0,
+            prepayment=prepayment,
             check_gid_valid=True)
         if contract_address is None:
             print(f"contract create failed!")
