@@ -186,7 +186,7 @@ def deploy_contract(
         constructor_params: list,
         prepayment=0,
         check_gid_valid=False):
-    ret, stdout, stderr = _run_once(f"./solc --bin {sol_file_path}")
+    ret, stdout, stderr = _run_once(f"chmod 755 ./solc && ./solc --bin {sol_file_path}")
     # print(f"solc --bin {sol_file_path}")
     func_param = ""
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
