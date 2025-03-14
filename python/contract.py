@@ -1,0 +1,108 @@
+###############################################################################
+# coding: utf-8
+#
+###############################################################################
+
+import json
+import shardora_api
+import sys
+import time
+from eth_utils import decode_hex, encode_hex
+from eth_abi import encode
+
+import argparse
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='process args')
+    parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从../init_accounts3 获取第一个')
+    parser.add_argument('--to', '-t', type=str, help='目标地址，默认随机值')
+    parser.add_argument('--amount', '-a', type=int, help='转账金额默认99999')
+    parser.add_argument('--prepayment', '-g', type=int, help='预置gas费默认10000000')
+    parser.add_argument('--sol', '-s', type=str, help='合约文件')
+    parser.add_argument('--function', '-f', type=str, help='调用合约的函数名')
+    parser.add_argument('--function_types', '-c', type=str, help='调用合约的函数参数类型列表，如果function为空，则为构造函数列表')
+    parser.add_argument('--function_args', '-f', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
+
+    args = parser.parse_args()
+    private_key = None
+    to = shardora_api.gen_gid()[0: 20]
+    from_address = None
+    amount = 99999
+    prepayment = 10000000
+    function = ""
+    function_types = []
+    function_args = []
+    sol_file = None
+    with open("../init_accounts3", "r") as f:
+        private_key = f.readline().strip().split("\t")[0]
+        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
+        
+    if args.private_key:
+        private_key = args.private_key
+        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
+
+    if args.to:
+        to = args.to
+
+    if args.amount:
+        amount = args.amount
+
+    if args.prepayment:
+        prepayment = args.prepayment
+
+    if args.function:
+        function = args.function
+
+    if args.function_types:
+        function_types = args.function_types.split(",")
+
+    if args.function_args:
+        function_args = args.function_args.split(",")
+
+    if len(function_types) != len(function_args):
+        print(f"invalid function types {function_types} and function args {function_args}")
+        sys.exit(1)
+
+    if args.sol:
+        sol_file = args.sol
+
+    if sol_file is None and function == "":
+        print(f"invalid params sol_file is None and function is None")
+        sys.exit(1)
+
+    func_param = shardora_api.keccak256_str(
+        f"{function}({args.function_types})")[:8] + encode_hex(encode(function_types, function_args))[2:]
+    if function == "":
+        contract_address = shardora_api.deploy_contract(
+            private_key,
+            amount,
+            sol_file,
+            function_types,
+            function_args,
+            prepayment=prepayment,
+            check_gid_valid=True)
+        if contract_address is None:
+            print(f"contract call failed!")
+            sys.exit(1)
+        else:
+            print("create contract success {contract_address}")
+    else:
+        res = shardora_api.transfer(
+            private_key,
+            to,
+            0,
+            8,
+            "",
+            "",
+            func_param,
+            "",
+            "",
+            0,
+            check_gid_valid=True)
+        if not res:
+            print("call contract failed!")
+            sys.exit(1)
+        else:
+            print("call contract success!")
+
+        

@@ -183,7 +183,9 @@ def deploy_contract(
         amount: int, 
         sol_file_path: str, 
         constructor_types: list, 
-        constructor_params: list):
+        constructor_params: list,
+        prepayment=0,
+        check_gid_valid=False):
     ret, stdout, stderr = _run_once(f"../solc --bin {sol_file_path}")
     # print(f"solc --bin {sol_file_path}")
     func_param = ""
@@ -205,8 +207,8 @@ def deploy_contract(
         amount=amount, 
         step=6, 
         contract_bytes=call_str, 
-        prepayment=0,
-        check_gid_valid=False)
+        prepayment=prepayment,
+        check_gid_valid=check_gid_valid)
     if not check_contract_deploy_success(contract_address):
         return None
     
