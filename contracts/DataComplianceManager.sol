@@ -15,13 +15,6 @@ contract DataComplianceManager {
     // 存储数据哈希与上链时间戳的键值对
     mapping(bytes32 => uint256) public complianceTimestamps;
 
-    // 事件：用于记录预言机节点的添加和删除
-    event OracleNodeAdded(address indexed oracleAddress);
-    event OracleNodeRemoved(address indexed oracleAddress);
-
-    // 事件：用于记录合规检测结果的存储以及合规检测结果上链的时间
-    event ComplianceResultStored(bytes32 indexed dataHash, uint256 timestamp, string result);
-
     // 构造函数，设置管理员地址
     constructor() {
         admin = msg.sender;
