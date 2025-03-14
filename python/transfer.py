@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='process args')
     parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从../init_accounts3 获取第一个')
     parser.add_argument('--to', '-t', type=str, help='目标地址，默认默认从../init_accounts3 获取第二个')
-    parser.add_argument('--amount', '-a', type=int, action='转币金额', help='默认99999')
+    parser.add_argument('--amount', '-a', type=int, help='默认99999')
     args = parser.parse_args()
     private_key = None
     to = None
