@@ -367,7 +367,7 @@ function InitC2cEnv(key, value) {
             // 转账到管理账户，创建合约
             {
                 new_contract(
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+                    "b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330", 
                     out_lines[3]);
                 var contract_cmd = `clickhouse-client --host ${node_host} --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
@@ -393,13 +393,12 @@ function InitC2cEnv(key, value) {
 
                 if (try_times >= 30) {
                     console.error(`create contract address failed!`);
-                    // return;
+                    return;
                 }
 
                 // 预设值合约调用币，并等待成功
                 var prikeys = [
-                    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
-                    "6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350",
+                    "b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330",
                 ];
                 for (var i = 0; i < prikeys.length; ++i)
                 {
@@ -418,7 +417,7 @@ function CreateNewItem(hash, info, price, start, end) {
         [hash, info, price, start, end]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewItem(bytes32,bytes,uint256,uint256,uint256)');
     call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        "b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
@@ -440,7 +439,7 @@ function ConfirmPurchase(hash) {
         [hash]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('ConfirmPurchase(bytes32)');
     call_contract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        "b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330", 
         addParamCode.substring(2) + addParam.substring(2), 0);
 }
 
@@ -464,7 +463,7 @@ async function GetAllItemJson() {
         [0, 100]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('GetAllItemJson(uint256,uint256)');
     QueryContract(
-        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
+        "b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330", 
         addParamCode.substring(2) + addParam.substring(2));
 
     while (http_response == "") {
@@ -506,7 +505,7 @@ if (args[0] == 0) {
 
 var tmp_id = args[1]
 // 测试聚合环签名整个流程
-var id = keccak256('cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848' + contract_address + tmp_id).toString('hex');
+var id = keccak256('b3d3f5f12e99c7f03755501dbe29ed0b28d9bfd19fde14a8f41b0f7b29364330' + contract_address + tmp_id).toString('hex');
 console.log(id);
 if (args[0] == 1) {
     CreateNewItem('0x'+id, web3.utils.toHex("test_json"), 1, 0, 0);
