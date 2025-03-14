@@ -202,7 +202,7 @@ def deploy_contract(
     call_str = bytes_codes + func_param
     contract_address_hash = keccak256_str(call_str)
     contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
-    transfer(
+    res = transfer(
         str_prikey=private_key, 
         to=contract_address, 
         amount=amount, 
@@ -210,7 +210,7 @@ def deploy_contract(
         contract_bytes=call_str, 
         prepayment=prepayment,
         check_gid_valid=check_gid_valid)
-    if not check_contract_deploy_success(contract_address):
+    if not res:
         return None
     
     return contract_address
