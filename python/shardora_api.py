@@ -297,26 +297,17 @@ def query_contract_function(
 
     return res
 
-def check_transaction_gid_valid(gid):
+def check_transaction_gid_valid(in_gid):
     for i in range(0, 30):
-        res = post_data(f"http://127.0.0.1:801/zjchain/transactions/", data = {
-            "shard": -1,
-            "pool": -1,
-            "limit": "1",
-            "hash": "",
-            "search": gid,
-            "type": 0,
-        })
-        # print(res)
-        # print(res.text)
-        print(f"check_transaction_gid_valid status {res.status_code}, message: {res.text}")
-        try:
-            res_json = json.loads(res.text)
-            if len(res_json["value"]) > 0:
-                return True
-        except:
-            pass
-        
+        res = check_gid_valid({"gids": [in_gid]})
+        if res.status_code != 200:
+            print("post check gids failed!")
+        else:
+            json_res = json.loads(res.text)
+            if json_res["gids"] is not None:
+                for gid in json_res["gids"]:
+                    if in_gid == gid:
+                        return True
         time.sleep(1)
 
     return False
