@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument('--sol', '-s', type=str, help='合约文件')
     parser.add_argument('--function', '-f', type=str, help='调用合约的函数名')
     parser.add_argument('--function_types', '-c', type=str, help='调用合约的函数参数类型列表，如果function为空，则为构造函数列表')
-    parser.add_argument('--function_args', '-f', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
+    parser.add_argument('--function_args', '-d', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
 
     args = parser.parse_args()
     private_key = None
