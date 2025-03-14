@@ -61,6 +61,7 @@ def transfer(
     if not check_gid_valid:
         return True
     
+    print(f"check gid: {gid}")
     return check_transaction_gid_valid(gid)
 
 def get_account_info(address):
