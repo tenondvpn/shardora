@@ -200,13 +200,15 @@ def deploy_contract(
     bytes_codes = ret_split[1].strip()
     # print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}")
     call_str = bytes_codes + func_param
-    contract_address_hash = keccak256_str(call_str)
+    gid = gen_gid()
+    contract_address_hash = keccak256_str(call_str+gid)
     contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
     res = transfer(
         str_prikey=private_key, 
         to=contract_address, 
         amount=amount, 
         step=6, 
+        gid=gid,
         contract_bytes=call_str, 
         prepayment=prepayment,
         check_gid_valid=check_gid_valid)
