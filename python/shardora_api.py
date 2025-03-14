@@ -311,6 +311,7 @@ def check_transaction_gid_valid(in_gid):
             print("post check gids failed!")
         else:
             json_res = json.loads(res.text)
+            print(json_res)
             if json_res["gids"] is not None:
                 for gid in json_res["gids"]:
                     if in_gid == gid:
