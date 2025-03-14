@@ -30,8 +30,7 @@ contract Ars {
     bytes32[] all_ids;
 
     // SetUp：初始化算法，需要用到pbc库
-    constructor(bytes memory enc_init_param) {
-        enc_init_param_ = ripemd160(enc_init_param);
+    constructor() {
     }
 
     function call_proxy_reenc(bytes memory params) public {
