@@ -5,6 +5,7 @@
 
 import shardora_api
 import sys
+import time
 from eth_utils import decode_hex, encode_hex
 from eth_abi import encode
 
@@ -66,6 +67,7 @@ if __name__ == "__main__":
         print(f"transfer failed: {res}")
         sys.exit(1)
 
+    time.sleep(10)
     # 获取转账后from和to的账户余额
     res = shardora_api.get_account_info(from_address)
     if res.status_code != 200:
