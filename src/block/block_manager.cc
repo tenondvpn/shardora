@@ -436,8 +436,8 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_step(pools::protobuf::kRootCreateAddress);
         // 如果 shard 已经制定了 Contract Account 的 shard，直接创建，不需要 root 再分配
         // 如果没有，则需要 root 继续创建 kRootCreateAddress 交易
-        if (tos_item.step() == pools::protobuf::kContractCreate || 
-                tos_item.step() == pools::protobuf::kCreateLibrary) {
+        // TODO: check address valid
+        if (tos_item.step() == pools::protobuf::kContractCreate) {
             // that's contract address, just add address
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(tos_item.pool_index());
