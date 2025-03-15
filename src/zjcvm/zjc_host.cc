@@ -250,13 +250,17 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 }
 
 size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
-    ZJC_DEBUG("called 4");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
+    ZJC_DEBUG("now get contract bytes code size: %s", common::Encode::HexEncode(id).c_str());
     protos::AddressInfoPtr acc_info = acc_mgr_->GetAccountInfo(id);
     if (acc_info == nullptr) {
+        ZJC_DEBUG("failed get contract bytes code size: %s", common::Encode::HexEncode(id).c_str());
+        assert(false);
         return 0;
     }
 
+    ZJC_DEBUG("success get contract bytes code size: %s, %d",
+        common::Encode::HexEncode(id).c_str(), acc_info->bytes_code().size());
     return acc_info->bytes_code().size();
 }
 
