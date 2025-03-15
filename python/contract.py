@@ -93,6 +93,7 @@ if __name__ == "__main__":
         else:
             tmp_function_args.append(int(function_args[i]))
 
+    print(f"tmp_function_args: {tmp_function_args}, function_types: {function_types}")
     func_param = shardora_api.keccak256_str(
         f"{function}({args.function_types})")[:8] + encode_hex(encode(function_types, tmp_function_args))[2:]
     if function == "":
