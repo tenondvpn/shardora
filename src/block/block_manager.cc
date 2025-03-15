@@ -478,7 +478,8 @@ void BlockManager::RootHandleNormalToTx(
         }
         
         // for ContractCreateByRootFrom tx
-        if (isContractCreateToTxMessageItem(tos_item)) {
+        if (tos_item.step() == pools::protobuf::kCreateLibrary) {
+            assert(!tos_item.library_bytes().empty());
             tx->set_contract_code(tos_item.library_bytes());
             tx->set_contract_from(tos_item.contract_from());
             tx->set_contract_prepayment(tos_item.prepayment());
