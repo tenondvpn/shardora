@@ -477,7 +477,8 @@ void BlockManager::RootHandleNormalToTx(
         }
         
         // for ContractCreateByRootFrom tx
-        if (tos_item.step() == pools::protobuf::kCreateLibrary || tos_item.step() == pools::protobuf::kContractCreate) {
+        if (tos_item.step() == pools::protobuf::kCreateLibrary || 
+                tos_item.step() == pools::protobuf::kContractCreate) {
             // assert(!tos_item.library_bytes().empty());
             tx->set_contract_code(tos_item.library_bytes());
             tx->set_key(protos::kCreateContractCallerSharding);
@@ -491,7 +492,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
         auto gid = common::Hash::keccak256(
-            tos_item.des() + "_" +
+            tx->to() + "_" +
             std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_gas_limit(0);
@@ -500,12 +501,31 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gid(gid);
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
-        pools_mgr_->HandleMessage(msg_ptr);
+
+        if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
+            auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+            tmp_msg_ptr->address_info = msg_ptr->address_info;
+            tmp_msg_ptr->header = tmp_msg_ptr->header;
+            auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
+            tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
+            tmp_tx->set_amount(tos_item.prepayment());
+            auto gid = common::Hash::keccak256(
+                tx->to() + "_" +
+                std::to_string(block.height()) + "_" +
+                std::to_string(i));
+            tx->set_gid(gid);
+            pools_mgr_->HandleMessage(msg_ptr);
+            pools_mgr_->HandleMessage(tmp_msg_ptr);
+        } else {
+            pools_mgr_->HandleMessage(msg_ptr);
+        }
+
         ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
             common::Encode::HexEncode(gid).c_str());
+        
     }
 }
 
