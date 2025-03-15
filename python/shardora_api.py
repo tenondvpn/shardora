@@ -192,8 +192,10 @@ def deploy_contract(
     libraries = ""
     if in_libraries != "":
         libraries = f"--libraries '{in_libraries}'"
-        
-    ret, stdout, stderr = _run_once(f"chmod 755 ./solc && ./solc {libraries} --bin {sol_file_path}")
+
+    cmd = f"chmod 755 ./solc && ./solc {libraries} --bin {sol_file_path}"
+    ret, stdout, stderr = _run_once(cmd)
+    print(cmd)
     # print(f"solc --bin {sol_file_path}")
     func_param = ""
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
@@ -201,6 +203,7 @@ def deploy_contract(
 
     ret_split = (ret.decode('utf-8')).split("Binary:")
     if len(ret_split) != 2:
+        print(f"run cmd: {cmd} failed {ret}")
         return None
     
     bytes_codes = ret_split[1].strip()
