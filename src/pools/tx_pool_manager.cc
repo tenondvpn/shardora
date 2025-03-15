@@ -465,8 +465,10 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             }
             
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, gid: %s", 
+            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu gid: %s", 
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
+                common::Encode::HexEncode(tx_msg.to()).c_str(),
+                tx_msg.amount(),
                 common::Encode::HexEncode(tx_msg.gid()).c_str());
             pool_index = common::GetAddressPoolIndex(
                 tx_msg.to().substr(0, security::kUnicastAddressLength)) % common::kImmutablePoolSize;
