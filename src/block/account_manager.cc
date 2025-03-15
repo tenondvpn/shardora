@@ -362,7 +362,7 @@ void AccountManager::HandleContractCreateByRootTo(
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             thread_update_accounts_queue_[thread_idx].push(account_info);
             update_acc_con_.notify_one();
-            ZJC_INFO("create add local contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+            ZJC_INFO("create add local contract by : %s, amount: %lu, sharding: %u, pool index: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 tx.amount(),
                 view_block.qc().network_id(),
@@ -799,7 +799,7 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kConsensusLocalTos:
         HandleLocalToTx(view_block_item, tx, db_batch);
         break;
-    case pools::protobuf::kCreateLibrary:
+    // case pools::protobuf::kCreateLibrary:
     case pools::protobuf::kContractCreate:
         HandleCreateContract(view_block_item, tx, db_batch);
         break;
