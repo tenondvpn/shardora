@@ -715,16 +715,12 @@ void BlockManager::createContractCreateByRootToTxs(
         to_item->set_des(contract_create_tx->des);
         to_item->set_amount(contract_create_tx->amount);
         to_item->set_library_bytes(contract_create_tx->library_bytes);
-        to_item->set_contract_from(contract_create_tx->contract_from);
-        to_item->set_prepayment(contract_create_tx->contract_prepayment);
         
         ZJC_DEBUG("success add local contract create to %s, %lu, "
-            "contract_from %s, contract_code: %s, prepayment: %lu",
+            "contract_code: %s",
             common::Encode::HexEncode(contract_create_tx->des).c_str(),
             contract_create_tx->amount,
-            common::Encode::HexEncode(contract_create_tx->contract_from).c_str(),
-            common::Encode::HexEncode(contract_create_tx->library_bytes).c_str(),
-            contract_create_tx->contract_prepayment);
+            common::Encode::HexEncode(contract_create_tx->library_bytes).c_str());
     }
     
     for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {
