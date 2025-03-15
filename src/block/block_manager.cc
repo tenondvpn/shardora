@@ -614,7 +614,7 @@ void BlockManager::HandleLocalNormalToTx(
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
                 addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
-                    to_tx.des(), to_tx.amount(), pool_index, "", "", 0);
+                    to_tx.des(), to_tx.amount(), pool_index, "");
             } else {
                 iter->second->amount += to_tx.amount();
             }
@@ -622,9 +622,7 @@ void BlockManager::HandleLocalNormalToTx(
             auto info = std::make_shared<localToTxInfo>(to_tx.des(),
                 to_tx.amount(),
                 pool_index,
-                to_tx.library_bytes(),
-                to_tx.contract_from(),
-                to_tx.prepayment());
+                to_tx.library_bytes());
             contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
         }
     }

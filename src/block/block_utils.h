@@ -123,21 +123,15 @@ struct localToTxInfo {
     uint32_t pool_index;
     // for ContractCreate
     std::string library_bytes;
-    std::string contract_from;
-    uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
     
     localToTxInfo(const std::string& des,
         uint64_t amount,
         uint32_t pool_index,
-        const std::string& library_bytes,
-        const std::string& contract_from,
-        uint64_t prepayment) :
+        const std::string& library_bytes) :
         des(des),
         amount(amount),
         pool_index(pool_index),
-        library_bytes(library_bytes),
-        contract_from(contract_from),
-        contract_prepayment(prepayment) {}
+        library_bytes(library_bytes) {}
 };
 
 inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageItem& tos_item) {
