@@ -885,6 +885,11 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
         return false;
     }
 
+    if (msg_ptr->address_info->type() == address::protobuf::kWaitingRootConfirm) {
+        ZJC_WARN("address invalid and waiting root confirm.");
+        return false;
+    }
+
     if (msg_ptr->address_info->addr() == tx_msg.to()) {
         assert(false);
         return false;
