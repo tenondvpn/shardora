@@ -22,6 +22,8 @@ if __name__ == "__main__":
     parser.add_argument('--function', '-f', type=str, help='调用合约的函数名')
     parser.add_argument('--function_types', '-c', type=str, help='调用合约的函数参数类型列表，如果function为空，则为构造函数列表')
     parser.add_argument('--function_args', '-d', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
+    parser.add_argument('--library', '-l', type=bool, help='创建library则为true')
+    parser.add_argument('--libraries', '-m', type=bool, help='合约依赖的library库地址')
 
     args = parser.parse_args()
     private_key = None
@@ -33,6 +35,7 @@ if __name__ == "__main__":
     function_types = []
     function_args = []
     sol_file = None
+    create_library = False
     with open("./init_accounts3", "r") as f:
         private_key = f.readline().strip().split("\t")[0]
         from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
@@ -59,6 +62,13 @@ if __name__ == "__main__":
     if args.function_args:
         function_args = args.function_args.split(",")
 
+    if args.library:
+        create_library = args.library
+
+    libraries = ""
+    if args.libraries:
+        libraries = args.libraries
+
     if len(function_types) != len(function_args):
         print(f"invalid function types {function_types} and function args {function_args}")
         sys.exit(1)
@@ -80,7 +90,9 @@ if __name__ == "__main__":
             function_types,
             function_args,
             prepayment=prepayment,
-            check_gid_valid=True)
+            check_gid_valid=True,
+            is_library=create_library,
+            in_libraries=libraries)
         if contract_address is None:
             print(f"contract create failed!")
             sys.exit(1)

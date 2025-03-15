@@ -186,8 +186,14 @@ def deploy_contract(
         constructor_types: list, 
         constructor_params: list,
         prepayment=0,
-        check_gid_valid=False):
-    ret, stdout, stderr = _run_once(f"chmod 755 ./solc && ./solc --bin {sol_file_path}")
+        check_gid_valid=False,
+        is_library=False,
+        in_libraries=""):
+    libraries = ""
+    if in_libraries != "":
+        libraries = f"--libraries '{in_libraries}'"
+        
+    ret, stdout, stderr = _run_once(f"chmod 755 ./solc && ./solc {libraries} --bin {sol_file_path}")
     # print(f"solc --bin {sol_file_path}")
     func_param = ""
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
@@ -203,11 +209,15 @@ def deploy_contract(
     gid = gen_gid()
     contract_address_hash = keccak256_str(call_str+gid)
     contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
+    step = 6
+    if is_library:
+        step = 14
+
     res = transfer(
         str_prikey=private_key, 
         to=contract_address, 
         amount=amount, 
-        step=6, 
+        step=step, 
         gid=gid,
         contract_bytes=call_str, 
         prepayment=prepayment,
@@ -228,50 +238,7 @@ def contract_prepayment(private_key: str, contract_address: str, prepayment: int
             prepayment=prepayment):
         return False
     
-    if not check_res:
-        return True
-    
-    keypair = get_keypair(bytes.fromhex(private_key))
-
-    return check_contract_prepayment_success(
-        address=keypair.account_id, 
-        contract_address=contract_address, 
-        prepayment=prepayment)
-
-def check_contract_deploy_success(contract_address: str, try_times=30):
-    for i in range(0, 30):
-        res = post_data("http://82.156.224.174:801/zjchain/check_contract_deploy_success/", 
-                        data={"contract_address": contract_address})
-        # print(res)
-        # print(res.text)
-        try:
-            res_json = json.loads(res.text)
-            if res_json["status"] == 0:
-                return True
-        except:
-            pass
-        
-        time.sleep(1)
-
-    return False
-
-def check_contract_prepayment_success(address: str, contract_address: str, prepayment: int, try_times=30):
-    for i in range(0, 30):
-        res = post_data(
-            "http://82.156.224.174:801/zjchain/check_contract_prepayment_success/", 
-            data={"contract_address": contract_address, "address": address, "prepayment": prepayment})
-        # print(res)
-        # print(res.text)
-        try:
-            res_json = json.loads(res.text)
-            if res_json["status"] == 0:
-                return True
-        except:
-            pass
-        
-        time.sleep(1)
-
-    return False
+    return True
 
 def call_contract_function(
         private_key: str, 
