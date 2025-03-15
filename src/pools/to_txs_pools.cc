@@ -291,7 +291,7 @@ void ToTxsPools::HandleCreateContractUserCall(
     } else {
         AddTxToMap(
             view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", 
-            "", "", 0);
+            "", tx.from(), tx.contract_prepayment());
     }
     
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
@@ -396,12 +396,9 @@ void ToTxsPools::AddTxToMap(
         item.sharding_id = sharding_id;
         item.elect_join_g2_value = key;
         // for ContractCreate Tx
-        if (library_bytes != "") {
-            item.library_bytes = library_bytes;
-            item.from = from;
-            item.prepayment = prepayment;
-        }
-        
+        item.library_bytes = library_bytes;
+        item.from = from;
+        item.prepayment = prepayment;
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }

@@ -64,7 +64,7 @@ public:
         }
 
         pools_max_heights_[view_block.qc().pool_index()] = block.height();
-        ZJC_DEBUG("success execute contract save contract prepayment pool: %u, height: %lu",
+        ZJC_DEBUG("success new block pool: %u, height: %lu",
             view_block.qc().pool_index(),
             block.height());
     }
