@@ -133,6 +133,7 @@ void ToTxsPools::StatisticToInfo(
         case pools::protobuf::kNormalTo:
             HandleNormalToTx(view_block, tx_list[i]);
             break;
+        case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kContractCreate:
             HandleCreateContractUserCall(view_block, tx_list[i]);
             break;

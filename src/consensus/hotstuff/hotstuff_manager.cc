@@ -477,6 +477,14 @@ void HotstuffManager::PopPoolsMessage() {
                                 address_info);
                         contract_prepayment_id = tx->to() + from_id;
                         break;
+                    case pools::protobuf::kCreateLibrary:
+                        tx_ptr = std::make_shared<consensus::CreateLibrary>(
+                                msg_ptr, i, 
+                                account_mgr_, 
+                                security_ptr_, 
+                                address_info);
+                        contract_prepayment_id = tx->to() + from_id;
+                        break;
                     case pools::protobuf::kContractExcute:
                         tx_ptr = std::make_shared<consensus::ContractCall>(
                                 contract_mgr_, 

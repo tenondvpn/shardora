@@ -55,6 +55,7 @@ protected:
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
         if (tx_info.step() == pools::protobuf::kContractCreate ||
+            tx_info.step() == pools::protobuf::kCreateLibrary||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||
             tx_info.step() == pools::protobuf::kContractCreateByRootFrom ||
             tx_info.step() == pools::protobuf::kContractCreateByRootTo ||

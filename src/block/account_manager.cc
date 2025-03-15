@@ -788,6 +788,7 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kConsensusLocalTos:
         HandleLocalToTx(view_block_item, tx, db_batch);
         break;
+    case pools::protobuf::kCreateLibrary:
     case pools::protobuf::kContractCreate:
         HandleCreateContract(view_block_item, tx, db_batch);
         break;

@@ -332,6 +332,7 @@ void ShardStatistic::HandleStatistic(
             }
 
             if (tx.step() == pools::protobuf::kNormalFrom ||
+                    tx.step() == pools::protobuf::kCreateLibrary || 
                     tx.step() == pools::protobuf::kContractCreate ||
                     tx.step() == pools::protobuf::kContractCreateByRootFrom ||
                     tx.step() == pools::protobuf::kContractExcute ||
