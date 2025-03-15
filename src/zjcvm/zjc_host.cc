@@ -250,7 +250,6 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 }
 
 size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
-    assert(false);
     ZJC_DEBUG("called 4");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
     protos::AddressInfoPtr acc_info = acc_mgr_->GetAccountInfo(id);
