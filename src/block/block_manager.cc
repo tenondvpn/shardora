@@ -505,7 +505,7 @@ void BlockManager::RootHandleNormalToTx(
         if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
             tmp_msg_ptr->address_info = msg_ptr->address_info;
-            tmp_msg_ptr->header = tmp_msg_ptr->header;
+            tmp_msg_ptr->header = msg_ptr->header;
             auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
             tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
             tmp_tx->set_amount(tos_item.prepayment());
