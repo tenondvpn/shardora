@@ -510,7 +510,7 @@ void BlockManager::RootHandleNormalToTx(
             tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
             tmp_tx->set_amount(tos_item.prepayment());
             auto tmp_gid = common::Hash::keccak256(
-                tx->to() + "_" +
+                tmp_tx->to() + "_" +
                 std::to_string(block.height()) + "_" +
                 std::to_string(i));
             tmp_tx->set_gid(tmp_gid);
