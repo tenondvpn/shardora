@@ -592,7 +592,15 @@ void AccountManager::HandleRootCreateAddressTx(
 
     auto account_info = GetAccountInfo(tx.to());
     if (account_info != nullptr) {
-//         assert(false);
+        if (account_info->type() == address::protobuf::kWaitingRootConfirm) {
+            account_info->set_type(address::protobuf::kContract);
+            ZJC_DEBUG("root confirmed contract address: %s", common::Encode::HexEncode(tx.to()).c_str());
+            prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+            auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+            thread_update_accounts_queue_[thread_idx].push(account_info);
+            update_acc_con_.notify_one();
+        }
+
         return;
     }
 
@@ -614,12 +622,12 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
-    if (account_info->type() == address::protobuf::kWaitingRootConfirm) {
+    if (!tx.contract_code().empty()) {
         account_info->set_type(address::protobuf::kContract);
         account_info->set_bytes_code(tx.contract_code());
         ZJC_DEBUG("contract %s success set library bytes: %s", 
             common::Encode::HexEncode(tx.to()).c_str(),
-            common::Encode::HexEncode(tx.contract_code()).c_str())
+            common::Encode::HexEncode(tx.contract_code()).c_str());
     } else {
         account_info->set_type(address::protobuf::kNormal);
     }
