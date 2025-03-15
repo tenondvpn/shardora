@@ -285,10 +285,16 @@ void ToTxsPools::HandleCreateContractUserCall(
     uint32_t sharding_id = network::kRootCongressNetworkId;
     uint32_t pool_index = view_block.qc().pool_index();
     protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.to());
-
-    AddTxToMap(
-        view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", 
-        addr_info->bytes_code(), tx.from(), tx.contract_prepayment());
+    if (tx.step() == pools::protobuf::kCreateLibrary) {
+        AddTxToMap(
+            view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", 
+            addr_info->bytes_code(), tx.from(), 0);
+    } else {
+        AddTxToMap(
+            view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", 
+            "", "", 0);
+    }
+    
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
