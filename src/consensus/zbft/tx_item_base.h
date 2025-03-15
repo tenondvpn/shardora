@@ -58,7 +58,7 @@ protected:
             tx_info.step() == pools::protobuf::kCreateLibrary||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||
             tx_info.step() == pools::protobuf::kContractCreateByRootFrom ||
-            tx_info.step() == pools::protobuf::kContractCreateByRootTo ||
+            // tx_info.step() == pools::protobuf::kContractCreateByRootTo ||
             tx_info.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());

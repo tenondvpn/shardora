@@ -402,7 +402,7 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
     switch (step) {
         case pools::protobuf::kNormalTo:
         case pools::protobuf::kRootCreateAddress:
-        case pools::protobuf::kContractCreateByRootTo:
+        // case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kConsensusRootElectShard:
         case pools::protobuf::kConsensusRootTimeBlock:

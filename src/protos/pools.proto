@@ -20,9 +20,9 @@ enum StepType {
     kCreateLibrary = 14; // 创建合约公共库的交易
     kCross = 15;  // 避免跨分片块缺失的交易
     kRootCross = 16;  // root避免跨分片块缺失的交易
-    kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
-    kContractCreateByRootFrom = 18;  // ContractCreate 交易的 from 部分
-    kPoolStatisticTag = 19;  // 此轮交易池统计结束标记块
+    // kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
+    kContractCreateByRootFrom = 17;  // ContractCreate 交易的 from 部分
+    kPoolStatisticTag = 18;  // 此轮交易池统计结束标记块
 }
 
 message ToTxHeights {

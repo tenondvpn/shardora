@@ -714,78 +714,78 @@ void BlockManager::createConsensusLocalToTxs(
     }
 }
 
-void BlockManager::createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos) {
-    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
-    for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
-        auto contract_create_tx = contract_create_tx_infos[i];
-        uint32_t pool_index = contract_create_tx->pool_index;
-        auto to_iter = to_cc_tx_map.find(pool_index);
-        if (to_iter == to_cc_tx_map.end()) {
-            pools::protobuf::ToTxMessage to_tx;
-            to_cc_tx_map[pool_index] = to_tx;
-            to_iter = to_cc_tx_map.find(pool_index);
-        }
+// void BlockManager::createContractCreateByRootToTxs(
+//         std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos) {
+//     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
+//     for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
+//         auto contract_create_tx = contract_create_tx_infos[i];
+//         uint32_t pool_index = contract_create_tx->pool_index;
+//         auto to_iter = to_cc_tx_map.find(pool_index);
+//         if (to_iter == to_cc_tx_map.end()) {
+//             pools::protobuf::ToTxMessage to_tx;
+//             to_cc_tx_map[pool_index] = to_tx;
+//             to_iter = to_cc_tx_map.find(pool_index);
+//         }
 
-        auto to_item = to_iter->second.add_tos();
-        to_item->set_pool_index(pool_index);
-        to_item->set_des(contract_create_tx->des);
-        to_item->set_amount(contract_create_tx->amount);
-        to_item->set_library_bytes(contract_create_tx->library_bytes);
+//         auto to_item = to_iter->second.add_tos();
+//         to_item->set_pool_index(pool_index);
+//         to_item->set_des(contract_create_tx->des);
+//         to_item->set_amount(contract_create_tx->amount);
+//         to_item->set_library_bytes(contract_create_tx->library_bytes);
         
-        ZJC_DEBUG("success add local contract create to %s, %lu, "
-            "contract_code: %s",
-            common::Encode::HexEncode(contract_create_tx->des).c_str(),
-            contract_create_tx->amount,
-            common::Encode::HexEncode(contract_create_tx->library_bytes).c_str());
-    }
+//         ZJC_DEBUG("success add local contract create to %s, %lu, "
+//             "contract_code: %s",
+//             common::Encode::HexEncode(contract_create_tx->des).c_str(),
+//             contract_create_tx->amount,
+//             common::Encode::HexEncode(contract_create_tx->library_bytes).c_str());
+//     }
     
-    for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {
-        if (iter->second.tos_size() <= 0) {
-            continue;
-        }
+//     for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {
+//         if (iter->second.tos_size() <= 0) {
+//             continue;
+//         }
 
-        auto to_msg = iter->second.tos(0); 
-        std::string str_for_hash;
-        str_for_hash.append(to_msg.des());
-        uint32_t pool_idx = to_msg.pool_index();
-        str_for_hash.append(reinterpret_cast<char*>(&pool_idx), sizeof(pool_idx));
-        uint64_t amount = to_msg.amount();
-        str_for_hash.append(reinterpret_cast<char*>(&amount), sizeof(amount));
-        std::string contract_code = to_msg.library_bytes();
-        str_for_hash.append(contract_code);
-        auto cc_hash = common::Hash::keccak256(str_for_hash);
+//         auto to_msg = iter->second.tos(0); 
+//         std::string str_for_hash;
+//         str_for_hash.append(to_msg.des());
+//         uint32_t pool_idx = to_msg.pool_index();
+//         str_for_hash.append(reinterpret_cast<char*>(&pool_idx), sizeof(pool_idx));
+//         uint64_t amount = to_msg.amount();
+//         str_for_hash.append(reinterpret_cast<char*>(&amount), sizeof(amount));
+//         std::string contract_code = to_msg.library_bytes();
+//         str_for_hash.append(contract_code);
+//         auto cc_hash = common::Hash::keccak256(str_for_hash);
         
-        auto val = iter->second.SerializeAsString();
-        prefix_db_->SaveTemporaryKv(cc_hash, val);
-        // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
-        auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        // 指定 root 分配的 pool
-        msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
-        auto tx = msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kCreateContractLocalInfo);
-        tx->set_value(cc_hash);
-        tx->set_pubkey("");
-        tx->set_to(msg_ptr->address_info->addr());
-        tx->set_step(pools::protobuf::kContractCreateByRootTo);
-        auto gid = common::Hash::keccak256(cc_hash);
-        // TODO 暂时写死用于调试，实际需要 ContractCreateByRootFrom 交易传
-        tx->set_gas_limit(1000000);
-        tx->set_gas_price(1);
-        tx->set_gid(gid);
+//         auto val = iter->second.SerializeAsString();
+//         prefix_db_->SaveTemporaryKv(cc_hash, val);
+//         // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
+//         auto msg_ptr = std::make_shared<transport::TransportMessage>();
+//         // 指定 root 分配的 pool
+//         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
+//         auto tx = msg_ptr->header.mutable_tx_proto();
+//         tx->set_key(protos::kCreateContractLocalInfo);
+//         tx->set_value(cc_hash);
+//         tx->set_pubkey("");
+//         tx->set_to(msg_ptr->address_info->addr());
+//         tx->set_step(pools::protobuf::kContractCreateByRootTo);
+//         auto gid = common::Hash::keccak256(cc_hash);
+//         // TODO 暂时写死用于调试，实际需要 ContractCreateByRootFrom 交易传
+//         tx->set_gas_limit(1000000);
+//         tx->set_gas_price(1);
+//         tx->set_gid(gid);
 
-        // 真正的 des 存在 kv 中
-        tx->set_amount(to_msg.amount());
-        tx->set_contract_code(to_msg.library_bytes());
+//         // 真正的 des 存在 kv 中
+//         tx->set_amount(to_msg.amount());
+//         tx->set_contract_code(to_msg.library_bytes());
         
-        ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
-            "cc_hash: %s, pool_idx: %lu, amount: %lu",
-            common::Encode::HexEncode(to_msg.des()).c_str(),
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(cc_hash).c_str());
-        pools_mgr_->HandleMessage(msg_ptr);        
-    }
-}
+//         ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
+//             "cc_hash: %s, pool_idx: %lu, amount: %lu",
+//             common::Encode::HexEncode(to_msg.des()).c_str(),
+//             common::Encode::HexEncode(gid).c_str(),
+//             common::Encode::HexEncode(cc_hash).c_str());
+//         pools_mgr_->HandleMessage(msg_ptr);        
+//     }
+// }
 
 void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
