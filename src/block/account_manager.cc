@@ -594,12 +594,6 @@ void AccountManager::HandleRootCreateAddressTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-            common::GlobalInfo::Instance()->network_id() !=
-            (network::kRootCongressNetworkId + network::kRootCongressNetworkId)) {
-        return;
-    }
-
     auto account_info = GetAccountInfo(tx.to());
     if (account_info != nullptr) {
         if (account_info->type() == address::protobuf::kWaitingRootConfirm) {
@@ -611,6 +605,10 @@ void AccountManager::HandleRootCreateAddressTx(
             update_acc_con_.notify_one();
         }
 
+        return;
+    }
+
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId) && tx.contract_code().empty()) {
         return;
     }
 
