@@ -891,10 +891,14 @@ int ToTxsPools::CreateToTxWithHeights(
             to_item->set_prepayment(iter->second.prepayment);
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
-            ZJC_DEBUG("create contract use caller sharding address: %s, %u, step: %d",
+            ZJC_DEBUG("create contract use caller sharding address: %s, %u, "
+                "step: %d, from: %s, to: %s, prepayment: %lu",
                 common::Encode::HexEncode(to).c_str(),
                 common::GlobalInfo::Instance()->network_id(),
-                iter->second.type);        
+                iter->second.type,
+                common::Encode::HexEncode(iter->second.from).c_str(),
+                common::Encode::HexEncode(to).c_str(),
+                iter->second.prepayment);        
         } else if (iter->second.type == pools::protobuf::kCreateLibrary) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             to_item->set_library_bytes(iter->second.library_bytes);
