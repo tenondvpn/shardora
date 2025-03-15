@@ -436,7 +436,8 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_step(pools::protobuf::kRootCreateAddress);
         // 如果 shard 已经制定了 Contract Account 的 shard，直接创建，不需要 root 再分配
         // 如果没有，则需要 root 继续创建 kRootCreateAddress 交易
-        if (tos_item.step() == pools::protobuf::kContractCreate) {
+        if (tos_item.step() == pools::protobuf::kContractCreate || 
+                tos_item.step() == pools::protobuf::kCreateLibrary) {
             // that's contract address, just add address
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(tos_item.pool_index());
@@ -1516,18 +1517,7 @@ pools::TxItemPtr BlockManager::GetToTx(
     auto height_hash = common::Hash::keccak256(string_for_hash);
     auto iter = heights_str_map_.find(height_hash);
     if (iter != heights_str_map_.end()) {
-        std::string gid = common::Hash::keccak256("0000");
-        auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
-        if (latest_to_block != nullptr) {
-            gid = common::Hash::keccak256(
-                std::to_string(latest_to_block->block_info().height()) +
-                std::to_string(latest_to_block->block_info().timestamp()));
-            ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-                common::Encode::HexEncode(gid).c_str(),
-                latest_to_block->block_info().height(), 
-                latest_to_block->block_info().timestamp());
-        }
-        
+        std::string gid = GetToTxGid();
         auto tx_ptr = iter->second;
         tx_ptr->tx_info->set_gid(gid);
         ZJC_INFO("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
@@ -1559,6 +1549,7 @@ std::string BlockManager::GetToTxGid() {
     auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block != nullptr) {
         gid = common::Hash::keccak256(
+            std::to_string(common::GlobalInfo::Instance()->network_id()) +
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
         // ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
@@ -1683,10 +1674,13 @@ void BlockManager::PopTxTicker() {
 }
 
 bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        return false;
+    }
+            
     auto cur_time = common::TimeUtils::TimestampMs();
     auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && 
-            pool_index != common::kImmutablePoolSize) {
+    if (pool_index != common::kImmutablePoolSize) {
         return false;
     }
 
