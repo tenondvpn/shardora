@@ -1,28 +1,29 @@
 #include "consensus/hotstuff/block_acceptor.h"
 
 #include "bls/agg_bls.h"
-#include <common/utils.h>
-#include <consensus/consensus_utils.h>
-#include <consensus/hotstuff/block_executor.h>
-#include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/view_block_chain.h>
-#include <consensus/zbft/contract_call.h>
-#include <consensus/zbft/contract_user_call.h>
-#include <consensus/zbft/contract_user_create_call.h>
-#include <consensus/zbft/elect_tx_item.h>
-#include <consensus/zbft/from_tx_item.h>
-#include <consensus/zbft/pool_statistic_tag.h>
-#include <consensus/zbft/to_tx_local_item.h>
-#include <consensus/zbft/to_tx_item.h>
-#include <consensus/zbft/time_block_tx.h>
-#include <consensus/zbft/statistic_tx_item.h>
-#include <consensus/zbft/root_to_tx_item.h>
-#include <consensus/zbft/root_cross_tx_item.h>
-#include <consensus/zbft/join_elect_tx_item.h>
-#include <protos/pools.pb.h>
-#include <protos/zbft.pb.h>
-#include <zjcvm/zjcvm_utils.h>
-#include <common/defer.h>
+#include "common/defer.h"
+#include "common/utils.h"
+#include "consensus/consensus_utils.h"
+#include "consensus/hotstuff/block_executor.h"
+#include "consensus/hotstuff/types.h"
+#include "consensus/hotstuff/view_block_chain.h"
+#include "consensus/zbft/contract_call.h"
+#include "consensus/zbft/contract_user_call.h"
+#include "consensus/zbft/contract_user_create_call.h"
+#include "consensus/zbft/create_library.h"
+#include "consensus/zbft/elect_tx_item.h"
+#include "consensus/zbft/from_tx_item.h"
+#include "consensus/zbft/pool_statistic_tag.h"
+#include "consensus/zbft/to_tx_local_item.h"
+#include "consensus/zbft/to_tx_item.h"
+#include "consensus/zbft/time_block_tx.h"
+#include "consensus/zbft/statistic_tx_item.h"
+#include "consensus/zbft/root_to_tx_item.h"
+#include "consensus/zbft/root_cross_tx_item.h"
+#include "consensus/zbft/join_elect_tx_item.h"
+#include "protos/pools.pb.h"
+#include "protos/zbft.pb.h"
+#include "zjcvm/zjcvm_utils.h"
 
 namespace shardora {
 
@@ -425,6 +426,15 @@ Status BlockAcceptor::addTxsToPool(
                 security_ptr_, 
                 address_info);
             ZJC_WARN("add tx now get kPoolStatisticTag tx: %u", pool_idx());
+            break;
+        }
+        case pools::protobuf::kCreateLibrary: {
+            tx_ptr = std::make_shared<consensus::CreateLibrary>(
+                msg_ptr, i, 
+                account_mgr_, 
+                security_ptr_, 
+                address_info);
+            ZJC_WARN("add tx now get CreateLibrary tx: %u", pool_idx());
             break;
         }
         default:
