@@ -537,9 +537,9 @@ void AccountManager::HandleContractExecuteTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
-    if (tx.status() != consensus::kConsensusSuccess) {
-        return;
-    }
+    // if (tx.status() != consensus::kConsensusSuccess) {
+    //     return;
+    // }
 
     ZJC_DEBUG("HandleContractExecuteTx address coming from: %s, to: %s, amount:%lu, balance: %lu",
         common::Encode::HexEncode(tx.from()).c_str(),
