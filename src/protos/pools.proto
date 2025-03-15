@@ -172,7 +172,6 @@ message TxMessage {
     optional uint64 contract_prepayment = 11;
     optional bytes contract_code = 12;
     optional bytes contract_input = 13;
-    optional bytes contract_from = 14;
-    optional bytes sign = 15;
-    repeated TxDelayTestInfo tx_debug = 16;
+    optional bytes sign = 14;
+    repeated TxDelayTestInfo tx_debug = 15;
 }

@@ -423,13 +423,12 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s",
             tos_item.step(),
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
-            common::Encode::HexEncode("gid").c_str(),
-            common::Encode::HexEncode(tos_item.contract_from()).c_str());
+            common::Encode::HexEncode("gid").c_str());
 
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
@@ -481,8 +480,6 @@ void BlockManager::RootHandleNormalToTx(
         if (tos_item.step() == pools::protobuf::kCreateLibrary || tos_item.step() == pools::protobuf::kContractCreate) {
             // assert(!tos_item.library_bytes().empty());
             tx->set_contract_code(tos_item.library_bytes());
-            tx->set_contract_from(tos_item.contract_from());
-            tx->set_contract_prepayment(tos_item.prepayment());
             tx->set_key(protos::kCreateContractCallerSharding);
             char data[8];
             uint32_t* uint_data = (uint32_t*)data;
@@ -504,12 +501,11 @@ void BlockManager::RootHandleNormalToTx(
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(tos_item.contract_from()).c_str());
+            common::Encode::HexEncode(gid).c_str());
     }
 }
 
@@ -737,8 +733,6 @@ void BlockManager::createContractCreateByRootToTxs(
         str_for_hash.append(reinterpret_cast<char*>(&amount), sizeof(amount));
         std::string contract_code = to_msg.library_bytes();
         str_for_hash.append(contract_code);
-        std::string contract_from = to_msg.contract_from();
-        str_for_hash.append(contract_from);
         auto cc_hash = common::Hash::keccak256(str_for_hash);
         
         auto val = iter->second.SerializeAsString();
@@ -762,15 +756,12 @@ void BlockManager::createContractCreateByRootToTxs(
         // 真正的 des 存在 kv 中
         tx->set_amount(to_msg.amount());
         tx->set_contract_code(to_msg.library_bytes());
-        tx->set_contract_from(to_msg.contract_from());
-        tx->set_contract_prepayment(to_msg.prepayment());
         
         ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
-            "cc_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
+            "cc_hash: %s, pool_idx: %lu, amount: %lu",
             common::Encode::HexEncode(to_msg.des()).c_str(),
             common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(cc_hash).c_str(),
-            pool_idx, amount, common::Encode::HexEncode(contract_from).c_str());
+            common::Encode::HexEncode(cc_hash).c_str());
         pools_mgr_->HandleMessage(msg_ptr);        
     }
 }

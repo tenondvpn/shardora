@@ -64,11 +64,6 @@ protected:
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());
             }
         }
-
-        // ZJC_DEBUG("gid: %s, contract_code: %d, amount: %d, contract_from: %s",
-        //     common::Encode::HexEncode(tx_info.gid()).c_str(),
-        //     tx_info.has_contract_code(), tx_info.amount(),
-        //     common::Encode::HexEncode(tx_info.contract_from()).c_str());
 		
         if (tx_info.has_contract_code()) {
             block_tx->set_contract_code(tx_info.contract_code());
@@ -76,10 +71,6 @@ protected:
 
         if (tx_info.has_contract_input()) {
             block_tx->set_contract_input(tx_info.contract_input());
-        }
-
-        if (tx_info.has_contract_from()) {
-            block_tx->set_from(tx_info.contract_from());
         }
 
         block_tx->set_amount(tx_info.amount());
