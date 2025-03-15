@@ -886,12 +886,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 continue;
             }
 
-            if (memcmp(account_info->bytes_code().c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(account_info->bytes_code());
-            }
-
+            to_item->set_library_bytes(account_info->bytes_code());
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
             ZJC_DEBUG("create contract use caller sharding address: %s, %u, step: %d",
@@ -900,12 +895,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 iter->second.type);        
         } else if (iter->second.type == pools::protobuf::kCreateLibrary) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            if (memcmp(iter->second.library_bytes.c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(iter->second.library_bytes);
-            }
-
+            to_item->set_library_bytes(iter->second.library_bytes);
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
             ZJC_DEBUG("create library use caller sharding address: %s, %u, step: %d",
