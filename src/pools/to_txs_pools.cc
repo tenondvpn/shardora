@@ -886,7 +886,9 @@ int ToTxsPools::CreateToTxWithHeights(
                 continue;
             }
 
+            to_item->set_contract_from(iter->second.from);
             to_item->set_library_bytes(account_info->bytes_code());
+            to_item->set_prepayment(iter->second.prepayment);
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
             ZJC_DEBUG("create contract use caller sharding address: %s, %u, step: %d",
@@ -908,14 +910,10 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::Encode::HexEncode(iter->second.library_bytes).c_str(),
                 common::Encode::HexEncode(to).c_str(),
                 common::Encode::HexEncode(iter->second.from).c_str());
-            if (memcmp(iter->second.library_bytes.c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(iter->second.library_bytes);
-                // ContractCreate 需要 from 地址，用于 prepayment 创建
-                to_item->set_contract_from(iter->second.from);
-                to_item->set_prepayment(iter->second.prepayment);
-            }
+            to_item->set_library_bytes(iter->second.library_bytes);
+            // ContractCreate 需要 from 地址，用于 prepayment 创建
+            to_item->set_contract_from(iter->second.from);
+            to_item->set_prepayment(iter->second.prepayment);
             auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
@@ -929,13 +927,9 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::Encode::HexEncode(to).c_str(),
                 common::Encode::HexEncode(iter->second.from).c_str());
             // for contract create tx
-			if (memcmp(iter->second.library_bytes.c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(iter->second.library_bytes);
-                to_item->set_contract_from(iter->second.from);
-                to_item->set_prepayment(iter->second.prepayment);
-            }
+            to_item->set_library_bytes(iter->second.library_bytes);
+            to_item->set_contract_from(iter->second.from);
+            to_item->set_prepayment(iter->second.prepayment);
             to_item->set_sharding_id(sharding_id);
             ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
                 common::Encode::HexEncode(to).c_str(),
