@@ -202,11 +202,11 @@ def deploy_contract(
         func_param = keccak256_str(encode_hex(encode(constructor_types, constructor_params)))[2:]
 
     ret_split = (ret.decode('utf-8')).split("Binary:")
-    if len(ret_split) != 2:
+    if len(ret_split) < 2:
         print(f"run cmd: {cmd} failed {ret}")
         return None
     
-    bytes_codes = ret_split[1].strip()
+    bytes_codes = ret_split[len(ret_split) - 1].strip()
     # print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}")
     call_str = bytes_codes + func_param
     gid = gen_gid()
