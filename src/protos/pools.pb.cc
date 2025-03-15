@@ -870,7 +870,7 @@ void AddDescriptorsImpl() {
       "rom\022\033\n\023contract_prepayment\030\013 \001(\004\022\025\n\rcont"
       "ract_code\030\014 \001(\014\022\026\n\016contract_input\030\r \001(\014\022"
       "\014\n\004sign\030\016 \001(\014\022:\n\010tx_debug\030\017 \003(\0132(.shardo"
-      "ra.pools.protobuf.TxDelayTestInfo*\241\003\n\010St"
+      "ra.pools.protobuf.TxDelayTestInfo*\204\003\n\010St"
       "epType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034"
       "\n\030kConsensusRootElectShard\020\002\022\033\n\027kConsens"
       "usRootTimeBlock\020\003\022!\n\035kConsensusCreateGen"
@@ -879,12 +879,11 @@ void AddDescriptorsImpl() {
       "ent\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRootCreat"
       "eAddress\020\t\022\016\n\nkStatistic\020\014\022\016\n\nkJoinElect"
       "\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016\n\nkR"
-      "ootCross\020\020\022\033\n\027kContractCreateByRootTo\020\021\022"
-      "\035\n\031kContractCreateByRootFrom\020\022\022\025\n\021kPoolS"
-      "tatisticTag\020\023"
+      "ootCross\020\020\022\035\n\031kContractCreateByRootFrom\020"
+      "\021\022\025\n\021kPoolStatisticTag\020\022"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3373);
+      descriptor, 3344);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -928,7 +927,6 @@ bool StepType_IsValid(int value) {
     case 16:
     case 17:
     case 18:
-    case 19:
       return true;
     default:
       return false;
