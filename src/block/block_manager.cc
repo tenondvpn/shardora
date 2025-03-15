@@ -509,22 +509,31 @@ void BlockManager::RootHandleNormalToTx(
             auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
             tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
             tmp_tx->set_amount(tos_item.prepayment());
-            auto gid = common::Hash::keccak256(
+            auto tmp_gid = common::Hash::keccak256(
                 tx->to() + "_" +
                 std::to_string(block.height()) + "_" +
                 std::to_string(i));
-            tx->set_gid(gid);
+            tmp_tx->set_gid(tmp_gid);
             pools_mgr_->HandleMessage(msg_ptr);
             pools_mgr_->HandleMessage(tmp_msg_ptr);
+            ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
+                "prepayment: %lu, gid: %s, tmp gid: %s",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                common::Encode::HexEncode(tos_item.contract_from()).c_str(),
+                tos_item.amount(),
+                tos_item.prepayment(),
+                common::Encode::HexEncode(gid).c_str(),
+                common::Encode::HexEncode(tmp_gid).c_str());
         } else {
             pools_mgr_->HandleMessage(msg_ptr);
+            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                tos_item.amount(),
+                tos_item.prepayment(),
+                common::Encode::HexEncode(gid).c_str());
         }
 
-        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s",
-            common::Encode::HexEncode(tos_item.des()).c_str(),
-            tos_item.amount(),
-            tos_item.prepayment(),
-            common::Encode::HexEncode(gid).c_str());
+        
         
     }
 }
