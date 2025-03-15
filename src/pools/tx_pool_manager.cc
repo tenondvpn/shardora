@@ -504,7 +504,6 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         if (pool_index == common::kInvalidPoolIndex) {
             if (!msg_ptr->address_info) {
                 ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
-                assert(false);
                 return;
             }
 
