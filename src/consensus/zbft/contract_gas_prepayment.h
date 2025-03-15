@@ -190,7 +190,7 @@ public:
             return;
         }
 
-        if (tx.step() == pools::protobuf::kContractCreate || tx.step() == pools::protobuf::kCreateLibrary {
+        if (tx.step() == pools::protobuf::kContractCreate || tx.step() == pools::protobuf::kCreateLibrary) {
             HandleUserCreate(view_block_item, tx, db_batch);
             return;
         }
