@@ -16,8 +16,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='process args')
     parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从./init_accounts3 获取第一个')
     parser.add_argument('--to', '-t', type=str, help='目标地址，默认随机值')
-    parser.add_argument('--amount', '-a', type=int, help='转账金额默认99999')
-    parser.add_argument('--prepayment', '-g', type=int, help='预置gas费默认10000000')
+    parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
+    parser.add_argument('--prepayment', '-g', type=int, help='预置gas费默认0')
     parser.add_argument('--sol', '-s', type=str, help='合约文件')
     parser.add_argument('--function', '-f', type=str, help='调用合约的函数名')
     parser.add_argument('--function_types', '-c', type=str, help='调用合约的函数参数类型列表，如果function为空，则为构造函数列表')
@@ -29,8 +29,8 @@ if __name__ == "__main__":
     private_key = None
     to = shardora_api.gen_gid()[0: 20]
     from_address = None
-    amount = 99999
-    prepayment = 10000000
+    amount = 0
+    prepayment = 0
     function = ""
     function_types = []
     function_args = []
