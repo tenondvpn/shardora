@@ -636,7 +636,7 @@ void BlockManager::HandleLocalNormalToTx(
             to_tx.has_library_bytes(),
             common::Encode::HexEncode(to_tx.des()).c_str(),
             common::Encode::HexEncode(tx.gid()).c_str());
-        if (!to_tx.has_library_bytes()) {
+        if (to_tx.amount() > 0) {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
                 addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
@@ -644,19 +644,19 @@ void BlockManager::HandleLocalNormalToTx(
             } else {
                 iter->second->amount += to_tx.amount();
             }
-        } else { // 合约创建交易统计到一个 vector
-            auto info = std::make_shared<localToTxInfo>(to_tx.des(),
-                to_tx.amount(),
-                pool_index,
-                to_tx.library_bytes());
-            contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
+        // } else { // 合约创建交易统计到一个 vector
+        //     auto info = std::make_shared<localToTxInfo>(to_tx.des(),
+        //         to_tx.amount(),
+        //         pool_index,
+        //         to_tx.library_bytes());
+        //     contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
         }
     }
 
     // 1. 处理转账类交易
     createConsensusLocalToTxs(tx, addr_amount_map);
     // 2. 生成 ContractCreateByRootTo 交易
-    createContractCreateByRootToTxs(contract_create_tx_infos);
+    // createContractCreateByRootToTxs(contract_create_tx_infos);
 }
 
 void BlockManager::createConsensusLocalToTxs(
@@ -686,15 +686,6 @@ void BlockManager::createConsensusLocalToTxs(
 
     // 一个 pool 生成一个 Consensuslocaltos
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
-// #ifndef NDEBUG
-//         // 48 ? des = to(20) + from(20)  = 40, 40 + pool(4) + amount(8) = 52
-//         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
-//             uint32_t pool_idx = iter->second.tos(i).pool_index();
-//             uint64_t amount = iter->second.tos(i).amount();
-//             ZJC_DEBUG("ammount success add local transfer to %s, %lu",
-//                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
-//         }
-// #endif
         // 由于是异步的，因此需要持久化 kv 来传递数据，但是 to 需要填充以分配交易池
         // pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
         auto val = iter->second.SerializeAsString();
