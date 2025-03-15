@@ -869,7 +869,8 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_pool_index(iter->second.pool_index);
         to_item->set_step(iter->second.type);
         // create contract just in caller sharding
-        if (iter->second.type == pools::protobuf::kContractCreate) {
+        if (iter->second.type == pools::protobuf::kContractCreate ||
+                iter->second.type == pools::protobuf::kCreateLibrary) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to);
             if (account_info == nullptr) {
@@ -885,9 +886,10 @@ int ToTxsPools::CreateToTxWithHeights(
 
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
-            ZJC_DEBUG("create contract use caller sharding address: %s, %u",
+            ZJC_DEBUG("create contract use caller sharding address: %s, %u, step: %d",
                 common::Encode::HexEncode(to).c_str(),
-                common::GlobalInfo::Instance()->network_id());        
+                common::GlobalInfo::Instance()->network_id(),
+                iter->second.type);        
         } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             ZJC_DEBUG("library bytes: %s, to: %s, from: %s",
