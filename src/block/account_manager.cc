@@ -423,7 +423,7 @@ void AccountManager::HandleCreateContract(
             if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
                 account_info = std::make_shared<address::protobuf::AddressInfo>();
                 auto& bytes_code = tx.storages(i).value();
-                account_info->set_type(address::protobuf::kContract);
+                account_info->set_type(address::protobuf::kWaitingRootConfirm);
                 account_info->set_pool_index(view_block.qc().pool_index());
                 account_info->set_addr(tx.to());
                 account_info->set_sharding_id(view_block.qc().network_id());
@@ -615,7 +615,7 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
     
-    if (isContractCreateTx(tx)) {
+    if (account_info->type() == address::protobuf::kWaitingRootConfirm) {
         account_info->set_type(address::protobuf::kContract);
     } else {
         account_info->set_type(address::protobuf::kNormal);
