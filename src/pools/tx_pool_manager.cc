@@ -454,7 +454,8 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             HandleSetContractPrepayment(msg_ptr);
             break;
         case pools::protobuf::kRootCreateAddress: {
-            if (tx_msg.to().size() != security::kUnicastAddressLength) {
+            if (tx_msg.to().size() != security::kUnicastAddressLength &&
+                    tx_msg.to().size() != security::kUnicastAddressLength * 2) {
                 return;
             }
 
