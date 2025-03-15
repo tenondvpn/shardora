@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('--function_types', '-c', type=str, help='调用合约的函数参数类型列表，如果function为空，则为构造函数列表')
     parser.add_argument('--function_args', '-d', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
     parser.add_argument('--library', '-l', type=bool, help='创建library则为true')
-    parser.add_argument('--libraries', '-m', type=bool, help='合约依赖的library库地址')
+    parser.add_argument('--libraries', '-m', type=str, help='合约依赖的library库地址')
 
     args = parser.parse_args()
     private_key = None
