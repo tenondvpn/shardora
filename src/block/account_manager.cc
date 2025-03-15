@@ -614,9 +614,12 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
-    
     if (account_info->type() == address::protobuf::kWaitingRootConfirm) {
         account_info->set_type(address::protobuf::kContract);
+        account_info->set_bytes_code(tx.contract_code());
+        ZJC_DEBUG("contract %s success set library bytes: %s", 
+            common::Encode::HexEncode(tx.to()).c_str(),
+            common::Encode::HexEncode(tx.contract_code()).c_str())
     } else {
         account_info->set_type(address::protobuf::kNormal);
     }

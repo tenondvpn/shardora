@@ -337,6 +337,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
         tos->set_des(tx.to());
         tos->set_sharding_id(des_sharding_and_pool[0]);
         tos->set_pool_index(des_sharding_and_pool[1]);
+        tos->set_library_bytes(tx.contract_code());
         to_txs.mutable_to_heights()->set_sharding_id(des_sharding_and_pool[0]);
         ZJC_DEBUG("address: %s, amount: %lu, success handle root create address: %u, "
             "local net: %u, step: %d, %u_%u_%lu, block height: %lu",
