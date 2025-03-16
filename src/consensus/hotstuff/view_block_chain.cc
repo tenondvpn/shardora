@@ -644,20 +644,19 @@ bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& 
     std::string phash = parent_hash;
     while (true) {
         if (phash.empty()) {
-            ZJC_DEBUG("gid phash empty: %s", common::Encode::HexEncode(gid).c_str());
+            ZJC_DEBUG("gid phash empty: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(phash).c_str());
             break;
         }
 
         auto it = view_blocks_info_.find(phash);
         if (it == view_blocks_info_.end()) {
-            ZJC_DEBUG("gid phash not exist: %s", common::Encode::HexEncode(gid).c_str());
+            ZJC_DEBUG("gid phash not exist: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(phash).c_str());
             break;
         }
 
         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
-            ZJC_DEBUG("gid phash it->second->view_block->qc().view(): %lu,"
-            " stored_to_db_view_: %lu, %s", it->second->view_block->qc().view(),
-             stored_to_db_view_, common::Encode::HexEncode(gid).c_str());
+            ZJC_DEBUG("gid phash view invalid: %lu, %lu, %s, phash: %s", it->second->view_block->qc().view(),
+                stored_to_db_view_, common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(phash).c_str());
             break;
         }
 
