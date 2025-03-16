@@ -77,48 +77,35 @@ Status Crypto::ReconstructAndVerifyThresSign(
     if (!elect_item) {
         ZJC_INFO("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
+            vote_view_, view, index, pool_idx_);
         return Status::kError;
     }
 
     if ((*elect_item->Members())[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
         ZJC_INFO("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
+            vote_view_, view, index, pool_idx_);
         assert(false);
         return Status::kError;
     }
 
-    // old vote
-    if (bls_collection_ && bls_collection_->view > view) {
-        ZJC_INFO("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
-            "index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
-        return Status::kInvalidArgument;
-    }
-        
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (!bls_collection_ || bls_collection_->view < view) {
-        bls_collection_ = std::make_shared<BlsCollection>();
-        bls_collection_->view = view; 
-        ZJC_INFO("set bls_collection_ && bls_collection_->view > view: %lu, %lu, "
-            "index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
+    if (view > vote_view_) {
+        vote_view_ = view;
+        hash_with_vote_index_.clear();
     }
 
-    // 已经处理过
-    if (bls_collection_->handled) {
-        ZJC_INFO("handled bls_collection_ && bls_collection_->view > view: %lu, %lu, "
-            "index: %u, pool_idx_: %d", 
-            bls_collection_->view, view, index, pool_idx_);
+    auto map_iter = hash_with_vote_index_.find(msg_hash);
+    if (map_iter != hash_with_vote_index_.end()) {
+        if (map_iter->second.find(index) != map_iter->second.end()) {
+            return Status::kBlsHandled;
+        }
+    } else {
+        hash_with_vote_index_[msg_hash] = std::map<uint32_t, std::shared_ptr<libff::alt_bn128_G1>>();
+        map_iter = hash_with_vote_index_.find(msg_hash);
+    }
+
+    if (map_iter->second.size() >= elect_item->t()) {
         return Status::kBlsHandled;
-        // auto collect_item = bls_collection_->GetItem(msg_hash, index);
-        // if (collect_item != nullptr && collect_item->reconstructed_sign != nullptr) {
-        //     reconstructed_sign = collect_item->reconstructed_sign;
-        //     return Status::kBlsHandled;
-        // }
-        
-        // bls_collection_->handled = false;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -132,67 +119,52 @@ Status Crypto::ReconstructAndVerifyThresSign(
         return Status::kError;
     }
 
-    auto collection_item = bls_collection_->GetItem(msg_hash, index);
-    auto invalid_count = elect_item->n() - elect_item->t() + 1;
-    if (bls_collection_->msg_collection_map.size() > invalid_count ||
-            bls_collection_->invalid_diff_count() > invalid_count) {
-        ZJC_INFO("msg_collection_map.size: %d, invalid_diff_count: %d, invalid_count: %d",
-            bls_collection_->msg_collection_map.size(),
-            bls_collection_->invalid_diff_count(),
-            invalid_count);
-        return Status::kInvalidOpposedCount;
-    }
-
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
-    collection_item->partial_signs[index] = partial_sign;
+    map_iter->second[index] = partial_sign;
     ZJC_INFO("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
-        collection_item->OkCount(), 
+        map_iter->second.size(), 
         elect_item->t(),
         index,
         elect_height,
         pool_idx_);
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (collection_item->OkCount() < elect_item->t()) {
+    if (map_iter->second.size() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
     }
 
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
-    for (uint32_t i = 0; i < elect_item->n(); i++) {
-        if (!collection_item->ok_bitmap.Valid(i)) {
-            continue;
-        }
-
-        all_signs.push_back(*collection_item->partial_signs[i]);
-        idx_vec.push_back(i+1);
+    for (auto index_iter = map_iter->second.begin(); index_iter != map_iter->second.end(); ++index_iter) {
+        all_signs.push_back(*index_iter->second);
+        idx_vec.push_back(index_iter->first + 1);
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(elect_item->t());
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, elect_item->t(), lagrange_coeffs);
 #ifdef HOTSTUFF_TEST
-    collection_item->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
-    collection_item->reconstructed_sign->to_affine_coordinates();   
+    reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+    reconstructed_sign->to_affine_coordinates();   
 #else
     libBLS::Bls bls_instance = libBLS::Bls(elect_item->t(), elect_item->n());
-    collection_item->reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
+    reconstructed_sign = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(all_signs, lagrange_coeffs));
-    collection_item->reconstructed_sign->to_affine_coordinates();
+    reconstructed_sign->to_affine_coordinates();
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     Status s = VerifyThresSign(
         common::GlobalInfo::Instance()->network_id(), 
         elect_height, 
         msg_hash, 
-        *collection_item->reconstructed_sign);
+        *reconstructed_sign);
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (s == Status::kSuccess) {
-        reconstructed_sign = collection_item->reconstructed_sign;
-        bls_collection_->handled = true;
-    } else {
+    if (s != Status::kSuccess) {
+        // TODO: check each partial sign
+        ZJC_ERROR("verify thresh sign failed!");
         assert(false);
+        return s;
     }
 
 // #ifndef NDEBUG
