@@ -834,9 +834,7 @@ void BlockManager::AddNewBlock(
         zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         // 当前节点和 block 分配的 shard 不同，要跨分片交易
         auto btime11 = common::TimeUtils::TimestampMs();
-        if (view_block_item->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
-                view_block_item->qc().network_id() + network::kConsensusWaitingShardOffset !=
-                common::GlobalInfo::Instance()->network_id()) {
+        if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
             pools_mgr_->OnNewCrossBlock(view_block_item);
             ZJC_DEBUG("new cross block coming: %u, %u, %lu",
                 view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
@@ -956,7 +954,7 @@ void BlockManager::AddNewBlock(
     }
 
     auto etime = common::TimeUtils::TimestampMs();
-    if (etime - btime > 100000lu)
+    // if (etime - btime > 100000lu)
     ZJC_DEBUG("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, t10: %lu, t11: %lu, t1: %lu, t2: %lu, t3: %lu",
         view_block_item->qc().network_id(),
@@ -1588,27 +1586,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     }
 
     pools::protobuf::AllToTxMessage all_to_txs;
-    std::string gid = common::Hash::keccak256("0000");
-    auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
-    if (latest_to_block != nullptr) {
-        gid = common::Hash::keccak256(
-            std::to_string(latest_to_block->block_info().height()) +
-            std::to_string(latest_to_block->block_info().timestamp()));
-        ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
-            "gid: %s, heights: %s",
-            latest_to_block->block_info().height(),
-            latest_to_block->block_info().timestamp(),
-            common::Encode::HexEncode(gid).c_str(),
-            ProtobufToJson(heights).c_str());
-    } else {
-        ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
-            "gid: %s, heights: %s",
-            0,
-            0,
-            common::Encode::HexEncode(gid).c_str(),
-            ProtobufToJson(heights).c_str());
-    }
-    
+    std::string gid = GetToTxGid();
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
         auto& to_tx = *all_to_txs.add_to_tx_arr();
