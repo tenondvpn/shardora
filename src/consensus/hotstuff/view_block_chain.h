@@ -270,7 +270,10 @@ private:
                 common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
             for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
                 view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
-                ZJC_DEBUG("hash: %s, success add gid to block: %s", 
+                ZJC_DEBUG("%u_%u_%lu, hash: %s, success add gid to block: %s", 
+                    view_block->qc().network_id(),
+                    view_block->qc().pool_index(),
+                    view_block->qc().view(),
                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
                     common::Encode::HexEncode(view_block->block_info().tx_list(i).gid()).c_str());
             }
