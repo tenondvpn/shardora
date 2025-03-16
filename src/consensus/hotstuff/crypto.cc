@@ -75,22 +75,23 @@ Status Crypto::ReconstructAndVerifyThresSign(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
-        ZJC_DEBUG("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_INFO("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
         return Status::kError;
     }
 
     if ((*elect_item->Members())[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_DEBUG("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_INFO("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
+        assert(false);
         return Status::kError;
     }
 
     // old vote
     if (bls_collection_ && bls_collection_->view > view) {
-        ZJC_DEBUG("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_INFO("bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
         return Status::kInvalidArgument;
@@ -100,14 +101,14 @@ Status Crypto::ReconstructAndVerifyThresSign(
     if (!bls_collection_ || bls_collection_->view < view) {
         bls_collection_ = std::make_shared<BlsCollection>();
         bls_collection_->view = view; 
-        ZJC_DEBUG("set bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_INFO("set bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
     }
 
     // 已经处理过
     if (bls_collection_->handled) {
-        ZJC_DEBUG("handled bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_INFO("handled bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             bls_collection_->view, view, index, pool_idx_);
         return Status::kBlsHandled;
@@ -135,7 +136,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     auto invalid_count = elect_item->n() - elect_item->t() + 1;
     if (bls_collection_->msg_collection_map.size() > invalid_count ||
             bls_collection_->invalid_diff_count() > invalid_count) {
-        ZJC_DEBUG("msg_collection_map.size: %d, invalid_diff_count: %d, invalid_count: %d",
+        ZJC_INFO("msg_collection_map.size: %d, invalid_diff_count: %d, invalid_count: %d",
             bls_collection_->msg_collection_map.size(),
             bls_collection_->invalid_diff_count(),
             invalid_count);
@@ -145,7 +146,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
     collection_item->partial_signs[index] = partial_sign;
-    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
+    ZJC_INFO("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
         collection_item->OkCount(), 
         elect_item->t(),
