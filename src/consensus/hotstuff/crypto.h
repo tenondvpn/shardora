@@ -34,7 +34,7 @@ public:
 
         std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
             if (!index_with_hash[index].empty()) {
-                ZJC_DEBUG("new hash coming index: %d, %s, %s", 
+                ZJC_INFO("new hash coming index: %d, %s, %s", 
                     index, 
                     common::Encode::HexEncode(msg_hash).c_str(),
                     common::Encode::HexEncode(index_with_hash[index]).c_str());
@@ -60,7 +60,7 @@ public:
                 max_hash_count = collection_item->OkCount();
             }
 
-            ZJC_DEBUG("hash: %s, all count: %u, ok count: %d, index: %d",
+            ZJC_INFO("hash: %s, all count: %u, ok count: %d, index: %d",
                 common::Encode::HexEncode(msg_hash).c_str(), 
                 count, 
                 collection_item->OkCount(), 
