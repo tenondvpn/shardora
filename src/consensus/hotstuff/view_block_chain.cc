@@ -353,7 +353,7 @@ void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
 Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
     View tmp_view = 0;
-    ZJC_INFO("pool: %u, now PruneTo: %lu, view_blocks_info_ size: %u", 
+    ZJC_DEBUG("pool: %u, now PruneTo: %lu, view_blocks_info_ size: %u", 
         pool_index_, stored_to_db_view_, view_blocks_info_.size());
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
         if (iter->second->view_block &&
