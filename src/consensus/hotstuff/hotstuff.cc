@@ -1118,7 +1118,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     auto replica_idx = vote_msg.replica_idx();
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-//#ifdef USE_AGG_BLS
+#ifdef USE_AGG_BLS
     auto qc_item_ptr = std::make_shared<QC>();
     QC& qc_item = *qc_item_ptr;
     qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
@@ -1167,7 +1167,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view());    
-//#else
+#else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
     auto qc_item_ptr = std::make_shared<QC>();
     QC& qc_item = *qc_item_ptr;
@@ -1253,7 +1253,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     // }    
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-//#endif
+#endif
 
     view_block_chain()->UpdateHighViewBlock(qc_item);
     pacemaker()->NewQcView(qc_item.view());
@@ -1915,7 +1915,7 @@ Status Hotstuff::ConstructVoteMsg(
     qc_item.set_leader_idx(v_block->qc().leader_idx());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto qc_hash = GetQCMsgHash(qc_item);
-//#ifdef USE_AGG_BLS
+#ifdef USE_AGG_BLS
     AggregateSignature partial_sig;
     if (crypto()->PartialSign(
                 common::GlobalInfo::Instance()->network_id(),
@@ -1927,7 +1927,7 @@ Status Hotstuff::ConstructVoteMsg(
     }
 
     vote_msg->mutable_partial_sig()->CopyFrom(partial_sig.DumpToProto());
-//#else
+#else
     std::string sign_x, sign_y;
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (crypto()->PartialSign(
@@ -1942,7 +1942,7 @@ Status Hotstuff::ConstructVoteMsg(
 
     vote_msg->set_sign_x(sign_x);
     vote_msg->set_sign_y(sign_y);
-//#endif
+#endif
     if (!msg_ptr->is_leader) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
         auto* txs = vote_msg->mutable_txs();
