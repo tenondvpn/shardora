@@ -845,19 +845,20 @@ void BlockManager::AddNewBlock(
         auto btime1 = common::TimeUtils::TimestampMs();
         // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
-            // ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
-            //     "tx size: %u, hash: %s, elect height: %lu, "
-            //     "tm height: %lu, gid: %s, status: %d, step: %d",
-            //     view_block_item->qc().network_id(),
-            //     view_block_item->qc().pool_index(),
-            //     block_item->height(),
-            //     block_item->tx_list_size(),
-            //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-            //     view_block_item->qc().elect_height(),
-            //     block_item->timeblock_height(),
-            //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            //     tx_list[i].status(),
-            //     tx_list[i].step());
+            ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
+                "tx size: %u, hash: %s, phash: %s, elect height: %lu, "
+                "tm height: %lu, gid: %s, status: %d, step: %d",
+                view_block_item->qc().network_id(),
+                view_block_item->qc().pool_index(),
+                block_item->height(),
+                block_item->tx_list_size(),
+                common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
+                view_block_item->qc().elect_height(),
+                block_item->timeblock_height(),
+                common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                tx_list[i].status(),
+                tx_list[i].step());
             // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
     // #ifdef SAVE_GID_WITH_BLOCK
             prefix_db_->SaveGidWithBlockHash(
