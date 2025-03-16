@@ -672,6 +672,10 @@ bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& 
             return false;
         }
         
+        ZJC_DEBUG("gid phash empty: %s, phash: %s, pphash: %s", 
+            common::Encode::HexEncode(gid).c_str(),
+            common::Encode::HexEncode(phash).c_str(),
+            common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str());
         phash = it->second->view_block->parent_hash();
     }
 
