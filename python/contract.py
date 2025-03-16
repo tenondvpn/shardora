@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     private_key = None
-    to = shardora_api.gen_gid()[0: 20]
+    to = None
     from_address = None
     amount = 0
     prepayment = 0
@@ -77,6 +77,26 @@ if __name__ == "__main__":
         sol_file = args.sol
 
     if sol_file is None and function == "":
+        if to is not None and prepayment > 0:
+            res = shardora_api.transfer(
+                private_key,
+                to,
+                0,
+                7,
+                "",
+                "",
+                "",
+                "",
+                "",
+                prepayment=prepayment,
+                check_gid_valid=True)
+            if not res:
+                print("prepayment contract failed!")
+                sys.exit(1)
+            else:
+                print("prepayment contract success!")
+                sys.exit(0)
+
         print(f"invalid params sol_file is None and function is None")
         sys.exit(1)
 
