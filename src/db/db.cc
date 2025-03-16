@@ -90,9 +90,9 @@ bool Db::Init(const std::string& db_path) {
     options.create_if_missing = true;
     options.max_bytes_for_level_multiplier = 5;
     options.level_compaction_dynamic_level_bytes = true;
-    rocksdb::BlockBasedTableOptions table_option;
-    table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
-    options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
+    // rocksdb::BlockBasedTableOptions table_option;
+    // table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
+    // options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
     options.compression = rocksdb::kSnappyCompression;
     options.bottommost_compression = rocksdb::kZlibCompression;
     options.compaction_style = rocksdb::kCompactionStyleUniversal;
