@@ -823,6 +823,9 @@ void BlockManager::AddNewBlock(
 
     // TODO: test
     const auto& tx_list = block_item->tx_list();
+        auto btime10 = common::TimeUtils::TimestampMs();
+        auto btime11 = common::TimeUtils::TimestampMs();
+        auto btime1 = common::TimeUtils::TimestampMs();
 #ifndef TEST_NO_CROSS
         if (statistic_mgr_) {
             // statistic_mgr_->OnNewBlock(view_block_item);
@@ -830,17 +833,17 @@ void BlockManager::AddNewBlock(
 
         // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
         to_txs_pool_->NewBlock(view_block_item);
-        auto btime10 = common::TimeUtils::TimestampMs();
+        btime10 = common::TimeUtils::TimestampMs();
         zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         // 当前节点和 block 分配的 shard 不同，要跨分片交易
-        auto btime11 = common::TimeUtils::TimestampMs();
+        btime11 = common::TimeUtils::TimestampMs();
         if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
             pools_mgr_->OnNewCrossBlock(view_block_item);
             ZJC_DEBUG("new cross block coming: %u, %u, %lu",
                 view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
         }
 
-        auto btime1 = common::TimeUtils::TimestampMs();
+        btime1 = common::TimeUtils::TimestampMs();
         // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
