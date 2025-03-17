@@ -95,11 +95,6 @@ int GmSsl::Decrypt(const std::string& msg, const std::string& key, std::string* 
     return -1;
 }
 
-int GmSsl::GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key) {
-    ZJC_FATAL("invalid!");
-    return -1;
-}
-
 bool GmSsl::IsValidPublicKey(const std::string& pubkey) {
     return pubkey.size() == 96;
 }
