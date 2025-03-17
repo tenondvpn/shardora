@@ -268,7 +268,7 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
     auto t8 = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    ZJC_INFO("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
         "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu, t7: %lu, t8: %lu",
@@ -2030,6 +2030,8 @@ Status Hotstuff::ConstructViewBlock(
 }
 
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
+    // TODO: remove it
+    return false;
     auto* v_block1 = &v_block;
     if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
         return true;
