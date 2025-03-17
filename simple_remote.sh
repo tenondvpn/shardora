@@ -62,6 +62,7 @@ init() {
 }
 
 make_package() {
+    rm -rf /root/zjnodes/zjchain/pkg
     mkdir /root/zjnodes/zjchain/pkg
     cp /root/zjnodes/zjchain/zjchain /root/zjnodes/zjchain/pkg
     cp /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/zjchain/pkg
