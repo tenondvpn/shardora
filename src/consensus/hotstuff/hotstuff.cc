@@ -155,7 +155,7 @@ Status Hotstuff::Propose(
             return s;
         }
 
-        // transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
