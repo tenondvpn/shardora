@@ -86,6 +86,8 @@ deploy_nodes() {
     done
 }
 
+killall -9 zjchain
+
 init_config
 sudo sysctl -p
 ulimit -c unlimited
