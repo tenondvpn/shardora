@@ -1,7 +1,8 @@
 #include "common/hash.h"
 
-#include <string.h>
+#include <gmssl/sm3.h>
 #include <openssl/sha.h>
+#include <string.h>
 
 #include "common/log.h"
 #include "common/encode.h"
@@ -89,6 +90,16 @@ std::string Hash::Sha256(const std::string& str) {
     std::string res(kHashOutputSize, '\0');
     SHA256_Final((unsigned char*)res.data(), &context);
     return res;
+}
+
+std::string Hash::sm3(const std::string& str) {
+    SM3_CTX ctx;
+    sm3_init(&ctx);
+    sm3_update(&ctx, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+    std::string res_hash;
+    res_hash.resize(32);
+    sm3_finish(&ctx, (uint8_t*)res_hash.data());
+    return res_hash;
 }
 
 namespace rmd160

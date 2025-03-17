@@ -43,6 +43,7 @@ public:
     static std::string Sha256(const std::string& str);
     static std::string ripemd160(const std::string& str);
     static std::string keccak256(const std::string& str);
+    static std::string sm3(const std::string& str);
 
 private:
     Hash() {}
