@@ -100,14 +100,17 @@ get_bootstrap() {
 }
 
 check_cmd_finished() {
+    echo "waiting..."
     while true
     do
-        sshpass_count=`ps -ef | grep sshpass | grep $PASSWORD | wc -l`
+        sshpass_count=`ps -ef | grep sshpass | grep ConnectTimeout | wc -l`
         if [ "$sshpass_count" == "0" ]; then
             break
         fi
         sleep 1
     done
+
+    echo "waiting ok"
 }
 
 scp_package() {
@@ -136,7 +139,7 @@ run_command() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 1)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -157,7 +160,7 @@ start_all_nodes() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 1)); then
             check_cmd_finished
             run_cmd_count=0
         fi
