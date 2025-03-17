@@ -34,6 +34,7 @@ int GmSsl::SetPrivateKey(const std::string& prikey) {
 int GmSsl::Sign(const std::string &hash, std::string *sign) {
 	SM2_SIGNATURE sig;
 	sm2_do_sign(prikey_.get(), (uint8_t*)hash.c_str(), &sig);
+    *sign = std::string((char*)sig.r, 32) + std::string((char*)sig.s, 32);
     return kSecuritySuccess;
 }
 
