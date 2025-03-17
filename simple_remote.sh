@@ -110,6 +110,7 @@ check_cmd_finished() {
         sleep 1
     done
 
+    ps -ef | grep sshpass | grep ConnectTimeout
     echo "waiting ok"
 }
 
