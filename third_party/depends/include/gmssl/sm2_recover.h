@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <gmssl/sm2.h>
 #include <gmssl/sm3.h>
 
 #ifdef __cplusplus
