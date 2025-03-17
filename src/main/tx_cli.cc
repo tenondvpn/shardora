@@ -878,7 +878,7 @@ int main(int argc, char** argv) {
     } else if (argv[1][0] == '5') {
         uint64_t amount = 0;
         common::StringUtil::ToUint64(argv[4], &amount);
-        gmssl_tx(argv[2], argv[3], amount);
+        gmssl_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
     } else {
         one_tx_main(argc, argv);
     }
