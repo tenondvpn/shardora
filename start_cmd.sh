@@ -6,8 +6,8 @@ start_shard=$5
 end_shard=$6
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
-rm -rf /root/zjnodes/
-mkdir -p /root/zjnodes/
+# rm -rf /root/zjnodes/
+# mkdir -p /root/zjnodes/
 
 init_config() {
     echo "fs.file-max = 1024000" >> /etc/sysctl.conf
@@ -102,9 +102,9 @@ start_nodes() {
 
 killall -9 zjchain
 
-init_config
-sudo sysctl -p
-ulimit -c unlimited
-init_firewall
-deploy_nodes
-# start_nodes
+# init_config
+# sudo sysctl -p
+# ulimit -c unlimited
+# init_firewall
+# deploy_nodes
+start_nodes
