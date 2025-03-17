@@ -26,10 +26,7 @@ int GmSsl::SetPrivateKey(const std::string& prikey) {
     uint8_t x[32];
     uint8_t y[32];
     uint8_t z[32];
-    sm2_z256_to_bytes(prikey_->public_key.X, x);
-    sm2_z256_to_bytes(prikey_->public_key.Y, y);
-    sm2_z256_to_bytes(prikey_->public_key.Z, z);
-    str_pk_ = std::string((char*)x, 32) + std::string((char*)y, 32) + std::string((char*)z, 32);
+    str_pk_ = std::string((char*)prikey_->public_key.x, 32) + std::string((char*)prikey_->public_key.y, 32);
     str_addr_ = common::Hash::sm3(str_pk_).substr(0, 20);
     return kSecuritySuccess;
 }
