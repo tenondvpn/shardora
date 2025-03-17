@@ -90,6 +90,9 @@ get_bootstrap() {
             node_info=$tmppubkey":"$ip":1"$shard_id"00"$i
             bootstrap=$node_info","$bootstrap
             i=$((i+1))
+            if ((i>=10)); then
+                break
+            fi
         done
     done
 }
