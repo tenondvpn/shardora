@@ -101,6 +101,8 @@ get_bootstrap() {
 
 check_cmd_finished() {
     echo "waiting..."
+    sleep 1
+    ps -ef | grep sshpass 
     while true
     do
         sshpass_count=`ps -ef | grep sshpass | grep ConnectTimeout | wc -l`
