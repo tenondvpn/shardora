@@ -75,14 +75,14 @@ Status Crypto::ReconstructAndVerifyThresSign(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
-        ZJC_INFO("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_DEBUG("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             vote_view_, view, index, pool_idx_);
         return Status::kError;
     }
 
     if ((*elect_item->Members())[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_INFO("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        ZJC_DEBUG("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             vote_view_, view, index, pool_idx_);
         assert(false);
@@ -122,7 +122,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
     map_iter->second[index] = partial_sign;
-    ZJC_INFO("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
+    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
         map_iter->second.size(), 
         elect_item->t(),

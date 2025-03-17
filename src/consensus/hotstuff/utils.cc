@@ -35,7 +35,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
         //     common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
-    // ZJC_INFO("phash: %s, gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
+    // ZJC_DEBUG("phash: %s, gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
     //     "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
     //     common::Encode::HexEncode(phash).c_str(),
     //     common::Encode::HexEncode(tx_info.gid()).c_str(),
@@ -87,7 +87,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     }
 
     auto hash = common::Hash::keccak256(msg);
-    ZJC_INFO("get block hash: %s, sharding_id: %u, pool_index: %u, "
+    ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
         "phash: %s, vss_random: %lu, height: %lu, "
         "timeblock_height: %lu, timestamp: %lu, msg: %s",
         common::Encode::HexEncode(hash).c_str(),
