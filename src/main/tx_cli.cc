@@ -818,7 +818,7 @@ int contract_call(int argc, char** argv, bool more=false) {
 
 int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amount) {
     security::GmSsl gmssl;
-    gmssl.SetPrivateKey(from_prikey);
+    gmssl.SetPrivateKey(private_key);
     std::cout << "gmssl address: " << common::Encode::HexEncode(gmssl.GetAddress()) <<
         ", pk: " << common::Encode::HexEncode(gmssl.GetPublicKey()) << std::endl;
     auto test_hash = common::Random::RandomString(32);
