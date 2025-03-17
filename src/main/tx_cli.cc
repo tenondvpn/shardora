@@ -877,6 +877,9 @@ int main(int argc, char** argv) {
         create_library(argc, argv);
     } else if (argv[1][0] == '5') {
         uint64_t amount = 0;
+        std::cout << "private key: " << argv[2] << std::endl;
+        std::cout << "to: " << argv[3] << std::endl;
+        std::cout << "amount: " << argv[4] << std::endl;
         common::StringUtil::ToUint64(argv[4], &amount);
         gmssl_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
     } else {
