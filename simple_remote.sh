@@ -115,6 +115,7 @@ check_cmd_finished() {
 }
 
 scp_package() {
+    echo 'scp_package start'
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
@@ -127,9 +128,11 @@ scp_package() {
     done
 
     check_cmd_finished
+    echo 'scp_package over'
 }
 
 run_command() {
+    echo 'run_command start'
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     start_pos=1
@@ -148,9 +151,11 @@ run_command() {
     done
 
     check_cmd_finished
+    echo 'run_command over'
 }
 
 start_all_nodes() {
+    echo 'start_all_nodes start'
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     start_pos=1
@@ -169,6 +174,7 @@ start_all_nodes() {
     done
 
     check_cmd_finished
+    echo 'start_all_nodes over'
 }
 
 init
