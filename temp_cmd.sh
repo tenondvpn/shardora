@@ -6,6 +6,7 @@ start_shard=$5
 end_shard=$6
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
+rm -rf /root/pkg*/
 rm -rf /root/zjnodes/
 mkdir -p /root/zjnodes/
 
