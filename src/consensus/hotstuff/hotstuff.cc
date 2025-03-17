@@ -538,6 +538,7 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
 
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
+    return Status::kSuccess;
     auto& view_item = *pro_msg_wrap->view_block_ptr;
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
