@@ -2030,8 +2030,6 @@ Status Hotstuff::ConstructViewBlock(
 }
 
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
-    // TODO: remove it
-    return false;
     auto* v_block1 = &v_block;
     if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
         return true;
@@ -2048,7 +2046,6 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
     }
 
     // fast hotstuff
-    
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
     if (!v_block3_info) {
         return true;
