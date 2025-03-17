@@ -264,7 +264,8 @@ int tx_main(int argc, char** argv) {
         ", pk: " << common::Encode::HexEncode(gmssl.GetPublicKey()) << std::endl;
     auto test_hash = common::Random::RandomString(32);
     std::string test_sign;
-    gmssl.Sign(test_hash, &test_sign);
+    auto sign_res = gmssl.Sign(test_hash, &test_sign);
+    assert(sign_res == 0);
     int verify_res = gmssl.Verify(test_hash, gmssl.GetPublicKey(), test_sign);
     std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
         << ", verify res: " << verify_res << std::endl;
