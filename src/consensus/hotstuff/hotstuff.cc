@@ -2031,7 +2031,6 @@ Status Hotstuff::ConstructViewBlock(
 }
 
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
-    return false;
     auto* v_block1 = &v_block;
     if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
         return true;
