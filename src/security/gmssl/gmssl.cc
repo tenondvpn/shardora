@@ -50,7 +50,7 @@ int GmSsl::Verify(const std::string& hash, const std::string& str_pk, const std:
 	size_t points_cnt;
 	sm2_signature_to_public_key_points(&sig, (uint8_t*)hash.c_str(), points, &points_cnt);
     auto tmp_pk = std::string((char*)points[1].x, 32) + std::string((char*)points[1].y, 32);
-    if (tmp_pk != str_pk) {
+    if (memcmp(tmp_pk.c_str(), str_pk.c_str(), tmp_pk.size() != 0) {
         return kSecurityError;
     }
 
