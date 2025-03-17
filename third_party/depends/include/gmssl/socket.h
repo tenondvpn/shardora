@@ -13,7 +13,6 @@
 
 #include <string.h>
 #include <stdint.h>
-#include <errno.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +35,7 @@ typedef int tls_socklen_t;
 #define tls_socket_send(sock,buf,len,flags)	send(sock,buf,(int)(len),flags)
 #define tls_socket_recv(sock,buf,len,flags)	recv(sock,buf,(int)(len),flags)
 #define tls_socket_close(sock)			closesocket(sock)
-#define tls_socket_wait()			Sleep(1)
+
 
 #else
 
@@ -56,7 +55,6 @@ typedef socklen_t tls_socklen_t;
 #define tls_socket_send(sock,buf,len,flags)	send(sock,buf,len,flags)
 #define tls_socket_recv(sock,buf,len,flags)	recv(sock,buf,len,flags)
 #define tls_socket_close(sock)			close(sock)
-#define tls_socket_wait()			usleep(1000)
 
 #endif
 

@@ -7,25 +7,17 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#ifndef GMSSL_API_H
+#define GMSSL_API_H
 
-#ifndef GMSSL_RAND_H
-#define GMSSL_RAND_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <gmssl/api.h>
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef WIN32
+#define _gmssl_export  __declspec(dllexport)
+#elif defined(__GNUC__)
+// use -fvisibility=hidden to change the "default" behavior
+#define _gmssl_export  __attribute__((visibility("default")))
+#else
+#define _gmssl_export
 #endif
 
-
-#define RAND_BYTES_MAX_SIZE	(256)
-
-_gmssl_export int rand_bytes(uint8_t *buf, size_t buflen);
-
-
-#ifdef __cplusplus
-}
-#endif
 #endif

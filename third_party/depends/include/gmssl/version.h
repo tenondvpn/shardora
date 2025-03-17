@@ -12,17 +12,19 @@
 #ifndef GMSSL_VERSION_H
 #define GMSSL_VERSION_H
 
+#include <gmssl/api.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
 // Also update CPACK_PACKAGE_VERSION in CMakeLists.txt
-#define GMSSL_VERSION_NUM	30102
-#define GMSSL_VERSION_STR	"GmSSL 3.1.2 Dev"
+#define GMSSL_VERSION_NUM	30101
+#define GMSSL_VERSION_STR	"GmSSL 3.1.1"
 
-int gmssl_version_num(void);
-const char *gmssl_version_str(void);
+_gmssl_export int gmssl_version_num(void);
+_gmssl_export const char *gmssl_version_str(void);
 
 #ifdef __cplusplus
 }

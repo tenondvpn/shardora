@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright 2014-2022 The GmSSL Project. All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the License); you may
@@ -62,7 +62,7 @@ int cms_content_info_to_der(
 	uint8_t **out, size_t *outlen);
 int cms_content_info_from_der(
 	int *content_type,
-	const uint8_t **content, size_t *content_len, // content is the full TLV
+	const uint8_t **content, size_t *content_len, // 这里获得的是完整的TLV
 	const uint8_t **in, size_t *inlen);
 int cms_content_info_print(FILE *fp, int fmt, int ind, const char *label, const uint8_t *d, size_t dlen);
 
@@ -269,13 +269,13 @@ typedef struct {
 
 int cms_signed_data_sign_to_der(
 	const CMS_CERTS_AND_KEY *signers, size_t signers_cnt,
-	int content_type, const uint8_t *data, size_t datalen, // with OID_cms_data, `data` is the raw data
-	const uint8_t *crls, size_t crls_len, // crls can be NULL
+	int content_type, const uint8_t *data, size_t datalen, // 当OID_cms_data时为raw data
+	const uint8_t *crls, size_t crls_len, // 可以为空
 	uint8_t **out, size_t *outlen);
 int cms_signed_data_verify_from_der(
 	const uint8_t *extra_certs, size_t extra_certs_len,
 	const uint8_t *extra_crls, size_t extra_crls_len,
-	int *content_type, const uint8_t **content, size_t *content_len, // should we return raw data			
+	int *content_type, const uint8_t **content, size_t *content_len, // 是否应该返回raw data呢？			
 	const uint8_t **certs, size_t *certs_len,
 	const uint8_t **crls, size_t *crls_len,
 	const uint8_t **signer_infos, size_t *signer_infos_len,
@@ -289,8 +289,8 @@ RecipientInfo ::= SEQUENCE {
 	keyEncryptionAlgorithm		AlgorithmIdentifier,
 	encryptedKey			OCTET STRING -- DER-encoding of SM2Cipher
 }
-
-DER-encoding length of RecipientInfo is not fixed (caused by INTEGERs)
+由于encryptedKey的类型为SM2Cipher, 而SM2Cipher中有2个INTEGER，因此长度是不固定的。
+因此不能预先确定输出长度
 */
 int cms_recipient_info_to_der(
 	int version,
@@ -303,7 +303,7 @@ int cms_recipient_info_from_der(
 	int *version,
 	const uint8_t **issuer, size_t *issuer_len,
 	const uint8_t **serial_number, size_t *serial_number_len,
-	int *pke_algor, const uint8_t **params, size_t *params_len,// sm2encrypt has no params, but ECIES might have params
+	int *pke_algor, const uint8_t **params, size_t *params_len,// SM2加密只使用SM3，没有默认参数，但是ECIES可能有
 	const uint8_t **enced_key, size_t *enced_key_len,
 	const uint8_t **in, size_t *inlen);
 int cms_recipient_info_print(FILE *fp, int fmt, int ind, const char *label, const uint8_t *d, size_t dlen);
@@ -452,29 +452,35 @@ int cms_key_agreement_info_print(FILE *fp, int fmt, int ind, const char *label, 
 
 
 
+// 下面是公开API
+// 公开API的设计考虑：
+// 1. 不需要调用其他函数
+// 2. 在逻辑上容易理解
+// 3. 将cms,cmslen看做对象
 
-// generate ContentInfo, type == data
+
+// 生成ContentInfo, type == data
 int cms_set_data(uint8_t *cms, size_t *cmslen,
 	const uint8_t *d, size_t dlen);
 
 int cms_encrypt(
-	uint8_t *cms, size_t *cmslen,
-	int enc_algor, const uint8_t *key, size_t keylen, const uint8_t *iv, size_t ivlen,
-	int content_type, const uint8_t *content, size_t content_len,
-	const uint8_t *shared_info1, size_t shared_info1_len,
+	uint8_t *cms, size_t *cmslen, // 输出的ContentInfo (type encryptedData)
+	int enc_algor, const uint8_t *key, size_t keylen, const uint8_t *iv, size_t ivlen, // 对称加密算法、密钥和IV
+	int content_type, const uint8_t *content, size_t content_len, // 待加密的输入数据
+	const uint8_t *shared_info1, size_t shared_info1_len, // 附加信息
 	const uint8_t *shared_info2, size_t shared_info2_len);
 
 int cms_decrypt(
-	const uint8_t *cms, size_t cmslen, // should be ContentInfo (type encryptedData)
-	int *enc_algor, const uint8_t *key, size_t keylen,
-	int *content_type, uint8_t *content, size_t *content_len,
-	const uint8_t **shared_info1, size_t *shared_info1_len,
+	const uint8_t *cms, size_t cmslen, // 输入的ContentInfo (type encryptedData)
+	int *enc_algor, const uint8_t *key, size_t keylen, // 解密密钥（我们不知道解密算法）
+	int *content_type, uint8_t *content, size_t *content_len, // 输出的解密数据类型及数据
+	const uint8_t **shared_info1, size_t *shared_info1_len, // 附加信息
 	const uint8_t **shared_info2, size_t *shared_info2_len);
 
 int cms_sign(
 	uint8_t *cms, size_t *cms_len,
-	const CMS_CERTS_AND_KEY *signers, size_t signers_cnt,
-	int content_type, const uint8_t *content, size_t content_len,
+	const CMS_CERTS_AND_KEY *signers, size_t signers_cnt, // 签名者的签名私钥和证书
+	int content_type, const uint8_t *content, size_t content_len, // 待签名的输入数据
 	const uint8_t *crls, size_t crls_len);
 
 int cms_verify(
@@ -488,17 +494,17 @@ int cms_verify(
 
 int cms_envelop(
 	uint8_t *cms, size_t *cms_len,
-	const uint8_t *rcpt_certs, size_t rcpt_certs_len,
-	int enc_algor, const uint8_t *key, size_t keylen, const uint8_t *iv, size_t ivlen,
-	int content_type, const uint8_t *content, size_t content_len,
-	const uint8_t *shared_info1, size_t shared_info1_len,
+	const uint8_t *rcpt_certs, size_t rcpt_certs_len, // 接收方证书，注意这个参数的类型可以容纳多个证书，但是只有在一个接受者时对调用方最方便
+	int enc_algor, const uint8_t *key, size_t keylen, const uint8_t *iv, size_t ivlen, // 对称加密算法及参数
+	int content_type, const uint8_t *content, size_t content_len, // 待加密的输入数据
+	const uint8_t *shared_info1, size_t shared_info1_len, // 附加输入信息
 	const uint8_t *shared_info2, size_t shared_info2_len);
 
 int cms_deenvelop(
 	const uint8_t *cms, size_t cms_len,
-	const SM2_KEY *rcpt_key, const uint8_t *rcpt_cert, size_t rcpt_cert_len,
+	const SM2_KEY *rcpt_key, const uint8_t *rcpt_cert, size_t rcpt_cert_len, // 接收方的解密私钥和对应的证书，注意只需要一个解密方
 	int *content_type, uint8_t *content, size_t *content_len,
-	const uint8_t **rcpt_infos, size_t *rcpt_infos_len,
+	const uint8_t **rcpt_infos, size_t *rcpt_infos_len, // 解析得到，用于显示
 	const uint8_t **shared_info1, size_t *shared_info1_len,
 	const uint8_t **shared_info2, size_t *shared_info2_len);
 
@@ -525,7 +531,7 @@ int cms_deenvelop_and_verify(
 	const uint8_t **shared_info1, size_t *shared_info1_len,
 	const uint8_t **shared_info2, size_t *shared_info2_len);
 
-// create ContentInfo, type == keyAgreementInfo
+// 生成ContentInfo, type == keyAgreementInfo
 int cms_set_key_agreement_info(
 	uint8_t *cms, size_t *cms_len,
 	const SM2_KEY *temp_public_key_r,
