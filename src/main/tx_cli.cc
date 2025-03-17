@@ -10,6 +10,7 @@
 #include "dht/dht_key.h"
 #include "pools/tx_utils.h"
 #include "security/ecdsa/ecdsa.h"
+#include "security/gmssl/gmssl.h"
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
 
@@ -257,6 +258,17 @@ int tx_main(int argc, char** argv) {
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
+    security::GmSsl gmssl;
+    gmssl.SetPrivateKey(from_prikey);
+    std::cout << "gmssl address: " << common::Encode::HexEncode(gmssl.GetAddress()) <<
+        ", pk: " << common::Encode::HexEncode(gmssl.GetPublicKey()) << std::endl;
+    auto test_hash = common::Random::RandomString(32);
+    std::string test_sign;
+    gmssl.Sign(test_hash, &test_sign);
+    int verify_res = gmssl.Verify(test_hash, gmssl.GetPublicKey(), test_sign);
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+        << ", verify res: " << verify_res << std::endl;
+    return 0;
     std::cout << "init from: " << common::Encode::HexEncode(security->GetAddress())
               << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;    
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
