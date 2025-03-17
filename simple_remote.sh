@@ -102,7 +102,7 @@ get_bootstrap() {
 check_cmd_finished() {
     while true
     do
-        sshpass_count=`ps -ef | grep sshpass | grep scp | wc -l`
+        sshpass_count=`ps -ef | grep sshpass | grep $PASSWORD | wc -l`
         if [ "$sshpass_count" == "0" ]; then
             break
         fi
