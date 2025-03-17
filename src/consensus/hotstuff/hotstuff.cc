@@ -155,7 +155,7 @@ Status Hotstuff::Propose(
             return s;
         }
 
-        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        // transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
@@ -538,7 +538,7 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
 
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    // return Status::kSuccess;
+    return Status::kSuccess;
     auto& view_item = *pro_msg_wrap->view_block_ptr;
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;

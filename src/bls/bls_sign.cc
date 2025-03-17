@@ -21,7 +21,7 @@ void BlsSign::Sign(
     try {
 #ifdef MOCK_SIGN
         *sign = libff::alt_bn128_G1::one();
-        std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
+        // std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
 #else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         *sign = bls_instance.Signing(g1_hash, secret_key);
