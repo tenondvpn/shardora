@@ -142,6 +142,71 @@ static transport::MessagePtr CreateTransactionWithAttr(
     return msg_ptr;
 }
 
+static transport::MessagePtr GmsslCreateTransactionWithAttr(
+        security::GmSsl& gmssl,
+        const std::string& gid,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(gmssl.GetPublicKey());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (gmssl.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    // std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+    //     << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+    //     << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+    //     << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+    //     << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+    //     << "amount: " << amount << std::endl
+    //     << "gas_limit: " << gas_limit << std::endl
+    //     << std::endl;
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
 static std::unordered_map<std::string, std::string> g_pri_addrs_map;
 static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
@@ -258,20 +323,6 @@ int tx_main(int argc, char** argv) {
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
-    security::GmSsl gmssl;
-    gmssl.SetPrivateKey(from_prikey);
-    std::cout << "gmssl address: " << common::Encode::HexEncode(gmssl.GetAddress()) <<
-        ", pk: " << common::Encode::HexEncode(gmssl.GetPublicKey()) << std::endl;
-    auto test_hash = common::Random::RandomString(32);
-    std::string test_sign;
-    auto sign_res = gmssl.Sign(test_hash, &test_sign);
-    assert(sign_res == 0);
-    int verify_res = gmssl.Verify(test_hash, gmssl.GetPublicKey(), test_sign);
-    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
-        << ", verify res: " << verify_res << std::endl;
-    return 0;
-    std::cout << "init from: " << common::Encode::HexEncode(security->GetAddress())
-              << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;    
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint32_t step_num = 1000;
@@ -765,6 +816,39 @@ int contract_call(int argc, char** argv, bool more=false) {
     return 0;
 }
 
+int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amount) {
+    security::GmSsl gmssl;
+    gmssl.SetPrivateKey(from_prikey);
+    std::cout << "gmssl address: " << common::Encode::HexEncode(gmssl.GetAddress()) <<
+        ", pk: " << common::Encode::HexEncode(gmssl.GetPublicKey()) << std::endl;
+    auto test_hash = common::Random::RandomString(32);
+    std::string test_sign;
+    auto sign_res = gmssl.Sign(test_hash, &test_sign);
+    assert(sign_res == 0);
+    int verify_res = gmssl.Verify(test_hash, gmssl.GetPublicKey(), test_sign);
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+        << ", verify res: " << verify_res << std::endl;
+
+    auto tx_msg_ptr = GmsslCreateTransactionWithAttr(
+        gmssl,
+        common::Random::RandomString(32),
+        to,
+        "",
+        "",
+        amount,
+        10000,
+        1,
+        3);
+
+        
+    if (transport::TcpTransport::Instance()->Send("127.0.0.1", 13001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "send success." << std::endl;
+}
+
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
     security::Ecdsa ecdsa;
@@ -791,6 +875,10 @@ int main(int argc, char** argv) {
         }
     } else if (argv[1][0] == '4') {
         create_library(argc, argv);
+    } else if (argv[1][0] == '5') {
+        uint64_t amount = 0;
+        common::StringUtil::ToUint64(argv[4], &amount);
+        gmssl_tx(argv[2], argv[3], amount);
     } else {
         one_tx_main(argc, argv);
     }
