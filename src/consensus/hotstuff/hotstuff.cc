@@ -538,7 +538,6 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
 
 
 Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
-    return Status::kSuccess;
     auto& view_item = *pro_msg_wrap->view_block_ptr;
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
@@ -566,6 +565,7 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                 auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
                 tmp_msg_ptr->header.CopyFrom(iter->second->header);
                 auto leader = leader_rotation_->GetLeader();
+                // TODO: check is same leader
                 if (!leader || SendMsgToLeader(leader, tmp_msg_ptr, VOTE) != Status::kSuccess) {
                     ZJC_ERROR("pool: %d, Send vote message is error.",
                         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
