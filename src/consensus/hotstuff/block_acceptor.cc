@@ -23,6 +23,7 @@
 #include "consensus/zbft/join_elect_tx_item.h"
 #include "protos/pools.pb.h"
 #include "protos/zbft.pb.h"
+#include "security/gmssl/gmssl.h"
 #include "zjcvm/zjcvm_utils.h"
 
 namespace shardora {
@@ -224,7 +225,12 @@ Status BlockAcceptor::addTxsToPool(
         protos::AddressInfoPtr address_info = nullptr;
         std::string from_id;
         if (pools::IsUserTransaction(tx->step())) {
-            from_id = security_ptr_->GetAddress(tx->pubkey());
+            if (tx->pubkey().size() == 64u) {
+                security::GmSsl gmssl;
+                from_id = gmssl.GetAddress(tx->pubkey());
+            } else {
+                from_id = security_ptr_->GetAddress(tx->pubkey());
+            }
         }
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
@@ -460,12 +466,25 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
-                if (!msg_ptr->is_leader && security_ptr_->Verify(
-                        tx_ptr->unique_tx_hash,
-                        tx_ptr->tx_info->pubkey(),
-                        tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                    assert(false);
-                    return Status::kError;
+                if (!msg_ptr->is_leader) {
+                    if (tx->pubkey().size() == 64u) {
+                        security::GmSsl gmssl;
+                        if (gmssl.Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                            return Status::kError;
+                        }
+                    } else {
+                        if (security_ptr_->Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                            return Status::kError;
+                        }
+                    }
                 }
             }
         }
