@@ -130,15 +130,15 @@ static transport::MessagePtr CreateTransactionWithAttr(
         return nullptr;
     }
 
-    std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
-        << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
-        << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
-        << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
-        << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
-        << "tx sign v: " << (char)sign[64] << std::endl
-        << "amount: " << amount << std::endl
-        << "gas_limit: " << gas_limit << std::endl
-        << std::endl;
+    // std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+    //     << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+    //     << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+    //     << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+    //     << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+    //     << "tx sign v: " << (char)sign[64] << std::endl
+    //     << "amount: " << amount << std::endl
+    //     << "gas_limit: " << gas_limit << std::endl
+    //     << std::endl;
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
