@@ -120,7 +120,7 @@ private:
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
         db::DbWriteBatch& db_batch);
     void HandleNormalToTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
@@ -139,9 +139,9 @@ private:
         const block::protobuf::BlockTx& tx);
     void createConsensusLocalToTxs(
         const block::protobuf::BlockTx& tx,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map);
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map);
     void createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos);
+        std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos);
     void HandleJoinElectTx(
         const view_block::protobuf::ViewBlockItem& block,
         const block::protobuf::BlockTx& tx,
@@ -178,6 +178,7 @@ private:
     static const uint64_t kToValidTimeout = 1500lu;
     static const uint64_t kElectTimeout = 20000lu;
     static const uint64_t kElectValidTimeout = 3000000lu;
+    static const uint32_t kEachTimeHandleBlocksCount = 64u;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;

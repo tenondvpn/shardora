@@ -16,9 +16,13 @@ public:
             uint16_t local_port)
             : TcpSocket(local_addr, local_port),
               peer_addr_(peer_addr),
-              peer_port_(peer_port) {}
+              peer_port_(peer_port) {
+        ZJC_DEBUG("memory check client socket create: %p", this);
+    }
 
-    virtual ~ClientSocket() {}
+    virtual ~ClientSocket() {
+        ZJC_DEBUG("memory check client socket destroy: %p", this);
+    }
 
     int Connect() const {
         if (fd_ < 0) {

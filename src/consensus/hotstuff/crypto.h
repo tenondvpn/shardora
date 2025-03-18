@@ -1,6 +1,11 @@
 #pragma once
+
+#include <unordered_map>
+#include <unordered_set>
+
 #include <bls/bls_manager.h>
 #include <bls/bls_utils.h>
+#include "common/bitmap.h"
 #include <common/node_members.h>
 #include <consensus/hotstuff/types.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
@@ -17,70 +22,6 @@ namespace hotstuff {
 // Every pool has a Crypto
 class Crypto {
 public:
-    struct BlsCollectionItem {
-        HashStr msg_hash;
-        common::Bitmap ok_bitmap{ common::kEachShardMaxNodeCount };
-        std::shared_ptr<libff::alt_bn128_G1> partial_signs[common::kEachShardMaxNodeCount];
-        std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign;
-
-        inline uint32_t OkCount() const {
-            return ok_bitmap.valid_count();
-        }    
-    };
-    // Bls vote collection
-    struct BlsCollection {
-        BlsCollection() : view(0), handled(false), count(0), max_hash_count(0) {
-        }
-
-        std::shared_ptr<BlsCollectionItem> GetItem(const HashStr& msg_hash, uint32_t index) {
-            if (!index_with_hash[index].empty()) {
-                ZJC_DEBUG("new hash coming index: %d, %s, %s", 
-                    index, 
-                    common::Encode::HexEncode(msg_hash).c_str(),
-                    common::Encode::HexEncode(index_with_hash[index]).c_str());
-                // assert(msg_hash == index_with_hash[index]);
-                auto it = msg_collection_map.find(index_with_hash[index]);
-                return it->second;
-            }
-            
-            ++count;
-            index_with_hash[index] = msg_hash;
-            std::shared_ptr<BlsCollectionItem> collection_item = nullptr;
-            auto it = msg_collection_map.find(msg_hash);
-            if (it == msg_collection_map.end()) {
-                collection_item = std::make_shared<BlsCollectionItem>();
-                collection_item->msg_hash = msg_hash;
-                msg_collection_map[msg_hash] = collection_item;
-            } else {
-                collection_item = it->second;
-            }
-    
-            collection_item->ok_bitmap.Set(index);
-            if (max_hash_count < collection_item->OkCount()) {
-                max_hash_count = collection_item->OkCount();
-            }
-
-            ZJC_DEBUG("hash: %s, all count: %u, ok count: %d, index: %d",
-                common::Encode::HexEncode(msg_hash).c_str(), 
-                count, 
-                collection_item->OkCount(), 
-                index);
-            return collection_item;
-        }
-
-        uint32_t invalid_diff_count() {
-            return count - max_hash_count;
-        }
-
-        View view;
-        // may receive different msg_hashs per view because of unexpected inconsistency.
-        std::unordered_map<HashStr, std::shared_ptr<BlsCollectionItem>> msg_collection_map;
-        HashStr index_with_hash[1024];
-        bool handled;
-        uint32_t count;
-        uint32_t max_hash_count;
-    };
-    
     Crypto(
             const uint32_t& pool_idx,
             const std::shared_ptr<ElectInfo>& elect_info,
@@ -118,10 +59,7 @@ public:
             const TC& tc);    
     Status SignMessage(transport::MessagePtr& msg_ptr);
     Status VerifyMessage(const transport::MessagePtr& msg_ptr);
-    void RecoverBlsCollection() {
-        bls_collection_ = nullptr;
-    }
-    
+
     inline std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, uint64_t elect_height) {
         auto item = elect_info_->GetElectItem(sharding_id, elect_height);
         if (item != nullptr) {
@@ -168,10 +106,6 @@ public:
         auto y = libBLS::ThresholdUtils::fieldElementToString(sign.Y);
         return "("+x+","+y+")";
     }
-
-    // std::shared_ptr<BlsCollectionItem> bls_collection_item(const HashStr& msg_hash) {
-    //     return bls_collection_->GetItem(msg_hash);
-    // }    
     
     Status VerifyThresSign(
         uint32_t sharding_id,
@@ -274,12 +208,17 @@ private:
         }
     }
 
+    struct HashWithVoteInfo {
+        common::Bitmap vote_bitmap;
+    };
+
     // 保留上一次 elect_item，避免 epoch 切换的影响
     uint32_t pool_idx_;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::shared_ptr<bls::IBlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<BlsCollection> bls_collection_ = nullptr;
     std::shared_ptr<ElectItem> genesis_elect_items_[network::kConsensusShardEndNetworkId] = { nullptr };
+    std::unordered_map<HashStr, std::map<uint32_t, std::shared_ptr<libff::alt_bn128_G1>>> hash_with_vote_index_;
+    View vote_view_ = 0;
 };
 
 } // namespace consensus

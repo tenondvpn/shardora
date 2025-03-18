@@ -86,11 +86,11 @@ public:
         acc_balance_map[from] = from_balance;
         block_tx.set_balance(from_balance);
         block_tx.set_gas_used(gas_used);
-    //     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-    //         common::Encode::HexEncode(block_tx.gid()).c_str(),
-    //         block_tx.balance(),
-    //         block_tx.gas_used(),
-    //         block_tx.status());
+        ZJC_DEBUG("create library called handle tx success: %s, %lu, %lu, status: %d",
+            common::Encode::HexEncode(block_tx.gid()).c_str(),
+            block_tx.balance(),
+            block_tx.gas_used(),
+            block_tx.status());
         return kConsensusSuccess;
     }
 

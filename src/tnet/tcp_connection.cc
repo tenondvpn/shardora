@@ -1,9 +1,10 @@
 #include "tnet/tcp_connection.h"
 
+#include "common/log.h"
+#include "common/global_info.h"
 #include "common/time_utils.h"
 #include "tnet/utils/cmd_packet.h"
 #include "tnet/socket/client_socket.h"
-#include <common/log.h>
 
 namespace shardora {
 
@@ -11,9 +12,11 @@ namespace tnet {
 
 TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {
     create_timestamp_ms_ = common::TimeUtils::TimestampMs();
+    common::GlobalInfo::Instance()->AddSharedObj(10);
 }
 
 TcpConnection::~TcpConnection() {
+    common::GlobalInfo::Instance()->DecSharedObj(10);
     if (socket_ != NULL) {
         socket_->Close();
         socket_->Free();

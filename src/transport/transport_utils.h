@@ -7,10 +7,12 @@
 #include <unistd.h>
 #endif
 
+#include <atomic>
 #include <memory>
 #include <functional>
 
 #include "common/log.h"
+#include "common/global_info.h"
 #include "common/string_utils.h"
 #include "common/time_utils.h"
 #include "protos/address.pb.h"
@@ -77,15 +79,31 @@ enum FirewallCheckStatus {
 static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
 static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
+static const uint32_t kEachMessagePoolMaxCount = 2048u;
 
-struct TransportMessage {
+// TODO: check memory
+class TransportMessage {
+public:
+    // static std::atomic<int32_t> testTransportMessageCount;
     TransportMessage() : conn(nullptr), retry(false), handled(false), is_leader(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
+#ifndef NDEBUG
         memset(times, 0, sizeof(times));
+#endif
         times_idx = 0;
         thread_index = -1;
+        // auto now_count = testTransportMessageCount.fetch_add(1);
+        // ZJC_DEBUG("memory check create new transport message: %d", now_count);
+         common::GlobalInfo::Instance()->AddSharedObj(11);
+
+    }
+
+    ~TransportMessage() {
+        // auto now_count = testTransportMessageCount.fetch_sub(1);
+        // ZJC_DEBUG("memory check remove transport message: %d", now_count);
+        common::GlobalInfo::Instance()->DecSharedObj(11);
     }
 
     protobuf::Header header;
@@ -93,8 +111,10 @@ struct TransportMessage {
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
-    uint64_t times[256];
-    std::string debug_str[256];
+#ifndef NDEBUG
+    uint64_t times[64];
+    std::string debug_str[64];
+#endif
     uint32_t times_idx;
     uint64_t handle_timeout;
     uint64_t timeout;
@@ -108,17 +128,20 @@ typedef std::shared_ptr<TransportMessage> MessagePtr;
 typedef std::function<void(const transport::MessagePtr& message)> MessageProcessor;
 typedef std::function<int(transport::MessagePtr& message)> FirewallCheckCallback;
 
-struct ClientItem {
+class ClientItem {
+public:
+    ClientItem() {
+        common::GlobalInfo::Instance()->AddSharedObj(12);
+    }
+
+    ~ClientItem() {
+        common::GlobalInfo::Instance()->DecSharedObj(12);
+    }
+
     std::string des_ip;
     uint16_t port;
     std::string msg;
     uint64_t hash64;
-};
-
-struct ClientConnection {
-    std::string des_ip;
-    uint16_t port;
-    tnet::TcpConnection* conn;
 };
 
 static const uint32_t kMaxHops = 20u;

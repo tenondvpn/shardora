@@ -376,7 +376,6 @@ void NetworkInit::AddCmds() {
                   << ",chainSize: " << chain->Size()
                   << ",commitView: " << chain->LatestCommittedBlock()->qc().view()
                   << ",CurView: " << pacemaker->CurView() << std::endl;
-        chain->Print();
     });
 }
 
@@ -1152,25 +1151,25 @@ void NetworkInit::AddBlockItemToCache(
         db::DbWriteBatch& db_batch) {
     // TODO: fix
     auto* block = &view_block->block_info();
-    if (prefix_db_->BlockExists(view_block->qc().view_block_hash())) {
-        ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-            view_block->qc().network_id(),
-            view_block->qc().pool_index(),
-            block->height(),
-            block->tx_list_size(),
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-        return;
-    }
+    // if (prefix_db_->BlockExists(view_block->qc().view_block_hash())) {
+    //     ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
+    //         view_block->qc().network_id(),
+    //         view_block->qc().pool_index(),
+    //         block->height(),
+    //         block->tx_list_size(),
+    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+    //     return;
+    // }
 
-    if (prefix_db_->BlockExists(view_block->qc().network_id(), view_block->qc().pool_index(), block->height())) {
-        ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-            view_block->qc().network_id(),
-            view_block->qc().pool_index(),
-            block->height(),
-            block->tx_list_size(),
-            common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-        return;
-    }
+    // if (prefix_db_->BlockExists(view_block->qc().network_id(), view_block->qc().pool_index(), block->height())) {
+    //     ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
+    //         view_block->qc().network_id(),
+    //         view_block->qc().pool_index(),
+    //         block->height(),
+    //         block->tx_list_size(),
+    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+    //     return;
+    // }
 
     ZJC_DEBUG("cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
         view_block->qc().network_id(),
@@ -1184,9 +1183,9 @@ void NetworkInit::AddBlockItemToCache(
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
     }
 
-    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
-        return;
-    }
+    // if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
+    //     return;
+    // }
 
     // gas_prepayment_->NewBlock(*view_block, db_batch);
     // one block must be one consensus pool
@@ -1238,7 +1237,6 @@ bool NetworkInit::DbNewBlockCallback(
         }
     }
 
-    shard_statistic_->OnNewBlock(view_block);
     return true;
 }
 

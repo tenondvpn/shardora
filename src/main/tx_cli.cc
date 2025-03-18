@@ -10,6 +10,8 @@
 #include "dht/dht_key.h"
 #include "pools/tx_utils.h"
 #include "security/ecdsa/ecdsa.h"
+#include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
 
@@ -133,9 +135,143 @@ static transport::MessagePtr CreateTransactionWithAttr(
     //     << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
     //     << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
     //     << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+    //     << "tx sign v: " << (char)sign[64] << std::endl
     //     << "amount: " << amount << std::endl
     //     << "gas_limit: " << gas_limit << std::endl
     //     << std::endl;
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
+static transport::MessagePtr GmsslCreateTransactionWithAttr(
+        security::GmSsl& gmssl,
+        const std::string& gid,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(gmssl.GetPublicKey());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (gmssl.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+        << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+        << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+        << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+        << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+        << "hash64: " << msg.hash64() << std::endl
+        << "amount: " << amount << std::endl
+        << "gas_limit: " << gas_limit << std::endl
+        << std::endl;
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
+
+static transport::MessagePtr OqsCreateTransactionWithAttr(
+        security::Oqs& oqs,
+        const std::string& gid,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(oqs.GetPublicKey());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (oqs.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+        << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+        << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+        << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+        << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+        << "hash64: " << msg.hash64() << std::endl
+        << "amount: " << amount << std::endl
+        << "gas_limit: " << gas_limit << std::endl
+        << std::endl;
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -145,6 +281,8 @@ static std::unordered_map<std::string, std::string> g_pri_addrs_map;
 static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
+static std::vector<std::string> g_oqs_prikeys;
+static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
 static void LoadAllAccounts(int32_t shardnum=3) {
     FILE* fd = fopen((std::string("../init_accounts") + std::to_string(shardnum)).c_str(), "r");
     if (fd == nullptr) {
@@ -179,6 +317,50 @@ static void LoadAllAccounts(int32_t shardnum=3) {
     assert(!g_prikeys.empty());
     while (g_prikeys.size() < common::kImmutablePoolSize) {
         g_prikeys.push_back(g_prikeys[0]);
+    }
+
+    fclose(fd);
+    delete[]read_buf;
+}
+
+static void GetOqsKeys() {
+    FILE* fd = fopen((std::string("../oqs_addrs")).c_str(), "r");
+    if (fd == nullptr) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    bool res = true;
+    std::string filed;
+    const uint32_t kMaxLen = 102400;
+    char* read_buf = new char[kMaxLen];
+    while (true) {
+        char* read_res = fgets(read_buf, kMaxLen, fd);
+        if (read_res == NULL) {
+            break;
+        }
+
+        auto line_splits = common::Split<>(read_res, '\n');
+        for (int32_t i = 0; i < line_splits.Count(); ++i) {
+            auto item_split = common::Split<>(line_splits[i], '\t');
+            if (item_split.Count() != 2) {
+                break;
+            }
+
+            std::string prikey = common::Encode::HexDecode(item_split[0]);
+            g_oqs_prikeys.push_back(prikey);
+            g_oqs_pri_pub_map[prikey] = common::Encode::HexDecode(item_split[1]);
+            if (g_oqs_prikeys.size() >= common::kImmutablePoolSize) {
+                break;
+            }
+
+            std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(g_oqs_pri_pub_map[prikey]) << std::endl;
+        }
+    }
+
+    assert(!g_oqs_prikeys.empty());
+    while (g_oqs_prikeys.size() < common::kImmutablePoolSize) {
+        g_oqs_prikeys.push_back(g_oqs_prikeys[0]);
     }
 
     fclose(fd);
@@ -257,8 +439,6 @@ int tx_main(int argc, char** argv) {
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
-    std::cout << "init from: " << common::Encode::HexEncode(security->GetAddress())
-              << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;    
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint32_t step_num = 1000;
@@ -337,6 +517,7 @@ int one_tx_main(int argc, char** argv) {
     log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    std::cout << 0 << std::endl;
     auto db_ptr = std::make_shared<db::Db>();
     if (!db_ptr->Init(db_path)) {
         std::cout << "init db failed!" << std::endl;
@@ -349,6 +530,7 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
+    std::cout << 1 << std::endl;
     if (transport::TcpTransport::Instance()->Init(
             "127.0.0.1:13791",
             128,
@@ -363,48 +545,24 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::cout << argv[2] << ", "
-        << argv[3] << ", "
-        << argv[4] << ", "
-        << argv[5] << ", "
-        << argv[6] << std::endl;
-
+    std::cout << 2 << std::endl;
     uint64_t amount = 0;
     if (!common::StringUtil::ToUint64(argv[3], &amount)) {
         std::cout << "invalid amount: " << argv[3] << std::endl;
         return 1;
     }
 
-    uint64_t gas_limit = 0;
-    if (!common::StringUtil::ToUint64(argv[4], &gas_limit)) {
-        std::cout << "invalid gas_limit: " << argv[3] << std::endl;
-        return 1;
-    }
-
+    uint64_t gas_limit = 1000;
     std::string key = "";
     std::string val = "";
-    if (argc >= 7) {
-        key = argv[5];
-        val = argv[6];
-    }
-
-
-    std::string prikey = common::Encode::HexDecode(from_prikey);
     std::string to = common::Encode::HexDecode(argv[2]);
-    uint32_t prikey_pos = 0;
-    auto from_prikey = prikey;
-    security->SetPrivateKey(from_prikey);
+    security->SetPrivateKey(g_prikeys[0]);
     std::string gid = common::Random::RandomString(32);
-    if (argc >= 8) {
-        FILE* fd = fopen(argv[7], "w");
-        fwrite(common::Encode::HexEncode(gid).c_str(), 1, 2 * gid.size(), fd);
-        fclose(fd);
-    }
-
+    std::cout << 4 << std::endl;
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
-        from_prikey,
+        g_prikeys[0],
         to,
         key,
         val,
@@ -412,6 +570,8 @@ int one_tx_main(int argc, char** argv) {
         gas_limit,
         1,
         shardnum);
+    std::cout << "gid: " << common::Encode::HexEncode(gid).c_str()
+        << ", hash64: " << tx_msg_ptr->header.hash64() << std::endl;
     if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
@@ -752,8 +912,161 @@ int contract_call(int argc, char** argv, bool more=false) {
     return 0;
 }
 
+int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amount) {
+    LoadAllAccounts(shardnum);
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("gmssl.db")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint64_t pos = 0;
+    if (db_ptr->Get("txcli_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
+    if (net_handler.Init(db_ptr, security) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    security::GmSsl gmssl;
+    gmssl.SetPrivateKey(private_key);
+    std::cout << "gmssl address: " << common::Encode::HexEncode(gmssl.GetAddress()) <<
+        ", pk: " << common::Encode::HexEncode(gmssl.GetPublicKey()) << std::endl;
+    auto test_hash = common::Random::RandomString(32);
+    std::string test_sign;
+    auto sign_res = gmssl.Sign(test_hash, &test_sign);
+    assert(sign_res == 0);
+    int verify_res = gmssl.Verify(test_hash, gmssl.GetPublicKey(), test_sign);
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+        << ", verify res: " << verify_res << std::endl;
+
+    auto tx_msg_ptr = GmsslCreateTransactionWithAttr(
+        gmssl,
+        common::Random::RandomString(32),
+        to,
+        "",
+        "",
+        amount,
+        10000,
+        1,
+        3);
+
+        
+    if (transport::TcpTransport::Instance()->Send("127.0.0.1", 13001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "send success." << std::endl;
+}
+
+int oqs_tx(const std::string& to, uint64_t amount) {
+    GetOqsKeys();
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("oqs.db")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint64_t pos = 0;
+    if (db_ptr->Get("txcli_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
+    if (net_handler.Init(db_ptr, security) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    security::Oqs oqs;
+    auto private_key = g_oqs_prikeys[0];
+    auto public_key = g_oqs_pri_pub_map[private_key];
+    oqs.SetPrivateKey(private_key, public_key);
+    std::cout << "oqs address: " << common::Encode::HexEncode(oqs.GetAddress()) <<
+        ", pk: " << common::Encode::HexEncode(oqs.GetPublicKey()) << std::endl;
+    auto test_hash = common::Random::RandomString(32);
+    std::string test_sign;
+    auto sign_res = oqs.Sign(test_hash, &test_sign);
+    assert(sign_res == 0);
+    int verify_res = oqs.Verify(test_hash, oqs.GetPublicKey(), test_sign);
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+        << ", verify res: " << verify_res << std::endl;
+
+    auto tx_msg_ptr = OqsCreateTransactionWithAttr(
+        oqs,
+        common::Random::RandomString(32),
+        to,
+        "",
+        "",
+        amount,
+        10000,
+        1,
+        3);
+
+        
+    if (transport::TcpTransport::Instance()->Send("127.0.0.1", 13001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "send success." << std::endl;
+}
+
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
+    security::Ecdsa ecdsa;
+    ecdsa.SetPrivateKey(common::Encode::HexDecode("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848"));
+    std::cout << common::Encode::HexEncode(ecdsa.GetPublicKey()) << std::endl;
+    ecdsa.SetPrivateKey(common::Encode::HexDecode("6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350"));
+    std::cout << common::Encode::HexEncode(ecdsa.GetPublicKey()) << std::endl;
     if (argc <= 1 || argv[1][0] == '0') {
         tx_main(argc, argv);
         transport::TcpTransport::Instance()->Stop();
@@ -773,7 +1086,21 @@ int main(int argc, char** argv) {
         }
     } else if (argv[1][0] == '4') {
         create_library(argc, argv);
+    } else if (argv[1][0] == '5') {
+        uint64_t amount = 0;
+        std::cout << "private key: " << argv[2] << std::endl;
+        std::cout << "to: " << argv[3] << std::endl;
+        std::cout << "amount: " << argv[4] << std::endl;
+        common::StringUtil::ToUint64(argv[4], &amount);
+        gmssl_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
+    } else if (argv[1][0] == '6') {
+        uint64_t amount = 0;
+        std::cout << "to: " << argv[2] << std::endl;
+        std::cout << "amount: " << argv[3] << std::endl;
+        common::StringUtil::ToUint64(argv[3], &amount);
+        oqs_tx(common::Encode::HexDecode(argv[2]), amount);
     } else {
+        std::cout << "call one tx." << std::endl;
         one_tx_main(argc, argv);
     }
 
@@ -781,3 +1108,4 @@ int main(int argc, char** argv) {
     transport::TcpTransport::Instance()->Stop();
     return 0;
 }
+ 

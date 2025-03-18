@@ -54,27 +54,32 @@ struct Construct {
 #endif
 
 #ifndef NDEBUG
-#define ADD_DEBUG_PROCESS_TIMESTAMP() { \
-    if (msg_ptr) { \
-        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
-        auto btime = common::TimeUtils::TimestampUs(); \
-        uint64_t diff_time = 0; \
-        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 200000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
-        msg_ptr->times[msg_ptr->times_idx] = btime; \
-        msg_ptr->times_idx++; \
-    } \
-}
+#define ADD_DEBUG_PROCESS_TIMESTAMP()
+#define TMP_ADD_DEBUG_PROCESS_TIMESTAMP()
 
-#define TMP_ADD_DEBUG_PROCESS_TIMESTAMP() { \
-    if (msg_ptr) { \
-        assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
-        auto btime = common::TimeUtils::TimestampUs(); \
-        uint64_t diff_time = 0; \
-        if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 10000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
-        msg_ptr->times[msg_ptr->times_idx] = btime; \
-        msg_ptr->times_idx++; \
-    } \
-}
+// #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
+//     if (msg_ptr) { \
+//         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
+//         auto btime = common::TimeUtils::TimestampUs(); \
+//         uint64_t diff_time = 0; \
+//         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 200000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+//         msg_ptr->debug_str[msg_ptr->times_idx] = std::string(ZJC_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
+//         msg_ptr->times[msg_ptr->times_idx] = btime; \
+//         msg_ptr->times_idx++; \
+//     } \
+// }
+
+// #define TMP_ADD_DEBUG_PROCESS_TIMESTAMP() { \
+//     if (msg_ptr) { \
+//         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
+//         auto btime = common::TimeUtils::TimestampUs(); \
+//         uint64_t diff_time = 0; \
+//         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 10000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+//         msg_ptr->debug_str[msg_ptr->times_idx] = std::string(ZJC_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
+//         msg_ptr->times[msg_ptr->times_idx] = btime; \
+//         msg_ptr->times_idx++; \
+//     } \
+// }
 #else
 #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #define TMP_ADD_DEBUG_PROCESS_TIMESTAMP()
@@ -193,7 +198,7 @@ enum VipLevel {
     kVipLevel5 = 5,
 };
 
-static const uint32_t kImmutablePoolSize = 16u;
+static const uint32_t kImmutablePoolSize = 32u;
 static const uint32_t kMaxTxCount = 2048u;
 static const uint32_t kRootChainPoolIndex = kImmutablePoolSize;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
@@ -240,7 +245,7 @@ static const uint32_t kInvalidUint32 = (std::numeric_limits<uint32_t>::max)();
 static const uint32_t kInvalidUint8 = (std::numeric_limits<uint8_t>::max)();
 static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
-static const uint8_t kMaxThreadCount = 16;
+static const uint8_t kMaxThreadCount = kImmutablePoolSize;
 
 static const uint32_t kSingleBlockMaxMBytes = 2u;
 static const uint32_t kVpnShareStakingPrice = 1u;
@@ -416,7 +421,6 @@ inline uint64_t GetNthElement(std::vector<uint64_t> v, float ratio) {
     std::nth_element(v.begin(), v.begin() + n, v.end());
     return v[n];
 }
-
 
 template <typename Func, typename... Args>
 bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... args) {

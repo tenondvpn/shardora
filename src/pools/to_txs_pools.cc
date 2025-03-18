@@ -29,15 +29,12 @@ ToTxsPools::ToTxsPools(
 ToTxsPools::~ToTxsPools() {}
 
 void ToTxsPools::NewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
-        db::DbWriteBatch& db_batch) {
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
 #ifdef TEST_NO_CROSS
     return;
 #endif
     auto& block = view_block_ptr->block_info();
-    if (view_block_ptr->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
-            view_block_ptr->qc().network_id() + network::kConsensusWaitingShardOffset !=
-            common::GlobalInfo::Instance()->network_id()) {
+    if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
         ZJC_DEBUG("network invalid: %d, local: %d", view_block_ptr->qc().network_id(), common::GlobalInfo::Instance()->network_id());
         return;
     }
@@ -73,7 +70,7 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
 #endif
-    StatisticToInfo(*view_block_ptr, db_batch);
+    StatisticToInfo(*view_block_ptr);
 
     added_heights_[pool_idx].insert(std::make_pair<>(
         block.height(), 
@@ -101,8 +98,7 @@ void ToTxsPools::NewBlock(
 }
 
 void ToTxsPools::StatisticToInfo(
-        const view_block::protobuf::ViewBlockItem& view_block, 
-        db::DbWriteBatch& db_batch) {
+        const view_block::protobuf::ViewBlockItem& view_block) {
     auto& block = view_block.block_info();
     const auto& tx_list = block.tx_list();
 #ifndef ENABLE_HOTSTUFF
@@ -133,8 +129,9 @@ void ToTxsPools::StatisticToInfo(
         //     common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list[i].step());
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalTo:
-            HandleNormalToTx(view_block, tx_list[i], db_batch);
+            HandleNormalToTx(view_block, tx_list[i]);
             break;
+        case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kContractCreate:
             HandleCreateContractUserCall(view_block, tx_list[i]);
             break;
@@ -285,7 +282,16 @@ void ToTxsPools::HandleCreateContractUserCall(
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
     uint32_t pool_index = view_block.qc().pool_index();
-    AddTxToMap(view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "", "", 0);
+    if (tx.step() == pools::protobuf::kCreateLibrary) {
+        AddTxToMap(
+            view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", 
+            tx.contract_code(), tx.from(), 0);
+    } else {
+        AddTxToMap(
+            view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", 
+            "", tx.from(), tx.contract_prepayment());
+    }
+    
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
@@ -325,6 +331,10 @@ void ToTxsPools::HandleCreateContractByRootFrom(
 void ToTxsPools::HandleRootCreateAddress(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        return;
+    }
+
     // 普通 EOA 账户要求有 amount
     if (tx.amount() <= 0 && !tx.has_contract_code()) {
         ZJC_DEBUG("from transfer amount invalid!");
@@ -347,9 +357,12 @@ void ToTxsPools::HandleRootCreateAddress(
         return;
     }
 
-    ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
+    ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", 
+        common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
 	// 对于 contract create，要把 from、contract_code、prepayment 发给对应 shard
-    AddTxToMap(view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", tx.contract_code(), tx.from(), tx.contract_prepayment());
+    AddTxToMap(view_block, tx.to(), tx.step(), tx.amount(), 
+        sharding_id, pool_index, "", tx.contract_code(),
+        tx.from(), tx.contract_prepayment());
 }
 
 void ToTxsPools::AddTxToMap(
@@ -388,12 +401,9 @@ void ToTxsPools::AddTxToMap(
         item.sharding_id = sharding_id;
         item.elect_join_g2_value = key;
         // for ContractCreate Tx
-        if (library_bytes != "") {
-            item.library_bytes = library_bytes;
-            item.from = from;
-            item.prepayment = prepayment;
-        }
-        
+        item.library_bytes = library_bytes;
+        item.from = from;
+        item.prepayment = prepayment;
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
@@ -413,30 +423,30 @@ void ToTxsPools::AddTxToMap(
 
 void ToTxsPools::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx_info) {
     if (tx_info.storages_size() <= 0) {
         assert(false);
         return;
     }
 
-    auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
-    for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() != protos::kNormalToShards) {
+    std::shared_ptr<pools::protobuf::ShardToTxItem> heights_ptr;
+    for (int32_t store_idx = 0; store_idx < tx_info.storages_size(); ++store_idx) {
+        auto& storage = tx_info.storages(store_idx);
+        if (storage.key() != protos::kNormalToShards) {
             continue;
         }
             
         pools::protobuf::ToTxMessage to_tx;
-        if (!to_tx.ParseFromString(tx_info.storages(i).value())) {
+        if (!to_tx.ParseFromString(storage.value())) {
             ZJC_WARN("parse from to txs message failed: %s",
-                common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
+                common::Encode::HexEncode(storage.value()).c_str());
             assert(false);
             continue;
         }
 
         ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-            "common::Encode::HexEncode(tx_info.storages(i).value()).c_str()",
+            common::Encode::HexEncode(storage.key()).c_str(),
+            "common::Encode::HexEncode(storage.value()).c_str()",
             to_tx.to_heights().sharding_id());
         if (to_tx.to_heights().heights_size() != common::kInvalidPoolIndex) {
             ZJC_ERROR("invalid heights size: %d, %d",
@@ -445,6 +455,7 @@ void ToTxsPools::HandleNormalToTx(
             continue;
         }
 
+        heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
         *heights_ptr = to_tx.to_heights();
         auto& heights = *heights_ptr;
         heights.set_block_height(view_block.block_info().height());
@@ -452,7 +463,6 @@ void ToTxsPools::HandleNormalToTx(
             view_block.block_info().height(), 
             heights.sharding_id(), 
             ProtobufToJson(to_tx).c_str());
-        prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
         for (int32_t i = 0; i < heights.heights_size(); ++i) {
             if (heights.heights(i) > has_statistic_height_[i]) {
                 has_statistic_height_[i] = heights.heights(i);
@@ -489,9 +499,13 @@ void ToTxsPools::HandleNormalToTx(
             erased_max_heights_[i] = heights.heights(i) + 1;
         }
 
+        ZJC_DEBUG("success update heights: %s", ProtobufToJson(*heights_ptr).c_str());
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = heights_ptr;
         break;
     }
+
+    assert(heights_ptr != nullptr);
 }
 
 void ToTxsPools::LoadLatestHeights() {
@@ -512,14 +526,17 @@ void ToTxsPools::LoadLatestHeights() {
         return;
     }
 
-    prev_to_heights_ = heights_ptr;
+    {
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
+        prev_to_heights_ = heights_ptr;
+    }
     uint32_t max_pool_index = common::kImmutablePoolSize;
     // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
     //     ++max_pool_index;
     // }
 
-    if (prev_to_heights_ != nullptr) {
-        auto& this_net_heights = prev_to_heights_->heights();
+    if (heights_ptr != nullptr) {
+        auto& this_net_heights = heights_ptr->heights();
         for (int32_t i = 0; i < this_net_heights.size(); ++i) {
             pool_consensus_heihgts_[i] = this_net_heights[i];
             has_statistic_height_[i] = this_net_heights[i];
@@ -527,7 +544,6 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
-    db::DbWriteBatch db_batch;
     for (uint32_t i = 0; i <= max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
         if (pool_latest_height == common::kInvalidUint64) {
@@ -543,7 +559,7 @@ void ToTxsPools::LoadLatestHeights() {
                     common::GlobalInfo::Instance()->network_id(), i, height, &view_block)) {
                 consensus_stop = true;
             } else {
-                NewBlock(view_block_ptr, db_batch);
+                NewBlock(view_block_ptr);
             }
 
             if (!consensus_stop) {
@@ -742,11 +758,19 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
+    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
+    {
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
+        prev_to_heights = prev_to_heights_;
+    }
+
+    ZJC_DEBUG("statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+        ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
     for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
-        if (prev_to_heights_ != nullptr) {
-            min_height = prev_to_heights_->heights(pool_idx) + 1;
+        if (prev_to_heights != nullptr) {
+            min_height = prev_to_heights->heights(pool_idx) + 1;
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
@@ -871,31 +895,38 @@ int ToTxsPools::CreateToTxWithHeights(
                 continue;
             }
 
-            if (memcmp(account_info->bytes_code().c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(account_info->bytes_code());
-            }
-
+            to_item->set_contract_from(iter->second.from);
+            to_item->set_library_bytes(account_info->bytes_code());
+            to_item->set_prepayment(iter->second.prepayment);
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
-            ZJC_DEBUG("create contract use caller sharding address: %s, %u",
+            ZJC_DEBUG("create contract use caller sharding address: %s, %u, "
+                "step: %d, from: %s, to: %s, prepayment: %lu",
                 common::Encode::HexEncode(to).c_str(),
-                common::GlobalInfo::Instance()->network_id());        
+                common::GlobalInfo::Instance()->network_id(),
+                iter->second.type,
+                common::Encode::HexEncode(iter->second.from).c_str(),
+                common::Encode::HexEncode(to).c_str(),
+                iter->second.prepayment);        
+        } else if (iter->second.type == pools::protobuf::kCreateLibrary) {
+            assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
+            to_item->set_library_bytes(iter->second.library_bytes);
+            auto net_id = common::GlobalInfo::Instance()->network_id();
+            to_item->set_sharding_id(net_id);
+            ZJC_DEBUG("create library use caller sharding address: %s, %u, step: %d",
+                common::Encode::HexEncode(to).c_str(),
+                common::GlobalInfo::Instance()->network_id(),
+                iter->second.type);        
         } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             ZJC_DEBUG("library bytes: %s, to: %s, from: %s",
                 common::Encode::HexEncode(iter->second.library_bytes).c_str(),
                 common::Encode::HexEncode(to).c_str(),
                 common::Encode::HexEncode(iter->second.from).c_str());
-            if (memcmp(iter->second.library_bytes.c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(iter->second.library_bytes);
-                // ContractCreate 需要 from 地址，用于 prepayment 创建
-                to_item->set_contract_from(iter->second.from);
-                to_item->set_prepayment(iter->second.prepayment);
-            }
+            to_item->set_library_bytes(iter->second.library_bytes);
+            // ContractCreate 需要 from 地址，用于 prepayment 创建
+            to_item->set_contract_from(iter->second.from);
+            to_item->set_prepayment(iter->second.prepayment);
             auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
@@ -909,13 +940,9 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::Encode::HexEncode(to).c_str(),
                 common::Encode::HexEncode(iter->second.from).c_str());
             // for contract create tx
-			if (memcmp(iter->second.library_bytes.c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(iter->second.library_bytes);
-                to_item->set_contract_from(iter->second.from);
-                to_item->set_prepayment(iter->second.prepayment);
-            }
+            to_item->set_library_bytes(iter->second.library_bytes);
+            to_item->set_contract_from(iter->second.from);
+            to_item->set_prepayment(iter->second.prepayment);
             to_item->set_sharding_id(sharding_id);
             ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
                 common::Encode::HexEncode(to).c_str(),

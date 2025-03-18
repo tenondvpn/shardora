@@ -655,7 +655,6 @@ static void PrepaymentsValid(evhtp_request_t* req, void* data) {
 }
 
 static void GidsValid(evhtp_request_t* req, void* data) {
-    ZJC_DEBUG("query account.");
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
     auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
     auto header3 = evhtp_header_new(
@@ -684,9 +683,11 @@ static void GidsValid(evhtp_request_t* req, void* data) {
             continue;
         }
 
+        ZJC_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         auto res = prefix_db->JustCheckCommitedGidExists(gid);
         if (res) {
             res_json["gids"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
 

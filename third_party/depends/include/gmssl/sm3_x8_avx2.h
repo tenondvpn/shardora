@@ -7,10 +7,7 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  */
 
-// TODO: a new header for coarse-grained parallelism SM3, implemented by sm3_avx2/avx512, sm3_sve/sve2, sm3_cl
-// and used by sm3_xmss or other algors
-
-#ifndef GMSSL_SM3_X8_AVX2_H  // GMSSL_SM3_MULTI_H ?
+#ifndef GMSSL_SM3_X8_AVX2_H
 #define GMSSL_SM3_X8_AVX2_H
 
 #include <stdint.h>

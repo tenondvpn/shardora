@@ -65,11 +65,7 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
-        ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
-            des_sharding_id_,
-            pool_index_,
-            0);
-        ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+        ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
             des_sharding_id_,
             pool_index_,
             0);
@@ -78,9 +74,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
             pool_index_,
             0,
             sync::kSyncHigh);
-        ZJC_DEBUG("des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
-            "invaid heights size: %u, height: %lu",
-            des_sharding_id_, pool_index_, latest_height_, 1, 0);
         return 1;
     }
 
@@ -97,11 +90,7 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
                 continue;
             }
 
-            ZJC_DEBUG("des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
-                "invaid heights size: %u, height: %lu",
-                des_sharding_id_, pool_index_, latest_height_,
-                invalid_heights.size(), invalid_heights[i]);
-            ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+            ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                 des_sharding_id_,
                 pool_index_,
                 invalid_heights[i]);

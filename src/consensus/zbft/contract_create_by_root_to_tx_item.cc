@@ -39,8 +39,6 @@ int ContractCreateByRootToTxItem::HandleTx(
 	auto cc_item = cc_to_tx.tos(0);
 	block_tx.set_to(cc_item.des());
 	block_tx.set_amount(cc_item.amount());
-	block_tx.set_contract_prepayment(cc_item.prepayment());
-	block_tx.set_from(cc_item.contract_from());
 	block_tx.set_contract_code(cc_item.library_bytes());
 	ZJC_DEBUG("create contract info, contract_code: %s, from: %s, gas_limit: %lu, gas_price: %lu, prepayment: %lu, to: %s",
 		block_tx.contract_code().c_str(),

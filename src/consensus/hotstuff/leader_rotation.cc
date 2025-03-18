@@ -41,14 +41,14 @@ LeaderRotation::~LeaderRotation() {}
 //         ZJC_DEBUG("pool: %d, committed block is empty", pool_idx_);
 //     }
 
-//     auto qc_hash = GetQCMsgHash(*qc_ptr);
+//     auto qc_hash = common::Hash::keccak256(committedBlock->qc().sign_x() + committedBlock->qc().sign_y());
 //     uint32_t now_time_num = common::TimeUtils::TimestampSeconds() / TIME_EPOCH_TO_CHANGE_LEADER_S;
 //     uint64_t random_hash = common::Hash::Hash64(qc_hash + std::to_string(now_time_num) + extra_nonce_);
 //     if (Members(common::GlobalInfo::Instance()->network_id())->empty()) {
 //         return nullptr;
 //     }
     
-//     auto leader = getLeaderByRate(static_cast<uint64_t>(random_hash));
+//     auto leader = getLeaderByRandom(static_cast<uint64_t>(random_hash));
 //     if (leader->public_ip == 0 || leader->public_port == 0) {
 //         // 刷新 members 的 ip port
 //         elect_info_->RefreshMemberAddrs(common::GlobalInfo::Instance()->network_id());

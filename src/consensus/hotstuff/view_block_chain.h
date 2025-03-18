@@ -28,13 +28,16 @@ public:
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
         BalanceMapPtr balane_map_ptr,
-        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr);
+        std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
+        bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> GetViewBlock(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockWithHash(const HashStr& hash);
+    std::shared_ptr<ViewBlock> GetViewBlockWithHeight(uint32_t network_id, uint64_t height);
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
     bool Has(const HashStr& hash);
+    bool ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>&);
     // if in the same branch
     bool Extends(const ViewBlock& block, const ViewBlock& target);
     // prune from last prune height to target view block
@@ -58,13 +61,11 @@ public:
     bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash);
     // If a chain is valid
     bool IsValid();
-    void Print() const;
-    void PrintBlock(const std::shared_ptr<ViewBlock>& block, const std::string& indent = "") const;
     std::string String() const;
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
     bool ViewBlockIsCheckedParentHash(const std::string& hash);
     void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
-    bool view_commited(uint32_t network_id, View view) {
+    bool view_commited(uint32_t network_id, View view) const {
         if (commited_view_.find(view) != commited_view_.end()) {
             return true;
         }
@@ -142,7 +143,8 @@ public:
         return latest_locked_block_;
     }
 
-    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlock>& view_block) {
+    inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
+        auto view_block = view_block_info->view_block;
         if (latest_committed_block_ &&
                 (view_block->qc().network_id() !=
                 latest_committed_block_->qc().network_id() ||
@@ -158,6 +160,7 @@ public:
             view_block->block_info().height(),
             view_block->qc().view());
         latest_committed_block_ = view_block;
+        // commited_block_queue_.push(view_block_info);
         auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
         if (it != view_blocks_info_.end()) {
             it->second->status = ViewBlockStatus::Committed;
@@ -183,12 +186,56 @@ public:
         return it->second->status;        
     } 
 
+    bool IsViewCommited(View view) {
+    }
+
 private:
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());
         if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
-            ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
+            auto strings = String();
+            if (strings.empty()) {
+                ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, "
+                    "parent hash: %s, tx size: %u",
+                    common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
+                    view_block_info->view_block->qc().network_id(),
+                    view_block_info->view_block->qc().pool_index(),
+                    view_block_info->view_block->qc().view(),
+                    view_block_info->view_block->block_info().height(),
+                    common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+                    view_block_info->view_block->block_info().tx_list_size());
+            } else {
+                ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, "
+                    "parent hash: %s, tx size: %u, strings: %s",
+                    common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
+                    view_block_info->view_block->qc().network_id(),
+                    view_block_info->view_block->qc().pool_index(),
+                    view_block_info->view_block->qc().view(),
+                    view_block_info->view_block->block_info().height(),
+                    common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+                    view_block_info->view_block->block_info().tx_list_size(),
+                    String().c_str());
+            }
+            return;
+        }
+        
+        view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
+
+        auto view_map_iter = view_map_.find(view_block_info->view_block->qc().view());
+        if (view_map_iter == view_map_.end()) {
+            view_map_[view_block_info->view_block->qc().view()] = 1;
+        } else {
+            ++view_map_iter->second;
+        }
+
+        // cached_block_queue_.push(view_block_info);
+        CHECK_MEMORY_SIZE(view_blocks_info_);
+        auto strings = String();
+        if (strings.empty()) {
+            if (view_map_[view_block_info->view_block->qc().view()] > 1)
+            ZJC_INFO("success add view block: %s, %u_%u_%lu, height: %lu, "
+                "parent hash: %s, tx size: %u, view count: %u",
                 common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
                 view_block_info->view_block->qc().network_id(),
                 view_block_info->view_block->qc().pool_index(),
@@ -196,25 +243,21 @@ private:
                 view_block_info->view_block->block_info().height(),
                 common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
                 view_block_info->view_block->block_info().tx_list_size(),
-                String().c_str());
-            return;
+                view_map_[view_block_info->view_block->qc().view()]);
+        } else {
+            if (view_map_[view_block_info->view_block->qc().view()] > 1)
+            ZJC_INFO("success add view block: %s, %u_%u_%lu, height: %lu, "
+                "parent hash: %s, tx size: %u, strings: %s, view count: %u",
+                common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
+                view_block_info->view_block->qc().network_id(),
+                view_block_info->view_block->qc().pool_index(),
+                view_block_info->view_block->qc().view(),
+                view_block_info->view_block->block_info().height(),
+                common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
+                view_block_info->view_block->block_info().tx_list_size(),
+                String().c_str(),
+                view_map_[view_block_info->view_block->qc().view()]);
         }
-
-        if (it != view_blocks_info_.end()) {
-            view_block_info->children = it->second->children;
-        }
-        
-        view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
-        CHECK_MEMORY_SIZE(view_blocks_info_);
-        ZJC_DEBUG("success add view block: %s, %u_%u_%lu, height: %lu, parent hash: %s, tx size: %u, strings: %s",
-            common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
-            view_block_info->view_block->qc().network_id(),
-            view_block_info->view_block->qc().pool_index(),
-            view_block_info->view_block->qc().view(),
-            view_block_info->view_block->block_info().height(),
-            common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
-            view_block_info->view_block->block_info().tx_list_size(),
-            String().c_str());
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
@@ -227,6 +270,12 @@ private:
                 common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
             for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
                 view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
+                ZJC_DEBUG("%u_%u_%lu, hash: %s, success add gid to block: %s", 
+                    view_block->qc().network_id(),
+                    view_block->qc().pool_index(),
+                    view_block->qc().view(),
+                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
+                    common::Encode::HexEncode(view_block->block_info().tx_list(i).gid()).c_str());
             }
         }
 
@@ -245,9 +294,8 @@ private:
         view_blocks_info_[hash]->status = status;        
     }
 
-    // prune the branch starting from view_block
-    Status GetChildren(const HashStr& hash, std::vector<std::shared_ptr<ViewBlock>>& children);
-    
+    static const uint32_t kCachedViewBlockCount = 16u;
+
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
@@ -259,8 +307,18 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     volatile View stored_to_db_view_ = 0llu;
     std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
-    std::unordered_set<uint64_t> commited_view_;
+    std::set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
+    std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
+    std::priority_queue<
+        std::shared_ptr<ViewBlockInfo>, 
+        std::vector<std::shared_ptr<ViewBlockInfo>>,
+        ViewBlockInfoCmp> cached_pri_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
+    std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
+    std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
+    std::unordered_map<uint64_t, uint32_t> view_map_;
 };
 
 // from db

@@ -62,14 +62,14 @@
 #define DEBUG(fmt, ...)
 #define ZJC_DEBUG(fmt, ...)
 #else
-#define DEBUG(fmt, ...)
-#define ZJC_DEBUG(fmt, ...)
-// #define DEBUG(fmt, ...)  do {\
-//     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-// } while (0)
-// #define ZJC_DEBUG(fmt, ...)  do {\
-//     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-// } while (0)
+// #define DEBUG(fmt, ...)
+// #define ZJC_DEBUG(fmt, ...)
+#define DEBUG(fmt, ...)  do {\
+    LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+} while (0)
+#define ZJC_DEBUG(fmt, ...)  do {\
+    LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+} while (0)
 #endif
 // #define ZJC_INFO(fmt, ...)
 // #define ZJC_WARN(fmt, ...)
@@ -141,7 +141,7 @@
 #endif
 
 static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
-#ifndef NDEBUG
+#ifdef NDEBUG
     return "";
 #endif
     std::string json_str;

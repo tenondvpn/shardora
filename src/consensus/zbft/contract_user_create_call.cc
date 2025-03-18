@@ -18,6 +18,8 @@ int ContractUserCreateCall::HandleTx(
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
     int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
+    ZJC_DEBUG("contract user call create called: %s, balance: %lu", 
+        common::Encode::HexEncode(from).c_str(), from_balance);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
@@ -173,12 +175,15 @@ int ContractUserCreateCall::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("create contract called %s, user: %s, prepament: %lu, gas used: %lu, gas_price: %lu",
+    ZJC_DEBUG("create contract called %s, user: %s, new balance: %lu, "
+        "gas used: %lu, gas_price: %lu, prepayment: %lu, amount: %lu",
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         from_balance,
         gas_used,
-        block_tx.gas_price());
+        block_tx.gas_price(),
+        block_tx.contract_prepayment(),
+        block_tx.amount());
     return kConsensusSuccess;
 }
 

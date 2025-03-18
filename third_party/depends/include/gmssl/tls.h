@@ -1,5 +1,5 @@
-/*
- *  Copyright 2014-2023 The GmSSL Project. All Rights Reserved.
+﻿/*
+ *  Copyright 2014-2022 The GmSSL Project. All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the License); you may
  *  not use this file except in compliance with the License.
@@ -26,6 +26,39 @@
 extern "C" {
 #endif
 
+
+/*
+TLS Public API
+
+	TLS_PROTOCOL
+	TLS_protocol_tlcp
+	TLS_protocol_tls12
+	TLS_protocol_tls13
+
+	TLS_CIPHER_SUITE
+	TLS_cipher_ecc_sm4_cbc_sm3
+	TLS_cipher_ecc_sm4_gcm_sm3
+	TLS_cipher_ecdhe_sm4_cbc_sm3
+	TLS_cipher_ecdhe_sm4_gcm_sm3
+	TLS_cipher_sm4_gcm_sm3
+
+	TLS_CTX
+	tls_ctx_init
+	tls_ctx_set_cipher_suites
+	tls_ctx_set_ca_certificates
+	tls_ctx_set_certificate_and_key
+	tls_ctx_set_tlcp_server_certificate_and_keys
+	tls_ctx_cleanup
+
+	TLS_CONNECT
+	tls_init
+	tls_set_socket
+	tls_do_handshake
+	tls_send
+	tls_recv
+	tls_shutdown
+	tls_cleanup
+*/
 
 typedef uint32_t uint24_t;
 
@@ -75,7 +108,7 @@ typedef enum {
 	TLS_cipher_sm4_ccm_sm3			= 0x00c7,
 
 	// TLCP, GB/T 38636-2020, GM/T 0024-2012
-	TLS_cipher_ecdhe_sm4_cbc_sm3		= 0xe011, // TODO: let TLSv1.2 use this as default cipher suite
+	TLS_cipher_ecdhe_sm4_cbc_sm3		= 0xe011, // 可以让TLSv1.2使用这个
 	TLS_cipher_ecdhe_sm4_gcm_sm3		= 0xe051,
 	TLS_cipher_ecc_sm4_cbc_sm3		= 0xe013,
 	TLS_cipher_ecc_sm4_gcm_sm3		= 0xe053,
@@ -253,6 +286,8 @@ typedef enum {
 const char *tls_curve_type_name(int type);
 
 
+// 与其支持v2，还不如直接修改v2，让v2和v3兼容
+
 typedef enum {
 	TLS_curve_secp256k1			= 22,
 	TLS_curve_secp256r1			= 23,
@@ -269,7 +304,7 @@ typedef enum {
 	TLS_curve_sm2p256v1			= 41, // GmSSLv2: 30
 } TLS_NAMED_CURVE;
 
-const char *tls_curve_name(int curve);
+const char *tls_named_curve_name(int curve);
 
 
 typedef enum {
@@ -307,7 +342,6 @@ typedef enum {
 
 
 typedef enum {
-	TLS_alert_level_undefined = 0,
 	TLS_alert_level_warning = 1,
 	TLS_alert_level_fatal = 2,
 } TLS_ALERT_LEVEL;
@@ -406,15 +440,14 @@ typedef struct {
 #define tls_record_protocol(record)	(((uint16_t)((record)[1]) << 8) | (record)[2])
 #define tls_record_data(record)		((record)+TLS_RECORD_HEADER_SIZE)
 #define tls_record_data_length(record)	(((uint16_t)((record)[3]) << 8) | (record)[4])
-#define tls_record_length(record)	((size_t)(TLS_RECORD_HEADER_SIZE + tls_record_data_length(record)))
+#define tls_record_length(record)	(TLS_RECORD_HEADER_SIZE + tls_record_data_length(record))
 
 int tls_record_set_type(uint8_t *record, int type);
 int tls_record_set_protocol(uint8_t *record, int protocol);
 int tls_record_set_data_length(uint8_t *record, size_t length);
 int tls_record_set_data(uint8_t *record, const uint8_t *data, size_t datalen);
 
-
-// parse ServerKeyExchange, ClientKeyExchange depends on current cipher_suite		
+// 握手消息ServerKeyExchange, ClientKeyExchange的解析依赖当前密码套件
 #define tls_format_set_cipher_suite(fmt,cipher)	do {(fmt)|=((cipher)<<8);} while (0)
 int tls_record_print(FILE *fp, const uint8_t *record,  size_t recordlen, int format, int indent);
 int tlcp_record_print(FILE *fp, const uint8_t *record,  size_t recordlen, int format, int indent);
@@ -501,13 +534,13 @@ int tls13_process_client_supported_versions(const uint8_t *ext_data, size_t ext_
 
 int tls13_process_server_supported_versions(const uint8_t *ext_data, size_t ext_datalen);
 
-int tls13_key_share_entry_to_bytes(const SM2_Z256_POINT *point, uint8_t **out, size_t *outlen);
-int tls13_client_key_share_ext_to_bytes(const SM2_Z256_POINT *point, uint8_t **out, size_t *outlen);
-int tls13_server_key_share_ext_to_bytes(const SM2_Z256_POINT *point, uint8_t **out, size_t *outlen);
+int tls13_key_share_entry_to_bytes(const SM2_POINT *point, uint8_t **out, size_t *outlen);
+int tls13_client_key_share_ext_to_bytes(const SM2_POINT *point, uint8_t **out, size_t *outlen);
+int tls13_server_key_share_ext_to_bytes(const SM2_POINT *point, uint8_t **out, size_t *outlen);
 int tls13_process_client_key_share(const uint8_t *ext_data, size_t ext_datalen,
-	const SM2_KEY *server_ecdhe_key, SM2_Z256_POINT *client_ecdhe_public,
+	const SM2_KEY *server_ecdhe_key, SM2_POINT *client_ecdhe_public,
 	uint8_t **out, size_t *outlen);
-int tls13_process_server_key_share(const uint8_t *ext_data, size_t ext_datalen, SM2_Z256_POINT *point);
+int tls13_process_server_key_share(const uint8_t *ext_data, size_t ext_datalen, SM2_POINT *point);
 
 
 int tls13_certificate_authorities_ext_to_bytes(const uint8_t *ca_names, size_t ca_names_len,
@@ -522,8 +555,8 @@ int tls_process_server_exts(const uint8_t *exts, size_t extslen,
 // Certificate
 int tls_record_set_handshake_certificate(uint8_t *record, size_t *recordlen,
 	const uint8_t *certs, size_t certslen);
-// see the impl of tls_record_get_handshake_certificate			
-// a standalone cert-chain parsing function should be given			
+// 这个函数比较特殊，是直接解析了证书链，而不是返回指针
+// 应该提供一个独立的解析函数来解析TLS的证书链
 int tls_record_get_handshake_certificate(const uint8_t *record, uint8_t *certs, size_t *certslen);
 
 // ServerKeyExchange
@@ -532,14 +565,14 @@ int tls_server_key_exchange_print(FILE *fp, const uint8_t *ske, size_t skelen, i
 #define TLS_MAX_SIGNATURE_SIZE	SM2_MAX_SIGNATURE_SIZE
 int tls_sign_server_ecdh_params(const SM2_KEY *server_sign_key,
 	const uint8_t client_random[32], const uint8_t server_random[32],
-	int curve, const SM2_Z256_POINT *point, uint8_t *sig, size_t *siglen);
+	int curve, const SM2_POINT *point, uint8_t *sig, size_t *siglen);
 int tls_verify_server_ecdh_params(const SM2_KEY *server_sign_key,
 	const uint8_t client_random[32], const uint8_t server_random[32],
-	int curve, const SM2_Z256_POINT *point, const uint8_t *sig, size_t siglen);
+	int curve, const SM2_POINT *point, const uint8_t *sig, size_t siglen);
 int tls_record_set_handshake_server_key_exchange_ecdhe(uint8_t *record, size_t *recordlen,
-	int curve, const SM2_Z256_POINT *point, const uint8_t *sig, size_t siglen);
+	int curve, const SM2_POINT *point, const uint8_t *sig, size_t siglen);
 int tls_record_get_handshake_server_key_exchange_ecdhe(const uint8_t *record,
-	int *curve, SM2_Z256_POINT *point, const uint8_t **sig, size_t *siglen);
+	int *curve, SM2_POINT *point, const uint8_t **sig, size_t *siglen);
 int tls_server_key_exchange_ecdhe_print(FILE *fp, const uint8_t *data, size_t datalen,
 	int format, int indent);
 
@@ -582,8 +615,8 @@ int tls_client_key_exchange_pke_print(FILE *fp, const uint8_t *cke, size_t ckele
 int tls_client_key_exchange_print(FILE *fp, const uint8_t *cke, size_t ckelen, int format, int indent);
 
 int tls_record_set_handshake_client_key_exchange_ecdhe(uint8_t *record, size_t *recordlen,
-	const SM2_Z256_POINT *point); // shoulde we use SM2_Z256_POITN?						
-int tls_record_get_handshake_client_key_exchange_ecdhe(const uint8_t *record, SM2_Z256_POINT *point);			
+	const SM2_POINT *point); // 这里不应该支持SM2_POINT类型						
+int tls_record_get_handshake_client_key_exchange_ecdhe(const uint8_t *record, SM2_POINT *point);			
 int tls_client_key_exchange_ecdhe_print(FILE *fp, const uint8_t *data, size_t datalen,
 	int format, int indent);
 
@@ -617,8 +650,8 @@ int tls_client_verify_finish(TLS_CLIENT_VERIFY_CTX *ctx, const uint8_t *sig, siz
 void tls_client_verify_cleanup(TLS_CLIENT_VERIFY_CTX *ctx);
 
 // Finished
-// FIXME: to support TLS 1.3  need MIN, MAX or TLS12, TLS13, TLCP...			
-#define TLS_VERIFY_DATA_SIZE 12 // TLS 1.3 use longer verify_data (>= 12 bytes)		
+// FIXME: 支持TLS 1.3 提供MIN, MAX或TLS12, TLS13, TLCP...
+#define TLS_VERIFY_DATA_SIZE 12 // TLS 1.3或者其他版本支持更长的verify_data
 #define TLS_FINISHED_RECORD_SIZE	(TLS_RECORD_HEADER_SIZE + TLS_HANDSHAKE_HEADER_SIZE + TLS_VERIFY_DATA_SIZE) // 21
 #define TLS_MAX_PADDING_SIZE		(1 + 255)
 #define TLS_MAC_SIZE			SM3_HMAC_SIZE
@@ -683,8 +716,6 @@ typedef struct {
 	SM2_KEY signkey;
 	SM2_KEY kenckey;
 	int verify_depth;
-
-	int quiet;
 } TLS_CTX;
 
 int tls_ctx_init(TLS_CTX *ctx, int protocol, int is_client);
@@ -717,14 +748,15 @@ typedef struct {
 
 	uint8_t record[TLS_MAX_RECORD_SIZE];
 
-	uint8_t databuf[TLS_MAX_RECORD_SIZE];
+	// 其实这个就不太对了，还是应该有一个完整的密文记录
+	uint8_t databuf[TLS_MAX_PLAINTEXT_SIZE];
 	uint8_t *data;
 	size_t datalen;
 
 	int cipher_suite;
 	uint8_t session_id[32];
 	size_t session_id_len;
-	uint8_t server_certs[TLS_MAX_CERTIFICATES_SIZE]; // TODO: use ptr and malloc			
+	uint8_t server_certs[TLS_MAX_CERTIFICATES_SIZE]; // 动态的可能会好一点
 	size_t server_certs_len;
 	uint8_t client_certs[TLS_MAX_CERTIFICATES_SIZE];
 	size_t client_certs_len;
@@ -751,11 +783,10 @@ typedef struct {
 	BLOCK_CIPHER_KEY client_write_key;
 	BLOCK_CIPHER_KEY server_write_key;
 
-	int quiet;
 } TLS_CONNECT;
 
 
-#define TLS_MAX_EXTENSIONS_SIZE 512 // FIXME: no reason to give fixed max length			
+#define TLS_MAX_EXTENSIONS_SIZE 512 // 这个应该再考虑一下数值，是否可以用其他的缓冲区装载？
 
 
 int tls_init(TLS_CONNECT *conn, const TLS_CTX *ctx);
@@ -823,23 +854,20 @@ int tls13_gcm_decrypt(const BLOCK_CIPHER_KEY *key, const uint8_t iv[12],
 	int *record_type, uint8_t *out, size_t *outlen);
 
 
-#ifdef ENABLE_TLS_DEBUG
+#ifdef TLS_DEBUG
 #	define tls_trace(s) fprintf(stderr,(s))
 #	define tls_record_trace(fp,rec,reclen,fmt,ind)  tls_record_print(fp,rec,reclen,fmt,ind)
-#	define tls_encrypted_record_trace(fp,rec,reclen,fmt,ind)  tls_encrypted_record_print(fp,rec,reclen,fmt,ind)
 #	define tlcp_record_trace(fp,rec,reclen,fmt,ind)  tlcp_record_print(fp,rec,reclen,fmt,ind)
 #	define tls12_record_trace(fp,rec,reclen,fmt,ind)  tls12_record_print(fp,rec,reclen,fmt,ind)
 #	define tls13_record_trace(fp,rec,reclen,fmt,ind)  tls13_record_print(fp,fmt,ind,rec,reclen)
 #else
 #	define tls_trace(s)
 #	define tls_record_trace(fp,rec,reclen,fmt,ind)
-#	define tls_encrypted_record_trace(fp,rec,reclen,fmt,ind)
 #	define tlcp_record_trace(fp,rec,reclen,fmt,ind)
 #	define tls12_record_trace(fp,rec,reclen,fmt,ind)
 #	define tls13_record_trace(fp,rec,reclen,fmt,ind)
 #endif
 
-int tls_encrypted_record_print(FILE *fp, const uint8_t *record,  size_t recordlen, int format, int indent);
 
 #ifdef  __cplusplus
 }

@@ -86,15 +86,15 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         }
     }
 
-    // auto hash = common::Hash::keccak256(msg);
-    // ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
-    //     "phash: %s, vss_random: %lu, height: %lu, "
-    //     "timeblock_height: %lu, timestamp: %lu, msg: %s",
-    //     common::Encode::HexEncode(hash).c_str(),
-    //     sharding_id, pool_index, 
-    //     common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
-    //     vss_random, height, timeblock_height, timestamp,
-    //     common::Encode::HexEncode(msg).c_str());
+    auto hash = common::Hash::keccak256(msg);
+    ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
+        "phash: %s, vss_random: %lu, height: %lu, "
+        "timeblock_height: %lu, timestamp: %lu, msg: %s",
+        common::Encode::HexEncode(hash).c_str(),
+        sharding_id, pool_index, 
+        common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
+        vss_random, height, timeblock_height, timestamp,
+        common::Encode::HexEncode(msg).c_str());
     return common::Hash::keccak256(msg);
 }
 

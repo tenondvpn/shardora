@@ -17,9 +17,13 @@ public:
             std::shared_ptr<security::Security>& sec_ptr,
             protos::AddressInfoPtr& addr_info)
             : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {
+        common::GlobalInfo::Instance()->AddSharedObj(4);
     }
 
-    virtual ~FromTxItem() {}
+    virtual ~FromTxItem() {
+        common::GlobalInfo::Instance()->DecSharedObj(4);
+    }
+
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,

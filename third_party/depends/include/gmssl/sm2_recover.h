@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright 2014-2022 The GmSSL Project. All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the License); you may
@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <gmssl/sm2.h>
 #include <gmssl/sm3.h>
 
 #ifdef __cplusplus

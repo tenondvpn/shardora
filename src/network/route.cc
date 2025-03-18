@@ -114,7 +114,8 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
     if (header.has_broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
-        auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
+        auto tmp_ptr = std::make_shared<transport::TransportMessage>();
+        tmp_ptr->header.CopyFrom(header_ptr->header);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
         broadcast_queue_[thread_idx].push(tmp_ptr);

@@ -55,9 +55,15 @@ static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecod
 
 static const uint64_t kStopConsensusTimeoutMs = 30000lu;
 
-struct BlockTxsItem {
+class BlockTxsItem {
+public:
     BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false), leader_to_index(-1) {
-        stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+            stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+        common::GlobalInfo::Instance()->AddSharedObj(0);
+    }
+
+    ~BlockTxsItem() {
+        common::GlobalInfo::Instance()->DecSharedObj(0);
     }
 
     pools::TxItemPtr tx_ptr;
@@ -72,9 +78,17 @@ struct BlockTxsItem {
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
 typedef std::shared_ptr<view_block::protobuf::ViewBlockItem> ViewBlockPtr;
 
-struct BlockToDbItem {
+class BlockToDbItem {
+public:
     BlockToDbItem(ViewBlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
-        : view_block_ptr(bptr), final_db_batch(batch) {}
+            : view_block_ptr(bptr), final_db_batch(batch) {
+        common::GlobalInfo::Instance()->AddSharedObj(1);
+    }
+    
+    ~BlockToDbItem() {
+        common::GlobalInfo::Instance()->DecSharedObj(1);
+    }
+
     ViewBlockPtr view_block_ptr;
     std::shared_ptr<db::DbWriteBatch> final_db_batch;
 };
@@ -109,21 +123,15 @@ struct localToTxInfo {
     uint32_t pool_index;
     // for ContractCreate
     std::string library_bytes;
-    std::string contract_from;
-    uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
     
     localToTxInfo(const std::string& des,
         uint64_t amount,
         uint32_t pool_index,
-        const std::string& library_bytes,
-        const std::string& contract_from,
-        uint64_t prepayment) :
+        const std::string& library_bytes) :
         des(des),
         amount(amount),
         pool_index(pool_index),
-        library_bytes(library_bytes),
-        contract_from(contract_from),
-        contract_prepayment(prepayment) {}
+        library_bytes(library_bytes) {}
 };
 
 inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageItem& tos_item) {

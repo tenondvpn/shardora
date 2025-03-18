@@ -26,7 +26,6 @@
 #include <protos/tx_storage_key.h>
 #include "db/db_utils.h"
 
-
 namespace shardora {
 
 namespace block {
@@ -142,6 +141,8 @@ void BlockManager::ConsensusAddBlock(
     assert(!block_item->view_block_ptr->qc().sign_x().empty());
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
+    ZJC_DEBUG("add new block thread: %d, size: %u", 
+        thread_idx, consensus_block_queues_[thread_idx].size());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
@@ -155,37 +156,62 @@ void BlockManager::HandleAllConsensusBlocks() {
             CreateStatisticTx();
         }
 
-        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (true) {
-                BlockToDbItemPtr db_item_ptr = nullptr;
-                consensus_block_queues_[i].pop(&db_item_ptr);
-                if (db_item_ptr == nullptr) {
-                    break;
+        bool no_sleep = true;
+        while (no_sleep) {
+            no_sleep = false;
+            for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+                int32_t count = 0;
+                while (count++ < kEachTimeHandleBlocksCount) {
+                    BlockToDbItemPtr db_item_ptr = nullptr;
+                    consensus_block_queues_[i].pop(&db_item_ptr);
+                    if (db_item_ptr == nullptr) {
+                        break;
+                    }
+    
+                    auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
+                    ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                        db_item_ptr->view_block_ptr->qc().network_id(),
+                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        block_ptr->height(),
+                        block_ptr->tx_list_size(),
+                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        block_ptr->timeblock_height());
+                    auto btime = common::TimeUtils::TimestampMs();
+                    AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
+                    auto use_time = (common::TimeUtils::TimestampMs() - btime);
+                    if (use_time >= 200)
+                    ZJC_INFO(" %u, pool: %d, height: %lu, "
+                        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, size: %u",
+                        db_item_ptr->view_block_ptr->qc().network_id(),
+                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        block_ptr->height(),
+                        block_ptr->tx_list_size(),
+                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        block_ptr->timeblock_height(),
+                        use_time,
+                        db_item_ptr->final_db_batch->ApproximateSize());
                 }
 
-                auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
-                ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                    db_item_ptr->view_block_ptr->qc().network_id(),
-                    db_item_ptr->view_block_ptr->qc().pool_index(),
-                    block_ptr->height(),
-                    block_ptr->tx_list_size(),
-                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                    db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height());
-                AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
-                ZJC_DEBUG("over from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
-                    "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                    db_item_ptr->view_block_ptr->qc().network_id(),
-                    db_item_ptr->view_block_ptr->qc().pool_index(),
-                    block_ptr->height(),
-                    block_ptr->tx_list_size(),
-                    common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                    db_item_ptr->view_block_ptr->qc().elect_height(),
-                    block_ptr->timeblock_height());
+                if (count >= kEachTimeHandleBlocksCount) {
+                    no_sleep = true;
+                    ZJC_INFO("pool index: %d, has block over from consensus new block coming sharding id:count: %u", i, consensus_block_queues_[i].size());
+                }
             }
-        }
 
+            // auto btime = common::TimeUtils::TimestampMs();
+            // auto st = db_->Put(db_batch);
+            // if (!st.ok()) {
+            //     ZJC_FATAL("write to db faield!");
+            // }
+
+            // ZJC_DEBUG("write to db use time: %lu, size: %u", 
+            //     (common::TimeUtils::TimestampMs() - btime), 
+            //     db_batch.ApproximateSize());
+        }
+        
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
@@ -311,6 +337,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
         tos->set_des(tx.to());
         tos->set_sharding_id(des_sharding_and_pool[0]);
         tos->set_pool_index(des_sharding_and_pool[1]);
+        tos->set_library_bytes(tx.contract_code());
         to_txs.mutable_to_heights()->set_sharding_id(des_sharding_and_pool[0]);
         ZJC_DEBUG("address: %s, amount: %lu, success handle root create address: %u, "
             "local net: %u, step: %d, %u_%u_%lu, block height: %lu",
@@ -328,25 +355,48 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 }
 
 void BlockManager::HandleNormalToTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    auto& view_block = *view_block_ptr;
+    if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
+        auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
+        latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
+        latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+        prefix_db_->SaveLatestToBlock(view_block_ptr, db_batch);
+        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
+            view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
+    }
+
+    ZJC_DEBUG("success handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
+            ZJC_DEBUG("x.storages(i).key() != protos::kNormalToShards handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
             continue;
         }
 
         pools::protobuf::ToTxMessage to_txs;
         if (!to_txs.ParseFromString(tx.storages(i).value())) {
             ZJC_WARN("parse to txs failed.");
+            ZJC_DEBUG("parse to txs failed. handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
             continue;
         }
 
-        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d",
+        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, gid: %s",
             to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
-            tx.step());
+            tx.step(),
+            common::Encode::HexEncode(tx.gid()).c_str());
+
+        auto& heights = *to_txs.mutable_to_heights();
+        heights.set_block_height(view_block.block_info().height());
+        ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
+            view_block.block_info().height(), 
+            heights.sharding_id(), 
+            ProtobufToJson(to_txs).c_str(),
+            to_txs.to_heights().sharding_id());
+        prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
         if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
                 ZJC_WARN("sharding invalid: %u, %u",
@@ -385,36 +435,36 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
+        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s",
             tos_item.step(),
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
-            common::Encode::HexEncode("gid").c_str(),
-            common::Encode::HexEncode(tos_item.contract_from()).c_str());
+            common::Encode::HexEncode("gid").c_str());
 
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
         // 如果 shard 已经制定了 Contract Account 的 shard，直接创建，不需要 root 再分配
         // 如果没有，则需要 root 继续创建 kRootCreateAddress 交易
-        if (tos_item.step() == pools::protobuf::kContractCreate) {
-            // that's contract address, just add address
-            auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-            account_info->set_pool_index(tos_item.pool_index());
-            account_info->set_addr(tos_item.des());
-            account_info->set_type(address::protobuf::kContract);
-            account_info->set_sharding_id(tos_item.sharding_id());
-            account_info->set_latest_height(block.height());
-            account_info->set_balance(tos_item.amount());
-            prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
-            ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
-                common::Encode::HexEncode(tos_item.des()).c_str(),
-                tos_item.amount(),
-                tos_item.sharding_id(),
-                tos_item.pool_index());
-           continue;
-        }
+        // TODO: check address valid
+        // if (tos_item.step() == pools::protobuf::kContractCreate) {
+        //     // that's contract address, just add address
+        //     auto account_info = std::make_shared<address::protobuf::AddressInfo>();
+        //     account_info->set_pool_index(tos_item.pool_index());
+        //     account_info->set_addr(tos_item.des());
+        //     account_info->set_type(address::protobuf::kContract);
+        //     account_info->set_sharding_id(tos_item.sharding_id());
+        //     account_info->set_latest_height(block.height());
+        //     account_info->set_balance(tos_item.amount());
+        //     prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
+        //     ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+        //         common::Encode::HexEncode(tos_item.des()).c_str(),
+        //         tos_item.amount(),
+        //         tos_item.sharding_id(),
+        //         tos_item.pool_index());
+        //    continue;
+        // }
 
         if (tos_item.step() == pools::protobuf::kJoinElect) {
             for (int32_t i = 0; i < tos_item.join_infos_size(); ++i) {
@@ -439,32 +489,64 @@ void BlockManager::RootHandleNormalToTx(
         }
         
         // for ContractCreateByRootFrom tx
-        if (isContractCreateToTxMessageItem(tos_item)) {
+        if (tos_item.step() == pools::protobuf::kCreateLibrary || 
+                tos_item.step() == pools::protobuf::kContractCreate) {
+            // assert(!tos_item.library_bytes().empty());
             tx->set_contract_code(tos_item.library_bytes());
-            tx->set_contract_from(tos_item.contract_from());
-            tx->set_contract_prepayment(tos_item.prepayment());
+            tx->set_key(protos::kCreateContractCallerSharding);
+            char data[8];
+            uint32_t* uint_data = (uint32_t*)data;
+            uint_data[0] = tos_item.sharding_id();
+            uint_data[1] = tos_item.pool_index();
+            tx->set_value(std::string(data, sizeof(data)));
         }
         
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
         auto gid = common::Hash::keccak256(
-            tos_item.des() + "_" +
+            tx->to() + "_" +
             std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
-        pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
-            common::Encode::HexEncode(tos_item.des()).c_str(),
-            tos_item.amount(),
-            tos_item.prepayment(),
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(tos_item.contract_from()).c_str());
+
+        if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
+            auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+            tmp_msg_ptr->address_info = msg_ptr->address_info;
+            tmp_msg_ptr->header = msg_ptr->header;
+            auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
+            tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
+            tmp_tx->set_amount(tos_item.prepayment());
+            auto tmp_gid = common::Hash::keccak256(
+                tmp_tx->to() + "_" +
+                std::to_string(block.height()) + "_" +
+                std::to_string(i));
+            tmp_tx->set_gid(tmp_gid);
+            pools_mgr_->HandleMessage(msg_ptr);
+            pools_mgr_->HandleMessage(tmp_msg_ptr);
+            ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
+                "prepayment: %lu, gid: %s, tmp gid: %s",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                common::Encode::HexEncode(tos_item.contract_from()).c_str(),
+                tos_item.amount(),
+                tos_item.prepayment(),
+                common::Encode::HexEncode(gid).c_str(),
+                common::Encode::HexEncode(tmp_gid).c_str());
+        } else {
+            pools_mgr_->HandleMessage(msg_ptr);
+            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                tos_item.amount(),
+                tos_item.prepayment(),
+                common::Encode::HexEncode(gid).c_str());
+        }
+
+        
+        
     }
 }
 
@@ -565,34 +647,32 @@ void BlockManager::HandleLocalNormalToTx(
             to_tx.has_library_bytes(),
             common::Encode::HexEncode(to_tx.des()).c_str(),
             common::Encode::HexEncode(tx.gid()).c_str());
-        if (!to_tx.has_library_bytes()) {
+        if (to_tx.amount() > 0) {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
                 addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
-                    to_tx.des(), to_tx.amount(), pool_index, "", "", 0);
+                    to_tx.des(), to_tx.amount(), pool_index, "");
             } else {
                 iter->second->amount += to_tx.amount();
             }
-        } else { // 合约创建交易统计到一个 vector
-            auto info = std::make_shared<localToTxInfo>(to_tx.des(),
-                to_tx.amount(),
-                pool_index,
-                to_tx.library_bytes(),
-                to_tx.contract_from(),
-                to_tx.prepayment());
-            contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
+        // } else { // 合约创建交易统计到一个 vector
+        //     auto info = std::make_shared<localToTxInfo>(to_tx.des(),
+        //         to_tx.amount(),
+        //         pool_index,
+        //         to_tx.library_bytes());
+        //     contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
         }
     }
 
     // 1. 处理转账类交易
     createConsensusLocalToTxs(tx, addr_amount_map);
     // 2. 生成 ContractCreateByRootTo 交易
-    createContractCreateByRootToTxs(contract_create_tx_infos);
+    // createContractCreateByRootToTxs(contract_create_tx_infos);
 }
 
 void BlockManager::createConsensusLocalToTxs(
         const block::protobuf::BlockTx& to_tx,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map) {
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map) {
     // ZJC_DEBUG("addr_amount_map size: %lu", addr_amount_map.size());
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
@@ -610,22 +690,13 @@ void BlockManager::createConsensusLocalToTxs(
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second->amount);
 
-        // ZJC_DEBUG("success add local transfer to %s, %lu",
-        //     common::Encode::HexEncode(iter->first).c_str(),
-        //     iter->second->amount);
+        ZJC_DEBUG("success add local transfer to %s, %lu",
+            common::Encode::HexEncode(iter->first).c_str(),
+            iter->second->amount);
     }
 
     // 一个 pool 生成一个 Consensuslocaltos
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
-// #ifndef NDEBUG
-//         // 48 ? des = to(20) + from(20)  = 40, 40 + pool(4) + amount(8) = 52
-//         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
-//             uint32_t pool_idx = iter->second.tos(i).pool_index();
-//             uint64_t amount = iter->second.tos(i).amount();
-//             ZJC_DEBUG("ammount success add local transfer to %s, %lu",
-//                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
-//         }
-// #endif
         // 由于是异步的，因此需要持久化 kv 来传递数据，但是 to 需要填充以分配交易池
         // pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
         auto val = iter->second.SerializeAsString();
@@ -646,102 +717,99 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success add local transfer tx tos hash: %s, gid: %s, src to tx gid: %s",
+        ZJC_DEBUG("success add local transfer tx tos hash: %s, gid: %s, src to tx gid: %s, val: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
             common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(to_tx.gid()).c_str());
+            common::Encode::HexEncode(to_tx.gid()).c_str(),
+            common::Encode::HexEncode(val).c_str());
     }
 }
 
-void BlockManager::createContractCreateByRootToTxs(
-        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos) {
-    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
-    for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
-        auto contract_create_tx = contract_create_tx_infos[i];
-        uint32_t pool_index = contract_create_tx->pool_index;
-        auto to_iter = to_cc_tx_map.find(pool_index);
-        if (to_iter == to_cc_tx_map.end()) {
-            pools::protobuf::ToTxMessage to_tx;
-            to_cc_tx_map[pool_index] = to_tx;
-            to_iter = to_cc_tx_map.find(pool_index);
-        }
+// void BlockManager::createContractCreateByRootToTxs(
+//         std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos) {
+//     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
+//     for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
+//         auto contract_create_tx = contract_create_tx_infos[i];
+//         uint32_t pool_index = contract_create_tx->pool_index;
+//         auto to_iter = to_cc_tx_map.find(pool_index);
+//         if (to_iter == to_cc_tx_map.end()) {
+//             pools::protobuf::ToTxMessage to_tx;
+//             to_cc_tx_map[pool_index] = to_tx;
+//             to_iter = to_cc_tx_map.find(pool_index);
+//         }
 
-        auto to_item = to_iter->second.add_tos();
-        to_item->set_pool_index(pool_index);
-        to_item->set_des(contract_create_tx->des);
-        to_item->set_amount(contract_create_tx->amount);
-        to_item->set_library_bytes(contract_create_tx->library_bytes);
-        to_item->set_contract_from(contract_create_tx->contract_from);
-        to_item->set_prepayment(contract_create_tx->contract_prepayment);
+//         auto to_item = to_iter->second.add_tos();
+//         to_item->set_pool_index(pool_index);
+//         to_item->set_des(contract_create_tx->des);
+//         to_item->set_amount(contract_create_tx->amount);
+//         to_item->set_library_bytes(contract_create_tx->library_bytes);
         
-        ZJC_DEBUG("success add local contract create to %s, %lu, "
-            "contract_from %s, contract_code: %s, prepayment: %lu",
-            common::Encode::HexEncode(contract_create_tx->des).c_str(),
-            contract_create_tx->amount,
-            common::Encode::HexEncode(contract_create_tx->contract_from).c_str(),
-            common::Encode::HexEncode(contract_create_tx->library_bytes).c_str(),
-            contract_create_tx->contract_prepayment);
-    }
+//         ZJC_DEBUG("success add local contract create to %s, %lu, "
+//             "contract_code: %s",
+//             common::Encode::HexEncode(contract_create_tx->des).c_str(),
+//             contract_create_tx->amount,
+//             common::Encode::HexEncode(contract_create_tx->library_bytes).c_str());
+//     }
     
-    for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {
-        if (iter->second.tos_size() <= 0) {
-            continue;
-        }
+//     for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {
+//         if (iter->second.tos_size() <= 0) {
+//             continue;
+//         }
 
-        auto to_msg = iter->second.tos(0); 
-        std::string str_for_hash;
-        str_for_hash.append(to_msg.des());
-        uint32_t pool_idx = to_msg.pool_index();
-        str_for_hash.append(reinterpret_cast<char*>(&pool_idx), sizeof(pool_idx));
-        uint64_t amount = to_msg.amount();
-        str_for_hash.append(reinterpret_cast<char*>(&amount), sizeof(amount));
-        std::string contract_code = to_msg.library_bytes();
-        str_for_hash.append(contract_code);
-        std::string contract_from = to_msg.contract_from();
-        str_for_hash.append(contract_from);
-        auto cc_hash = common::Hash::keccak256(str_for_hash);
+//         auto to_msg = iter->second.tos(0); 
+//         std::string str_for_hash;
+//         str_for_hash.append(to_msg.des());
+//         uint32_t pool_idx = to_msg.pool_index();
+//         str_for_hash.append(reinterpret_cast<char*>(&pool_idx), sizeof(pool_idx));
+//         uint64_t amount = to_msg.amount();
+//         str_for_hash.append(reinterpret_cast<char*>(&amount), sizeof(amount));
+//         std::string contract_code = to_msg.library_bytes();
+//         str_for_hash.append(contract_code);
+//         auto cc_hash = common::Hash::keccak256(str_for_hash);
         
-        auto val = iter->second.SerializeAsString();
-        prefix_db_->SaveTemporaryKv(cc_hash, val);
-        // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
-        auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        // 指定 root 分配的 pool
-        msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
-        auto tx = msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kCreateContractLocalInfo);
-        tx->set_value(cc_hash);
-        tx->set_pubkey("");
-        tx->set_to(msg_ptr->address_info->addr());
-        tx->set_step(pools::protobuf::kContractCreateByRootTo);
-        auto gid = common::Hash::keccak256(cc_hash);
-        // TODO 暂时写死用于调试，实际需要 ContractCreateByRootFrom 交易传
-        tx->set_gas_limit(1000000);
-        tx->set_gas_price(1);
-        tx->set_gid(gid);
+//         auto val = iter->second.SerializeAsString();
+//         prefix_db_->SaveTemporaryKv(cc_hash, val);
+//         // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
+//         auto msg_ptr = std::make_shared<transport::TransportMessage>();
+//         // 指定 root 分配的 pool
+//         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
+//         auto tx = msg_ptr->header.mutable_tx_proto();
+//         tx->set_key(protos::kCreateContractLocalInfo);
+//         tx->set_value(cc_hash);
+//         tx->set_pubkey("");
+//         tx->set_to(msg_ptr->address_info->addr());
+//         tx->set_step(pools::protobuf::kContractCreateByRootTo);
+//         auto gid = common::Hash::keccak256(cc_hash);
+//         // TODO 暂时写死用于调试，实际需要 ContractCreateByRootFrom 交易传
+//         tx->set_gas_limit(1000000);
+//         tx->set_gas_price(1);
+//         tx->set_gid(gid);
 
-        // 真正的 des 存在 kv 中
-        tx->set_amount(to_msg.amount());
-        tx->set_contract_code(to_msg.library_bytes());
-        tx->set_contract_from(to_msg.contract_from());
-        tx->set_contract_prepayment(to_msg.prepayment());
+//         // 真正的 des 存在 kv 中
+//         tx->set_amount(to_msg.amount());
+//         tx->set_contract_code(to_msg.library_bytes());
         
-        ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
-            "cc_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
-            common::Encode::HexEncode(to_msg.des()).c_str(),
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(cc_hash).c_str(),
-            pool_idx, amount, common::Encode::HexEncode(contract_from).c_str());
-        pools_mgr_->HandleMessage(msg_ptr);        
-    }
-}
+//         ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
+//             "cc_hash: %s, pool_idx: %lu, amount: %lu",
+//             common::Encode::HexEncode(to_msg.des()).c_str(),
+//             common::Encode::HexEncode(gid).c_str(),
+//             common::Encode::HexEncode(cc_hash).c_str());
+//         pools_mgr_->HandleMessage(msg_ptr);        
+//     }
+// }
 
 void BlockManager::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: fix
+    // if (view_block_item->qc().view() >= 64) {
+    //     return;
+    // }
+
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
+    auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
         view_block_item->qc().network_id(),
@@ -764,94 +832,100 @@ void BlockManager::AddNewBlock(
         return;
     }
 
-    // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
-    to_txs_pool_->NewBlock(view_block_item, db_batch);
-    zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
-    // 当前节点和 block 分配的 shard 不同，要跨分片交易
-    if (view_block_item->qc().network_id() != common::GlobalInfo::Instance()->network_id() &&
-            view_block_item->qc().network_id() + network::kConsensusWaitingShardOffset !=
-            common::GlobalInfo::Instance()->network_id()) {
-        pools_mgr_->OnNewCrossBlock(view_block_item);
-        ZJC_DEBUG("new cross block coming: %u, %u, %lu",
-            view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-    }
-
+    // TODO: test
     const auto& tx_list = block_item->tx_list();
-    // 处理交易信息
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        // ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
-        //     "tx size: %u, hash: %s, elect height: %lu, "
-        //     "tm height: %lu, gid: %s, status: %d, step: %d",
-        //     view_block_item->qc().network_id(),
-        //     view_block_item->qc().pool_index(),
-        //     block_item->height(),
-        //     block_item->tx_list_size(),
-        //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-        //     view_block_item->qc().elect_height(),
-        //     block_item->timeblock_height(),
-        //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-        //     tx_list[i].status(),
-        //     tx_list[i].step());
-        // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
-#ifdef SAVE_GID_WITH_BLOCK
-        prefix_db_->SaveGidWithBlockHash(
-            tx_list[i].gid(), 
-            view_block_item->qc().view_block_hash(), 
-            db_batch);
-#endif
-        if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
-            account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
-        }
-        
-        if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            continue;
+        auto btime10 = common::TimeUtils::TimestampMs();
+        auto btime11 = common::TimeUtils::TimestampMs();
+        auto btime1 = common::TimeUtils::TimestampMs();
+#ifndef TEST_NO_CROSS
+        if (statistic_mgr_) {
+            // statistic_mgr_->OnNewBlock(view_block_item);
         }
 
-        switch (tx_list[i].step()) {
-        case pools::protobuf::kRootCreateAddress:
-            // ZJC_DEBUG("success handle root create address tx.");
-            ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
-            break;
-        case pools::protobuf::kNormalTo: {
-            HandleNormalToTx(*view_block_item, tx_list[i], db_batch);
-            if (network::IsSameToLocalShard(view_block_item->qc().network_id())) {
-                auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-                latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_item;
-                latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-                prefix_db_->SaveLatestToBlock(view_block_item, db_batch);
-                ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", view_block_item->block_info().height(), view_block_item->block_info().timestamp());
+        to_txs_pool_->NewBlock(view_block_item);
+        btime10 = common::TimeUtils::TimestampMs();
+        zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+        // 当前节点和 block 分配的 shard 不同，要跨分片交易
+        btime11 = common::TimeUtils::TimestampMs();
+        if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+            pools_mgr_->OnNewCrossBlock(view_block_item);
+            ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+                view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+        }
+
+        btime1 = common::TimeUtils::TimestampMs();
+        // 处理交易信息
+        for (int32_t i = 0; i < tx_list.size(); ++i) {
+            ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
+                "tx size: %u, hash: %s, phash: %s, elect height: %lu, "
+                "tm height: %lu, gid: %s, status: %d, step: %d",
+                view_block_item->qc().network_id(),
+                view_block_item->qc().pool_index(),
+                block_item->height(),
+                block_item->tx_list_size(),
+                common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
+                view_block_item->qc().elect_height(),
+                block_item->timeblock_height(),
+                common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                tx_list[i].status(),
+                tx_list[i].step());
+            // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
+    // #ifdef SAVE_GID_WITH_BLOCK
+            prefix_db_->SaveGidWithBlockHash(
+                tx_list[i].gid(), 
+                view_block_item->qc().view_block_hash(), 
+                db_batch);
+    // #endif
+            prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
+            if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
+                account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+            }
+            
+            if (tx_list[i].status() != consensus::kConsensusSuccess) {
+                continue;
             }
 
-            // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-            //     "gid: %s, bls: %s, %s",
-            //     view_block_item->qc().network_id(),
-            //     view_block_item->qc().pool_index(),
-            //     block_item->height(),
-            //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
-            break;
-        }
-        case pools::protobuf::kConsensusRootTimeBlock:
-            prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
-            break;
-        case pools::protobuf::kStatistic:
-            HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
-            break;
-        case pools::protobuf::kCross:
-            assert(false);
-            break;
-        case pools::protobuf::kConsensusRootElectShard:
-            HandleElectTx(*view_block_item, tx_list[i], db_batch);
-            break;
-        case pools::protobuf::kJoinElect:
-            HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
-            break;
-        default:
-            break;
-        }
-    }
+            switch (tx_list[i].step()) {
+            case pools::protobuf::kRootCreateAddress:
+                // ZJC_DEBUG("success handle root create address tx.");
+                ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
+                break;
+            case pools::protobuf::kNormalTo: {
+                HandleNormalToTx(view_block_item, tx_list[i], db_batch);
+                
 
+                // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                //     "gid: %s, bls: %s, %s",
+                //     view_block_item->qc().network_id(),
+                //     view_block_item->qc().pool_index(),
+                //     block_item->height(),
+                //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
+                //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
+                break;
+            }
+            case pools::protobuf::kConsensusRootTimeBlock:
+                prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+                break;
+            case pools::protobuf::kStatistic:
+                HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kCross:
+                assert(false);
+                break;
+            case pools::protobuf::kConsensusRootElectShard:
+                HandleElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kJoinElect:
+                HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            default:
+                break;
+            }
+        }
+#endif
+    auto btime2 = common::TimeUtils::TimestampMs();
     if (new_block_callback_ != nullptr) {
         // ZJC_DEBUG("new db callback called: %u_%u_%lu, %u_%u_%lu", 
         //     view_block_item->qc().network_id(),
@@ -873,6 +947,8 @@ void BlockManager::AddNewBlock(
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         db_batch);
+    auto btime3 = common::TimeUtils::TimestampMs();
+    auto put_size = db_batch.ApproximateSize();
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
@@ -884,15 +960,23 @@ void BlockManager::AddNewBlock(
             view_block_item->qc().view());
     }
 
+    auto etime = common::TimeUtils::TimestampMs();
+    // if (etime - btime > 100000lu)
     ZJC_DEBUG("success new block coming sharding id UpdateStoredToDbView : %u_%u_%lu, "
-        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, t10: %lu, t11: %lu, t1: %lu, t2: %lu, t3: %lu",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         block_item->tx_list_size(),
         common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
         view_block_item->qc().elect_height(),
-        block_item->timeblock_height());
+        block_item->timeblock_height(),
+        (etime - btime),
+        (btime10 - btime),
+        (btime11 - btime10),
+        (btime1 - btime11),
+        (btime2 - btime1),
+        (btime3 - btime2));
 
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
@@ -1130,13 +1214,13 @@ void BlockManager::AddMiningToken(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(tos_hash + block_hash);
+        auto gid = common::Hash::keccak256(std::string("mining") + tos_hash + block_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success create kConsensusLocalTos gid: %s", common::Encode::HexEncode(gid).c_str());
+        ZJC_INFO("mining success create kConsensusLocalTos gid: %s", common::Encode::HexEncode(gid).c_str());
     }
 }
 
@@ -1407,7 +1491,7 @@ void BlockManager::HandleStatisticBlock(
 pools::TxItemPtr BlockManager::GetToTx(
         uint32_t pool_index, 
         const std::string& heights_str) {
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
         return nullptr;
     }
 
@@ -1451,24 +1535,13 @@ pools::TxItemPtr BlockManager::GetToTx(
     auto height_hash = common::Hash::keccak256(string_for_hash);
     auto iter = heights_str_map_.find(height_hash);
     if (iter != heights_str_map_.end()) {
-        std::string gid = common::Hash::keccak256("0000");
-        auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
-        if (latest_to_block != nullptr) {
-            gid = common::Hash::keccak256(
-                std::to_string(latest_to_block->block_info().height()) +
-                std::to_string(latest_to_block->block_info().timestamp()));
-            ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-                common::Encode::HexEncode(gid).c_str(),
-                latest_to_block->block_info().height(), 
-                latest_to_block->block_info().timestamp());
-        }
-        
+        std::string gid = GetToTxGid();
         auto tx_ptr = iter->second;
         tx_ptr->tx_info->set_gid(gid);
         ZJC_INFO("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
-            ProtobufToJson(*(tx_ptr->tx_info)).c_str(),
+            "ProtobufToJson(*(tx_ptr->tx_info)).c_str()",
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(), 
-            "common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str()",
+            common::Encode::HexEncode(tx_ptr->tx_info->value()).c_str(),
             ProtobufToJson(heights).c_str());
         return iter->second;
     }
@@ -1490,10 +1563,15 @@ pools::TxItemPtr BlockManager::GetToTx(
 }
 
 std::string BlockManager::GetToTxGid() {
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        return "";
+    }
+
     std::string gid = common::Hash::keccak256("0000");
     auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block != nullptr) {
         gid = common::Hash::keccak256(
+            std::to_string(common::GlobalInfo::Instance()->network_id()) +
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
         // ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
@@ -1515,27 +1593,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     }
 
     pools::protobuf::AllToTxMessage all_to_txs;
-    std::string gid = common::Hash::keccak256("0000");
-    auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
-    if (latest_to_block != nullptr) {
-        gid = common::Hash::keccak256(
-            std::to_string(latest_to_block->block_info().height()) +
-            std::to_string(latest_to_block->block_info().timestamp()));
-        ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
-            "gid: %s, heights: %s",
-            latest_to_block->block_info().height(),
-            latest_to_block->block_info().timestamp(),
-            common::Encode::HexEncode(gid).c_str(),
-            ProtobufToJson(heights).c_str());
-    } else {
-        ZJC_DEBUG("success get to tx  latest height: %lu, tm: %lu, "
-            "gid: %s, heights: %s",
-            0,
-            0,
-            common::Encode::HexEncode(gid).c_str(),
-            ProtobufToJson(heights).c_str());
-    }
-    
+    std::string gid = GetToTxGid();
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
         auto& to_tx = *all_to_txs.add_to_tx_arr();
@@ -1564,8 +1622,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kNormalTo);
-    
-
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
@@ -1586,19 +1642,19 @@ bool BlockManager::HasSingleTx(
         return true;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (HasStatisticTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has statistic tx.");
-        return true;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (HasStatisticTx(pool_index, gid_valid_fn)) {
+    //     // ZJC_DEBUG("success check has statistic tx.");
+    //     return true;
+    // }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (HasElectTx(pool_index, gid_valid_fn)) {
-        // ZJC_DEBUG("success check has elect tx.");
-        return true;
-    }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (HasElectTx(pool_index, gid_valid_fn)) {
+    //     // ZJC_DEBUG("success check has elect tx.");
+    //     return true;
+    // }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
     return false;
 }
 
@@ -1620,23 +1676,32 @@ void BlockManager::PopTxTicker() {
 }
 
 bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
-        auto cur_time = common::TimeUtils::TimestampMs();
-        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        return false;
+    }
+            
+    auto cur_time = common::TimeUtils::TimestampMs();
+    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
+    if (pool_index != common::kImmutablePoolSize) {
+        return false;
+    }
+
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
+        ZJC_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
         return false;
     }
 
     if (!gid_valid_fn(GetToTxGid())) {
-        // ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
-        //     pool_index, 
-        //     common::Encode::HexEncode(GetToTxGid()).c_str());
+        ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
+            pool_index, 
+            common::Encode::HexEncode(GetToTxGid()).c_str());
         return false;
     }
 
-    // ZJC_DEBUG("has to tx %u, tx gid: %s", 
-    //     pool_index, 
-    //     common::Encode::HexEncode(GetToTxGid()).c_str());
+    ZJC_DEBUG("has to tx %u, tx gid: %s", 
+        pool_index, 
+        common::Encode::HexEncode(GetToTxGid()).c_str());
     return true;
 }
 

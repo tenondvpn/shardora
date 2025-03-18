@@ -1,5 +1,5 @@
 /*
- *  Copyright 2014-2024 The GmSSL Project. All Rights Reserved.
+ *  Copyright 2014-2022 The GmSSL Project. All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the License); you may
  *  not use this file except in compliance with the License.
@@ -11,12 +11,39 @@
 #ifndef GMSSL_ZUC_H
 #define GMSSL_ZUC_H
 
+
 #include <stdlib.h>
 #include <stdint.h>
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/*
+ZUC Public API
+
+	ZUC_KEY_SIZE
+	ZUC_IV_SIZE
+	ZUC_MAC_SIZE
+
+	ZUC_CTX
+	zuc_encrypt_init
+	zuc_encrypt_update
+	zuc_encrypt_finish
+	zuc_decrypt_init
+	zuc_decrypt_update
+	zuc_decrypt_finish
+
+	ZUC_MAC_CTX
+	zuc_mac_init
+	zuc_mac_update
+	zuc_mac_finish
+
+	zuc_eea_encrypt
+	zuc_eia_generate_mac
+*/
 
 
 # define ZUC_KEY_SIZE	16
@@ -76,8 +103,8 @@ ZUC_UINT32 zuc_eia_generate_mac(const ZUC_UINT32 *data, size_t nbits,
 typedef ZUC_STATE ZUC256_STATE;
 
 void zuc256_init(ZUC256_STATE *state, const uint8_t key[ZUC256_KEY_SIZE], const uint8_t iv[ZUC256_IV_SIZE]);
-void zuc256_generate_keystream(ZUC_STATE *state, size_t nwords, ZUC_UINT32 *words);
-ZUC_UINT32 zuc256_generate_keyword(ZUC_STATE *state);
+#define zuc256_generate_keystream(state,nwords,words) zuc_generate_keystream(state,nwords,words)
+#define zuc256_generate_keyword(state) zuc_generate_keyword(state)
 
 
 typedef struct ZUC256_MAC_CTX_st {
@@ -97,6 +124,8 @@ void zuc256_mac_update(ZUC256_MAC_CTX *ctx, const uint8_t *data, size_t len);
 void zuc256_mac_finish(ZUC256_MAC_CTX *ctx, const uint8_t *data, size_t nbits, uint8_t mac[ZUC_MAC_SIZE]);
 
 
+// Public API
+
 typedef struct {
 	ZUC_STATE zuc_state;
 	uint8_t block[4];
@@ -106,6 +135,10 @@ typedef struct {
 int zuc_encrypt_init(ZUC_CTX *ctx, const uint8_t key[ZUC_KEY_SIZE], const uint8_t iv[ZUC_IV_SIZE]);
 int zuc_encrypt_update(ZUC_CTX *ctx, const uint8_t *in, size_t inlen, uint8_t *out, size_t *outlen);
 int zuc_encrypt_finish(ZUC_CTX *ctx, uint8_t *out, size_t *outlen);
+
+#define zuc_decrypt_init(ctx,key,iv) zuc_encrypt_init(ctx,key,iv)
+#define zuc_decrypt_update(ctx,in,inlen,out,outlen) zuc_encrypt_update(ctx,in,inlen,out,outlen)
+#define zuc_decrypt_finish(ctx,out,outlen) zuc_encrypt_finish(ctx,out,outlen)
 
 
 #ifdef __cplusplus

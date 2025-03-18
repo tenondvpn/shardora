@@ -33,7 +33,7 @@ int ContractCall::HandleTx(
             from_balance,
             common::Encode::HexEncode(block_tx.to()).c_str(),
             block_tx.amount(), block_tx.gas_limit(), block_tx.gas_price());
-        assert(false);
+        // assert(false);
         return kConsensusSuccess;
     }
 

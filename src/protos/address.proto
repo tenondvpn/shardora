@@ -13,6 +13,7 @@ enum AddressType {
     kLocalToTxAddress = 6;
     kElectAddress = 7;
     kContractPrepayment = 8;
+    kWaitingRootConfirm = 9;
 }
 
 message AddressInfo {

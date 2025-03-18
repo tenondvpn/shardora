@@ -527,7 +527,6 @@ Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
         return s;
     }
     // 同步之后尝试消费之前消费失败的 Block
-    hotstuff_mgr_->hotstuff(pool_idx)->TryWaitingProposeMsgs();
     return Status::kSuccess;
 }
 
@@ -665,7 +664,7 @@ Status HotstuffSyncer::processResponseChain(
         auto view_block = min_heap.top();
         min_heap.pop();
         // TODO: check valid
-        tmp_chain->Store(view_block, true, nullptr, nullptr);
+        tmp_chain->Store(view_block, true, nullptr, nullptr, false);
     }
     
     ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
@@ -777,7 +776,7 @@ Status HotstuffSyncer::onRecViewBlock(
 
     // 4. 保存 view_block
     // TODO: check valid
-    s = hotstuff->view_block_chain()->Store(view_block_ptr, true, nullptr, nullptr);
+    s = hotstuff->view_block_chain()->Store(view_block_ptr, true, nullptr, nullptr, false);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,
             common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(), 
@@ -786,8 +785,6 @@ Status HotstuffSyncer::onRecViewBlock(
         return s;
     }
 
-    // 标记交易占用
-    hotstuff->acceptor()->MarkBlockTxsAsUsed(view_block.block_info());
     return Status::kSuccess;
 }
 

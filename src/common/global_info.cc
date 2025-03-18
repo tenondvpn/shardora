@@ -19,7 +19,8 @@ GlobalInfo* GlobalInfo::Instance() {
     return &ins;
 }
 
-GlobalInfo::GlobalInfo() {}
+GlobalInfo::GlobalInfo() {
+}
 
 GlobalInfo::~GlobalInfo() {
     if (thread_with_pools_ != nullptr) {
@@ -27,7 +28,29 @@ GlobalInfo::~GlobalInfo() {
     }
 }
 
+void GlobalInfo::Timer() {
+    for (uint32_t i = 0; i < 64; ++i) {
+        auto count = shared_obj_count_[i].fetch_add(0);
+        if (count <= 64) {
+            continue;
+        }
+
+        if (count > shared_obj_max_count_[i]) {
+            shared_obj_max_count_[i] = count;
+        }
+
+        ZJC_INFO("index %d get all shared object count now: %d, max: %d", 
+            i, count, shared_obj_max_count_[i]);
+    }
+
+    tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
+}
+
 int GlobalInfo::Init(const common::Config& config) {
+#ifndef NDEBUG
+    tick_ptr_ = std::make_shared<common::Tick>();
+    tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
+#endif
     memset(consensus_thread_index_map_, common::kInvalidUint8, sizeof(consensus_thread_index_map_));
     begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 10000lu;
     message_handler_thread_count_ = 4;
@@ -72,9 +95,11 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_host", ck_host_);
     config.Get("zjchain", "ck_user", ck_user_);
     config.Get("zjchain", "ck_pass", ck_pass_);
-    config.Get("zjchain", "pools_each_thread_max_messages", pools_each_thread_max_messages_);
     config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
-
+    if (each_tx_pool_max_txs_ < 10240) {
+        each_tx_pool_max_txs_ = 10240;
+    }
+    
     auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;

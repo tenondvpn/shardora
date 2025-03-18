@@ -116,8 +116,9 @@ private:
                     common::kRootChainPoolIndex,
                     check_height,
                     &view_block)) {
-                ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu",
-                    sharding_id, common::kRootChainPoolIndex, check_height);
+                ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu, max height: %lu",
+                    sharding_id, common::kRootChainPoolIndex, check_height,
+                    cross_synced_max_heights_[sharding_id]);
                 if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64) {
                     uint32_t count = 0;
                     for (uint64_t h = check_height; h <= cross_synced_max_heights_[sharding_id] && ++count < 64; ++h) {
@@ -126,10 +127,10 @@ private:
                             continue;
                         }
 
-                        ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
+                        ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                             sharding_id,
                             common::kRootChainPoolIndex,
-                            h);        
+                            h);
                         kv_sync_->AddSyncHeight(
                                 sharding_id,
                                 common::kRootChainPoolIndex,
@@ -185,11 +186,7 @@ private:
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height())) {
-                            ZJC_INFO("kvsync add sync block height net: %u, pool: %u, height: %lu",
-                                cross.src_shard(),
-                                cross.src_pool(),
-                                cross.height());
-                            ZJC_DEBUG("add sync block height net: %u, pool: %u, height: %lu",
+                            ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                                 cross.src_shard(),
                                 cross.src_pool(),
                                 cross.height());

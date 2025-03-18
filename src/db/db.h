@@ -2,8 +2,12 @@
 
 #include <mutex>
 #include <memory>
-#include "common/utils.h"
+#include <iostream>
+#include <string>
+
+#include "common/global_info.h"
 #include "common/log.h"
+#include "common/utils.h"
 
 #ifdef LEVELDB
 #include "leveldb/options.h"
@@ -14,13 +18,13 @@
 #include "leveldb/filter_policy.h"
 #include "leveldb/db.h"
 #else
+#include "rocksdb/db.h"
+#include "rocksdb/filter_policy.h"
 #include "rocksdb/options.h"
 #include "rocksdb/slice.h"
 #include "rocksdb/status.h"
-#include "rocksdb/write_batch.h"
-#include "rocksdb/filter_policy.h"
-#include "rocksdb/db.h"
 #include "rocksdb/table.h"
+#include "rocksdb/write_batch.h"
 #endif
 
 namespace shardora {
@@ -43,15 +47,55 @@ namespace db {
     typedef rocksdb::ReadOptions DbReadOptions;
     typedef rocksdb::Slice DbSlice;
     typedef rocksdb::Iterator DbIterator;
+
+
+
+using namespace ROCKSDB_NAMESPACE;
+
+// 自定义 Handler 用于将一个 WriteBatch 的操作应用到另一个
+class BatchMerger : public WriteBatch::Handler {
+public:
+    explicit BatchMerger(WriteBatch* target) : target_batch_(target) {}
+
+    Status PutCF(uint32_t column_family_id, const Slice& key, const Slice& value) override {
+        target_batch_->Put(0, key, value);
+        return Status::OK();
+    }
+
+    Status DeleteCF(uint32_t column_family_id, const Slice& key) override {
+        target_batch_->Delete(0, key);
+        return Status::OK();
+    }
+
+    Status MergeCF(uint32_t column_family_id, const Slice& key, const Slice& value) override {
+        target_batch_->Merge(0, key, value);
+        return Status::OK();
+    }
+
+    // 如果需要支持其他操作（例如 SingleDelete），可以继续重写对应方法
+
+private:
+    WriteBatch* target_batch_;
+};
+
+// 合并两个 WriteBatch
+inline static Status MergeWriteBatches(WriteBatch& target, const WriteBatch& source) {
+    BatchMerger merger(&target);
+    return source.Iterate(&merger);
+}
+
 #endif // LEVELDB
 
 class DbWriteBatch {
 public:
-    DbWriteBatch() {}
+    DbWriteBatch() {
+        common::GlobalInfo::Instance()->AddSharedObj(5);
+    }
     DbWriteBatch(const DbWriteBatch&) = default;
     DbWriteBatch& operator =(const DbWriteBatch&) = default;
     ~DbWriteBatch() {
         Clear();
+        common::GlobalInfo::Instance()->DecSharedObj(5);
     }
 
     void Put(const std::string& key, const std::string& value) {
@@ -96,6 +140,15 @@ public:
         count_ = 0;
     }
 
+    void Append(DbWriteBatch& other) {
+#ifdef LEVELDB
+        db_batch_.Append(other.db_batch_);
+#else
+    // 合并 batch2 到 batch1
+        MergeWriteBatches(db_batch_, other.db_batch_);
+#endif
+    }
+
     size_t ApproximateSize() const {
 #ifdef LEVELDB
         return db_batch_.ApproximateSize();
@@ -104,6 +157,7 @@ public:
 #endif
     }
 
+    
     TmpDbWriteBatch db_batch_;
     uint32_t count_ = 0;
     // std::unordered_map<std::string, std::string> data_map_;
@@ -138,10 +192,10 @@ public:
             return db::DbStatus();
         }
 
-        ZJC_INFO("write to db datasize: %u", db_batch.ApproximateSize());
+        ZJC_DEBUG("write to db datasize: %u", db_batch.ApproximateSize());
         DbWriteOptions write_opt;
 #ifndef LEVELDB
-        write_opt.disableWAL = true;
+        // write_opt.disableWAL = true;
 #endif
         auto st = db_->Write(write_opt, &db_batch.db_batch_);
         db_batch.Clear();

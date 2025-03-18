@@ -3,24 +3,24 @@
 
 #include <cassert>
 #include <chrono>
-#include <common/log.h>
-#include <common/utils.h>
-#include <consensus/hotstuff/agg_crypto.h>
-#include <consensus/hotstuff/block_acceptor.h>
-#include <consensus/hotstuff/block_wrapper.h>
-#include <consensus/hotstuff/hotstuff.h>
-#include <consensus/hotstuff/view_block_chain.h>
+
 #include <libbls/tools/utils.h>
-#include <protos/pools.pb.h>
 
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
 #include "bls/bls_sign.h"
+#include "common/encode.h"
 #include "common/hash.h"
+#include "common/log.h"
 #include "common/global_info.h"
 #include "common/random.h"
 #include "common/time_utils.h"
-#include "common/encode.h"
+#include "common/utils.h"
+#include "consensus/hotstuff/agg_crypto.h"
+#include "consensus/hotstuff/block_acceptor.h"
+#include "consensus/hotstuff/block_wrapper.h"
+#include "consensus/hotstuff/hotstuff.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "db/db.h"
 #include "dht/base_dht.h"
 #include "elect/elect_manager.h"
@@ -28,6 +28,9 @@
 #include "network/route.h"
 #include "network/universal_manager.h"
 #include "pools/tx_pool_manager.h"
+#include "protos/pools.pb.h"
+#include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
 #include "transport/processor.h"
 #include "types.h"
 
@@ -337,11 +340,6 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             break;
-        case NEWVIEW: // 接收 tc 和 qc
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            hotstuff(hotstuff_msg.pool_index())->HandleNewViewMsg(msg_ptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            break;
         case PRE_RESET_TIMER:
             ADD_DEBUG_PROCESS_TIMESTAMP();
             hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
@@ -368,6 +366,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+        msg_ptr->times_idx = 0;
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             bool has_user_tx = false;
             bool has_system_tx = false;
@@ -388,6 +387,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
                 prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
                 has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, gid_valid_func);
+                ZJC_DEBUG("pool: %d check hash system tx: %d", pool_idx, has_system_tx);
             }
 
             ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -449,8 +449,17 @@ void HotstuffManager::PopPoolsMessage() {
                     if (!pools::IsUserTransaction(tx->step())) {
                         continue;
                     }
-                        
-                    from_id = security_ptr_->GetAddress(tx->pubkey());
+                    
+                    if (tx->pubkey().size() == 64u) {
+                        security::GmSsl gmssl;
+                        from_id = gmssl.GetAddress(tx->pubkey());
+                    } else if (tx->pubkey().size() > 128u) {
+                        security::Oqs oqs;
+                        from_id = oqs.GetAddress(tx->pubkey());
+                    } else {
+                        from_id = security_ptr_->GetAddress(tx->pubkey());
+                    }
+
                     if (tx->step() == pools::protobuf::kContractExcute) {
                         address_info = account_mgr_->GetAccountInfo(tx->to());
                     } else {
@@ -474,6 +483,14 @@ void HotstuffManager::PopPoolsMessage() {
                         tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
                                 contract_mgr_, 
                                 db_, 
+                                msg_ptr, i, 
+                                account_mgr_, 
+                                security_ptr_, 
+                                address_info);
+                        contract_prepayment_id = tx->to() + from_id;
+                        break;
+                    case pools::protobuf::kCreateLibrary:
+                        tx_ptr = std::make_shared<consensus::CreateLibrary>(
                                 msg_ptr, i, 
                                 account_mgr_, 
                                 security_ptr_, 
@@ -521,13 +538,35 @@ void HotstuffManager::PopPoolsMessage() {
                     
                     if (tx_ptr != nullptr) {
                         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-                        if (security_ptr_->Verify(
-                                tx_ptr->unique_tx_hash,
-                                tx_ptr->tx_info->pubkey(),
-                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                            assert(false);
+                        if (tx_ptr->tx_info->pubkey().size() == 64u) {
+                            security::GmSsl gmssl;
+                            if (gmssl.Verify(
+                                    tx_ptr->unique_tx_hash,
+                                    tx_ptr->tx_info->pubkey(),
+                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                                assert(false);
+                            } else {
+                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            }
+                        } else if (tx_ptr->tx_info->pubkey().size() > 128u) {
+                            security::Oqs oqs;
+                            if (oqs.Verify(
+                                    tx_ptr->unique_tx_hash,
+                                    tx_ptr->tx_info->pubkey(),
+                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                                assert(false);
+                            } else {
+                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            }
                         } else {
-                            pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            if (security_ptr_->Verify(
+                                    tx_ptr->unique_tx_hash,
+                                    tx_ptr->tx_info->pubkey(),
+                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                                assert(false);
+                            } else {
+                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            }
                         }
                     }
                 }
@@ -550,9 +589,9 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kConsensusLocalTos,
         std::bind(&HotstuffManager::CreateToTxLocal, this, std::placeholders::_1));
-    pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kContractCreateByRootTo,
-        std::bind(&HotstuffManager::CreateContractByRootToTx, this, std::placeholders::_1));
+    // pools_mgr_->RegisterCreateTxFunction(
+    //     pools::protobuf::kContractCreateByRootTo,
+    //     std::bind(&HotstuffManager::CreateContractByRootToTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCreateAddress,
         std::bind(&HotstuffManager::CreateRootToTxItem, this, std::placeholders::_1));

@@ -1,28 +1,31 @@
 #include "consensus/hotstuff/block_acceptor.h"
 
 #include "bls/agg_bls.h"
-#include <common/utils.h>
-#include <consensus/consensus_utils.h>
-#include <consensus/hotstuff/block_executor.h>
-#include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/view_block_chain.h>
-#include <consensus/zbft/contract_call.h>
-#include <consensus/zbft/contract_user_call.h>
-#include <consensus/zbft/contract_user_create_call.h>
-#include <consensus/zbft/elect_tx_item.h>
-#include <consensus/zbft/from_tx_item.h>
-#include <consensus/zbft/pool_statistic_tag.h>
-#include <consensus/zbft/to_tx_local_item.h>
-#include <consensus/zbft/to_tx_item.h>
-#include <consensus/zbft/time_block_tx.h>
-#include <consensus/zbft/statistic_tx_item.h>
-#include <consensus/zbft/root_to_tx_item.h>
-#include <consensus/zbft/root_cross_tx_item.h>
-#include <consensus/zbft/join_elect_tx_item.h>
-#include <protos/pools.pb.h>
-#include <protos/zbft.pb.h>
-#include <zjcvm/zjcvm_utils.h>
-#include <common/defer.h>
+#include "common/defer.h"
+#include "common/utils.h"
+#include "consensus/consensus_utils.h"
+#include "consensus/hotstuff/block_executor.h"
+#include "consensus/hotstuff/types.h"
+#include "consensus/hotstuff/view_block_chain.h"
+#include "consensus/zbft/contract_call.h"
+#include "consensus/zbft/contract_user_call.h"
+#include "consensus/zbft/contract_user_create_call.h"
+#include "consensus/zbft/create_library.h"
+#include "consensus/zbft/elect_tx_item.h"
+#include "consensus/zbft/from_tx_item.h"
+#include "consensus/zbft/pool_statistic_tag.h"
+#include "consensus/zbft/to_tx_local_item.h"
+#include "consensus/zbft/to_tx_item.h"
+#include "consensus/zbft/time_block_tx.h"
+#include "consensus/zbft/statistic_tx_item.h"
+#include "consensus/zbft/root_to_tx_item.h"
+#include "consensus/zbft/root_cross_tx_item.h"
+#include "consensus/zbft/join_elect_tx_item.h"
+#include "protos/pools.pb.h"
+#include "protos/zbft.pb.h"
+#include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
+#include "zjcvm/zjcvm_utils.h"
 
 namespace shardora {
 
@@ -223,7 +226,15 @@ Status BlockAcceptor::addTxsToPool(
         protos::AddressInfoPtr address_info = nullptr;
         std::string from_id;
         if (pools::IsUserTransaction(tx->step())) {
-            from_id = security_ptr_->GetAddress(tx->pubkey());
+            if (tx->pubkey().size() == 64u) {
+                security::GmSsl gmssl;
+                from_id = gmssl.GetAddress(tx->pubkey());
+            } else if (tx->pubkey().size() > 128u) {
+                security::Oqs oqs;
+                from_id = oqs.GetAddress(tx->pubkey());
+            } else {
+                from_id = security_ptr_->GetAddress(tx->pubkey());
+            }
         }
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
@@ -427,6 +438,15 @@ Status BlockAcceptor::addTxsToPool(
             ZJC_WARN("add tx now get kPoolStatisticTag tx: %u", pool_idx());
             break;
         }
+        case pools::protobuf::kCreateLibrary: {
+            tx_ptr = std::make_shared<consensus::CreateLibrary>(
+                msg_ptr, i, 
+                account_mgr_, 
+                security_ptr_, 
+                address_info);
+            ZJC_WARN("add tx now get CreateLibrary tx: %u", pool_idx());
+            break;
+        }
         default:
             // TODO 没完！还需要支持其他交易的写入
             // break;
@@ -450,12 +470,34 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
             txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
-                if (!msg_ptr->is_leader && security_ptr_->Verify(
-                        tx_ptr->unique_tx_hash,
-                        tx_ptr->tx_info->pubkey(),
-                        tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                    assert(false);
-                    return Status::kError;
+                if (!msg_ptr->is_leader) {
+                    if (tx->pubkey().size() == 64u) {
+                        security::GmSsl gmssl;
+                        if (gmssl.Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                            return Status::kError;
+                        }
+                    } else if (tx->pubkey().size() > 128u) {
+                        security::Oqs oqs;
+                        if (oqs.Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                            return Status::kError;
+                        }
+                    } else {
+                        if (security_ptr_->Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                            return Status::kError;
+                        }
+                    }
                 }
             }
         }
@@ -530,18 +572,6 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     return true;
 }
 
-void BlockAcceptor::MarkBlockTxsAsUsed(const block::protobuf::Block& block) {
-    // mark txs as used
-    std::vector<std::string> gids;
-    for (uint32_t i = 0; i < uint32_t(block.tx_list().size()); i++) {
-        auto& gid = block.tx_list(i).gid();
-        gids.push_back(gid);
-    }
-
-    std::map<std::string, pools::TxItemPtr> res_map;
-    pools_mgr_->GetTxByGids(pool_idx(), gids, res_map);    
-}
-
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
@@ -609,47 +639,9 @@ void BlockAcceptor::commit(
         *queue_item_ptr->final_db_batch);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
-        if (block->tx_list_size() > 0) {
-            pools_mgr_->TxOver(queue_item_ptr->view_block_ptr->qc().pool_index(), block->tx_list());
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            prefix_db_->SaveCommittedGids(block->tx_list(), *queue_item_ptr->final_db_batch);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-        } else {
-#ifndef NDEBUG
-            transport::protobuf::ConsensusDebug cons_debug;
-            cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
-            ZJC_DEBUG("commit block tx over no tx, net: %d, pool: %d, height: %lu, propose_debug: %s", 
-                queue_item_ptr->view_block_ptr->qc().network_id(),
-                queue_item_ptr->view_block_ptr->qc().pool_index(),
-                block->height(),
-                ProtobufToJson(cons_debug).c_str());     
-#endif   
-        }
-
         // tps measurement
         ADD_DEBUG_PROCESS_TIMESTAMP();
         CalculateTps(block->tx_list_size());
-#ifndef NDEBUG
-        // auto now_ms = common::TimeUtils::TimestampMs();
-        // transport::protobuf::ConsensusDebug cons_debug;
-        // cons_debug.ParseFromString(queue_item_ptr->view_block_ptr->debug());
-        // for (auto i = 0; i < block->tx_list_size(); ++i)
-        //     ZJC_INFO("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
-        //         "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu, gid: %s",
-        //         common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-        //         common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
-        //         queue_item_ptr->view_block_ptr->qc().network_id(),
-        //         queue_item_ptr->view_block_ptr->qc().pool_index(),
-        //         queue_item_ptr->view_block_ptr->qc().view(),
-        //         queue_item_ptr->view_block_ptr->qc().network_id(),
-        //         queue_item_ptr->view_block_ptr->qc().pool_index(),
-        //         block->height(),
-        //         queue_item_ptr->view_block_ptr->qc().elect_height(),
-        //         block->timestamp(),
-        //         block->tx_list_size(),
-        //         ProtobufToJson(cons_debug).c_str(), (now_ms - cons_debug.begin_timestamp()),
-        //         common::Encode::HexEncode(block->tx_list(i).gid()).c_str());
-#else
         auto now_ms = common::TimeUtils::TimestampMs();
         uint64_t b_tm = 0;
         common::StringUtil::ToUint64(queue_item_ptr->view_block_ptr->debug(), &b_tm);
@@ -668,7 +660,6 @@ void BlockAcceptor::commit(
             block->tx_list_size(),
             "",
             (now_ms - b_tm));
-#endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
     }
     

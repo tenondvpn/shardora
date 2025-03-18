@@ -11,7 +11,9 @@
 #include "common/config.h"
 #include "common/encode.h"
 #include "common/hash.h"
+#include "common/spin_mutex.h"
 #include "common/time_utils.h"
+#include "common/tick.h"
 #include "common/utils.h"
 
 namespace shardora {
@@ -220,17 +222,26 @@ public:
         return common::kInvalidUint8;
     }
 
-    uint32_t pools_each_thread_max_messages() const {
-        return pools_each_thread_max_messages_;
-    }
-
     uint32_t each_tx_pool_max_txs() const {
         return each_tx_pool_max_txs_;
     }
 
+    void AddSharedObj(int32_t index) {
+#ifndef NDEBUG
+        shared_obj_count_[index].fetch_add(1);
+#endif
+    }
+
+    void DecSharedObj(int32_t index) {
+#ifndef NDEBUG
+    shared_obj_count_[index].fetch_sub(1);
+#endif
+}
+
 private:
     GlobalInfo();
     ~GlobalInfo();
+    void Timer();
 
     static const uint32_t kDefaultTestNetworkShardId = 4u;
     static const uint32_t kTickThreadPoolCount = 1U;
@@ -271,8 +282,11 @@ private:
     std::unordered_map<int, uint8_t> valid_thread_index_;
     volatile bool global_stoped_ = false;
     volatile bool main_inited_success_ = false;
-    uint32_t pools_each_thread_max_messages_ = 2048u;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
+
+    std::atomic<int32_t> shared_obj_count_[64] = {0};
+    int32_t shared_obj_max_count_[64] = {0};
+    std::shared_ptr<common::Tick> tick_ptr_;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

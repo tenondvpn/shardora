@@ -103,6 +103,10 @@ public:
     Status Start();
 
     void UpdateStoredToDbView(View view) {
+        if (view > db_stored_view_) {
+            db_stored_view_ = view;
+        }
+
         view_block_chain_->UpdateStoredToDbView(view);
     }
     
@@ -120,12 +124,6 @@ public:
         const transport::MessagePtr& msg_ptr);
     Status TryCommit(const transport::MessagePtr& msg_ptr, const QC& commit_qc, uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
-    // 消费等待队列中的 ProposeMsg
-    int TryWaitingProposeMsgs() {
-        int succ = handle_propose_pipeline_.CallWaitingProposeMsgs();
-        ZJC_DEBUG("pool: %d, handle waiting propose, %d/%d", pool_idx_, succ, handle_propose_pipeline_.Size());
-        return succ;
-    }
 
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
@@ -228,27 +226,7 @@ public:
         bool has_system_tx);
 
 private:
-    // void LoadAllViewBlockWithLatestCommitedBlock(std::shared_ptr<ViewBlock>& view_block);
     void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
-
-    void InitHandleProposeMsgPipeline() {
-        // 仅 VerifyLeader 和 ChainStore 出错后允许重试
-        // 因为一旦节点状态落后，父块缺失，ChainStore 会一直失败，导致无法追上进度
-        // 而对于 Leader，理论上是可以通过 QC 同步追上进度的，但 Propose&Vote 要比同步 QC 快很多，因此也会一直失败
-        // 因此，要在同步完成之后，给新提案重新 VerifyLeader 和 ChainStore 的机会 
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_HasVote, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyLeader, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyQC, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_VerifyViewBlock, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_TxAccept, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_ChainStore, this, std::placeholders::_1));
-        handle_propose_pipeline_.AddStep(std::bind(&Hotstuff::HandleProposeMsgStep_Vote, this, std::placeholders::_1));
-        handle_propose_pipeline_.SetCondition(std::bind(&Hotstuff::HandleProposeMsgCondition, this, std::placeholders::_1));
-        handle_propose_pipeline_.UseRetry(true); // 开启断点重试
-        handle_propose_pipeline_.set_derectly_call_accept_and_store_fn(
-            std::bind(&Hotstuff::HandleProposeMsgStep_Directly, this, std::placeholders::_1, std::placeholders::_2));
-    }
-
     Status HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
@@ -293,7 +271,7 @@ private:
         const transport::MessagePtr& msg_ptr, 
         ViewBlock* view_block,
         hotstuff::protobuf::TxPropose* tx_propose);
-    Status ConstructHotstuffMsg(
+    void ConstructHotstuffMsg(
             const MsgType msg_type, 
             pb_ProposeMsg* pb_pro_msg, 
             pb_VoteMsg* pb_vote_msg,
@@ -308,8 +286,6 @@ private:
     Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
-    void SaveLatestProposeMessage();
-    void LoadLatestProposeMessage();
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 300lu;
 
@@ -330,21 +306,20 @@ private:
     View last_vote_view_ = 0;
     View last_leader_propose_view_ = 0;
     SyncPoolFn sync_pool_fn_ = nullptr;
-    Pipeline handle_propose_pipeline_;
     std::map<View, transport::MessagePtr> voted_msgs_;
     uint64_t latest_propose_msg_tm_ms_ = 0;
     std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr_;
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;
-    std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
+    // std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
+    volatile View db_stored_view_ = 0llu;
     
 };
 
 } // namespace consensus
 
 } // namespace shardora
-

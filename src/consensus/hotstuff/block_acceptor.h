@@ -65,15 +65,8 @@ public:
     virtual Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) = 0;
     // Commit a block
     virtual void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
-    // Add txs to local pool
-    // virtual Status AddTxs(
-    //     transport::MessagePtr msg_ptr, 
-    //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) = 0;
-    // Return block txs to pool
-    virtual Status Return(const std::shared_ptr<view_block::protobuf::ViewBlockItem>&) = 0;
     // Handle Synced Block From KeyValueSyncer
     virtual void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
-    virtual void MarkBlockTxsAsUsed(const block::protobuf::Block&) = 0;
     virtual double Tps() = 0;
 };
 
@@ -114,22 +107,9 @@ public:
     //     transport::MessagePtr msg_ptr, 
     //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
     void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
-    // 将 block txs 从交易池中取出，当 block 成功加入链中后调用
-    void MarkBlockTxsAsUsed(const block::protobuf::Block&) override;
 
     inline double Tps() override {
         return cur_tps_;
-    }
-    
-    // Return expired or invalid block txs to pool
-    Status Return(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) override {
-        auto& block = view_block->block_info();
-        // return txs to the pool
-        for (uint32_t i = 0; i < uint32_t(block.tx_list().size()); i++) {
-            auto& gid = block.tx_list(i).gid();
-            pools_mgr_->RecoverTx(pool_idx_, gid);
-        }
-        return Status::kSuccess;
     }
 
     private:

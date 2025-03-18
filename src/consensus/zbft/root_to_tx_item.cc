@@ -36,10 +36,10 @@ int RootToTxItem::HandleTx(
         // gas prepayment
         account_info = account_mgr_->GetAccountInfo(
             block_tx.to().substr(0, security::kUnicastAddressLength));
-        if (account_info == nullptr) {
-            block_tx.set_status(kConsensusAccountNotExists);
-            return kConsensusSuccess;
-        }
+        // if (account_info == nullptr) {
+        //     block_tx.set_status(kConsensusAccountNotExists);
+        //     return kConsensusSuccess;
+        // }
     } else {
         account_info = account_mgr_->GetAccountInfo(block_tx.to());
     }

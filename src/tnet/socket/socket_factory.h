@@ -66,20 +66,20 @@ public:
             return NULL;
         }
 
-        ClientSocket* socket = new ClientSocket(
+        ClientSocket* client_socket = new ClientSocket(
                 peer_addr,
                 peer_port,
                 local_addr,
                 local_port);
-        socket->SetFd(fd);
+        client_socket->SetFd(fd);
 
-        if (!local.empty() && !socket->Bind()) {
+        if (!local.empty() && !client_socket->Bind()) {
             ZJC_ERROR("bind failed, spec [%s]", local.c_str());
-            socket->Free();
+            client_socket->Free();
             return NULL;
         }
 
-        return socket;
+        return client_socket;
 #endif
         return NULL;
     }

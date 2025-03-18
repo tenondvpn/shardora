@@ -5,8 +5,6 @@
 
 #pragma once
 
-#ifndef ROCKSDB_LITE
-
 #include <functional>
 #include <map>
 #include <memory>
@@ -164,7 +162,7 @@ class ObjectLibrary {
     size_t slength_;  // The minimum required length to match the separators
     std::vector<std::pair<std::string, Quantifier>>
         separators_;  // What to match
-  };                  // End class Entry
+  };  // End class Entry
 
  private:
   // An Entry containing a FactoryFunc for creating new Objects
@@ -582,4 +580,3 @@ class ObjectRegistry {
   mutable std::mutex library_mutex_;  // Mutex for managed libraries
 };
 }  // namespace ROCKSDB_NAMESPACE
-#endif  // ROCKSDB_LITE

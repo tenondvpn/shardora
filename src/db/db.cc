@@ -116,8 +116,8 @@ bool Db::Init(const std::string& db_path) {
     // options.keep_log_file_num = 1;
     // options.max_open_files = 10 / 5;
     // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
-    // options.IncreaseParallelism();
-    // options.OptimizeLevelStyleCompaction();
+    options.IncreaseParallelism();
+    options.OptimizeLevelStyleCompaction();
 
 //     options.prefix_extractor.reset(rocksdb::NewFixedPrefixTransform(3));
 //     options.memtable_prefix_bloom_bits = 100000000;

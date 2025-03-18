@@ -23,7 +23,7 @@ ThreadHandler::ThreadHandler(
         : msg_handler_(msg_handler),
         wait_con_(wait_con),
         wait_mutex_(wait_mutex) {
-    thread_.reset(new std::thread(&ThreadHandler::HandleMessage, this));
+    thread_ = std::make_shared<std::thread>(&ThreadHandler::HandleMessage, this);
     thread_->detach();
 }
 
@@ -32,7 +32,7 @@ ThreadHandler::~ThreadHandler() {}
 void ThreadHandler::Join() {
     destroy_ = true;
     if (thread_) {
-        thread_ = nullptr;
+        thread_->join();
     }
 }
 
@@ -73,6 +73,9 @@ void ThreadHandler::HandleMessage() {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             ZJC_DEBUG("begin message handled msg hash: %lu, thread idx: %d", 
                 msg_ptr->header.hash64(), thread_idx);
+            // if (msg_ptr->header.type() != common::kPoolsMessage) {
+            //     continue;
+            // }
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
@@ -94,69 +97,23 @@ void ThreadHandler::HandleMessage() {
                         "ProtobufToJson(msg_ptr->header).c_str()");
             }
 
-            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
+            // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
         auto btime = common::TimeUtils::TimestampUs();
         if (maping_thread_idx <= (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
-#ifndef ENABLE_HOTSTUFF            
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            msg_ptr->header.set_type(common::kConsensusTimerMessage);
-            // ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
-            Processor::Instance()->HandleMessage(msg_ptr);
-            auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 200000) {
-                std::string t;
-                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-                }
-
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
-                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
-            }
-
-            // ZJC_DEBUG("over kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
-
-#else
-            // HotstuffSyncTimerMessage
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
             // PacemakerTimerMessage
             btime = common::TimeUtils::TimestampUs();
             msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPacemakerTimerMessage);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
-            auto etime = common::TimeUtils::TimestampUs();
-            // ZJC_INFO("kPacemakerTimerMessage over handle message: %d, thread: %d use: %lu us", 
-            //     msg_ptr->header.type(), thread_idx, (etime - btime));            
-#endif            
-        // } else {
-            // auto btime = common::TimeUtils::TimestampUs();
-            // auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            // msg_ptr->header.set_type(common::kPoolTimerMessage);
-            // // ZJC_DEBUG("start kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-            // //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
-            // msg_ptr->times[msg_ptr->times_idx++] = btime;
-            // Processor::Instance()->HandleMessage(msg_ptr);
-            // auto etime = common::TimeUtils::TimestampUs();
-            // if (etime - btime > 200000) {
-            //     std::string t;
-            //     for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-            //         t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-            //     }
-
-            //     ZJC_INFO("kPoolTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
-            //         msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
-            // }
-            // ZJC_DEBUG("end kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
-            //     msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
+            ADD_DEBUG_PROCESS_TIMESTAMP();
         }
 
         if (count >= kMaxHandleMessageCount) {
@@ -245,6 +202,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
+    ZJC_DEBUG("message coming hash64: %lu", msg_ptr->header.hash64());
     if (common::kConsensusMessage == msg_ptr->header.type()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             return;
@@ -262,6 +220,18 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     uint32_t priority = GetPriority(msg_ptr);
     if (thread_vec_.empty()) {
         return;
+    }
+
+    auto thread_index = GetThreadIndex(msg_ptr);
+    if (thread_index >= common::kMaxThreadCount) {
+        assert(false);
+        return;
+    }
+
+    if (msg_ptr->header.type() == common::kPoolsMessage && msg_ptr->header.has_tx_proto()) {
+        if (threads_message_queues_[thread_index][priority].size() >= kEachMessagePoolMaxCount) {
+            return;
+        }
     }
 
     if (msg_ptr->header.hop_count() >= kMaxHops) {
@@ -294,12 +264,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
             msg_ptr->header.zbft().bft_timeout() && 
             msg_ptr->header.zbft().leader_idx() != -1) {
         HandleSyncBftTimeout(msg_ptr);
-        return;
-    }
-
-    auto thread_index = GetThreadIndex(msg_ptr);
-    if (thread_index >= common::kMaxThreadCount) {
-        assert(false);
         return;
     }
 
@@ -405,6 +369,7 @@ void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
         transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
         uint32_t priority = GetPriority(new_msg_ptr);
         threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
+        assert(new_msg_ptr->times_idx < 128);
         wait_con_[queue_idx % all_thread_count_].notify_one();
     }
 }

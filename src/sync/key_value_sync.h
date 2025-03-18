@@ -42,11 +42,13 @@ enum SyncItemTag : uint32_t {
     kViewHash = 2,
 };
 
-struct SyncItem {
+class SyncItem {
+public:
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
             : network_id(net_id), key(in_key), 
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
         tag = kViewHash;
+        common::GlobalInfo::Instance()->AddSharedObj(9);
     }
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
@@ -56,6 +58,11 @@ struct SyncItem {
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
         tag = kBlockHeight;
+        common::GlobalInfo::Instance()->AddSharedObj(9);
+    }
+
+    ~SyncItem() {
+        common::GlobalInfo::Instance()->DecSharedObj(9);
     }
 
     uint32_t network_id{ 0 };
@@ -128,7 +135,7 @@ private:
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
     void ConsensusTimerMessage();
-    void PopKvMessage();
+    uint32_t PopKvMessage();
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(
         uint32_t network_id,
@@ -136,9 +143,11 @@ private:
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res,
         uint32_t& add_size);
+    void ConsensusTimerMessageThread();
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
+    static const uint32_t kEachTimerHandleCount = 64u;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
     std::unordered_map<std::string, SyncItemPtr> synced_map_;
@@ -160,6 +169,10 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> bft_block_queues_[common::kMaxThreadCount];  
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
+    std::shared_ptr<std::thread> check_timer_thread_;
+    volatile bool destroy_ = false;
+    std::mutex wait_mutex_;
+    std::condition_variable wait_con_;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };

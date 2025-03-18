@@ -47,13 +47,13 @@ public:
             db::DbWriteBatch& db_batch) {
         auto& block = view_block.block_info();
         if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
-            ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] "
-                " %lu, %lu", 
-                block.height(), 
-                pools_max_heights_[view_block.qc().pool_index()]);
-            ZJC_INFO("failed save contract prepayment pool: %u, height: %lu",
-                view_block.qc().pool_index(),
-                block.height());
+            // ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] "
+            //     " %lu, %lu", 
+            //     block.height(), 
+            //     pools_max_heights_[view_block.qc().pool_index()]);
+            // ZJC_INFO("failed save contract prepayment pool: %u, height: %lu",
+            //     view_block.qc().pool_index(),
+            //     block.height());
             // assert(false);
             return;
         }
@@ -64,7 +64,7 @@ public:
         }
 
         pools_max_heights_[view_block.qc().pool_index()] = block.height();
-        ZJC_DEBUG("success execute contract save contract prepayment pool: %u, height: %lu",
+        ZJC_DEBUG("success new block pool: %u, height: %lu",
             view_block.qc().pool_index(),
             block.height());
     }
@@ -95,7 +95,7 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    StorageLruMap<10240> storage_map_[common::kMaxThreadCount];
+    StorageLruMap<1024> storage_map_[common::kMaxThreadCount];
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;

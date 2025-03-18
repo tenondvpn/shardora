@@ -257,7 +257,8 @@ std::string WaitingTxsPools::GetToTxGid() {
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         uint32_t pool_index, 
         const std::string& tx_hash) {
-    if (pool_index != common::kImmutablePoolSize) {
+    if (network::IsSameToLocalShard(network::kRootCongressNetworkId) &&
+            pool_index != common::kImmutablePoolSize) {
         return nullptr;
     }
 

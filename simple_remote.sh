@@ -62,6 +62,7 @@ init() {
 }
 
 make_package() {
+    rm -rf /root/zjnodes/zjchain/pkg
     mkdir /root/zjnodes/zjchain/pkg
     cp /root/zjnodes/zjchain/zjchain /root/zjnodes/zjchain/pkg
     cp /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/zjchain/pkg
@@ -69,6 +70,7 @@ make_package() {
     cp /root/shardora/shards3 /root/zjnodes/zjchain/pkg
     cp /root/shardora/root_nodes /root/zjnodes/zjchain/pkg/shards2
     cp /root/shardora/temp_cmd.sh /root/zjnodes/zjchain/pkg
+    cp /root/shardora/start_cmd.sh /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
@@ -90,22 +92,56 @@ get_bootstrap() {
             node_info=$tmppubkey":"$ip":1"$shard_id"00"$i
             bootstrap=$node_info","$bootstrap
             i=$((i+1))
+            if ((i>=10)); then
+                break
+            fi
         done
     done
 }
 
 check_cmd_finished() {
+    echo "waiting..."
+    sleep 1
+    ps -ef | grep sshpass 
     while true
     do
-        sshpass_count=`ps -ef | grep sshpass | grep scp | wc -l`
+        sshpass_count=`ps -ef | grep sshpass | grep ConnectTimeout | wc -l`
         if [ "$sshpass_count" == "0" ]; then
             break
         fi
         sleep 1
     done
+
+    ps -ef | grep sshpass | grep ConnectTimeout
+    echo "waiting ok"
+}
+
+
+clear_command() {
+    echo 'run_command start'
+    node_ips_array=(${node_ips//,/ })
+    run_cmd_count=0
+    start_pos=1
+    for ip in "${node_ips_array[@]}"; do 
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg*" &
+        run_cmd_count=$((run_cmd_count + 1))
+        if ((start_pos==1)); then
+            sleep 3
+        fi
+
+        if (($run_cmd_count >= 1)); then
+            check_cmd_finished
+            run_cmd_count=0
+        fi
+        start_pos=$(($start_pos+$each_nodes_count))
+    done
+
+    check_cmd_finished
+    echo 'run_command over'
 }
 
 scp_package() {
+    echo 'scp_package start'
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
@@ -118,9 +154,11 @@ scp_package() {
     done
 
     check_cmd_finished
+    echo 'scp_package over'
 }
 
 run_command() {
+    echo 'run_command start'
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     start_pos=1
@@ -139,11 +177,38 @@ run_command() {
     done
 
     check_cmd_finished
+    echo 'run_command over'
 }
 
+start_all_nodes() {
+    echo 'start_all_nodes start'
+    node_ips_array=(${node_ips//,/ })
+    run_cmd_count=0
+    start_pos=1
+    for ip in "${node_ips_array[@]}"; do 
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh start_cmd.sh $ip $start_pos $each_nodes_count $bootstrap 2 $end_shard &"  &
+        run_cmd_count=$((run_cmd_count + 1))
+        if ((start_pos==1)); then
+            sleep 3
+        fi
+
+        if (($run_cmd_count >= 10)); then
+            check_cmd_finished
+            run_cmd_count=0
+        fi
+        start_pos=$(($start_pos+$each_nodes_count))
+    done
+
+    check_cmd_finished
+    echo 'start_all_nodes over'
+}
+
+killall -9 sspass
 init
 make_package
+clear_command
 scp_package
 get_bootstrap
 echo $bootstrap
 run_command
+start_all_nodes
