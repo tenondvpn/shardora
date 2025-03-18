@@ -49,6 +49,9 @@ int GmSsl::Verify(const std::string& hash, const std::string& str_pk, const std:
         ZJC_DEBUG("sign get pk: %s, src pk: %s", 
             common::Encode::HexEncode(tmp_pk).c_str(), 
             common::Encode::HexEncode(str_pk).c_str());
+        printf("sign get pk: %s, src pk: %s\n", 
+            common::Encode::HexEncode(tmp_pk).c_str(), 
+            common::Encode::HexEncode(str_pk).c_str());
         return kSecurityError;
     }
 
