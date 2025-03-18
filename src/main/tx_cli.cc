@@ -474,6 +474,8 @@ int one_tx_main(int argc, char** argv) {
         gas_limit,
         1,
         shardnum);
+    std::cout << "gid: " << common::Encode::HexEncode(gid).c_str()
+        << ", hash64: " << tx_msg_ptr->header.hash64() << std::endl;
     if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
