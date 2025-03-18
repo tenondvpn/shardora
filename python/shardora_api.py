@@ -50,7 +50,7 @@ def transfer(
 
     keypair = get_keypair(bytes.fromhex(str_prikey))
     param = get_transfer_params(
-        gid, to, amount, 90000000000, 1, 
+        gid, to, amount, 9000000, 1, 
         keypair, 3, contract_bytes, input, 
         prepayment, step, key, val)
     res = _call_tx(param)
