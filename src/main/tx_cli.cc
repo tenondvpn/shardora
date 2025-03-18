@@ -324,7 +324,7 @@ static void LoadAllAccounts(int32_t shardnum=3) {
 }
 
 static void GetOqsKeys() {
-    FILE* fd = fopen((std::string("../oqs_addrs") + std::to_string(shardnum)).c_str(), "r");
+    FILE* fd = fopen((std::string("../oqs_addrs")).c_str(), "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
