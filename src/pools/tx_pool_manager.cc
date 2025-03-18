@@ -111,6 +111,14 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
             ZJC_ERROR("verify signature failed!");
             return transport::kFirewallCheckError;
         }
+
+        auto tmp_acc_ptr = acc_mgr_.lock();
+        msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(gmssl.GetAddress(tx_msg.pubkey()));
+        if (msg_ptr->address_info == nullptr) {
+            ZJC_DEBUG("failed get account info: %s", 
+                common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
+            return transport::kFirewallCheckError; // xufeisofly111 bug: 共识压测时这里会导致共识卡住一段时候，之后恢复
+        }
     } else {
         if (security_->Verify(
                 msg_ptr->msg_hash,
@@ -119,14 +127,14 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
             ZJC_ERROR("verify signature failed!");
             return transport::kFirewallCheckError;
         }
-    }
 
-    auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
-    if (msg_ptr->address_info == nullptr) {
-        ZJC_DEBUG("failed get account info: %s", 
-            common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
-        return transport::kFirewallCheckError; // xufeisofly111 bug: 共识压测时这里会导致共识卡住一段时候，之后恢复
+        auto tmp_acc_ptr = acc_mgr_.lock();
+        msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+        if (msg_ptr->address_info == nullptr) {
+            ZJC_DEBUG("failed get account info: %s", 
+                common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
+            return transport::kFirewallCheckError; // xufeisofly111 bug: 共识压测时这里会导致共识卡住一段时候，之后恢复
+        }
     }
 
     // ZJC_DEBUG("pools message fierwall coming success.");

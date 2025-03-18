@@ -448,8 +448,14 @@ void HotstuffManager::PopPoolsMessage() {
                     if (!pools::IsUserTransaction(tx->step())) {
                         continue;
                     }
-                        
-                    from_id = security_ptr_->GetAddress(tx->pubkey());
+                    
+                    if (tx->pubkey().size() == 64u) {
+                        security::GmSsl gmssl;
+                        from_id = gmssl.GetAddress(tx->pubkey());
+                    } else {
+                        from_id = security_ptr_->GetAddress(tx->pubkey());
+                    }
+
                     if (tx->step() == pools::protobuf::kContractExcute) {
                         address_info = account_mgr_->GetAccountInfo(tx->to());
                     } else {
