@@ -11,6 +11,7 @@
 #include "pools/tx_utils.h"
 #include "security/ecdsa/ecdsa.h"
 #include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
 
@@ -191,6 +192,73 @@ static transport::MessagePtr GmsslCreateTransactionWithAttr(
     auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
     std::string sign;
     if (gmssl.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+        << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
+        << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
+        << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
+        << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+        << "hash64: " << msg.hash64() << std::endl
+        << "amount: " << amount << std::endl
+        << "gas_limit: " << gas_limit << std::endl
+        << std::endl;
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
+
+static transport::MessagePtr OqsCreateTransactionWithAttr(
+        security::Oqs& oqs,
+        const std::string& gid,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(oqs.GetPublicKey());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (oqs.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
         return nullptr;
     }
@@ -871,6 +939,79 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
     std::cout << "send success." << std::endl;
 }
 
+int oqs_tx(const std::string& private_key, const std::string& to, uint64_t amount) {
+    LoadAllAccounts(shardnum);
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("oqs.db")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint64_t pos = 0;
+    if (db_ptr->Get("txcli_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
+    if (net_handler.Init(db_ptr, security) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    security::Oqs oqs;
+    oqs.SetPrivateKey(private_key);
+    std::cout << "oqs address: " << common::Encode::HexEncode(oqs.GetAddress()) <<
+        ", pk: " << common::Encode::HexEncode(oqs.GetPublicKey()) << std::endl;
+    auto test_hash = common::Random::RandomString(32);
+    std::string test_sign;
+    auto sign_res = oqs.Sign(test_hash, &test_sign);
+    assert(sign_res == 0);
+    int verify_res = oqs.Verify(test_hash, oqs.GetPublicKey(), test_sign);
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+        << ", verify res: " << verify_res << std::endl;
+
+    auto tx_msg_ptr = OqsCreateTransactionWithAttr(
+        oqs,
+        common::Random::RandomString(32),
+        to,
+        "",
+        "",
+        amount,
+        10000,
+        1,
+        3);
+
+        
+    if (transport::TcpTransport::Instance()->Send("127.0.0.1", 13001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "send success." << std::endl;
+}
+
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
     security::Ecdsa ecdsa;
@@ -904,6 +1045,13 @@ int main(int argc, char** argv) {
         std::cout << "amount: " << argv[4] << std::endl;
         common::StringUtil::ToUint64(argv[4], &amount);
         gmssl_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
+    } else if (argv[1][0] == '6') {
+        uint64_t amount = 0;
+        std::cout << "private key: " << argv[2] << std::endl;
+        std::cout << "to: " << argv[3] << std::endl;
+        std::cout << "amount: " << argv[4] << std::endl;
+        common::StringUtil::ToUint64(argv[4], &amount);
+        oqs_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
     } else {
         std::cout << "call one tx." << std::endl;
         one_tx_main(argc, argv);

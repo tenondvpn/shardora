@@ -13,7 +13,9 @@ namespace security {
 
 class Oqs : public Security {
 public:
-    Oqs() {}
+    Oqs() {
+        sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
+    }
 
     virtual ~Oqs() {
         if (sig_ptr_ != nullptr) {
@@ -22,6 +24,7 @@ public:
     }
 
     virtual int SetPrivateKey(const std::string& prikey);
+    int SetPrivateKey(const std::string& prikey, const std::string& pubkey);
     virtual int Sign(const std::string& hash, std::string* sign);
     virtual int Verify(const std::string& hash, const std::string& pubkey, const std::string& sign);
     virtual std::string Recover(

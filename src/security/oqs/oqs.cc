@@ -11,6 +11,10 @@ namespace shardora {
 namespace security {
 
 int Oqs::SetPrivateKey(const std::string& prikey) {
+    if (sig_ptr_ != nullptr) {
+        OQS_SIG_free(sig_ptr_);
+    }
+    
     sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
     auto rc = OQS_SIG_keypair(sig_ptr_, public_key_, secret_key_);
     if (rc != OQS_SUCCESS) {
@@ -18,6 +22,24 @@ int Oqs::SetPrivateKey(const std::string& prikey) {
         return kSecurityError;
     }
 
+    str_prikey_ = std::string((char*)secret_key_, sizeof(secret_key_));
+    str_pk_ = std::string((char*)public_key_, sizeof(public_key_));
+    str_addr_ = common::Hash::keccak256(str_pk_).substr(0, 20);
+    std::cout << "prikey: " << common::Encode::HexEncode(str_prikey_) 
+        << ", pubkey: " << common::Encode::HexEncode(str_pk_) 
+        << ", address: " << common::Encode::HexEncode(str_addr_) 
+        << std::endl;
+    return kSecuritySuccess;
+}
+
+int Oqs::SetPrivateKey(const std::string& prikey, const std::string& pubkey) {
+    if (sig_ptr_ != nullptr) {
+        OQS_SIG_free(sig_ptr_);
+    }
+
+    sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
+    memcpy(secret_key_, prikey.c_str(), prikey.size());
+    memcpy(public_key_, pubkey.c_str(), pubkey.size());
     str_pk_ = std::string((char*)public_key_, sizeof(public_key_));
     str_addr_ = common::Hash::keccak256(str_pk_).substr(0, 20);
     return kSecuritySuccess;
