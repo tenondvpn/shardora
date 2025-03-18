@@ -46,16 +46,13 @@ int GmSsl::Verify(const std::string& hash, const std::string& str_pk, const std:
 	sm2_signature_to_public_key_points(&sig, (uint8_t*)hash.c_str(), points, &points_cnt);
     auto tmp_pk0 = std::string((char*)points[0].x, 32) + std::string((char*)points[0].y, 32);
     auto tmp_pk = std::string((char*)points[1].x, 32) + std::string((char*)points[1].y, 32);
-    printf("sign get pk: %s, pk1: %s, src pk: %s, points_cnt: %d\n", 
-        common::Encode::HexEncode(tmp_pk0).c_str(), 
-        common::Encode::HexEncode(tmp_pk).c_str(), 
-        common::Encode::HexEncode(str_pk).c_str(),
-        points_cnt);
-
-    if (memcmp(tmp_pk.c_str(), str_pk.c_str(), tmp_pk.size()) != 0) {
-        ZJC_DEBUG("sign get pk: %s, src pk: %s", 
+    if (memcmp(tmp_pk.c_str(), str_pk.c_str(), tmp_pk.size()) != 0 && 
+            memcmp(tmp_pk0.c_str(), str_pk.c_str(), tmp_pk0.size()) != 0) {
+        ZJC_DEBUG("sign get pk: %s, pk1: %s, src pk: %s, points_cnt: %d", 
+            common::Encode::HexEncode(tmp_pk0).c_str(), 
             common::Encode::HexEncode(tmp_pk).c_str(), 
-            common::Encode::HexEncode(str_pk).c_str());
+            common::Encode::HexEncode(str_pk).c_str(),
+            points_cnt);
         return kSecurityError;
     }
 
