@@ -402,6 +402,7 @@ int one_tx_main(int argc, char** argv) {
     log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    std::cout << 0 << std::endl;
     auto db_ptr = std::make_shared<db::Db>();
     if (!db_ptr->Init(db_path)) {
         std::cout << "init db failed!" << std::endl;
@@ -414,6 +415,7 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
+    std::cout << 1 << std::endl;
     if (transport::TcpTransport::Instance()->Init(
             "127.0.0.1:13791",
             128,
@@ -428,6 +430,7 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
+    std::cout << 2 << std::endl;
     std::cout << argv[2] << ", "
         << argv[3] << ", "
         << argv[4] << ", "
@@ -446,6 +449,7 @@ int one_tx_main(int argc, char** argv) {
         return 1;
     }
 
+    std::cout << 3 << std::endl;
     std::string key = "";
     std::string val = "";
     if (argc >= 7) {
@@ -462,6 +466,7 @@ int one_tx_main(int argc, char** argv) {
         fclose(fd);
     }
 
+    std::cout << 4 << std::endl;
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
