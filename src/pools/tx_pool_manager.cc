@@ -5,16 +5,17 @@
 #include "common/global_info.h"
 #include "common/hash.h"
 #include "common/string_utils.h"
+#include "common/time_utils.h"
 #include "dht/dht_key.h"
 #include "network/dht_manager.h"
 #include "network/network_utils.h"
 #include "network/route.h"
+#include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "security/ecdsa/secp256k1.h"
+#include "security/gmssl/gmssl.h"
 #include "transport/processor.h"
 #include "transport/tcp_transport.h"
-#include <common/time_utils.h>
-#include <protos/pools.pb.h>
 
 namespace shardora {
 
@@ -101,12 +102,23 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    if (security_->Verify(
-            msg_ptr->msg_hash,
-            tx_msg.pubkey(),
-            tx_msg.sign()) != security::kSecuritySuccess) {
-        ZJC_ERROR("verify signature failed!");
-        return transport::kFirewallCheckError;
+    if (tx_msg.pubkey().size() == 64) {
+        security::GmSsl gmssl;
+        if (gmssl.Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                tx_msg.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            return transport::kFirewallCheckError;
+        }
+    } else {
+        if (security_->Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                tx_msg.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            return transport::kFirewallCheckError;
+        }
     }
 
     auto tmp_acc_ptr = acc_mgr_.lock();

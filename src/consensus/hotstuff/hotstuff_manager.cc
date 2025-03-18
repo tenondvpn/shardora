@@ -3,24 +3,24 @@
 
 #include <cassert>
 #include <chrono>
-#include <common/log.h>
-#include <common/utils.h>
-#include <consensus/hotstuff/agg_crypto.h>
-#include <consensus/hotstuff/block_acceptor.h>
-#include <consensus/hotstuff/block_wrapper.h>
-#include <consensus/hotstuff/hotstuff.h>
-#include <consensus/hotstuff/view_block_chain.h>
+
 #include <libbls/tools/utils.h>
-#include <protos/pools.pb.h>
 
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
 #include "bls/bls_sign.h"
+#include "common/encode.h"
 #include "common/hash.h"
+#include "common/log.h"
 #include "common/global_info.h"
 #include "common/random.h"
 #include "common/time_utils.h"
-#include "common/encode.h"
+#include "common/utils.h"
+#include "consensus/hotstuff/agg_crypto.h"
+#include "consensus/hotstuff/block_acceptor.h"
+#include "consensus/hotstuff/block_wrapper.h"
+#include "consensus/hotstuff/hotstuff.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "db/db.h"
 #include "dht/base_dht.h"
 #include "elect/elect_manager.h"
@@ -28,6 +28,8 @@
 #include "network/route.h"
 #include "network/universal_manager.h"
 #include "pools/tx_pool_manager.h"
+#include "protos/pools.pb.h"
+#include "security/gmssl/gmssl.h"
 #include "transport/processor.h"
 #include "types.h"
 
@@ -526,13 +528,25 @@ void HotstuffManager::PopPoolsMessage() {
                     
                     if (tx_ptr != nullptr) {
                         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-                        if (security_ptr_->Verify(
-                                tx_ptr->unique_tx_hash,
-                                tx_ptr->tx_info->pubkey(),
-                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                            assert(false);
+                        if (tx_ptr->tx_info->pubkey().size() == 64) {
+                            security::GmSsl gmssl;
+                            if (gmssl.Verify(
+                                    tx_ptr->unique_tx_hash,
+                                    tx_ptr->tx_info->pubkey(),
+                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                                assert(false);
+                            } else {
+                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            }
                         } else {
-                            pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            if (security_ptr_->Verify(
+                                    tx_ptr->unique_tx_hash,
+                                    tx_ptr->tx_info->pubkey(),
+                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                                assert(false);
+                            } else {
+                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            }
                         }
                     }
                 }
