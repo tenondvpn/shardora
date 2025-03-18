@@ -453,7 +453,6 @@ int one_tx_main(int argc, char** argv) {
         val = argv[6];
     }
 
-
     std::string to = common::Encode::HexDecode(argv[2]);
     security->SetPrivateKey(g_prikeys[0]);
     std::string gid = common::Random::RandomString(32);
@@ -923,6 +922,7 @@ int main(int argc, char** argv) {
         common::StringUtil::ToUint64(argv[4], &amount);
         gmssl_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
     } else {
+        std::cout << "call one tx." << std::endl;
         one_tx_main(argc, argv);
     }
 
@@ -930,3 +930,4 @@ int main(int argc, char** argv) {
     transport::TcpTransport::Instance()->Stop();
     return 0;
 }
+ 
