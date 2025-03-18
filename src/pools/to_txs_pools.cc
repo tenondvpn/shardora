@@ -490,6 +490,7 @@ void ToTxsPools::HandleNormalToTx(
             erased_max_heights_[i] = heights.heights(i) + 1;
         }
 
+        ZJC_DEBUG("success update heights: %s", ProtobufToJson(*heights_ptr).c_str());
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = heights_ptr;
         break;

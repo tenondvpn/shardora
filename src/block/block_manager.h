@@ -120,7 +120,7 @@ private:
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
         db::DbWriteBatch& db_batch);
     void HandleNormalToTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
