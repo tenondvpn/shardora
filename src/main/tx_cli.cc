@@ -431,41 +431,18 @@ int one_tx_main(int argc, char** argv) {
     }
 
     std::cout << 2 << std::endl;
-    std::cout << argv[2] << ", "
-        << argv[3] << ", "
-        << argv[4] << ", "
-        << argv[5] << ", "
-        << argv[6] << std::endl;
-
     uint64_t amount = 0;
     if (!common::StringUtil::ToUint64(argv[3], &amount)) {
         std::cout << "invalid amount: " << argv[3] << std::endl;
         return 1;
     }
 
-    uint64_t gas_limit = 0;
-    if (!common::StringUtil::ToUint64(argv[4], &gas_limit)) {
-        std::cout << "invalid gas_limit: " << argv[3] << std::endl;
-        return 1;
-    }
-
-    std::cout << 3 << std::endl;
+    uint64_t gas_limit = 1000;
     std::string key = "";
     std::string val = "";
-    if (argc >= 7) {
-        key = argv[5];
-        val = argv[6];
-    }
-
     std::string to = common::Encode::HexDecode(argv[2]);
     security->SetPrivateKey(g_prikeys[0]);
     std::string gid = common::Random::RandomString(32);
-    if (argc >= 8) {
-        FILE* fd = fopen(argv[7], "w");
-        fwrite(common::Encode::HexEncode(gid).c_str(), 1, 2 * gid.size(), fd);
-        fclose(fd);
-    }
-
     std::cout << 4 << std::endl;
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
