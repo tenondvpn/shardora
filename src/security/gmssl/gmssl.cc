@@ -23,9 +23,6 @@ int GmSsl::SetPrivateKey(const std::string& prikey) {
         return kSecurityError;
     }
 
-    uint8_t x[32];
-    uint8_t y[32];
-    uint8_t z[32];
     str_pk_ = std::string((char*)prikey_->public_key.x, 32) + std::string((char*)prikey_->public_key.y, 32);
     str_addr_ = common::Hash::sm3(str_pk_).substr(0, 20);
     return kSecuritySuccess;
@@ -49,6 +46,9 @@ int GmSsl::Verify(const std::string& hash, const std::string& str_pk, const std:
 	sm2_signature_to_public_key_points(&sig, (uint8_t*)hash.c_str(), points, &points_cnt);
     auto tmp_pk = std::string((char*)points[1].x, 32) + std::string((char*)points[1].y, 32);
     if (memcmp(tmp_pk.c_str(), str_pk.c_str(), tmp_pk.size()) != 0) {
+        ZJC_DEBUG("sign get pk: %s, src pk: %s", 
+            common::Encode::HexEncode(tmp_pk).c_str(), 
+            common::Encode::HexEncode(str_pk).c_str());
         return kSecurityError;
     }
 
