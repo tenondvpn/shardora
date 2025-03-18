@@ -611,7 +611,7 @@ void AccountManager::HandleRootCreateAddressTx(
         return;
     }
 
-    if (network::IsSameToLocalShard(network::kRootCongressNetworkId) && tx.contract_code().empty()) {
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && tx.contract_code().empty()) {
         return;
     }
 
