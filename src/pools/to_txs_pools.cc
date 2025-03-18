@@ -422,23 +422,24 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-    auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
-    for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() != protos::kNormalToShards) {
+    std::shared_ptr<pools::protobuf::ShardToTxItem> heights_ptr;
+    for (int32_t store_idx = 0; store_idx < tx_info.storages_size(); ++store_idx) {
+        auto& storage = tx_info.storages(store_idx);
+        if (storage.key() != protos::kNormalToShards) {
             continue;
         }
             
         pools::protobuf::ToTxMessage to_tx;
-        if (!to_tx.ParseFromString(tx_info.storages(i).value())) {
+        if (!to_tx.ParseFromString(storage.value())) {
             ZJC_WARN("parse from to txs message failed: %s",
-                common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
+                common::Encode::HexEncode(storage.value()).c_str());
             assert(false);
             continue;
         }
 
         ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
-            "common::Encode::HexEncode(tx_info.storages(i).value()).c_str()",
+            common::Encode::HexEncode(storage.key()).c_str(),
+            "common::Encode::HexEncode(storage.value()).c_str()",
             to_tx.to_heights().sharding_id());
         if (to_tx.to_heights().heights_size() != common::kInvalidPoolIndex) {
             ZJC_ERROR("invalid heights size: %d, %d",
@@ -447,6 +448,7 @@ void ToTxsPools::HandleNormalToTx(
             continue;
         }
 
+        heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
         *heights_ptr = to_tx.to_heights();
         auto& heights = *heights_ptr;
         heights.set_block_height(view_block.block_info().height());
@@ -495,6 +497,8 @@ void ToTxsPools::HandleNormalToTx(
         prev_to_heights_ = heights_ptr;
         break;
     }
+
+    assert(heights_ptr != nullptr);
 }
 
 void ToTxsPools::LoadLatestHeights() {

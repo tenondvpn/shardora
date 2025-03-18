@@ -359,6 +359,15 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     auto& view_block = *view_block_ptr;
+    if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
+        auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
+        latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
+        latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+        prefix_db_->SaveLatestToBlock(view_block_ptr, db_batch);
+        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
+            view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
+    }
+
     ZJC_DEBUG("success handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
@@ -388,15 +397,6 @@ void BlockManager::HandleNormalToTx(
             ProtobufToJson(to_txs).c_str(),
             to_txs.to_heights().sharding_id());
         prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
-        if (network::IsSameToLocalShard(heights.sharding_id())) {
-            auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-            latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
-            latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-            prefix_db_->SaveLatestToBlock(view_block_ptr, db_batch);
-            ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
-                view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
-        }
-
         if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
             if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
                 ZJC_WARN("sharding invalid: %u, %u",
