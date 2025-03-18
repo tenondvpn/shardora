@@ -388,7 +388,7 @@ void BlockManager::HandleNormalToTx(
             ProtobufToJson(to_txs).c_str(),
             to_txs.to_heights().sharding_id());
         prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
-        if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
+        if (network::IsSameToLocalShard(heights.sharding_id())) {
             auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
             latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
             latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
