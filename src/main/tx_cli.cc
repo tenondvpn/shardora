@@ -199,6 +199,7 @@ static transport::MessagePtr GmsslCreateTransactionWithAttr(
         << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
         << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
         << "tx sign: " << common::Encode::HexEncode(sign) << std::endl
+        << "hash64: " << msg.hash64() << std::endl
         << "amount: " << amount << std::endl
         << "gas_limit: " << gas_limit << std::endl
         << std::endl;
