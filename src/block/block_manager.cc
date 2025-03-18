@@ -1214,13 +1214,13 @@ void BlockManager::AddMiningToken(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(tos_hash + block_hash);
+        auto gid = common::Hash::keccak256(std::string("mining") + tos_hash + block_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success create kConsensusLocalTos gid: %s", common::Encode::HexEncode(gid).c_str());
+        ZJC_INFO("mining success create kConsensusLocalTos gid: %s", common::Encode::HexEncode(gid).c_str());
     }
 }
 
