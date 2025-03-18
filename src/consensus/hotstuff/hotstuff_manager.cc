@@ -528,7 +528,7 @@ void HotstuffManager::PopPoolsMessage() {
                     
                     if (tx_ptr != nullptr) {
                         tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-                        if (tx_ptr->tx_info->pubkey().size() == 64) {
+                        if (tx_ptr->tx_info->pubkey().size() == 64u) {
                             security::GmSsl gmssl;
                             if (gmssl.Verify(
                                     tx_ptr->unique_tx_hash,
