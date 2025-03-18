@@ -905,7 +905,11 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
     auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+    if (msg_ptr->address_info == nullptr) {
+        msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(
+            security_->GetAddress(tx_msg.pubkey()));
+    }
+
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
         return false;
