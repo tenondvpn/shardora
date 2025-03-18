@@ -989,7 +989,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas);
-        assert(false);
         return;
     }
 
