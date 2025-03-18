@@ -117,7 +117,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         if (msg_ptr->address_info == nullptr) {
             ZJC_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
-            return transport::kFirewallCheckError; // xufeisofly111 bug: 共识压测时这里会导致共识卡住一段时候，之后恢复
+            return transport::kFirewallCheckError;
         }
     } else {
         if (security_->Verify(

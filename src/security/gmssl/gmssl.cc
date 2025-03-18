@@ -16,7 +16,7 @@ int GmSsl::SetPrivateKey(const std::string& prikey) {
     str_prikey_ = prikey;
     prikey_ = std::make_shared<SM2_KEY>();
     // 设置私钥
-    memcpy(prikey_->private_key, prikey.c_str(), 32);
+    // memcpy(prikey_->private_key, prikey.c_str(), 32);
     // 根据私钥生成公钥
     if (sm2_key_generate(prikey_.get()) != 1) {
         ZJC_ERROR("Failed to generate public key from private key.");
