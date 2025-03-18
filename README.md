@@ -1,5 +1,7 @@
 # Shardora
       A Dynamic Blockchain Sharding System with Resilient and Seamless Shard Reconfiguration
+      paper: https://ccs2025a.hotcrp.com/doc/ccs2025a-paper756.pdf?cap=hcav756eNAubdJqApSsXnJDucFgJMXB
+      
 
 # Quick Start
 ## Requirements
@@ -19,10 +21,9 @@
       # ip_list like 192.168.0.1,192.168.0.2, mean 2 machine create 2 * 4 nodes shardora network
       # machine user must root
       # machine password must Xf4aGbTaf!(for test), you can change it by edit simple_remote.sh
-```
 
 ## Transaction test
 ```
-      cd ./cbuild_Debug && make txcli
+      cd ./cbuild_Release && make txcli
       ./txcli
 ```
