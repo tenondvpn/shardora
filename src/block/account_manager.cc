@@ -257,6 +257,7 @@ void AccountManager::HandleLocalToTx(
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
     if (tx.status() != consensus::kConsensusSuccess) {
+        ZJC_ERROR("tx status invalid: %d", tx.status());
         return;
     }
 
@@ -310,6 +311,8 @@ void AccountManager::HandleLocalToTx(
             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         } else {
             if (account_info->latest_height() > block.height()) {
+                ZJC_ERROR("account_info->latest_height() > block.height(): %lu, %lu",
+                    account_info->latest_height(), block.height());
                 return;
             }
 
