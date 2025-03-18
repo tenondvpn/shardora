@@ -454,11 +454,8 @@ int one_tx_main(int argc, char** argv) {
     }
 
 
-    std::string prikey = common::Encode::HexDecode(from_prikey);
     std::string to = common::Encode::HexDecode(argv[2]);
-    uint32_t prikey_pos = 0;
-    auto from_prikey = prikey;
-    security->SetPrivateKey(from_prikey);
+    security->SetPrivateKey(g_prikeys[0]);
     std::string gid = common::Random::RandomString(32);
     if (argc >= 8) {
         FILE* fd = fopen(argv[7], "w");
@@ -469,7 +466,7 @@ int one_tx_main(int argc, char** argv) {
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
-        from_prikey,
+        g_prikeys[0],
         to,
         key,
         val,
