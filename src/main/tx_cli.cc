@@ -281,6 +281,8 @@ static std::unordered_map<std::string, std::string> g_pri_addrs_map;
 static std::vector<std::string> g_prikeys;
 static std::vector<std::string> g_addrs;
 static std::unordered_map<std::string, std::string> g_pri_pub_map;
+static std::vector<std::string> g_oqs_prikeys;
+static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
 static void LoadAllAccounts(int32_t shardnum=3) {
     FILE* fd = fopen((std::string("../init_accounts") + std::to_string(shardnum)).c_str(), "r");
     if (fd == nullptr) {
@@ -315,6 +317,50 @@ static void LoadAllAccounts(int32_t shardnum=3) {
     assert(!g_prikeys.empty());
     while (g_prikeys.size() < common::kImmutablePoolSize) {
         g_prikeys.push_back(g_prikeys[0]);
+    }
+
+    fclose(fd);
+    delete[]read_buf;
+}
+
+static void GetOqsKeys() {
+    FILE* fd = fopen((std::string("../oqs_addrs") + std::to_string(shardnum)).c_str(), "r");
+    if (fd == nullptr) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    bool res = true;
+    std::string filed;
+    const uint32_t kMaxLen = 102400;
+    char* read_buf = new char[kMaxLen];
+    while (true) {
+        char* read_res = fgets(read_buf, kMaxLen, fd);
+        if (read_res == NULL) {
+            break;
+        }
+
+        auto line_splits = common::Split<>(read_res, '\n');
+        for (int32_t i = 0; i < line_splits.Count(); ++i) {
+            auto item_split = common::Split<>(line_splits[i], '\t');
+            if (item_split.Count() != 2) {
+                break;
+            }
+
+            std::string prikey = common::Encode::HexDecode(item_split[0]);
+            g_oqs_prikeys.push_back(prikey);
+            g_oqs_pri_pub_map[prikey] = common::Encode::HexDecode(item_split[1]);
+            if (g_oqs_prikeys.size() >= common::kImmutablePoolSize) {
+                break;
+            }
+
+            std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(g_oqs_pri_pub_map[prikey]) << std::endl;
+        }
+    }
+
+    assert(!g_oqs_prikeys.empty());
+    while (g_oqs_prikeys.size() < common::kImmutablePoolSize) {
+        g_oqs_prikeys.push_back(g_oqs_prikeys[0]);
     }
 
     fclose(fd);
@@ -939,8 +985,8 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
     std::cout << "send success." << std::endl;
 }
 
-int oqs_tx(const std::string& private_key, const std::string& to, uint64_t amount) {
-    LoadAllAccounts(shardnum);
+int oqs_tx(const std::string& to, uint64_t amount) {
+    GetOqsKeys();
     SignalRegister();
     WriteDefaultLogConf();
     log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
@@ -981,7 +1027,9 @@ int oqs_tx(const std::string& private_key, const std::string& to, uint64_t amoun
     }
 
     security::Oqs oqs;
-    oqs.SetPrivateKey(private_key);
+    auto private_key = g_oqs_prikeys[0];
+    auto public_key = g_oqs_pri_pub_map[private_key];
+    oqs.SetPrivateKey(private_key, public_key);
     std::cout << "oqs address: " << common::Encode::HexEncode(oqs.GetAddress()) <<
         ", pk: " << common::Encode::HexEncode(oqs.GetPublicKey()) << std::endl;
     auto test_hash = common::Random::RandomString(32);
@@ -1047,11 +1095,10 @@ int main(int argc, char** argv) {
         gmssl_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
     } else if (argv[1][0] == '6') {
         uint64_t amount = 0;
-        std::cout << "private key: " << argv[2] << std::endl;
-        std::cout << "to: " << argv[3] << std::endl;
-        std::cout << "amount: " << argv[4] << std::endl;
-        common::StringUtil::ToUint64(argv[4], &amount);
-        oqs_tx(common::Encode::HexDecode(argv[2]), common::Encode::HexDecode(argv[3]), amount);
+        std::cout << "to: " << argv[2] << std::endl;
+        std::cout << "amount: " << argv[3] << std::endl;
+        common::StringUtil::ToUint64(argv[3], &amount);
+        oqs_tx(common::Encode::HexDecode(argv[2]), amount);
     } else {
         std::cout << "call one tx." << std::endl;
         one_tx_main(argc, argv);
