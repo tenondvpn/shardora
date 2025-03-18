@@ -96,7 +96,8 @@ int GmSsl::Decrypt(const std::string& msg, const std::string& key, std::string* 
 }
 
 bool GmSsl::IsValidPublicKey(const std::string& pubkey) {
-    return pubkey.size() == 96;
+    ZJC_FATAL("invalid!");
+    return false;
 }
 
 std::string GmSsl::UnicastAddress(const std::string& src_address) {

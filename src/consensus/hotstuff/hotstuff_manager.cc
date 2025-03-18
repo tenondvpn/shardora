@@ -30,6 +30,7 @@
 #include "pools/tx_pool_manager.h"
 #include "protos/pools.pb.h"
 #include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
 #include "transport/processor.h"
 #include "types.h"
 
@@ -452,6 +453,9 @@ void HotstuffManager::PopPoolsMessage() {
                     if (tx->pubkey().size() == 64u) {
                         security::GmSsl gmssl;
                         from_id = gmssl.GetAddress(tx->pubkey());
+                    } else if (tx->pubkey().size() > 128u) {
+                        security::Oqs oqs;
+                        from_id = oqs.GetAddress(tx->pubkey());
                     } else {
                         from_id = security_ptr_->GetAddress(tx->pubkey());
                     }
@@ -537,6 +541,16 @@ void HotstuffManager::PopPoolsMessage() {
                         if (tx_ptr->tx_info->pubkey().size() == 64u) {
                             security::GmSsl gmssl;
                             if (gmssl.Verify(
+                                    tx_ptr->unique_tx_hash,
+                                    tx_ptr->tx_info->pubkey(),
+                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                                assert(false);
+                            } else {
+                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
+                            }
+                        } else if (tx_ptr->tx_info->pubkey().size() > 128u) {
+                            security::Oqs oqs;
+                            if (oqs.Verify(
                                     tx_ptr->unique_tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {

@@ -14,6 +14,7 @@
 #include "protos/prefix_db.h"
 #include "security/ecdsa/secp256k1.h"
 #include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
 #include "transport/processor.h"
 #include "transport/tcp_transport.h"
 
@@ -102,7 +103,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    if (tx_msg.pubkey().size() == 64) {
+    if (tx_msg.pubkey().size() == 64u) {
         security::GmSsl gmssl;
         if (gmssl.Verify(
                 msg_ptr->msg_hash,
@@ -116,7 +117,24 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(gmssl.GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
             ZJC_DEBUG("failed get account info: %s", 
-                common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
+                common::Encode::HexEncode(gmssl.GetAddress(tx_msg.pubkey())).c_str());
+            return transport::kFirewallCheckError;
+        }
+    } else if (tx_msg.pubkey().size() > 128u) {
+        security::Oqs oqs;
+        if (oqs.Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                tx_msg.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            return transport::kFirewallCheckError;
+        }
+
+        auto tmp_acc_ptr = acc_mgr_.lock();
+        msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(oqs.GetAddress(tx_msg.pubkey()));
+        if (msg_ptr->address_info == nullptr) {
+            ZJC_DEBUG("failed get account info: %s", 
+                common::Encode::HexEncode(oqs.GetAddress(tx_msg.pubkey())).c_str());
             return transport::kFirewallCheckError;
         }
     } else {
@@ -382,6 +400,9 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (tx_msg.pubkey().size() == 64u) {
                 security::GmSsl gmssl;
                 address_info = tmp_acc_ptr->GetAccountInfo(gmssl.GetAddress(tx_msg.pubkey()));
+            } else if (tx_msg.pubkey().size() > 128u) {
+                security::Oqs oqs;
+                address_info = tmp_acc_ptr->GetAccountInfo(oqs.GetAddress(tx_msg.pubkey()));
             } else {
                 address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
             }

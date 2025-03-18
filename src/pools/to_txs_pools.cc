@@ -334,7 +334,7 @@ void ToTxsPools::HandleRootCreateAddress(
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
         return;
     }
-    
+
     // 普通 EOA 账户要求有 amount
     if (tx.amount() <= 0 && !tx.has_contract_code()) {
         ZJC_DEBUG("from transfer amount invalid!");
@@ -357,9 +357,12 @@ void ToTxsPools::HandleRootCreateAddress(
         return;
     }
 
-    ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
+    ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", 
+        common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
 	// 对于 contract create，要把 from、contract_code、prepayment 发给对应 shard
-    AddTxToMap(view_block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", tx.contract_code(), tx.from(), tx.contract_prepayment());
+    AddTxToMap(view_block, tx.to(), tx.step(), tx.amount(), 
+        sharding_id, pool_index, "", tx.contract_code(),
+        tx.from(), tx.contract_prepayment());
 }
 
 void ToTxsPools::AddTxToMap(

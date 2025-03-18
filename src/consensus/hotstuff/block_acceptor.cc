@@ -24,6 +24,7 @@
 #include "protos/pools.pb.h"
 #include "protos/zbft.pb.h"
 #include "security/gmssl/gmssl.h"
+#include "security/oqs/oqs.h"
 #include "zjcvm/zjcvm_utils.h"
 
 namespace shardora {
@@ -228,6 +229,9 @@ Status BlockAcceptor::addTxsToPool(
             if (tx->pubkey().size() == 64u) {
                 security::GmSsl gmssl;
                 from_id = gmssl.GetAddress(tx->pubkey());
+            } else if (tx->pubkey().size() > 128u) {
+                security::Oqs oqs;
+                from_id = oqs.GetAddress(tx->pubkey());
             } else {
                 from_id = security_ptr_->GetAddress(tx->pubkey());
             }
@@ -470,6 +474,15 @@ Status BlockAcceptor::addTxsToPool(
                     if (tx->pubkey().size() == 64u) {
                         security::GmSsl gmssl;
                         if (gmssl.Verify(
+                                tx_ptr->unique_tx_hash,
+                                tx_ptr->tx_info->pubkey(),
+                                tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                            assert(false);
+                            return Status::kError;
+                        }
+                    } else if (tx->pubkey().size() > 128u) {
+                        security::Oqs oqs;
+                        if (oqs.Verify(
                                 tx_ptr->unique_tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
