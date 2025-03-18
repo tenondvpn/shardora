@@ -378,7 +378,14 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         auto& tx_msg = header.tx_proto();
         if (IsUserTransaction(tx_msg.step())) {
             auto tmp_acc_ptr = acc_mgr_.lock();
-            protos::AddressInfoPtr address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+            protos::AddressInfoPtr address_info = nullptr;
+            if (tx_msg.pubkey().size() == 64) {
+                address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
+            } else {
+                security::GmSsl gmssl;
+                address_info = tmp_acc_ptr->GetAccountInfo(gmssl.GetAddress(tx_msg.pubkey()));
+            }
+            
             if (!address_info) {
                 return;
             }
