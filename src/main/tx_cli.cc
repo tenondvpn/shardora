@@ -818,6 +818,46 @@ int contract_call(int argc, char** argv, bool more=false) {
 }
 
 int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amount) {
+    LoadAllAccounts(shardnum);
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("gmssl.db")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint64_t pos = 0;
+    if (db_ptr->Get("txcli_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
+    if (net_handler.Init(db_ptr, security) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
     security::GmSsl gmssl;
     gmssl.SetPrivateKey(private_key);
     std::cout << "gmssl address: " << common::Encode::HexEncode(gmssl.GetAddress()) <<
