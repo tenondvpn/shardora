@@ -1,7 +1,7 @@
 killall -9 zjchain
 killall -9 txcli
 
-TARGET=Debug
+TARGET=Release
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
 sh build.sh a $TARGET

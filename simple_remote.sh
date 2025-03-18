@@ -17,7 +17,7 @@ init() {
     killall -9 zjchain
     killall -9 txcli
 
-    TARGET=Debug
+    TARGET=Release
     sh build.sh a $TARGET
     sudo rm -rf /root/zjnodes
     sudo cp -rf ./zjnodes_local /root/zjnodes
