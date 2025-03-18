@@ -382,12 +382,13 @@ void BlockManager::HandleNormalToTx(
 
         auto& heights = *to_txs.mutable_to_heights();
         heights.set_block_height(view_block.block_info().height());
-        ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s",
+        ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
             view_block.block_info().height(), 
             heights.sharding_id(), 
-            ProtobufToJson(to_txs).c_str());
+            ProtobufToJson(to_txs).c_str(),
+            to_txs.to_heights().sharding_id());
         prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
-        if (network::IsSameToLocalShard(to_txs.to_heights().sharding_id())) {
+        if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
             auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
             latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
             latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
