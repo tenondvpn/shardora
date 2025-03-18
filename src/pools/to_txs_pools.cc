@@ -331,6 +331,10 @@ void ToTxsPools::HandleCreateContractByRootFrom(
 void ToTxsPools::HandleRootCreateAddress(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        return;
+    }
+    
     // 普通 EOA 账户要求有 amount
     if (tx.amount() <= 0 && !tx.has_contract_code()) {
         ZJC_DEBUG("from transfer amount invalid!");
@@ -751,15 +755,17 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
+    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
+    {
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
+        prev_to_heights = prev_to_heights_;
+    }
+
+    ZJC_DEBUG("statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+        ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
     for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
-        std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
-        {
-            common::AutoSpinLock lock(prev_to_heights_mutex_);
-            prev_to_heights = prev_to_heights_;
-        }
-
         if (prev_to_heights != nullptr) {
             min_height = prev_to_heights->heights(pool_idx) + 1;
         }
