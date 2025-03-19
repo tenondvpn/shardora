@@ -165,7 +165,8 @@ if __name__ == "__main__":
             "",
             "",
             0,
-            check_gid_valid=True)
+            check_gid_valid=True,
+            gas_limit=90000)
         if not res:
             print("call contract failed!")
             sys.exit(1)

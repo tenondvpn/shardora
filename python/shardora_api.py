@@ -44,13 +44,14 @@ def transfer(
         key="", 
         val="", 
         prepayment=0, 
-        check_gid_valid=True):
+        check_gid_valid=True,
+        gas_limit=999999):
     if gid == "":
         gid = _gen_gid()
 
     keypair = get_keypair(bytes.fromhex(str_prikey))
     param = get_transfer_params(
-        gid, to, amount, 9000000, 1, 
+        gid, to, amount, gas_limit, 1, 
         keypair, 3, contract_bytes, input, 
         prepayment, step, key, val)
     res = _call_tx(param)
