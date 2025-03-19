@@ -81,13 +81,28 @@ if __name__ == "__main__":
     if args.sol:
         sol_file = args.sol
 
+    tmp_function_args = []
+    for i in range(len(function_types)):
+        arg_type = function_types[i]
+        if arg_type == 'bytes' or arg_type == 'bytes32' or arg_type == 'address' or arg_type == 'string':
+            tmp_function_args.append(function_args[i])
+        elif arg_type == 'bool':
+            if function_args[i].lower() == 'false' or function_args[i] == "0":
+                tmp_function_args.append(False)
+            else:
+                tmp_function_args.append(True)
+        else:
+            tmp_function_args.append(int(function_args[i]))
+
+    print(f"tmp_function_args: {tmp_function_args}, function_types: {function_types}")
+
     if query_func is not None:
         res = shardora_api.query_contract_function(
             private_key=private_key, 
             contract_address=to, 
             function=query_func,
             types_list=function_types,
-            params_list=function_args)
+            params_list=tmp_function_args)
         if res.status_code != 200:
             print("query function failed!")
             sys.exit(1)
@@ -119,20 +134,6 @@ if __name__ == "__main__":
         print(f"invalid params sol_file is None and function is None")
         sys.exit(1)
 
-    tmp_function_args = []
-    for i in range(len(function_types)):
-        arg_type = function_types[i]
-        if arg_type == 'bytes' or arg_type == 'bytes32' or arg_type == 'address' or arg_type == 'string':
-            tmp_function_args.append(function_args[i])
-        elif arg_type == 'bool':
-            if function_args[i].lower() == 'false' or function_args[i] == "0":
-                tmp_function_args.append(False)
-            else:
-                tmp_function_args.append(True)
-        else:
-            tmp_function_args.append(int(function_args[i]))
-
-    print(f"tmp_function_args: {tmp_function_args}, function_types: {function_types}")
     func_param = shardora_api.keccak256_str(
         f"{function}({args.function_types})")[:8] + encode_hex(encode(function_types, tmp_function_args))[2:]
     if function == "":
