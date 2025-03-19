@@ -95,6 +95,21 @@ def gen_gid() -> str:
 def keccak256_str(s: str) -> str:
     return _keccak256_str(s)
 
+def check_address_valid(address, balance=0):
+    post_data = {"addrs":[address], "balance": balance}
+    res = _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
+    if res.status_code != 200:
+        return False
+    
+    json_res = json.loads(res.text)
+    if "addrs" in json_res:
+        for addr in json_res["addrs"]:
+            if addr == address:
+                return True
+            
+    return False
+
+
 def check_accounts_valid(post_data: dict):
     return _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
 
@@ -229,7 +244,14 @@ def deploy_contract(
     if not res:
         return None
     
-    return contract_address
+    if check_gid_valid:
+        for i in range(0, 30):
+            if check_address_valid(contract_address):
+                return contract_address
+            
+            time.sleep(1)
+    
+    return None
 
 def contract_prepayment(private_key: str, contract_address: str, prepayment: int, check_res: bool, gid: str):
     if not transfer(
