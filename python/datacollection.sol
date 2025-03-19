@@ -45,7 +45,7 @@ contract DataCollection {
     }
 
     // 按索引查询单条记录
-    function getUsageRecord(uint256 index) public view returns (uint256, string,uint256, string,uint256,uint256, uint256, uint256) {
+    function getUsageRecord(uint256 index) public view returns (uint256, string memory, uint256, string memory, uint256,uint256, uint256, uint256) {
         require(index < usageRecords.length, "Index out of bounds");
         UsageRecord memory record = usageRecords[index];
         return (record.timestamp,record.cpuModel, record.cpuPercent, record.gpuModel,record.gpuPercent,record.memorySize,record.memoryPercent, record.bandwidthMBps);
