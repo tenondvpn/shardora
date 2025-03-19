@@ -273,8 +273,9 @@ int Execution::execute(
         out_res->status_code, 
         common::Encode::HexEncode(from_address).c_str(),
         common::Encode::HexEncode(to_address).c_str(),
+        gas, 
         src_gas_left,
-        gas, out_res->gas_left, out_res->gas_refund, (etime - btime));
+        out_res->gas_left, out_res->gas_refund, (etime - btime));
     return kZjcvmSuccess;
 }
 
