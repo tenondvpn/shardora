@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
     parser.add_argument('--prepayment', '-g', type=int, help='预置gas费默认0')
     parser.add_argument('--sol', '-s', type=str, help='合约文件')
+    parser.add_argument('--query', '-q', type=str, help='查询合约的函数名')
     parser.add_argument('--function', '-f', type=str, help='调用合约的函数名')
     parser.add_argument('--function_types', '-c', type=str, help='调用合约的函数参数类型列表，如果function为空，则为构造函数列表')
     parser.add_argument('--function_args', '-d', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     function_args = []
     sol_file = None
     create_library = False
+    query_func = None
     with open("./init_accounts3", "r") as f:
         private_key = f.readline().strip().split("\t")[0]
         from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
@@ -65,6 +67,9 @@ if __name__ == "__main__":
     if args.library:
         create_library = args.library
 
+    if args.query:
+        query_func = args.query
+
     libraries = ""
     if args.libraries:
         libraries = args.libraries
@@ -75,6 +80,20 @@ if __name__ == "__main__":
 
     if args.sol:
         sol_file = args.sol
+
+    if query_func is not None:
+        res = shardora_api.query_contract_function(
+            private_key=private_key, 
+            contract_address=to, 
+            function=query_func,
+            types_list=function_types,
+            params_list=function_args)
+        if res.status_code != 200:
+            print("query function failed!")
+            sys.exit(1)
+
+        print(f"query function success: {res.text}")
+        sys.exit(0)
 
     if sol_file is None and function == "":
         if to is not None and prepayment > 0:
