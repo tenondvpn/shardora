@@ -542,7 +542,7 @@ static void AbiQueryContract(evhtp_request_t* req, void* data) {
     // std::string http_res(qdata.c_str() + 64, len);
     evbuffer_add(req->buffer_out, hex_data.c_str(), hex_data.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("query contract success data: %s", http_res.c_str());
+    ZJC_INFO("query contract success data: %s", hex_data.c_str());
 }
 
 static void QueryAccount(evhtp_request_t* req, void* data) {
