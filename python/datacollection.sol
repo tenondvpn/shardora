@@ -6,8 +6,8 @@ contract DataCollection {
         string cpuModel;          //cpu型号
         uint256 cpuPercent;       //CPU使用率
         string gpuModel;          //gpu型号
-        unit256 gpuPercent;       //gpu使用情况
-        unit256 memorySize;       //内存大小
+        uint256 gpuPercent;       //gpu使用情况
+        uint256 memorySize;       //内存大小
         uint256 memoryPercent;    //内存使用情况
         uint256 bandwidthMBps;    //带宽
     }
@@ -17,6 +17,12 @@ contract DataCollection {
 
     constructor() {
         owner = msg.sender;
+    }
+
+    // 修饰器：限制只有管理员可以调用
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not an owner");
+        _;
     }
 
     // 记录数据（保留 onlyOwner 限制）
