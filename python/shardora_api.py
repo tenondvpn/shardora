@@ -246,11 +246,16 @@ def deploy_contract(
     
     if check_gid_valid:
         for i in range(0, 30):
-            if check_address_valid(contract_address):
+            if prepayment > 0:
+                keypair = get_keypair(bytes.fromhex(private_key))
+                if check_address_valid(contract_address + keypair.account_id, prepayment):
+                    return contract_address
+                
+            elif check_address_valid(contract_address):
                 return contract_address
             
             time.sleep(1)
-    
+
     return None
 
 def contract_prepayment(private_key: str, contract_address: str, prepayment: int, check_res: bool, gid: str):
