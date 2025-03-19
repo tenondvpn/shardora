@@ -512,7 +512,7 @@ static void AbiQueryContract(evhtp_request_t* req, void* data) {
         contract_addr,
         from,
         0,
-        prepayment,
+        999999999999lu,
         0,
         zjcvm::kJustCall,
         zjc_host,
