@@ -421,6 +421,11 @@ std::string ViewBlockChain::String() const {
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
             view_blocks.push_back(it->second->view_block);
+            ZJC_DEBUG("view block view: %lu, height: %lu, hash: %s, phash: %s", 
+                it->second->view_block->qc().view(),
+                it->second->view_block->block_info().height(),
+                common::Encode::HexEncode(it->second->view_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str());
         }
     }
 
