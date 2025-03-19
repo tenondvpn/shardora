@@ -102,7 +102,7 @@ def check_address_valid(address, balance=0):
         return False
     
     json_res = json.loads(res.text)
-    if "addrs" in json_res:
+    if "addrs" in json_res and json_res["addrs"] is not None:
         for addr in json_res["addrs"]:
             if addr == address:
                 return True
