@@ -268,7 +268,7 @@ def query_contract_function(
     # print(f"func_param: {func_param}")
     keypair = get_keypair(bytes.fromhex(private_key))
     # print(keypair.account_id)
-    res = post_data(f"http://{http_ip}:{http_port}/query_contract", data = {
+    res = post_data(f"http://{http_ip}:{http_port}/abi_query_contract", data = {
         "input": func_param,
         'address': contract_address,
         'from': keypair.account_id,
