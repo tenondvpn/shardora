@@ -22,22 +22,27 @@ int ContractCall::HandleTx(
     bool check_valid = false;
     auto gas_used = kCallContractDefaultUseGas;
     int64_t contract_balance_add = 0;
+    auto gas_limit = block_tx.gas_limit();
     do {
-        if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
+        if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price() + block_tx.amount()) {
             block_tx.set_status(kConsensusOutOfGas);
             // assert(false);
             break;
         }
-    
-        if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
-            block_tx.set_status(kConsensusOutOfGas);
+
+        if (block_tx.amount() >= from_balance) {
+            block_tx.set_status(kConsensusOutOfPrepayment);
             ZJC_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
                 "amount: %lu, gas limit: %lu, gas price: %lu",
                 common::Encode::HexEncode(block_tx.from()).c_str(),
                 from_balance,
                 common::Encode::HexEncode(block_tx.to()).c_str(),
-                block_tx.amount(), block_tx.gas_limit(), block_tx.gas_price());
+                block_tx.amount(), gas_limit, block_tx.gas_price());
             break;
+        }
+    
+        if (block_tx.gas_price() * gas_limit + block_tx.amount() > from_balance) {
+            gas_limit = (from_balance - block_tx.amount()) / block_tx.gas_price();
         }
     
         int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
@@ -64,7 +69,7 @@ int ContractCall::HandleTx(
         zjc_host.contract_mgr_ = contract_mgr_;
         zjc_host.acc_mgr_ = account_mgr_;
         zjc_host.my_address_ = block_tx.to();
-        zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
+        zjc_host.tx_context_.block_gas_limit = gas_limit;
         // user caller prepayment 's gas
         zjc_host.AddTmpAccountBalance(
             block_tx.from(),
@@ -83,9 +88,9 @@ int ContractCall::HandleTx(
                     common::Encode::HexEncode(block_tx.contract_input()).c_str());
             }
 
-            gas_used += block_tx.gas_limit() - res.gas_left;
-            if (res.gas_left > (int64_t)block_tx.gas_limit()) {
-                gas_used = block_tx.gas_limit();
+            gas_used += gas_limit - res.gas_left;
+            if (res.gas_left > (int64_t)gas_limit) {
+                gas_used = gas_limit;
             }
         }
         
@@ -98,10 +103,10 @@ int ContractCall::HandleTx(
                     consensus::kKeyValueStorageEachBytes;
             }
 
-            if (block_tx.gas_limit() < gas_used) {
+            if (gas_limit < gas_used) {
                 block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
                 ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
-                    from_balance, block_tx.gas_limit(), gas_used);
+                    from_balance, gas_limit, gas_used);
             }
         } else {
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
@@ -148,10 +153,10 @@ int ContractCall::HandleTx(
                     break;
                 }
 
-                if (gas_used > block_tx.gas_limit()) {
+                if (gas_used > gas_limit) {
                     block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
                     ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
-                        tmp_from_balance, block_tx.gas_limit(), gas_more);
+                        tmp_from_balance, gas_limit, gas_more);
                     break;
                 }
 
