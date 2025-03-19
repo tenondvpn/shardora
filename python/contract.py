@@ -107,7 +107,7 @@ if __name__ == "__main__":
             print("query function failed!")
             sys.exit(1)
 
-        print(f"query function success: {res.text}")
+        print(f"query function success: {len(res.text)} {res.text}")
         sys.exit(0)
 
     if sol_file is None and function == "":
