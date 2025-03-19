@@ -434,10 +434,14 @@ std::string ViewBlockChain::String() const {
     std::string ret;
     std::string block_height_str;
     std::set<uint64_t> height_set;
+    std::set<uint64_t> view_set;
     for (const auto& vb : view_blocks) {
         ret += "," + std::to_string(vb->qc().view());
         block_height_str += "," + std::to_string(vb->block_info().height());
+        assert(height_set.find(vb->block_info().height()) == height_set.end());
+        assert(view_set.find(vb->qc().view()) == view_set.end());
         height_set.insert(vb->block_info().height());
+        view_set.insert(vb->qc().view());
     }
 
     ZJC_DEBUG("get chain pool: %u, views: %s, all size: %u, block_height_str: %s",
