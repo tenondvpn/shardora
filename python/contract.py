@@ -6,6 +6,7 @@
 import json
 import shardora_api
 import sys
+import binascii
 import time
 from eth_utils import decode_hex, encode_hex
 from eth_abi import encode
@@ -107,6 +108,7 @@ if __name__ == "__main__":
             print("query function failed!")
             sys.exit(1)
 
+        hex_str = binascii.hexlify(res.text.encode()).decode()
         print(f"query function success: {len(res.text)} {res.text}")
         sys.exit(0)
 
