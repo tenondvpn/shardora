@@ -638,6 +638,10 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
             addr_info = prefix_db->GetAddressInfo(addr);
         }
 
+        if (addr_info == nullptr || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+            addr_info = nullptr;
+        }
+
         if (addr_info != nullptr && addr_info->balance() >= balance_val) {
             res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
             ZJC_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
