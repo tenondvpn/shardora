@@ -44,6 +44,11 @@ int ContractCall::HandleTx(
         if (block_tx.gas_price() * gas_limit + block_tx.amount() > from_balance) {
             gas_limit = (from_balance - block_tx.amount()) / block_tx.gas_price();
         }
+
+        if (kCallContractDefaultUseGas > gas_limit) {
+            block_tx.set_status(kConsensusOutOfPrepayment);
+            break;
+        }
     
         int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
         if (balance_status != kConsensusSuccess) {
@@ -51,6 +56,7 @@ int ContractCall::HandleTx(
             break;
         }
 
+        gas_limit -= kCallContractDefaultUseGas;
         check_valid = true;
     } while (0);
 
@@ -80,7 +86,7 @@ int ContractCall::HandleTx(
         if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
             evmc_result evmc_res = {};
             evmc::Result res{ evmc_res };
-            int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, &res);
+            int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, gas_limit, &res);
             if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
                 block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
                 ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
@@ -373,6 +379,7 @@ int ContractCall::ContractExcute(
         uint64_t contract_balance,
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
+        uint64_t gas_limit,
         evmc::Result* out_res) {
     int exec_res = zjcvm::Execution::Instance()->execute(
         contract_info->bytes_code(),
@@ -381,7 +388,7 @@ int ContractCall::ContractExcute(
         tx.to(),
         tx.from(),
         tx.amount(),
-        tx.gas_limit(),
+        gas_limit,
         0,
         zjcvm::kJustCall,
         zjc_host,

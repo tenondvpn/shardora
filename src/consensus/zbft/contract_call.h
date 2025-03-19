@@ -46,6 +46,7 @@ private:
         uint64_t contract_balance,
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
+        uint64_t gas_limit,
         evmc::Result* out_res);
     int SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
