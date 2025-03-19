@@ -18,211 +18,221 @@ int ContractCall::HandleTx(
     auto preppayment_id = block_tx.to() + block_tx.from();
     GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance);
     uint64_t test_from_balance = from_balance;
-    if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
-        block_tx.set_status(kConsensusOutOfGas);
-        // assert(false);
-        return kConsensusSuccess;
-    }
-
-    auto gas_used = kCallContractDefaultUseGas;
-    if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
-        block_tx.set_status(kConsensusOutOfGas);
-        ZJC_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
-            "amount: %lu, gas limit: %lu, gas price: %lu",
-            common::Encode::HexEncode(block_tx.from()).c_str(),
-            from_balance,
-            common::Encode::HexEncode(block_tx.to()).c_str(),
-            block_tx.amount(), block_tx.gas_limit(), block_tx.gas_price());
-        // assert(false);
-        return kConsensusSuccess;
-    }
-
     uint64_t to_balance = 0;
-    int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
-    if (balance_status != kConsensusSuccess) {
-        block_tx.set_status(balance_status);
-        // will never happen
-//         assert(false);
-        return kConsensusSuccess;
-    }
-
-    to_balance += block_tx.amount();
-    block::protobuf::BlockTx contract_tx;
-    zjcvm::Uint64ToEvmcBytes32(
-        zjc_host.tx_context_.tx_gas_price,
-        block_tx.gas_price());
-    zjc_host.contract_mgr_ = contract_mgr_;
-    zjc_host.acc_mgr_ = account_mgr_;
-    zjc_host.my_address_ = block_tx.to();
-    zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
-    // user caller prepayment 's gas
-    zjc_host.AddTmpAccountBalance(
-        block_tx.from(),
-        from_balance);
-    zjc_host.AddTmpAccountBalance(
-        block_tx.to(),
-        to_balance);
-    if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
-        evmc_result evmc_res = {};
-        evmc::Result res{ evmc_res };
-        int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, &res);
-        if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
-            block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
-            ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
-                call_res, res.status_code, "common::Encode::HexEncode(address_info->bytes_code()).c_str()",
-                common::Encode::HexEncode(block_tx.contract_input()).c_str());
-        }
-
-        gas_used += block_tx.gas_limit() - res.gas_left;
-        if (res.gas_left > (int64_t)block_tx.gas_limit()) {
-            gas_used = block_tx.gas_limit();
-        }
-    }
-    
-
-    if (from_balance > gas_used * block_tx.gas_price()) {
-        from_balance -= gas_used * block_tx.gas_price();
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-            // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                consensus::kKeyValueStorageEachBytes;
-        }
-
-        if (block_tx.gas_limit() < gas_used) {
-            block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
-                from_balance, block_tx.gas_limit(), gas_used);
-        }
-    } else {
-        block_tx.set_status(consensus::kConsensusAccountBalanceError);
-        ZJC_ERROR("leader balance error: %llu, %llu",
-            from_balance, gas_used * block_tx.gas_price());
-        from_balance = 0;
-    }
-
-    int64_t tmp_from_balance = from_balance;
-    if (block_tx.status() == kConsensusSuccess) {
-        int64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
-        if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
-            if (tmp_from_balance < dec_amount) {
-                block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu", tmp_from_balance, dec_amount);
-            }
-        } else {
-            tmp_from_balance = 0;
-            block_tx.set_status(consensus::kConsensusAccountBalanceError);
-            ZJC_ERROR("leader balance error: %llu, %llu",
-                tmp_from_balance, gas_used * block_tx.gas_price());
-        }
-    } else {
-        if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
-            tmp_from_balance -= gas_used * block_tx.gas_price();
-        } else {
-            tmp_from_balance = 0;
-        }
-    }
-
+    bool check_valid = false;
+    auto gas_used = kCallContractDefaultUseGas;
     int64_t contract_balance_add = 0;
-    if (block_tx.status() == kConsensusSuccess) {
-        int64_t caller_balance_add = 0;
-        int64_t gas_more = 0;
-        int res = SaveContractCreateInfo(
-            zjc_host,
-            block_tx,
-            contract_balance_add,
-            caller_balance_add,
-            gas_more);
-        gas_used += gas_more;
-        do {
-            if (res != kConsensusSuccess) {
-                block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                break;
+    do {
+        if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
+            block_tx.set_status(kConsensusOutOfGas);
+            // assert(false);
+            break;
+        }
+    
+        if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
+            block_tx.set_status(kConsensusOutOfGas);
+            ZJC_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
+                "amount: %lu, gas limit: %lu, gas price: %lu",
+                common::Encode::HexEncode(block_tx.from()).c_str(),
+                from_balance,
+                common::Encode::HexEncode(block_tx.to()).c_str(),
+                block_tx.amount(), block_tx.gas_limit(), block_tx.gas_price());
+            break;
+        }
+    
+        int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
+        if (balance_status != kConsensusSuccess) {
+            block_tx.set_status(balance_status);
+            break;
+        }
+
+        check_valid = true;
+    } while (0);
+
+    if (!check_valid) {
+        if (from_balance >= gas_used * block_tx.gas_price()) {
+            from_balance -= gas_used * block_tx.gas_price();
+        } else {
+            from_balance = 0;
+        }
+    } else {
+        to_balance += block_tx.amount();
+        block::protobuf::BlockTx contract_tx;
+        zjcvm::Uint64ToEvmcBytes32(
+            zjc_host.tx_context_.tx_gas_price,
+            block_tx.gas_price());
+        zjc_host.contract_mgr_ = contract_mgr_;
+        zjc_host.acc_mgr_ = account_mgr_;
+        zjc_host.my_address_ = block_tx.to();
+        zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
+        // user caller prepayment 's gas
+        zjc_host.AddTmpAccountBalance(
+            block_tx.from(),
+            from_balance);
+        zjc_host.AddTmpAccountBalance(
+            block_tx.to(),
+            to_balance);
+        if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
+            evmc_result evmc_res = {};
+            evmc::Result res{ evmc_res };
+            int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, &res);
+            if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
+                block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
+                ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
+                    call_res, res.status_code, "common::Encode::HexEncode(address_info->bytes_code()).c_str()",
+                    common::Encode::HexEncode(block_tx.contract_input()).c_str());
             }
 
-            if (gas_used > block_tx.gas_limit()) {
+            gas_used += block_tx.gas_limit() - res.gas_left;
+            if (res.gas_left > (int64_t)block_tx.gas_limit()) {
+                gas_used = block_tx.gas_limit();
+            }
+        }
+        
+
+        if (from_balance > gas_used * block_tx.gas_price()) {
+            from_balance -= gas_used * block_tx.gas_price();
+            for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+                // TODO(): check key exists and reserve gas
+                gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
+                    consensus::kKeyValueStorageEachBytes;
+            }
+
+            if (block_tx.gas_limit() < gas_used) {
                 block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
                 ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
-                    tmp_from_balance, block_tx.gas_limit(), gas_more);
-                break;
+                    from_balance, block_tx.gas_limit(), gas_used);
             }
+        } else {
+            block_tx.set_status(consensus::kConsensusAccountBalanceError);
+            ZJC_ERROR("leader balance error: %llu, %llu",
+                from_balance, gas_used * block_tx.gas_price());
+            from_balance = 0;
+        }
 
-            if (tmp_from_balance < int64_t(gas_used * block_tx.gas_price())) {
-                block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("balance error: %llu, %llu",
-                    tmp_from_balance, gas_more * block_tx.gas_price());
-                break;
-            }
-
-            // just dec caller_balance_add
-            int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) -
-                caller_balance_add +
-                static_cast<int64_t>(block_tx.contract_prepayment()) +
-                static_cast<int64_t>(gas_used * block_tx.gas_price());
-            if ((int64_t)tmp_from_balance < dec_amount) {
+        int64_t tmp_from_balance = from_balance;
+        if (block_tx.status() == kConsensusSuccess) {
+            int64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
+            if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
+                if (tmp_from_balance < dec_amount) {
+                    block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                    ZJC_ERROR("leader balance error: %llu, %llu", tmp_from_balance, dec_amount);
+                }
+            } else {
+                tmp_from_balance = 0;
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
                 ZJC_ERROR("leader balance error: %llu, %llu",
-                    tmp_from_balance, caller_balance_add);
-                break;
+                    tmp_from_balance, gas_used * block_tx.gas_price());
             }
+        } else {
+            if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
+                tmp_from_balance -= gas_used * block_tx.gas_price();
+            } else {
+                tmp_from_balance = 0;
+            }
+        }
 
-            tmp_from_balance -= dec_amount;
-            // change contract 's amount, now is contract 's new balance
-            auto new_contract_balance = static_cast<int64_t>(to_balance) + contract_balance_add;
-            if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
-                auto trans_item = block_tx.add_contract_txs();
-                std::string destruct_from = std::string(
-                    (char*)zjc_host.recorded_selfdestructs_->selfdestructed.bytes,
-                    sizeof(zjc_host.recorded_selfdestructs_->selfdestructed.bytes));
-                std::string destruct_to = std::string(
-                    (char*)zjc_host.recorded_selfdestructs_->beneficiary.bytes,
-                    sizeof(zjc_host.recorded_selfdestructs_->beneficiary.bytes));
-                if (destruct_from != block_tx.to() || destruct_from == destruct_to) {
+        if (block_tx.status() == kConsensusSuccess) {
+            int64_t caller_balance_add = 0;
+            int64_t gas_more = 0;
+            int res = SaveContractCreateInfo(
+                zjc_host,
+                block_tx,
+                contract_balance_add,
+                caller_balance_add,
+                gas_more);
+            gas_used += gas_more;
+            do {
+                if (res != kConsensusSuccess) {
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                    ZJC_ERROR("self destruct error not equal: %s, %s, beneficiary: %s",
-                        common::Encode::HexEncode(destruct_from).c_str(),
-                        common::Encode::HexEncode(block_tx.to()).c_str(),
-                        common::Encode::HexEncode(destruct_to).c_str());
                     break;
                 }
-                
-                trans_item->set_from(destruct_from);
-                trans_item->set_to(destruct_to);
-                trans_item->set_amount(new_contract_balance);
-                new_contract_balance = 0;
-                ZJC_ERROR("self destruct success gid: %s, %s, %s, "
-                    "beneficiary: %s, amount: %lu, status: %d",
-                    common::Encode::HexEncode(block_tx.gid()).c_str(),
-                    common::Encode::HexEncode(destruct_from).c_str(),
-                    common::Encode::HexEncode(block_tx.to()).c_str(),
-                    common::Encode::HexEncode(destruct_to).c_str(),
-                    trans_item->amount(),
-                    block_tx.status());
-                auto destruct_kv = block_tx.add_storages();
-                destruct_kv->set_key(protos::kContractDestruct);
-                ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
-                    common::Encode::HexEncode(protos::kContractDestruct).c_str());
-                acc_balance_map[block_tx.to()] = -1;
-                // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
-            }
 
-            block_tx.set_amount(new_contract_balance);
-        } while (0);
-    }
+                if (gas_used > block_tx.gas_limit()) {
+                    block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
+                    ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
+                        tmp_from_balance, block_tx.gas_limit(), gas_more);
+                    break;
+                }
 
-    if (block_tx.status() == kConsensusSuccess) {
-        from_balance = tmp_from_balance;
-        if (acc_balance_map[block_tx.to()] != -1) {
-            acc_balance_map[block_tx.to()] = block_tx.amount();
+                if (tmp_from_balance < int64_t(gas_used * block_tx.gas_price())) {
+                    block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                    ZJC_ERROR("balance error: %llu, %llu",
+                        tmp_from_balance, gas_more * block_tx.gas_price());
+                    break;
+                }
+
+                // just dec caller_balance_add
+                int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) -
+                    caller_balance_add +
+                    static_cast<int64_t>(block_tx.contract_prepayment()) +
+                    static_cast<int64_t>(gas_used * block_tx.gas_price());
+                if ((int64_t)tmp_from_balance < dec_amount) {
+                    block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                    ZJC_ERROR("leader balance error: %llu, %llu",
+                        tmp_from_balance, caller_balance_add);
+                    break;
+                }
+
+                tmp_from_balance -= dec_amount;
+                // change contract 's amount, now is contract 's new balance
+                auto new_contract_balance = static_cast<int64_t>(to_balance) + contract_balance_add;
+                if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
+                    auto trans_item = block_tx.add_contract_txs();
+                    std::string destruct_from = std::string(
+                        (char*)zjc_host.recorded_selfdestructs_->selfdestructed.bytes,
+                        sizeof(zjc_host.recorded_selfdestructs_->selfdestructed.bytes));
+                    std::string destruct_to = std::string(
+                        (char*)zjc_host.recorded_selfdestructs_->beneficiary.bytes,
+                        sizeof(zjc_host.recorded_selfdestructs_->beneficiary.bytes));
+                    if (destruct_from != block_tx.to() || destruct_from == destruct_to) {
+                        block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                        ZJC_ERROR("self destruct error not equal: %s, %s, beneficiary: %s",
+                            common::Encode::HexEncode(destruct_from).c_str(),
+                            common::Encode::HexEncode(block_tx.to()).c_str(),
+                            common::Encode::HexEncode(destruct_to).c_str());
+                        break;
+                    }
+                    
+                    trans_item->set_from(destruct_from);
+                    trans_item->set_to(destruct_to);
+                    trans_item->set_amount(new_contract_balance);
+                    new_contract_balance = 0;
+                    ZJC_ERROR("self destruct success gid: %s, %s, %s, "
+                        "beneficiary: %s, amount: %lu, status: %d",
+                        common::Encode::HexEncode(block_tx.gid()).c_str(),
+                        common::Encode::HexEncode(destruct_from).c_str(),
+                        common::Encode::HexEncode(block_tx.to()).c_str(),
+                        common::Encode::HexEncode(destruct_to).c_str(),
+                        trans_item->amount(),
+                        block_tx.status());
+                    auto destruct_kv = block_tx.add_storages();
+                    destruct_kv->set_key(protos::kContractDestruct);
+                    ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
+                        common::Encode::HexEncode(protos::kContractDestruct).c_str());
+                    acc_balance_map[block_tx.to()] = -1;
+                    // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
+                }
+
+                block_tx.set_amount(new_contract_balance);
+            } while (0);
         }
-    }
 
-    if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
-        if (from_balance > 0) {
-            auto trans_item = block_tx.add_contract_txs();
-            trans_item->set_from(block_tx.to());
-            trans_item->set_to(block_tx.from());
-            trans_item->set_amount(from_balance);
-            from_balance = 0;
+        if (block_tx.status() == kConsensusSuccess) {
+            from_balance = tmp_from_balance;
+            if (acc_balance_map[block_tx.to()] != -1) {
+                acc_balance_map[block_tx.to()] = block_tx.amount();
+            }
+        }
+
+        if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
+            if (from_balance > 0) {
+                auto trans_item = block_tx.add_contract_txs();
+                trans_item->set_from(block_tx.to());
+                trans_item->set_to(block_tx.from());
+                trans_item->set_amount(from_balance);
+                from_balance = 0;
+            }
         }
     }
 
