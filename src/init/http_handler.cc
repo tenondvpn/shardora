@@ -428,6 +428,123 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     ZJC_INFO("query contract success data: %s", http_res.c_str());
 }
 
+
+static void AbiQueryContract(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query contract coming.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* tmp_contract_addr = evhtp_kv_find(req->uri->query, "address");
+    const char* tmp_input = evhtp_kv_find(req->uri->query, "input");
+    const char* tmp_from = evhtp_kv_find(req->uri->query, "from");
+    if (tmp_contract_addr == nullptr || tmp_from == nullptr || tmp_input == nullptr) {
+        std::string res = common::StringUtil::Format(
+            "param invalid contract_addr valid: %d, input valid: %d",
+            (tmp_contract_addr != nullptr), (tmp_input != nullptr), (tmp_from != nullptr));
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    std::string from = common::Encode::HexDecode(tmp_from);
+    std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
+    std::string input = common::Encode::HexDecode(tmp_input);
+    uint64_t height = 0;
+
+    auto contract_prepayment_id = contract_addr + from;
+    protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+    if (!addr_info) {
+        addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+    }
+
+    if (!addr_info) {
+        std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    uint64_t prepayment = addr_info->balance();
+    auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
+    if (contract_addr_info == nullptr) {
+        std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    zjcvm::ZjchainHost zjc_host;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = 0;
+    zjc_host.tx_context_.block_timestamp = 0;
+    uint64_t chanin_id = 0;
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.contract_mgr_ = contract_mgr;
+    zjc_host.acc_mgr_ = nullptr;
+    zjc_host.my_address_ = contract_addr;
+    zjc_host.tx_context_.block_gas_limit = prepayment;
+    // user caller prepayment 's gas
+    uint64_t from_balance = prepayment;
+    uint64_t to_balance = contract_addr_info->balance();
+    zjc_host.AddTmpAccountBalance(
+        from,
+        from_balance);
+    zjc_host.AddTmpAccountBalance(
+        contract_addr,
+        to_balance);
+    evmc_result evmc_res = {};
+    evmc::Result result{ evmc_res };
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        contract_addr_info->bytes_code(),
+        input,
+        from,
+        contract_addr,
+        from,
+        0,
+        prepayment,
+        0,
+        zjcvm::kJustCall,
+        zjc_host,
+        &result);
+    if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
+        std::string res = "query contract failed: " + 
+            std::to_string(result.status_code) + 
+            ", exec_res: " + std::to_string(exec_res);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract error: %s.", res.c_str());
+        return;
+    }
+	
+    std::string qdata((char*)result.output_data, result.output_size);
+    auto hex_data = common::Encode::HexEncode(qdata);
+    // ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    // if (result.output_size < 64) {
+    //     auto res = common::Encode::HexEncode(qdata); 
+    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
+    //     evhtp_send_reply(req, EVHTP_RES_OK);
+    //     return;
+    // }
+    // evmc_bytes32 len_bytes;
+    // memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
+    // uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
+    // std::string http_res(qdata.c_str() + 64, len);
+    evbuffer_add(req->buffer_out, hex_data.c_str(), hex_data.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_INFO("query contract success data: %s", http_res.c_str());
+}
+
 static void QueryAccount(evhtp_request_t* req, void* data) {
     ZJC_DEBUG("query account.");
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
@@ -983,6 +1100,7 @@ void HttpHandler::Init(
     http_server.AddCallback("/get_seckey_and_encrypt_data", GetSecAndEncData);
     http_server.AddCallback("/proxy_decrypt", ProxDecryption);
     http_server.AddCallback("/query_contract", QueryContract);
+    http_server.AddCallback("/abi_query_contract", AbiQueryContract);
     http_server.AddCallback("/query_account", QueryAccount);
     http_server.AddCallback("/query_init", QueryInit);
     http_server.AddCallback("/get_proxy_reenc_info", GetProxyReencInfo);
