@@ -33,7 +33,7 @@ contract Confirm {
 
     function ChangeOwner(address new_owner) public onlyOwner {
         require(msg.sender != new_owner, "same owner");
-        owner_list.push(msg.sender)
+        owner_list.push(msg.sender);
         owner = new_owner;
     }
 
