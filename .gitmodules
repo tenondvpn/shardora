@@ -1,0 +1,7 @@
+[submodule "libs/protobuf"]
+	path = libs/protobuf
+	url = git@github.com:protocolbuffers/protobuf.git
+	branch = commit/48cb18e5c419ddd23d9badcfe4e9df7bde1979b2
+[submodule "libs/evhtp"]
+	path = libs/evhtp
+	url = git@github.com:ellzey/libevhtp.git
