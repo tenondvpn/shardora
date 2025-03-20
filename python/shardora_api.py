@@ -215,7 +215,7 @@ def deploy_contract(
     # print(f"solc --bin {sol_file_path}")
     func_param = ""
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
-        func_param = keccak256_str(encode_hex(encode(constructor_types, constructor_params)))[2:]
+        func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
     ret_split = (ret.decode('utf-8')).split("Binary:")
     if len(ret_split) < 2:
