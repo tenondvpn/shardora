@@ -85,7 +85,9 @@ if __name__ == "__main__":
     tmp_function_args = []
     for i in range(len(function_types)):
         arg_type = function_types[i]
-        if arg_type == 'bytes' or arg_type == 'bytes32' or arg_type == 'address' or arg_type == 'string':
+        if arg_type == 'bytes' or arg_type == 'bytes32' or arg_type == 'address':
+            tmp_function_args.append(decode_hex(function_args[i]))
+        elif arg_type == 'string':
             tmp_function_args.append(function_args[i])
         elif arg_type == 'bool':
             if function_args[i].lower() == 'false' or function_args[i] == "0":
