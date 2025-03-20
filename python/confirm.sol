@@ -121,9 +121,9 @@ contract Confirm {
         all_bytes[filedCount++] = '","root_hash":"';
         all_bytes[filedCount++] = ToHex(Bytes32toBytes(item.root_hash));
         if (last) {
-            all_bytes[filedCount++] = '}';
+            all_bytes[filedCount++] = '"}';
         } else {
-            all_bytes[filedCount++] = '},';
+            all_bytes[filedCount++] = '"},';
         }
         return bytesConcat(all_bytes, filedCount);
     }
