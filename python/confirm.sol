@@ -143,7 +143,6 @@ contract Confirm {
         uint got_len = 1;
         for (uint i=start_pos; i<arrayLength && got_len <= len; i++) {
             all_bytes[validLen++] = GetItemJson(confirm_list[i], (i == arrayLength - 1 || got_len == len));
-            ++start_idx;
             ++got_len;
         }
 
