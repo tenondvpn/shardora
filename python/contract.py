@@ -145,7 +145,7 @@ if __name__ == "__main__":
             0,
             sol_file,
             function_types,
-            function_args,
+            tmp_function_args,
             prepayment=prepayment,
             check_gid_valid=True,
             is_library=create_library,
