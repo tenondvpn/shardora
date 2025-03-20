@@ -289,18 +289,26 @@ def query_contract_function(
         contract_address: str, 
         function: str, 
         types_list: list, 
-        params_list: list):
+        params_list: list,
+        call_type=0):
     func_param = (keccak256_str(f"{function}({','.join(types_list)})")[:8] + 
         encode_hex(encode(types_list, params_list))[2:])
 
     # print(f"func_param: {func_param}")
     keypair = get_keypair(bytes.fromhex(private_key))
     # print(keypair.account_id)
-    res = post_data(f"http://{http_ip}:{http_port}/abi_query_contract", data = {
-        "input": func_param,
-        'address': contract_address,
-        'from': keypair.account_id,
-    })
+    if call_type == 0:
+        res = post_data(f"http://{http_ip}:{http_port}/abi_query_contract", data = {
+            "input": func_param,
+            'address': contract_address,
+            'from': keypair.account_id,
+        })
+    else:
+        res = post_data(f"http://{http_ip}:{http_port}/query_contract", data = {
+            "input": func_param,
+            'address': contract_address,
+            'from': keypair.account_id,
+        })
 
     return res
 

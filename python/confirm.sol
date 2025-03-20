@@ -137,14 +137,12 @@ contract Confirm {
         all_bytes[validLen++] = ToHex(Bytes32toBytes(local_id));
         all_bytes[validLen++] = '","data_id":"';
         all_bytes[validLen++] = ToHex(Bytes32toBytes(data_id));
-        all_bytes[validLen++] = '","confirm_list":"';
-        all_bytes[0] = '[';
+        all_bytes[validLen++] = '","confirm_list":';
+        all_bytes[validLen++] = '[';
         uint arrayLength = confirm_list.length;
-        uint start_idx = 0;
         uint got_len = 1;
         for (uint i=start_pos; i<arrayLength && got_len <= len; i++) {
-            all_bytes[start_idx + 1] = GetItemJson(confirm_list[i], (i == arrayLength - 1 || got_len == len));
-            ++validLen;
+            all_bytes[validLen++] = GetItemJson(confirm_list[i], (i == arrayLength - 1 || got_len == len));
             ++start_idx;
             ++got_len;
         }

@@ -105,7 +105,8 @@ if __name__ == "__main__":
             contract_address=to, 
             function=query_func,
             types_list=function_types,
-            params_list=tmp_function_args)
+            params_list=tmp_function_args,
+            call_type=1)
         if res.status_code != 200:
             print("query function failed!")
             sys.exit(1)
