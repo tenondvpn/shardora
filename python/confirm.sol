@@ -132,7 +132,7 @@ contract Confirm {
         bytes[] memory all_bytes = new bytes[](confirm_list.length + 20);
         uint validLen = 0;
         all_bytes[validLen++] = '{"owner":"';
-        all_bytes[validLen++] = ToHex(toBytes(item.owner));
+        all_bytes[validLen++] = ToHex(toBytes(owner));
         all_bytes[validLen++] = '","local_id":"';
         all_bytes[validLen++] = ToHex(Bytes32toBytes(local_id));
         all_bytes[validLen++] = '","data_id":"';
