@@ -50,6 +50,7 @@ contract DataCollection {
         UsageRecord memory record = usageRecords[index];
         return (record.timestamp,record.cpuModel, record.cpuPercent, record.gpuModel,record.gpuPercent,record.memorySize,record.memoryPercent, record.bandwidthMBps);
     }
+    
     // 按时间范围查询（返回所有符合条件的记录索引）
     function getRecordsByTimeRange(uint256 startTime, uint256 endTime) public view returns (uint256[] memory) {
         uint256 count = 0;
