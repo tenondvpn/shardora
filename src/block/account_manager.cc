@@ -98,13 +98,13 @@ protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& ad
 
 protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
-    if (addr_info != nullptr || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+    if (addr_info != nullptr && addr_info->type() != address::protobuf::kWaitingRootConfirm) {
         return addr_info;
     }
 
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     addr_info = GetAcountInfoFromDb(addr);
-    if (!addr_info|| addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+    if (!addr_info || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
         BLOCK_DEBUG(
             "get account failed[%s] in thread_idx:%d", 
             common::Encode::HexEncode(addr).c_str(), thread_idx);
