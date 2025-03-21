@@ -108,7 +108,7 @@ add_definitions(
     -DMOCK_SIGN
     -DENABLE_HOTSTUFF
     -DDISABLE_GENESIS_BLS_VERIFY
-    #-DTEST_NO_CROSS
+    -DTEST_NO_CROSS
     #-DUSE_AGG_BLS
 )
 
@@ -133,6 +133,7 @@ endif()
 # link definitions
 link_directories(
     ${LIB_DIR}
+    ${LIB_DIR}/gcc830
 )
 
 # bin/lib
