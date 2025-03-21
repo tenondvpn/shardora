@@ -41,14 +41,7 @@ void ToTxsPools::NewBlock(
         return;
     }
 
-    // 更新 pool 的 max height
     auto pool_idx = view_block_ptr->qc().pool_index();
-    if (block.height() > pool_max_heihgts_[pool_idx]) {
-        pool_max_heihgts_[pool_idx] = block.height();
-    }
-
-    
-
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString( view_block_ptr->debug());
@@ -63,6 +56,16 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
 #endif
     StatisticToInfo(*view_block_ptr);
+
+    {
+        common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
+        auto& height_map = network_txs_pools_[pool_idx];
+        auto height_iter = height_map.find(view_block_ptr->block_info().height());
+        if (height_iter == height_map.end()) {
+            TxMap tx_map;
+            height_map[view_block_ptr->block_info().height()] = tx_map;
+        }
+    }
 
     added_heights_[pool_idx].insert(std::make_pair<>(
         block.height(), 
@@ -86,8 +89,12 @@ void ToTxsPools::NewBlock(
     }
 
     CHECK_MEMORY_SIZE_WITH_MESSAGE(added_heights_[pool_idx], std::to_string(pool_idx).c_str());
-    valided_heights_[pool_idx].insert(block.height());
 
+    // 更新 pool 的 max height
+    if (block.height() > pool_max_heihgts_[pool_idx]) {
+        pool_max_heihgts_[pool_idx] = block.height();
+    }
+    
     if (pool_consensus_heihgts_[pool_idx] + 1 == block.height()) {
         ++pool_consensus_heihgts_[pool_idx];
         for (; pool_consensus_heihgts_[pool_idx] <= pool_max_heihgts_[pool_idx];
@@ -99,6 +106,7 @@ void ToTxsPools::NewBlock(
             }
         }
     }
+    valided_heights_[pool_idx].insert(block.height());
 }
 
 void ToTxsPools::StatisticToInfo(
@@ -607,7 +615,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
         while (cons_height > 0) {
             auto exist_iter = added_heights_[i].find(cons_height);
             if (exist_iter != added_heights_[i].end()) {
-                if (exist_iter->second + 5000lu > timeout) {
+                if (exist_iter->second + 300lu > timeout) {
                     --cons_height;
                     continue;
                 }
@@ -794,7 +802,8 @@ int ToTxsPools::CreateToTxWithHeights(
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
-                continue;
+                assert(false);
+                return kPoolsError;
             }
 
             for (auto to_iter = hiter->second.begin();
