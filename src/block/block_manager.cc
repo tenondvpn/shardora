@@ -839,7 +839,7 @@ void BlockManager::AddNewBlock(
         auto btime1 = common::TimeUtils::TimestampMs();
 #ifndef TEST_NO_CROSS
         if (statistic_mgr_) {
-            statistic_mgr_->OnNewBlock(view_block_item);
+            //statistic_mgr_->OnNewBlock(view_block_item);
         }
 
         to_txs_pool_->NewBlock(view_block_item);
