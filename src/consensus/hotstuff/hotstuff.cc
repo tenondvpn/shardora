@@ -2259,7 +2259,7 @@ void Hotstuff::TryRecoverFromStuck(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs->empty()) {
-        ZJC_WARN("pool: %u txs.empty().", pool_idx_);
+        ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
         return;
     }
     
