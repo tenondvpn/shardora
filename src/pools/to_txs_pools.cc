@@ -35,7 +35,9 @@ void ToTxsPools::NewBlock(
 #endif
     auto& block = view_block_ptr->block_info();
     if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
-        ZJC_DEBUG("network invalid: %d, local: %d", view_block_ptr->qc().network_id(), common::GlobalInfo::Instance()->network_id());
+        ZJC_DEBUG("network invalid: %d, local: %d", 
+            view_block_ptr->qc().network_id(), 
+            common::GlobalInfo::Instance()->network_id());
         return;
     }
 
@@ -45,17 +47,7 @@ void ToTxsPools::NewBlock(
         pool_max_heihgts_[pool_idx] = block.height();
     }
 
-    if (pool_consensus_heihgts_[pool_idx] + 1 == block.height()) {
-        ++pool_consensus_heihgts_[pool_idx];
-        for (; pool_consensus_heihgts_[pool_idx] <= pool_max_heihgts_[pool_idx];
-                ++pool_consensus_heihgts_[pool_idx]) {
-            auto iter = added_heights_[pool_idx].find(
-                    pool_consensus_heihgts_[pool_idx] + 1);
-            if (iter == added_heights_[pool_idx].end()) {
-                break;
-            }
-        }
-    }
+    
 
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
@@ -95,6 +87,18 @@ void ToTxsPools::NewBlock(
 
     CHECK_MEMORY_SIZE_WITH_MESSAGE(added_heights_[pool_idx], std::to_string(pool_idx).c_str());
     valided_heights_[pool_idx].insert(block.height());
+
+    if (pool_consensus_heihgts_[pool_idx] + 1 == block.height()) {
+        ++pool_consensus_heihgts_[pool_idx];
+        for (; pool_consensus_heihgts_[pool_idx] <= pool_max_heihgts_[pool_idx];
+                ++pool_consensus_heihgts_[pool_idx]) {
+            auto iter = added_heights_[pool_idx].find(
+                    pool_consensus_heihgts_[pool_idx] + 1);
+            if (iter == added_heights_[pool_idx].end()) {
+                break;
+            }
+        }
+    }
 }
 
 void ToTxsPools::StatisticToInfo(
@@ -784,10 +788,12 @@ int ToTxsPools::CreateToTxWithHeights(
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
         auto& height_map = network_txs_pools_[pool_idx];
+        ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
+            pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
-//                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
+                ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
                 continue;
             }
 
