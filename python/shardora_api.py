@@ -204,7 +204,8 @@ def deploy_contract(
         prepayment=0,
         check_gid_valid=False,
         is_library=False,
-        in_libraries=""):
+        in_libraries="",
+        contract_address=None):
     libraries = ""
     if in_libraries != "":
         libraries = f"--libraries '{in_libraries}'"
@@ -226,8 +227,10 @@ def deploy_contract(
     # print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}")
     call_str = bytes_codes + func_param
     gid = gen_gid()
-    contract_address_hash = keccak256_str(call_str+gid)
-    contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
+    if contract_address is None:
+        contract_address_hash = keccak256_str(call_str+gid)
+        contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
+        
     step = 6
     if is_library:
         step = 14

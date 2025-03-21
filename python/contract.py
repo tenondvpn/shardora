@@ -150,7 +150,8 @@ if __name__ == "__main__":
             prepayment=prepayment,
             check_gid_valid=True,
             is_library=create_library,
-            in_libraries=libraries)
+            in_libraries=libraries,
+            contract_address=to)
         if contract_address is None:
             print(f"contract create failed!")
             sys.exit(1)
