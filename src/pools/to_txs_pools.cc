@@ -883,7 +883,8 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    ZJC_DEBUG("not acc amount map empty.");
+    ZJC_DEBUG("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+        ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // for (auto iter = cross_set.begin(); iter != cross_set.end(); ++iter) {
     //     auto cross_item = to_tx.add_crosses();
     //     cross_item->set_src_shard((*iter).src_shard);
