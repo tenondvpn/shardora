@@ -186,6 +186,13 @@ int ContractCall::HandleTx(
                 }
 
                 tmp_from_balance -= dec_amount;
+                if (to_balance < -contract_balance_add) {
+                    block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                    ZJC_ERROR("to balance error: %llu, %llu",
+                        to_balance, contract_balance_add);
+                    break;
+                }
+                
                 // change contract 's amount, now is contract 's new balance
                 auto new_contract_balance = static_cast<int64_t>(to_balance) + contract_balance_add;
                 if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
@@ -352,11 +359,12 @@ int ContractCall::SaveContractCreateInfo(
             trans_item->set_to(to_iter->first);
             trans_item->set_amount(to_iter->second);
             other_add += to_iter->second;
-            ZJC_DEBUG("contract call transfer gid: %s, from: %s, to: %s, amount: %lu",
+            ZJC_DEBUG("contract call transfer gid: %s, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
                 common::Encode::HexEncode(block_tx.gid()).c_str(),
                 common::Encode::HexEncode(transfer_iter->first).c_str(),
                 common::Encode::HexEncode(to_iter->first).c_str(),
-                to_iter->second);
+                to_iter->second,
+                contract_balance_add);
         }
     }
 
