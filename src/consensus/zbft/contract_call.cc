@@ -251,7 +251,12 @@ int ContractCall::HandleTx(
         }
     }
 
-    block_tx.set_amount(new_contract_balance);
+    if (block_tx.status() == kConsensusSuccess) {
+        block_tx.set_amount(new_contract_balance);
+    } else {
+        block_tx.set_amount(src_to_balance);
+    }
+    
     acc_balance_map[preppayment_id] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
