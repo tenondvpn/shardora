@@ -17,8 +17,10 @@ int ContractCall::HandleTx(
     uint64_t from_balance = 0;
     auto preppayment_id = block_tx.to() + block_tx.from();
     GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance);
+    uint64_t src_to_balance = 0;
+    GetTempAccountBalance(block_tx.to(), acc_balance_map, &src_to_balance);
+    int64_t new_contract_balance = static_cast<int64_t>(src_to_balance);
     uint64_t test_from_balance = from_balance;
-    uint64_t to_balance = 0;
     bool check_valid = false;
     auto gas_used = kCallContractDefaultUseGas;
     int64_t contract_balance_add = 0;
@@ -50,11 +52,7 @@ int ContractCall::HandleTx(
             break;
         }
     
-        int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
-        if (balance_status != kConsensusSuccess) {
-            block_tx.set_status(balance_status);
-            break;
-        }
+        
 
         gas_limit -= kCallContractDefaultUseGas;
         check_valid = true;
@@ -67,7 +65,7 @@ int ContractCall::HandleTx(
             from_balance = 0;
         }
     } else {
-        to_balance += block_tx.amount();
+        new_contract_balance += block_tx.amount();
         block::protobuf::BlockTx contract_tx;
         zjcvm::Uint64ToEvmcBytes32(
             zjc_host.tx_context_.tx_gas_price,
@@ -82,11 +80,11 @@ int ContractCall::HandleTx(
             from_balance);
         zjc_host.AddTmpAccountBalance(
             block_tx.to(),
-            to_balance);
+            new_contract_balance);
         if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
             evmc_result evmc_res = {};
             evmc::Result res{ evmc_res };
-            int call_res = ContractExcute(address_info, to_balance, zjc_host, block_tx, gas_limit, &res);
+            int call_res = ContractExcute(address_info, new_contract_balance, zjc_host, block_tx, gas_limit, &res);
             if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
                 block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
                 ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, gas_limit: %lu, bytes: %s, input: %s!",
@@ -186,15 +184,15 @@ int ContractCall::HandleTx(
                 }
 
                 tmp_from_balance -= dec_amount;
-                if (to_balance < -contract_balance_add) {
+                if (new_contract_balance < -contract_balance_add) {
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
                     ZJC_ERROR("to balance error: %llu, %llu",
-                        to_balance, contract_balance_add);
+                        new_contract_balance, contract_balance_add);
                     break;
                 }
                 
                 // change contract 's amount, now is contract 's new balance
-                auto new_contract_balance = static_cast<int64_t>(to_balance) + contract_balance_add;
+                new_contract_balance += contract_balance_add;
                 if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
                     auto trans_item = block_tx.add_contract_txs();
                     std::string destruct_from = std::string(
@@ -232,7 +230,6 @@ int ContractCall::HandleTx(
                     // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
                 }
 
-                block_tx.set_amount(new_contract_balance);
             } while (0);
         }
 
@@ -254,6 +251,7 @@ int ContractCall::HandleTx(
         }
     }
 
+    block_tx.set_amount(new_contract_balance);
     acc_balance_map[preppayment_id] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
@@ -261,7 +259,8 @@ int ContractCall::HandleTx(
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
-        "amount: %ld, to_balance: %ld, contract_balance_add: %ld, use time: %lu",
+        "amount: %ld, to_balance: %ld, contract_balance_add: %ld, "
+        "contract new balance: %lu, use time: %lu",
         common::Encode::HexEncode(block_tx.gid()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
@@ -272,8 +271,9 @@ int ContractCall::HandleTx(
         block_tx.status(),
         block_tx.step(),
         block_tx.amount(),
-        to_balance,
+        src_to_balance,
         contract_balance_add,
+        new_contract_balance,
         (etime - btime));
     return kConsensusSuccess;
 }
