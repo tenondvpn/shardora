@@ -173,7 +173,9 @@ bool Execution::GetStorage(
         // }
     }
 
-    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
+    ZJC_DEBUG("get storage: %s, %s", 
+        common::Encode::HexEncode(str_key).c_str(), 
+        common::Encode::HexEncode(*val).c_str());
     return res;
 }
         
