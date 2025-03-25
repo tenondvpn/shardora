@@ -86,6 +86,9 @@ int ContractCall::HandleTx(
         if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
             evmc_result evmc_res = {};
             evmc::Result res{ evmc_res };
+            ZJC_DEBUG("now call contract address: %s, bytes: %s", 
+                common::Encode::HexEncode(address_info->addr()).c_str(), 
+                common::Encode::HexEncode(address_info->bytes_code()).c_str());
             int call_res = ContractExcute(address_info, new_contract_balance, zjc_host, block_tx, gas_limit, &res);
             if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
                 block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
