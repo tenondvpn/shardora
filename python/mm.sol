@@ -199,7 +199,7 @@ contract mm {
         }
 
         document.assetIds[assetIndex] = document.assetIds[document.assetIds.length - 1]; // 替换为最后一个元素
-        document.assetIds.length--; // 手动缩减数组长度
+        document.assetIds.pop(); // 手动缩减数组长度
         assetCounts[didHash] = document.assetIds.length; // 更新对应 DID 的资产数量
 
         // 更新更新时间
@@ -261,7 +261,7 @@ contract mm {
         for (uint j = 0; j < dids.length; j++) {
             if (keccak256(abi.encodePacked(dids[j])) == keccak256(abi.encodePacked(_did))) {
                 dids[j] = dids[dids.length - 1]; // 替换为最后一个元素
-                dids.length--; // 手动减少数组长度
+                dids.pop(); // 手动减少数组长度
                 break;
             }
         }
