@@ -108,7 +108,7 @@ if __name__ == "__main__":
             params_list=tmp_function_args,
             call_type=1)
         if res.status_code != 200:
-            print("query function failed!")
+            print(f"query function failed status: {res.status_code}, text: {res.text}")
             sys.exit(1)
 
         print(f"query function success: {len(res.text)} {res.text}")
