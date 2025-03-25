@@ -30,7 +30,7 @@ contract mm {
     event DIDRegistered(string did, string userType, string created);
     event DIDUpdated(string did, string updated);
     event DIDDeleted(string did);
-    event TestDIDDeleted(uint64 tm);
+    event TestDIDDeleted(uint256 tm);
     event AssetAssociated(string did, string assetId, uint8 rightType);
     event AssetDeleted(string did, string assetId);
     event BalanceUpdated(string did, uint256 newBalance);
