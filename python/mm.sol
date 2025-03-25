@@ -85,7 +85,15 @@ contract mm {
         return balances[didHash]; // 返回余额
     }
 
-
+    function getRecordsByTimeRange() public view returns (uint256[] memory) {
+        uint256[] memory indices = new uint256[](10);
+        uint256 currentIndex = 0;
+        for (uint256 i = 0; i < 10; i++) {
+            indices[currentIndex] = i;
+            currentIndex++;
+        }
+        return indices;
+    }
 
     // 关联资产到已注册的 DID
     function associateAsset(
