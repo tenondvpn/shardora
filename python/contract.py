@@ -41,9 +41,9 @@ if __name__ == "__main__":
     create_library = False
     query_func = None
     qyery_type = 0
-    with open("./init_accounts3", "r") as f:
-        private_key = f.readline().strip().split("\t")[0]
-        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
+    # with open("./init_accounts3", "r") as f:
+    #     private_key = f.readline().strip().split("\t")[0]
+    #     from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
         
     if args.private_key:
         private_key = args.private_key
