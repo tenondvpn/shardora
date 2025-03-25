@@ -349,10 +349,6 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
         protos::AddressInfoPtr acc_info = acc_mgr_->GetAccountInfo(id);
         if (acc_info != nullptr) {
             if (!acc_info->bytes_code().empty()) {
-                if (acc_info->pool_index() != view_block_chain_->pool_index()) {
-                    return evmc_res;
-                }
-                
                 ZJC_DEBUG("get call bytes code success: %s, field: %s",
                     common::Encode::HexEncode(id).c_str(),
                     protos::kFieldBytesCode.c_str());
