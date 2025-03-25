@@ -225,14 +225,14 @@ def deploy_contract(
     contract_line = None
     with open(sol_file_path, 'r') as f:
         for line in f.readlines():
-            if line.find('contract'):
+            if line.find('contract') >= 0:
                 contract_line = line
                 break
         
     file_list = file_cmd.list_files(f'./{file_name}/')
     for file in file_list:
         file_name = file.split('/')[-1].split('.')[0]
-        if contract_line.find(file_name):
+        if contract_line.find(file_name) >= 0:
             print(f"read contract file: {file} contract_line: {contract_line}")
             with open(file, "r") as f:
                 bytes_codes = f.read()
