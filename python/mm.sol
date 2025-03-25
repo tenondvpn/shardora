@@ -52,7 +52,7 @@ contract mm {
         emit DIDDeleted("1111");
         emit TestDIDDeleted(block.timestamp);
         emit DIDDeleted("111100001111");
-        string memory currentTime = uint2str(block.timestamp);
+        string memory currentTime = string(u256ToBytes(block.timestamp));
         emit DIDDeleted("2222");
         DIDDocument storage newDocument = didDocuments[didHash];
         emit DIDDeleted("3333");
@@ -313,28 +313,28 @@ contract mm {
         return dids;
     }
 
+    function u256ToBytes(uint256 x) public pure returns (bytes memory b) {
+        b = new bytes(32);
+        assembly { mstore(add(b, 32), x) }
+    }
+
     // 辅助函数：将 uint 转换为 string
     function uint2str(uint _i) internal pure returns (string memory) {
-        emit TestDIDDeleted(9);
         if (_i == 0) {
             return "0";
         }
-        emit TestDIDDeleted(10);
         uint j = _i;
         uint len;
         while (j != 0) {
             len++;
             j /= 10;
         }
-        emit TestDIDDeleted(11);
         bytes memory bstr = new bytes(len);
         uint k = len - 1;
-        emit TestDIDDeleted(12);
         while (_i != 0) {
             bstr[k--] = bytes1(uint8(48 + _i % 10));
             _i /= 10;
         }
-        emit TestDIDDeleted(13);
         return string(bstr);
     }
 }
