@@ -218,6 +218,18 @@ def deploy_contract(
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
         func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
+    file_name = sol_file_path.split('/')[-1]
+    line_split = ret.split("\n")
+    bytes_codes = None
+    for i in range(0, len(line_split)):
+        if line_split[i].find(file_name):
+            bytes_codes = line_split[i + 2].strip()
+            break
+
+    if bytes_codes is None:
+        print("get sol bytes code failed!")
+        return None
+
     ret_split = (ret.decode('utf-8')).split("Binary:")
     if len(ret_split) < 2:
         print(f"run cmd: {cmd} failed {ret}")
