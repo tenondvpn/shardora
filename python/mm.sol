@@ -315,21 +315,26 @@ contract mm {
 
     // 辅助函数：将 uint 转换为 string
     function uint2str(uint _i) internal pure returns (string memory) {
+        emit TestDIDDeleted(9);
         if (_i == 0) {
             return "0";
         }
+        emit TestDIDDeleted(10);
         uint j = _i;
         uint len;
         while (j != 0) {
             len++;
             j /= 10;
         }
+        emit TestDIDDeleted(11);
         bytes memory bstr = new bytes(len);
         uint k = len - 1;
+        emit TestDIDDeleted(12);
         while (_i != 0) {
             bstr[k--] = bytes1(uint8(48 + _i % 10));
             _i /= 10;
         }
+        emit TestDIDDeleted(13);
         return string(bstr);
     }
 }
