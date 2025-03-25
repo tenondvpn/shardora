@@ -210,7 +210,7 @@ def deploy_contract(
     if in_libraries != "":
         libraries = f"--libraries '{in_libraries}'"
 
-    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path}"
+    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path} -o temp"
     ret, stdout, stderr = _run_once(cmd)
     print(cmd)
     # print(f"solc --bin {sol_file_path}")
@@ -218,24 +218,15 @@ def deploy_contract(
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
         func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
-    file_name = sol_file_path.split('/')[-1]
-    line_split = (ret.decode('utf-8')).split("\n")
     bytes_codes = None
-    for i in range(0, len(line_split)):
-        if line_split[i].find(file_name) and line_split[i].find('======='):
-            bytes_codes = line_split[i + 2].strip()
-            break
+    file_name = sol_file_path.split('/')[-1].split('.')[0]
+    with open(f"./temp/{file_name}", "r") as f:
+        bytes_codes = f.read()
 
     if bytes_codes is None:
         print("get sol bytes code failed!")
         return None
 
-    # ret_split = (ret.decode('utf-8')).split("Binary:")
-    # if len(ret_split) < 2:
-    #     print(f"run cmd: {cmd} failed {ret}")
-    #     return None
-    
-    # bytes_codes = ret_split[len(ret_split) - 1].strip()
     print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}", flush=True)
     call_str = bytes_codes + func_param
     gid = gen_gid()
