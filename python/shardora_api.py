@@ -219,7 +219,7 @@ def deploy_contract(
         func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
     file_name = sol_file_path.split('/')[-1]
-    line_split = ret.split("\n")
+    line_split = (ret.decode('utf-8')).split("\n")
     bytes_codes = None
     for i in range(0, len(line_split)):
         if line_split[i].find(file_name):
@@ -230,12 +230,12 @@ def deploy_contract(
         print("get sol bytes code failed!")
         return None
 
-    ret_split = (ret.decode('utf-8')).split("Binary:")
-    if len(ret_split) < 2:
-        print(f"run cmd: {cmd} failed {ret}")
-        return None
+    # ret_split = (ret.decode('utf-8')).split("Binary:")
+    # if len(ret_split) < 2:
+    #     print(f"run cmd: {cmd} failed {ret}")
+    #     return None
     
-    bytes_codes = ret_split[len(ret_split) - 1].strip()
+    # bytes_codes = ret_split[len(ret_split) - 1].strip()
     # print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}")
     call_str = bytes_codes + func_param
     gid = gen_gid()
