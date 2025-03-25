@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parser.add_argument('--function_args', '-d', type=str, help='调用合约的函数参数值列表，如果function为空，则为构造函数列表')
     parser.add_argument('--library', '-l', type=bool, help='创建library则为true')
     parser.add_argument('--libraries', '-m', type=str, help='合约依赖的library库地址')
+    parser.add_argument('--qyery_type', '-i', type=int, help='合约查询函数type')
 
     args = parser.parse_args()
     private_key = None
@@ -39,6 +40,7 @@ if __name__ == "__main__":
     sol_file = None
     create_library = False
     query_func = None
+    qyery_type = 0
     with open("./init_accounts3", "r") as f:
         private_key = f.readline().strip().split("\t")[0]
         from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
@@ -70,6 +72,9 @@ if __name__ == "__main__":
 
     if args.query:
         query_func = args.query
+
+    if args.qyery_type:
+        qyery_type = args.qyery_type
 
     libraries = ""
     if args.libraries:
@@ -106,7 +111,7 @@ if __name__ == "__main__":
             function=query_func,
             types_list=function_types,
             params_list=tmp_function_args,
-            call_type=1)
+            call_type=qyery_type)
         if res.status_code != 200:
             print(f"query function failed status: {res.status_code}, text: {res.text}")
             sys.exit(1)
