@@ -354,22 +354,13 @@ contract assethashtree {
     }
 
     // 辅助函数：将 uint 转换为 string
+    function u256ToBytes(uint256 x) public pure returns (bytes memory b) {
+        b = new bytes(32);
+        assembly { mstore(add(b, 32), x) }
+    }
+
+    // 辅助函数：将 uint 转换为 string
     function uint2str(uint _i) internal pure returns (string memory) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint j = _i;
-        uint len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint k = len - 1;
-        while (_i != 0) {
-            bstr[k--] = byte(uint8(48 + _i % 10));
-            _i /= 10;
-        }
-        return string(bstr);
+        return string(u256ToBytes(_i));
     }
 }

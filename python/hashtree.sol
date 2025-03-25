@@ -39,7 +39,7 @@ contract hashtree {
         ownerAssets[_ownerDID].push(_assetId);
     }
 
-
+    // ========== 查询接口 ==========
     function getAssetIdsByOwner(string memory _ownerDID)
     public
     view
