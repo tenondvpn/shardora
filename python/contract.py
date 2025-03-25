@@ -104,17 +104,17 @@ if __name__ == "__main__":
                 tmp_function_args.append(int(function_args[i]))
         else:
             if arg_type.startswith('bytes') or arg_type.startswith('address'):
-                items = function_args[i].split(';')
+                items = function_args[i].split('`')
                 tmp_arr = []
                 for item in items:
                     tmp_arr.append(decode_hex(item))
 
                 tmp_function_args.append(tmp_arr)
             elif arg_type.startswith('string'):
-                items = function_args[i].split(';')
+                items = function_args[i].split('`')
                 tmp_function_args.append(items)
             elif arg_type.startswith('bool'):
-                items = function_args[i].split(';')
+                items = function_args[i].split('`')
                 tmp_arr = []
                 for item in items:
                     if item.lower() == 'false' or item == "0":
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
                 tmp_function_args.append(tmp_arr)
             else:
-                items = function_args[i].split(';')
+                items = function_args[i].split('`')
                 tmp_arr = []
                 for item in items:
                     tmp_arr.append(int(item))
