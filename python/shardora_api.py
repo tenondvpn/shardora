@@ -222,13 +222,21 @@ def deploy_contract(
 
     bytes_codes = None
     file_cmd = linux_file_cmd.LinuxFileCommand()
-    file_list = file_cmd.list_files(f'./{file_name}/')
-    if len(file_list) != 1:
-        print(f"invalid files: {file_list}")
-        return None
+    contract_line = None
+    with open(sol_file_path, 'r') as f:
+        for line in f.readlines():
+            if line.find('contract'):
+                contract_line = line
+                break
+
         
-    with open(file_list[0], "r") as f:
-        bytes_codes = f.read()
+    file_list = file_cmd.list_files(f'./{file_name}/')
+    for file in file_list:
+        file_name = file.split('/')[-1].split('.')[0]
+        if contract_line.find(file_name):
+            with open(file, "r") as f:
+                bytes_codes = f.read()
+            break
 
     if bytes_codes is None:
         print("get sol bytes code failed!")
