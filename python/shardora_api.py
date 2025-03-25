@@ -210,7 +210,7 @@ def deploy_contract(
     if in_libraries != "":
         libraries = f"--libraries '{in_libraries}'"
 
-    cmd = f"chmod 755 ./solc && ./solc {libraries} --bin {sol_file_path}"
+    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path}"
     ret, stdout, stderr = _run_once(cmd)
     print(cmd)
     # print(f"solc --bin {sol_file_path}")
