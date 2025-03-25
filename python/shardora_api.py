@@ -222,7 +222,7 @@ def deploy_contract(
     line_split = (ret.decode('utf-8')).split("\n")
     bytes_codes = None
     for i in range(0, len(line_split)):
-        if line_split[i].find(file_name):
+        if line_split[i].find(file_name) and line_split[i].find('======='):
             bytes_codes = line_split[i + 2].strip()
             break
 
