@@ -320,6 +320,6 @@ contract mm {
 
     // 辅助函数：将 uint 转换为 string
     function uint2str(uint _i) internal pure returns (string memory) {
-        return string(u256ToBytes(block.timestamp));
+        return string(u256ToBytes(_i));
     }
 }
