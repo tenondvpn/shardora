@@ -213,7 +213,7 @@ contract assethashtree {
         for (uint j = 0; j < assetIds.length; j++) {
             if (keccak256(abi.encodePacked(assetIds[j])) == keccak256(abi.encodePacked(_assetId))) {
                 assetIds[j] = assetIds[assetIds.length - 1]; // 替换为最后一个元素
-                assetIds.length--; // 移除最后一个元素
+                assetIds.pop(); // 移除最后一个元素
                 break;
             }
         }
@@ -265,7 +265,7 @@ contract assethashtree {
 
         // 替换要删除的用户 ID 为最后一个元素并缩减数组
         asset.userIds[indexToRemove] = asset.userIds[asset.userIds.length - 1];
-        asset.userIds.length--;
+        asset.userIds.pop();
 
         emit UserDisassociated(_assetId, _userId);
     }
