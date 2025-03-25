@@ -74,6 +74,8 @@ int ContractCall::HandleTx(
         zjc_host.acc_mgr_ = account_mgr_;
         zjc_host.my_address_ = block_tx.to();
         zjc_host.tx_context_.block_gas_limit = gas_limit;
+        zjc_host.tx_context_.block_number = view_block.block_info().height();
+        zjc_host.tx_context_.block_timestamp= view_block.block_info().timestamp();
         // user caller prepayment 's gas
         zjc_host.AddTmpAccountBalance(
             block_tx.from(),
