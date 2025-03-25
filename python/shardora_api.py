@@ -236,7 +236,7 @@ def deploy_contract(
     #     return None
     
     # bytes_codes = ret_split[len(ret_split) - 1].strip()
-    print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}")
+    print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}", flush=True)
     call_str = bytes_codes + func_param
     gid = gen_gid()
     if contract_address is None:
