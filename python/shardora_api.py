@@ -7,6 +7,7 @@ import os
 import time
 import json
 
+import linux_file_cmd
 from eth_keys import keys, datatypes
 from secp256k1 import PrivateKey, PublicKey
 from eth_utils import decode_hex, encode_hex
@@ -211,7 +212,7 @@ def deploy_contract(
         libraries = f"--libraries '{in_libraries}'"
 
     file_name = sol_file_path.split('/')[-1].split('.')[0]
-    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path} -o ./temp/{file_name}.bin"
+    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path} -o {file_name}"
     ret, stdout, stderr = _run_once(cmd)
     print(cmd)
     # print(f"solc --bin {sol_file_path}")
@@ -220,7 +221,13 @@ def deploy_contract(
         func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
     bytes_codes = None
-    with open(f"./temp/{file_name}.bin", "r") as f:
+    file_cmd = linux_file_cmd.LinuxFileCommand()
+    file_list = file_cmd.list_files('./{file_name}')
+    if len(file_list) != 1:
+        print(f"invalid files: {file_list}")
+        return None
+        
+    with open(file_list[0], "r") as f:
         bytes_codes = f.read()
 
     if bytes_codes is None:
