@@ -220,7 +220,7 @@ def deploy_contract(
 
     bytes_codes = None
     file_name = sol_file_path.split('/')[-1].split('.')[0]
-    with open(f"./temp/{file_name}", "r") as f:
+    with open(f"./temp/{file_name}.bin", "r") as f:
         bytes_codes = f.read()
 
     if bytes_codes is None:
