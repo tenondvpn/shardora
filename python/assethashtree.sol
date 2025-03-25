@@ -60,6 +60,7 @@ contract assethashtree {
         didContract = mm(_didContractAddress);
     }
 
+    // cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580000,00000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580000,title0,type0,content0,sign0
     // 注册数据资产
     function registerAsset(
         string memory _assetId,

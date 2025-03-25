@@ -200,6 +200,7 @@ int Execution::execute(
         ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
             "to size: %u, depth: %u, gas_limit: %lu",
             code_size, from_address.size(), to_address.size(), depth, gas_limit);
+        assert(false);
         return kZjcvmError;
     }
 
