@@ -222,7 +222,7 @@ def deploy_contract(
 
     bytes_codes = None
     file_cmd = linux_file_cmd.LinuxFileCommand()
-    file_list = file_cmd.list_files('./{file_name}')
+    file_list = file_cmd.list_files(f'./{file_name}/')
     if len(file_list) != 1:
         print(f"invalid files: {file_list}")
         return None
