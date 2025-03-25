@@ -189,6 +189,10 @@ public:
     bool IsViewCommited(View view) {
     }
 
+    uint32_t pool_index() const {
+        return pool_index_;
+    }
+
 private:
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
