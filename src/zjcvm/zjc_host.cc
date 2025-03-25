@@ -409,7 +409,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
 
 evmc_tx_context ZjchainHost::get_tx_context() const noexcept {
     // assert(false);
-    ZJC_DEBUG("called 9");
+    ZJC_DEBUG("emit called block number: %lu, block timestamp: %lu", tx_context_.block_number, tx_context_.block_timestamp);
     return tx_context_;
 }
 
