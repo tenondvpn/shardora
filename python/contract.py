@@ -90,17 +90,47 @@ if __name__ == "__main__":
     tmp_function_args = []
     for i in range(len(function_types)):
         arg_type = function_types[i]
-        if arg_type == 'bytes' or arg_type == 'bytes32' or arg_type == 'address':
-            tmp_function_args.append(decode_hex(function_args[i]))
-        elif arg_type == 'string':
-            tmp_function_args.append(function_args[i])
-        elif arg_type == 'bool':
-            if function_args[i].lower() == 'false' or function_args[i] == "0":
-                tmp_function_args.append(False)
+        if not arg_type.endswith('[]'):
+            if arg_type.startswith('bytes') or arg_type == 'address':
+                tmp_function_args.append(decode_hex(function_args[i]))
+            elif arg_type == 'string':
+                tmp_function_args.append(function_args[i])
+            elif arg_type == 'bool':
+                if function_args[i].lower() == 'false' or function_args[i] == "0":
+                    tmp_function_args.append(False)
+                else:
+                    tmp_function_args.append(True)
             else:
-                tmp_function_args.append(True)
+                tmp_function_args.append(int(function_args[i]))
         else:
-            tmp_function_args.append(int(function_args[i]))
+            if arg_type.startswith('bytes') or arg_type.startswith('address'):
+                items = function_args[i].split(';')
+                tmp_arr = []
+                for item in items:
+                    tmp_arr.append(decode_hex(item))
+
+                tmp_function_args.append(tmp_arr)
+            elif arg_type.startswith('string'):
+                items = function_args[i].split(';')
+                tmp_function_args.append(items)
+            elif arg_type.startswith('bool'):
+                items = function_args[i].split(';')
+                tmp_arr = []
+                for item in items:
+                    if item.lower() == 'false' or item == "0":
+                        tmp_arr.append(False)
+                    else:
+                        tmp_arr.append(True)
+
+                tmp_function_args.append(tmp_arr)
+            else:
+                items = function_args[i].split(';')
+                tmp_arr = []
+                for item in items:
+                    tmp_arr.append(int(item))
+                        
+                tmp_function_args.append(tmp_arr)
+
 
     print(f"tmp_function_args: {tmp_function_args}, function_types: {function_types}")
 
