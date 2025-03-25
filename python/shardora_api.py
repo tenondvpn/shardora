@@ -210,7 +210,8 @@ def deploy_contract(
     if in_libraries != "":
         libraries = f"--libraries '{in_libraries}'"
 
-    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path} -o temp"
+    file_name = sol_file_path.split('/')[-1].split('.')[0]
+    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path} -o ./temp/{file_name}.bin"
     ret, stdout, stderr = _run_once(cmd)
     print(cmd)
     # print(f"solc --bin {sol_file_path}")
@@ -219,7 +220,6 @@ def deploy_contract(
         func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
     bytes_codes = None
-    file_name = sol_file_path.split('/')[-1].split('.')[0]
     with open(f"./temp/{file_name}.bin", "r") as f:
         bytes_codes = f.read()
 

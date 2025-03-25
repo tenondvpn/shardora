@@ -90,6 +90,8 @@ contract assethashtree {
         assetIds.push(_assetId); // 将资产ID存入列表中
         emit AssetRegistered(_assetId, _owner, currentTime);
     }
+
+    //--function_args cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580000,cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580001,0,_assetType,100
     function publishTransaction(
         string memory _userId,
         string memory _assetId,
@@ -219,6 +221,8 @@ contract assethashtree {
             }
         }
     }
+
+    // --function_args cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580001,cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580000,0,20000000064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580000,contractaddress
     // 关联用户与资产
     function associateUser(
         string memory _assetId,
@@ -270,6 +274,7 @@ contract assethashtree {
 
         emit UserDisassociated(_assetId, _userId);
     }
+    // --function_args cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580001,cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580000,1
     // 更新用户在资产上的权利类型
     function updateUserRights(
         string memory _assetId,
@@ -323,6 +328,7 @@ contract assethashtree {
         );
     }
 
+    // --function_args cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789580001,title,new_title
     function updateAssetField(
         string memory _assetId,
         string memory fieldName,  // Specify which field to update
