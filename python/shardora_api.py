@@ -233,7 +233,7 @@ def deploy_contract(
     for file in file_list:
         file_name = file.split('/')[-1].split('.')[0]
         if contract_line.find(file_name):
-            print(f"read contract file: {file}")
+            print(f"read contract file: {file} contract_line: {contract_line}")
             with open(file, "r") as f:
                 bytes_codes = f.read()
             break
