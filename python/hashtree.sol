@@ -2,7 +2,7 @@ pragma solidity >=0.8.17 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 interface DIDRegistry {
-    function existsDID(string _did) external view returns (bool);
+    function existsDID(string memory _did) external view returns (bool);
 }
 
 contract hashtree {
