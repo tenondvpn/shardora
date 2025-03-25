@@ -198,8 +198,11 @@ int Execution::execute(
             to_address.size() != security::kUnicastAddressLength ||
             depth >= kContractCallMaxDepth) {
         ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
-            "to size: %u, depth: %u, gas_limit: %lu",
-            code_size, from_address.size(), to_address.size(), depth, gas_limit);
+            "to size: %u, depth: %u, gas_limit: %lu, from_address: %s, to_address: %s, origin_address: %s",
+            code_size, from_address.size(), to_address.size(), depth, gas_limit,
+            common::Encode::HexEncode(from_address).c_str(),
+            common::Encode::HexEncode(to_address).c_str(),
+            common::Encode::HexEncode(origin_address).c_str());
         assert(false);
         return kZjcvmError;
     }
