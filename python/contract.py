@@ -56,11 +56,7 @@ if __name__ == "__main__":
 
     if args.ripemd_val:
         ripemd_val = args.ripemd_val
-        
-    # with open("./init_accounts3", "r") as f:
-    #     private_key = f.readline().strip().split("\t")[0]
-    #     from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
-        
+
     if args.private_key:
         private_key = args.private_key
         from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
@@ -122,7 +118,7 @@ if __name__ == "__main__":
                 if len(ripemd_key) < 10:
                     str_len = '0' + str_len
                 bytes_param = ripemd_act + str_len + ripemd_key + ripemd_val
-                tmp_function_args.append(bytes_param)
+                tmp_function_args.append(bytes.fromhex(encode_hex(bytes_param)))
             else:
                 tmp_function_args.append(int(function_args[i]))
         else:
