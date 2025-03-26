@@ -27,6 +27,9 @@ if __name__ == "__main__":
     parser.add_argument('--library', '-l', type=bool, help='创建library则为true')
     parser.add_argument('--libraries', '-m', type=str, help='合约依赖的library库地址')
     parser.add_argument('--qyery_type', '-i', type=int, help='合约查询函数type')
+    parser.add_argument('--ripemd_act', '-x', type=str, help='ripemd自定函数操作命令')
+    parser.add_argument('--ripemd_key', '-y', type=str, help='ripemd自定函数操作key')
+    parser.add_argument('--ripemd_val', '-z', type=str, help='ripemd自定函数操作value')
 
     args = parser.parse_args()
     private_key = None
@@ -41,6 +44,19 @@ if __name__ == "__main__":
     create_library = False
     query_func = None
     qyery_type = 0
+    ripemd_act = ""
+    ripemd_key = ""
+    ripemd_val = ""
+
+    if args.ripemd_act:
+        ripemd_act = args.ripemd_act
+
+    if args.ripemd_key:
+        ripemd_key = args.ripemd_key
+
+    if args.ripemd_val:
+        ripemd_val = args.ripemd_val
+        
     # with open("./init_accounts3", "r") as f:
     #     private_key = f.readline().strip().split("\t")[0]
     #     from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
@@ -100,6 +116,13 @@ if __name__ == "__main__":
                     tmp_function_args.append(False)
                 else:
                     tmp_function_args.append(True)
+            elif arg_type == 'ripemd':
+                function_types[i] = 'bytes'
+                str_len = str(len(ripemd_key))
+                if len(ripemd_key) < 10:
+                    str_len = '0' + str_len
+                bytes_param = ripemd_act + str_len + ripemd_key + ripemd_val
+                tmp_function_args.append(bytes_param)
             else:
                 tmp_function_args.append(int(function_args[i]))
         else:
