@@ -118,7 +118,7 @@ if __name__ == "__main__":
                 if len(ripemd_key) < 10:
                     str_len = '0' + str_len
                 bytes_param = ripemd_act + str_len + ripemd_key + ripemd_val
-                tmp_function_args.append(bytes.fromhex(encode_hex(bytes_param)))
+                tmp_function_args.append(bytes(bytes_param, encoding='utf-8'))
             else:
                 tmp_function_args.append(int(function_args[i]))
         else:
