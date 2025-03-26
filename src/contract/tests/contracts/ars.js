@@ -374,6 +374,7 @@ function InitC2cEnv(key, value) {
     
                 var param = "readd" + key_len + key + value;
                 var hexparam = web3.utils.toHex(param);
+                console.log("constructer param: " + hexparam);
                 // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
                 cons_codes = web3.eth.abi.encodeParameters(
                     ['bytes'], 
