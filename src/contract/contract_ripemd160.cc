@@ -316,9 +316,10 @@ int Ripemd160::CreateArsKeys(
     auto tmp_key = std::string("ars_create_") + id;
     auto val = common::StringUtil::Format("%u,%u", ars.ring_size(), ars.signer_count());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("init sign success: %s, from: %s, ring size: %d, signer_count: %d",
+    ZJC_DEBUG("init sign success: %s, from: %s, key: %s, ring size: %d, signer_count: %d",
         ex_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), 
+        tmp_key.c_str(),
         ars.ring_size(), 
         ars.signer_count());
     return kContractSuccess;
@@ -365,7 +366,7 @@ int Ripemd160::SingleSign(
     auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
     int32_t ring_size = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
-        ZJC_WARN("ring_size failed: %s", val.c_str());
+        ZJC_WARN("ring_size failed key: %s, val: %s", tmp_key.c_str(), val.c_str());
         return kContractError;
     }
 
