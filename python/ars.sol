@@ -60,7 +60,7 @@ contract Ars {
         emit DebugEvent(3);
         require(ars_map[id].exists);
         emit DebugEvent(4);
-        _ = ripemd160(params);
+        ripemd160(params);
         emit DebugEvent(5);
     }
 
@@ -68,7 +68,7 @@ contract Ars {
         emit DebugEvent(6);
         require(ars_map[id].exists);
         emit DebugEvent(7);
-        _ = ripemd160(params);
+        ripemd160(params);
         emit DebugEvent(8);
     }
 
