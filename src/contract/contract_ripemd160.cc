@@ -392,7 +392,7 @@ int Ripemd160::SingleSign(
         return kContractError;
     }
 
-    if (signer_idx < 0 || signer_idx >= ars.signer_count()) {
+    if (signer_idx < 0 || signer_idx >= ars.ring_size()) {
         ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
