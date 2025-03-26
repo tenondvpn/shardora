@@ -477,13 +477,12 @@ int Ripemd160::AggSignAndVerify(
     std::vector<std::vector<element_t>*> pi_proofs;
     int ret = kContractSuccess;
     int32_t valid_idx = 0;
-    for (auto i = 0; i < ars.signer_count(); ++i, ++valid_idx) {
+    for (auto i = 0; i < ars.ring_size(); ++i) {
         auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
-            ret = kContractError;
-            break;
+            continue;
         }
 
         ZJC_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
@@ -491,8 +490,7 @@ int Ripemd160::AggSignAndVerify(
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
             ZJC_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
-            ret = kContractError;
-            break;
+            continue;
         }
 
         messages.push_back(items[0]);
@@ -519,9 +517,14 @@ int Ripemd160::AggSignAndVerify(
         }
 
         pi_proofs.push_back(tmp_pi_proof);
+        if (pi_proofs.size() == ars.signer_count()) {
+            break;
+        }
+
+        ++valid_idx;
     }
 
-    if (ret == kContractSuccess) {
+    if (pi_proofs.size() == ars.signer_count()) {
         ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
         auto tmp_key = std::string("ars_create_agg_sign");
         unsigned char data[20480] = {0};
