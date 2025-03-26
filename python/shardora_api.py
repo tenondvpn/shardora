@@ -212,7 +212,7 @@ def deploy_contract(
         libraries = f"--libraries '{in_libraries}'"
 
     file_name = sol_file_path.split('/')[-1].split('.')[0]
-    cmd = f"/usr/bin/solc {libraries} --bin {sol_file_path} -o {file_name}"
+    cmd = f"/usr/bin/solc {libraries} --overwrite --bin {sol_file_path} -o {file_name}"
     ret, stdout, stderr = _run_once(cmd)
     print(cmd)
     # print(f"solc --bin {sol_file_path}")
