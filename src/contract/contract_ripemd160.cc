@@ -494,26 +494,26 @@ int Ripemd160::AggSignAndVerify(
         }
 
         messages.push_back(items[0]);
-        element_t& delta_prime = delta_primes[i];
-        element_t& y_prime = y_primes[i];
+        element_t& delta_prime = delta_primes[valid_idx];
+        element_t& y_prime = y_primes[valid_idx];
         element_init_G1(delta_prime, ars.get_pairing());
         element_init_G2(y_prime, ars.get_pairing());
         element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
         element_from_bytes_compressed(y_prime, (unsigned char*)common::Encode::HexDecode(items[2]).c_str());
         std::vector<element_t>* tmp_pi_proof = new std::vector<element_t>(4);
-        for (uint32_t i = 3; i < items.Count(); ++i) {
-            if (items.SubLen(i) <= 0) {
+        for (uint32_t j = 3; j < items.Count(); ++j) {
+            if (items.SubLen(j) <= 0) {
                 break;
             }
 
-            element_t& proof = (*tmp_pi_proof)[i - 3];
-            if (i < 5) {
+            element_t& proof = (*tmp_pi_proof)[j - 3];
+            if (j < 5) {
                 element_init_G1(proof, ars.get_pairing());
             } else {
                 element_init_Zr(proof, ars.get_pairing());
             }
 
-            element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
+            element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[j]).c_str());
         }
 
         pi_proofs.push_back(tmp_pi_proof);
