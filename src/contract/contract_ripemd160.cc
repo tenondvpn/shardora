@@ -443,6 +443,7 @@ int Ripemd160::AggSignAndVerify(
         // 聚合签名生成
     auto id = common::Encode::HexDecode(value);
     auto tmp_key = std::string("ars_create_") + id;
+    ZJC_DEBUG("get create ars key: %s", common::Encode::HexEncode(tmp_key).c_str());
     std::string val;
     if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
@@ -481,15 +482,16 @@ int Ripemd160::AggSignAndVerify(
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
-            return kContractError;
+            ret = kContractError;
+            break;
         }
 
         ZJC_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
             tmp_key.c_str(), common::Encode::HexEncode(val).c_str(), val.c_str());
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
+            ZJC_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
             ret = kContractError;
-            ZJC_WARN("items.Count() < 4: %s", val.c_str());
             break;
         }
 
