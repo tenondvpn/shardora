@@ -464,6 +464,7 @@ int Ripemd160::AggSignAndVerify(
     ContractArs ars;
     ars.set_ring_size(ring_size);
     ars.set_signer_count(signer_count);
+    ZJC_DEBUG("success get signer_count: %d, ring_size: %d", signer_count, ring_size);
     element_t agg_signature;
     element_init_G1(agg_signature, ars.get_pairing());
     std::vector<std::string> messages;
