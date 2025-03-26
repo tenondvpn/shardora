@@ -270,23 +270,27 @@ int Ripemd160::CreateArsKeys(
     // 初始化公私钥对
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
+        ZJC_DEBUG("line_splits.Count() < 2");
         return kContractError;
     }
 
-    auto keys_splits = common::Split<>(line_splits[0], ',');
+    auto keys_splits = common::Split<10240>(line_splits[0], ',');
     ars.set_ring_size(keys_splits.Count());
     auto ex_splits = common::Split<>(line_splits[1], ',');
     if (ex_splits.Count() < 2) {
+        ZJC_DEBUG("ex_splits.Count() < 2");
         return kContractError;
     }
 
     auto signer_count = 0;
     if (!common::StringUtil::ToInt32(ex_splits[0], &signer_count)) {
+        ZJC_DEBUG("common::StringUtil::ToInt32(ex_splits[0], &signer_count) failed");
         return kContractError;
     }
 
     ars.set_signer_count(signer_count);
     if (signer_count <= 0 || signer_count >= ars.ring_size()) {
+        ZJC_DEBUG("signer_count <= 0 || signer_count >= ars.ring_size(): %u, %u", signer_count, ars.ring_size());
         return kContractError;
     }
 
