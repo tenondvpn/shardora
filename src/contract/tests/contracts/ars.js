@@ -530,6 +530,7 @@ if (args[0] == 2) {
     SingleSign("tarsps", "tarsps", args[2] + "-" + id, id);
 }
 
+//--ripemd_val "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789000000-cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789000000"
 if (args[0] == 3) {
     AggSign("tarsas", "tarsas", id, id);
 }
