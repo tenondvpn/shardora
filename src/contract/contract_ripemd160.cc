@@ -285,6 +285,7 @@ int Ripemd160::CreateArsKeys(
         return kContractError;
     }
 
+    ars.set_signer_count(signer_count);
     if (signer_count <= 0 || signer_count >= ars.ring_size()) {
         return kContractError;
     }
