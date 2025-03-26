@@ -365,13 +365,13 @@ int Ripemd160::SingleSign(
     auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
     int32_t ring_size = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
-        ZJC_WARN("ring_size failed");
+        ZJC_WARN("ring_size failed: %s", val.c_str());
         return kContractError;
     }
 
     int32_t signer_count = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
-        ZJC_WARN("signer_count failed");
+        ZJC_WARN("signer_count failed: %s", val.c_str());
         return kContractError;
     }
 
