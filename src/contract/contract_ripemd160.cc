@@ -484,6 +484,8 @@ int Ripemd160::AggSignAndVerify(
             return kContractError;
         }
 
+        ZJC_DEBUG("success get single sign key: %s, val: %s", 
+            tmp_key.c_str(), common::Encode::HexEncode(val).c_str());
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
             ret = kContractError;
