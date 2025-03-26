@@ -38,7 +38,6 @@ contract Ars {
         test_ripdmd_ = ripemd160(params);
     }
 
-    // 3,2,cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789000000,ripemd
     function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
         emit DebugEvent(0);
 
@@ -61,7 +60,7 @@ contract Ars {
         emit DebugEvent(3);
         require(ars_map[id].exists);
         emit DebugEvent(4);
-        bytes32 res = ripemd160(params);
+        _ = ripemd160(params);
         emit DebugEvent(5);
     }
 
@@ -69,7 +68,7 @@ contract Ars {
         emit DebugEvent(6);
         require(ars_map[id].exists);
         emit DebugEvent(7);
-        bytes32 res = ripemd160(params);
+        _ = ripemd160(params);
         emit DebugEvent(8);
     }
 
