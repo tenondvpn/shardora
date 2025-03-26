@@ -38,6 +38,7 @@ contract Ars {
         test_ripdmd_ = ripemd160(params);
     }
 
+    // 3,2,cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789000000,ripemd
     function CreateNewArs(uint ring_size, uint signer_count, bytes32 id, bytes memory params) public {
         emit DebugEvent(0);
 

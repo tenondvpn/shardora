@@ -192,8 +192,9 @@ if __name__ == "__main__":
         print(f"invalid params sol_file is None and function is None")
         sys.exit(1)
 
+    function_types_str = ','.join(function_types)
     func_param = shardora_api.keccak256_str(
-        f"{function}({args.function_types})")[:8] + encode_hex(encode(function_types, tmp_function_args))[2:]
+        f"{function}({function_types_str})")[:8] + encode_hex(encode(function_types, tmp_function_args))[2:]
     if function == "":
         contract_address = shardora_api.deploy_contract(
             private_key,
