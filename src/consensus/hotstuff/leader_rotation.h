@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/node_members.h>
+#include "common/time_utils.h"
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
@@ -30,7 +31,8 @@ public:
             return nullptr;
         }
 
-        auto index = pool_idx_ % members->size();
+        auto now_tm_skip = common::TimeUtils::TimestampSeconds() / 30lu;
+        auto index = (now_tm_skip + pool_idx_) % members->size();
         return (*members)[index];
     }
 

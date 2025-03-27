@@ -317,6 +317,7 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
     volatile View db_stored_view_ = 0llu;
+    uint64_t prev_sync_latest_view_tm_ms_ = 0;
     
 };
 
