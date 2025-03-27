@@ -2199,6 +2199,11 @@ void Hotstuff::TryRecoverFromStuck(
         return;
     }
 
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    // if (now_tm_ms >= prev_sync_latest_view_tm_ms_ + 3000lu) {
+    //     kv_sync_->AddSyncHeight();
+    //     prev_sync_latest_view_tm_ms_ = now_tm_ms;
+    // }
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
         // ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
         //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
