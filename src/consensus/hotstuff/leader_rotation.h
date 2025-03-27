@@ -16,10 +16,11 @@ static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 30; // 单位 s, 时间边
 class LeaderRotation {
 public:
     LeaderRotation(
-            const uint32_t& pool_idx,
-            const std::shared_ptr<ViewBlockChain>&,
-            const std::shared_ptr<ElectInfo>&);
-    ~LeaderRotation();
+            uint32_t pool_idx,
+            const std::shared_ptr<ViewBlockChain>& chain,
+            const std::shared_ptr<ElectInfo>& elect_info) :
+            pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {}
+    ~LeaderRotation() {}
 
     LeaderRotation(const LeaderRotation&) = delete;
     LeaderRotation& operator=(const LeaderRotation&) = delete;
