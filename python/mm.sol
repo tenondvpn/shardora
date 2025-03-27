@@ -30,7 +30,6 @@ contract mm {
     event DIDRegistered(string did, string userType, string created);
     event DIDUpdated(string did, string updated);
     event DIDDeleted(string did);
-    event TestDIDDeleted(uint256 tm);
     event AssetAssociated(string did, string assetId, uint8 rightType);
     event AssetDeleted(string did, string assetId);
     event BalanceUpdated(string did, uint256 newBalance);
@@ -46,16 +45,10 @@ contract mm {
         string memory _signatureValue
     ) public {
         bytes32 didHash = keccak256(abi.encodePacked(_did));
-        emit DIDDeleted("0000");
         require(bytes(didDocuments[didHash].created).length == 0, "DID already exists");
 
-        emit DIDDeleted("1111");
-        emit TestDIDDeleted(block.timestamp);
-        emit DIDDeleted("111100001111");
         string memory currentTime = uint2str(block.timestamp);
-        emit DIDDeleted("2222");
         DIDDocument storage newDocument = didDocuments[didHash];
-        emit DIDDeleted("3333");
         newDocument.userType = _userType;
         newDocument.created = currentTime;
         newDocument.updated = currentTime;
@@ -63,9 +56,7 @@ contract mm {
         newDocument.publicKey2 = _publicKey2;
         newDocument.signatureValue = _signatureValue;
 
-        emit DIDDeleted("4444");
         dids.push(_did);  // 将 DID 存入列表中
-        emit DIDDeleted("5555");
         emit DIDRegistered(_did, _userType, currentTime);
     }
 

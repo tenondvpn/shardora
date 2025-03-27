@@ -2189,7 +2189,7 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     if (!has_user_tx_tag_ && !has_system_tx) {
-        // ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
+        ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 
@@ -2207,16 +2207,17 @@ void Hotstuff::TryRecoverFromStuck(
         return;
     }
 
-    auto stuck_st = IsStuck();
-    if (stuck_st != 0) {
-        if (stuck_st != 1) {
-            ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
-        }
-        return;
-    }
+    // auto stuck_st = IsStuck();
+    // if (stuck_st != 0) {
+    //     if (stuck_st != 1) {
+    //         ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
+    //     }
+    //     return;
+    // }
 
     auto leader = leader_rotation()->GetLeader();
     if (!leader) {
+        ZJC_DEBUG("no leader");
         return;
     }
     
