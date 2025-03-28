@@ -765,6 +765,8 @@ int ToTxsPools::CreateToTxWithHeights(
     return kPoolsError;
 #endif
     if (leader_to_heights.heights_size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("leader_to_heights.heights_size() != common::kInvalidPoolIndex: %u, %u", 
+            leader_to_heights.heights_size(), common::kInvalidPoolIndex);
         assert(false);
         return kPoolsError;
     }
