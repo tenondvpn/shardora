@@ -161,6 +161,10 @@ void TxPool::CheckPopedTxs() {
             ZJC_DEBUG("re push tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         }
     }
+
+    if (local_poped_tx_queue_.size() == 0 && added_txs_.size() == 0) {
+        over_gids_.clear();
+    }
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
