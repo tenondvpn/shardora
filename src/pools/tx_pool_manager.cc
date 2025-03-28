@@ -391,6 +391,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     auto thread_idx = 0;  //common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        tx_pool_[i].CheckPopedTxs();
+    }
+    
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();

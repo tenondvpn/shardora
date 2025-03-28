@@ -33,6 +33,10 @@ public:
         return res;
     }
 
+    T* front() {
+        return rw_queue_.peek();
+    }
+
     size_t size() const {
         return rw_queue_.size_approx();
     }

@@ -83,8 +83,7 @@ public:
 #ifdef ZJC_UNITTEST
         time_valid = 0;
 #endif // ZJC_UNITTEST
-        timeout = now_tm + kTxPoolTimeoutUs;
-        remove_timeout = timeout + kTxPoolTimeoutUs;
+        remove_timeout = now_tm + kTxPoolTimeoutUs;
         auto prio = common::ShiftUint64(tx_info->gas_price());
         prio_key = std::string((char*)&prio, sizeof(prio)) + tx_info->gid();
     }
@@ -99,8 +98,8 @@ public:
         block::protobuf::BlockTx* block_tx) = 0;
 
     uint64_t prev_consensus_tm_us;
-    uint64_t timeout;
     uint64_t remove_timeout;
+    uint64_t pop_timeout;
     uint64_t time_valid{ 0 };
     std::string unique_tx_hash;
     std::string prio_key;
