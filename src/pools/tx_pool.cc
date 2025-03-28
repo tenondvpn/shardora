@@ -148,6 +148,8 @@ void TxPool::CheckPopedTxs() {
         if (!prefix_db_->JustCheckCommitedGidExists(tx_ptr->tx_info->gid())) {
             added_txs_.push(tx_ptr);
             ZJC_DEBUG("re push tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+        } else {
+            ZJC_DEBUG("remove tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         }
     }
 }
@@ -221,7 +223,7 @@ void TxPool::GetTxIdempotently(
 
         ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
-        tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
+        // tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
         // consensus_poped_tx_queue_.push(tx_ptr);
     }
 }
