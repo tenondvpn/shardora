@@ -194,17 +194,6 @@ void TxPool::GetTxSyncToLeader(
 
 void TxPool::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count, 
-        pools::CheckGidValidFunction gid_vlid_func) {
-    CheckThreadIdValid();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-}
-
-void TxPool::GetTxIdempotently(
-        transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func) {

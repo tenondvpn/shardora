@@ -132,11 +132,6 @@ public:
     }
 
 private:
-    void GetTxIdempotently(
-        transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count,
-        pools::CheckGidValidFunction gid_vlid_func);    
     void InitHeightTree();
     void InitLatestInfo();
     void UpdateSyncedHeight();
