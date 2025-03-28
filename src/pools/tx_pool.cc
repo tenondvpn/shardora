@@ -141,11 +141,13 @@ void TxPool::CheckPopedTxs() {
         }
 
         if (!local_poped_tx_queue_.pop(&tx_ptr)) {
+            assert(false);
             break;
         }
 
         if (!prefix_db_->JustCheckCommitedGidExists(tx_ptr->tx_info->gid())) {
             added_txs_.push(tx_ptr);
+            ZJC_DEBUG("re push tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         }
     }
 }
