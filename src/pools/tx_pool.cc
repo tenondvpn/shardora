@@ -128,7 +128,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 void TxPool::CheckPopedTxs() {
     std::shared_ptr<hotstuff::ViewBlock> view_block;
-    while (!overed_view_blocks_.pop(&view_block)) {
+    while (overed_view_blocks_.pop(&view_block)) {
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             over_gids_.insert(view_block->block_info().tx_list(i).gid());
         }
