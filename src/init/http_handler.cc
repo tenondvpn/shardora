@@ -76,14 +76,19 @@ static int CreateTransactionWithAttr(
         transport::protobuf::Header& msg) {
     auto from = http_handler->security_ptr()->GetAddress(from_pk);
     if (from.empty()) {
+        ZJC_DEBUG("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
         return kAccountNotExists;
     }
 
     if (from == to) {
+        ZJC_DEBUG("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
         return kFromEqualToInvalid;
     }
 
     if (from.size() != 20 || to.size() != 20) {
+        ZJC_DEBUG("failed get address size error: %s, %s",
+            common::Encode::HexEncode(from).c_str(), 
+            common::Encode::HexEncode(to).c_str());
         return kAccountNotExists;
     }
 
