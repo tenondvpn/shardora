@@ -136,7 +136,7 @@ private:
     void InitLatestInfo();
     void UpdateSyncedHeight();
 
-    static const uint64_t kSyncBlockPeriodMs = 3000lu;
+    static const uint64_t kSyncBlockPeriodMs = 10000lu;
     static const uint64_t kPopedTxTimeoutMs = 3000lu;
 
     std::unordered_map<std::string, TxItemPtr> gid_map_;
