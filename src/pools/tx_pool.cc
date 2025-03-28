@@ -130,11 +130,12 @@ void TxPool::CheckPopedTxs() {
     TxItemPtr tx_ptr = nullptr;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     while (true) {
-        auto& front_tx = *local_poped_tx_queue_.front();
-        if (!front_tx) {
+        auto front_tx_ptr = local_poped_tx_queue_.front();
+        if (front_tx_ptr == nullptr) {
             break;
         }
 
+        auto front_tx = *front_tx_ptr;
         if (front_tx->pop_timeout + kPopedTxTimeoutMs > now_tm_ms) {
             break;
         }
