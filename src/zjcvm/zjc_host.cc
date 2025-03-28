@@ -225,6 +225,7 @@ evmc_storage_status ZjchainHost::set_storage(
     //     status = EVMC_STORAGE_MODIFIED_RESTORED;
     // }
 
+    contract_to_call_dirty_ = true;
     return EVMC_STORAGE_ADDED;
 }
 
@@ -305,6 +306,7 @@ size_t ZjchainHost::copy_code(
 bool ZjchainHost::selfdestruct(
         const evmc::address& addr,
         const evmc::address& beneficiary) noexcept {
+    contract_to_call_dirty_ = true;
     ZJC_DEBUG("selfdestruct called addr: %s, beneficiary: %s",
         common::Encode::HexEncode(std::string((char*)addr.bytes, 20)).c_str(),
         common::Encode::HexEncode(std::string((char*)beneficiary.bytes, 20)).c_str());
@@ -353,6 +355,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
                     common::Encode::HexEncode(id).c_str(),
                     protos::kFieldBytesCode.c_str());
                 ++depth_;
+                contract_to_call_dirty_ = false;
                 int res_status = zjcvm::Execution::Instance()->execute(
                     acc_info->bytes_code(),
                     params.data,
@@ -365,6 +368,14 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
                     zjcvm::kJustCall,
                     *this,
                     &evmc_res);
+                if (contract_to_call_dirty_) {
+                    evmc_res.status_code = EVMC_REVERT;
+                    ZJC_DEBUG("contract to call contract should not modify status. not support: %s, %s",
+                        common::Encode::HexEncode(id).c_str(),
+                        protos::kFieldBytesCode.c_str());
+                    return evmc_res;
+                }
+
                 if (res_status != consensus::kConsensusSuccess || evmc_res.status_code != EVMC_SUCCESS) {
                     return evmc_res;
                 }
@@ -408,8 +419,8 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
 }
 
 evmc_tx_context ZjchainHost::get_tx_context() const noexcept {
-    assert(false);
-    ZJC_DEBUG("called 9");
+    // assert(false);
+    ZJC_DEBUG("emit called block number: %lu, block timestamp: %lu", tx_context_.block_number, tx_context_.block_timestamp);
     return tx_context_;
 }
 
@@ -436,6 +447,7 @@ void ZjchainHost::emit_log(const evmc::address& addr,
         topics_str.c_str());
 #endif
 
+    contract_to_call_dirty_ = true;
     recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
 }
 
@@ -450,6 +462,7 @@ void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t bala
     Uint64ToEvmcBytes32(tmp_val, balance);
     account_balance_[addr] = tmp_val;
     CHECK_MEMORY_SIZE(account_balance_);
+    contract_to_call_dirty_ = true;
 }
 
 int ZjchainHost::SaveKeyValue(
@@ -463,6 +476,7 @@ int ZjchainHost::SaveKeyValue(
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key).c_str(),
         common::Encode::HexEncode(val).c_str());
+    contract_to_call_dirty_ = true;
     return SaveKeyValue(addr, key, val);
 }
 
@@ -485,6 +499,7 @@ int ZjchainHost::SaveKeyValue(
 
     auto& old = it->second.str_storage[key];
     old.str_val = val;
+    contract_to_call_dirty_ = true;
     return kZjcvmSuccess;
 }
 

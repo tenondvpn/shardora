@@ -721,9 +721,10 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
             view_block_chain(),
             tc,
             pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu", pool_idx_,
+        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu, pool now: %s", pool_idx_,
             common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
-            pro_msg_wrap->msg_ptr->header.hash64());
+            pro_msg_wrap->msg_ptr->header.hash64(),
+            view_block_chain_->String().c_str());
         return Status::kError;
     }
     
@@ -2189,7 +2190,7 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     if (!has_user_tx_tag_ && !has_system_tx) {
-        // ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
+        ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 
@@ -2199,6 +2200,10 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    // if (now_tm_ms >= prev_sync_latest_view_tm_ms_ + 3000lu) {
+    //     kv_sync_->AddSyncHeight();
+    //     prev_sync_latest_view_tm_ms_ = now_tm_ms;
+    // }
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
         // ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
         //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
@@ -2207,16 +2212,17 @@ void Hotstuff::TryRecoverFromStuck(
         return;
     }
 
-    auto stuck_st = IsStuck();
-    if (stuck_st != 0) {
-        if (stuck_st != 1) {
-            ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
-        }
-        return;
-    }
+    // auto stuck_st = IsStuck();
+    // if (stuck_st != 0) {
+    //     if (stuck_st != 1) {
+    //         ZJC_DEBUG("pool: %u stuck_st != 0: %d", pool_idx_, stuck_st);
+    //     }
+    //     return;
+    // }
 
     auto leader = leader_rotation()->GetLeader();
     if (!leader) {
+        ZJC_DEBUG("no leader");
         return;
     }
     
@@ -2259,7 +2265,7 @@ void Hotstuff::TryRecoverFromStuck(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs->empty()) {
-        ZJC_WARN("pool: %u txs.empty().", pool_idx_);
+        ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
         return;
     }
     

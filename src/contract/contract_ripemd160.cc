@@ -270,22 +270,27 @@ int Ripemd160::CreateArsKeys(
     // 初始化公私钥对
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
+        ZJC_DEBUG("line_splits.Count() < 2");
         return kContractError;
     }
 
-    auto keys_splits = common::Split<>(line_splits[0], ',');
+    auto keys_splits = common::Split<10240>(line_splits[0], ',');
     ars.set_ring_size(keys_splits.Count());
     auto ex_splits = common::Split<>(line_splits[1], ',');
     if (ex_splits.Count() < 2) {
+        ZJC_DEBUG("ex_splits.Count() < 2");
         return kContractError;
     }
 
     auto signer_count = 0;
     if (!common::StringUtil::ToInt32(ex_splits[0], &signer_count)) {
+        ZJC_DEBUG("common::StringUtil::ToInt32(ex_splits[0], &signer_count) failed");
         return kContractError;
     }
 
+    ars.set_signer_count(signer_count);
     if (signer_count <= 0 || signer_count >= ars.ring_size()) {
+        ZJC_DEBUG("signer_count <= 0 || signer_count >= ars.ring_size(): %u, %u", signer_count, ars.ring_size());
         return kContractError;
     }
 
@@ -311,9 +316,10 @@ int Ripemd160::CreateArsKeys(
     auto tmp_key = std::string("ars_create_") + id;
     auto val = common::StringUtil::Format("%u,%u", ars.ring_size(), ars.signer_count());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("init sign success: %s, from: %s, ring size: %d, signer_count: %d",
+    ZJC_DEBUG("init sign success: %s, from: %s, key: %s, ring size: %d, signer_count: %d",
         ex_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), 
+        common::Encode::HexEncode(tmp_key).c_str(),
         ars.ring_size(), 
         ars.signer_count());
     return kContractSuccess;
@@ -360,13 +366,13 @@ int Ripemd160::SingleSign(
     auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
     int32_t ring_size = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
-        ZJC_WARN("ring_size failed");
+        ZJC_WARN("ring_size failed key: %s, val: %s", common::Encode::HexEncode(tmp_key).c_str(), val.c_str());
         return kContractError;
     }
 
     int32_t signer_count = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
-        ZJC_WARN("signer_count failed");
+        ZJC_WARN("signer_count failed: %s", val.c_str());
         return kContractError;
     }
 
@@ -392,7 +398,7 @@ int Ripemd160::SingleSign(
         return kContractError;
     }
 
-    if (signer_idx < 0 || signer_idx >= ars.signer_count()) {
+    if (signer_idx < 0 || signer_idx > ars.ring_size()) {
         ZJC_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
@@ -432,7 +438,7 @@ int Ripemd160::SingleSign(
     element_clear(delta_prime);
     element_clear(y_prime);
     element_clear(private_key);
-    AggSignAndVerify(param, key, line_splits[1]);
+    // AggSignAndVerify(param, key, line_splits[1]);
     return kContractSuccess;
 }
 
@@ -443,6 +449,7 @@ int Ripemd160::AggSignAndVerify(
         // 聚合签名生成
     auto id = common::Encode::HexDecode(value);
     auto tmp_key = std::string("ars_create_") + id;
+    ZJC_DEBUG("get create ars key: %s", common::Encode::HexEncode(tmp_key).c_str());
     std::string val;
     if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
@@ -463,6 +470,7 @@ int Ripemd160::AggSignAndVerify(
     ContractArs ars;
     ars.set_ring_size(ring_size);
     ars.set_signer_count(signer_count);
+    ZJC_DEBUG("success get signer_count: %d, ring_size: %d", signer_count, ring_size);
     element_t agg_signature;
     element_init_G1(agg_signature, ars.get_pairing());
     std::vector<std::string> messages;
@@ -476,48 +484,54 @@ int Ripemd160::AggSignAndVerify(
     std::vector<std::vector<element_t>*> pi_proofs;
     int ret = kContractSuccess;
     int32_t valid_idx = 0;
-    for (auto i = 0; i < ars.signer_count(); ++i, ++valid_idx) {
+    for (auto i = 0; i < ars.ring_size(); ++i) {
         auto tmp_key = std::string("ars_create_single_sign_") + std::to_string(i);
         std::string val;
         if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
             CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
-            return kContractError;
+            continue;
         }
 
+        ZJC_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
+            tmp_key.c_str(), common::Encode::HexEncode(val).c_str(), val.c_str());
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
-            ret = kContractError;
-            ZJC_WARN("items.Count() < 4: %s", val.c_str());
-            break;
+            ZJC_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
+            continue;
         }
 
         messages.push_back(items[0]);
-        element_t& delta_prime = delta_primes[i];
-        element_t& y_prime = y_primes[i];
+        element_t& delta_prime = delta_primes[valid_idx];
+        element_t& y_prime = y_primes[valid_idx];
         element_init_G1(delta_prime, ars.get_pairing());
         element_init_G2(y_prime, ars.get_pairing());
         element_from_bytes_compressed(delta_prime, (unsigned char*)common::Encode::HexDecode(items[1]).c_str());
         element_from_bytes_compressed(y_prime, (unsigned char*)common::Encode::HexDecode(items[2]).c_str());
         std::vector<element_t>* tmp_pi_proof = new std::vector<element_t>(4);
-        for (uint32_t i = 3; i < items.Count(); ++i) {
-            if (items.SubLen(i) <= 0) {
+        for (uint32_t j = 3; j < items.Count(); ++j) {
+            if (items.SubLen(j) <= 0) {
                 break;
             }
 
-            element_t& proof = (*tmp_pi_proof)[i - 3];
-            if (i < 5) {
+            element_t& proof = (*tmp_pi_proof)[j - 3];
+            if (j < 5) {
                 element_init_G1(proof, ars.get_pairing());
             } else {
                 element_init_Zr(proof, ars.get_pairing());
             }
 
-            element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[i]).c_str());
+            element_from_bytes(proof, (unsigned char*)common::Encode::HexDecode(items[j]).c_str());
         }
 
         pi_proofs.push_back(tmp_pi_proof);
+        if (pi_proofs.size() == ars.signer_count()) {
+            break;
+        }
+
+        ++valid_idx;
     }
 
-    if (ret == kContractSuccess) {
+    if (pi_proofs.size() == ars.signer_count()) {
         ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
         auto tmp_key = std::string("ars_create_agg_sign");
         unsigned char data[20480] = {0};

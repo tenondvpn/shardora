@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/node_members.h>
+#include "common/time_utils.h"
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
@@ -15,10 +16,11 @@ static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 30; // 单位 s, 时间边
 class LeaderRotation {
 public:
     LeaderRotation(
-            const uint32_t& pool_idx,
-            const std::shared_ptr<ViewBlockChain>&,
-            const std::shared_ptr<ElectInfo>&);
-    ~LeaderRotation();
+            uint32_t pool_idx,
+            const std::shared_ptr<ViewBlockChain>& chain,
+            const std::shared_ptr<ElectInfo>& elect_info) :
+            pool_idx_(pool_idx), chain_(chain), elect_info_(elect_info) {}
+    ~LeaderRotation() {}
 
     LeaderRotation(const LeaderRotation&) = delete;
     LeaderRotation& operator=(const LeaderRotation&) = delete;
@@ -30,7 +32,8 @@ public:
             return nullptr;
         }
 
-        auto index = pool_idx_ % members->size();
+        auto now_tm_skip = 0;//common::TimeUtils::TimestampSeconds() / 30lu;
+        auto index = (now_tm_skip + pool_idx_) % members->size();
         return (*members)[index];
     }
 

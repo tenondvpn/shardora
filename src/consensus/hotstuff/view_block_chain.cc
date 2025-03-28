@@ -63,25 +63,6 @@ Status ViewBlockChain::Store(
         }
     }
 
-    // if (!zjc_host_ptr) {
-    //     zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
-    //     for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-    //         auto& tx = view_block->block_info().tx_list(i);
-    //         ZJC_DEBUG("store success prev storage key tx step: %d", tx.step());
-    //         for (auto s_idx = 0; s_idx < tx.storages_size(); ++s_idx) {
-    //             zjc_host_ptr->SavePrevStorages(
-    //                 tx.storages(s_idx).key(), 
-    //                 tx.storages(s_idx).value(),
-    //                 true);
-    //             if (tx.storages(s_idx).key().size() > 40)
-    //             ZJC_DEBUG("store success prev storage key: %s, value: %s",
-    //                 common::Encode::HexEncode(tx.storages(s_idx).key()).c_str(),
-    //                 common::Encode::HexEncode(tx.storages(s_idx).value()).c_str());
-
-    //         }
-    //     }
-    // }
-
 #ifndef NDEBUG
     ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
         "%u_%u_%lu, %lu, hash: %s, prehash: %s",
@@ -255,14 +236,6 @@ bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_blo
         return true;
     }
     
-    auto view_map_iter = view_map_.find(it->second->view_block->qc().view());
-    if (view_map_iter != view_map_.end()) {
-        ++view_map_iter->second;
-        if (view_map_iter->second <= 0) {
-            view_map_.erase(view_map_iter);
-        }
-    }
-
     view_blocks_info_.erase(it);
     return true;
 }
@@ -360,24 +333,8 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
                 iter->second->view_block->qc().view() < stored_to_db_view_) {
             if (view_commited(
                     iter->second->view_block->qc().network_id(),
-                    iter->second->view_block->qc().view())) {
-                // if (!iter->second->valid) {
-                //     forked_blockes.push_back(iter->second->view_block);
-                //     ZJC_DEBUG("success add brach view block: %u_%u_%lu, tx size: %u",
-                //         iter->second->view_block->qc().network_id(), 
-                //         iter->second->view_block->qc().pool_index(), 
-                //         iter->second->view_block->qc().view(), 
-                //         iter->second->view_block->block_info().tx_list_size());
-                // }
-
-                auto view_map_iter = view_map_.find(iter->second->view_block->qc().view());
-                if (view_map_iter != view_map_.end()) {
-                    ++view_map_iter->second;
-                    if (view_map_iter->second <= 0) {
-                        view_map_.erase(view_map_iter);
-                    }
-                }
-            
+                    iter->second->view_block->qc().view()) || 
+                    iter->second->view_block->qc().sign_x().empty()) {
                 iter = view_blocks_info_.erase(iter);
                 CHECK_MEMORY_SIZE(view_blocks_info_);
             } else {
@@ -421,6 +378,12 @@ std::string ViewBlockChain::String() const {
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
             view_blocks.push_back(it->second->view_block);
+            ZJC_DEBUG("view block view: %lu, height: %lu, hash: %s, phash: %s, has sign: %d", 
+                it->second->view_block->qc().view(),
+                it->second->view_block->block_info().height(),
+                common::Encode::HexEncode(it->second->view_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str(),
+                !it->second->view_block->qc().sign_x().empty());
         }
     }
 
@@ -434,10 +397,12 @@ std::string ViewBlockChain::String() const {
     std::string ret;
     std::string block_height_str;
     std::set<uint64_t> height_set;
+    std::set<uint64_t> view_set;
     for (const auto& vb : view_blocks) {
         ret += "," + std::to_string(vb->qc().view());
         block_height_str += "," + std::to_string(vb->block_info().height());
         height_set.insert(vb->block_info().height());
+        view_set.insert(vb->qc().view());
     }
 
     ZJC_DEBUG("get chain pool: %u, views: %s, all size: %u, block_height_str: %s",

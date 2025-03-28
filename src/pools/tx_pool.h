@@ -80,6 +80,7 @@ public:
             const std::string& prehash,
             const uint64_t timestamp);
     void SyncBlock();
+    void CheckPopedTxs();
 
     uint32_t all_tx_size() const {
         return added_txs_.size() + consensus_added_txs_.size();
@@ -88,7 +89,6 @@ public:
 
     uint32_t tx_size() const {        
         return added_txs_.size();
-        // return prio_map_.size() + consensus_tx_map_.size() + universal_prio_map_.size();
     }
 
     uint64_t oldest_timestamp() const {
@@ -132,25 +132,18 @@ public:
     }
 
 private:
-    void GetTxIdempotently(
-        transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& src_prio_map,
-        std::map<std::string, TxItemPtr>& res_map,
-        uint32_t count,
-        pools::CheckGidValidFunction gid_vlid_func);    
     void InitHeightTree();
     void InitLatestInfo();
     void UpdateSyncedHeight();
 
-    static const uint64_t kSyncBlockPeriodMs = 3000lu;
+    static const uint64_t kSyncBlockPeriodMs = 1000lu;
+    static const uint64_t kPopedTxTimeoutMs = 30000lu;
 
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::unordered_map<std::string, uint64_t> gid_start_time_map_;
     std::vector<uint64_t> latencys_us_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
-    std::map<std::string, TxItemPtr> prio_map_;
-    std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;
     std::string latest_hash_;
     uint64_t latest_timestamp_ = 0U;
@@ -170,7 +163,6 @@ private:
     std::map<uint64_t, std::string> checked_height_with_prehash_;
     volatile uint64_t oldest_timestamp_ = 0;
     uint64_t prev_tx_count_tm_us_ = 0;
-    std::map<std::string, TxItemPtr> consensus_tx_map_;
     TxPoolManager* pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_check_tx_timeout_tm_ = 0;
@@ -178,6 +170,9 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
+
+    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> local_poped_tx_queue_;
+    // common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_poped_tx_queue_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;

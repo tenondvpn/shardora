@@ -126,6 +126,34 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     return invalid_heights.size();
 }
 
+void TxPool::CheckPopedTxs() {
+    TxItemPtr tx_ptr = nullptr;
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    while (true) {
+        auto front_tx_ptr = local_poped_tx_queue_.front();
+        if (front_tx_ptr == nullptr) {
+            break;
+        }
+
+        auto front_tx = *front_tx_ptr;
+        if (front_tx->pop_timeout + kPopedTxTimeoutMs > now_tm_ms) {
+            break;
+        }
+
+        if (!local_poped_tx_queue_.pop(&tx_ptr)) {
+            assert(false);
+            break;
+        }
+
+        if (!prefix_db_->JustCheckCommitedGidExists(tx_ptr->tx_info->gid())) {
+            added_txs_.push(tx_ptr);
+            ZJC_DEBUG("re push tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+        } else {
+            ZJC_DEBUG("remove tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+        }
+    }
+}
+
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
@@ -158,42 +186,19 @@ void TxPool::GetTxSyncToLeader(
             ZJC_DEBUG("gid invalid: %s, step is not user tx: %d", 
                 common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(), 
                 tx_ptr->tx_info->step());
-            continue;
+        } else {
+            auto* tx = txs->Add();
+            *tx = *tx_ptr->tx_info;
         }
 
-        auto* tx = txs->Add();
-        *tx = *tx_ptr->tx_info;
+        tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
         ZJC_DEBUG("success to leader tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+        // local_poped_tx_queue_.push(tx_ptr);
     }
 }
 
 void TxPool::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& res_map, 
-        uint32_t count, 
-        pools::CheckGidValidFunction gid_vlid_func) {
-    CheckThreadIdValid();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("now get tx universal_prio_map_ size: %u, prio_map_: %u, consensus_tx_map_: %u",
-        universal_prio_map_.size(),
-        prio_map_.size(),
-        consensus_tx_map_.size());
-    GetTxIdempotently(msg_ptr, universal_prio_map_, res_map, count, gid_vlid_func);
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (!res_map.empty()) {
-    //     ZJC_DEBUG("pool index: %u, success get tx size: %d", pool_index_, res_map.size());
-    //     return;
-    // }
-
-    // GetTxIdempotently(msg_ptr, prio_map_, res_map, count, gid_vlid_func);
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // GetTxIdempotently(msg_ptr, consensus_tx_map_, res_map, count, gid_vlid_func);    
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-}
-
-void TxPool::GetTxIdempotently(
-        transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckGidValidFunction gid_vlid_func) {
@@ -206,6 +211,8 @@ void TxPool::GetTxIdempotently(
 
         ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+        tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
+        // local_poped_tx_queue_.push(tx_ptr);
     }
 
     while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {
@@ -216,6 +223,8 @@ void TxPool::GetTxIdempotently(
 
         ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+        // tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
+        // consensus_poped_tx_queue_.push(tx_ptr);
     }
 }
 

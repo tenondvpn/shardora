@@ -173,7 +173,9 @@ bool Execution::GetStorage(
         // }
     }
 
-    ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
+    ZJC_DEBUG("get storage: %s, %s", 
+        common::Encode::HexEncode(str_key).c_str(), 
+        common::Encode::HexEncode(*val).c_str());
     return res;
 }
         
@@ -196,8 +198,12 @@ int Execution::execute(
             to_address.size() != security::kUnicastAddressLength ||
             depth >= kContractCallMaxDepth) {
         ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
-            "to size: %u, depth: %u, gas_limit: %lu",
-            code_size, from_address.size(), to_address.size(), depth, gas_limit);
+            "to size: %u, depth: %u, gas_limit: %lu, from_address: %s, to_address: %s, origin_address: %s",
+            code_size, from_address.size(), to_address.size(), depth, gas_limit,
+            common::Encode::HexEncode(from_address).c_str(),
+            common::Encode::HexEncode(to_address).c_str(),
+            common::Encode::HexEncode(origin_address).c_str());
+        assert(false);
         return kZjcvmError;
     }
 
@@ -269,12 +275,16 @@ int Execution::execute(
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("execute res: %d, from: %s, to: %s, gas_limit: %lu, "
-        "src_gas_left: %lu, gas_left: %lu, gas_refund: %lu, use time: %lu",
+        "src_gas_left: %lu, gas_left: %lu, gas_refund: %lu, use time: %lu, output: %s",
         out_res->status_code, 
         common::Encode::HexEncode(from_address).c_str(),
         common::Encode::HexEncode(to_address).c_str(),
+        gas, 
         src_gas_left,
-        gas, out_res->gas_left, out_res->gas_refund, (etime - btime));
+        out_res->gas_left, 
+        out_res->gas_refund,
+        (etime - btime),
+        common::Encode::HexEncode(std::string((char*)out_res->output_data, out_res->output_size)).c_str());
     return kZjcvmSuccess;
 }
 

@@ -104,8 +104,8 @@ add_definitions(
     #-DARMEABI_V7A
     #-DLATENCY
     #-DHOTSTUFF_TEST
-    -DMOCK_VERIFY
-    -DMOCK_SIGN
+    #-DMOCK_VERIFY
+    #-DMOCK_SIGN
     -DENABLE_HOTSTUFF
     -DDISABLE_GENESIS_BLS_VERIFY
     #-DTEST_NO_CROSS
@@ -133,6 +133,7 @@ endif()
 # link definitions
 link_directories(
     ${LIB_DIR}
+    ${LIB_DIR}/gcc830
 )
 
 # bin/lib

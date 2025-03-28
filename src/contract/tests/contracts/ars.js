@@ -374,6 +374,7 @@ function InitC2cEnv(key, value) {
     
                 var param = "readd" + key_len + key + value;
                 var hexparam = web3.utils.toHex(param);
+                console.log("constructer param: " + hexparam);
                 // var addParam = web3.eth.abi.encodeParameter('bytes', hexparam);
                 cons_codes = web3.eth.abi.encodeParameters(
                     ['bytes'], 
@@ -452,7 +453,7 @@ function CreateNewArs(prev, key, value, id) {
         ['uint256', 'uint256', 'bytes32', 'bytes'], 
         [3, 2, '0x' + id, hexparam]);
     var addParamCode = web3.eth.abi.encodeFunctionSignature('CreateNewArs(uint256,uint256,bytes32,bytes)');
-    //console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
+    console.log("addParam 0: " + key + ":" + value + "," + addParamCode.substring(2) + addParam.substring(2));
     call_contract(
         "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
         addParamCode.substring(2) + addParam.substring(2), 0);
@@ -529,6 +530,7 @@ if (args[0] == 2) {
     SingleSign("tarsps", "tarsps", args[2] + "-" + id, id);
 }
 
+//--ripemd_val "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789000000-cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b789000000"
 if (args[0] == 3) {
     AggSign("tarsas", "tarsas", id, id);
 }

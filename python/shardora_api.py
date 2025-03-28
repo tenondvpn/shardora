@@ -7,6 +7,7 @@ import os
 import time
 import json
 
+import linux_file_cmd
 from eth_keys import keys, datatypes
 from secp256k1 import PrivateKey, PublicKey
 from eth_utils import decode_hex, encode_hex
@@ -25,7 +26,7 @@ from coincurve import PrivateKey as cPrivateKey
 
 w3 = Web3(Web3.IPCProvider('/Users/myuser/Library/Ethereum/geth.ipc'))
 
-http_ip = "121.37.186.201"
+http_ip = "127.0.0.1"
 http_port = "23001"
 
 Keypair = namedtuple('Keypair', ['skbytes', 'pkbytes', 'account_id'])
@@ -44,13 +45,14 @@ def transfer(
         key="", 
         val="", 
         prepayment=0, 
-        check_gid_valid=True):
+        check_gid_valid=True,
+        gas_limit=999999):
     if gid == "":
         gid = _gen_gid()
 
     keypair = get_keypair(bytes.fromhex(str_prikey))
     param = get_transfer_params(
-        gid, to, amount, 9000000, 1, 
+        gid, to, amount, gas_limit, 1, 
         keypair, 3, contract_bytes, input, 
         prepayment, step, key, val)
     res = _call_tx(param)
@@ -93,6 +95,21 @@ def gen_gid() -> str:
 
 def keccak256_str(s: str) -> str:
     return _keccak256_str(s)
+
+def check_address_valid(address, balance=0):
+    post_data = {"addrs":[address], "balance": balance}
+    res = _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
+    if res.status_code != 200:
+        return False
+    
+    json_res = json.loads(res.text)
+    if "addrs" in json_res and json_res["addrs"] is not None:
+        for addr in json_res["addrs"]:
+            if addr == address:
+                return True
+            
+    return False
+
 
 def check_accounts_valid(post_data: dict):
     return _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
@@ -188,30 +205,50 @@ def deploy_contract(
         prepayment=0,
         check_gid_valid=False,
         is_library=False,
-        in_libraries=""):
+        in_libraries="",
+        contract_address=None):
     libraries = ""
     if in_libraries != "":
         libraries = f"--libraries '{in_libraries}'"
 
-    cmd = f"chmod 755 ./solc && ./solc {libraries} --bin {sol_file_path}"
+    file_name = sol_file_path.split('/')[-1].split('.')[0]
+    cmd = f"/usr/bin/solc {libraries} --overwrite --bin {sol_file_path} -o {file_name}"
     ret, stdout, stderr = _run_once(cmd)
     print(cmd)
     # print(f"solc --bin {sol_file_path}")
     func_param = ""
     if len(constructor_types) > 0 and len(constructor_types) == len(constructor_params):
-        func_param = keccak256_str(encode_hex(encode(constructor_types, constructor_params)))[2:]
+        func_param = encode_hex(encode(constructor_types, constructor_params))[2:]
 
-    ret_split = (ret.decode('utf-8')).split("Binary:")
-    if len(ret_split) < 2:
-        print(f"run cmd: {cmd} failed {ret}")
+    bytes_codes = None
+    file_cmd = linux_file_cmd.LinuxFileCommand()
+    contract_line = None
+    with open(sol_file_path, 'r') as f:
+        for line in f.readlines():
+            if line.find('contract') >= 0:
+                contract_line = line
+                break
+        
+    file_list = file_cmd.list_files(f'./{file_name}/')
+    for file in file_list:
+        file_name = file.split('/')[-1].split('.')[0]
+        if contract_line.find(file_name) >= 0:
+            print(f"read contract file: {file} contract_line: {contract_line}")
+            with open(file, "r") as f:
+                bytes_codes = f.read()
+            break
+
+    if bytes_codes is None:
+        print("get sol bytes code failed!")
         return None
-    
-    bytes_codes = ret_split[len(ret_split) - 1].strip()
-    # print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}")
+
+    print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}", flush=True)
     call_str = bytes_codes + func_param
     gid = gen_gid()
-    contract_address_hash = keccak256_str(call_str+gid)
-    contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
+    if contract_address is None:
+        contract_address_hash = keccak256_str(call_str+gid)
+        contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
+        
     step = 6
     if is_library:
         step = 14
@@ -228,7 +265,19 @@ def deploy_contract(
     if not res:
         return None
     
-    return contract_address
+    if check_gid_valid:
+        for i in range(0, 30):
+            if prepayment > 0:
+                keypair = get_keypair(bytes.fromhex(private_key))
+                if check_address_valid(contract_address + keypair.account_id, prepayment):
+                    return contract_address
+                
+            elif check_address_valid(contract_address):
+                return contract_address
+            
+            time.sleep(1)
+
+    return None
 
 def contract_prepayment(private_key: str, contract_address: str, prepayment: int, check_res: bool, gid: str):
     if not transfer(
@@ -261,18 +310,26 @@ def query_contract_function(
         contract_address: str, 
         function: str, 
         types_list: list, 
-        params_list: list):
+        params_list: list,
+        call_type=0):
     func_param = (keccak256_str(f"{function}({','.join(types_list)})")[:8] + 
         encode_hex(encode(types_list, params_list))[2:])
 
     # print(f"func_param: {func_param}")
     keypair = get_keypair(bytes.fromhex(private_key))
     # print(keypair.account_id)
-    res = post_data(f"http://{http_ip}:{http_port}/query_contract", data = {
-        "input": func_param,
-        'address': contract_address,
-        'from': keypair.account_id,
-    })
+    if call_type == 0:
+        res = post_data(f"http://{http_ip}:{http_port}/abi_query_contract", data = {
+            "input": func_param,
+            'address': contract_address,
+            'from': keypair.account_id,
+        })
+    else:
+        res = post_data(f"http://{http_ip}:{http_port}/query_contract", data = {
+            "input": func_param,
+            'address': contract_address,
+            'from': keypair.account_id,
+        })
 
     return res
 
@@ -290,7 +347,7 @@ def check_transaction_gid_valid(in_gid):
                     print(f"{in_gid} == {gid} : {(in_gid == gid)}")
                     if in_gid == gid:
                         return True
-        time.sleep(1)
+        time.sleep(3)
 
     return False
 

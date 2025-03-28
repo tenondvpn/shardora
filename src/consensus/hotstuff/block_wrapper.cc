@@ -64,7 +64,7 @@ Status BlockWrapper::Wrap(
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
-        ZJC_ERROR("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
+        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
             s, pool_idx_, 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 

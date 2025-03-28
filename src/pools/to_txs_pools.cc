@@ -35,28 +35,13 @@ void ToTxsPools::NewBlock(
 #endif
     auto& block = view_block_ptr->block_info();
     if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
-        ZJC_DEBUG("network invalid: %d, local: %d", view_block_ptr->qc().network_id(), common::GlobalInfo::Instance()->network_id());
+        ZJC_DEBUG("network invalid: %d, local: %d", 
+            view_block_ptr->qc().network_id(), 
+            common::GlobalInfo::Instance()->network_id());
         return;
     }
 
-    // 更新 pool 的 max height
     auto pool_idx = view_block_ptr->qc().pool_index();
-    if (block.height() > pool_max_heihgts_[pool_idx]) {
-        pool_max_heihgts_[pool_idx] = block.height();
-    }
-
-    if (pool_consensus_heihgts_[pool_idx] + 1 == block.height()) {
-        ++pool_consensus_heihgts_[pool_idx];
-        for (; pool_consensus_heihgts_[pool_idx] <= pool_max_heihgts_[pool_idx];
-                ++pool_consensus_heihgts_[pool_idx]) {
-            auto iter = added_heights_[pool_idx].find(
-                    pool_consensus_heihgts_[pool_idx] + 1);
-            if (iter == added_heights_[pool_idx].end()) {
-                break;
-            }
-        }
-    }
-
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString( view_block_ptr->debug());
@@ -71,6 +56,16 @@ void ToTxsPools::NewBlock(
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
 #endif
     StatisticToInfo(*view_block_ptr);
+
+    {
+        common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
+        auto& height_map = network_txs_pools_[pool_idx];
+        auto height_iter = height_map.find(view_block_ptr->block_info().height());
+        if (height_iter == height_map.end()) {
+            TxMap tx_map;
+            height_map[view_block_ptr->block_info().height()] = tx_map;
+        }
+    }
 
     added_heights_[pool_idx].insert(std::make_pair<>(
         block.height(), 
@@ -94,6 +89,23 @@ void ToTxsPools::NewBlock(
     }
 
     CHECK_MEMORY_SIZE_WITH_MESSAGE(added_heights_[pool_idx], std::to_string(pool_idx).c_str());
+
+    // 更新 pool 的 max height
+    if (block.height() > pool_max_heihgts_[pool_idx]) {
+        pool_max_heihgts_[pool_idx] = block.height();
+    }
+    
+    if (pool_consensus_heihgts_[pool_idx] + 1 == block.height()) {
+        ++pool_consensus_heihgts_[pool_idx];
+        for (; pool_consensus_heihgts_[pool_idx] <= pool_max_heihgts_[pool_idx];
+                ++pool_consensus_heihgts_[pool_idx]) {
+            auto iter = added_heights_[pool_idx].find(
+                    pool_consensus_heihgts_[pool_idx] + 1);
+            if (iter == added_heights_[pool_idx].end()) {
+                break;
+            }
+        }
+    }
     valided_heights_[pool_idx].insert(block.height());
 }
 
@@ -603,7 +615,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
         while (cons_height > 0) {
             auto exist_iter = added_heights_[i].find(cons_height);
             if (exist_iter != added_heights_[i].end()) {
-                if (exist_iter->second + 5000lu > timeout) {
+                if (exist_iter->second + 300lu > timeout) {
                     --cons_height;
                     continue;
                 }
@@ -753,6 +765,8 @@ int ToTxsPools::CreateToTxWithHeights(
     return kPoolsError;
 #endif
     if (leader_to_heights.heights_size() != common::kInvalidPoolIndex) {
+        ZJC_DEBUG("leader_to_heights.heights_size() != common::kInvalidPoolIndex: %u, %u", 
+            leader_to_heights.heights_size(), common::kInvalidPoolIndex);
         assert(false);
         return kPoolsError;
     }
@@ -784,11 +798,14 @@ int ToTxsPools::CreateToTxWithHeights(
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
         auto& height_map = network_txs_pools_[pool_idx];
+        ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
+            pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
-//                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
-                continue;
+                ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
+                assert(false);
+                return kPoolsError;
             }
 
             for (auto to_iter = hiter->second.begin();
@@ -868,7 +885,8 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    ZJC_DEBUG("not acc amount map empty.");
+    ZJC_DEBUG("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+        ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // for (auto iter = cross_set.begin(); iter != cross_set.end(); ++iter) {
     //     auto cross_item = to_tx.add_crosses();
     //     cross_item->set_src_shard((*iter).src_shard);

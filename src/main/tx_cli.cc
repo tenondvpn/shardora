@@ -488,7 +488,7 @@ int tx_main(int argc, char** argv) {
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
             
-            usleep(100000lu);
+            usleep(10000lu);
 
         }
 
