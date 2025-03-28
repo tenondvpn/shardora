@@ -667,7 +667,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash() && IsQcTcValid(pro_msg.tc())) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (VerifyQC(pro_msg.tc()) != Status::kSuccess) {
-            ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, pro_msg.tc().view());
+            ZJC_DEBUG("pool: %d verify qc failed: %lu", pool_idx_, pro_msg.tc().view());
             return Status::kError;
         }
 
@@ -1725,6 +1725,7 @@ Status Hotstuff::VerifyQC(const QC& qc) {
     }
 
     if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
+        ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, qc.view());
         assert(false);
         return Status::kError; 
     }
@@ -1762,7 +1763,7 @@ Status Hotstuff::VerifyViewBlock(
     }
 
     if (v_block.block_info().height() <= view_block_chain->LatestCommittedBlock()->block_info().height()) {
-        ZJC_ERROR("new view block height error: %lu, last commited block height: %lu", 
+        ZJC_DEBUG("new view block height error: %lu, last commited block height: %lu", 
             v_block.block_info().height(),
             view_block_chain->LatestCommittedBlock()->block_info().height());
         return Status::kError;
