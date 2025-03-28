@@ -127,6 +127,13 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 void TxPool::CheckPopedTxs() {
+    std::shared_ptr<hotstuff::ViewBlock> view_block;
+    while (!overed_view_blocks_.pop(&view_block)) {
+        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+            over_gids_.insert(view_block->block_info().tx_list(i).gid());
+        }
+    }
+
     TxItemPtr tx_ptr = nullptr;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     while (true) {
@@ -145,11 +152,13 @@ void TxPool::CheckPopedTxs() {
             break;
         }
 
-        if (!prefix_db_->JustCheckCommitedGidExists(tx_ptr->tx_info->gid())) {
+        auto iter = over_gids_.find(tx_ptr->tx_info->gid());
+        if (iter != over_gids_.end()) {
+            ZJC_DEBUG("remove tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
+            over_gids_.erase(iter);
+        } else {
             added_txs_.push(tx_ptr);
             ZJC_DEBUG("re push tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
-        } else {
-            ZJC_DEBUG("remove tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         }
     }
 }

@@ -81,6 +81,9 @@ public:
             const uint64_t timestamp);
     void SyncBlock();
     void CheckPopedTxs();
+    void TxOver(const std::shared_ptr<hotstuff::ViewBlock>& view_block) {
+        overed_view_blocks_.push(view_block);
+    }
 
     uint32_t all_tx_size() const {
         return added_txs_.size() + consensus_added_txs_.size();
@@ -170,6 +173,8 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
+    common::ThreadSafeQueue<std::shared_ptr<hotstuff::ViewBlock>> overed_view_blocks_;
+    std::unordered_set<std::string> over_gids_;
 
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> local_poped_tx_queue_;
     // common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_poped_tx_queue_;
