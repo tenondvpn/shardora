@@ -82,7 +82,7 @@ public:
     void SyncBlock();
     void CheckPopedTxs();
     void TxOver(const std::shared_ptr<hotstuff::ViewBlock>& view_block) {
-        overed_view_blocks_.push(view_block);
+        // overed_view_blocks_.push(view_block);
     }
 
     uint32_t all_tx_size() const {
