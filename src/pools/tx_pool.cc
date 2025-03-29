@@ -128,7 +128,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
 void TxPool::CheckPopedTxs() {
     db::DbReadOptions option;
-    auto iter = db_->NewIterator(option);
+    auto iter = db_->db()->NewIterator(option);
     std::string key;
     key.reserve(48);
     key.append(protos::kUserTxPrefix);
@@ -142,13 +142,13 @@ void TxPool::CheckPopedTxs() {
     while (iter->Valid() && added_txs_.size() < 2 * common::kMaxTxCount) {
         auto tx_ptr = std::make_shared<TxItem>();
         pools::protobuf::TxMessage& tx_info = tx_ptr->reload_tx_info;
-        if (tx_info.ParseFromString(iter->value())) {
+        if (tx_info.ParseFromString(iter->value().ToString())) {
             if (tx_info.has_tx_debug_timeout_seconds()) {
                 if (tx_info.tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
                     break;
                 }
 
-                db_->Delete(iter->key());
+                db_->Delete(iter->key().ToString());
                 tx_ptr->tx_info = &tx_ptr->reload_tx_info;
                 added_txs_.push(tx_ptr);
             }
