@@ -854,7 +854,7 @@ void BlockManager::AddNewBlock(
             zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         }
 
-    //     btime1 = common::TimeUtils::TimestampMs();
+        btime1 = common::TimeUtils::TimestampMs();
     //         // 处理交易信息
     //     for (int32_t i = 0; i < tx_list.size(); ++i) {
     //         ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
@@ -928,7 +928,7 @@ void BlockManager::AddNewBlock(
     //         default:
     //             break;
     //         }
-        }
+        // }
 #endif
     auto btime2 = common::TimeUtils::TimestampMs();
     if (new_block_callback_ != nullptr) {
