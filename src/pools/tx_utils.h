@@ -99,10 +99,10 @@ public:
 
     uint64_t prev_consensus_tm_us;
     uint64_t remove_timeout;
-    uint64_t pop_timeout;
     uint64_t time_valid{ 0 };
     std::string unique_tx_hash;
     std::string prio_key;
+    pools::protobuf::TxMessage reload_tx_info;
     pools::protobuf::TxMessage* tx_info;
     transport::MessagePtr msg_ptr;
     protos::AddressInfoPtr address_info;

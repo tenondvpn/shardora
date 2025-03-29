@@ -721,7 +721,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
             view_block_chain(),
             tc,
             pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().elect_height()) != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu, pool now: %s", pool_idx_,
+        ZJC_DEBUG("pool: %d, Verify ViewBlock is error. hash: %s, hash64: %lu, pool now: %s", pool_idx_,
             common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
             pro_msg_wrap->msg_ptr->header.hash64(),
             view_block_chain_->String().c_str());

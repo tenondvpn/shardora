@@ -174,4 +174,5 @@ message TxMessage {
     optional bytes contract_input = 13;
     optional bytes sign = 14;
     repeated TxDelayTestInfo tx_debug = 15;
+    optional uint64 tx_debug_timeout_seconds = 16;
 }

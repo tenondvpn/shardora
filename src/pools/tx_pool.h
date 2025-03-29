@@ -81,9 +81,6 @@ public:
             const uint64_t timestamp);
     void SyncBlock();
     void CheckPopedTxs();
-    void TxOver(const std::shared_ptr<hotstuff::ViewBlock>& view_block) {
-        // overed_view_blocks_.push(view_block);
-    }
 
     uint32_t all_tx_size() const {
         return added_txs_.size() + consensus_added_txs_.size();
@@ -140,7 +137,7 @@ private:
     void UpdateSyncedHeight();
 
     static const uint64_t kSyncBlockPeriodMs = 1000lu;
-    static const uint64_t kPopedTxTimeoutMs = 3000lu;
+    static const uint64_t kPopedTxTimeoutMs = 10lu;
 
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::unordered_map<std::string, uint64_t> gid_start_time_map_;
@@ -173,11 +170,6 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
-    common::ThreadSafeQueue<std::shared_ptr<hotstuff::ViewBlock>> overed_view_blocks_;
-    std::unordered_set<std::string> over_gids_;
-
-    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> local_poped_tx_queue_;
-    // common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_poped_tx_queue_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;

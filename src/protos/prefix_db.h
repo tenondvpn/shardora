@@ -94,6 +94,8 @@ static const std::string kCommitedGidPrefix = "ay\x01";
 static const std::string kGidWithBlockHash = "az\x01";
 static const std::string kViewBlockVaildParentHash = "ba\x01";
 static const std::string kViewBlockVaildView = "bb\x01";
+static const std::string kUserTxPrefix = "bc\x01";
+static const std::string kUserTxGidPrefix = "bd\x01";
 
 class PrefixDb {
 public:
@@ -2075,6 +2077,53 @@ public:
         uint64_t* u64_arr = (uint64_t*)(value + 8);
         u64_arr[0] = view;
         db_batch.Put(key, std::string(value, sizeof(value)));
+    }
+
+    void AddUserTxInfo(uint32_t pool_index, pools::protobuf::TxMessage& tx_info) {
+        db::DbWriteBatch db_batch;
+        tx_info.set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
+        std::string key;
+        key.reserve(48);
+        key.append(kUserTxPrefix);
+        char tm_data[8];
+        uint64_t* udata = (uint64_t*)tm_data;
+        *udata = tx_info.tx_debug_timeout_seconds();
+        char pool_data[4];
+        uint32_t* pdata = (uint32_t*)pool_data;
+        *pdata = pool_index;
+        key.append(std::string(pool_data, sizeof(pool_data)));
+        key.append(std::string(tm_data, sizeof(tm_data)));
+        key.append(tx_info.gid());
+        std::string gid_key;
+        gid_key.reserve(48);
+        gid_key.append(kUserTxGidPrefix);
+        gid_key.append(std::string(pool_data, sizeof(pool_data)));
+        gid_key.append(tx_info.gid());
+        db_batch.Put(gid_key, key);
+        db_batch.Put(key, tx_info.SerializeAsString());
+        auto st = db_->Put(db_batch);
+        if (!st.ok()) {
+            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+        }
+    }
+
+    void DeleteUesrTxInfo(
+            uint32_t pool_index, 
+            const block::protobuf::BlockTx& tx_info, 
+            db::DbWriteBatch& db_batch) {
+        std::string gid_key;
+        gid_key.reserve(48);
+        gid_key.append(kUserTxGidPrefix);
+        char pool_data[4];
+        uint32_t* pdata = (uint32_t*)pool_data;
+        *pdata = pool_index;
+        gid_key.append(std::string(pool_data, sizeof(pool_data)));
+        gid_key.append(tx_info.gid());
+        std::string key;
+        if (db_->Get(gid_key, &key).ok()) {
+            db_batch.Delete(key);
+            db_batch.Delete(gid_key);
+        }
     }
 
 private:

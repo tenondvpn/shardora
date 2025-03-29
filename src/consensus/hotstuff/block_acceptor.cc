@@ -665,7 +665,6 @@ void BlockAcceptor::commit(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     block_mgr_->ConsensusAddBlock(queue_item_ptr);
-    pools_mgr_->TxOver(pool_idx_, queue_item_ptr->view_block_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 

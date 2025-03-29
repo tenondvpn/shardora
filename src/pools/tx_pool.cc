@@ -127,44 +127,37 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 void TxPool::CheckPopedTxs() {
-    std::shared_ptr<hotstuff::ViewBlock> view_block;
-    while (overed_view_blocks_.pop(&view_block)) {
-        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            over_gids_.insert(view_block->block_info().tx_list(i).gid());
+    db::DbReadOptions option;
+    auto iter = db_->NewIterator(option);
+    std::string key;
+    key.reserve(48);
+    key.append(protos::kUserTxPrefix);
+    char pool_data[4];
+    uint32_t* pdata = (uint32_t*)pool_data;
+    *pdata = pool_index_;
+    key.append(std::string(pool_data, sizeof(pool_data)));
+    iter->Seek(key);
+    int32_t valid_count = 0;
+    auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
+    while (iter->Valid() && added_txs_.size() < 2 * common::kMaxTxCount) {
+        auto tx_ptr = std::make_shared<TxItem>();
+        pools::protobuf::TxMessage& tx_info = tx_ptr->reload_tx_info;
+        if (tx_info.ParseFromString(iter->value())) {
+            if (tx_info.has_tx_debug_timeout_seconds()) {
+                if (tx_info.tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
+                    break;
+                }
+
+                db_->Delete(iter->key());
+                tx_ptr->tx_info = &tx_ptr->reload_tx_info;
+                added_txs_.push(tx_ptr);
+            }
         }
+
+        iter->Next();
     }
 
-    TxItemPtr tx_ptr = nullptr;
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
-    while (true) {
-        auto front_tx_ptr = local_poped_tx_queue_.front();
-        if (front_tx_ptr == nullptr) {
-            break;
-        }
-
-        auto front_tx = *front_tx_ptr;
-        if (front_tx->pop_timeout + kPopedTxTimeoutMs > now_tm_ms) {
-            break;
-        }
-
-        if (!local_poped_tx_queue_.pop(&tx_ptr)) {
-            assert(false);
-            break;
-        }
-
-        auto iter = over_gids_.find(tx_ptr->tx_info->gid());
-        if (iter != over_gids_.end()) {
-            ZJC_DEBUG("remove tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
-            over_gids_.erase(iter);
-        } else {
-            added_txs_.push(tx_ptr);
-            ZJC_DEBUG("re push tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
-        }
-    }
-
-    if (local_poped_tx_queue_.size() == 0 && added_txs_.size() == 0) {
-        over_gids_.clear();
-    }
+    delete iter;
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
@@ -180,6 +173,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
+    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
     ZJC_DEBUG("success add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
     return kPoolsSuccess;
 }
@@ -204,7 +198,6 @@ void TxPool::GetTxSyncToLeader(
             *tx = *tx_ptr->tx_info;
         }
 
-        tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
         ZJC_DEBUG("success to leader tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         // local_poped_tx_queue_.push(tx_ptr);
     }
@@ -224,8 +217,6 @@ void TxPool::GetTxIdempotently(
 
         ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
-        tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
-        // local_poped_tx_queue_.push(tx_ptr);
     }
 
     while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {
@@ -236,8 +227,6 @@ void TxPool::GetTxIdempotently(
 
         ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
-        // tx_ptr->pop_timeout = common::TimeUtils::TimestampMs();
-        // consensus_poped_tx_queue_.push(tx_ptr);
     }
 }
 
