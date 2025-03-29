@@ -838,7 +838,6 @@ void BlockManager::AddNewBlock(
         auto btime11 = common::TimeUtils::TimestampMs();
         auto btime1 = common::TimeUtils::TimestampMs();
 #ifndef TEST_NO_CROSS
-        if (false) {
         // 当前节点和 block 分配的 shard 不同，要跨分片交易
         if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
             pools_mgr_->OnNewCrossBlock(view_block_item);
@@ -856,7 +855,8 @@ void BlockManager::AddNewBlock(
         }
 
         btime1 = common::TimeUtils::TimestampMs();
-        // 处理交易信息
+        if (false) {
+            // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
                 "tx size: %u, hash: %s, phash: %s, elect height: %lu, "
