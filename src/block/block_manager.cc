@@ -873,12 +873,12 @@ void BlockManager::AddNewBlock(
                 tx_list[i].status(),
                 tx_list[i].step());
             // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
-    // #ifdef SAVE_GID_WITH_BLOCK
+    #ifdef SAVE_GID_WITH_BLOCK
             prefix_db_->SaveGidWithBlockHash(
                 tx_list[i].gid(), 
                 view_block_item->qc().view_block_hash(), 
                 db_batch);
-    // #endif
+    #endif
             if (!pools::IsUserTransaction(tx_list[i].step())) {
                 prefix_db_->DeleteUesrTxInfo(view_block_item->qc().pool_index(), tx_list[i], db_batch);
             }

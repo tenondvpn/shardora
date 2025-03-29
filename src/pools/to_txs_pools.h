@@ -83,6 +83,8 @@ private:
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
     void StatisticToInfo(
         const view_block::protobuf::ViewBlockItem& view_block);
+    void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
+    void ThreadCallback();
 
     struct ToAddressItemInfo {
         uint64_t amount;
@@ -121,7 +123,10 @@ private:
         std::unordered_map<
             uint32_t, 
             std::unordered_set<CrossItem, CrossItemRecordHash>>> cross_sharding_map_[common::kInvalidPoolIndex];
-
+    std::shared_ptr<std::thread> handle_block_thread_;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> view_block_queue_;
+    std::condition_variable thread_wait_conn_;
+    std::mutex thread_wait_mutex_;
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };
 

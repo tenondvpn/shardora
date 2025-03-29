@@ -24,6 +24,9 @@ ToTxsPools::ToTxsPools(
     if (pools_mgr_ != nullptr) {
         LoadLatestHeights();
     }
+
+    handle_block_thread_ = std::make_shared<std::thread>(
+        std::bind(&ToTxsPools::ThreadCallback, this));
 }
 
 ToTxsPools::~ToTxsPools() {}
@@ -33,6 +36,27 @@ void ToTxsPools::NewBlock(
 #ifdef TEST_NO_CROSS
     return;
 #endif
+    view_block_queue_.push(view_block_ptr);
+    thread_wait_conn_.notify_one();
+}
+
+void ToTxsPools::ThreadCallback() {
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> block_ptr;
+    while (view_block_queue_.pop(&block_ptr)) {
+        ThreadToStatistic(block_ptr);
+    }
+
+    std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+    thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+}
+
+
+void ToTxsPools::ThreadToStatistic(
+    const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
+#ifdef TEST_NO_CROSS
+    return;
+#endif
+    view_block_queue_.push(view_block_ptr);
     auto& block = view_block_ptr->block_info();
     if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
         ZJC_DEBUG("network invalid: %d, local: %d", 
