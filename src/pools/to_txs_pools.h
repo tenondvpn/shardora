@@ -128,6 +128,8 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> view_block_queue_;
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
+    volatile bool destroy_ = false;
+    
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };
 

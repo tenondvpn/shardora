@@ -29,7 +29,10 @@ ToTxsPools::ToTxsPools(
         std::bind(&ToTxsPools::ThreadCallback, this));
 }
 
-ToTxsPools::~ToTxsPools() {}
+ToTxsPools::~ToTxsPools() {
+    destroy_ = true;
+    handle_block_thread_->join();
+}
 
 void ToTxsPools::NewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
@@ -41,13 +44,15 @@ void ToTxsPools::NewBlock(
 }
 
 void ToTxsPools::ThreadCallback() {
-    std::shared_ptr<view_block::protobuf::ViewBlockItem> block_ptr;
-    while (view_block_queue_.pop(&block_ptr)) {
-        ThreadToStatistic(block_ptr);
-    }
+    while (!destroy_) {
+        std::shared_ptr<view_block::protobuf::ViewBlockItem> block_ptr;
+        while (view_block_queue_.pop(&block_ptr)) {
+            ThreadToStatistic(block_ptr);
+        }
 
-    std::unique_lock<std::mutex> lock(thread_wait_mutex_);
-    thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+        thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+    }
 }
 
 
