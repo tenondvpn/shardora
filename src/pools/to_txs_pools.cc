@@ -44,6 +44,7 @@ void ToTxsPools::NewBlock(
 }
 
 void ToTxsPools::ThreadCallback() {
+    common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         std::shared_ptr<view_block::protobuf::ViewBlockItem> block_ptr;
         while (view_block_queue_.pop(&block_ptr)) {
