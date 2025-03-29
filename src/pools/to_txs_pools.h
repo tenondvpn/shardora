@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "common/node_members.h"
+#include "common/thread_safe_queue.h"
 #include "common/unique_map.h"
 #include "protos/address.pb.h"
 #include "protos/prefix_db.h"
