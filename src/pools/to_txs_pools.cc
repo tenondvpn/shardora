@@ -61,7 +61,6 @@ void ToTxsPools::ThreadToStatistic(
 #ifdef TEST_NO_CROSS
     return;
 #endif
-    view_block_queue_.push(view_block_ptr);
     auto& block = view_block_ptr->block_info();
     if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
         ZJC_DEBUG("network invalid: %d, local: %d", 
