@@ -2079,7 +2079,7 @@ public:
         db_batch.Put(key, std::string(value, sizeof(value)));
     }
 
-    void AddUserTxInfo(uint32_t pool_index, pools::protobuf::TxMessage& tx_info) {
+    void AddUserTxInfo(uint32_t pool_index, pools::protobuf::TxMessage& tx_info, db::DbWriteBatch& db_batch) {
         db::DbWriteBatch db_batch;
         tx_info.set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         std::string key;
@@ -2101,10 +2101,6 @@ public:
         gid_key.append(tx_info.gid());
         db_batch.Put(gid_key, key);
         db_batch.Put(key, tx_info.SerializeAsString());
-        auto st = db_->Put(db_batch);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
     }
 
     void DeleteUesrTxInfo(

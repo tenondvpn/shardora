@@ -170,7 +170,8 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
-
+    db::DbWriteBatch db_batch_;
+    uint32_t db_batch_tx_count_ = 0;
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;
 

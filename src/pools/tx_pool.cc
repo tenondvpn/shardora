@@ -176,7 +176,18 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
+    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info, db_batch_);
+    ++db_batch_tx_count_;
+    if (db_batch_tx_count_ >= kMaxToTxsCount * 3) {
+        auto st = db_->Put(db_batch_);
+        if (!st.ok()) {
+            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+        }
+
+        db_batch_ = db::DbWriteBatch();
+        db_batch_tx_count_ = 0;
+    }
+    
     ZJC_DEBUG("success add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
     return kPoolsSuccess;
 }
