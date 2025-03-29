@@ -176,7 +176,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    // prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
+    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
     ZJC_DEBUG("success add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
     return kPoolsSuccess;
 }
