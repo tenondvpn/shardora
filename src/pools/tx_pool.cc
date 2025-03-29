@@ -127,7 +127,6 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 void TxPool::CheckPopedTxs() {
-    return;
     db::DbReadOptions option;
     auto iter = db_->db()->NewIterator(option);
     std::string key;
@@ -154,6 +153,9 @@ void TxPool::CheckPopedTxs() {
                 tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
                 db_->Delete(iter->key().ToString());
                 added_txs_.push(tx_ptr);
+                if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+                    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
+                }
             }
         }
 
@@ -176,16 +178,8 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info, db_batch_);
-    ++db_batch_tx_count_;
-    if (db_batch_tx_count_ >= kMaxToTxsCount * 3) {
-        auto st = db_->Put(db_batch_);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-
-        db_batch_ = db::DbWriteBatch();
-        db_batch_tx_count_ = 0;
+    if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+        prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
     }
     
     ZJC_DEBUG("success add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());

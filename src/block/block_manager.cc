@@ -878,7 +878,10 @@ void BlockManager::AddNewBlock(
                 view_block_item->qc().view_block_hash(), 
                 db_batch);
     // #endif
-            prefix_db_->DeleteUesrTxInfo(view_block_item->qc().pool_index(), tx_list[i], db_batch);
+            if (!pools::IsUserTransaction(tx_list[i].step())) {
+                prefix_db_->DeleteUesrTxInfo(view_block_item->qc().pool_index(), tx_list[i], db_batch);
+            }
+            
             prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
             if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
                 account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
