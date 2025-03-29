@@ -127,6 +127,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 void TxPool::CheckPopedTxs() {
+    return;
     db::DbReadOptions option;
     auto iter = db_->db()->NewIterator(option);
     std::string key;
@@ -175,7 +176,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
+    // prefix_db_->AddUserTxInfo(pool_index_, *tx_ptr->tx_info);
     ZJC_DEBUG("success add tx gid: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
     return kPoolsSuccess;
 }
