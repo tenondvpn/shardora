@@ -2122,8 +2122,9 @@ public:
         std::string key;
         if (db_->Get(gid_key, &key).ok()) {
             db_batch.Delete(key);
-            db_batch.Delete(gid_key);
         }
+
+        db_batch.Delete(gid_key);
     }
 
 private:

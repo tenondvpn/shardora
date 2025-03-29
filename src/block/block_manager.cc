@@ -855,7 +855,6 @@ void BlockManager::AddNewBlock(
         }
 
         btime1 = common::TimeUtils::TimestampMs();
-        if (false) {
             // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
@@ -930,7 +929,6 @@ void BlockManager::AddNewBlock(
                 break;
             }
         }
-    }
 #endif
     auto btime2 = common::TimeUtils::TimestampMs();
     if (new_block_callback_ != nullptr) {
