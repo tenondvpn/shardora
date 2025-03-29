@@ -140,16 +140,18 @@ void TxPool::CheckPopedTxs() {
     int32_t valid_count = 0;
     auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
     while (iter->Valid() && added_txs_.size() < 2 * common::kMaxTxCount) {
-        auto tx_ptr = std::make_shared<TxItem>();
-        pools::protobuf::TxMessage& tx_info = tx_ptr->reload_tx_info;
-        if (tx_info.ParseFromString(iter->value().ToString())) {
-            if (tx_info.has_tx_debug_timeout_seconds()) {
-                if (tx_info.tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
+        auto msg_ptr = std::make_shared<shardora::transport::TransportMessage>();
+        auto* tx_info = msg_ptr->header.mutable_tx_proto();
+        if (tx_info->ParseFromString(iter->value().ToString())) {
+            if (tx_info->has_tx_debug_timeout_seconds()) {
+                if (tx_info->tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
                     break;
                 }
 
+                auto tx_ptr = pools_mgr_->CreateTxPtr(msg_ptr);
+                msg_ptr->msg_hash = pools::GetTxMessageHash(*tx_info);
+                tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
                 db_->Delete(iter->key().ToString());
-                tx_ptr->tx_info = &tx_ptr->reload_tx_info;
                 added_txs_.push(tx_ptr);
             }
         }

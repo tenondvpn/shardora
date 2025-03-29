@@ -129,6 +129,10 @@ public:
         item_functions_[type] = func;
     }
 
+    TxItemPtr CreateTxPtr(transport::MessagePtr& msg_ptr) {
+        return item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
+    }
+
     uint64_t latest_height(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_height();
     }
