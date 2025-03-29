@@ -2080,7 +2080,6 @@ public:
     }
 
     void AddUserTxInfo(uint32_t pool_index, pools::protobuf::TxMessage& tx_info, db::DbWriteBatch& db_batch) {
-        db::DbWriteBatch db_batch;
         tx_info.set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         std::string key;
         key.reserve(48);
