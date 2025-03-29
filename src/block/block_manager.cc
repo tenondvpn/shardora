@@ -883,51 +883,51 @@ void BlockManager::AddNewBlock(
             }
             
             // prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
-            // if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
-            //     account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
-            // }
+            if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
+                account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+            }
             
-            // if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            //     continue;
-            // }
+            if (tx_list[i].status() != consensus::kConsensusSuccess) {
+                continue;
+            }
 
-            // switch (tx_list[i].step()) {
-            // case pools::protobuf::kRootCreateAddress:
-            //     // ZJC_DEBUG("success handle root create address tx.");
-            //     ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
-            //     break;
-            // case pools::protobuf::kNormalTo: {
-            //     // HandleNormalToTx(view_block_item, tx_list[i], db_batch);
+            switch (tx_list[i].step()) {
+            case pools::protobuf::kRootCreateAddress:
+                // ZJC_DEBUG("success handle root create address tx.");
+                ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
+                break;
+            case pools::protobuf::kNormalTo: {
+                // HandleNormalToTx(view_block_item, tx_list[i], db_batch);
                 
 
-            //     // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-            //     //     "gid: %s, bls: %s, %s",
-            //     //     view_block_item->qc().network_id(),
-            //     //     view_block_item->qc().pool_index(),
-            //     //     block_item->height(),
-            //     //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            //     //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
-            //     //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
-            //     break;
-            // }
-            // case pools::protobuf::kConsensusRootTimeBlock:
-            //     prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
-            //     break;
-            // case pools::protobuf::kStatistic:
-            //     HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
-            //     break;
-            // case pools::protobuf::kCross:
-            //     assert(false);
-            //     break;
-            // case pools::protobuf::kConsensusRootElectShard:
-            //     HandleElectTx(*view_block_item, tx_list[i], db_batch);
-            //     break;
-            // case pools::protobuf::kJoinElect:
-            //     HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
-            //     break;
-            // default:
-            //     break;
-            // }
+                // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                //     "gid: %s, bls: %s, %s",
+                //     view_block_item->qc().network_id(),
+                //     view_block_item->qc().pool_index(),
+                //     block_item->height(),
+                //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
+                //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
+                break;
+            }
+            case pools::protobuf::kConsensusRootTimeBlock:
+                prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+                break;
+            case pools::protobuf::kStatistic:
+                HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kCross:
+                assert(false);
+                break;
+            case pools::protobuf::kConsensusRootElectShard:
+                HandleElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kJoinElect:
+                HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            default:
+                break;
+            }
         }
 #endif
     auto btime2 = common::TimeUtils::TimestampMs();
