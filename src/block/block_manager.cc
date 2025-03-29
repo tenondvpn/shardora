@@ -884,7 +884,7 @@ void BlockManager::AddNewBlock(
             
             prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
             if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
-                // account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+                account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
             }
             
             if (tx_list[i].status() != consensus::kConsensusSuccess) {
@@ -897,7 +897,7 @@ void BlockManager::AddNewBlock(
                 ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
                 break;
             case pools::protobuf::kNormalTo: {
-                HandleNormalToTx(view_block_item, tx_list[i], db_batch);
+                // HandleNormalToTx(view_block_item, tx_list[i], db_batch);
                 
 
                 // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
