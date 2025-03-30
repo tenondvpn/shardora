@@ -175,8 +175,10 @@ std::pair<cpp_int, cpp_int> ENCRYPT(const CRSParams& crs,
     cpp_int h2 = mp::powm(crs.g, q1, crs.p);
     
     // 计算密文
-    cpp_int C1 = (mp::powm(T_sum, q0, crs.p) * mp::powm(crs.h, q1, crs.p)) % crs.p;
-    cpp_int C2 = (message * mp::powm(crs.Z, q0 + q1, crs.p)) % crs.p;
+    cpp_int tmp_c1 = mp::powm(T_sum, q0, crs.p) * mp::powm(crs.h, q1, crs.p);
+    cpp_int C1 = tmp_c1 % crs.p;
+    cpp_int tmp_c2 = message * mp::powm(crs.Z, q0 + q1, crs.p);
+    cpp_int C2 = tmp_c2 % crs.p;
     
     return {C1, C2};
 }
