@@ -86,8 +86,9 @@ def ENCRYPT(mpk,msg,AS):
     cq=q0
     cs=s
     h1_inv = inverse(h1, p)
-    # print("h1=",h1)
-    # print("h1_=",h1_inv)
+    print("h1=",h1)
+    print("p=",p)
+    print("h1_=",h1_inv)
     # print("mul=",h1_inv*h1%p)
     h2=(h1_inv*h)%p
     c1=(msg*(pow(Z,s,p)))%p
