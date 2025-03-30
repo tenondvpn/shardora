@@ -2,7 +2,6 @@ import random
 from Crypto.Util.number import getPrime
 from Crypto.Util.number import inverse
 def SETUP(lamda):
-
     p = getPrime(lamda)
     a = random.randint(2, p - 2)
     g=2
@@ -171,13 +170,16 @@ crs=SETUP(16)
 (sk0,pk0)=KEYGEN(crs,0)
 (sk1,pk1)=KEYGEN(crs,1)
 (mpk,hsk0,hsk1)=AGGREGATE(crs,(pk0,pk1))
+print(f"crs: {crs}, sk0: {sk0}, sk1: {sk1}, pk0: {pk0}, pk1: {pk1}, mpk: {mpk}, hsk0: {hsk0}, hsk1: {hsk1}")
 ct=ENCRYPT(mpk,199,1)
 print("密文为", ct)
 m=DEC(ct,sk0,hsk0,mpk)
 print("解密后的消息为", m)
+print(f"crs: {crs}, sk0: {sk0}, sk1: {sk1}, pk0: {pk0}, pk1: {pk1}, mpk: {mpk}, hsk0: {hsk0}, hsk1: {hsk1}, ct: {ct}, m: {m}")
 u0 = random.randint(2, mpk[0] - 2)
 u1=  random.randint(2, mpk[0] - 2)
 rk=RKGEN((u0,u1),sk1,hsk1,1)
+
 ct_new=REENC(rk,ct)
 m2=DECRE(ct_new,sk1,hsk1,mpk)
 print("重加密的密文解密后的密文为", m2)
