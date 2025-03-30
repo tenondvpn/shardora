@@ -200,8 +200,15 @@ void TxPool::GetTxSyncToLeader(
         }
 
         front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        auto* tx = txs->Add();
-        *tx = *front_tx_ptr->tx_info;
+        if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
+            ZJC_DEBUG("gid invalid: %s, step is not user tx: %d", 
+                common::Encode::HexEncode(front_tx_ptr->tx_info->gid()).c_str(), 
+                front_tx_ptr->tx_info->step());
+        } else {
+            auto* tx = txs->Add();
+            *tx = *front_tx_ptr->tx_info;
+        }
+
         local_tx_queue_.push(front_tx_ptr);
     }
 }
