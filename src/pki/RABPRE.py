@@ -178,7 +178,7 @@ def DECRE(ct,sk,hsk,mpk):
 
 
 
-crs=SETUP(16)
+crs=SETUP(1024*1024)
 (sk0,pk0)=KEYGEN(crs,0)
 (sk1,pk1)=KEYGEN(crs,1)
 (mpk,hsk0,hsk1)=AGGREGATE(crs,(pk0,pk1))
