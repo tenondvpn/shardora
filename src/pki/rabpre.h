@@ -315,7 +315,7 @@ public:
 int test_rabpre_main() {
     try {
         // 参数初始化
-        auto crs = Rabpre::SETUP(1024);
+        auto crs = Rabpre::SETUP(1024 * 1024);
 
         // 密钥生成
         auto [sk0, pk0] = Rabpre::KEYGEN(crs, 0);
