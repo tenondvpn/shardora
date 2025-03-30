@@ -11,7 +11,7 @@ def sieve_of_eratosthenes(n):
                 primes[i] = False
         p += 1
     prime_numbers = [p for p in range(2, n) if primes[p]]
-    return prime_numbers
+    return prime_numbers[random.randint(0, len(prime_numbers))]
 
 def SETUP(lamda):
     p = sieve_of_eratosthenes(lamda)
