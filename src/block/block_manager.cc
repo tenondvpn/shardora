@@ -883,7 +883,6 @@ void BlockManager::AddNewBlock(
             }
             
             prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
-            break;
             if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
                 account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
             }
@@ -899,8 +898,6 @@ void BlockManager::AddNewBlock(
                 break;
             case pools::protobuf::kNormalTo: {
                 HandleNormalToTx(view_block_item, tx_list[i], db_batch);
-                
-
                 // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
                 //     "gid: %s, bls: %s, %s",
                 //     view_block_item->qc().network_id(),
