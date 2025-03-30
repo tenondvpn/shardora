@@ -839,22 +839,22 @@ void BlockManager::AddNewBlock(
         auto btime1 = common::TimeUtils::TimestampMs();
 #ifndef TEST_NO_CROSS
         // 当前节点和 block 分配的 shard 不同，要跨分片交易
-        if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
-            pools_mgr_->OnNewCrossBlock(view_block_item);
-            ZJC_DEBUG("new cross block coming: %u, %u, %lu",
-                view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-            btime10 = common::TimeUtils::TimestampMs();
-        } else {
-            if (statistic_mgr_) {
-                // statistic_mgr_->OnNewBlock(view_block_item);
-            }
+        // if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+        //     pools_mgr_->OnNewCrossBlock(view_block_item);
+        //     ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+        //         view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+        //     btime10 = common::TimeUtils::TimestampMs();
+        // } else {
+        //     if (statistic_mgr_) {
+        //         // statistic_mgr_->OnNewBlock(view_block_item);
+        //     }
 
-            to_txs_pool_->NewBlock(view_block_item);
-            btime10 = common::TimeUtils::TimestampMs();
-            zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
-        }
+        //     to_txs_pool_->NewBlock(view_block_item);
+        //     btime10 = common::TimeUtils::TimestampMs();
+        //     zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+        // }
 
-        btime1 = common::TimeUtils::TimestampMs();
+        // btime1 = common::TimeUtils::TimestampMs();
             // 处理交易信息
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
