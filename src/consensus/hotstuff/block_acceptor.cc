@@ -639,6 +639,7 @@ void BlockAcceptor::commit(
         *queue_item_ptr->final_db_batch);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
+        pools_mgr_->TxOver(pool_idx_, *queue_item_ptr->view_block_ptr);
         // tps measurement
         ADD_DEBUG_PROCESS_TIMESTAMP();
         CalculateTps(block->tx_list_size());

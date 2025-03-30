@@ -1567,6 +1567,7 @@ Status Hotstuff::Commit(
                 tmp_block->parent_hash(), 
                 tmp_block->qc().view());
             tmp_block_info->valid = true;
+            
             ADD_DEBUG_PROCESS_TIMESTAMP();
         } else {
             ZJC_DEBUG("now ignore commit view block %u_%u_%lu, hash: %s, parent hash: %s", 

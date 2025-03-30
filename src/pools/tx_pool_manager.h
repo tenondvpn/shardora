@@ -64,6 +64,10 @@ public:
         const pools::TxItemPtr& valid_tx);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
 
+    void TxOver(uint32_t pool_index, view_block::protobuf::ViewBlockItem& view_block) {
+        tx_pool_[pool_index].TxOver(view_block);
+    }
+
     uint32_t all_tx_size(uint32_t pool_index) const {
         return tx_pool_[pool_index].all_tx_size();
     }

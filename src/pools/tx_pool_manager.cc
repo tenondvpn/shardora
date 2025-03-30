@@ -390,12 +390,12 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
-            tx_pool_[pool_idx].CheckPopedTxs();
-        }
-    }
+    // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
+    // for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+    //     if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
+    //         tx_pool_[pool_idx].CheckPopedTxs();
+    //     }
+    // }
 
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {

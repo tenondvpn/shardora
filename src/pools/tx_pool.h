@@ -80,7 +80,7 @@ public:
             const std::string& prehash,
             const uint64_t timestamp);
     void SyncBlock();
-    void CheckPopedTxs();
+    void TxOver(view_block::protobuf::ViewBlockItem& view_block);
 
     uint32_t all_tx_size() const {
         return added_txs_.size() + consensus_added_txs_.size();
@@ -170,6 +170,7 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
+    std::unordered_map<std::string, TxItemPtr> local_tx_map_;
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;
 
