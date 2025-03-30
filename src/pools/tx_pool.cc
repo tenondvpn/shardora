@@ -172,8 +172,8 @@ void TxPool::GetTxSyncToLeader(
             *tx = *tx_ptr->tx_info;
         }
 
-        local_tx_map_[tx_ptr->tx_info->gid()] = tx_ptr;
-        local_tx_queue_.push(tx_ptr);
+        // local_tx_map_[tx_ptr->tx_info->gid()] = tx_ptr;
+        // local_tx_queue_.push(tx_ptr);
         tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         ZJC_DEBUG("success to leader tx gid: %s, local_tx_map_ size: %u", 
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
@@ -227,8 +227,8 @@ void TxPool::GetTxIdempotently(
 
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
         tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        local_tx_map_[tx_ptr->tx_info->gid()] = tx_ptr;
-        local_tx_queue_.push(tx_ptr);
+        // local_tx_map_[tx_ptr->tx_info->gid()] = tx_ptr;
+        // local_tx_queue_.push(tx_ptr);
         ZJC_DEBUG("gid success: %s, local_tx_map_ size: %u", 
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
             local_tx_map_.size());
