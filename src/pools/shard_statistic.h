@@ -35,9 +35,14 @@ public:
             std::shared_ptr<contract::ContractManager>& tmp_contract_mgr)
             : elect_mgr_(elect_mgr), secptr_(sec_ptr), pools_mgr_(pools_mgr), contract_mgr_(tmp_contract_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
+        handle_block_thread_ = std::make_shared<std::thread>(
+            std::bind(&ShardStatistic::ThreadCallback, this));
     }
 
-    ~ShardStatistic() {}
+    ~ShardStatistic() {
+        destroy_ = true;
+        handle_block_thread_->join();
+    }
     int Init();
     void OnNewElectBlock(
         uint32_t sharding_id,
@@ -88,6 +93,8 @@ public:
     std::string getLeaderIdFromBlock(const view_block::protobuf::ViewBlockItem &block);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
     void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
+    void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
+    void ThreadCallback();
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
@@ -114,6 +121,12 @@ public:
     std::map<uint64_t, std::map<uint32_t, StatisticInfoItem>> statistic_pool_info_;
     uint64_t latest_statisticed_height_ = 0;
     std::map<uint64_t, pools::protobuf::ElectStatistic> statistic_height_map_;
+
+    std::shared_ptr<std::thread> handle_block_thread_;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> view_block_queue_;
+    std::condition_variable thread_wait_conn_;
+    std::mutex thread_wait_mutex_;
+    volatile bool destroy_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

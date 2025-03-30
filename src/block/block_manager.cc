@@ -846,7 +846,7 @@ void BlockManager::AddNewBlock(
             btime10 = common::TimeUtils::TimestampMs();
         } else {
             if (statistic_mgr_) {
-                // statistic_mgr_->OnNewBlock(view_block_item);
+                statistic_mgr_->OnNewBlock(view_block_item);
             }
 
             to_txs_pool_->NewBlock(view_block_item);
