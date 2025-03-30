@@ -189,7 +189,7 @@ std::pair<cpp_int, cpp_int> ENCRYPT(const CRSParams& crs,
 int test_rabpre_main() {
     try {
         // 系统初始化
-        const unsigned SECURITY_BITS = 512;
+        const unsigned SECURITY_BITS = 199;
         auto crs = SETUP(SECURITY_BITS);
         
         // 生成密钥对
