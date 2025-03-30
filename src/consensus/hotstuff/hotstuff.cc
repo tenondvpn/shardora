@@ -2191,12 +2191,12 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     if (!has_user_tx_tag_ && !has_system_tx) {
-        ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
+        // ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
-        ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
+        // ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
         return;
     }
 
@@ -2223,7 +2223,7 @@ void Hotstuff::TryRecoverFromStuck(
 
     auto leader = leader_rotation()->GetLeader();
     if (!leader) {
-        ZJC_DEBUG("no leader");
+        // ZJC_DEBUG("no leader");
         return;
     }
     
@@ -2245,7 +2245,7 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     if (!has_user_tx_tag_) {
-        ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
+        // ZJC_DEBUG("pool: %u not has_user_tx_tag_.", pool_idx_);
         return;
     }
 
