@@ -173,10 +173,36 @@ void TxPool::GetTxSyncToLeader(
         }
 
         local_tx_map_[tx_ptr->tx_info->gid()] = tx_ptr;
+        local_tx_queue_.push(tx_ptr);
+        tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         ZJC_DEBUG("success to leader tx gid: %s, local_tx_map_ size: %u", 
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
             local_tx_map_.size());
         // local_poped_tx_queue_.push(tx_ptr);
+    }
+
+    auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
+    while (!local_tx_queue_.empty()) {
+        auto front_tx_ptr = local_tx_queue_.front();
+        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
+            break;
+        }
+
+        local_tx_queue_.pop();
+        auto iter = local_tx_map_.find(front_tx_ptr->tx_info->gid());
+        if (iter == local_tx_map_.end()) {
+            continue;
+        }
+
+        if (gid_vlid_func != nullptr && !gid_vlid_func(front_tx_ptr->tx_info->gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(front_tx_ptr->tx_info->gid()).c_str());
+            continue;
+        }
+
+        front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
+        auto* tx = txs->Add();
+        *tx = *front_tx_ptr->tx_info;
+        local_tx_queue_.push(front_tx_ptr);
     }
 }
 
@@ -193,10 +219,35 @@ void TxPool::GetTxIdempotently(
         }
 
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+        tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         local_tx_map_[tx_ptr->tx_info->gid()] = tx_ptr;
+        local_tx_queue_.push(tx_ptr);
         ZJC_DEBUG("gid success: %s, local_tx_map_ size: %u", 
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
             local_tx_map_.size());
+    }
+
+    auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
+    while (!local_tx_queue_.empty()) {
+        auto front_tx_ptr = local_tx_queue_.front();
+        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
+            break;
+        }
+
+        local_tx_queue_.pop();
+        auto iter = local_tx_map_.find(front_tx_ptr->tx_info->gid());
+        if (iter == local_tx_map_.end()) {
+            continue;
+        }
+
+        if (gid_vlid_func != nullptr && !gid_vlid_func(front_tx_ptr->tx_info->gid())) {
+            ZJC_DEBUG("gid invalid: %s", common::Encode::HexEncode(front_tx_ptr->tx_info->gid()).c_str());
+            continue;
+        }
+
+        front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
+        res_map[front_tx_ptr->unique_tx_hash] = front_tx_ptr;
+        local_tx_queue_.push(front_tx_ptr);
     }
 
     while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {

@@ -171,6 +171,7 @@ private:
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
     std::unordered_map<std::string, TxItemPtr> local_tx_map_;
+    std::queue<TxItemPtr> local_tx_queue_;
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;
 
