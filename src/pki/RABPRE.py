@@ -1,6 +1,42 @@
 import random
 # from Crypto.Util.number import getPrime
-from Crypto.Util.number import inverse
+# from Crypto.Util.number import inverse
+
+def inverse(a, m):
+    """
+    计算整数 a 在模 m 下的乘法逆元。
+    
+    参数:
+        a (int): 需要求逆元的整数
+        m (int): 模数（必须为正整数）
+    
+    返回:
+        int: a 在模 m 下的逆元 x，满足 (a * x) % m == 1
+    
+    异常:
+        ValueError: 如果逆元不存在（即 a 和 m 不互质，或 m <= 0）
+    """
+    if m <= 0:
+        raise ValueError("模数 m 必须是正整数")
+    
+    a = a % m  # 确保 a 是非负数
+    
+    # 扩展欧几里得算法初始化
+    old_r, r = a, m
+    old_s, s = 1, 0
+    
+    while r != 0:
+        # 计算当前商和更新系数
+        quotient = old_r // r
+        old_r, r = r, old_r - quotient * r
+        old_s, s = s, old_s - quotient * s
+    
+    # 检查是否存在逆元
+    if old_r != 1:
+        raise ValueError("逆元不存在（a 和 m 必须互质）")
+    
+    # 确保结果在 [0, m-1] 范围内
+    return old_s % m
 
 def sieve_of_eratosthenes(n):
     primes = [True] * (n + 1)
