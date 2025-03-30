@@ -333,7 +333,7 @@ int test_rabpre_main() {
         cout << "原始明文: " << plaintext << "\n解密结果: " << decrypted << endl;
 
         // 重加密测试
-        auto rk = Rabpre::RKGEN({0,0}, sk1, hsk1, 1);
+        auto rk = Rabpre::RKGEN({7,5}, sk1, hsk1, 1);
         auto ct_new = Rabpre::REENC(rk, ct);
         long long m2 = Rabpre::DECRE(ct_new, sk1, hsk1, mpk);
         cout << "重加密解密结果: " << m2 << endl;
