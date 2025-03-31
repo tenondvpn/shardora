@@ -794,12 +794,12 @@ void AccountManager::NewBlockWithTx(
         const view_block::protobuf::ViewBlockItem& view_block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("now handle new block %u_%u_%lu %lu, gid: %s",
+    ZJC_DEBUG("now handle new block %u_%u_%lu %lu, nonce: %lu",
         view_block_item.qc().network_id(), 
         view_block_item.qc().pool_index(), 
         view_block_item.qc().view(), 
         view_block_item.block_info().height(),
-        common::Encode::HexEncode(tx.gid()).c_str());
+        tx.nonce());
     switch (tx.step()) {
     case pools::protobuf::kRootCreateAddress:
         HandleRootCreateAddressTx(view_block_item, tx, db_batch);

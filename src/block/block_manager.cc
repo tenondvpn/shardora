@@ -368,26 +368,26 @@ void BlockManager::HandleNormalToTx(
             view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
     }
 
-    ZJC_DEBUG("success handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
+    ZJC_DEBUG("success handle nonce: %lu", tx.nonce());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
-            ZJC_DEBUG("x.storages(i).key() != protos::kNormalToShards handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
+            ZJC_DEBUG("x.storages(i).key() != protos::kNormalToShards handle nonce: %lu", tx.nonce());
             continue;
         }
 
         pools::protobuf::ToTxMessage to_txs;
         if (!to_txs.ParseFromString(tx.storages(i).value())) {
             ZJC_WARN("parse to txs failed.");
-            ZJC_DEBUG("parse to txs failed. handle gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
+            ZJC_DEBUG("parse to txs failed. handle nonce: %lu", tx.nonce());
             continue;
         }
 
-        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, gid: %s",
+        ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, nonce: %lu",
             to_txs.to_heights().sharding_id(),
             common::GlobalInfo::Instance()->network_id(),
             tx.step(),
-            common::Encode::HexEncode(tx.gid()).c_str());
+            tx.nonce());
 
         auto& heights = *to_txs.mutable_to_heights();
         heights.set_block_height(view_block.block_info().height());
@@ -435,12 +435,12 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, gid: %s",
+        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
             tos_item.step(),
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
-            common::Encode::HexEncode("gid").c_str());
+            0);
 
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
@@ -501,18 +501,15 @@ void BlockManager::RootHandleNormalToTx(
             tx->set_value(std::string(data, sizeof(data)));
         }
         
+        auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
+        msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
-        auto gid = common::Hash::keccak256(
-            tx->to() + "_" +
-            std::to_string(block.height()) + "_" +
-            std::to_string(i));
+        auto nonce = msg_ptr->address_info->nonce() + 1;
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
-        auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
-        msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
+        tx->set_nonce(nonce++);
 
         if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -525,24 +522,24 @@ void BlockManager::RootHandleNormalToTx(
                 tmp_tx->to() + "_" +
                 std::to_string(block.height()) + "_" +
                 std::to_string(i));
-            tmp_tx->set_gid(tmp_gid);
+            tmp_tx->set_nonce(nonce++);
             pools_mgr_->HandleMessage(msg_ptr);
             pools_mgr_->HandleMessage(tmp_msg_ptr);
             ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
-                "prepayment: %lu, gid: %s, tmp gid: %s",
+                "prepayment: %lu, nonce: %lu, tmp nonce: %lu",
                 common::Encode::HexEncode(tos_item.des()).c_str(),
                 common::Encode::HexEncode(tos_item.contract_from()).c_str(),
                 tos_item.amount(),
                 tos_item.prepayment(),
-                common::Encode::HexEncode(gid).c_str(),
-                common::Encode::HexEncode(tmp_gid).c_str());
+                nonce,
+                nonce);
         } else {
             pools_mgr_->HandleMessage(msg_ptr);
-            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s",
+            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
                 common::Encode::HexEncode(tos_item.des()).c_str(),
                 tos_item.amount(),
                 tos_item.prepayment(),
-                common::Encode::HexEncode(gid).c_str());
+                nonce);
         }
 
         
@@ -563,9 +560,9 @@ void BlockManager::HandleLocalNormalToTx(
     // 1. 单纯的转账交易（包括 prepayment），这种类型的交易聚合 amount 最终一起执行，聚合成 ConsensusLocalTos 交易即可
     // 2. 合约账户创建交易，涉及到 evm，需要按照 ContractCreate 交易执行
     // 根据有无 contract_from 字段区分
-    ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, gid: %s, step: %d", 
+    ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, nonce: %s, step: %d", 
         to_txs.tos_size(),
-        common::Encode::HexEncode(tx.gid()).c_str(),
+        tx.nonce(),
         step);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
@@ -578,18 +575,9 @@ void BlockManager::HandleLocalNormalToTx(
         }
         
         protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(addr);
-        // ZJC_DEBUG("0 handle local to has_library_bytes: %d, des: %s, gid: %s, addr: %s, "
-        //     "not has addr: %d, to_tx.sharding_id(): %d, addr sharding id: %d", 
-        //     to_tx.has_library_bytes(),
-        //     common::Encode::HexEncode(to_tx.des()).c_str(),
-        //     common::Encode::HexEncode(tx.gid()).c_str(),
-        //     common::Encode::HexEncode(addr).c_str(),
-        //     (account_info == nullptr),
-        //     to_tx.sharding_id(),
-        //     (account_info == nullptr ? 0 : account_info->sharding_id()));
-        ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, gid: %s, step: %d, addr: %s, account_info == nullptr: %d", 
+        ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, nonce: %lu, step: %d, addr: %s, account_info == nullptr: %d", 
             to_txs.tos_size(),
-            common::Encode::HexEncode(tx.gid()).c_str(),
+            tx.nonce(),
             step,
             common::Encode::HexEncode(addr).c_str(),
             (account_info == nullptr));
@@ -621,10 +609,10 @@ void BlockManager::HandleLocalNormalToTx(
             // ZJC_DEBUG("root create address coming %s, shard: %u, pool: %u",
             //     common::Encode::HexEncode(addr).c_str(), sharding_id, pool_index);
         } else {
-            ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, gid: %s, step: %d, addr: %s, "
+            ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, nonce: %lu, step: %d, addr: %s, "
                 "to_tx.sharding_id(): %d, account_info->sharding_id(): %d", 
                 to_txs.tos_size(),
-                common::Encode::HexEncode(tx.gid()).c_str(),
+                tx.nonce(),
                 step,
                 common::Encode::HexEncode(addr).c_str(),
                 to_tx.sharding_id(),
@@ -643,10 +631,10 @@ void BlockManager::HandleLocalNormalToTx(
         }
 
         // 转账类型交易根据 to 地址聚合到一个 map 中
-        ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, gid: %s", 
+        ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
             to_tx.has_library_bytes(),
             common::Encode::HexEncode(to_tx.des()).c_str(),
-            common::Encode::HexEncode(tx.gid()).c_str());
+            tx.nonce());
         if (to_tx.amount() > 0) {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
@@ -711,16 +699,16 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(to_tx.gid() + msg_ptr->address_info->addr());
+        auto nonce = msg_ptr->address_info->nonce() + 1;
         tx->set_gas_limit(0);
         tx->set_amount(0); // 具体 amount 在 kv 中
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
+        tx->set_nonce(nonce);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_DEBUG("success add local transfer tx tos hash: %s, gid: %s, src to tx gid: %s, val: %s",
+        ZJC_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(to_tx.gid()).c_str(),
+            nonce,
+            nonce,
             common::Encode::HexEncode(val).c_str());
     }
 }
@@ -789,7 +777,7 @@ void BlockManager::createConsensusLocalToTxs(
 //         tx->set_amount(to_msg.amount());
 //         tx->set_contract_code(to_msg.library_bytes());
         
-//         ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, "
+//         ZJC_DEBUG("create contract to tx add to pool, to: %s, nonce: %lu, "
 //             "cc_hash: %s, pool_idx: %lu, amount: %lu",
 //             common::Encode::HexEncode(to_msg.des()).c_str(),
 //             common::Encode::HexEncode(gid).c_str(),
@@ -859,7 +847,7 @@ void BlockManager::AddNewBlock(
         for (int32_t i = 0; i < tx_list.size(); ++i) {
     //         ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
     //             "tx size: %u, hash: %s, phash: %s, elect height: %lu, "
-    //             "tm height: %lu, gid: %s, status: %d, step: %d",
+    //             "tm height: %lu, nonce: %lu, status: %d, step: %d",
     //             view_block_item->qc().network_id(),
     //             view_block_item->qc().pool_index(),
     //             block_item->height(),
@@ -878,7 +866,6 @@ void BlockManager::AddNewBlock(
                 view_block_item->qc().view_block_hash(), 
                 db_batch);
     #endif
-            prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
             if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
                 account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
             }
@@ -895,7 +882,7 @@ void BlockManager::AddNewBlock(
             case pools::protobuf::kNormalTo: {
                 HandleNormalToTx(view_block_item, tx_list[i], db_batch);
                 // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-                //     "gid: %s, bls: %s, %s",
+                //     "nonce: %lu, bls: %s, %s",
                 //     view_block_item->qc().network_id(),
                 //     view_block_item->qc().pool_index(),
                 //     block_item->height(),
@@ -991,23 +978,23 @@ void BlockManager::AddNewBlock(
 
         for (int32_t debug_idx = 0; debug_idx < debug_len; ++debug_idx) {
             if (debug_idx == 0) {
-                ZJC_INFO("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                ZJC_INFO("tx delay debug step: %d, nonce: %lu, use time: %lu, all_time: %lu, pos: %s",
                     tx_list[i].step(),
-                    common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                    tx_list[i].nonce(), 
                     tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
                     (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
                     tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
             } else {
                 // debug_idx -= 1;
                 // if (debug_idx == 0) {
-                //     ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                //     ZJC_DEBUG("tx delay debug step: %d, nonce: %lu, use time: %lu, all_time: %lu, pos: %s",
                 //         tx_list[i].step(),
                 //         common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
                 //         tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms(), 
                 //         (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
                 //         tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
                 // } else {
-                //     ZJC_DEBUG("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                //     ZJC_DEBUG("tx delay debug step: %d, nonce: %lu, use time: %lu, all_time: %lu, pos: %s",
                 //         tx_list[i].step(),
                 //         common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
                 //         (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
@@ -1016,9 +1003,9 @@ void BlockManager::AddNewBlock(
                 // }
                 
                 // debug_idx += 1;
-                ZJC_INFO("tx delay debug step: %d, gid: %s, use time: %lu, all_time: %lu, pos: %s",
+                ZJC_INFO("tx delay debug step: %d, nonce: %lu, use time: %lu, all_time: %lu, pos: %s",
                     tx_list[i].step(),
-                    common::Encode::HexEncode(tx_list[i].gid()).c_str(), 
+                    tx_list[i].nonce(),
                     (tx_list[i].tx_debug(debug_idx).tx_debug_tm_ms() - tx_list[i].tx_debug(debug_idx - 1).tx_debug_tm_ms()), 
                     (tx_list[i].tx_debug(debug_len - 1).tx_debug_tm_ms() - tx_list[i].tx_debug(0).tx_debug_tm_ms()),
                     tx_list[i].tx_debug(debug_idx).tx_debug_info().c_str());
@@ -1093,7 +1080,7 @@ void BlockManager::HandleElectTx(
 
             AddMiningToken(view_block.qc().view_block_hash(), elect_block);
             if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
-                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info->gid() == tx.gid()) {
+                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info->nonce() == tx.nonce()) {
                     shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
                     ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
                 }
@@ -1126,9 +1113,6 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
     // }
 
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto gid = common::Hash::keccak256(
-            std::to_string(common::GlobalInfo::Instance()->network_id()) + "_" +
-            std::to_string(height) + kPoolStatisticTagPrefix + std::to_string(i));
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(i);
         auto tx = msg_ptr->header.mutable_tx_proto();
@@ -1143,11 +1127,11 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
+        tx->set_nonce(msg_ptr->address_info->nonce() + 1);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success create kPoolStatisticTag gid: %s, pool idx: %u, "
+        ZJC_INFO("success create kPoolStatisticTag nonce: %lu, pool idx: %u, "
             "pool addr: %s, addr get pool: %u, height: %lu",
-            common::Encode::HexEncode(gid).c_str(), 
+            tx->nonce(), 
             i,
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             common::GetAddressPoolIndex(msg_ptr->address_info->addr()),
@@ -1213,13 +1197,12 @@ void BlockManager::AddMiningToken(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(std::string("mining") + tos_hash + block_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
+        tx->set_nonce(msg_ptr->address_info->nonce() + 1);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("mining success create kConsensusLocalTos gid: %s", common::Encode::HexEncode(gid).c_str());
+        ZJC_INFO("mining success create kConsensusLocalTos nonce: %lu", tx->nonce());
     }
 }
 
@@ -1367,12 +1350,11 @@ void BlockManager::CreateStatisticTx() {
             tx->set_value(elect_statistic.SerializeAsString());
             tx->set_pubkey("");
             tx->set_step(pools::protobuf::kStatistic);
-            auto gid = common::Hash::keccak256(
-                statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
             tx->set_gas_limit(0);
             tx->set_amount(0);
             tx->set_gas_price(common::kBuildinTransactionGasPrice);
-            tx->set_gid(gid);
+            new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
+            tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
             auto tx_ptr = std::make_shared<BlockTxsItem>();
             tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
@@ -1382,12 +1364,12 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
                 "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
-                "gid: %s, timeblock_height: %lu",
+                "nonce: %lu, timeblock_height: %lu",
                 common::Encode::HexEncode(statistic_hash).c_str(),
                 0,
                 "", tx_ptr->timeout,
                 kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
-                common::Encode::HexEncode(gid).c_str(),
+                tx->nonce(),
                 timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
             CHECK_MEMORY_SIZE(shard_statistics_map_);
@@ -1466,11 +1448,10 @@ void BlockManager::HandleStatisticBlock(
         tx->set_pubkey("");
         tx->set_to(new_msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusRootElectShard);
-        auto gid = common::Hash::keccak256(kShardElectPrefix + tx->value());
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
+        tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
         auto shard_elect_tx = std::make_shared<BlockTxsItem>();
         shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
         shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
@@ -1479,9 +1460,9 @@ void BlockManager::HandleStatisticBlock(
         shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
         shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
         shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
-        ZJC_INFO("success add elect tx: %u, %lu, gid: %s, txhash: %s, statistic elect height: %lu",
+        ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, txhash: %s, statistic elect height: %lu",
             view_block.qc().network_id(), block.timeblock_height(),
-            common::Encode::HexEncode(gid).c_str(),
+            tx->nonce(),
             common::Encode::HexEncode(shard_elect_tx->tx_ptr->unique_tx_hash).c_str(),
             0);
     }
@@ -1537,7 +1518,7 @@ pools::TxItemPtr BlockManager::GetToTx(
     //     std::string gid = GetToTxGid();
     //     auto tx_ptr = iter->second;
     //     tx_ptr->tx_info->set_gid(gid);
-    //     ZJC_INFO("success get exists to tx tx info: %s, gid: %s, val: %s, heights: %s", 
+    //     ZJC_INFO("success get exists to tx tx info: %s, nonce: %lu, val: %s, heights: %s", 
     //         "ProtobufToJson(*(tx_ptr->tx_info)).c_str()",
     //         common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(), 
     //         common::Encode::HexEncode(tx_ptr->tx_info->value()).c_str(),
@@ -1549,9 +1530,9 @@ pools::TxItemPtr BlockManager::GetToTx(
     if (tx_ptr != nullptr) {
         // heights_str_map_[height_hash] = tx_ptr;
         // CHECK_MEMORY_SIZE(heights_str_map_);
-        ZJC_INFO("success get to tx tx info: %s, gid: %s, val: %s, heights: %s",
+        ZJC_INFO("success get to tx tx info: %s, nonce: %lu, val: %s, heights: %s",
             ProtobufToJson(*tx_ptr->tx_info).c_str(),
-            common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(), 
+            tx_ptr->tx_info->nonce(), 
             "common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str()",
             ProtobufToJson(heights).c_str());
     } else {
@@ -1573,12 +1554,12 @@ std::string BlockManager::GetToTxGid() {
             std::to_string(common::GlobalInfo::Instance()->network_id()) +
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
-        // ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+        // ZJC_DEBUG("set to tx nonce: %lu, latest to block height: %lu, timestamp: %lu", 
         //     common::Encode::HexEncode(gid).c_str(),
         //     latest_to_block->block_info().height(), 
         //     latest_to_block->block_info().timestamp());
     } else {
-        // ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+        // ZJC_DEBUG("default 0000 set to tx nonce: %lu, latest to block height: %lu, timestamp: %lu", 
         //     common::Encode::HexEncode(gid).c_str(), 0, 0);
     }
     
@@ -1624,7 +1605,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_gid(gid);
+    tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
     tx_ptr->unique_tx_hash = tos_hashs;
@@ -1663,7 +1644,7 @@ void BlockManager::PopTxTicker() {
     if (static_tmp_map != nullptr) {
         for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
             ZJC_DEBUG("now pop statistic tx tx hash: %s, tm height: %lu",
-                common::Encode::HexEncode(iter->second->tx_ptr->tx_info->gid()).c_str(), iter->first);
+                iter->second->tx_ptr->tx_info->nonce(), iter->first);
         }
 
         auto valid_got_latest_statistic_map_ptr_index_tmp = (valid_got_latest_statistic_map_ptr_index_ + 1) % 2;
@@ -1691,14 +1672,14 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
         return false;
     }
 
-    if (!gid_valid_fn(GetToTxGid())) {
-        ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
-            pool_index, 
-            common::Encode::HexEncode(GetToTxGid()).c_str());
-        return false;
-    }
+    // if (!gid_valid_fn(GetToTxGid())) {
+    //     ZJC_DEBUG("invalid has to tx %u, tx nonce: %lu", 
+    //         pool_index, 
+    //         common::Encode::HexEncode(GetToTxGid()).c_str());
+    //     return false;
+    // }
 
-    ZJC_DEBUG("has to tx %u, tx gid: %s", 
+    ZJC_DEBUG("has to tx %u, tx nonce: %lu", 
         pool_index, 
         common::Encode::HexEncode(GetToTxGid()).c_str());
     return true;
@@ -1735,11 +1716,13 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunct
             return false;
         }
 
-        if (!gid_valid_fn(iter->second->tx_ptr->tx_info->gid())) {
+        if (!gid_valid_fn(
+                iter->second->tx_ptr->address_info->addr(), 
+                iter->second->tx_ptr->tx_info->nonce())) {
             return false;
         }
 
-        // ZJC_DEBUG("has statistic %u, tx gid: %s", 
+        // ZJC_DEBUG("has statistic %u, tx nonce: %lu", 
         //     pool_index, 
         //     common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
         return true;
@@ -1758,13 +1741,15 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckGidValidFunction 
             continue;
         }
 
-        if (!gid_valid_fn(shard_elect_tx_[i]->tx_ptr->tx_info->gid())) {
+        if (!gid_valid_fn(
+                shard_elect_tx_[i]->tx_ptr->address_info->addr(), 
+                shard_elect_tx_[i]->tx_ptr->tx_info->nonce())) {
             return false;
         }
         
-        ZJC_DEBUG("has elect %u, tx gid: %s", 
+        ZJC_DEBUG("has elect %u, tx nonce: %lu", 
             pool_index, 
-            common::Encode::HexEncode(shard_elect_tx_[i]->tx_ptr->tx_info->gid()).c_str());
+            shard_elect_tx_[i]->tx_ptr->tx_info->nonce());
         return true;
     }
 
@@ -1773,8 +1758,8 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckGidValidFunction 
 
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
-        const std::string& tx_gid) {
-    bool leader = tx_gid.empty();
+        uint64_t nonce) {
+    bool leader = (nonce == 0);
     while (shard_statistics_map_ptr_queue_.size() > 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
     }
@@ -1798,15 +1783,15 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             break;
         }
 
-        if (iter->second->tx_ptr->tx_info->gid() == tx_gid) {
+        if (iter->second->tx_ptr->tx_info->nonce() == nonce) {
             shard_statistic_tx = iter->second;
             break;
         }
     }
 
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr, tx_gid: %s, is leader: %d",
-            common::Encode::HexEncode(tx_gid).c_str(),
+        ZJC_DEBUG("shard_statistic_tx == nullptr, nonce: %s, is leader: %d",
+            nonce,
             leader);
         if (pool_index == common::kRootChainPoolIndex) {
             assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
