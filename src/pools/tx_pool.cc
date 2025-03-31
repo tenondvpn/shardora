@@ -178,7 +178,6 @@ void TxPool::GetTxSyncToLeader(
         ZJC_DEBUG("success to leader tx gid: %s, local_tx_map_ size: %u", 
             common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
             local_tx_map_.size());
-        // local_poped_tx_queue_.push(tx_ptr);
     }
 
     auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
