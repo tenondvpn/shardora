@@ -41,7 +41,7 @@ public:
             for (auto tm_iter = value->begin(); tm_iter != value->end();) {
                 if (tm_iter->first + kQpsWindowSeconds * 2 >= now_timestamp_seconds_10) {
                     now_qps_windows += tm_iter->second;
-                    ++tm_iter
+                    ++tm_iter;
                 } else {
                     tm_iter = value->erase(tm_iter);
                 }
