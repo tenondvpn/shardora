@@ -1477,8 +1477,8 @@ void WsServer::Transaction(websocketpp::connection_hdl hdl, const std::string& e
         }
 
         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-        ZJC_DEBUG("success send chain message: %s:%d, gid: %s, hash64: %lu",
-            item[0], port, common::Encode::HexEncode(tx.gid()).c_str(), chain_msg.hash64());
+        ZJC_DEBUG("success send chain message: %s:%d, nonce: %lu, hash64: %lu",
+            item[0], port, tx.nonce(), chain_msg.hash64());
     }
 
     C2cResponse(hdl, c2c_msg.msg_id(), 0, "ok");

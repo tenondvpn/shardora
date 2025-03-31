@@ -57,8 +57,8 @@ Status BlockWrapper::Wrap(
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
-    auto gid_valid_func = [&](const std::string& gid) -> bool {
-        return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
+    auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
+        return view_block_chain->CheckTxGidValid(addr, nonce, prev_view_block->qc().view_block_hash());
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);

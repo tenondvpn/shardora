@@ -216,9 +216,9 @@ Status BlockAcceptor::addTxsToPool(
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
-        if (view_block_chain && !view_block_chain->CheckTxGidValid(tx->gid(), parent_hash)) {
-            ZJC_WARN("check tx gid failed: %s, phash: %s", 
-                common::Encode::HexEncode(tx->gid()).c_str(), 
+        if (view_block_chain && !view_block_chain->CheckTxNonceValid(tx->to(), tx->nonce(), parent_hash)) {
+            ZJC_WARN("check tx nonce failed: %lu, phash: %s", 
+                tx->nonce(), 
                 common::Encode::HexEncode(parent_hash).c_str());
             return Status::kError;
         }
@@ -247,7 +247,7 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         if (!address_info) {
-            ZJC_WARN("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
+            ZJC_WARN("get address failed nonce: %lu", tx->nonce());
             return Status::kError;
         }
 
@@ -325,15 +325,16 @@ Status BlockAcceptor::addTxsToPool(
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::ToTxItem>(msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto gid = tx_pools_->GetToTxGid();
-                if (view_block_chain->CheckTxGidValid(gid, parent_hash)) {
-                    auto tx_item = tx_pools_->GetToTxs(
-                        pool_idx(), 
-                        all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
-                    if (tx_item != nullptr && !tx_item->txs.empty()) {
-                        tx_ptr = tx_item->txs.begin()->second;
-                    }
-                }
+                // auto gid = tx_pools_->GetToTxGid();
+                // if (view_block_chain->CheckTxGidValid(gid, parent_hash)) {
+                //     auto tx_item = tx_pools_->GetToTxs(
+                //         pool_idx(), 
+                //         all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
+                //     if (tx_item != nullptr && !tx_item->txs.empty()) {
+                //         tx_ptr = tx_item->txs.begin()->second;
+                //     }
+                // }
+                assert(false);
             }
             
             break;
@@ -346,12 +347,12 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), tx->gid());
+                auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), 0);
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
                     tx_ptr = tx_item->txs.begin()->second;
                 } else {
-                    ZJC_WARN("failed get statistic gid: %s, pool: %u, tx_proto: %s",
-                        common::Encode::HexEncode(tx->gid()).c_str(), pool_idx_, ProtobufToJson(*tx).c_str());
+                    ZJC_WARN("failed get statistic nonce: %lu, pool: %u, tx_proto: %s",
+                        tx->nonce(), pool_idx_, ProtobufToJson(*tx).c_str());
                     // assert(false);
                 }
             }
