@@ -56,7 +56,9 @@ public:
         bool* has_user_tx, 
         bool* has_system_tx);
     void InitCrossPools();
-    void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
+    void BftCheckInvalidGids(
+        uint32_t pool_index, 
+        std::vector<std::shared_ptr<InvalidGidItem>>& items);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     int BackupConsensusAddTxs(
         transport::MessagePtr msg_ptr, 
