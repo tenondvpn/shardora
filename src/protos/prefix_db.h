@@ -745,23 +745,12 @@ public:
 
     bool JustCheckCommitedGidExists(const std::string& gid) {
         // TODO: perf test
+        return false;
         std::string key = kCommitedGidPrefix + gid;
         if (db_->Exist(key)) {
             return true;
         }
 
-        return false;
-    }
-
-    bool CheckAndSaveGidExists(const std::string& gid) {
-        // TODO: perf test
-        std::string key = kGidPrefix + gid;
-        if (db_->Exist(key)) {
-            return true;
-        }
-        
-        // db_->Put(key, "1");
-        // ZJC_DEBUG("success save tx gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), false);
         return false;
     }
 
