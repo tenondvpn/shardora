@@ -87,7 +87,7 @@ public:
         block_tx.set_balance(from_balance);
         block_tx.set_gas_used(gas_used);
         ZJC_DEBUG("create library called handle tx success nonce: %lu, %lu, %lu, status: %d",
-            block_tx.nonce().c_str(),
+            block_tx.nonce(),
             block_tx.balance(),
             block_tx.gas_used(),
             block_tx.status());
