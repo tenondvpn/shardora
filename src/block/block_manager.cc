@@ -1216,7 +1216,7 @@ void BlockManager::LoadLatestBlocks() {
         auto& block = *tmblock_ptr;
         if (GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                common::kRootChainPoolIndex,
+                common::kImmutablePoolSize,
                 tmblock.height(),
                 block) == kBlockSuccess) {
             ZJC_DEBUG("load latest elect block called!");
@@ -1680,7 +1680,7 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid
 }
 
 bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
-    if (pool_index != common::kRootChainPoolIndex) {
+    if (pool_index != common::kImmutablePoolSize) {
         return false;
     }
 
@@ -1787,7 +1787,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         ZJC_DEBUG("shard_statistic_tx == nullptr, nonce: %s, is leader: %d",
             nonce,
             leader);
-        if (pool_index == common::kRootChainPoolIndex) {
+        if (pool_index == common::kImmutablePoolSize) {
             assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
         }
         return nullptr;

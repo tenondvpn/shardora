@@ -71,7 +71,7 @@ enum AddressType {
   kRootElect = 2,
   kRootTimer = 3,
   kStatistic = 4,
-  kToTxAddress = 5,
+  kImmutablePoolAddress = 5,
   kLocalToTxAddress = 6,
   kElectAddress = 7,
   kContractPrepayment = 8,

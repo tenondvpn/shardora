@@ -113,11 +113,11 @@ private:
             view_block::protobuf::ViewBlockItem view_block;
             if (!prefix_db_->GetBlockWithHeight(
                     sharding_id,
-                    common::kRootChainPoolIndex,
+                    common::kImmutablePoolSize,
                     check_height,
                     &view_block)) {
                 ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu, max height: %lu",
-                    sharding_id, common::kRootChainPoolIndex, check_height,
+                    sharding_id, common::kImmutablePoolSize, check_height,
                     cross_synced_max_heights_[sharding_id]);
                 if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64) {
                     uint32_t count = 0;
@@ -129,11 +129,11 @@ private:
 
                         ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                             sharding_id,
-                            common::kRootChainPoolIndex,
+                            common::kImmutablePoolSize,
                             h);
                         kv_sync_->AddSyncHeight(
                                 sharding_id,
-                                common::kRootChainPoolIndex,
+                                common::kImmutablePoolSize,
                                 h,
                                 sync::kSyncPriLow);
                     }

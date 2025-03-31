@@ -46,7 +46,7 @@ public:
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo>& pools_address_info(uint32_t pool_idx) {
-        if (pool_idx == common::kRootChainPoolIndex) {
+        if (pool_idx == common::kImmutablePoolSize) {
             return root_pool_address_info_;
         }
 

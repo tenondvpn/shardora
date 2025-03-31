@@ -200,7 +200,6 @@ enum VipLevel {
 
 static const uint32_t kImmutablePoolSize = 32u;
 static const uint32_t kMaxTxCount = 2048u;
-static const uint32_t kRootChainPoolIndex = kImmutablePoolSize;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;
 static const uint16_t kDefaultVpnPort = 9033u;
@@ -267,8 +266,8 @@ static const uint32_t kDefaultBroadcastHopLimit = 5u;
 static const uint32_t kDefaultBroadcastHopToLayer = 2u;
 static const uint32_t kDefaultBroadcastNeighborCount = 7u;
 static const uint64_t kBuildinTransactionGasPrice = 999999999lu;
-static const std::string kRootPoolsAddress = common::Encode::HexDecode(
-    "0000000000000000000000000000000000000000");
+static const std::string kRootPoolsAddressPrefix = common::Encode::HexDecode(
+    "000000000000000000000000000000000000");
 
 #pragma pack(push)
 #pragma pack(1)

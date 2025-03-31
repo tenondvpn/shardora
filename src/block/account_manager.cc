@@ -52,9 +52,9 @@ void AccountManager::CreatePoolsAddressInfo() {
     root_pool_address_info_->set_pubkey("");
     root_pool_address_info_->set_balance(0);
     root_pool_address_info_->set_sharding_id(-1);
-    root_pool_address_info_->set_pool_index(common::kRootChainPoolIndex);
+    root_pool_address_info_->set_pool_index(common::kImmutablePoolSize);
     root_pool_address_info_->set_addr(common::kRootPoolsAddress);
-    root_pool_address_info_->set_type(address::protobuf::kToTxAddress);
+    root_pool_address_info_->set_type(address::protobuf::kImmutablePoolAddress);
     root_pool_address_info_->set_latest_height(0);
     uint32_t i = 0;
     std::unordered_set<uint32_t> pool_idx_set;
@@ -81,7 +81,7 @@ void AccountManager::CreatePoolsAddressInfo() {
         pool_address_info_[pool_idx]->set_sharding_id(-1);
         pool_address_info_[pool_idx]->set_pool_index(pool_idx);
         pool_address_info_[pool_idx]->set_addr(addr);
-        pool_address_info_[pool_idx]->set_type(address::protobuf::kToTxAddress);
+        pool_address_info_[pool_idx]->set_type(address::protobuf::kImmutablePoolAddress);
         pool_address_info_[pool_idx]->set_latest_height(0);
         
         pool_idx_set.insert(pool_idx);

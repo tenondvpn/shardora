@@ -554,7 +554,7 @@ void ElectTxItem::SetPrevElectInfo(
     if (!res) {
         ELECT_ERROR("get prev block error[%d][%d][%lu].",
                     network::kRootCongressNetworkId,
-                    common::kRootChainPoolIndex,
+                    common::kImmutablePoolSize,
                     elect_block.prev_members().prev_elect_height());
         return;
     }

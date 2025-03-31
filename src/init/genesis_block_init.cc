@@ -150,6 +150,53 @@ int GenesisBlockInit::CreateGenesisBlocks(
     return res;
 }
 
+
+// 网络中每个 pool 都有个 address
+void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
+    immutable_pool_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
+    std::string immutable_pool_addr;
+    immutable_pool_addr.reserve(security::kUnicastAddressLength);
+    immutable_pool_addr.append(common::kRootPoolsAddressPrefix);
+    immutable_pool_addr.append(std::string((char*)&network_id, sizeof(network_id)));
+    immutable_pool_address_info_->set_pubkey("");
+    immutable_pool_address_info_->set_balance(0);
+    immutable_pool_address_info_->set_sharding_id(network_id);
+    immutable_pool_address_info_->set_pool_index(common::kImmutablePoolSize);
+    immutable_pool_address_info_->set_addr(immutable_pool_addr);
+    immutable_pool_address_info_->set_type(address::protobuf::kImmutablePoolAddress);
+    immutable_pool_address_info_->set_latest_height(0);
+    immutable_pool_address_info_->set_nonce(0);
+    uint32_t i = 0;
+    std::unordered_set<uint32_t> pool_idx_set;
+    for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
+        auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(network_id));
+        auto addr = hash.substr(
+            hash.size() - security::kUnicastAddressLength, 
+            security::kUnicastAddressLength);
+        auto pool_idx = common::GetAddressPoolIndex(addr);
+        if (pool_idx_set.size() > common::kImmutablePoolSize) {
+            break;
+        }
+
+        auto iter = pool_idx_set.find(pool_idx);
+        if (iter != pool_idx_set.end()) {
+            continue;
+        }
+
+        pool_address_info_[pool_idx] = std::make_shared<address::protobuf::AddressInfo>();
+        pool_address_info_[pool_idx]->set_pubkey("");
+        pool_address_info_[pool_idx]->set_balance(0);
+        pool_address_info_[pool_idx]->set_sharding_id(network_id);
+        pool_address_info_[pool_idx]->set_pool_index(pool_idx);
+        pool_address_info_[pool_idx]->set_addr(addr);
+        pool_address_info_[pool_idx]->set_type(address::protobuf::kPoolAddress);
+        pool_address_info_[pool_idx]->set_latest_height(0);
+        pool_address_info_[pool_idx]->set_nonce(0);
+        
+        pool_idx_set.insert(pool_idx);
+    }
+}
+
 void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
     pools::protobuf::ShardToTxItem heights;
     heights.set_sharding_id(shard_id);
@@ -576,7 +623,7 @@ void GenesisBlockInit::SetPrevElectInfo(
     if (!res) {
         ELECT_ERROR("get prev block error[%d][%d][%lu].",
             network::kRootCongressNetworkId,
-            common::kRootChainPoolIndex,
+            common::kImmutablePoolSize,
             elect_block.prev_members().prev_elect_height());
         return;
     }
@@ -819,7 +866,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         view_block_ptr->set_parent_hash(root_pre_vb_hash);
         if (CreateAllQc(
                 common::GlobalInfo::Instance()->network_id(),
-                common::kRootChainPoolIndex,
+                common::kImmutablePoolSize,
                 root_single_block_view++, 
                 genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
@@ -885,7 +932,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         view_block_ptr->set_parent_hash(root_pre_vb_hash);
         if (CreateAllQc(
                 common::GlobalInfo::Instance()->network_id(),
-                common::kRootChainPoolIndex,
+                common::kImmutablePoolSize,
                 root_single_block_view++, 
                 genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
@@ -1002,7 +1049,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     // flush 磁盘
     db_->Put(db_batch);
     {
-        auto addr_info = account_mgr_->pools_address_info(common::kRootChainPoolIndex);
+        auto addr_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(addr_info->addr());
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address info failed! [%s]",
@@ -1021,7 +1068,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 }
 
 std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t pool_index) {
-    if (pool_index == common::kRootChainPoolIndex) {
+    if (pool_index == common::kImmutablePoolSize) {
         return common::kRootPoolsAddress;
     }
 

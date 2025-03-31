@@ -184,11 +184,11 @@ void TxPoolManager::SyncCrossPool() {
             for (uint64_t i = ex_height; i < cross_synced_max_heights_[i] && count < 64; ++i, ++count) {
                 ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                     network::kRootCongressNetworkId,
-                    common::kRootChainPoolIndex,
+                    common::kImmutablePoolSize,
                     i);
                 kv_sync_->AddSyncHeight(
                     network::kRootCongressNetworkId,
-                    common::kRootChainPoolIndex,
+                    common::kImmutablePoolSize,
                     i,
                     sync::kSyncHigh);
             }

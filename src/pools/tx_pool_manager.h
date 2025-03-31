@@ -87,7 +87,7 @@ public:
             return;
         }
 
-        if (view_block->qc().pool_index() != common::kRootChainPoolIndex) {
+        if (view_block->qc().pool_index() != common::kImmutablePoolSize) {
             return;
         }
 

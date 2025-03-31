@@ -117,6 +117,7 @@ private:
         uint64_t view,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
+    void CreatePoolsAddressInfo(uint16_t network_id);
 
     std::map<uint32_t, std::map<uint32_t, std::set<std::string>>> net_pool_index_map_; // net => (pool => addr)
     uint32_t net_pool_index_map_addr_count_ = 0;
@@ -131,6 +132,8 @@ private:
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
     YAML::Node genesis_config_;
     nlohmann::json bls_pk_json_;
+    std::shared_ptr<address::protobuf::AddressInfo> immutable_pool_address_info_;
+    std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize];
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };

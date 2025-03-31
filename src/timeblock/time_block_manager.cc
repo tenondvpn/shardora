@@ -64,7 +64,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
 bool TimeBlockManager::HasTimeblockTx(
         uint32_t pool_index, 
         pools::CheckGidValidFunction gid_valid_fn) {
-    if (pool_index != common::kRootChainPoolIndex ||
+    if (pool_index != common::kImmutablePoolSize ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return false;
     }

@@ -72,7 +72,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     ZJC_DEBUG("get single tx pool: %u", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (pool_index == common::kRootChainPoolIndex) {
+    if (pool_index == common::kImmutablePoolSize) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true);
         if (txs_item) {
@@ -102,7 +102,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr) {
         // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        //     if (pool_index == common::kRootChainPoolIndex) {
+        //     if (pool_index == common::kImmutablePoolSize) {
         //         ZJC_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
         //     }
         // }
@@ -158,7 +158,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
         return nullptr;
     }
 
-    if (pool_index == common::kRootChainPoolIndex) {
+    if (pool_index == common::kImmutablePoolSize) {
         return nullptr;
     }
 
@@ -187,7 +187,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_index, bool leader) {
-    if (pool_index != common::kRootChainPoolIndex ||
+    if (pool_index != common::kImmutablePoolSize ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return nullptr;
     }
@@ -215,7 +215,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         uint32_t pool_index, 
         const std::string& tx_gid) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        if (pool_index != common::kRootChainPoolIndex) {
+        if (pool_index != common::kImmutablePoolSize) {
             return nullptr;
         }
     } else {
