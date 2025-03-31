@@ -892,18 +892,18 @@ void BlockManager::AddNewBlock(
                 // ZJC_DEBUG("success handle root create address tx.");
                 ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
                 break;
-            // case pools::protobuf::kNormalTo: {
-            //     HandleNormalToTx(view_block_item, tx_list[i], db_batch);
-            //     // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-            //     //     "gid: %s, bls: %s, %s",
-            //     //     view_block_item->qc().network_id(),
-            //     //     view_block_item->qc().pool_index(),
-            //     //     block_item->height(),
-            //     //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            //     //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
-            //     //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
-            //     break;
-            // }
+            case pools::protobuf::kNormalTo: {
+                HandleNormalToTx(view_block_item, tx_list[i], db_batch);
+                // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                //     "gid: %s, bls: %s, %s",
+                //     view_block_item->qc().network_id(),
+                //     view_block_item->qc().pool_index(),
+                //     block_item->height(),
+                //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
+                //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
+                break;
+            }
             case pools::protobuf::kConsensusRootTimeBlock:
                 prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
                 break;
