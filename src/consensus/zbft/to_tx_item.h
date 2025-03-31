@@ -23,9 +23,9 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("to tx consensus coming: %s, gid: %s", 
+        ZJC_DEBUG("to tx consensus coming: %s, nonce: %s", 
             "common::Encode::HexEncode(tx_info.value()).c_str()", 
-            common::Encode::HexEncode(tx_info.gid()).c_str());
+            tx_info.nonce());
         DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty() ||
