@@ -234,9 +234,17 @@ public:
 
     void DecSharedObj(int32_t index) {
 #ifndef NDEBUG
-    shared_obj_count_[index].fetch_sub(1);
+        shared_obj_count_[index].fetch_sub(1);
 #endif
-}
+    }
+
+    uint32_t tx_user_qps_limit_window_sconds() const {
+        return tx_user_qps_limit_window_sconds_;
+    }
+
+    uint32_t tx_user_qps_limit_window() const {
+        return tx_user_qps_limit_window_;
+    }
 
 private:
     GlobalInfo();
@@ -283,6 +291,8 @@ private:
     volatile bool global_stoped_ = false;
     volatile bool main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
+    uint32_t tx_user_qps_limit_window_sconds_ = 1u;
+    uint32_t tx_user_qps_limit_window_ = 10240u * 10u;
 
     std::atomic<int32_t> shared_obj_count_[64] = {0};
     int32_t shared_obj_max_count_[64] = {0};

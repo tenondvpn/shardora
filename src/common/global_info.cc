@@ -95,6 +95,8 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ck_host", ck_host_);
     config.Get("zjchain", "ck_user", ck_user_);
     config.Get("zjchain", "ck_pass", ck_pass_);
+    config.Get("zjchain", "tx_user_qps_limit_window_sconds", tx_user_qps_limit_window_sconds_);
+    config.Get("zjchain", "tx_user_qps_limit_window", tx_user_qps_limit_window_);
     config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
     if (each_tx_pool_max_txs_ < 10240) {
         each_tx_pool_max_txs_ = 10240;

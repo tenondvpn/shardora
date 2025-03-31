@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "common/global_info.h"
 #include "common/hash.h"
 #include "common/spin_mutex.h"
 #include "common/utils.h"
@@ -16,8 +17,6 @@ namespace pools {
 
 using QpsWindow = std::map<uint64_t, uint32_t>;
 using QpsWindowPtr = std::shared_ptr<QpsWindow>;
-static const uint32_t kQpsWindowSeconds = 10lu;
-static const uint32_t kQpsWindowMaxQps = 1024u * 2u;
 
 template<uint32_t kBucketSize>
 class AccountQpsLruMap {
@@ -33,13 +32,14 @@ public:
         item_list_.push_front(addr);
         item_map_[addr] = item_list_.begin();
         QpsWindowPtr value = nullptr;
-        auto now_timestamp_seconds_10 = common::TimeUtils::TimestampSeconds() / kQpsWindowSeconds;
+        auto qps_limit_window = common::GlobalInfo::Instance()->tx_user_qps_limit_window_sconds();
+        auto now_timestamp_seconds_10 = common::TimeUtils::TimestampSeconds() / qps_limit_window;
         auto iter = qps_user_map_.find(addr);
         if (iter != qps_user_map_.end()) {
             value = iter->second;
             uint32_t now_qps_windows = 0;
             for (auto tm_iter = value->begin(); tm_iter != value->end();) {
-                if (tm_iter->first + kQpsWindowSeconds * 2 >= now_timestamp_seconds_10) {
+                if (tm_iter->first + qps_limit_window * 2 >= now_timestamp_seconds_10) {
                     now_qps_windows += tm_iter->second;
                     ++tm_iter;
                 } else {
@@ -52,7 +52,7 @@ public:
                 (*value)[now_timestamp_seconds_10] = 0;
             }
 
-            if (now_qps_windows >= kQpsWindowMaxQps) {
+            if (now_qps_windows >= common::GlobalInfo::Instance()->tx_user_qps_limit_window()) {
                 return false;
             }
         } else {

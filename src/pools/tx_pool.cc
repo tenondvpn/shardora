@@ -404,6 +404,12 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
         return;
     }
 
+    if (!account_tx_qps_check_.check(tx_ptr->tx_info->pubkey())) {
+        ZJC_DEBUG("pools check firewall message failed, invalid qps limit pk: %s", 
+            common::Encode::HexEncode(tx_ptr->tx_info->pubkey()).c_str());
+        return;
+    }
+    
     CheckThreadIdValid();
     if (consensus_added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend %u, %u, all valid: %u", 
