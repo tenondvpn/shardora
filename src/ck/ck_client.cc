@@ -43,7 +43,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 //     for (int32_t i = 0; i < tx_list.size(); ++i) {
 //         ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
 //             "tx size: %u, hash: %s, elect height: %lu, "
-//             "tm height: %lu, gid: %s, status: %d, step: %d",
+//             "tm height: %lu, nonce: %s, status: %d, step: %d",
 //             view_block_item->qc().network_id(),
 //             view_block_item->qc().pool_index(),
 //             block_item->height(),
@@ -51,7 +51,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 //             common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
 //             view_block_item->qc().elect_height(),
 //             block_item->timeblock_height(),
-//             common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+//             tx_list[i].nonce(),
 //             tx_list[i].status(),
 //             tx_list[i].step());
 //     }
@@ -130,8 +130,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         bls_agg_sign_x->Append(common::Encode::HexEncode(view_block_item->qc().sign_x()));
         bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
         date->Append(common::MicTimestampToDate(block_item->timestamp()));
-        gid->Append(common::Encode::HexEncode(tx.gid()));
-        ZJC_DEBUG("success add gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
+        gid->Append(std::to_string(tx.nonce()));
         from->Append(common::Encode::HexEncode(tx.from()));
         from_pubkey->Append("");
         from_sign->Append("");
@@ -152,7 +151,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         to_add->Append(false);
         attrs->Append("");
         status->Append(tx.status());
-        tx_hash->Append(common::Encode::HexEncode(tx.gid()));
+        tx_hash->Append(std::to_string(tx.nonce()));
         call_contract_step->Append(tx.step());
         std::string storage_str;
         if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
@@ -205,10 +204,10 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 prepay_user->Append(common::Encode::HexEncode(user));
                 prepay_height->Append(block_item->height());
                 prepay_amount->Append(tx.balance());
-                ZJC_DEBUG("success add prepayment contract: %s, address: %s, gid: %s, balance: %lu",
+                ZJC_DEBUG("success add prepayment contract: %s, address: %s, nonce: %lu, balance: %lu",
                     common::Encode::HexEncode(contract).c_str(), 
                     common::Encode::HexEncode(user).c_str(), 
-                    common::Encode::HexEncode(tx.gid()).c_str(), 
+                    tx.nonce(), 
                     tx.balance());
             }
             
@@ -284,10 +283,10 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                     prepay_user->Append(common::Encode::HexEncode(user));
                     prepay_height->Append(block_item->height());
                     prepay_amount->Append(to_txs.tos(to_tx_idx).balance());
-                    ZJC_DEBUG("success add prepayment contract: %s, address: %s, gid: %s, balance: %lu",
+                    ZJC_DEBUG("success add prepayment contract: %s, address: %s, nonce: %lu, balance: %lu",
                         common::Encode::HexEncode(contract).c_str(), 
                         common::Encode::HexEncode(user).c_str(), 
-                        common::Encode::HexEncode(tx.gid()).c_str(), 
+                        tx.nonce(), 
                         to_txs.tos(to_tx_idx).balance());
                 }
 
@@ -317,7 +316,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 ZJC_DEBUG("1 2 now handle local to idx: %d", i);
                 date->Append(common::MicTimestampToDate(block_item->timestamp()));
                 ZJC_DEBUG("1 2 0 now handle local to idx: %d", i);
-                gid->Append(common::Encode::HexEncode(tx.gid()));
+                gid->Append(std::to_string(tx.nonce()));
                 ZJC_DEBUG("1 2 1 now handle local to idx: %d", i);
                 from->Append("");
                 from_pubkey->Append("");
@@ -335,7 +334,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 to_add->Append(true);
                 attrs->Append("");
                 status->Append(tx.status());
-                tx_hash->Append(common::Encode::HexEncode(tx.gid()));
+                tx_hash->Append(std::to_string(tx.nonce()));
                 call_contract_step->Append(tx.step());
                 storages->Append("");
                 transfers->Append("");
@@ -365,7 +364,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
             "tx size: %u, hash: %s, elect height: %lu, "
-            "tm height: %lu, gid: %s, status: %d, step: %d",
+            "tm height: %lu, nonce: %lu, status: %d, step: %d",
             view_block_item->qc().network_id(),
             view_block_item->qc().pool_index(),
             block_item->height(),
@@ -373,7 +372,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
             view_block_item->qc().elect_height(),
             block_item->timeblock_height(),
-            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].nonce(),
             tx_list[i].status(),
             tx_list[i].step());
     }
@@ -427,12 +426,6 @@ void ClickHouseClient::FlushToCkWithData() try {
             trans.AppendColumn("bls_agg_sign_y", bls_agg_sign_y);
             trans.AppendColumn("commit_bitmap", commit_bitmap);
             trans.AppendColumn("gid", gid);
-
-// #ifndef NDEBUG
-//             for (int32_t test_i = 0; test_i < gid->Size(); ++test_i) {
-//                 ZJC_DEBUG("success flush gid to db: %s", gid->At(test_i).data());
-//             }
-// #endif
 
             trans.AppendColumn("from", from);
             trans.AppendColumn("from_pubkey", from_pubkey);
