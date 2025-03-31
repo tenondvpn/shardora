@@ -469,12 +469,12 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
-        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, gid: %s",
+        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, nonce: %lu",
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
             common::Encode::HexEncode(tx_msg.to()).c_str(),
             tx_msg.step(),
-            common::Encode::HexEncode(tx_msg.gid()).c_str());
+            tx_msg.nonce());
         switch (tx_msg.step()) {
         case pools::protobuf::kJoinElect:
             HandleElectTx(msg_ptr);
@@ -502,11 +502,11 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             }
             
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu gid: %s", 
+            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu nonce: %lu", 
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
                 common::Encode::HexEncode(tx_msg.to()).c_str(),
                 tx_msg.amount(),
-                common::Encode::HexEncode(tx_msg.gid()).c_str());
+                tx_msg.nonce());
             pool_index = common::GetAddressPoolIndex(
                 tx_msg.to().substr(0, security::kUnicastAddressLength)) % common::kImmutablePoolSize;
             break;
@@ -519,9 +519,9 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local to tx message hash: %s, gid: %s",
+            ZJC_DEBUG("get local to tx message hash: %s, nonce: %lu",
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
-                common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
+                msg_ptr->header.tx_proto().nonce());
             break;
         }
         case pools::protobuf::kRootCross: {

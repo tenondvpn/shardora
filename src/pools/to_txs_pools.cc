@@ -157,8 +157,8 @@ void ToTxsPools::StatisticToInfo(
     //     common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list.size());
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            ZJC_INFO("tx status error: %d, gid: %s, net: %u, pool: %u, height: %lu, hash: %s",
-                tx_list[i].status(), common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            ZJC_INFO("tx status error: %d, nonce: %lu, net: %u, pool: %u, height: %lu, hash: %s",
+                tx_list[i].status(), tx_list[i].nonce(),
                 view_block.qc().network_id(), view_block.qc().pool_index(), block.height(),
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
 //                 assert(false);
@@ -257,10 +257,10 @@ void ToTxsPools::HandleContractExecute(
 void ToTxsPools::HandleContractGasPrepayment(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
-    ZJC_DEBUG("now get contract address: %s, from: %s, gid: %s, prepayment: %lu, amount: %lu",
+    ZJC_DEBUG("now get contract address: %s, from: %s, nonce: %lu, prepayment: %lu, amount: %lu",
         common::Encode::HexEncode(tx.to()).c_str(),
         common::Encode::HexEncode(tx.from()).c_str(),
-        common::Encode::HexEncode(tx.gid()).c_str(),
+        tx.nonce(),
         tx.contract_prepayment(),
         tx.amount());
     if (tx.amount() > 0) {
@@ -273,18 +273,18 @@ void ToTxsPools::HandleContractGasPrepayment(
         protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
-            ZJC_DEBUG("success get contract address: %s, from: %s, gid: %s, "
+            ZJC_DEBUG("success get contract address: %s, from: %s, nonce: %lu, "
                 "prepayment: %lu, sharding_id: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 common::Encode::HexEncode(tx.from()).c_str(),
-                common::Encode::HexEncode(tx.gid()).c_str(),
+                tx.nonce(),
                 tx.contract_prepayment(),
                 sharding_id);
         } else {
-            ZJC_DEBUG("failed get contract address: %s, from: %s, gid: %s, prepayment: %lu",
+            ZJC_DEBUG("failed get contract address: %s, from: %s, nonce: %lu, prepayment: %lu",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 common::Encode::HexEncode(tx.from()).c_str(),
-                common::Encode::HexEncode(tx.gid()).c_str(),
+                tx.nonce(),
                 tx.contract_prepayment());
         }
 
