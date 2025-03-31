@@ -601,63 +601,70 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
     }
 }
 
-bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
-    std::string phash = parent_hash;
-    while (true) {
-        if (phash.empty()) {
-            ZJC_DEBUG("gid phash empty: %s, phash: %s", 
-                common::Encode::HexEncode(gid).c_str(), 
-                common::Encode::HexEncode(phash).c_str());
-            break;
-        }
-
-        auto it = view_blocks_info_.find(phash);
-        if (it == view_blocks_info_.end()) {
-            ZJC_DEBUG("gid phash not exist: %s, phash: %s", 
-                common::Encode::HexEncode(gid).c_str(), 
-                common::Encode::HexEncode(phash).c_str());
-            break;
-        }
-
-        if (it->second->view_block->qc().view() <= stored_to_db_view_) {
-            ZJC_DEBUG("gid phash view invalid: %lu, %lu, %s, phash: %s", 
-                it->second->view_block->qc().view(),
-                stored_to_db_view_, 
-                common::Encode::HexEncode(gid).c_str(), 
-                common::Encode::HexEncode(phash).c_str());
-            break;
-        }
-
-        auto iter = it->second->added_txs.find(gid);
-        if (iter != it->second->added_txs.end()) {
-            ZJC_DEBUG("failed check tx gid: %s, phash: %s",
-                common::Encode::HexEncode(gid).c_str(),
-                common::Encode::HexEncode(phash).c_str());
-            return false;
-        }
-
-        if (!it->second->view_block) {
-            return false;
-        }
-        
-        ZJC_DEBUG("gid phash empty: %s, phash: %s, pphash: %s", 
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(phash).c_str(),
-            common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str());
-        phash = it->second->view_block->parent_hash();
-    }
-
-    if (prefix_db_->JustCheckCommitedGidExists(gid)) {
-        ZJC_DEBUG("failed check tx gid exists in db: %s", 
-            common::Encode::HexEncode(gid).c_str());
-        return false;
-    }
-
-    ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", 
-        common::Encode::HexEncode(gid).c_str(), 
-        common::Encode::HexEncode(parent_hash).c_str());
+bool ViewBlockChain::CheckTxNonceValid(
+        const std::string& addr, 
+        uint64_t nonce, 
+        const std::string& parent_hash) {
     return true;
 }
+
+// bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
+//     std::string phash = parent_hash;
+//     while (true) {
+//         if (phash.empty()) {
+//             ZJC_DEBUG("gid phash empty: %s, phash: %s", 
+//                 common::Encode::HexEncode(gid).c_str(), 
+//                 common::Encode::HexEncode(phash).c_str());
+//             break;
+//         }
+
+//         auto it = view_blocks_info_.find(phash);
+//         if (it == view_blocks_info_.end()) {
+//             ZJC_DEBUG("gid phash not exist: %s, phash: %s", 
+//                 common::Encode::HexEncode(gid).c_str(), 
+//                 common::Encode::HexEncode(phash).c_str());
+//             break;
+//         }
+
+//         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+//             ZJC_DEBUG("gid phash view invalid: %lu, %lu, %s, phash: %s", 
+//                 it->second->view_block->qc().view(),
+//                 stored_to_db_view_, 
+//                 common::Encode::HexEncode(gid).c_str(), 
+//                 common::Encode::HexEncode(phash).c_str());
+//             break;
+//         }
+
+//         auto iter = it->second->added_txs.find(gid);
+//         if (iter != it->second->added_txs.end()) {
+//             ZJC_DEBUG("failed check tx gid: %s, phash: %s",
+//                 common::Encode::HexEncode(gid).c_str(),
+//                 common::Encode::HexEncode(phash).c_str());
+//             return false;
+//         }
+
+//         if (!it->second->view_block) {
+//             return false;
+//         }
+        
+//         ZJC_DEBUG("gid phash empty: %s, phash: %s, pphash: %s", 
+//             common::Encode::HexEncode(gid).c_str(),
+//             common::Encode::HexEncode(phash).c_str(),
+//             common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str());
+//         phash = it->second->view_block->parent_hash();
+//     }
+
+//     if (prefix_db_->JustCheckCommitedGidExists(gid)) {
+//         ZJC_DEBUG("failed check tx gid exists in db: %s", 
+//             common::Encode::HexEncode(gid).c_str());
+//         return false;
+//     }
+
+//     ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", 
+//         common::Encode::HexEncode(gid).c_str(), 
+//         common::Encode::HexEncode(parent_hash).c_str());
+//     return true;
+// }
 
 void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
     auto view_block_ptr_info = Get(qc_item.view_block_hash());

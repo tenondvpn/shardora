@@ -90,7 +90,6 @@ public:
     std::shared_ptr<ViewBlock> view_block;
     ViewBlockStatus status;
     std::shared_ptr<QC> qc;
-    std::unordered_set<std::string> added_txs;
     BalanceMapPtr acc_balance_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     bool valid;

@@ -58,7 +58,10 @@ public:
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
             BalanceMap& acc_balance_map);
-    bool CheckTxGidValid(const std::string& gid, const std::string& parent_hash);
+    bool CheckTxNonceValid(
+        const std::string& addr, 
+        uint64_t nonce, 
+        const std::string& parent_hash);
     // If a chain is valid
     bool IsValid();
     std::string String() const;
@@ -232,20 +235,6 @@ private:
             BalanceMapPtr acc_balance_map_ptr,
             std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
-        if (view_block) {
-            ZJC_DEBUG("add new view block %s, leader: %d",
-                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());
-            for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-                view_block_info_ptr->added_txs.insert(view_block->block_info().tx_list(i).gid());
-                ZJC_DEBUG("%u_%u_%lu, hash: %s, success add gid to block: %s", 
-                    view_block->qc().network_id(),
-                    view_block->qc().pool_index(),
-                    view_block->qc().view(),
-                    common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
-                    common::Encode::HexEncode(view_block->block_info().tx_list(i).gid()).c_str());
-            }
-        }
-
         view_block_info_ptr->view_block = view_block;
         view_block_info_ptr->acc_balance_map_ptr = acc_balance_map_ptr;
         view_block_info_ptr->zjc_host_ptr = zjc_host_ptr;
