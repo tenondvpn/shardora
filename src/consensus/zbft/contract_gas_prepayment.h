@@ -25,8 +25,8 @@ public:
             db::DbWriteBatch& db_batch) {
         auto& block = view_block.block_info();
         if (tx.status() != consensus::kConsensusSuccess) {
-            ZJC_DEBUG("tx.status() != consensus::kConsensusSuccess, gid: %s, from: %s, to: %s", 
-                common::Encode::HexEncode(tx.gid()).c_str(), 
+            ZJC_DEBUG("tx.status() != consensus::kConsensusSuccess, nonce: %s, from: %s, to: %s", 
+                tx.nonce(), 
                 common::Encode::HexEncode(tx.from()).c_str(),
                 common::Encode::HexEncode(tx.to()).c_str());
             return;
@@ -179,10 +179,10 @@ public:
             const view_block::protobuf::ViewBlockItem& view_block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
-        ZJC_DEBUG("new block with tx coming: %lu, %lu, gid: %s, from: %s, to: %s", 
+        ZJC_DEBUG("new block with tx coming: %lu, %lu, nonce: %lu, from: %s, to: %s", 
             view_block_item.block_info().height(), 
             pools_max_heights_[view_block_item.qc().pool_index()],
-            common::Encode::HexEncode(tx.gid()).c_str(), 
+            tx.nonce(), 
             common::Encode::HexEncode(tx.from()).c_str(),
             common::Encode::HexEncode(tx.to()).c_str());
         if (tx.step() == pools::protobuf::kConsensusLocalTos) { // 增加 prepayment 的交易

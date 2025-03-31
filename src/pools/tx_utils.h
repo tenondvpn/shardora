@@ -109,7 +109,7 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<bool(const std::string& gid)> CheckGidValidFunction;
+typedef std::function<bool(const std::string& addr, uint64_t nonce)> CheckGidValidFunction;
 
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {
