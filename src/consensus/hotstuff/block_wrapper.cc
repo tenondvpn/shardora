@@ -58,7 +58,7 @@ Status BlockWrapper::Wrap(
     // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
-        return view_block_chain->CheckTxGidValid(addr, nonce, prev_view_block->qc().view_block_hash());
+        return view_block_chain->CheckTxNonceValid(addr, nonce, prev_view_block->qc().view_block_hash());
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
@@ -86,16 +86,15 @@ Status BlockWrapper::Wrap(
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = *it->second->tx_info;
-            assert(tx_info->gid().size() == 32);
             // ADD_TX_DEBUG_INFO(tx_info);
             // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-            //     "step: %d, to: %s, gid: %s, tx info: %s",
+            //     "step: %d, to: %s, nonce: %lu, tx info: %s",
             //     view_block->qc().pool_index(),
             //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
             //     block->height(),
             //     tx_info->step(),
             //     common::Encode::HexEncode(tx_info->to()).c_str(),
-            //     common::Encode::HexEncode(tx_info->gid()).c_str(),
+            //     tx_info->nonce(),
             //     "ProtobufToJson(*tx_info).c_str()");
         }
         tx_propose->set_tx_type(txs_ptr->tx_type);
