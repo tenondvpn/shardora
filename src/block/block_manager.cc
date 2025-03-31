@@ -846,10 +846,10 @@ void BlockManager::AddNewBlock(
             btime10 = common::TimeUtils::TimestampMs();
         } else {
             if (statistic_mgr_) {
-                // statistic_mgr_->OnNewBlock(view_block_item);
+                statistic_mgr_->OnNewBlock(view_block_item);
             }
 
-            // to_txs_pool_->NewBlock(view_block_item);
+            to_txs_pool_->NewBlock(view_block_item);
             btime10 = common::TimeUtils::TimestampMs();
             zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         }
@@ -872,15 +872,15 @@ void BlockManager::AddNewBlock(
     //             tx_list[i].status(),
     //             tx_list[i].step());
     //         // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
-    #ifdef SAVE_GID_WITH_BLOCK
-            prefix_db_->SaveGidWithBlockHash(
-                tx_list[i].gid(), 
-                view_block_item->qc().view_block_hash(), 
-                db_batch);
-    #endif
+    // #ifdef SAVE_GID_WITH_BLOCK
+    //         prefix_db_->SaveGidWithBlockHash(
+    //             tx_list[i].gid(), 
+    //             view_block_item->qc().view_block_hash(), 
+    //             db_batch);
+    // #endif
             prefix_db_->SaveCommittedGid(tx_list[i], db_batch);
             if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
-                account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+                // account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
             }
             
             if (tx_list[i].status() != consensus::kConsensusSuccess) {
