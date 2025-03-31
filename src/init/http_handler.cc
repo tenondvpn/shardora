@@ -62,7 +62,7 @@ static const char* GetStatus(int status) {
 }
 
 static int CreateTransactionWithAttr(
-        const std::string& gid,
+        uint64_t nonce,
         const std::string& from_pk,
         const std::string& to,
         const std::string& sign_r,
@@ -92,17 +92,17 @@ static int CreateTransactionWithAttr(
         return kAccountNotExists;
     }
 
-    ZJC_DEBUG("from: %s, to: %s, gid: %s",
+    ZJC_DEBUG("from: %s, to: %s, nonce: %lu",
         common::Encode::HexEncode(from).c_str(),
         common::Encode::HexEncode(to).c_str(),
-        common::Encode::HexEncode(gid).c_str());
+        nonce);
     dht::DhtKeyManager dht_key(des_net_id);
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
     auto new_tx = msg.mutable_tx_proto();
-    new_tx->set_gid(gid);
+    new_tx->set_nonce(nonce);
     new_tx->set_pubkey(from_pk);
     const char* step = evhtp_kv_find(evhtp_kvs, "type");
     if (step == nullptr) {
@@ -185,7 +185,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     evhtp_headers_add_header(req->headers_out, header1);
     evhtp_headers_add_header(req->headers_out, header2);
     evhtp_headers_add_header(req->headers_out, header3);
-    const char* gid = evhtp_kv_find(req->uri->query, "gid");
+    const char* nonce_ptr = evhtp_kv_find(req->uri->query, "nonce");
     const char* frompk = evhtp_kv_find(req->uri->query, "pubkey");
     const char* to = evhtp_kv_find(req->uri->query, "to");
     const char* amount = evhtp_kv_find(req->uri->query, "amount");
@@ -195,15 +195,15 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     const char* sign_s = evhtp_kv_find(req->uri->query, "sign_s");
     const char* sign_v = evhtp_kv_find(req->uri->query, "sign_v");
     const char* shard_id = evhtp_kv_find(req->uri->query, "shard_id");
-    if (gid == nullptr || frompk == nullptr || to == nullptr ||
+    if (nonce_ptr == nullptr || frompk == nullptr || to == nullptr ||
             amount == nullptr || gas_limit == nullptr ||
             gas_price == nullptr || sign_r == nullptr ||
             sign_s == nullptr || shard_id == nullptr) {
         std::string res = common::StringUtil::Format(
-            "param invalid gid: %d, frompk: %d, to: %d,"
+            "param invalid nonce: %d, frompk: %d, to: %d,"
             "amount: %d, gas_limit: %d, gas_price: %d, "
             "sign_r: %d, sign_s: %d, shard_id: %d \n",
-            (gid != nullptr), (frompk != nullptr), (to != nullptr),
+            (nonce_ptr != nullptr), (frompk != nullptr), (to != nullptr),
             (amount != nullptr), (gas_limit != nullptr),
             (gas_price != nullptr), (sign_r != nullptr),
             (sign_s != nullptr), (shard_id != nullptr));
@@ -213,9 +213,18 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         return;
     }
 
-    ZJC_DEBUG("gid: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, "
+    ZJC_DEBUG("nonce_ptr: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, "
         "gas_price: %s, sign_r: %s, sign_s: %s, sign_v: %s, shard_id: %s",
-        gid, frompk, to, amount, gas_limit, gas_price, sign_r, sign_s, sign_v, shard_id);
+        nonce_ptr, frompk, to, amount, gas_limit, gas_price, sign_r, sign_s, sign_v, shard_id);
+
+    uint64_t nonce = 0;
+    if (!common::StringUtil::ToUint64(std::string(nonce_ptr), &nonce)) {
+        std::string res = std::string("amount not integer: ") + nonce_ptr;
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+    
     uint64_t amount_val = 0;
     if (!common::StringUtil::ToUint64(std::string(amount), &amount_val)) {
         std::string res = std::string("amount not integer: ") + amount;
@@ -269,7 +278,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     transport::protobuf::Header& msg = msg_ptr->header;
     int status = CreateTransactionWithAttr(
-        common::Encode::HexDecode(gid),
+        nonce,
         common::Encode::HexDecode(frompk),
         common::Encode::HexDecode(to),
         common::Encode::HexDecode(tmp_sign_r),

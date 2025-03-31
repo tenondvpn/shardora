@@ -47,19 +47,18 @@ void TimeBlockManager::CreateTimeBlockTx() {
         return;
     }
 
-    auto gid = common::Hash::keccak256(kTimeBlockGidPrefix +
-        std::to_string(latest_time_block_tm_));
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
-    tx_info.set_gid(gid);
+    tx_info.set_to("");
+    tx_info.set_nonce(0llu);
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
-    ZJC_INFO("success create timeblock gid: %s", common::Encode::HexEncode(gid).c_str());
+    ZJC_INFO("success create timeblock nonce: %s", 0);
 }
 
 bool TimeBlockManager::HasTimeblockTx(
@@ -81,7 +80,7 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (!gid_valid_fn(tmblock_tx_ptr_->tx_info->gid())) {
+        if (!gid_valid_fn("", tmblock_tx_ptr_->tx_info->nonce())) {
             return false;
         }
         
