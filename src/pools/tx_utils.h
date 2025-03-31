@@ -85,7 +85,6 @@ public:
 #endif // ZJC_UNITTEST
         remove_timeout = now_tm + kTxPoolTimeoutUs;
         auto prio = common::ShiftUint64(tx_info->gas_price());
-        prio_key = std::string((char*)&prio, sizeof(prio)) + tx_info->gid();
     }
 
     virtual int HandleTx(
@@ -101,7 +100,6 @@ public:
     uint64_t remove_timeout;
     uint64_t time_valid{ 0 };
     std::string unique_tx_hash;
-    std::string prio_key;
     pools::protobuf::TxMessage* tx_info;
     transport::MessagePtr msg_ptr;
     protos::AddressInfoPtr address_info;
