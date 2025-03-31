@@ -75,6 +75,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, elect_pos_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, destructed_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, consensus_gap_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, nonce_),
   0,
   3,
   4,
@@ -85,12 +86,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   8,
   7,
   ~0u,
+  12,
   11,
-  10,
   9,
+  10,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 18, sizeof(::shardora::address::protobuf::AddressInfo)},
+  { 0, 19, sizeof(::shardora::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -119,7 +121,7 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\024protos/address.proto\022\031shardora.address"
-      ".protobuf\032\020protos/bls.proto\"\325\002\n\013AddressI"
+      ".protobuf\032\020protos/bls.proto\"\344\002\n\013AddressI"
       "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013"
       "sharding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n"
       "\004addr\030\005 \001(\014\0224\n\004type\030\006 \001(\0162&.shardora.add"
@@ -128,15 +130,15 @@ void AddDescriptorsImpl() {
       " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
       "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
       "94967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rconsensu"
-      "s_gap\030\r \001(\004*\307\001\n\013AddressType\022\013\n\007kNormal\020\000"
-      "\022\r\n\tkContract\020\001\022\016\n\nkRootElect\020\002\022\016\n\nkRoot"
-      "Timer\020\003\022\016\n\nkStatistic\020\004\022\020\n\014kToTxAddress\020"
-      "\005\022\025\n\021kLocalToTxAddress\020\006\022\021\n\rkElectAddres"
-      "s\020\007\022\027\n\023kContractPrepayment\020\010\022\027\n\023kWaiting"
-      "RootConfirm\020\t"
+      "s_gap\030\r \001(\004\022\r\n\005nonce\030\016 \001(\004*\307\001\n\013AddressTy"
+      "pe\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootE"
+      "lect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\020"
+      "\n\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020\006\022"
+      "\021\n\rkElectAddress\020\007\022\027\n\023kContractPrepaymen"
+      "t\020\010\022\027\n\023kWaitingRootConfirm\020\t"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 613);
+      descriptor, 628);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -200,6 +202,7 @@ const int AddressInfo::kG2SFieldNumber;
 const int AddressInfo::kElectPosFieldNumber;
 const int AddressInfo::kDestructedFieldNumber;
 const int AddressInfo::kConsensusGapFieldNumber;
+const int AddressInfo::kNonceFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 AddressInfo::AddressInfo()
@@ -292,7 +295,7 @@ void AddressInfo::Clear() {
         reinterpret_cast<char*>(&credit_) -
         reinterpret_cast<char*>(&balance_)) + sizeof(credit_));
   }
-  if (cached_has_bits & 3840u) {
+  if (cached_has_bits & 7936u) {
     ::memset(&latest_height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&destructed_) -
         reinterpret_cast<char*>(&latest_height_)) + sizeof(destructed_));
@@ -492,6 +495,20 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 nonce = 14;
+      case 14: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(112u /* 112 & 0xFF */)) {
+          set_has_nonce();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &nonce_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -578,18 +595,23 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->elect_pos(), output);
   }
 
   // optional bool destructed = 12;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(12, this->destructed(), output);
   }
 
   // optional uint64 consensus_gap = 13;
   if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(13, this->consensus_gap(), output);
+  }
+
+  // optional uint64 nonce = 14;
+  if (cached_has_bits & 0x00000400u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(14, this->nonce(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -668,18 +690,23 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->elect_pos(), target);
   }
 
   // optional bool destructed = 12;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(12, this->destructed(), target);
   }
 
   // optional uint64 consensus_gap = 13;
   if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(13, this->consensus_gap(), target);
+  }
+
+  // optional uint64 nonce = 14;
+  if (cached_has_bits & 0x00000400u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(14, this->nonce(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -767,7 +794,7 @@ size_t AddressInfo::ByteSizeLong() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 3840u) {
+  if (_has_bits_[8 / 32] & 7936u) {
     // optional uint64 latest_height = 8;
     if (has_latest_height()) {
       total_size += 1 +
@@ -780,6 +807,13 @@ size_t AddressInfo::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->consensus_gap());
+    }
+
+    // optional uint64 nonce = 14;
+    if (has_nonce()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->nonce());
     }
 
     // optional bool destructed = 12;
@@ -854,7 +888,7 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 3840u) {
+  if (cached_has_bits & 7936u) {
     if (cached_has_bits & 0x00000100u) {
       latest_height_ = from.latest_height_;
     }
@@ -862,9 +896,12 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
       consensus_gap_ = from.consensus_gap_;
     }
     if (cached_has_bits & 0x00000400u) {
-      destructed_ = from.destructed_;
+      nonce_ = from.nonce_;
     }
     if (cached_has_bits & 0x00000800u) {
+      destructed_ = from.destructed_;
+    }
+    if (cached_has_bits & 0x00001000u) {
       elect_pos_ = from.elect_pos_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -909,6 +946,7 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
   swap(credit_, other->credit_);
   swap(latest_height_, other->latest_height_);
   swap(consensus_gap_, other->consensus_gap_);
+  swap(nonce_, other->nonce_);
   swap(destructed_, other->destructed_);
   swap(elect_pos_, other->elect_pos_);
   swap(_has_bits_[0], other->_has_bits_[0]);
