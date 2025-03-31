@@ -84,10 +84,10 @@ bool Db::Init(const std::string& db_path) {
 
     rocksdb::Options options;
     // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.create_if_missing = true;
     options.IncreaseParallelism();
     options.OptimizeLevelStyleCompaction();
     // create the DB if it's not already present
-    // options.create_if_missing = true;
     // options.max_bytes_for_level_multiplier = 5;
     // options.level_compaction_dynamic_level_bytes = true;
     // rocksdb::BlockBasedTableOptions table_option;
