@@ -275,6 +275,9 @@ void TxPool::GetTxIdempotently(
         ZJC_DEBUG("gid success: %s", common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str());
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
     }
+
+    ZJC_INFO("now tx size added_txs_: %u, consensus_added_txs_: %u, local_tx_queue_: %u, local_tx_map_: %u", 
+        added_txs_.size(), consensus_added_txs_.size(), local_tx_queue_.size(), local_tx_map_.size());
 }
 
 void TxPool::InitLatestInfo() {

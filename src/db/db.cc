@@ -90,8 +90,8 @@ bool Db::Init(const std::string& db_path) {
     options.max_bytes_for_level_multiplier = 5;
     options.level_compaction_dynamic_level_bytes = true;
     rocksdb::BlockBasedTableOptions table_option;
-    table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(12, false));
-    table_option.block_cache = rocksdb::NewLRUCache(8 * 1024 * 1024 * 1024);
+    table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
+    table_option.block_cache = rocksdb::NewLRUCache(512 * 1024 * 1024);
     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
     options.compression = rocksdb::kSnappyCompression;
     options.bottommost_compression = rocksdb::kZlibCompression;
