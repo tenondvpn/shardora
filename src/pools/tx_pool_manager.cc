@@ -102,6 +102,12 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         return transport::kFirewallCheckError;
     }
 
+    if (!account_tx_qps_check_.check(tx_msg.pubkey())) {
+        ZJC_DEBUG("pools check firewall message failed, invalid qps limit pk: %d, hash64: %lu", 
+            tx_msg.pubkey().size(), header.hash64());
+        return transport::kFirewallCheckError;
+    }
+
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     if (tx_msg.pubkey().size() == 64u) {
         security::GmSsl gmssl;

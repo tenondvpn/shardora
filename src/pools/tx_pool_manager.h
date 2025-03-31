@@ -10,6 +10,7 @@
 #include "common/thread_safe_queue.h"
 #include "common/unique_map.h"
 #include "network/network_utils.h"
+#include "pools/account_lru_map.h"
 #include "pools/cross_block_manager.h"
 #include "pools/cross_pool.h"
 #include "pools/root_cross_pool.h"
@@ -283,6 +284,7 @@ private:
     uint64_t prev_msgs_show_tm_ms_ = 0;
     std::weak_ptr<block::AccountManager> acc_mgr_;
     volatile uint32_t now_max_tx_count_ = 0;
+    AccountQpsLruMap account_tx_qps_check_;
 
     // tps received
     uint64_t prev_tps_count_ = 0;
