@@ -84,7 +84,7 @@ public:
         time_valid = 0;
 #endif // ZJC_UNITTEST
         remove_timeout = now_tm + kTxPoolTimeoutUs;
-        auto prio = common::ShiftUint64(tx_info->gas_price());
+        unique_tx_hash = GetTxKey(addr_info->addr(), tx_info->nonce());
     }
 
     virtual int HandleTx(
@@ -394,6 +394,15 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
     }
 }
 
+static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
+    assert(addr.size() == 20);
+    std::string data;
+    data.resize(28);
+    memcpy(data.data(), addr.c_str(), 20);
+    uint64_t* nonce_data = (uint64_t*)(data.data() + 20);
+    *nonce_data = nonce;
+    return data;
+}
 
 };  // namespace pools
 

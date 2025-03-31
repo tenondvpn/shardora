@@ -126,15 +126,6 @@ void ShardStatistic::ThreadToStatistic(
             continue;
         }
 
-        // ZJC_DEBUG("handle statsitic block %u_%u_%lu, "
-        //     "block height: %lu, tm height: %lu, gid: %s, step: %d", 
-        //     view_block_ptr->qc().network_id(),
-        //     view_block_ptr->qc().pool_index(),
-        //     view_block_ptr->qc().view(),
-        //     view_block_ptr->block_info().height(),
-        //     view_block_ptr->block_info().timeblock_height(),
-        //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-        //     tx_list[i].step());
         if (tx_list[i].step() == pools::protobuf::kStatistic) {
             HandleStatisticBlock(block, tx_list[i]);
         }
@@ -326,24 +317,24 @@ void ShardStatistic::HandleStatistic(
                     CHECK_MEMORY_SIZE(statistic_pool_info_);
                     ZJC_DEBUG(
                         "new success handle kPoolStatisticTag tx statistic_height: %lu, "
-                        "pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
+                        "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
                         statistic_height, 
                         pool_idx, 
                         block.height(), 
                         statistic_item.statistic_min_height,
-                        common::Encode::HexEncode(tx.gid()).c_str());
+                        tx.nonce());
                 } else {
                     StatisticInfoItem statistic_item;
                     statistic_item.statistic_min_height = block.height() + 1;
                     exist_iter->second[pool_idx] = statistic_item;
                     ZJC_DEBUG(
                         "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
-                        "pool: %u, height: %lu, statistic_max_height: %lu, gid: %s", 
+                        "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
                         statistic_height, 
                         pool_idx, 
                         block.height(), 
                         statistic_item.statistic_min_height,
-                        common::Encode::HexEncode(tx.gid()).c_str());
+                        tx.nonce());
                 }
 
                 statistic_info_ptr->statistic_max_height = block.height();
