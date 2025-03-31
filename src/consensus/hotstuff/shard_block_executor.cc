@@ -30,12 +30,12 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         int res = iter->second->TxToBlockTx(*tx_info, &block_tx);
         if (res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
-            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, gid: %s, res: %d",
+            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, res: %d",
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 
                 view_block->qc().view(), 
                 block_tx.step(), 
-                common::Encode::HexEncode(block_tx.gid()).c_str(),
+                block_tx.nonce(),
                 res);
             continue;
         }
@@ -55,12 +55,12 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
             block_tx);
         if (do_tx_res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
-            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, gid: %s, do_tx_res: %d",
+            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, do_tx_res: %d",
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 
                 view_block->qc().view(), 
                 block_tx.step(), 
-                common::Encode::HexEncode(block_tx.gid()).c_str(),
+                block_tx.nonce(),
                 do_tx_res);
             continue;
         }
@@ -76,12 +76,12 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         }
 
         zjc_host.recorded_logs_.clear();
-        // ZJC_DEBUG("handle tx success: %u_%u_%lu, tx step: %d, gid: %s",
+        // ZJC_DEBUG("handle tx success: %u_%u_%lu, tx step: %d, nonce: %lu",
         //     view_block->qc().network_id(), 
         //     view_block->qc().pool_index(), 
         //     view_block->qc().view(), 
         //     block_tx.step(), 
-        //     common::Encode::HexEncode(block_tx.gid()).c_str());
+        //     block_tx.nonce());
     }
     
     return Status::kSuccess;    

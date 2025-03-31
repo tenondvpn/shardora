@@ -8,7 +8,8 @@ namespace hotstuff {
 std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std::string& phash) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
-    message.append(tx_info.gid());
+    uint64_t nonce = tx_info.nonce();
+    message.append(std::string((char*)&nonce, sizeof(nonce)));
     message.append(tx_info.from());
     message.append(tx_info.to());
     uint64_t balance = tx_info.balance();
@@ -35,10 +36,10 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
             common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     }
 
-    ZJC_DEBUG("phash: %s, gid: %s, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
+    ZJC_DEBUG("phash: %s, nonce: %lu, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
         "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
         common::Encode::HexEncode(phash).c_str(),
-        common::Encode::HexEncode(tx_info.gid()).c_str(),
+        tx_info.nonce(),
         common::Encode::HexEncode(tx_info.from()).c_str(),
         common::Encode::HexEncode(tx_info.to()).c_str(),
         balance, amount, gas_limit, gas_price, step,
