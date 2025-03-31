@@ -323,8 +323,8 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_WARN("http transaction success %s, %s, gid: %s", common::Encode::HexEncode(
-            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, gid);
+    ZJC_WARN("http transaction success %s, %s, nonce: %lu", common::Encode::HexEncode(
+            http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, nonce);
 }
 
 static void QueryContract(evhtp_request_t* req, void* data) {
@@ -699,7 +699,7 @@ static void GetBlockWithGid(evhtp_request_t* req, void* data) {
     }
 
     uint64_t tmp_nonce = 0;
-    if (!common::StringUtil::ToUint64(nonce, tmp_nonce)) {
+    if (!common::StringUtil::ToUint64(nonce, &tmp_nonce)) {
         std::string res = std::string("nonce not exists.");
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);

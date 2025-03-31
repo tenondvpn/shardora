@@ -219,9 +219,9 @@ int ContractCall::HandleTx(
                     trans_item->set_to(destruct_to);
                     trans_item->set_amount(new_contract_balance);
                     new_contract_balance = 0;
-                    ZJC_ERROR("self destruct success gid: %s, %s, %s, "
+                    ZJC_ERROR("self destruct success nonce: %lu, %s, %s, "
                         "beneficiary: %s, amount: %lu, status: %d",
-                        common::Encode::HexEncode(block_tx.gid()).c_str(),
+                        block_tx.nonce(),
                         common::Encode::HexEncode(destruct_from).c_str(),
                         common::Encode::HexEncode(block_tx.to()).c_str(),
                         common::Encode::HexEncode(destruct_to).c_str(),
@@ -267,11 +267,11 @@ int ContractCall::HandleTx(
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
+    ZJC_DEBUG("contract nonce %lu, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
         "amount: %ld, to_balance: %ld, contract_balance_add: %ld, "
         "contract new balance: %lu, use time: %lu",
-        common::Encode::HexEncode(block_tx.gid()).c_str(),
+        block_tx.nonce(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         test_from_balance,
@@ -369,8 +369,8 @@ int ContractCall::SaveContractCreateInfo(
             trans_item->set_to(to_iter->first);
             trans_item->set_amount(to_iter->second);
             other_add += to_iter->second;
-            ZJC_DEBUG("contract call transfer gid: %s, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
-                common::Encode::HexEncode(block_tx.gid()).c_str(),
+            ZJC_DEBUG("contract call transfer nonce: %lu, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
+                block_tx.nonce(),
                 common::Encode::HexEncode(transfer_iter->first).c_str(),
                 common::Encode::HexEncode(to_iter->first).c_str(),
                 to_iter->second,
