@@ -904,21 +904,21 @@ void BlockManager::AddNewBlock(
             //     //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
             //     break;
             // }
-            // case pools::protobuf::kConsensusRootTimeBlock:
-            //     prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
-            //     break;
+            case pools::protobuf::kConsensusRootTimeBlock:
+                prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+                break;
             // case pools::protobuf::kStatistic:
             //     HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
             //     break;
-            // case pools::protobuf::kCross:
-            //     assert(false);
-            //     break;
-            // case pools::protobuf::kConsensusRootElectShard:
-            //     HandleElectTx(*view_block_item, tx_list[i], db_batch);
-            //     break;
-            // case pools::protobuf::kJoinElect:
-            //     HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
-            //     break;
+            case pools::protobuf::kCross:
+                assert(false);
+                break;
+            case pools::protobuf::kConsensusRootElectShard:
+                HandleElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kJoinElect:
+                HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
             default:
                 break;
             }
