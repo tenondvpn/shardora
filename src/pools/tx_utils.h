@@ -42,6 +42,16 @@ enum PoolsErrorCode {
     kPoolsTxAdded = 2,
 };
 
+static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
+    assert(addr.size() == 20);
+    std::string data;
+    data.resize(28);
+    memcpy(data.data(), addr.c_str(), 20);
+    uint64_t* nonce_data = (uint64_t*)(data.data() + 20);
+    *nonce_data = nonce;
+    return data;
+}
+
 class TxItem {
 public:
     virtual ~TxItem() {}
@@ -392,16 +402,6 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
             assert(false);
             return false;
     }
-}
-
-static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
-    assert(addr.size() == 20);
-    std::string data;
-    data.resize(28);
-    memcpy(data.data(), addr.c_str(), 20);
-    uint64_t* nonce_data = (uint64_t*)(data.data() + 20);
-    *nonce_data = nonce;
-    return data;
 }
 
 };  // namespace pools
