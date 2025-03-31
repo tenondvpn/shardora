@@ -67,7 +67,7 @@ public:
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
-        auto gid_valid_func = [&](const std::string& gid) -> bool {
+        pools::CheckGidValidFunction gid_valid_func = [&](const std::string& gid) -> bool {
             return view_block_chain->CheckTxGidValid(gid, parent_hash);
         };
 
