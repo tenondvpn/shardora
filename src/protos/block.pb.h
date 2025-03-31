@@ -767,21 +767,6 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
       tx_debug() const;
 
-  // optional bytes gid = 1;
-  bool has_gid() const;
-  void clear_gid();
-  static const int kGidFieldNumber = 1;
-  const ::std::string& gid() const;
-  void set_gid(const ::std::string& value);
-  #if LANG_CXX11
-  void set_gid(::std::string&& value);
-  #endif
-  void set_gid(const char* value);
-  void set_gid(const void* value, size_t size);
-  ::std::string* mutable_gid();
-  ::std::string* release_gid();
-  void set_allocated_gid(::std::string* gid);
-
   // optional bytes from = 2;
   bool has_from() const;
   void clear_from();
@@ -842,6 +827,13 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_contract_input();
   void set_allocated_contract_input(::std::string* contract_input);
 
+  // optional uint64 nonce = 1;
+  bool has_nonce() const;
+  void clear_nonce();
+  static const int kNonceFieldNumber = 1;
+  ::google::protobuf::uint64 nonce() const;
+  void set_nonce(::google::protobuf::uint64 value);
+
   // optional uint64 amount = 4;
   bool has_amount() const;
   void clear_amount();
@@ -900,8 +892,8 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.BlockTx)
  private:
-  void set_has_gid();
-  void clear_has_gid();
+  void set_has_nonce();
+  void clear_has_nonce();
   void set_has_from();
   void clear_has_from();
   void set_has_to();
@@ -934,11 +926,11 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TransferItem > contract_txs_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TxLog > events_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo > tx_debug_;
-  ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::internal::ArenaStringPtr to_;
   ::google::protobuf::internal::ArenaStringPtr contract_code_;
   ::google::protobuf::internal::ArenaStringPtr contract_input_;
+  ::google::protobuf::uint64 nonce_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 gas_limit_;
   ::google::protobuf::uint64 gas_used_;
@@ -5599,81 +5591,39 @@ TxLog::mutable_topics() {
 
 // BlockTx
 
-// optional bytes gid = 1;
-inline bool BlockTx::has_gid() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+// optional uint64 nonce = 1;
+inline bool BlockTx::has_nonce() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void BlockTx::set_has_gid() {
-  _has_bits_[0] |= 0x00000001u;
+inline void BlockTx::set_has_nonce() {
+  _has_bits_[0] |= 0x00000010u;
 }
-inline void BlockTx::clear_has_gid() {
-  _has_bits_[0] &= ~0x00000001u;
+inline void BlockTx::clear_has_nonce() {
+  _has_bits_[0] &= ~0x00000010u;
 }
-inline void BlockTx::clear_gid() {
-  gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_gid();
+inline void BlockTx::clear_nonce() {
+  nonce_ = GOOGLE_ULONGLONG(0);
+  clear_has_nonce();
 }
-inline const ::std::string& BlockTx::gid() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.BlockTx.gid)
-  return gid_.GetNoArena();
+inline ::google::protobuf::uint64 BlockTx::nonce() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.BlockTx.nonce)
+  return nonce_;
 }
-inline void BlockTx::set_gid(const ::std::string& value) {
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.BlockTx.gid)
-}
-#if LANG_CXX11
-inline void BlockTx::set_gid(::std::string&& value) {
-  set_has_gid();
-  gid_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.BlockTx.gid)
-}
-#endif
-inline void BlockTx::set_gid(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.BlockTx.gid)
-}
-inline void BlockTx::set_gid(const void* value, size_t size) {
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.BlockTx.gid)
-}
-inline ::std::string* BlockTx::mutable_gid() {
-  set_has_gid();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.BlockTx.gid)
-  return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlockTx::release_gid() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.BlockTx.gid)
-  if (!has_gid()) {
-    return NULL;
-  }
-  clear_has_gid();
-  return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlockTx::set_allocated_gid(::std::string* gid) {
-  if (gid != NULL) {
-    set_has_gid();
-  } else {
-    clear_has_gid();
-  }
-  gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.BlockTx.gid)
+inline void BlockTx::set_nonce(::google::protobuf::uint64 value) {
+  set_has_nonce();
+  nonce_ = value;
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.BlockTx.nonce)
 }
 
 // optional bytes from = 2;
 inline bool BlockTx::has_from() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void BlockTx::set_has_from() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void BlockTx::clear_has_from() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void BlockTx::clear_from() {
   from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -5733,13 +5683,13 @@ inline void BlockTx::set_allocated_from(::std::string* from) {
 
 // optional bytes to = 3;
 inline bool BlockTx::has_to() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void BlockTx::set_has_to() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void BlockTx::clear_has_to() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void BlockTx::clear_to() {
   to_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6052,13 +6002,13 @@ inline void BlockTx::set_contract_prepayment(::google::protobuf::uint64 value) {
 
 // optional bytes contract_code = 14;
 inline bool BlockTx::has_contract_code() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void BlockTx::set_has_contract_code() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void BlockTx::clear_has_contract_code() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void BlockTx::clear_contract_code() {
   contract_code_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6118,13 +6068,13 @@ inline void BlockTx::set_allocated_contract_code(::std::string* contract_code) {
 
 // optional bytes contract_input = 15;
 inline bool BlockTx::has_contract_input() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void BlockTx::set_has_contract_input() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void BlockTx::clear_has_contract_input() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void BlockTx::clear_contract_input() {
   contract_input_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
