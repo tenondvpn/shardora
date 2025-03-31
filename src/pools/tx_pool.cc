@@ -183,7 +183,12 @@ void TxPool::GetTxSyncToLeader(
     auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
     while (!local_tx_queue_.empty()) {
         auto front_tx_ptr = local_tx_queue_.front();
-        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
+        auto tmout = kUserPopedTxTimeoutSec;
+        if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
+            tmout = kSystemPopedTxTimeoutSec;
+        }
+
+        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + tmout > now_tm_seconds) {
             break;
         }
 
@@ -236,7 +241,12 @@ void TxPool::GetTxIdempotently(
     auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
     while (!local_tx_queue_.empty()) {
         auto front_tx_ptr = local_tx_queue_.front();
-        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + kPopedTxTimeoutMs > now_tm_seconds) {
+        auto tmout = kUserPopedTxTimeoutSec;
+        if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
+            tmout = kSystemPopedTxTimeoutSec;
+        }
+
+        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + tmout > now_tm_seconds) {
             break;
         }
 
