@@ -447,22 +447,28 @@ public:
         return db_->Exist(view_key);
     }
 
-    void SaveGidWithBlockHash(
-            const std::string& gid, 
+    void SaveUserNonceWithBlockHash(
+            const std::string& addr,
+            uint64_t nonce,
             const std::string& hash, 
             db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
         key.append(kGidWithBlockHash);
-        key.append(gid);
+        key.append(addr);
+        key.append(std::string((char*)&nonce, sizeof(nonce)));
         batch.Put(key, hash);
     }
 
-    bool GetBlockWithGid(const std::string& gid, view_block::protobuf::ViewBlockItem* block) {
+    bool GetBlockWithUserNonce(
+            const std::string& addr,
+            uint64_t nonce,
+            view_block::protobuf::ViewBlockItem* block) {
         std::string key;
         key.reserve(48);
         key.append(kGidWithBlockHash);
-        key.append(gid);
+        key.append(addr);
+        key.append(std::string((char*)&nonce, sizeof(nonce)));
         std::string hash;
         auto st = db_->Get(key, &hash);
         if (!st.ok()) {
@@ -741,23 +747,6 @@ public:
         }
 
         return true;
-    }
-
-    bool JustCheckCommitedGidExists(const std::string& gid) {
-        std::string key = kCommitedGidPrefix + gid;
-        if (db_->Exist(key)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    void SaveCommittedGid(
-            const block::protobuf::BlockTx& tx, 
-            db::DbWriteBatch& db_batch) {
-        std::string key = kCommitedGidPrefix + tx.gid();
-        db_batch.Put(key, "1");
-        ZJC_DEBUG("success save tx gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
     }
 
     void SaveContractUserPrepayment(
