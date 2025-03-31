@@ -3272,6 +3272,13 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 contract_prepayment() const;
   void set_contract_prepayment(::google::protobuf::uint64 value);
 
+  // optional uint64 tx_debug_timeout_seconds = 16;
+  bool has_tx_debug_timeout_seconds() const;
+  void clear_tx_debug_timeout_seconds();
+  static const int kTxDebugTimeoutSecondsFieldNumber = 16;
+  ::google::protobuf::uint64 tx_debug_timeout_seconds() const;
+  void set_tx_debug_timeout_seconds(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.TxMessage)
  private:
   void set_has_version();
@@ -3302,6 +3309,8 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_contract_input();
   void set_has_sign();
   void clear_has_sign();
+  void set_has_tx_debug_timeout_seconds();
+  void clear_has_tx_debug_timeout_seconds();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -3321,6 +3330,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   int step_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 contract_prepayment_;
+  ::google::protobuf::uint64 tx_debug_timeout_seconds_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // ===================================================================
@@ -6708,6 +6718,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::
 TxMessage::tx_debug() const {
   // @@protoc_insertion_point(field_list:shardora.pools.protobuf.TxMessage.tx_debug)
   return tx_debug_;
+}
+
+// optional uint64 tx_debug_timeout_seconds = 16;
+inline bool TxMessage::has_tx_debug_timeout_seconds() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void TxMessage::set_has_tx_debug_timeout_seconds() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void TxMessage::clear_has_tx_debug_timeout_seconds() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void TxMessage::clear_tx_debug_timeout_seconds() {
+  tx_debug_timeout_seconds_ = GOOGLE_ULONGLONG(0);
+  clear_has_tx_debug_timeout_seconds();
+}
+inline ::google::protobuf::uint64 TxMessage::tx_debug_timeout_seconds() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxMessage.tx_debug_timeout_seconds)
+  return tx_debug_timeout_seconds_;
+}
+inline void TxMessage::set_tx_debug_timeout_seconds(::google::protobuf::uint64 value) {
+  set_has_tx_debug_timeout_seconds();
+  tx_debug_timeout_seconds_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.tx_debug_timeout_seconds)
 }
 
 #ifdef __GNUC__

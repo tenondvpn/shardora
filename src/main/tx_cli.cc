@@ -482,7 +482,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 1000 == 0) {
+        if (count % 500 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
