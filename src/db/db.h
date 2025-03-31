@@ -105,7 +105,7 @@ public:
         // }
 
         db_batch_.Put(key, value);
-        ++count_;
+        count_ += key.size() + value.size();
     }
 
     bool Exist(const std::string& key) {
@@ -150,11 +150,7 @@ public:
     }
 
     size_t ApproximateSize() const {
-#ifdef LEVELDB
-        return db_batch_.ApproximateSize();
-#else
-        return count_ > 0 ? 100 : 0;
-#endif
+        return count_;
     }
 
     
