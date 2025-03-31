@@ -373,14 +373,14 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            auto gid_valid_func = [&](const std::string& gid) -> bool {
+            auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
                     return false;
                 }
                 
-                return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
-                    gid, 
+                return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
+                    addr, nonce,
                     latest_block->qc().view_block_hash());
             };
 
@@ -467,7 +467,7 @@ void HotstuffManager::PopPoolsMessage() {
                     }
             
                     if (!address_info) {
-                        ZJC_WARN("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
+                        ZJC_WARN("get address failed nonce: %lu", tx->nonce());
                         continue;
                     }
             

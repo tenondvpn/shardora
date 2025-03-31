@@ -232,7 +232,7 @@ Status Hotstuff::Propose(
         pb_pro_msg->tx_propose().txs_size());
     propose_debug_str += ", tx gids: ";
     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-        propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).gid()) + " ";
+        propose_debug_str += std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).nonce()) + " ";
     }
 
     transport::protobuf::ConsensusDebug consensus_debug;
@@ -1370,7 +1370,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 #ifndef NDEBUG
     std::string gids;
     for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
-        gids += common::Encode::HexEncode(pre_rst_timer_msg.txs(i).gid()) + " ";
+        gids += std::to_string(pre_rst_timer_msg.txs(i).nonce()) + " ";
     }
 
     ZJC_WARN("pool: %u, reset timer get follower tx gids: %s", pool_idx_, gids.c_str());
@@ -2147,7 +2147,7 @@ Status Hotstuff::SendMsgToLeader(
 //         for (uint32_t i = 0; i < header_msg.hotstuff().pre_reset_timer_msg().txs_size(); ++i) {
 //             auto& tx = header_msg.hotstuff().pre_reset_timer_msg().txs(i);
 //             ZJC_WARN("pool index: %u, send to leader %d message to leader net: %u, %s, "
-//                 "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d, gid: %s, to: %s",
+//                 "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d, nonce: %lu, to: %s",
 //                 pool_idx_,
 //                 msg_type,
 //                 leader->net_id, 
@@ -2157,7 +2157,7 @@ Status Hotstuff::SendMsgToLeader(
 //                 leader->public_port,
 //                 leader->index,
 //                 local_idx,
-//                 common::Encode::HexEncode(tx.gid()).c_str(),
+//                 tx.nonce(),
 //                 common::Encode::HexEncode(tx.to()).c_str());
 //         }
 //     }
