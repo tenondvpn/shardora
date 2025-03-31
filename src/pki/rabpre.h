@@ -74,7 +74,8 @@ struct CRS {
 class Rabpre {
 public:
     static CRS SETUP(int lambda) {
-        long long p = CryptoUtils::sieve_of_eratosthenes(lambda);
+     //   long long p = CryptoUtils::sieve_of_eratosthenes(lambda);
+        long long p =57697;
         long long a = CryptoUtils::rand_int(2, p-2);
         long long g = 2;
         long long b = CryptoUtils::rand_int(2, p-2);
@@ -226,7 +227,7 @@ public:
             long long m = (((((((temp1 * Z_inv) % p) * B_inv) % p) * U0_inv) % p) * U1_inv) % p;
             m = (m + p - r) % p; // 修正负数
             long long m_inv = CryptoUtils::inverse(m, p);
-            return ((m * m_inv) % p * c1 * Z_inv) % p;
+            return (c1 * Z_inv) % p;
         } catch (const exception& e) {
             cerr << "解密错误: " << e.what() << endl;
             throw;
@@ -242,7 +243,8 @@ public:
     RKGEN(const tuple<int, int>& S,
           long long sk,
           const tuple<long long, long long, long long, long long, long long>& hsk,
-          int AS_) {
+          int AS_,const tuple<long long, long long, long long,
+                   long long, long long, long long>& mpk) {
         long long p = get<4>(hsk);
         long long B = get<1>(hsk);
         long long A = get<0>(hsk);
@@ -253,8 +255,8 @@ public:
         long long rk1 = CryptoUtils::mod_pow((Ask * B_inv) % p, o, p);
         long long rk2 = CryptoUtils::mod_pow(A, o, p);
 
-        auto mpk_dummy = make_tuple(p, 0LL, 0LL, 0LL, 0LL, 0LL); // 需要真实mpk
-        auto cto = ENCRYPT(mpk_dummy, o, AS_); // 注意：此处需要真实mpk上下文
+       // auto mpk_dummy = make_tuple(p, 0LL, 0LL, 0LL, 0LL, 0LL); // 需要真实mpk
+        auto cto = ENCRYPT(mpk, o, AS_); // 注意：此处需要真实mpk上下文
 
         return make_tuple(hsk, get<0>(S), get<1>(S), rk1, rk2, cto);
     }
@@ -315,7 +317,7 @@ public:
 int test_rabpre_main() {
     try {
         // 参数初始化
-        auto crs = Rabpre::SETUP(1024 * 1024);
+        auto crs = Rabpre::SETUP(32);
 
         // 密钥生成
         auto [sk0, pk0] = Rabpre::KEYGEN(crs, 0);
@@ -325,16 +327,19 @@ int test_rabpre_main() {
         auto [mpk, hsk0, hsk1] = Rabpre::AGGREGATE(crs, {pk0, pk1});
 
         // 加密测试
-        long long plaintext = 199;
+        long long plaintext = 199; //修改消息
         auto ct = Rabpre::ENCRYPT(mpk, plaintext, 1);
 
         // 解密测试
         long long decrypted = Rabpre::DEC(ct, sk0, hsk0, mpk);
-        cout << "原始明文: " << plaintext << "\n解密结果: " << decrypted << endl;
+        cout << "原始明文: " << plaintext<<endl;
+        cout<<"第一层密文: " <<get<1>(ct)<<endl;
+        cout<< "解密结果: " << decrypted << endl;
 
         // 重加密测试
-        auto rk = Rabpre::RKGEN({7,5}, sk1, hsk1, 1);
+        auto rk = Rabpre::RKGEN({0,0}, sk1, hsk1, 1,mpk);
         auto ct_new = Rabpre::REENC(rk, ct);
+        cout<<"重加密密文: "<<get<0>(get<1>(ct_new))<<endl;
         long long m2 = Rabpre::DECRE(ct_new, sk1, hsk1, mpk);
         cout << "重加密解密结果: " << m2 << endl;
 
