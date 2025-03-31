@@ -673,9 +673,25 @@ static void GetBlockWithGid(evhtp_request_t* req, void* data) {
     evhtp_headers_add_header(req->headers_out, header2);
     evhtp_headers_add_header(req->headers_out, header3);
 
-    const char* gid = evhtp_kv_find(req->uri->query, "gid");
-    if (gid == nullptr) {
-        std::string res = std::string("gid not exists.");
+    const char* addr = evhtp_kv_find(req->uri->query, "addr");
+    if (addr == nullptr) {
+        std::string res = std::string("addr not exists.");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    const char* nonce = evhtp_kv_find(req->uri->query, "nonce");
+    if (nonce == nullptr) {
+        std::string res = std::string("nonce not exists.");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    uint64_t tmp_nonce = 0;
+    if (!common::StringUtil::ToUint64(nonce, tmp_nonce)) {
+        std::string res = std::string("nonce not exists.");
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
@@ -686,7 +702,8 @@ static void GetBlockWithGid(evhtp_request_t* req, void* data) {
     res_json["msg"] = "success";
     view_block::protobuf::ViewBlockItem view_block;
     
-    bool res = prefix_db->GetBlockWithGid(common::Encode::HexDecode(gid), &view_block);
+    bool res = prefix_db->GetBlockWithUserNonce(
+        common::Encode::HexDecode(addr), tmp_nonce, &view_block);
     if (res) {
         res_json["block"]["height"] = view_block.block_info().height();
         res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());
@@ -810,7 +827,7 @@ static void GidsValid(evhtp_request_t* req, void* data) {
         }
 
         ZJC_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
-        auto res = prefix_db->JustCheckCommitedGidExists(gid);
+        auto res = false; //prefix_db->JustCheckCommitedGidExists(gid);
         if (res) {
             res_json["gids"][invalid_addr_index++] = addrs_splits[i];
             ZJC_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());

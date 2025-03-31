@@ -806,7 +806,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
-        tx_info->set_gid(common::CreateGID(""));
+        tx_info->set_nonce(root_single_block_height);
         tx_info->set_from("");
         tx_info->set_to(root_pool_addr);
         tx_info->set_amount(0);
@@ -852,7 +852,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
-        tx_info->set_gid(common::CreateGID(""));
+        tx_info->set_nonce(root_single_block_height);
         tx_info->set_from("");
         tx_info->set_to(root_pool_addr);
         tx_info->set_amount(0);
@@ -1064,13 +1064,14 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             }
         }
 
+        uint64_t nonce = 0;
         std::map<block::protobuf::BlockTx*, uint32_t> tx2net_map_for_account; 
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         {
             auto tx_info = tx_list->Add();
-            tx_info->set_gid(common::CreateGID(""));
+            tx_info->set_nonce(nonce++);
             tx_info->set_from("");
             // 每个 root 账户地址都对应一个 pool 账户，先把创世账户中涉及到的 pool 账户创建出来
             tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
@@ -1085,7 +1086,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         // 创建 root 创世账户，貌似没什么用
         {
             auto tx_info = tx_list->Add();
-            tx_info->set_gid(common::CreateGID(""));
+            tx_info->set_nonce(nonce++);
             tx_info->set_from("");
             tx_info->set_to(address);
             tx_info->set_amount(genesis_account_balance); // 余额 0 即可
@@ -1105,7 +1106,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     std::string shard_acc_address = *addr_iter;
                     // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
                     auto tx_info = tx_list->Add();
-                    tx_info->set_gid(common::CreateGID(""));
+                    tx_info->set_nonce(nonce++);
                     tx_info->set_from("");
                     tx_info->set_to(shard_acc_address);
                     tx_info->set_amount(genesis_account_balance);
@@ -1509,10 +1510,11 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             expect_all_balance += genesis_account_balance;
         }
 
+        uint64_t nonce = 0;
         // 添加创建节点账户交易，节点账户用于选举
         {
             auto tx_info = tx_list->Add();
-            tx_info->set_gid(common::CreateGID(""));
+            tx_info->set_nonce(nonce++);
             tx_info->set_from("");
             tx_info->set_to(address);
             tx_info->set_amount(0);
@@ -1653,7 +1655,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         if (i >= common::kImmutablePoolSize) {
             std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
             auto tx_info = tx_list->Add();
-            tx_info->set_gid(common::CreateGID(""));
+            tx_info->set_nonce(0);
             tx_info->set_from("");
             tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             tx_info->set_amount(0);
@@ -1668,7 +1670,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
                 // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
                 auto tx_info = tx_list->Add();
-                tx_info->set_gid(common::CreateGID(""));
+                tx_info->set_nonce(0);
                 tx_info->set_from("");
                 tx_info->set_to(*addr_iter);
                 tx_info->set_amount(genesis_account_balance);
