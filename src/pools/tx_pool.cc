@@ -276,6 +276,7 @@ void TxPool::GetTxIdempotently(
         res_map[tx_ptr->unique_tx_hash] = tx_ptr;
     }
 
+    if (local_tx_queue_.size() > 0)
     ZJC_INFO("now tx size added_txs_: %u, consensus_added_txs_: %u, local_tx_queue_: %u, local_tx_map_: %u", 
         added_txs_.size(), consensus_added_txs_.size(), local_tx_queue_.size(), local_tx_map_.size());
 }
