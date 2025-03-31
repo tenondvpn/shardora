@@ -222,29 +222,6 @@ void TxPoolManager::ConsensusTimerMessage() {
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
-    // if (prev_get_valid_tm_ms_ < now_tm_ms) {
-    //     prev_get_valid_tm_ms_ = now_tm_ms + kGetMinPeriod;
-    //     GetMinValidTxCount();
-    // }
-
-    std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
-// #ifndef NDEBUG
-    // std::string test_str;
-    // uint32_t max_count = 0;
-    // for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-    //     if (tx_pool_[i].tx_size() > max_count) {
-    //         max_count = tx_pool_[i].tx_size();
-    //     }
-    //     // test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
-    //     // tx_count_queue.push(tx_pool_[i].tx_size());
-    //     // if (tx_count_queue.size() > 2) {
-    //     //     tx_count_queue.pop();
-    //     // }
-    // }
-
-    // now_max_tx_count_ = max_count * 2 / 3;
-    // ZJC_DEBUG("set max txcount: %u, test str: %s", max_count, test_str.c_str());
-// #endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         SyncMinssingRootHeights(now_tm_ms);
@@ -428,7 +405,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
                     tx_pool_[address_info->pool_index()].all_tx_size(), 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
-                    tx_pool_[address_info->pool_index()].tx_size());
+                    tx_pool_[address_info->pool_index()].all_tx_size());
                 return;
             }
 
@@ -442,7 +419,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         -1, pools_msg_queue_.size(),
                         address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
-                        tx_pool_[address_info->pool_index()].tx_size(),
+                        tx_pool_[address_info->pool_index()].all_tx_size(),
                         (prev_tps_count_/(dur / 1000)));
                 prev_show_tm_ms_ = now_tm;
                 prev_tps_count_ = 0;
@@ -477,7 +454,7 @@ int TxPoolManager::BackupConsensusAddTxs(
         ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
             tx_pool_[pool_index].all_tx_size(), 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
-            tx_pool_[pool_index].tx_size());
+            tx_pool_[pool_index].all_tx_size());
     } else {
         tx_pool_[pool_index].ConsensusAddTxs(valid_tx);
     }
@@ -1152,52 +1129,7 @@ void TxPoolManager::GetTxIdempotently(
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
         pools::CheckGidValidFunction gid_vlid_func) {
-    // TODO: check latency
-    // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-    //         pool_index != common::kImmutablePoolSize) {
-    //     if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-    //         return;
-    //     }
-    // }
-
     tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
-}
-
-void TxPoolManager::GetMinValidTxCount() {
-    std::priority_queue<PoolsCountPrioItem> count_queue_;
-    std::priority_queue<PoolsTmPrioItem> tm_queue_;
-    uint64_t min_tm = common::kInvalidUint64;
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        if (tx_pool_[i].tx_size() > 0) {
-            count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
-        }
-
-        if (count_queue_.size() > kMinPoolsValidCount) {
-            count_queue_.pop();
-        }
-
-        if (tx_pool_[i].oldest_timestamp() > 0) {
-            tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
-            if (tx_pool_[i].oldest_timestamp() < min_tm) {
-                min_tm = tx_pool_[i].oldest_timestamp();
-            }
-        }
-
-        if (tm_queue_.size() > kMinPoolsValidCount) {
-            tm_queue_.pop();
-        }
-    }
-
-    if (min_tm != common::kInvalidUint64) {
-        min_timestamp_ = min_tm;
-    }
-
-    if (count_queue_.size() < kMinPoolsValidCount) {
-        return;
-    }
-
-    min_valid_tx_count_ = count_queue_.top().count;
-    min_valid_timestamp_ = tm_queue_.top().max_timestamp;
 }
 
 }  // namespace pools

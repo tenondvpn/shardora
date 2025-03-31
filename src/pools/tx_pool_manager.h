@@ -75,10 +75,6 @@ public:
         return tx_pool_[pool_index].all_tx_size();
     }
 
-    uint32_t tx_size(uint32_t pool_index) const {
-        return tx_pool_[pool_index].tx_size();
-    }
-
     void OnNewCrossBlock(
             const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
         auto* block_item = &view_block->block_info();
