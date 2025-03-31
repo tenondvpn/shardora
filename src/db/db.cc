@@ -98,8 +98,8 @@ bool Db::Init(const std::string& db_path) {
     options.bottommost_compression = rocksdb::kZlibCompression;
     options.compaction_style = rocksdb::kCompactionStyleUniversal;
     options.compaction_options_universal.size_ratio = 20;
-    options.level0_file_num_compaction_trigger = 4;
-    options.max_bytes_for_level_base = 64 * 1024 * 1024;
+    options.level0_file_num_compaction_trigger = 8;
+    options.max_bytes_for_level_base = 512 * 1024 * 1024;
     options.write_buffer_size = 512 * 1024 * 1024;
     options.max_write_buffer_number = 4;
     options.max_background_compactions  = 8;

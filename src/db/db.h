@@ -169,6 +169,7 @@ public:
         DbReadOptions read_opt;
         std::string val;
         read_opt.fill_cache = false;
+        read_opt.verify_checksums = false;
         auto status = db_->Get(read_opt, key, &val);
         return status.ok(); 
         // DbIterator* it = db_->NewIterator(DbReadOptions());
