@@ -293,7 +293,9 @@ struct StatisticInfoItem {
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
-    message.append(tx_info.gid());
+    uint64_t nonce = tx_info.nonce();
+    message.append(std::string((char*)&nonce, sizeof(nonce)));
+    // message.append(tx_info.gid());
     message.append(tx_info.pubkey());
     message.append(tx_info.to());
     uint64_t amount = tx_info.amount();

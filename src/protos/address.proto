@@ -35,5 +35,5 @@ message AddressInfo {
     // 识节点了，处于边缘化状态。Shardora 希望长期没有被选为共识节点的节点有更高一些的概率在之后的选
     // 举中被选中。
     optional uint64 consensus_gap = 13; // 边缘化程度 P
-
+    optional uint64 nonce = 14;
 }
