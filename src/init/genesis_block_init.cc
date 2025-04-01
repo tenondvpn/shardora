@@ -675,7 +675,7 @@ int GenesisBlockInit::CreateElectBlock(
         return kInitSuccess;
     }
     
-    auto account_info = pool_address_info_[shard_netid];
+    auto account_info = immutable_pool_address_info_;
     auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
     auto* tenon_block = view_block_ptr->mutable_block_info();
     auto tx_list = tenon_block->mutable_tx_list();
@@ -1706,16 +1706,14 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-        }
-
-        {
+        } else {
             auto tx_info = tx_list->Add();
             tx_info->set_to(pool_address_info_[i]->addr());
             tx_info->set_nonce(pool_address_info_[i]->nonce());
             pool_address_info_[i]->set_nonce(pool_address_info_[i]->nonce() + 1);
             tx_info->set_from("");
-            tx_info->set_amount(genesis_account_balance); // 余额 0 即可
-            tx_info->set_balance(genesis_account_balance);
+            tx_info->set_amount(0); // 余额 0 即可
+            tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
             // root 创世账户也创建在 shard3?
