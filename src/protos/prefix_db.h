@@ -156,13 +156,13 @@ public:
         std::string val;
         auto st = db_->Get(kAddressPrefix + addr, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
         if (!addr_info->ParseFromString(val)) {
-            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 

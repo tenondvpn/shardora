@@ -1114,9 +1114,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_from("");
             // 每个 root 账户地址都对应一个 pool 账户，先把创世账户中涉及到的 pool 账户创建出来
-            tx_info->set_to(pool_address_info_[i]->addr());
-            tx_info->set_nonce(pool_address_info_[i]->nonce());
-            pool_address_info_[i]->set_nonce(pool_address_info_[i]->nonce() + 1);
+            tx_info->set_to(address);
+            tx_info->set_nonce(0);
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
