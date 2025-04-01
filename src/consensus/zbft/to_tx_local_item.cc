@@ -67,7 +67,7 @@ int ToTxLocalItem::HandleTx(
         to_tx->set_balance(to_balance);
         str_for_hash.append(to_txs.tos(i).des());
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
-        acc_balance_map[to_txs.tos(i).des()] = std::make_pair<int64_t, uint64_t>(to_balance, nonce);
+        acc_balance_map[to_txs.tos(i).des()] = std::pair<int64_t, uint64_t>(static_cast<int64_t>(to_balance), nonce);
         ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
             to_balance,
