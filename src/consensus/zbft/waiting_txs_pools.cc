@@ -51,7 +51,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
         if (!txs_item->txs.empty()) {
             auto first_tx = txs_item->txs.begin()->second;
             ZJC_DEBUG("success leader get single txs coming thread: %d, "
-                "pool index: %d, tx count: %d, nonce: %s, step: %d", 
+                "pool index: %d, tx count: %d, nonce: %lu, step: %d", 
                 thread_id, pool_index, txs_item->txs.size(), 
                 first_tx->tx_info->nonce(), 
                 first_tx->tx_info->step());
