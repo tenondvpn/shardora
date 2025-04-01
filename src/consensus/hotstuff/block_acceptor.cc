@@ -236,6 +236,7 @@ Status BlockAcceptor::addTxsToPool(
                 from_id = security_ptr_->GetAddress(tx->pubkey());
             }
         }
+        
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {

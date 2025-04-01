@@ -145,8 +145,12 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     for (uint32_t i = 0; i < view_block.block_info().tx_list_size(); ++i) {
+        auto& addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
+            view_block.block_info().tx_list(i).from() : 
+            view_block.block_info().tx_list(i).to();
+        assert(!addr.empty());
         auto tx_key = GetTxKey(
-            view_block.block_info().tx_list(i).from(), 
+            addr, 
             view_block.block_info().tx_list(i).nonce());
         auto iter = local_tx_map_.find(tx_key);
         if (iter != local_tx_map_.end()) {
