@@ -147,9 +147,9 @@ int GenesisBlockInit::CreateGenesisBlocks(
         }
     }
 
+    PrintGenisisAccounts();
     return res;
 }
-
 
 // 网络中每个 pool 都有个 address
 void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
@@ -1823,6 +1823,25 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     }
 
     hasRunOnce = true;
+}
+
+void GenesisBlockInit::PrintGenisisAccounts() {
+    db::DbReadOptions option;
+    auto iter = db_->db()->NewIterator(option);
+    iter->Seek(protos::kAddressPrefix);
+    int32_t valid_count = 0;
+    while (iter->Valid()) {
+        address::protobuf::AddressInfo addr_info;
+        if (!addr_info.ParseFromString(iter->value().ToString())) {
+            assert(false);
+        }
+
+        std::cout << common::Encode::HexEncode(addr_info.addr()) << ", " 
+            << addr_info.balance() << ", " << addr_info.nonce() << std::endl;
+        iter->Next();
+    }
+
+    delete iter;
 }
 
 };  // namespace init

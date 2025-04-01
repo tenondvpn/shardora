@@ -117,6 +117,7 @@ private:
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     void CreatePoolsAddressInfo(uint16_t network_id);
+    void PrintGenisisAccounts();
 
     std::map<uint32_t, std::map<uint32_t, std::map<std::string, uint64_t>>> net_pool_index_map_; // net => (pool => addr)
     uint32_t net_pool_index_map_addr_count_ = 0;
