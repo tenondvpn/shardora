@@ -81,6 +81,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }
 
     if (net_type == GenisisNetworkType::RootNetwork) { // 构造 root 创世网络
+        CreatePoolsAddressInfo(network::kRootCongressNetworkId);
         // 生成节点私有数据，如 bls
         std::vector<std::string> prikeys;
         CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, real_root_genesis_nodes);
@@ -116,6 +117,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                 continue;
             }
 
+            CreatePoolsAddressInfo(shard_node_net_id);
             CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
             common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
             PrepareCreateGenesisBlocks(shard_node_net_id);            
