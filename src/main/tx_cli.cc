@@ -79,7 +79,7 @@ static void WriteDefaultLogConf() {
 
 static transport::MessagePtr CreateTransactionWithAttr(
         std::shared_ptr<security::Security>& security,
-        const std::string& gid,
+        uint64_t nonce,
         const std::string& from_prikey,
         const std::string& to,
         const std::string& key,
@@ -96,7 +96,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_type(common::kPoolsMessage);
     // auto* brd = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
-    new_tx->set_gid(gid);
+    new_tx->set_nonce(nonce);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kNormalFrom);
     new_tx->set_to(to);
@@ -146,7 +146,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
 
 static transport::MessagePtr GmsslCreateTransactionWithAttr(
         security::GmSsl& gmssl,
-        const std::string& gid,
+        uint64_t nonce,
         const std::string& to,
         const std::string& key,
         const std::string& val,
@@ -162,7 +162,7 @@ static transport::MessagePtr GmsslCreateTransactionWithAttr(
     msg.set_type(common::kPoolsMessage);
     // auto* brd = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
-    new_tx->set_gid(gid);
+    new_tx->set_nonce(nonce);
     new_tx->set_pubkey(gmssl.GetPublicKey());
     new_tx->set_step(pools::protobuf::kNormalFrom);
     new_tx->set_to(to);
@@ -213,7 +213,7 @@ static transport::MessagePtr GmsslCreateTransactionWithAttr(
 
 static transport::MessagePtr OqsCreateTransactionWithAttr(
         security::Oqs& oqs,
-        const std::string& gid,
+        uint64_t nonce,
         const std::string& to,
         const std::string& key,
         const std::string& val,
@@ -229,7 +229,7 @@ static transport::MessagePtr OqsCreateTransactionWithAttr(
     msg.set_type(common::kPoolsMessage);
     // auto* brd = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
-    new_tx->set_gid(gid);
+    new_tx->set_nonce(nonce);
     new_tx->set_pubkey(oqs.GetPublicKey());
     new_tx->set_step(pools::protobuf::kNormalFrom);
     new_tx->set_to(to);
@@ -444,6 +444,11 @@ int tx_main(int argc, char** argv) {
     uint32_t step_num = 1000;
     std::string gid = common::Random::RandomString(32);
     uint64_t random_u64 = common::Random::RandomUint64();
+    std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+    for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
+        prikey_with_nonce[*iter] = 0;
+    }
+
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos + random_u64;
@@ -463,10 +468,9 @@ int tx_main(int argc, char** argv) {
         // if (common::Random::RandomInt32() % 10 < 3) {
         //     tmp_data[0] = common::Random::RandomInt16();
         // }
-
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
-            gid,
+            ++prikey_with_nonce[from_prikey],
             from_prikey,
             to,
             "",
@@ -561,7 +565,7 @@ int one_tx_main(int argc, char** argv) {
     std::cout << 4 << std::endl;
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
-        gid,
+        0,
         g_prikeys[0],
         to,
         key,
@@ -634,7 +638,7 @@ int create_library(int argc, char** argv) {
     std::string to = security::GetContractAddress(security->GetAddress(), gid, common::Hash::keccak256(bytescode));
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
-        gid,
+        0,
         from_prikey,
         to,
         "create_contract",
@@ -719,7 +723,7 @@ int contract_main(int argc, char** argv) {
     std::string to = security::GetContractAddress(security->GetAddress(), gid, common::Hash::keccak256(bytescode));
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
-        gid,
+        0,
         from_prikey,
         to,
         "create_contract",
@@ -795,7 +799,7 @@ int contract_set_prepayment(int argc, char** argv) {
     std::string to = common::Encode::HexDecode(argv[2]);
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
-        gid,
+        0,
         from_prikey,
         to,
         "prepayment",
@@ -880,7 +884,7 @@ int contract_call(int argc, char** argv, bool more=false) {
         gid_int[0] = i;
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
-            gid,
+            0,
             from_prikey,
             to,
             "call",
@@ -967,7 +971,7 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
 
     auto tx_msg_ptr = GmsslCreateTransactionWithAttr(
         gmssl,
-        common::Random::RandomString(32),
+        0,
         to,
         "",
         "",
@@ -1042,7 +1046,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
 
     auto tx_msg_ptr = OqsCreateTransactionWithAttr(
         oqs,
-        common::Random::RandomString(32),
+        0,
         to,
         "",
         "",
