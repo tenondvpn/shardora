@@ -284,12 +284,15 @@ void AccountManager::HandleDefaultTx(
         account_info->set_sharding_id(view_block.qc().network_id());
         account_info->set_latest_height(block.height());
         account_info->set_balance(0);
-        account_info->set_nonce(0);
+        account_info->set_nonce(tx.nonce());
         prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     } else {
         if (account_info->latest_height() > block.height() || account_info->nonce() >= tx.nonce()) {
-            ZJC_ERROR("account_info->latest_height() > block.height(): %lu, %lu",
-                account_info->latest_height(), block.height());
+            ZJC_ERROR("addr: %s, step: %d, account_info->latest_height() > block.height(): %lu, %lu, nonce: %lu, %lu",
+                common::Encode::HexEncode(account_info->addr()).c_str(),
+                tx.step(),
+                account_info->latest_height(), block.height(),
+                account_info->nonce(), tx.nonce());
             return;
         }
 
