@@ -1107,6 +1107,7 @@ void BlockManager::AddPoolStatisticTag(uint64_t height) {
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(i);
+        assert(msg_ptr->address_info != nullptr);
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kPoolStatisticTag);
         char data[8] = {0};

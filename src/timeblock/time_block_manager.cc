@@ -48,6 +48,8 @@ void TimeBlockManager::CreateTimeBlockTx() {
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
+    assert(msg_ptr->address_info != nullptr);
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
