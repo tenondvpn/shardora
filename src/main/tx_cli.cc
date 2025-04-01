@@ -263,7 +263,7 @@ static transport::MessagePtr OqsCreateTransactionWithAttr(
         return nullptr;
     }
 
-    std::cout << " tx gid: " << common::Encode::HexEncode(new_tx->gid()) << std::endl
+    std::cout << " tx nonce: " << nonce << std::endl
         << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
         << "tx to: " << common::Encode::HexEncode(new_tx->to()) << std::endl
         << "tx hash: " << common::Encode::HexEncode(tx_hash) << std::endl
