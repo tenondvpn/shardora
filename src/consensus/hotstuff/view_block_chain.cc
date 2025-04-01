@@ -648,8 +648,21 @@ bool ViewBlockChain::CheckTxNonceValid(
     }
 
     auto addr_info = account_mgr_->GetAccountInfo(addr);
-    if (addr_info->nonce() + 1 == nonce) {
-        return true;
+    if (addr_info == nullptr) {
+        ZJC_DEBUG("failed check tx nonce not exists in db: %s, %lu, phash: %s", 
+            common::Encode::HexEncode(addr).c_str(), 
+            nonce,
+            common::Encode::HexEncode(parent_hash).c_str());
+        return false;
+    }
+
+    if (addr_info->nonce() + 1 != nonce) {
+        ZJC_DEBUG("failed check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+            common::Encode::HexEncode(addr).c_str(), 
+            nonce,
+            addr_info->nonce(),
+            common::Encode::HexEncode(parent_hash).c_str());
+        return false;
     }
 
     ZJC_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
@@ -657,7 +670,7 @@ bool ViewBlockChain::CheckTxNonceValid(
         nonce,
         addr_info->nonce(),
         common::Encode::HexEncode(parent_hash).c_str());
-    return false;
+    return true;
 }
 
 void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
