@@ -245,6 +245,7 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
     account_info->set_sharding_id(des_sharding_id);
     account_info->set_latest_height(latest_height);
     account_info->set_balance(tx.balance());
+    account_info->set_nonce(tx.nonce());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.step() ==  pools::protobuf::kContractCreate && tx.storages(i).key() == protos::kCreateContractBytesCode) {
             auto& bytes_code = tx.storages(i).value();
