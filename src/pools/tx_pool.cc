@@ -288,7 +288,7 @@ void TxPool::GetTxIdempotently(
         front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         res_map[front_tx_ptr->tx_key] = front_tx_ptr;
         local_tx_queue_.push(front_tx_ptr);
-        ZJC_DEBUG("tx get tx key: %s", common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+        ZJC_DEBUG("tx get tx key: %s", common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
     }
 
     while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {
