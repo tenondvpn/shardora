@@ -1116,8 +1116,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             // 每个 root 账户地址都对应一个 pool 账户，先把创世账户中涉及到的 pool 账户创建出来
             tx_info->set_to(address);
             tx_info->set_nonce(0);
-            tx_info->set_amount(0);
-            tx_info->set_balance(0);
+            tx_info->set_amount(genesis_account_balance);
+            tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
             // root 网络的 pool addr 账户创建在 shard3?
