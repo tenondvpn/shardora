@@ -54,13 +54,16 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
     tx_info.set_to("");
-    tx_info.set_nonce(0llu);
+    tx_info.set_nonce(msg_ptr->address_info->nonce() + 1);
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
-    ZJC_INFO("success create timeblock nonce: %s", 0);
+    ZJC_INFO("success create timeblock tx key: %s",
+        pools::GetTxKey(
+            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(), 
+            msg_ptr->address_info->nonce()).c_str());
 }
 
 bool TimeBlockManager::HasTimeblockTx(
