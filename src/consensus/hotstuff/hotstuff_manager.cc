@@ -537,11 +537,11 @@ void HotstuffManager::PopPoolsMessage() {
                     }
                     
                     if (tx_ptr != nullptr) {
-                        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
+                        auto tx_hash = pools::GetTxMessageHash(*tx);
                         if (tx_ptr->tx_info->pubkey().size() == 64u) {
                             security::GmSsl gmssl;
                             if (gmssl.Verify(
-                                    tx_ptr->unique_tx_hash,
+                                    tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                                 assert(false);
@@ -551,7 +551,7 @@ void HotstuffManager::PopPoolsMessage() {
                         } else if (tx_ptr->tx_info->pubkey().size() > 128u) {
                             security::Oqs oqs;
                             if (oqs.Verify(
-                                    tx_ptr->unique_tx_hash,
+                                    tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                                 assert(false);
@@ -560,7 +560,7 @@ void HotstuffManager::PopPoolsMessage() {
                             }
                         } else {
                             if (security_ptr_->Verify(
-                                    tx_ptr->unique_tx_hash,
+                                    tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                                 assert(false);

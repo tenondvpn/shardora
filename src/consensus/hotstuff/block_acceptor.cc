@@ -469,14 +469,14 @@ Status BlockAcceptor::addTxsToPool(
         }
         
         if (tx_ptr != nullptr) {
-            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
-            txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
+            auto tx_hash = pools::GetTxMessageHash(*tx);
+            txs_map[tx_ptr->tx_key] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
                 if (!msg_ptr->is_leader) {
                     if (tx->pubkey().size() == 64u) {
                         security::GmSsl gmssl;
                         if (gmssl.Verify(
-                                tx_ptr->unique_tx_hash,
+                                tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                             assert(false);
@@ -485,7 +485,7 @@ Status BlockAcceptor::addTxsToPool(
                     } else if (tx->pubkey().size() > 128u) {
                         security::Oqs oqs;
                         if (oqs.Verify(
-                                tx_ptr->unique_tx_hash,
+                                tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                             assert(false);
@@ -493,7 +493,7 @@ Status BlockAcceptor::addTxsToPool(
                         }
                     } else {
                         if (security_ptr_->Verify(
-                                tx_ptr->unique_tx_hash,
+                                tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                             assert(false);

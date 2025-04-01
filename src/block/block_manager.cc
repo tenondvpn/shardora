@@ -1352,7 +1352,6 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
             tx_ptr->tx_hash = statistic_hash;
-            tx_ptr->tx_ptr->unique_tx_hash = tx_ptr->tx_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
@@ -1448,15 +1447,13 @@ void BlockManager::HandleStatisticBlock(
         auto shard_elect_tx = std::make_shared<BlockTxsItem>();
         shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
         shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
-        shard_elect_tx->tx_ptr->unique_tx_hash = pools::GetTxMessageHash(
-            *shard_elect_tx->tx_ptr->tx_info);
         shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
         shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
         shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
-        ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, txhash: %s, statistic elect height: %lu",
+        ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, statistic elect height: %lu",
             view_block.qc().network_id(), block.timeblock_height(),
             tx->nonce(),
-            common::Encode::HexEncode(shard_elect_tx->tx_ptr->unique_tx_hash).c_str(),
+            common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_key).c_str(),
             0);
     }
 }
@@ -1601,7 +1598,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
-    tx_ptr->unique_tx_hash = tos_hashs;
     return tx_ptr;
 }
 
@@ -1864,7 +1860,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
         auto shard_elect_tx = shard_elect_tx_[i];
         if (!tx_hash.empty()) {
-            if (shard_elect_tx->tx_ptr->unique_tx_hash == tx_hash) {
+            if (shard_elect_tx->tx_ptr->tx_key == tx_hash) {
                 // ZJC_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
                 //     pool_index, common::Encode::HexEncode(tx_hash).c_str());
                 return shard_elect_tx->tx_ptr;

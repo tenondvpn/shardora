@@ -52,75 +52,6 @@ static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
     return data;
 }
 
-class TxItem {
-public:
-    virtual ~TxItem() {}
-    TxItem(const transport::MessagePtr& msgp, int32_t tx_info_idx, protos::AddressInfoPtr& addr_info)
-            : prev_consensus_tm_us(0),
-            address_info(addr_info),
-            is_consensus_add_tx(false),
-            tx_info_index(tx_info_idx) {
-        msg_ptr = msgp;
-        tx_info = nullptr;
-        if (tx_info_index < 0) {
-            tx_info = msg_ptr->header.mutable_tx_proto();
-        } else {
-            if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg() &&
-                    tx_info_idx < msg_ptr->header.hotstuff().pre_reset_timer_msg().txs_size()) {
-                tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pre_reset_timer_msg()->mutable_txs(tx_info_idx);
-            } else if (msg_ptr->header.hotstuff().pro_msg().has_tx_propose()) {
-                auto& propose_msg = msg_ptr->header.hotstuff().pro_msg().tx_propose();
-                if (tx_info_idx < propose_msg.txs_size()) {
-                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_tx_propose()->mutable_txs(tx_info_idx);
-                }
-            } else if (msg_ptr->header.hotstuff().has_vote_msg()) {
-                auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
-                if (tx_info_idx < vote_msg.txs_size()) {
-                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
-                }
-            } else {
-                assert(false)
-;            }
-        }
-
-        if (tx_info == nullptr) {
-            assert(false);
-            return;
-        }
-
-        uint64_t now_tm = common::TimeUtils::TimestampUs();
-        time_valid = now_tm + kBftStartDeltaTime;
-#ifdef ZJC_UNITTEST
-        time_valid = 0;
-#endif // ZJC_UNITTEST
-        remove_timeout = now_tm + kTxPoolTimeoutUs;
-        unique_tx_hash = GetTxKey(addr_info->addr(), tx_info->nonce());
-    }
-
-    virtual int HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        block::protobuf::BlockTx& block_tx) = 0;
-    virtual int TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx) = 0;
-
-    uint64_t prev_consensus_tm_us;
-    uint64_t remove_timeout;
-    uint64_t time_valid{ 0 };
-    std::string unique_tx_hash;
-    pools::protobuf::TxMessage* tx_info;
-    transport::MessagePtr msg_ptr;
-    protos::AddressInfoPtr address_info;
-    bool is_consensus_add_tx;
-    int32_t tx_info_index;
-};
-
-typedef std::shared_ptr<TxItem> TxItemPtr;
-typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<bool(const std::string& addr, uint64_t nonce)> CheckGidValidFunction;
-
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {
         memset(succ_tx_count, 0, sizeof(succ_tx_count));
@@ -403,6 +334,75 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
             return false;
     }
 }
+
+class TxItem {
+public:
+    virtual ~TxItem() {}
+    TxItem(const transport::MessagePtr& msgp, int32_t tx_info_idx, protos::AddressInfoPtr& addr_info)
+            : prev_consensus_tm_us(0),
+            address_info(addr_info),
+            is_consensus_add_tx(false),
+            tx_info_index(tx_info_idx) {
+        msg_ptr = msgp;
+        tx_info = nullptr;
+        if (tx_info_index < 0) {
+            tx_info = msg_ptr->header.mutable_tx_proto();
+        } else {
+            if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg() &&
+                    tx_info_idx < msg_ptr->header.hotstuff().pre_reset_timer_msg().txs_size()) {
+                tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pre_reset_timer_msg()->mutable_txs(tx_info_idx);
+            } else if (msg_ptr->header.hotstuff().pro_msg().has_tx_propose()) {
+                auto& propose_msg = msg_ptr->header.hotstuff().pro_msg().tx_propose();
+                if (tx_info_idx < propose_msg.txs_size()) {
+                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_tx_propose()->mutable_txs(tx_info_idx);
+                }
+            } else if (msg_ptr->header.hotstuff().has_vote_msg()) {
+                auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+                if (tx_info_idx < vote_msg.txs_size()) {
+                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
+                }
+            } else {
+                assert(false)
+;            }
+        }
+
+        if (tx_info == nullptr) {
+            assert(false);
+            return;
+        }
+
+        uint64_t now_tm = common::TimeUtils::TimestampUs();
+        time_valid = now_tm + kBftStartDeltaTime;
+#ifdef ZJC_UNITTEST
+        time_valid = 0;
+#endif // ZJC_UNITTEST
+        remove_timeout = now_tm + kTxPoolTimeoutUs;
+        tx_key = GetTxKey(addr_info->addr(), tx_info->nonce());
+    }
+
+    virtual int HandleTx(
+        const view_block::protobuf::ViewBlockItem& view_block,
+        zjcvm::ZjchainHost& zjc_host,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        block::protobuf::BlockTx& block_tx) = 0;
+    virtual int TxToBlockTx(
+        const pools::protobuf::TxMessage& tx_info,
+        block::protobuf::BlockTx* block_tx) = 0;
+
+    uint64_t prev_consensus_tm_us;
+    uint64_t remove_timeout;
+    uint64_t time_valid{ 0 };
+    std::string tx_key;
+    pools::protobuf::TxMessage* tx_info;
+    transport::MessagePtr msg_ptr;
+    protos::AddressInfoPtr address_info;
+    bool is_consensus_add_tx;
+    int32_t tx_info_index;
+};
+
+typedef std::shared_ptr<TxItem> TxItemPtr;
+typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
+typedef std::function<bool(const std::string& addr, uint64_t nonce)> CheckGidValidFunction;
 
 };  // namespace pools
 

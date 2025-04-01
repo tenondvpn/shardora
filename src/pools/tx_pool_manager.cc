@@ -1101,15 +1101,14 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         return;
     }
 
-    tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, nonce: %lu, from pk: %s, to: %s",
+    ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, tx key: %s, nonce: %lu, from pk: %s, to: %s",
         pool_index,
         msg_ptr->header.tx_proto().step(),
-        common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+        common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
         tx_ptr->tx_info->nonce(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());

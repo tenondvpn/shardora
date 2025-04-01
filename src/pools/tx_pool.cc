@@ -133,9 +133,9 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         return kPoolsError;
     }
 
-    if (tx_ptr->unique_tx_hash.empty()) {
+    if (tx_ptr->tx_key.empty()) {
         ZJC_DEBUG("add failed unique hash empty: %d", tx_ptr->tx_info->step());
-        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
+        tx_ptr->tx_key = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
     added_txs_.push(tx_ptr);
@@ -161,6 +161,8 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         if (iter != local_tx_map_.end()) {
             local_tx_map_.erase(iter);
         }
+
+        ZJC_DEBUG("tx over tx key: %s", common::Encode::HexEncode(tx_key).c_str());
     }
 }
 
@@ -185,11 +187,11 @@ void TxPool::GetTxSyncToLeader(
             *tx = *tx_ptr->tx_info;
         }
 
-        local_tx_map_[tx_ptr->unique_tx_hash] = tx_ptr;
+        local_tx_map_[tx_ptr->tx_key] = tx_ptr;
         local_tx_queue_.push(tx_ptr);
         tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        ZJC_DEBUG("success to leader tx unique_tx_hash: %s, local_tx_map_ size: %u", 
-            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+        ZJC_DEBUG("success to leader tx tx_key: %s, local_tx_map_ size: %u", 
+            common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
             local_tx_map_.size());
     }
 
@@ -206,7 +208,7 @@ void TxPool::GetTxSyncToLeader(
         }
 
         local_tx_queue_.pop();
-        auto iter = local_tx_map_.find(front_tx_ptr->unique_tx_hash);
+        auto iter = local_tx_map_.find(front_tx_ptr->tx_key);
         if (iter == local_tx_map_.end()) {
             continue;
         }
@@ -214,15 +216,15 @@ void TxPool::GetTxSyncToLeader(
         if (gid_vlid_func != nullptr && !gid_vlid_func(
                 front_tx_ptr->address_info->addr(), 
                 front_tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("unique_tx_hash invalid: %s", 
-                common::Encode::HexEncode(front_tx_ptr->unique_tx_hash).c_str());
+            ZJC_DEBUG("tx_key invalid: %s", 
+                common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
             continue;
         }
 
         front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
         if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
-            ZJC_DEBUG("unique_tx_hash invalid: %s, step is not user tx: %d", 
-                common::Encode::HexEncode(front_tx_ptr->unique_tx_hash).c_str(), 
+            ZJC_DEBUG("tx_key invalid: %s, step is not user tx: %d", 
+                common::Encode::HexEncode(front_tx_ptr->tx_key).c_str(), 
                 front_tx_ptr->tx_info->step());
         } else {
             auto* tx = txs->Add();
@@ -243,17 +245,17 @@ void TxPool::GetTxIdempotently(
         if (gid_vlid_func != nullptr && !gid_vlid_func(
                 tx_ptr->address_info->addr(), 
                 tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("unique_tx_hash invalid: %s",
-                common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
+            ZJC_DEBUG("tx_key invalid: %s",
+                common::Encode::HexEncode(tx_ptr->tx_key).c_str());
             continue;
         }
 
-        res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+        res_map[tx_ptr->tx_key] = tx_ptr;
         tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        local_tx_map_[tx_ptr->unique_tx_hash] = tx_ptr;
+        local_tx_map_[tx_ptr->tx_key] = tx_ptr;
         local_tx_queue_.push(tx_ptr);
-        ZJC_DEBUG("unique_tx_hash success: %s, local_tx_map_ size: %u", 
-            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+        ZJC_DEBUG("tx_key success: %s, local_tx_map_ size: %u", 
+            common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
             local_tx_map_.size());
     }
 
@@ -270,7 +272,7 @@ void TxPool::GetTxIdempotently(
         }
 
         local_tx_queue_.pop();
-        auto iter = local_tx_map_.find(front_tx_ptr->unique_tx_hash);
+        auto iter = local_tx_map_.find(front_tx_ptr->tx_key);
         if (iter == local_tx_map_.end()) {
             continue;
         }
@@ -278,28 +280,30 @@ void TxPool::GetTxIdempotently(
         if (gid_vlid_func != nullptr && !gid_vlid_func(
                 front_tx_ptr->address_info->addr(),
                 front_tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("unique_tx_hash invalid: %s", 
-                common::Encode::HexEncode(front_tx_ptr->unique_tx_hash).c_str());
+            ZJC_DEBUG("tx_key invalid: %s", 
+                common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
             continue;
         }
 
         front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        res_map[front_tx_ptr->unique_tx_hash] = front_tx_ptr;
+        res_map[front_tx_ptr->tx_key] = front_tx_ptr;
         local_tx_queue_.push(front_tx_ptr);
+        ZJC_DEBUG("tx get tx key: %s", common::Encode::HexEncode(tx_ptr->tx_key).c_str());
     }
 
     while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(
                 tx_ptr->address_info->addr(), 
                 tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("unique_tx_hash invalid: %s", 
-                common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
+            ZJC_DEBUG("tx_key invalid: %s", 
+                common::Encode::HexEncode(tx_ptr->tx_key).c_str());
             continue;
         }
 
-        ZJC_DEBUG("unique_tx_hash success: %s", 
-            common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str());
-        res_map[tx_ptr->unique_tx_hash] = tx_ptr;
+        ZJC_DEBUG("tx_key success: %s", 
+            common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+        res_map[tx_ptr->tx_key] = tx_ptr;
+        ZJC_DEBUG("tx get tx key: %s", common::Encode::HexEncode(tx_ptr->tx_key).c_str());
     }
 
     if (local_tx_queue_.size() > 0)
@@ -456,9 +460,9 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
         return;
     }
 
-    if (tx_ptr->unique_tx_hash.empty()) {
+    if (tx_ptr->tx_key.empty()) {
         ZJC_WARN("add failed unique hash empty: %d", tx_ptr->tx_info->step());
-        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx_ptr->tx_info);
+        tx_ptr->tx_key = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
     consensus_added_txs_.push(tx_ptr);
