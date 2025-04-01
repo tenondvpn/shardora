@@ -168,7 +168,7 @@ void TxPool::GetTxSyncToLeader(
         }
 
         if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            ZJC_DEBUG("nonce invalid: %s, step is not user tx: %d", 
+            ZJC_DEBUG("nonce invalid: %lu, step is not user tx: %d", 
                 tx_ptr->tx_info->nonce(), 
                 tx_ptr->tx_info->step());
         } else {
