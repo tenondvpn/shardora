@@ -101,16 +101,16 @@ protected:
                 return consensus::kConsensusAccountNotExists;
             }
 
-            acc_balance_map[id] = acc_info->balance();
+            acc_balance_map[id] = std::make_pair<int64_t, uint64_t>(acc_info->balance(), acc_info->nonce());
             *balance = acc_info->balance();
             // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
             //     common::Encode::HexEncode(id).c_str(), *balance);
         } else {
-            if (iter->second == -1) {
+            if (iter->second.first == -1) {
                 return consensus::kConsensusAccountNotExists;
             }
 
-            *balance = iter->second;
+            *balance = iter->second.first;
             // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
             //     common::Encode::HexEncode(id).c_str(), *balance);
         }
