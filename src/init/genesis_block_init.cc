@@ -169,7 +169,7 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
     immutable_pool_address_info_->set_latest_height(0);
     immutable_pool_address_info_->set_nonce(0);
     ZJC_DEBUG("init pool immutable index net: %u, base address: %s", 
-        network_id, common::Encode::HexEncode(immutable_pool_address_info_).c_str());
+        network_id, common::Encode::HexEncode(immutable_pool_addr).c_str());
     uint32_t i = 0;
     std::unordered_set<uint32_t> pool_idx_set;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
