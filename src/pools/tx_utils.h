@@ -43,11 +43,11 @@ enum PoolsErrorCode {
 };
 
 static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
-    assert(addr.size() == 20);
+    assert(addr.size() == 20 || addr.size() == 40);
     std::string data;
-    data.resize(28);
-    memcpy(data.data(), addr.c_str(), 20);
-    uint64_t* nonce_data = (uint64_t*)(data.data() + 20);
+    data.resize(addr.size() + 8);
+    memcpy(data.data(), addr.c_str(), addr.size());
+    uint64_t* nonce_data = (uint64_t*)(data.data() + addr.size());
     *nonce_data = nonce;
     return data;
 }
