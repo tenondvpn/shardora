@@ -1052,7 +1052,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     // flush 磁盘
     db_->Put(db_batch);
     {
-        auto addr_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
+        auto addr_info = immutable_pool_address_info_;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(addr_info->addr());
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address info failed! [%s]",
