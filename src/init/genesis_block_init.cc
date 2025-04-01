@@ -1829,6 +1829,13 @@ void GenesisBlockInit::PrintGenisisAccounts() {
     iter->Seek(protos::kAddressPrefix);
     int32_t valid_count = 0;
     while (iter->Valid()) {
+        if (memcmp(
+                protos::kAddressPrefix.c_str(), 
+                iter->key().data(), 
+                protos::kAddressPrefix.size()) != 0) {
+            break;
+        }
+
         address::protobuf::AddressInfo addr_info;
         if (!addr_info.ParseFromString(iter->value().ToString())) {
             assert(false);
