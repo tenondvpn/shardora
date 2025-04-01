@@ -265,6 +265,10 @@ void AccountManager::HandleDefaultTx(
         return;
     }
 
+    if (tx.status() != consensus::kConsensusSuccess) {
+        return;
+    }
+
     auto& block = view_block.block_info();
     auto account_info = GetAccountInfo(tx.to());
     if (account_info == nullptr) {
