@@ -63,7 +63,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
     ZJC_INFO("success create timeblock tx key: %s",
         pools::GetTxKey(
-            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(), 
+            msg_ptr->address_info->addr(), 
             msg_ptr->address_info->nonce()).c_str());
 }
 
