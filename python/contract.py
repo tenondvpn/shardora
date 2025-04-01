@@ -364,6 +364,8 @@ if __name__ == "__main__":
             result = parser.parse_struct_return(
                 struct_name="AssetData",
                 result=res.text)
+            print(f"query function success: {len(res.text)} {result}")
+            
         print(f"query function success: {len(res.text)} {res.text}")
         sys.exit(0)
 
