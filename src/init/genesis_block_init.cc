@@ -853,7 +853,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
-        tx_info->set_nonce(root_single_block_height);
         tx_info->set_from("");
         tx_info->set_to(immutable_pool_address_info_->addr());
         tx_info->set_amount(0);
@@ -901,7 +900,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
-        tx_info->set_nonce(root_single_block_height);
         tx_info->set_from("");
         tx_info->set_to(immutable_pool_address_info_->addr());
         tx_info->set_nonce(immutable_pool_address_info_->nonce());
