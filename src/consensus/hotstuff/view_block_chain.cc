@@ -118,6 +118,7 @@ Status ViewBlockChain::Store(
 #endif
     return Status::kSuccess;
 }
+
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
     while (commited_block_queue_.pop(&view_block_info_ptr)) {
@@ -607,66 +608,57 @@ bool ViewBlockChain::CheckTxNonceValid(
         const std::string& addr, 
         uint64_t nonce, 
         const std::string& parent_hash) {
-    return true;
-}
+    std::string phash = parent_hash;
+    while (true) {
+        if (phash.empty()) {
+            break;
+        }
 
-// bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
-//     std::string phash = parent_hash;
-//     while (true) {
-//         if (phash.empty()) {
-//             ZJC_DEBUG("gid phash empty: %s, phash: %s", 
-//                 common::Encode::HexEncode(gid).c_str(), 
-//                 common::Encode::HexEncode(phash).c_str());
-//             break;
-//         }
+        auto it = view_blocks_info_.find(phash);
+        if (it == view_blocks_info_.end()) {
+            break;
+        }
 
-//         auto it = view_blocks_info_.find(phash);
-//         if (it == view_blocks_info_.end()) {
-//             ZJC_DEBUG("gid phash not exist: %s, phash: %s", 
-//                 common::Encode::HexEncode(gid).c_str(), 
-//                 common::Encode::HexEncode(phash).c_str());
-//             break;
-//         }
+        if (it->second->view_block->qc().view() <= stored_to_db_view_) {
+            break;
+        }
 
-//         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
-//             ZJC_DEBUG("gid phash view invalid: %lu, %lu, %s, phash: %s", 
-//                 it->second->view_block->qc().view(),
-//                 stored_to_db_view_, 
-//                 common::Encode::HexEncode(gid).c_str(), 
-//                 common::Encode::HexEncode(phash).c_str());
-//             break;
-//         }
+        if (it->second->acc_balance_map_ptr) {
+            auto& tmp_map = *it->second->acc_balance_map_ptr;
+            auto iter = tmp_map.find(addr);
+            if (iter != tmp_map.end()) {
+                if (iter->second.second + 1 != nonce) {
+                    ZJC_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+                        common::Encode::HexEncode(addr).c_str(), 
+                        nonce,
+                        iter->second.second,
+                        common::Encode::HexEncode(parent_hash).c_str());
+                    return false;
+                }
 
-//         auto iter = it->second->added_txs.find(gid);
-//         if (iter != it->second->added_txs.end()) {
-//             ZJC_DEBUG("failed check tx gid: %s, phash: %s",
-//                 common::Encode::HexEncode(gid).c_str(),
-//                 common::Encode::HexEncode(phash).c_str());
-//             return false;
-//         }
+                return true;
+            }
+        }
 
-//         if (!it->second->view_block) {
-//             return false;
-//         }
+        if (!it->second->view_block) {
+            return false;
+        }
         
-//         ZJC_DEBUG("gid phash empty: %s, phash: %s, pphash: %s", 
-//             common::Encode::HexEncode(gid).c_str(),
-//             common::Encode::HexEncode(phash).c_str(),
-//             common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str());
-//         phash = it->second->view_block->parent_hash();
-//     }
+        phash = it->second->view_block->parent_hash();
+    }
 
-//     if (prefix_db_->JustCheckCommitedGidExists(gid)) {
-//         ZJC_DEBUG("failed check tx gid exists in db: %s", 
-//             common::Encode::HexEncode(gid).c_str());
-//         return false;
-//     }
+    auto addr_info = account_mgr_->GetAccountInfo(addr);
+    if (addr_info->nonce() + 1 == nonce) {
+        return true;
+    }
 
-//     ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", 
-//         common::Encode::HexEncode(gid).c_str(), 
-//         common::Encode::HexEncode(parent_hash).c_str());
-//     return true;
-// }
+    ZJC_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+        common::Encode::HexEncode(addr).c_str(), 
+        nonce,
+        addr_info->nonce(),
+        common::Encode::HexEncode(parent_hash).c_str());
+    return false;
+}
 
 void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
     auto view_block_ptr_info = Get(qc_item.view_block_hash());

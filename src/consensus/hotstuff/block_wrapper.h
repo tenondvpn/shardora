@@ -67,11 +67,11 @@ public:
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
-        pools::CheckGidValidFunction gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
-            return view_block_chain->CheckTxNonceValid(addr, nonce, parent_hash);
-        };
+        // pools::CheckGidValidFunction gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
+        //     return view_block_chain->CheckTxNonceValid(addr, nonce, parent_hash);
+        // };
 
-        txs_pools_->GetTxSyncToLeader(pool_idx_, consensus::kSyncToLeaderTxCount, txs, gid_valid_func);
+        txs_pools_->GetTxSyncToLeader(pool_idx_, consensus::kSyncToLeaderTxCount, txs, nullptr);
     }
 
 private:
