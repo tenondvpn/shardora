@@ -74,10 +74,6 @@ private:
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    // void HandleContractCreateByRootTo(
-    //     const view_block::protobuf::ViewBlockItem& view_block,
-    //     const block::protobuf::BlockTx& tx,
-    //     db::DbWriteBatch& db_batch);
     void HandleLocalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
@@ -96,6 +92,10 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleCreateGenesisAcount(
+        const view_block::protobuf::ViewBlockItem& view_block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
+    void HandleDefaultTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
