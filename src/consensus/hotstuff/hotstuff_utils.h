@@ -19,8 +19,8 @@ namespace shardora {
 namespace hotstuff {
 
 using Breakpoint = int;
-using BalanceMap = std::unordered_map<std::string, int64_t>;
-using BalanceMapPtr = std::shared_ptr<BalanceMap>;
+using BalanceAndNonceMap = std::unordered_map<std::string, std::pair<int64_t, uint64_t>>;
+using BalanceAndNonceMapPtr = std::shared_ptr<BalanceAndNonceMap>;
 
 class ProposeMsgWrapper {
 public:
@@ -35,7 +35,7 @@ public:
     // Context
     transport::MessagePtr msg_ptr;
     std::shared_ptr<ViewBlock> view_block_ptr;
-    BalanceMapPtr acc_balance_map_ptr;
+    BalanceAndNonceMapPtr acc_balance_and_nonce_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     Breakpoint breakpoint; // 断点位置
     int tried_times;
@@ -90,7 +90,7 @@ public:
     std::shared_ptr<ViewBlock> view_block;
     ViewBlockStatus status;
     std::shared_ptr<QC> qc;
-    BalanceMapPtr acc_balance_map_ptr;
+    BalanceAndNonceMapPtr acc_balance_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     bool valid;
 

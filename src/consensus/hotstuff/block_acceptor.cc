@@ -62,7 +62,7 @@ Status BlockAcceptor::Accept(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_and_nonce_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto& msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -124,7 +124,7 @@ Status BlockAcceptor::Accept(
         propose_msg, 
         directly_user_leader_txs, 
         txs_ptr, 
-        balance_map,
+        balance_and_nonce_map,
         zjc_host);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
@@ -137,7 +137,7 @@ Status BlockAcceptor::Accept(
     zjc_host.parent_hash_ = view_block.parent_hash();
     zjc_host.view_block_chain_ = view_block_chain;
     zjc_host.view_ = view_block.qc().view();
-    s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
+    s = DoTransactions(txs_ptr, &view_block, balance_and_nonce_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_WARN("DoTransactions error!");
         return s;
@@ -199,14 +199,14 @@ Status BlockAcceptor::addTxsToPool(
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& now_balance_map,
+        BalanceAndNonceMap& now_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    BalanceMap prevs_balance_map;
+    BalanceAndNonceMap prevs_balance_map;
     // view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
@@ -256,7 +256,8 @@ Status BlockAcceptor::addTxsToPool(
         if (iter != prevs_balance_map.end()) {
             now_balance_map[iter->first] = iter->second;
         } else {
-            now_balance_map[address_info->addr()] = address_info->balance();
+            now_balance_map[address_info->addr()] = std::make_pair<int64_t, uint64_t>(
+                address_info->balance(), address_info->nonce());
         }
 
         std::string contract_prepayment_id;
@@ -463,7 +464,8 @@ Status BlockAcceptor::addTxsToPool(
             } else {
                 address_info = account_mgr_->GetAccountInfo(contract_prepayment_id);
                 if (address_info) {
-                    now_balance_map[contract_prepayment_id] = address_info->balance();
+                    now_balance_map[contract_prepayment_id] = std::make_pair<int64_t, uint64_t>(
+                        address_info->balance(), address_info->nonce());
                 }
             }
         }
@@ -516,7 +518,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         const hotstuff::protobuf::TxPropose& tx_propose,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
         msg_ptr,
@@ -577,7 +579,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     Status s = BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
             txs_ptr, view_block, balance_map, zjc_host);

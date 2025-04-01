@@ -9,6 +9,7 @@
 #include "common/node_members.h"
 #include "common/time_utils.h"
 #include "common/utils.h"
+#include "consensus/hotstuff/hotstuff_utils.h"
 #include "db/db.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -383,7 +384,7 @@ public:
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) = 0;
     virtual int TxToBlockTx(
         const pools::protobuf::TxMessage& tx_info,

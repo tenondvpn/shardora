@@ -8,7 +8,7 @@ namespace hotstuff {
 Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& acc_balance_map,
+        BalanceAndNonceMap& acc_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     // 执行交易
     auto& block = *view_block->mutable_block_info();

@@ -29,7 +29,7 @@ RootToTxItem::~RootToTxItem() {}
 int RootToTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     protos::AddressInfoPtr account_info = nullptr;
     if (block_tx.to().size() == security::kUnicastAddressLength * 2) {

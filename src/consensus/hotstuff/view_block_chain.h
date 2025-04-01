@@ -27,7 +27,7 @@ public:
     Status Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
-        BalanceMapPtr balane_map_ptr,
+        BalanceAndNonceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
         bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
@@ -57,7 +57,7 @@ public:
     bool GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance);
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
-            BalanceMap& acc_balance_map);
+            BalanceAndNonceMap& acc_balance_map);
     bool CheckTxNonceValid(
         const std::string& addr, 
         uint64_t nonce, 
@@ -232,7 +232,7 @@ private:
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
             std::shared_ptr<ViewBlock> view_block, 
-            BalanceMapPtr acc_balance_map_ptr,
+            BalanceAndNonceMapPtr acc_balance_map_ptr,
             std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr) {
         auto view_block_info_ptr = std::make_shared<ViewBlockInfo>();
         view_block_info_ptr->view_block = view_block;

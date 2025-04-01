@@ -59,7 +59,7 @@ public:
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) = 0;
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) = 0;
@@ -96,7 +96,7 @@ public:
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) override;
     // Accept a synced block.
     Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) override;
@@ -120,13 +120,13 @@ public:
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceMap& now_balance_map,
+        BalanceAndNonceMap& now_balance_map,
         zjcvm::ZjchainHost& zjc_host);
     bool IsBlockValid(const view_block::protobuf::ViewBlockItem&);
     Status DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>&,
         view_block::protobuf::ViewBlockItem*,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
     Status GetAndAddTxsLocally(
         transport::MessagePtr msg_ptr,
@@ -135,7 +135,7 @@ public:
         const hotstuff::protobuf::TxPropose& block_info,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>&,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
     void commit(
         transport::MessagePtr msg_ptr, 

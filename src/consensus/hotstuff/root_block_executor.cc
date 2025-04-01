@@ -8,7 +8,7 @@ namespace hotstuff {
 Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& balance_map,
+        BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     if (txs_ptr->txs.size() == 1) {
         auto& tx = *txs_ptr->txs.begin()->second;
@@ -35,7 +35,7 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
 void RootBlockExecutor::RootDefaultTx(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& balance_map) {
+        BalanceAndNonceMap& balance_map) {
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
@@ -47,7 +47,7 @@ void RootBlockExecutor::RootDefaultTx(
 void RootBlockExecutor::RootCreateAccountAddressBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& acc_balance_map,
+        BalanceAndNonceMap& acc_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
@@ -84,7 +84,7 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
 void RootBlockExecutor::RootCreateElectConsensusShardBlock(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceMap& acc_balance_map,
+        BalanceAndNonceMap& acc_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto& tx_map = txs_ptr->txs;
     if (tx_map.size() != 1) {

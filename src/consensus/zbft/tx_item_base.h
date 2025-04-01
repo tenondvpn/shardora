@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block/account_manager.h"
+#include "consensus/hotstuff/hotstuff_utils.h"
 #include "pools/tx_pool.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -25,7 +26,7 @@ protected:
     virtual int HandleTx(
             const view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
-            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         return consensus::kConsensusSuccess;
     }
@@ -85,7 +86,7 @@ protected:
 
     int GetTempAccountBalance(
             const std::string& id,
-            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            hotstuff::BalanceAndNonceMap& acc_balance_map,
             uint64_t* balance) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {

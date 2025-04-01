@@ -7,7 +7,7 @@ namespace consensus {
 int FromTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     uint64_t gas_used = 0;
     // gas just consume by from

@@ -20,7 +20,7 @@ public:
     virtual Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map,
+            BalanceAndNonceMap& balance_map,
             zjcvm::ZjchainHost& zjc_host) = 0;
 };
 
@@ -38,7 +38,7 @@ public:
     Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map,
+            BalanceAndNonceMap& balance_map,
             zjcvm::ZjchainHost& zjc_host);
 private:
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
@@ -59,7 +59,7 @@ public:
     Status DoTransactionAndCreateTxBlock(
             const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map,
+            BalanceAndNonceMap& balance_map,
             zjcvm::ZjchainHost& zjc_host);
 private:
     std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
@@ -68,16 +68,16 @@ private:
     void RootDefaultTx(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map);
+            BalanceAndNonceMap& balance_map);
     void RootCreateAccountAddressBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map,
+            BalanceAndNonceMap& balance_map,
             zjcvm::ZjchainHost& zjc_host);
     void RootCreateElectConsensusShardBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceMap& balance_map,
+            BalanceAndNonceMap& balance_map,
             zjcvm::ZjchainHost& zjc_host);        
 };
 

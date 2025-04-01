@@ -25,7 +25,7 @@ ViewBlockChain::~ViewBlockChain(){}
 Status ViewBlockChain::Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
-        BalanceMapPtr balane_map_ptr,
+        BalanceAndNonceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
         bool init) {
     if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
@@ -50,7 +50,7 @@ Status ViewBlockChain::Store(
     }
 
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
-        balane_map_ptr = std::make_shared<BalanceMap>();
+        balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
             if (tx.balance() == 0) {
@@ -559,7 +559,7 @@ bool ViewBlockChain::GetPrevAddressBalance(const std::string& phash, const std::
 
 void ViewBlockChain::MergeAllPrevBalanceMap(
         const std::string& parent_hash, 
-        BalanceMap& acc_balance_map) {
+        BalanceAndNonceMap& acc_balance_map) {
     std::string phash = parent_hash;
     // TODO: check valid
     uint32_t count = 0;

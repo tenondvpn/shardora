@@ -23,7 +23,7 @@ inline bool ElectNodeBalanceDiffCompare(
 int ElectTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     for (int32_t storage_idx = 0; storage_idx < block_tx.storages_size(); ++storage_idx) {

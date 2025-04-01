@@ -753,7 +753,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
-    auto balance_map_ptr = std::make_shared<BalanceMap>();
+    auto balance_map_ptr = std::make_shared<BalanceAndNonceMap>();
     auto& balance_map = *balance_map_ptr;
     auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     auto btime = common::TimeUtils::TimestampMs();
@@ -851,8 +851,8 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
 #endif
     // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
-    pro_msg_wrap->acc_balance_map_ptr = std::make_shared<BalanceMap>();
-    auto& balance_map = *pro_msg_wrap->acc_balance_map_ptr;
+    pro_msg_wrap->acc_balance_and_nonce_map_ptr = std::make_shared<BalanceAndNonceMap>();
+    auto& balance_and_nonce_map = *pro_msg_wrap->acc_balance_and_nonce_map_ptr;
     pro_msg_wrap->zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     auto btime = common::TimeUtils::TimestampMs();
     zjcvm::ZjchainHost prev_zjc_host;
@@ -862,7 +862,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
             pro_msg_wrap, 
             true, 
             false, 
-            balance_map,
+            balance_and_nonce_map,
             zjc_host);
     if (s  != Status::kSuccess) {
 #ifndef NDEBUG
@@ -915,7 +915,7 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
     Status s = view_block_chain()->Store(
         pro_msg_wrap->view_block_ptr, 
         false, 
-        pro_msg_wrap->acc_balance_map_ptr,
+        pro_msg_wrap->acc_balance_and_nonce_map_ptr,
         pro_msg_wrap->zjc_host_ptr,
         false);
 #ifndef NDEBUG
