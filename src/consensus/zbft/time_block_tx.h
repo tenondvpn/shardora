@@ -18,6 +18,25 @@ public:
         protos::AddressInfoPtr& addr_info)
         : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {}
     virtual ~TimeBlockTx() {}
+    virtual int HandleTx(
+            const view_block::protobuf::ViewBlockItem& view_block,
+            zjcvm::ZjchainHost& zjc_host,
+            hotstuff::BalanceAndNonceMap& acc_balance_map,
+            block::protobuf::BlockTx& block_tx) {
+        uint64_t to_balance = 0;
+        uint64_t to_nonce = 0;
+        GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+        if (to_nonce + 1 != block_tx.nonce()) {
+            block_tx.set_status(kConsensusNonceInvalid);
+            ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+                view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+            return consensus::kConsensusSuccess;
+        }
+
+        ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+            view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+    return consensus::kConsensusSuccess;
+    }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(TimeBlockTx);
