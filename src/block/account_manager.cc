@@ -260,7 +260,7 @@ void AccountManager::HandleDefaultTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    if (!pools::IsTxUseFromAddress(tx.step())) {
+    if (pools::IsTxUseFromAddress(tx.step())) {
         assert(false);
         return;
     }
