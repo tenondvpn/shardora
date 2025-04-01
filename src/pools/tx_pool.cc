@@ -148,7 +148,12 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         auto& addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
             view_block.block_info().tx_list(i).to();
-        assert(!addr.empty());
+        if (addr.empty()) {
+            ZJC_DEBUG("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
+            assert(false);
+            continue;
+        }
+
         auto tx_key = GetTxKey(
             addr, 
             view_block.block_info().tx_list(i).nonce());
