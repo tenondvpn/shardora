@@ -117,30 +117,12 @@ public:
 
     void AddAddressInfo(
             const std::string& addr,
-            const address::protobuf::AddressInfo& addr_info) {
-        AddAddressInfo(addr, addr_info.SerializeAsString());
-    }
-
-    void AddAddressInfo(
-            const std::string& addr,
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-        ZJC_DEBUG("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
-    }
-
-    void AddAddressInfo(const std::string& addr, const std::string& val) {
-        auto st = db_->Put(kAddressPrefix + addr, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    void AddAddressInfo(
-            const std::string& addr,
-            const std::string& val,
-            db::DbWriteBatch& write_batch) {
-        write_batch.Put(kAddressPrefix + addr, val);
+        ZJC_DEBUG("success add addr: %s, value: %s", 
+            common::Encode::HexEncode(kAddressPrefix + addr).c_str(), 
+            ProtobufToJson(addr_info).c_str());
     }
 
     void AddNowElectHeight2Plege(const std::string& addr , const uint64_t height , db::DbWriteBatch& db_batch) {

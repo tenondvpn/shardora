@@ -717,7 +717,7 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_balance(tx.balance());
         account_info->set_nonce(tx.nonce());
         account_info->set_elect_pos(join_info.member_idx());
-        prefix_db_->AddAddressInfo(tx.from(), *account_info);
+        prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u, elect pos: %u",
             common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
