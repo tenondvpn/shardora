@@ -62,9 +62,9 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
     ZJC_INFO("success create timeblock tx key: %s",
-        pools::GetTxKey(
+        common::Encode::HexEncode(pools::GetTxKey(
             msg_ptr->address_info->addr(), 
-            msg_ptr->address_info->nonce()).c_str());
+            msg_ptr->address_info->nonce())).c_str());
 }
 
 bool TimeBlockManager::HasTimeblockTx(
