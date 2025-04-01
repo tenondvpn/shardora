@@ -1708,6 +1708,19 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
+        {
+            auto tx_info = tx_list->Add();
+            tx_info->set_to(pool_address_info_[i]->addr());
+            tx_info->set_nonce(pool_address_info_[i]->nonce());
+            pool_address_info_[i]->set_nonce(pool_address_info_[i]->nonce() + 1);
+            tx_info->set_from("");
+            tx_info->set_amount(genesis_account_balance); // 余额 0 即可
+            tx_info->set_balance(genesis_account_balance);
+            tx_info->set_gas_limit(0);
+            tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+            // root 创世账户也创建在 shard3?
+        }
+        
         auto& pool_map = net_pool_index_map_[net_id];
         auto pool_iter = pool_map.find(i);
         if (pool_iter != pool_map.end()) {
