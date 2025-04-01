@@ -15,6 +15,7 @@ int JoinElectTxItem::HandleTx(
     uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;
+    uint64_t from_nonce = 0;
     uint64_t to_balance = 0;
     auto tmp_id = sec_ptr_->GetAddress(from_pk_);
     auto& from = address_info->addr();
@@ -25,7 +26,7 @@ int JoinElectTxItem::HandleTx(
         return kConsensusSuccess;
     }
 
-    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
+    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance, &from_nonce);
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
@@ -36,6 +37,12 @@ int JoinElectTxItem::HandleTx(
     bls::protobuf::JoinElectInfo join_info;
     do {
         gas_used = consensus::kJoinElectGas;
+        if (from_nonce + 1 != block_tx.nonce()) {
+            block_tx.set_status(kConsensusNonceInvalid);
+            // will never happen
+            break;
+        }
+
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *

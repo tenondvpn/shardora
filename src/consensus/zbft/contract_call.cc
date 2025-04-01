@@ -34,6 +34,12 @@ int ContractCall::HandleTx(
             break;
         }
 
+        if (from_nonce + 1 != block_tx.nonce()) {
+            block_tx.set_status(kConsensusNonceInvalid);
+            // assert(false);
+            break;
+        }
+
         if (block_tx.amount() >= from_balance) {
             block_tx.set_status(kConsensusOutOfPrepayment);
             ZJC_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
