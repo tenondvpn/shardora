@@ -116,8 +116,6 @@ private:
     bool inited_{ false };
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
-    std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
     common::ThreadSafeQueue<protos::AddressInfoPtr> thread_update_accounts_queue_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> merge_update_accounts_thread_ = nullptr;
     // common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];

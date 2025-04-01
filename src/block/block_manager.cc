@@ -542,9 +542,6 @@ void BlockManager::RootHandleNormalToTx(
                 tos_item.prepayment(),
                 nonce);
         }
-
-        
-        
     }
 }
 
