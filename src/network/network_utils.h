@@ -80,6 +80,14 @@ inline static bool IsSameToLocalShard(uint32_t net_id) {
     return false;
 }
 
+inline static uint16_t GetLocalConsensusNetworkId() {
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+        return common::GlobalInfo::Instance()->network_id();
+    }
+
+    return common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset;
+}
+
 }  // namespace network
 
 }  // namespace shardora

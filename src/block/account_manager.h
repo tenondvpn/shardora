@@ -47,10 +47,10 @@ public:
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo>& pools_address_info(uint32_t pool_idx) {
         if (pool_idx == common::kImmutablePoolSize) {
-            return root_pool_address_info_;
+            return GetAccountInfo(immutable_pool_addr_);
         }
 
-        return pool_address_info_[pool_idx % common::kImmutablePoolSize];
+        return GetAccountInfo(pool_base_addrs_[pool_idx]);
     }
 
     const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
@@ -127,6 +127,8 @@ private:
     std::mutex thread_wait_mutex_;
     volatile bool thread_valid_[common::kMaxThreadCount] = {false};
     AccountLruMap<102400> account_lru_map_;
+    std::string immutable_pool_addr_;
+    std::string pool_base_addrs_[common::kImmutablePoolSize];
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

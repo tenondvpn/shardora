@@ -21,6 +21,8 @@ namespace shardora {
 namespace block {
 
 AccountManager::AccountManager() {
+    
+
 }
 
 AccountManager::~AccountManager() {
@@ -42,6 +44,33 @@ int AccountManager::Init(
         std::bind(&AccountManager::RunUpdateAccounts, this));
     std::unique_lock<std::mutex> lock(thread_wait_mutex_);
     thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+    
+    std::string immutable_pool_addr;
+    immutable_pool_addr.reserve(security::kUnicastAddressLength);
+    immutable_pool_addr.append(common::kRootPoolsAddressPrefix);
+    uint16_t network_id = network::GetLocalConsensusNetworkId();
+    immutable_pool_addr.append(std::string((char*)&network_id, sizeof(network_id)));
+    immutable_pool_addr_ = immutable_pool_addr;
+    std::unordered_set<uint32_t> pool_idx_set;
+    for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
+        auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(network_id));
+        auto addr = hash.substr(
+            hash.size() - security::kUnicastAddressLength, 
+            security::kUnicastAddressLength);
+        auto pool_idx = common::GetAddressPoolIndex(addr);
+        if (pool_idx_set.size() >= common::kImmutablePoolSize) {
+            break;
+        }
+
+        auto iter = pool_idx_set.find(pool_idx);
+        if (iter != pool_idx_set.end()) {
+            continue;
+        }
+
+        pool_base_addrs_[pool_idx] = addr;
+        pool_idx_set.insert(pool_idx);
+    }
+
     return kBlockSuccess;
 }
 
