@@ -176,7 +176,7 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
             hash.size() - security::kUnicastAddressLength, 
             security::kUnicastAddressLength);
         auto pool_idx = common::GetAddressPoolIndex(addr);
-        if (pool_idx_set.size() > common::kImmutablePoolSize) {
+        if (pool_idx_set.size() >= common::kImmutablePoolSize) {
             break;
         }
 
@@ -194,7 +194,6 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
         pool_address_info_[pool_idx]->set_type(address::protobuf::kPoolAddress);
         pool_address_info_[pool_idx]->set_latest_height(0);
         pool_address_info_[pool_idx]->set_nonce(0);
-        
         pool_idx_set.insert(pool_idx);
     }
 }
