@@ -1690,7 +1690,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         if (i >= common::kImmutablePoolSize) {
-            auto address_info = pool_address_info_[i];
+            auto address_info = immutable_pool_address_info_;
             auto tx_info = tx_list->Add();
             tx_info->set_nonce(address_info->nonce());
             address_info->set_nonce(address_info->nonce() + 1);
