@@ -302,8 +302,8 @@ void AccountManager::HandleDefaultTx(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
-    ZJC_INFO("transfer to address new balance %s: %lu, nonce: %lu",
-        common::Encode::HexEncode(tx.to()).c_str(), tx.balance(),
+    ZJC_INFO("transfer to address new balance %s, step: %d, balance: %lu, nonce: %lu",
+        common::Encode::HexEncode(tx.to()).c_str(), tx.step(), tx.balance(),
         account_info->nonce());
 }
 
