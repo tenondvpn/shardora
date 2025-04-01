@@ -1056,6 +1056,7 @@ void NetworkInit::GetNetworkNodesFromConf(
         auto keypair = bls::AggBls::Instance()->GetKeyPair();
         node_ptr->agg_bls_pk = keypair->pk();
         node_ptr->agg_bls_pk_proof = keypair->proof();
+        node_ptr->nonce = 0;
         root_genesis_nodes.push_back(node_ptr);
         ZJC_DEBUG("root private key: %s, id: %s", 
             common::Encode::HexEncode(sk).c_str(), 
@@ -1086,6 +1087,7 @@ void NetworkInit::GetNetworkNodesFromConf(
             auto keypair = bls::AggBls::Instance()->GetKeyPair();
             node_ptr->agg_bls_pk = keypair->pk();
             node_ptr->agg_bls_pk_proof = keypair->proof();
+            node_ptr->nonce = 0;
             cons_genesis_nodes.push_back(node_ptr);   
             ZJC_DEBUG("shard: %d private key: %s, id: %s", 
                 net_i,
