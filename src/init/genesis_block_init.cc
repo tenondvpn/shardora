@@ -1288,9 +1288,10 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         }
 
         all_balance += account_ptr->balance();
-        ZJC_INFO("new address %s, genesis balance: %lu",
+        ZJC_INFO("new address %s, genesis balance: %lu, nonce: %lu",
             common::Encode::HexEncode(account_ptr->addr()).c_str(), 
-            account_ptr->balance());
+            account_ptr->balance(),
+            account_ptr->nonce());
 
     }
 
@@ -1649,9 +1650,10 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             return kInitError;
         }
         all_balance += account_ptr->balance();
-        ZJC_INFO("new address %s, genesis balance: %lu",
+        ZJC_INFO("new address %s, genesis balance: %lu, nonce: %lu",
             common::Encode::HexEncode(account_ptr->addr()).c_str(), 
-            account_ptr->balance());
+            account_ptr->balance(),
+            account_ptr->nonce());
     }
 
     if (all_balance != expect_all_balance) {
