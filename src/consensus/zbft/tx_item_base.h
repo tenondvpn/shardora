@@ -87,7 +87,8 @@ protected:
     int GetTempAccountBalance(
             const std::string& id,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
-            uint64_t* balance) {
+            uint64_t* balance,
+            uint64_t* nonce) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
             protos::AddressInfoPtr acc_info = account_mgr_->GetAccountInfo(id);
@@ -103,6 +104,7 @@ protected:
 
             acc_balance_map[id] = std::make_pair<int64_t, uint64_t>(acc_info->balance(), acc_info->nonce());
             *balance = acc_info->balance();
+            *nonce = acc_info->nonce();
             // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
             //     common::Encode::HexEncode(id).c_str(), *balance);
         } else {
@@ -111,6 +113,7 @@ protected:
             }
 
             *balance = iter->second.first;
+            *nonce = iter->second.second;
             // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
             //     common::Encode::HexEncode(id).c_str(), *balance);
         }

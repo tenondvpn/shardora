@@ -183,18 +183,20 @@ int ContractCreateByRootToTxItem::HandleTx(
 
 		from_prepayment = tmp_from_balance;
 		
-    auto preppayment_id = block_tx.to() + block_tx.from();
-    acc_balance_map[preppayment_id] = from_prepayment;
-		acc_balance_map[block_tx.to()] = block_tx.amount();
-		
+        auto preppayment_id = block_tx.to() + block_tx.from();
+        acc_balance_map[preppayment_id] = std::make_pair<int64_t, uint64_t>(
+            from_prepayment, block_tx.nonce()) ;
+		acc_balance_map[block_tx.to()] = std::make_pair<int64_t, uint64_t>(
+            block_tx.amount(), 0) ;
 		block_tx.set_contract_prepayment(from_prepayment);
 		block_tx.set_gas_used(gas_used);
-		ZJC_DEBUG("create contract local called to: %s, contract_from: %s, prepayment: %lu, gas used: %lu, gas_price: %lu",
-				  common::Encode::HexEncode(block_tx.to()).c_str(),
-				  common::Encode::HexEncode(block_tx.from()).c_str(),
-				  from_prepayment,
-				  gas_used,
-				  block_tx.gas_price());
+		ZJC_DEBUG("create contract local called to: %s, contract_from: %s, "
+            "prepayment: %lu, gas used: %lu, gas_price: %lu",
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            common::Encode::HexEncode(block_tx.from()).c_str(),
+            from_prepayment,
+            gas_used,
+            block_tx.gas_price());
 	}
 	return kConsensusSuccess;
 }

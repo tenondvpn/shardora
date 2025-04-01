@@ -15,10 +15,12 @@ int ContractCall::HandleTx(
     auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
+    uint64_t from_nonce = 0;
     auto preppayment_id = block_tx.to() + block_tx.from();
-    GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance);
+    GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance, &from_nonce);
     uint64_t src_to_balance = 0;
-    GetTempAccountBalance(block_tx.to(), acc_balance_map, &src_to_balance);
+    uint64_t src_to_nonce = 0;
+    GetTempAccountBalance(block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
     int64_t new_contract_balance = static_cast<int64_t>(src_to_balance);
     uint64_t test_from_balance = from_balance;
     bool check_valid = false;
@@ -231,7 +233,7 @@ int ContractCall::HandleTx(
                     destruct_kv->set_key(protos::kContractDestruct);
                     ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
                         common::Encode::HexEncode(protos::kContractDestruct).c_str());
-                    acc_balance_map[block_tx.to()] = -1;
+                    acc_balance_map[block_tx.to()] = std::make_pair<int64_t, uint64_t>(-1, 0);
                     // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
                 }
 
@@ -240,8 +242,8 @@ int ContractCall::HandleTx(
 
         if (block_tx.status() == kConsensusSuccess) {
             from_balance = tmp_from_balance;
-            if (acc_balance_map[block_tx.to()] != -1) {
-                acc_balance_map[block_tx.to()] = block_tx.amount();
+            if (acc_balance_map[block_tx.to()].first != -1) {
+                acc_balance_map[block_tx.to()] = std::make_pair<int64_t, uint64_t>(block_tx.amount(), 0);
             }
         }
 
@@ -262,7 +264,8 @@ int ContractCall::HandleTx(
         block_tx.set_amount(src_to_balance);
     }
     
-    acc_balance_map[preppayment_id] = from_balance;
+    // must prepayment's nonce, not caller or contract
+    acc_balance_map[preppayment_id] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));

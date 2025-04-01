@@ -72,7 +72,7 @@ int FromTxItem::HandleTx(
     }
 
     // 剪掉来源账户的金额
-    acc_balance_map[from] = from_balance;
+    acc_balance_map[from] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     // ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",

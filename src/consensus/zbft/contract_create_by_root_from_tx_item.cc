@@ -84,7 +84,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
         // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code(), true);
 	}
 
-    acc_balance_map[from] = from_balance;
+    acc_balance_map[from] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("set contract create called: %d, from: %s, to: %s, amount: %lu",

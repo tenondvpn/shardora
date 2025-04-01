@@ -31,8 +31,9 @@ int ToTxLocalItem::HandleTx(
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint64_t to_balance = 0;
+        uint64_t nonce = 0;
         // if (to_txs.tos(i).des().size() == security::kUnicastAddressLength) { // only to, for normal to tx
-            int balance_status = GetTempAccountBalance(to_txs.tos(i).des(), acc_balance_map, &to_balance);
+            int balance_status = GetTempAccountBalance(to_txs.tos(i).des(), acc_balance_map, &to_balance, &nonce);
             if (balance_status != kConsensusSuccess) {
                 ZJC_DEBUG("create new address: %s, balance: %lu",
                     common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
@@ -66,7 +67,7 @@ int ToTxLocalItem::HandleTx(
         to_tx->set_balance(to_balance);
         str_for_hash.append(to_txs.tos(i).des());
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
-        acc_balance_map[to_txs.tos(i).des()] = to_balance;
+        acc_balance_map[to_txs.tos(i).des()] = std::make_pair<int64_t, uint64_t>(to_balance, nonce);
         ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
             to_balance,
