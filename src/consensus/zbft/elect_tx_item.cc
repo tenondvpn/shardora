@@ -694,7 +694,7 @@ int ElectTxItem::CheckWeedout(
     std::vector<TxItem> member_tx_count;
     for (int32_t member_idx = 0; member_idx < statistic_item.tx_count_size(); ++member_idx) {
         max_tx_count = std::max(max_tx_count, statistic_item.tx_count(member_idx));
-        *min_tx_count = std::min(*min_tx_count, statistic_item.tx_count(member_idx));
+        *min_tx_count = (std::min)(*min_tx_count, statistic_item.tx_count(member_idx));
 
         member_tx_count.push_back(std::make_pair(member_idx, statistic_item.tx_count(member_idx)));
     }

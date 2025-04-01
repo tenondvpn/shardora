@@ -58,8 +58,7 @@ Status ViewBlockChain::Store(
             }
 
             auto& addr = account_mgr_->GetTxValidAddress(tx);
-            (*balane_map_ptr)[addr] = tx.balance();
-            
+            (*balane_map_ptr)[addr] = std::pair(tx.balance(), tx.nonce());
         }
     }
 

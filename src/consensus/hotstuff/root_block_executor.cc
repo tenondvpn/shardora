@@ -40,7 +40,7 @@ void RootBlockExecutor::RootDefaultTx(
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr->txs.begin();
-    balance_map[tx.to()] = 0;
+    balance_map[tx.to()] = std::pair(0, 0);
     iter->second->TxToBlockTx(*iter->second->tx_info, &tx);
 }
 
