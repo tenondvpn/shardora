@@ -1632,7 +1632,7 @@ void BlockManager::PopTxTicker() {
     while (shard_statistics_map_ptr_queue_.pop(&static_tmp_map)) {}
     if (static_tmp_map != nullptr) {
         for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
-            ZJC_DEBUG("now pop statistic tx tx hash: %s, tm height: %lu",
+            ZJC_DEBUG("now pop statistic tx tx nonce: %lu, tm height: %lu",
                 iter->second->tx_ptr->tx_info->nonce(), iter->first);
         }
 
