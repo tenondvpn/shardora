@@ -45,7 +45,7 @@ public:
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
-    std::shared_ptr<address::protobuf::AddressInfo>& pools_address_info(uint32_t pool_idx) {
+    std::shared_ptr<address::protobuf::AddressInfo> pools_address_info(uint32_t pool_idx) {
         if (pool_idx == common::kImmutablePoolSize) {
             return GetAccountInfo(immutable_pool_addr_);
         }
