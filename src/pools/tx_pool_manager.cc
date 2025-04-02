@@ -1051,36 +1051,6 @@ void TxPoolManager::BftCheckInvalidGids(
     }
 }
 
-void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx, bool* has_system_tx) {
-    // uint32_t count = 0;
-    // while (!destroy_) {
-    //     transport::MessagePtr msg_ptr = nullptr;
-    //     if (!msg_queues_[pool_index].pop(&msg_ptr)) {
-    //         break;
-    //     }
-
-    //     ZJC_DEBUG("success pop tx gid: %s, step: %d",
-    //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
-    //         msg_ptr->header.tx_proto().step());
-    //     if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
-    //         if (has_user_tx != nullptr) {
-    //             *has_user_tx = true;
-    //         }
-    //     } else {
-    //         if (has_system_tx != nullptr) {
-    //             *has_system_tx = true;
-    //         }
-    //     }
-
-    //     // auto now_tm_ms = common::TimeUtils::TimestampMs();
-    //     DispatchTx(pool_index, msg_ptr);
-    //     if (!pop_all && ++count >= 1024) {
-    //         break;
-    //     }
-    // }
-    assert(false);
-}
-
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {

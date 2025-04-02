@@ -51,11 +51,6 @@ public:
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckAddrNonceValidFunction gid_vlid_func);
-    void PopTxs(
-        uint32_t pool_index, 
-        bool pop_all, 
-        bool* has_user_tx, 
-        bool* has_system_tx);
     void InitCrossPools();
     void BftCheckInvalidGids(
         uint32_t pool_index, 
