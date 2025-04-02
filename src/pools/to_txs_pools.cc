@@ -829,6 +829,28 @@ int ToTxsPools::CreateToTxWithHeights(
         prev_to_heights = prev_to_heights_;
     }
 
+    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+        if (prev_to_heights->heights(i) > leader_to_heights.heights(i)) {
+            ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
+                i, prev_to_heights->heights(i), leader_to_heights.heights(i));
+            return kPoolsError;
+        }
+    }
+
+    bool heights_valid = false;
+    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+        if (prev_to_heights->heights(i) < leader_to_heights.heights(i)) {
+            ZJC_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
+                i, prev_to_heights->heights(i), leader_to_heights.heights(i));
+            heights_valid = true;
+            break;
+        }
+    }
+
+    if (!heights_valid) {
+        return kPoolsError;
+    }
+
     ZJC_DEBUG("statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
         ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
