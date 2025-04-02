@@ -141,8 +141,11 @@ void BlockManager::ConsensusAddBlock(
     assert(!block_item->view_block_ptr->qc().sign_x().empty());
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
-    ZJC_DEBUG("add new block thread: %d, size: %u", 
-        thread_idx, consensus_block_queues_[thread_idx].size());
+    ZJC_DEBUG("add new block thread: %d, size: %u, %u_%u_%lu", 
+        thread_idx, consensus_block_queues_[thread_idx].size(),
+        block_item->view_block_ptr->qc().network_id(),
+        block_item->view_block_ptr->qc().pool_index(),
+        block_item->view_block_ptr->qc().view());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
