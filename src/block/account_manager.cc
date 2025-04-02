@@ -165,6 +165,10 @@ void AccountManager::HandleNormalFromTx(
     }
 
     if (account_info->nonce() >= tx.nonce()) {
+        ZJC_ERROR("account nonce invalid addr: %s, src nonce: %lu, new nonce: %lu",
+            common::Encode::HexEncode(account_info->addr()).c_str(), 
+            account_info->nonce(), 
+            tx.nonce());
         assert(false);
         return;
     }
