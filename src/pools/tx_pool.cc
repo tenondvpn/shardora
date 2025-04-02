@@ -294,9 +294,11 @@ void TxPool::GetTxIdempotently(
                 }
 
                 res_map.push_back(tx_ptr);
-                ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu", 
+                ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu, res count: %u, count: %u", 
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
-                    tx_ptr->tx_info->nonce());
+                    tx_ptr->tx_info->nonce(),
+                    res_map.size(),
+                    count);
                 if (res_map.size() >= count) {
                     break;
                 }
