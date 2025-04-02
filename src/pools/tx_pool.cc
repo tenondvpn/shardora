@@ -167,6 +167,10 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                     nonce_iter = tx_iter->second.erase(nonce_iter);
                 }
             }
+
+            if (tx_iter->second.empty()) {
+                tx_map_.erase(tx_iter);
+            }
         };
         
         remove_tx_func(tx_map_);
