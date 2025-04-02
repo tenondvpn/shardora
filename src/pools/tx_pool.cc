@@ -187,7 +187,16 @@ void TxPool::GetTxSyncToLeader(
             continue;
         }
 
+        auto iter = consensus_tx_map_.find(tx_ptr->address_info->addr());
+        if (iter != consensus_tx_map_.end()) {
+            auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
+            if (nonce_iter != iter->second.end()) {
+                continue;
+            }
+        }
+
         tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+        consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
     for (auto iter = tx_map_.begin(); iter != tx_map_.end();) {
@@ -256,6 +265,14 @@ void TxPool::GetTxIdempotently(
             continue;
         }
 
+        auto iter = consensus_tx_map_.find(tx_ptr->address_info->addr());
+        if (iter != consensus_tx_map_.end()) {
+            auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
+            if (nonce_iter != iter->second.end()) {
+                continue;
+            }
+        }
+
         tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
@@ -263,6 +280,14 @@ void TxPool::GetTxIdempotently(
     while (consensus_added_txs_.pop(&tx_ptr)) {
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             continue;
+        }
+
+        auto iter = consensus_tx_map_.find(tx_ptr->address_info->addr());
+        if (iter != consensus_tx_map_.end()) {
+            auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
+            if (nonce_iter != iter->second.end()) {
+                continue;
+            }
         }
 
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
