@@ -1118,7 +1118,7 @@ void TxPoolManager::GetTxSyncToLeader(
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckGidValidFunction gid_vlid_func) {
+        pools::CheckAddrNonceValidFunction gid_vlid_func) {
     tx_pool_[pool_index].GetTxSyncToLeader(count, txs, gid_vlid_func);    
 }
 
@@ -1127,7 +1127,7 @@ void TxPoolManager::GetTxIdempotently(
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map,
-        pools::CheckGidValidFunction gid_vlid_func) {
+        pools::CheckAddrNonceValidFunction gid_vlid_func) {
     tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
 

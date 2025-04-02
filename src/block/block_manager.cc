@@ -1499,26 +1499,6 @@ pools::TxItemPtr BlockManager::GetToTx(
         }
     }
 
-    // std::string string_for_hash;
-    // for (int32_t i = 0; i < heights.heights_size(); ++i) {
-    //     auto height = heights.heights(i);
-    //     string_for_hash.append((char*)&height, sizeof(height));
-    // }
-
-    // auto height_hash = common::Hash::keccak256(string_for_hash);
-    // auto iter = heights_str_map_.find(height_hash);
-    // if (iter != heights_str_map_.end()) {
-    //     std::string gid = GetToTxGid();
-    //     auto tx_ptr = iter->second;
-    //     tx_ptr->tx_info->set_gid(gid);
-    //     ZJC_INFO("success get exists to tx tx info: %s, nonce: %lu, val: %s, heights: %s", 
-    //         "ProtobufToJson(*(tx_ptr->tx_info)).c_str()",
-    //         common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(), 
-    //         common::Encode::HexEncode(tx_ptr->tx_info->value()).c_str(),
-    //         ProtobufToJson(heights).c_str());
-    //     return iter->second;
-    // }
-
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         // heights_str_map_[height_hash] = tx_ptr;
@@ -1535,30 +1515,6 @@ pools::TxItemPtr BlockManager::GetToTx(
     return tx_ptr;
 }
 
-std::string BlockManager::GetToTxGid() {
-    if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
-        return "";
-    }
-
-    std::string gid = common::Hash::keccak256("0000");
-    auto latest_to_block = latest_to_block_ptr_[latest_to_block_ptr_index_];
-    if (latest_to_block != nullptr) {
-        gid = common::Hash::keccak256(
-            std::to_string(common::GlobalInfo::Instance()->network_id()) +
-            std::to_string(latest_to_block->block_info().height()) +
-            std::to_string(latest_to_block->block_info().timestamp()));
-        // ZJC_DEBUG("set to tx nonce: %lu, latest to block height: %lu, timestamp: %lu", 
-        //     common::Encode::HexEncode(gid).c_str(),
-        //     latest_to_block->block_info().height(), 
-        //     latest_to_block->block_info().timestamp());
-    } else {
-        // ZJC_DEBUG("default 0000 set to tx nonce: %lu, latest to block height: %lu, timestamp: %lu", 
-        //     common::Encode::HexEncode(gid).c_str(), 0, 0);
-    }
-    
-    return gid;
-}
-
 pools::TxItemPtr BlockManager::HandleToTxsMessage(
         const pools::protobuf::ShardToTxItem& heights) {
     if (create_to_tx_cb_ == nullptr) {
@@ -1566,7 +1522,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     }
 
     pools::protobuf::AllToTxMessage all_to_txs;
-    std::string gid = GetToTxGid();
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
         auto& to_tx = *all_to_txs.add_to_tx_arr();
@@ -1607,7 +1562,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
 bool BlockManager::HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
-        pools::CheckGidValidFunction gid_valid_fn) {
+        pools::CheckAddrNonceValidFunction gid_valid_fn) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (HasToTx(pool_index, gid_valid_fn)) {
         // ZJC_DEBUG("success check has to tx.");
@@ -1647,37 +1602,27 @@ void BlockManager::PopTxTicker() {
     pop_tx_tick_.CutOff(50000lu, std::bind(&BlockManager::PopTxTicker, this));
 }
 
-bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
+bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn) {
     if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
         return false;
     }
-            
-    auto cur_time = common::TimeUtils::TimestampMs();
-    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
+    
     if (pool_index != common::kImmutablePoolSize) {
         return false;
     }
 
+    auto cur_time = common::TimeUtils::TimestampMs();
+    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
         ZJC_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
         return false;
     }
 
-    // if (!gid_valid_fn(GetToTxGid())) {
-    //     ZJC_DEBUG("invalid has to tx %u, tx nonce: %lu", 
-    //         pool_index, 
-    //         common::Encode::HexEncode(GetToTxGid()).c_str());
-    //     return false;
-    // }
-
-    ZJC_DEBUG("has to tx %u, tx nonce: %lu", 
-        pool_index, 
-        common::Encode::HexEncode(GetToTxGid()).c_str());
     return true;
 }
 
-bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
+bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn) {
     if (pool_index != common::kImmutablePoolSize) {
         return false;
     }
@@ -1723,7 +1668,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunct
     return false;
 }
 
-bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
+bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn) {
     for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
         if (i % common::kImmutablePoolSize != pool_index) {
             continue;

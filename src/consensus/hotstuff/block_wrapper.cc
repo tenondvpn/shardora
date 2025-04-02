@@ -124,7 +124,7 @@ Status BlockWrapper::Wrap(
 
 bool BlockWrapper::HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
-        pools::CheckGidValidFunction gid_valid_fn) {
+        pools::CheckAddrNonceValidFunction gid_valid_fn) {
     return txs_pools_->HasSingleTx(msg_ptr, pool_idx_, gid_valid_fn);
 }
         

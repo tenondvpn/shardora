@@ -32,7 +32,7 @@ public:
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) = 0;
     virtual bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
-        pools::CheckGidValidFunction gid_valid_fn) = 0;
+        pools::CheckAddrNonceValidFunction gid_valid_fn) = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -61,13 +61,13 @@ public:
     // 是否存在内置交易
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
-        pools::CheckGidValidFunction gid_valid_fn) override;
+        pools::CheckAddrNonceValidFunction gid_valid_fn) override;
     void GetTxSyncToLeader(
             uint32_t leader_idx, 
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
-        // pools::CheckGidValidFunction gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
+        // pools::CheckAddrNonceValidFunction gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
         //     return view_block_chain->CheckTxNonceValid(addr, nonce, parent_hash);
         // };
 
@@ -78,7 +78,7 @@ private:
     Status LeaderGetTxsIdempotently(
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            pools::CheckGidValidFunction gid_vlid_func) {
+            pools::CheckAddrNonceValidFunction gid_vlid_func) {
         txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, gid_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;

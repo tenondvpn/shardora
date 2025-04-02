@@ -19,20 +19,20 @@ WaitingTxsPools::~WaitingTxsPools() {}
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
-        pools::CheckGidValidFunction gid_vlid_func) {
+        pools::CheckAddrNonceValidFunction addr_nonce_valid_func) {
     auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
     #ifdef TEST_NO_CROSS
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     #else
-    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(msg_ptr, pool_index, gid_vlid_func);
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(msg_ptr, pool_index, addr_nonce_valid_func);
     #endif
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item != nullptr) {
         for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
-            if (!gid_vlid_func(iter->second->address_info->addr(), iter->second->tx_info->nonce())) {
+            if (!addr_nonce_valid_func(iter->second->address_info->addr(), iter->second->tx_info->nonce())) {
                 txs_item = nullptr;
                 break;
             }
@@ -41,7 +41,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
 
     if (txs_item == nullptr) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently(msg_ptr, gid_vlid_func);
+        txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently(msg_ptr, addr_nonce_valid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
     }
 
@@ -68,7 +68,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
-        pools::CheckGidValidFunction gid_vlid_func) {
+        pools::CheckAddrNonceValidFunction addr_nonce_valid_func) {
     ZJC_DEBUG("get single tx pool: %u", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -77,7 +77,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetTimeblockTx(pool_index, true);
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || !gid_vlid_func(
+            if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
                     iter->second->address_info->addr(), 
                     iter->second->tx_info->nonce())) {
                 txs_item = nullptr;
@@ -89,14 +89,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr && pool_index == common::kImmutablePoolSize) {
-        if (gid_vlid_func("", 0)) {
-            txs_item = GetToTxs(pool_index, "");
-            ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
-        } else {
-            ZJC_DEBUG("GetToTxGid failed: %d, nonce: %s", 
-                (txs_item != nullptr), 
-                0);
-        }
+        txs_item = GetToTxs(pool_index, "");
+        ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -111,7 +105,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || !gid_vlid_func(
+            if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
                     iter->second->address_info->addr(), 
                     iter->second->tx_info->nonce())) {
                 txs_item = nullptr;
@@ -124,7 +118,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetElectTx(pool_index, "");
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || !gid_vlid_func(
+            if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
                     iter->second->address_info->addr(), 
                     iter->second->tx_info->nonce())) {
                 txs_item = nullptr;
@@ -139,7 +133,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
 bool WaitingTxsPools::HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckGidValidFunction gid_valid_fn) {
+        pools::CheckAddrNonceValidFunction gid_valid_fn) {
     if (timeblock_mgr_->HasTimeblockTx(pool_index, gid_valid_fn)) {
         return true;
     }
@@ -255,10 +249,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
     }
 
     return nullptr;
-}
-
-std::string WaitingTxsPools::GetToTxGid() {
-    return block_mgr_->GetToTxGid();
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(

@@ -662,12 +662,26 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
         to_heights.add_heights(cons_height);
     }
 
+    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
+    {
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
+        prev_to_heights = prev_to_heights_;
+    }
+
     if (!valid) {
         ZJC_DEBUG("final leader get to heights error, pool: %u, height: %lu", 0, 0);
         return kPoolsError;
     }
 
-    return kPoolsSuccess;
+    for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
+        if (prev_to_heights->heights(i) >= to_heights.heights(i)) {
+            ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
+                i, prev_to_heights->heights(i), to_heights.heights(i));
+            return kPoolsError;
+        }
+    }
+
+    return kPoolsError;
 }
 
 void ToTxsPools::HandleCrossShard(

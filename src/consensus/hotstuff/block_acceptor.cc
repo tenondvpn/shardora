@@ -327,15 +327,6 @@ Status BlockAcceptor::addTxsToPool(
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::ToTxItem>(msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                // auto gid = tx_pools_->GetToTxGid();
-                // if (view_block_chain->CheckTxGidValid(gid, parent_hash)) {
-                //     auto tx_item = tx_pools_->GetToTxs(
-                //         pool_idx(), 
-                //         all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
-                //     if (tx_item != nullptr && !tx_item->txs.empty()) {
-                //         tx_ptr = tx_item->txs.begin()->second;
-                //     }
-                // }
                 assert(false);
             }
             

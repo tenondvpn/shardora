@@ -46,7 +46,7 @@ public:
     pools::TxItemPtr tmblock_tx_ptr(bool leader, uint32_t pool_index);
     bool HasTimeblockTx(
         uint32_t pool_index, 
-        pools::CheckGidValidFunction gid_valid_fn);
+        pools::CheckAddrNonceValidFunction gid_valid_fn);
 
     void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
         create_tm_tx_cb_ = func;

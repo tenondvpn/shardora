@@ -169,7 +169,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
 void TxPool::GetTxSyncToLeader(
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckGidValidFunction gid_vlid_func) {
+        pools::CheckAddrNonceValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
     while (txs->size() < count && added_txs_.pop(&tx_ptr)) {
         if (gid_vlid_func != nullptr && 
@@ -239,7 +239,7 @@ void TxPool::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count,
-        pools::CheckGidValidFunction gid_vlid_func) {
+        pools::CheckAddrNonceValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
     while (res_map.size() < count && added_txs_.pop(&tx_ptr)) {
         if (gid_vlid_func != nullptr && !gid_vlid_func(

@@ -22,14 +22,14 @@ public:
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
             transport::MessagePtr msg_ptr,
-            pools::CheckGidValidFunction gid_vlid_func) {
+            pools::CheckAddrNonceValidFunction gid_vlid_func) {
         return LeaderGetTxsIdempotently(msg_ptr, gid_vlid_func);
     }
 
 private:
     std::shared_ptr<WaitingTxsItem> LeaderGetTxsIdempotently(
             transport::MessagePtr msg_ptr, 
-            pools::CheckGidValidFunction gid_vlid_func) {
+            pools::CheckAddrNonceValidFunction gid_vlid_func) {
         transport::protobuf::Header header;
         auto txs_items = std::make_shared<WaitingTxsItem>();
         auto& tx_vec = txs_items->txs;
