@@ -674,10 +674,18 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     }
 
     for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
-        if (prev_to_heights->heights(i) >= to_heights.heights(i)) {
+        if (prev_to_heights->heights(i) > to_heights.heights(i)) {
             ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), to_heights.heights(i));
             return kPoolsError;
+        }
+    }
+
+    for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
+        if (prev_to_heights->heights(i) < to_heights.heights(i)) {
+            ZJC_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
+                i, prev_to_heights->heights(i), to_heights.heights(i));
+            return kPoolsSuccess;
         }
     }
 
