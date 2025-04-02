@@ -212,7 +212,7 @@ Status BlockAcceptor::addTxsToPool(
     // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
     //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    std::map<std::string, pools::TxItemPtr>& txs_map = txs_ptr->txs;
+    auto& txs_map = txs_ptr->txs;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
@@ -336,7 +336,7 @@ Status BlockAcceptor::addTxsToPool(
                     pool_idx(), 
                     all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
                 if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain) {
-                    tx_ptr = tx_item->txs.begin()->second;
+                    tx_ptr = *(tx_item->txs.begin());
                     if (view_block_chain->CheckTxNonceValid(
                             tx_ptr->tx_info->to(), 
                             tx_ptr->tx_info->nonce(), 
@@ -358,7 +358,7 @@ Status BlockAcceptor::addTxsToPool(
             } else {
                 auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), 0);
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
-                    tx_ptr = tx_item->txs.begin()->second;
+                    tx_ptr = *(tx_item->txs.begin());
                 } else {
                     ZJC_WARN("failed get statistic nonce: %lu, pool: %u, tx_proto: %s",
                         tx->nonce(), pool_idx_, ProtobufToJson(*tx).c_str());
@@ -393,7 +393,7 @@ Status BlockAcceptor::addTxsToPool(
                 auto txhash = pools::GetTxMessageHash(*tx);
                 auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
-                    tx_ptr = tx_item->txs.begin()->second;
+                    tx_ptr = *(tx_item->txs.begin());
                 }
             }
                 
@@ -408,7 +408,7 @@ Status BlockAcceptor::addTxsToPool(
             } else {
                 auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false);
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
-                    tx_ptr = tx_item->txs.begin()->second;
+                    tx_ptr = *(tx_item->txs.begin());
                 }
             }
             break;
@@ -479,7 +479,7 @@ Status BlockAcceptor::addTxsToPool(
         
         if (tx_ptr != nullptr) {
             auto tx_hash = pools::GetTxMessageHash(*tx);
-            txs_map[tx_ptr->tx_key] = tx_ptr;
+            txs_map.push_back(tx_ptr);
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
                 if (!msg_ptr->is_leader) {
                     if (tx->pubkey().size() == 64u) {
