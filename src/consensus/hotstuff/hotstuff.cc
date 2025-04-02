@@ -10,6 +10,7 @@
 #include <protos/hotstuff.pb.h>
 #include <protos/pools.pb.h>
 #include <protos/view_block.pb.h>
+#include "security/ecdsa/ecdsa.h"
 #include <tools/utils.h>
 
 namespace shardora {
@@ -231,8 +232,11 @@ Status Hotstuff::Propose(
         propose_debug_index_++,
         pb_pro_msg->tx_propose().txs_size());
     propose_debug_str += ", tx gids: ";
+    security::Ecdsa ecdsa;
     for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
-        propose_debug_str += std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).nonce()) + " ";
+        propose_debug_str += common::Encode::HexEncode(ecdsa.GetAddress(pb_pro_msg->tx_propose().txs(tx_idx).pubkey())) + "_" +
+            common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).to())  + "_" +
+            std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).nonce()) + " ";
     }
 
     transport::protobuf::ConsensusDebug consensus_debug;
