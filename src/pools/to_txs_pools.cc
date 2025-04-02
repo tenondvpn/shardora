@@ -877,7 +877,7 @@ int ToTxsPools::CreateToTxWithHeights(
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
-                assert(false);
+                // assert(false);
                 return kPoolsError;
             }
 
