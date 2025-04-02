@@ -44,7 +44,7 @@ public:
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map,
+        std::vector<pools::TxItemPtr>& res_map,
         pools::CheckAddrNonceValidFunction gid_vlid_func);
     void GetTxSyncToLeader(
         uint32_t pool_index,

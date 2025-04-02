@@ -66,7 +66,7 @@ public:
     int AddTx(TxItemPtr& tx_ptr);
     void GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& res_map, 
+        std::vector<pools::TxItemPtr>& res_map, 
         uint32_t count, 
         pools::CheckAddrNonceValidFunction gid_vlid_func);
     void GetTxSyncToLeader(

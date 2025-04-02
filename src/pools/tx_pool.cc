@@ -246,7 +246,7 @@ void TxPool::GetTxSyncToLeader(
 
 void TxPool::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& res_map,
+        std::vector<pools::TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckAddrNonceValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
@@ -293,7 +293,7 @@ void TxPool::GetTxIdempotently(
                     }
                 }
 
-                res_map[tx_ptr->tx_key] = tx_ptr;
+                res_map.push_back(tx_ptr);
                 ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu", 
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                     tx_ptr->tx_info->nonce());

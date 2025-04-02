@@ -1096,7 +1096,7 @@ void TxPoolManager::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map,
+        std::vector<pools::TxItemPtr>& res_map,
         pools::CheckAddrNonceValidFunction gid_vlid_func) {
     tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
