@@ -311,7 +311,6 @@ void TxPool::GetTxIdempotently(
                         tx_ptr->tx_info->nonce());
                     if (res != 0) {
                         if (res > 0) {
-                            nonce_iter = iter->second.erase(nonce_iter);
                             continue;
                         }
                         
@@ -327,12 +326,15 @@ void TxPool::GetTxIdempotently(
 
                 valid_nonce = tx_ptr->tx_info->nonce();
                 res_map.push_back(tx_ptr);
-                ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, nonce: %lu, res count: %u, count: %u", 
+                ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, nonce: %lu, "
+                    "res count: %u, count: %u, tx_map size: %u, addr tx size: %u", 
                     pool_index_,
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                     tx_ptr->tx_info->nonce(),
                     res_map.size(),
-                    count);
+                    count,
+                    tx_map.size(),
+                    iter->second.size());
                 if (res_map.size() >= count) {
                     break;
                 }
