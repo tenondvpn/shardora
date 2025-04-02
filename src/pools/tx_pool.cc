@@ -224,7 +224,7 @@ void TxPool::GetTxSyncToLeader(
                     tx_ptr->tx_info->nonce());
                 auto* tx = txs->Add();
                 *tx = *tx_ptr->tx_info;
-                if (txs->size() < count) {
+                if (txs->size() >= count) {
                     break;
                 }
             }
@@ -310,7 +310,7 @@ void TxPool::GetTxIdempotently(
                 ++iter;
             }
 
-            if (res_map.size() < count) {
+            if (res_map.size() >= count) {
                 break;
             }
         }
