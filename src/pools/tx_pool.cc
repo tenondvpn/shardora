@@ -139,7 +139,9 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    ZJC_DEBUG("success add tx nonce: %lu", tx_ptr->tx_info->nonce());
+    ZJC_DEBUG("trace tx success add tx %s, nonce: %lu", 
+        common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+        tx_ptr->tx_info->nonce());
     return kPoolsSuccess;
 }
 
@@ -169,7 +171,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_DEBUG("tx over tx key: %s, nonce: %lu", 
+        ZJC_DEBUG("trace tx over tx addr: %s, nonce: %lu", 
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
     }
@@ -210,6 +212,9 @@ void TxPool::GetTxSyncToLeader(
                     tx_ptr->tx_info->nonce(), 
                     tx_ptr->tx_info->step());
             } else {
+                ZJC_DEBUG("trace tx to leader tx addr: %s, nonce: %lu", 
+                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                    tx_ptr->tx_info->nonce());
                 auto* tx = txs->Add();
                 *tx = *tx_ptr->tx_info;
                 if (txs->size() < count) {
@@ -273,6 +278,9 @@ void TxPool::GetTxIdempotently(
                 }
 
                 res_map[tx_ptr->tx_key] = tx_ptr;
+                ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu", 
+                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                    tx_ptr->tx_info->nonce());
                 if (res_map.size() < count) {
                     break;
                 }
