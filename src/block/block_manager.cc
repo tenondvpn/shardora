@@ -697,16 +697,15 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto nonce = msg_ptr->address_info->nonce() + 1;
         tx->set_gas_limit(0);
         tx->set_amount(0); // 具体 amount 在 kv 中
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(nonce);
+        tx->set_nonce(msg_ptr->address_info->nonce() + 1);
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
-            nonce,
-            nonce,
+            msg_ptr->address_info->nonce(),
+            msg_ptr->address_info->nonce() + 1,
             common::Encode::HexEncode(val).c_str());
     }
 }
@@ -1198,7 +1197,9 @@ void BlockManager::AddMiningToken(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_nonce(msg_ptr->address_info->nonce() + 1);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("mining success create kConsensusLocalTos nonce: %lu", tx->nonce());
+        ZJC_INFO("mining success create kConsensusLocalTos %s nonce: %lu",
+            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+            tx->nonce());
     }
 }
 

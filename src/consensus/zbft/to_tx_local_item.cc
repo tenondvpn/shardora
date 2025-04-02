@@ -25,6 +25,16 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
+    uint64_t to_balance = 0;
+    uint64_t to_nonce = 0;
+    GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+    if (to_nonce + 1 != block_tx.nonce()) {
+        block_tx.set_status(kConsensusNonceInvalid);
+        ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+            view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+        return consensus::kConsensusSuccess;
+    }
+
     block::protobuf::ConsensusToTxs block_to_txs;
     std::string str_for_hash;
     str_for_hash.reserve(to_txs.tos_size() * 48);
@@ -74,6 +84,9 @@ int ToTxLocalItem::HandleTx(
             to_txs.tos(i).amount());
     }
 
+    ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+    acc_balance_map[block_tx.to()] = std::pair(to_balance, block_tx.nonce());
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kConsensusLocalNormalTos);
     storage->set_value(block_to_txs.SerializeAsString());
