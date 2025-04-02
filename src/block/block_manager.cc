@@ -1541,7 +1541,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     }
     
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-    new_msg_ptr->address_info = account_mgr_->pools_address_info(0 % common::kImmutablePoolSize);
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     tx->set_key(protos::kNormalTos);
     // TODO: fix hash invalid
