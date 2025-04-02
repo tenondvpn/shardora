@@ -237,11 +237,11 @@ Status Hotstuff::Propose(
         if (!pb_pro_msg->tx_propose().txs(tx_idx).pubkey().empty()) {
             propose_debug_str += common::Encode::HexEncode(ecdsa.GetAddress(pb_pro_msg->tx_propose().txs(tx_idx).pubkey())) + "_" +
                 common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).to())  + "_" +
-                std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).step()) + "_";
+                std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).step()) + "_" +
                 std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).nonce()) + " ";
         } else {
             propose_debug_str += common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).to())  + "_" +
-                std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).step()) + "_";
+                std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).step()) + "_" +
                 std::to_string(pb_pro_msg->tx_propose().txs(tx_idx).nonce()) + " ";
         }
     }
