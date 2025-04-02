@@ -218,7 +218,7 @@ void TxPool::GetTxSyncToLeader(
                 front_tx_ptr->tx_info->nonce())) {
             ZJC_DEBUG("tx_key invalid: %s", 
                 common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
-            continue;
+            break;
         }
 
         front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
@@ -282,7 +282,7 @@ void TxPool::GetTxIdempotently(
                 front_tx_ptr->tx_info->nonce())) {
             ZJC_DEBUG("tx_key invalid: %s", 
                 common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
-            continue;
+            break;
         }
 
         front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
