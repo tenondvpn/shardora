@@ -257,6 +257,7 @@ void TxPool::GetTxIdempotently(
         }
 
         tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+        consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
     while (consensus_added_txs_.pop(&tx_ptr)) {
@@ -318,7 +319,7 @@ void TxPool::GetTxIdempotently(
         }
     };
 
-    get_tx_func(tx_map_);
+    // get_tx_func(tx_map_);
     get_tx_func(consensus_tx_map_);
 }
 
