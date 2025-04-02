@@ -558,8 +558,9 @@ void BlockManager::HandleLocalNormalToTx(
     // 1. 单纯的转账交易（包括 prepayment），这种类型的交易聚合 amount 最终一起执行，聚合成 ConsensusLocalTos 交易即可
     // 2. 合约账户创建交易，涉及到 evm，需要按照 ContractCreate 交易执行
     // 根据有无 contract_from 字段区分
-    ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, nonce: %s, step: %d", 
+    ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
         to_txs.tos_size(),
+        common::Encode::HexEncode(tx.to()).c_str(),
         tx.nonce(),
         step);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
