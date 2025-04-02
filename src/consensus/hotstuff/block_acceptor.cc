@@ -216,13 +216,6 @@ Status BlockAcceptor::addTxsToPool(
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
-        if (view_block_chain && !view_block_chain->CheckTxNonceValid(tx->to(), tx->nonce(), parent_hash)) {
-            ZJC_WARN("check tx nonce failed: %lu, phash: %s", 
-                tx->nonce(), 
-                common::Encode::HexEncode(parent_hash).c_str());
-            return Status::kError;
-        }
-
         protos::AddressInfoPtr address_info = nullptr;
         std::string from_id;
         if (pools::IsUserTransaction(tx->step())) {
@@ -249,6 +242,13 @@ Status BlockAcceptor::addTxsToPool(
 
         if (!address_info) {
             ZJC_WARN("get address failed nonce: %lu", tx->nonce());
+            return Status::kError;
+        }
+
+        if (view_block_chain && !view_block_chain->CheckTxNonceValid(address_info->addr(), tx->nonce(), parent_hash)) {
+            ZJC_WARN("check tx nonce failed: %lu, phash: %s", 
+                tx->nonce(), 
+                common::Encode::HexEncode(parent_hash).c_str());
             return Status::kError;
         }
 
