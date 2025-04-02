@@ -85,7 +85,7 @@ Status BlockWrapper::Wrap(
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
-            *tx_info = *it->second->tx_info;
+            *tx_info = *((*it)->tx_info);
             // ADD_TX_DEBUG_INFO(tx_info);
             // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
             //     "step: %d, to: %s, nonce: %lu, tx info: %s",

@@ -11,8 +11,8 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     if (txs_ptr->txs.size() == 1) {
-        auto& tx = *txs_ptr->txs.begin()->second;
-        switch (tx.tx_info->step()) {
+        auto& tx = *(txs_ptr->txs.begin());
+        switch (tx->tx_info->step()) {
         case pools::protobuf::kConsensusRootElectShard:
             RootCreateElectConsensusShardBlock(txs_ptr, view_block, balance_map, zjc_host);
             break;
@@ -41,7 +41,7 @@ void RootBlockExecutor::RootDefaultTx(
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr->txs.begin();
     balance_map[tx.to()] = std::pair(0, 0);
-    iter->second->TxToBlockTx(*iter->second->tx_info, &tx);
+    (*iter)->TxToBlockTx(*(*iter)->tx_info, &tx);
 }
 
 void RootBlockExecutor::RootCreateAccountAddressBlock(
@@ -54,8 +54,8 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
     auto& tx_map = txs_ptr->txs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
-        auto& src_tx = iter->second->tx_info;
-        iter->second->TxToBlockTx(*src_tx, &tx);
+        auto& src_tx = (*iter)->tx_info;
+        (*iter)->TxToBlockTx(*src_tx, &tx);
         // create address must to and have transfer amount
         if (tx.step() == pools::protobuf::kRootCreateAddress) {
             if (!tx.has_contract_code() && tx.amount() <= 0) {
@@ -67,7 +67,7 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
             }
         }
 
-        int do_tx_res = iter->second->HandleTx(
+        int do_tx_res = (*iter)->HandleTx(
             *view_block,
             zjc_host,
             acc_balance_map,
@@ -92,7 +92,7 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     }
 
     auto iter = tx_map.begin();
-    if (iter->second->tx_info->step() != pools::protobuf::kConsensusRootElectShard) {
+    if ((*iter)->tx_info->step() != pools::protobuf::kConsensusRootElectShard) {
         assert(false);
         return;
     }
@@ -100,8 +100,8 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(*iter->second->tx_info, &tx);
-    int do_tx_res = iter->second->HandleTx(
+    (*iter)->TxToBlockTx(*(*iter)->tx_info, &tx);
+    int do_tx_res = (*iter)->HandleTx(
         *view_block,
         zjc_host,
         acc_balance_map,
