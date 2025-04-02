@@ -23,9 +23,10 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("to tx consensus coming: %s, nonce: %s", 
-            "common::Encode::HexEncode(tx_info.value()).c_str()", 
-            tx_info.nonce());
+        ZJC_DEBUG("to tx consensus coming: %s, nonce: %lu, val: %s", 
+            common::Encode::HexEncode(tx_info.to()).c_str(), 
+            tx_info.nonce(),
+            common::Encode::HexEncode(tx_info.value()).c_str());
         DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty() ||
@@ -50,6 +51,27 @@ public:
             assert(!storage->value().empty());
         }
         
+        return consensus::kConsensusSuccess;
+    }
+
+    virtual int HandleTx(
+            const view_block::protobuf::ViewBlockItem& view_block,
+            zjcvm::ZjchainHost& zjc_host,
+            hotstuff::BalanceAndNonceMap& acc_balance_map,
+            block::protobuf::BlockTx& block_tx) {
+        uint64_t to_balance = 0;
+        uint64_t to_nonce = 0;
+        GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+        if (to_nonce + 1 != block_tx.nonce()) {
+            block_tx.set_status(kConsensusNonceInvalid);
+            ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+                view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+            return consensus::kConsensusSuccess;
+        }
+
+        ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+            view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+        acc_balance_map[block_tx.to()] = std::pair(to_balance, block_tx.nonce());
         return consensus::kConsensusSuccess;
     }
 
