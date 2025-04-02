@@ -386,6 +386,10 @@ void TxPool::SyncBlock() {
 }
 
 void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
+    if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
+        return;
+    }
+    
     if (!IsUserTransaction(tx_ptr->tx_info->step())) {
         return;
     }
