@@ -191,20 +191,27 @@ void TxPool::GetTxSyncToLeader(
     }
 
     for (auto iter = tx_map_.begin(); iter != tx_map_.end();) {
+        uint64_t valid_nonce = common::kInvalidUint64;
         for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end();) {
             auto tx_ptr = nonce_iter->second;
-            int res = gid_vlid_func(
-                    tx_ptr->address_info->addr(), 
-                    tx_ptr->tx_info->nonce());
-            if (res != 0) {
-                if (res > 0) {
-                    nonce_iter = iter->second.erase(nonce_iter);
-                    continue;
+            if (valid_nonce == common::kInvalidUint64) {
+                int res = gid_vlid_func(
+                        tx_ptr->address_info->addr(), 
+                        tx_ptr->tx_info->nonce());
+                if (res != 0) {
+                    if (res > 0) {
+                        nonce_iter = iter->second.erase(nonce_iter);
+                        continue;
+                    }
+                    
+                    ZJC_DEBUG("tx_key invalid: %s",
+                        common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+                    break;
                 }
-                
-                ZJC_DEBUG("tx_key invalid: %s",
-                    common::Encode::HexEncode(tx_ptr->tx_key).c_str());
-                break;
+            } else {
+                if (valid_nonce + 1 != tx_ptr->tx_info->nonce()) {
+                    break;
+                }
             }
 
             if (!IsUserTransaction(tx_ptr->tx_info->step())) {
@@ -231,7 +238,7 @@ void TxPool::GetTxSyncToLeader(
             ++iter;
         }
 
-        if (txs->size() < count) {
+        if (txs->size() >= count) {
             break;
         }
     }
@@ -261,7 +268,7 @@ void TxPool::GetTxIdempotently(
 
     auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
         for (auto iter = tx_map.begin(); iter != tx_map.end();) {
-            uint64_t valid_nonce= common::kInvalidUint64;
+            uint64_t valid_nonce = common::kInvalidUint64;
             for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end();) {
                 auto tx_ptr = nonce_iter->second;
                 if (valid_nonce == common::kInvalidUint64) {
@@ -290,7 +297,7 @@ void TxPool::GetTxIdempotently(
                 ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu", 
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                     tx_ptr->tx_info->nonce());
-                if (res_map.size() < count) {
+                if (res_map.size() >= count) {
                     break;
                 }
 
