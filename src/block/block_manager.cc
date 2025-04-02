@@ -511,7 +511,6 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_amount(tos_item.amount());
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_nonce(nonce++);
-
         if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
             tmp_msg_ptr->address_info = msg_ptr->address_info;
