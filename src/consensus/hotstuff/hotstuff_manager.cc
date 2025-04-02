@@ -373,7 +373,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
+            auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> int {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
                     return false;

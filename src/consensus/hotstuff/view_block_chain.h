@@ -58,7 +58,7 @@ public:
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
             BalanceAndNonceMap& acc_balance_map);
-    bool CheckTxNonceValid(
+    int CheckTxNonceValid(
         const std::string& addr, 
         uint64_t nonce, 
         const std::string& parent_hash);

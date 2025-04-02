@@ -32,7 +32,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item != nullptr) {
         for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
-            if (!addr_nonce_valid_func(iter->second->address_info->addr(), iter->second->tx_info->nonce())) {
+            if (addr_nonce_valid_func(iter->second->address_info->addr(), iter->second->tx_info->nonce()) != 0) {
                 txs_item = nullptr;
                 break;
             }
@@ -77,9 +77,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetTimeblockTx(pool_index, true);
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
+            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     iter->second->address_info->addr(), 
-                    iter->second->tx_info->nonce())) {
+                    iter->second->tx_info->nonce()) != 0) {
                 txs_item = nullptr;
             }
         }

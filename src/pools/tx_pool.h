@@ -84,7 +84,7 @@ public:
     void TxOver(view_block::protobuf::ViewBlockItem& view_block);
 
     uint32_t all_tx_size() const {
-        return added_txs_.size() + consensus_added_txs_.size() + local_tx_map_.size() + local_tx_queue_.size();
+        return added_txs_.size() + consensus_added_txs_.size() + tx_map_.size() + consensus_tx_map_.size();
     }
     
     uint64_t oldest_timestamp() const {

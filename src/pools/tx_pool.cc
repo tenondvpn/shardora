@@ -154,17 +154,21 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             continue;
         }
 
-        auto tx_iter = tx_map_.find(addr);
-        if (tx_iter != tx_map_.end()) {
-            for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
-                if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
-                    break;
+        auto remove_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
+            auto tx_iter = tx_map_.find(addr);
+            if (tx_iter != tx_map_.end()) {
+                for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
+                    if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
+                        break;
+                    }
+
+                    nonce_iter = tx_iter->second.erase(nonce_iter);
                 }
-
-                nonce_iter = tx_iter->second.erase(nonce_iter);
             }
-        }
-
+        };
+        
+        remove_tx_func(tx_map_);
+        remove_tx_func(consensus_tx_map_);
         ZJC_DEBUG("tx over tx key: %s, nonce: %lu", 
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
@@ -185,15 +189,21 @@ void TxPool::GetTxSyncToLeader(
     }
 
     while (txs->size() < count) {
-        for (auto iter = tx_map_.begin(); iter != tx_map_.end(); ++iter) {
-            for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
+        for (auto iter = tx_map_.begin(); iter != tx_map_.end();) {
+            for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end();) {
                 auto tx_ptr = nonce_iter->second;
-                if (gid_vlid_func != nullptr && !gid_vlid_func(
+                int res = gid_vlid_func(
                         tx_ptr->address_info->addr(), 
-                        tx_ptr->tx_info->nonce())) {
+                        tx_ptr->tx_info->nonce());
+                if (res != 0) {
+                    if (res > 0) {
+                        nonce_iter = iter->second.erase(nonce_iter);
+                        continue;
+                    }
+                    
                     ZJC_DEBUG("tx_key invalid: %s",
                         common::Encode::HexEncode(tx_ptr->tx_key).c_str());
-                    continue;
+                    break;
                 }
 
                 if (!IsUserTransaction(tx_ptr->tx_info->step())) {
@@ -204,6 +214,14 @@ void TxPool::GetTxSyncToLeader(
                     auto* tx = txs->Add();
                     *tx = *tx_ptr->tx_info;
                 }
+
+                ++nonce_iter;
+            }
+
+            if (iter->second.empty()) {
+                iter = tx_map_.erase(iter);
+            } else {
+                ++iter;
             }
         }
     }
@@ -233,18 +251,31 @@ void TxPool::GetTxIdempotently(
 
     auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
         while (res_map.size() < count) {
-            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-                for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
+            for (auto iter = tx_map.begin(); iter != tx_map.end();) {
+                for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end();) {
                     auto tx_ptr = nonce_iter->second;
-                    if (gid_vlid_func != nullptr && !gid_vlid_func(
-                            tx_ptr->address_info->addr(), 
-                            tx_ptr->tx_info->nonce())) {
+                    int res = gid_vlid_func(
+                        tx_ptr->address_info->addr(), 
+                        tx_ptr->tx_info->nonce());
+                    if (res != 0) {
+                        if (res > 0) {
+                            nonce_iter = iter->second.erase(nonce_iter);
+                            continue;
+                        }
+                        
                         ZJC_DEBUG("tx_key invalid: %s",
                             common::Encode::HexEncode(tx_ptr->tx_key).c_str());
-                        continue;
+                        break;
                     }
     
                     res_map[tx_ptr->tx_key] = tx_ptr;
+                    ++nonce_iter;
+                }
+
+                if (iter->second.empty()) {
+                    iter = tx_map.erase(iter);
+                } else {
+                    ++iter;
                 }
             }
         }
@@ -389,7 +420,7 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
     if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
         return;
     }
-    
+
     if (!IsUserTransaction(tx_ptr->tx_info->step())) {
         return;
     }

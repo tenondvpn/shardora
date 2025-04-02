@@ -604,7 +604,7 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
     }
 }
 
-bool ViewBlockChain::CheckTxNonceValid(
+int ViewBlockChain::CheckTxNonceValid(
         const std::string& addr, 
         uint64_t nonce, 
         const std::string& parent_hash) {
@@ -633,10 +633,10 @@ bool ViewBlockChain::CheckTxNonceValid(
                         nonce,
                         iter->second.second,
                         common::Encode::HexEncode(parent_hash).c_str());
-                    return false;
+                    return iter->second.second + 1 > nonce ? 1 : -1;
                 }
 
-                return true;
+                return 0;
             }
         }
 
@@ -653,7 +653,7 @@ bool ViewBlockChain::CheckTxNonceValid(
             common::Encode::HexEncode(addr).c_str(), 
             nonce,
             common::Encode::HexEncode(parent_hash).c_str());
-        return false;
+        return -1;
     }
 
     if (addr_info->nonce() + 1 != nonce) {
@@ -662,7 +662,7 @@ bool ViewBlockChain::CheckTxNonceValid(
             nonce,
             addr_info->nonce(),
             common::Encode::HexEncode(parent_hash).c_str());
-        return false;
+        return addr_info->nonce() + 1 > nonce ? 1 : -1;
     }
 
     ZJC_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
@@ -670,7 +670,7 @@ bool ViewBlockChain::CheckTxNonceValid(
         nonce,
         addr_info->nonce(),
         common::Encode::HexEncode(parent_hash).c_str());
-    return true;
+    return 0;
 }
 
 void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {

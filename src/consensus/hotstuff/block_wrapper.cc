@@ -57,7 +57,7 @@ Status BlockWrapper::Wrap(
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
-    auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
+    auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> int {
         return view_block_chain->CheckTxNonceValid(addr, nonce, prev_view_block->qc().view_block_hash());
     };
 

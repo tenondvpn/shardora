@@ -245,7 +245,8 @@ Status BlockAcceptor::addTxsToPool(
             return Status::kError;
         }
 
-        if (view_block_chain && !view_block_chain->CheckTxNonceValid(address_info->addr(), tx->nonce(), parent_hash)) {
+        if (view_block_chain && view_block_chain->CheckTxNonceValid(
+                address_info->addr(), tx->nonce(), parent_hash) != 0) {
             ZJC_WARN("check tx nonce failed: %lu, phash: %s", 
                 tx->nonce(), 
                 common::Encode::HexEncode(parent_hash).c_str());
@@ -332,10 +333,10 @@ Status BlockAcceptor::addTxsToPool(
                     all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
                 if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain) {
                     tx_ptr = tx_item->txs.begin()->second;
-                    if (!view_block_chain->CheckTxNonceValid(
+                    if (view_block_chain->CheckTxNonceValid(
                             tx_ptr->tx_info->to(), 
                             tx_ptr->tx_info->nonce(), 
-                            parent_hash)) {
+                            parent_hash) != 0) {
                         tx_ptr = nullptr;
                     }
                 }
