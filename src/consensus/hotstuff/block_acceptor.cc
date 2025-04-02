@@ -246,16 +246,13 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         auto now_map_iter = now_balance_map.find(address_info->addr());
-        if (now_map_iter != now_balance_map.end()) {
-            if (now_map_iter->second.second + 1 != tx->nonce()) {
-                ZJC_WARN("check tx nonce failed prev: %lu now: %lu, phash: %s", 
-                    now_map_iter->second.second,
-                    tx->nonce(), 
-                    common::Encode::HexEncode(parent_hash).c_str());
-                return Status::kError;
-            }
-
-            now_map_iter->second.second += 1;
+        if (now_map_iter == now_balance_map.end()) {
+            if (view_block_chain && view_block_chain->CheckTxNonceValid(
+                address_info->addr(), tx->nonce(), parent_hash) != 0) {
+            ZJC_WARN("check tx nonce failed: %lu, phash: %s", 
+                tx->nonce(), 
+                common::Encode::HexEncode(parent_hash).c_str());
+            return Status::kError;
         } else {
             if (view_block_chain && view_block_chain->CheckTxNonceValid(
                     address_info->addr(), tx->nonce(), parent_hash) != 0) {
