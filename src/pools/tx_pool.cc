@@ -205,9 +205,9 @@ void TxPool::GetTxSyncToLeader(
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
-    for (auto iter = tx_map_.begin(); iter != tx_map_.end();) {
+    for (auto iter = tx_map_.begin(); iter != tx_map_.end(); ++iter) {
         uint64_t valid_nonce = common::kInvalidUint64;
-        for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end();) {
+        for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
             auto tx_ptr = nonce_iter->second;
             if (valid_nonce == common::kInvalidUint64) {
                 int res = gid_vlid_func(
@@ -215,7 +215,6 @@ void TxPool::GetTxSyncToLeader(
                         tx_ptr->tx_info->nonce());
                 if (res != 0) {
                     if (res > 0) {
-                        nonce_iter = iter->second.erase(nonce_iter);
                         continue;
                     }
                     
@@ -245,14 +244,6 @@ void TxPool::GetTxSyncToLeader(
                     break;
                 }
             }
-
-            ++nonce_iter;
-        }
-
-        if (iter->second.empty()) {
-            iter = tx_map_.erase(iter);
-        } else {
-            ++iter;
         }
 
         if (txs->size() >= count) {
@@ -301,9 +292,9 @@ void TxPool::GetTxIdempotently(
     }
 
     auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
-        for (auto iter = tx_map.begin(); iter != tx_map.end();) {
+        for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
             uint64_t valid_nonce = common::kInvalidUint64;
-            for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end();) {
+            for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
                 auto tx_ptr = nonce_iter->second;
                 if (valid_nonce == common::kInvalidUint64) {
                     int res = gid_vlid_func(
@@ -338,14 +329,6 @@ void TxPool::GetTxIdempotently(
                 if (res_map.size() >= count) {
                     break;
                 }
-
-                ++nonce_iter;
-            }
-
-            if (iter->second.empty()) {
-                iter = tx_map.erase(iter);
-            } else {
-                ++iter;
             }
 
             if (res_map.size() >= count) {
