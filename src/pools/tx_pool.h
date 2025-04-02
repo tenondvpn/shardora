@@ -167,9 +167,8 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
-    std::unordered_map<std::string, TxItemPtr> local_tx_map_;
-    std::queue<TxItemPtr> local_tx_queue_;
-    AccountQpsLruMap<10240> account_tx_qps_check_;
+    std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
+    std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;

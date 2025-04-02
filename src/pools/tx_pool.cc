@@ -154,15 +154,20 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             continue;
         }
 
-        auto tx_key = GetTxKey(
-            addr, 
-            view_block.block_info().tx_list(i).nonce());
-        auto iter = local_tx_map_.find(tx_key);
-        if (iter != local_tx_map_.end()) {
-            local_tx_map_.erase(iter);
+        auto tx_iter = tx_map_.find(addr);
+        if (tx_iter != tx_map_.end()) {
+            for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
+                if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
+                    break;
+                }
+
+                nonce_iter = tx_iter->second.erase(nonce_iter);
+            }
         }
 
-        ZJC_DEBUG("tx over tx key: %s", common::Encode::HexEncode(tx_key).c_str());
+        ZJC_DEBUG("tx over tx key: %s, nonce: %lu", 
+            common::Encode::HexEncode(addr).c_str(), 
+            view_block.block_info().tx_list(i).nonce());
     }
 }
 
@@ -171,68 +176,36 @@ void TxPool::GetTxSyncToLeader(
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckAddrNonceValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
-    while (txs->size() < count && added_txs_.pop(&tx_ptr)) {
-        if (gid_vlid_func != nullptr && 
-                !gid_vlid_func(tx_ptr->address_info->addr(), tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("nonce invalid: %s", tx_ptr->tx_info->nonce());
+    while (added_txs_.pop(&tx_ptr)) {
+        if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             continue;
         }
 
-        if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            ZJC_DEBUG("nonce invalid: %lu, step is not user tx: %d", 
-                tx_ptr->tx_info->nonce(), 
-                tx_ptr->tx_info->step());
-        } else {
-            auto* tx = txs->Add();
-            *tx = *tx_ptr->tx_info;
-        }
-
-        local_tx_map_[tx_ptr->tx_key] = tx_ptr;
-        local_tx_queue_.push(tx_ptr);
-        tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        ZJC_DEBUG("success to leader tx tx_key: %s, local_tx_map_ size: %u", 
-            common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
-            local_tx_map_.size());
+        tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
-    auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
-    while (!local_tx_queue_.empty()) {
-        auto front_tx_ptr = local_tx_queue_.front();
-        auto tmout = kUserPopedTxTimeoutSec;
-        if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
-            tmout = kSystemPopedTxTimeoutSec;
-        }
+    while (txs->size() < count) {
+        for (auto iter = tx_map_.begin(); iter != tx_map_.end(); ++iter) {
+            for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
+                auto tx_ptr = nonce_iter->second;
+                if (gid_vlid_func != nullptr && !gid_vlid_func(
+                        tx_ptr->address_info->addr(), 
+                        tx_ptr->tx_info->nonce())) {
+                    ZJC_DEBUG("tx_key invalid: %s",
+                        common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+                    continue;
+                }
 
-        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + tmout > now_tm_seconds) {
-            break;
+                if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+                    ZJC_DEBUG("nonce invalid: %lu, step is not user tx: %d", 
+                        tx_ptr->tx_info->nonce(), 
+                        tx_ptr->tx_info->step());
+                } else {
+                    auto* tx = txs->Add();
+                    *tx = *tx_ptr->tx_info;
+                }
+            }
         }
-
-        auto iter = local_tx_map_.find(front_tx_ptr->tx_key);
-        if (iter == local_tx_map_.end()) {
-            local_tx_queue_.pop();
-            continue;
-        }
-
-        if (gid_vlid_func != nullptr && !gid_vlid_func(
-                front_tx_ptr->address_info->addr(), 
-                front_tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("tx_key invalid: %s", 
-                common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
-            break;
-        }
-
-        front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
-            ZJC_DEBUG("tx_key invalid: %s, step is not user tx: %d", 
-                common::Encode::HexEncode(front_tx_ptr->tx_key).c_str(), 
-                front_tx_ptr->tx_info->step());
-        } else {
-            auto* tx = txs->Add();
-            *tx = *front_tx_ptr->tx_info;
-        }
-
-        local_tx_queue_.pop();
-        local_tx_queue_.push(front_tx_ptr);
     }
 }
 
@@ -242,75 +215,43 @@ void TxPool::GetTxIdempotently(
         uint32_t count,
         pools::CheckAddrNonceValidFunction gid_vlid_func) {
     TxItemPtr tx_ptr;
-    while (res_map.size() < count && added_txs_.pop(&tx_ptr)) {
-        if (gid_vlid_func != nullptr && !gid_vlid_func(
-                tx_ptr->address_info->addr(), 
-                tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("tx_key invalid: %s",
-                common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+    while (added_txs_.pop(&tx_ptr)) {
+        if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             continue;
         }
 
-        res_map[tx_ptr->tx_key] = tx_ptr;
-        tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        local_tx_map_[tx_ptr->tx_key] = tx_ptr;
-        local_tx_queue_.push(tx_ptr);
-        ZJC_DEBUG("tx_key success: %s, local_tx_map_ size: %u", 
-            common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
-            local_tx_map_.size());
+        tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
-    auto now_tm_seconds = common::TimeUtils::TimestampSeconds();
-    while (!local_tx_queue_.empty()) {
-        auto front_tx_ptr = local_tx_queue_.front();
-        auto tmout = kUserPopedTxTimeoutSec;
-        if (!IsUserTransaction(front_tx_ptr->tx_info->step())) {
-            tmout = kSystemPopedTxTimeoutSec;
-        }
-
-        if (front_tx_ptr->tx_info->tx_debug_timeout_seconds() + tmout > now_tm_seconds) {
-            break;
-        }
-
-        auto iter = local_tx_map_.find(front_tx_ptr->tx_key);
-        if (iter == local_tx_map_.end()) {
-            local_tx_queue_.pop();
+    while (consensus_added_txs_.pop(&tx_ptr)) {
+        if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             continue;
         }
 
-        if (gid_vlid_func != nullptr && !gid_vlid_func(
-                front_tx_ptr->address_info->addr(),
-                front_tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("tx_key invalid: %s", 
-                common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
-            break;
-        }
-
-        front_tx_ptr->tx_info->set_tx_debug_timeout_seconds(common::TimeUtils::TimestampSeconds());
-        res_map[front_tx_ptr->tx_key] = front_tx_ptr;
-        local_tx_queue_.pop();
-        local_tx_queue_.push(front_tx_ptr);
-        ZJC_DEBUG("tx get tx key: %s", common::Encode::HexEncode(front_tx_ptr->tx_key).c_str());
+        consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
-    while (res_map.size() < count && consensus_added_txs_.pop(&tx_ptr)) {
-        if (gid_vlid_func != nullptr && !gid_vlid_func(
-                tx_ptr->address_info->addr(), 
-                tx_ptr->tx_info->nonce())) {
-            ZJC_DEBUG("tx_key invalid: %s", 
-                common::Encode::HexEncode(tx_ptr->tx_key).c_str());
-            continue;
+    auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
+        while (res_map.size() < count) {
+            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
+                    auto tx_ptr = nonce_iter->second;
+                    if (gid_vlid_func != nullptr && !gid_vlid_func(
+                            tx_ptr->address_info->addr(), 
+                            tx_ptr->tx_info->nonce())) {
+                        ZJC_DEBUG("tx_key invalid: %s",
+                            common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+                        continue;
+                    }
+    
+                    res_map[tx_ptr->tx_key] = tx_ptr;
+                }
+            }
         }
+    };
 
-        ZJC_DEBUG("tx_key success: %s", 
-            common::Encode::HexEncode(tx_ptr->tx_key).c_str());
-        res_map[tx_ptr->tx_key] = tx_ptr;
-        ZJC_DEBUG("tx get tx key: %s", common::Encode::HexEncode(tx_ptr->tx_key).c_str());
-    }
-
-    if (local_tx_queue_.size() > 0)
-    ZJC_INFO("now tx size added_txs_: %u, consensus_added_txs_: %u, local_tx_queue_: %u, local_tx_map_: %u", 
-        added_txs_.size(), consensus_added_txs_.size(), local_tx_queue_.size(), local_tx_map_.size());
+    get_tx_func(tx_map_);
+    get_tx_func(consensus_tx_map_);
 }
 
 void TxPool::InitLatestInfo() {
@@ -449,12 +390,6 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
         return;
     }
 
-    if (!account_tx_qps_check_.check(tx_ptr->tx_info->pubkey())) {
-        ZJC_DEBUG("pools check firewall message failed, invalid qps limit pk: %s", 
-            common::Encode::HexEncode(tx_ptr->tx_info->pubkey()).c_str());
-        return;
-    }
-    
     CheckThreadIdValid();
     if (consensus_added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_WARN("add failed extend %u, %u, all valid: %u", 
