@@ -214,6 +214,7 @@ void TxPool::GetTxSyncToLeader(
                 }
             }
 
+            valid_nonce = tx_ptr->tx_info->nonce();
             if (!IsUserTransaction(tx_ptr->tx_info->step())) {
                 ZJC_DEBUG("nonce invalid: %lu, step is not user tx: %d", 
                     tx_ptr->tx_info->nonce(), 
@@ -285,14 +286,13 @@ void TxPool::GetTxIdempotently(
                             common::Encode::HexEncode(tx_ptr->tx_key).c_str());
                         break;
                     }
-
-                    valid_nonce = tx_ptr->tx_info->nonce();
                 } else {
                     if (tx_ptr->tx_info->nonce() != valid_nonce + 1) {
                         break;
                     }
                 }
 
+                valid_nonce = tx_ptr->tx_info->nonce();
                 res_map.push_back(tx_ptr);
                 ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu, res count: %u, count: %u", 
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
