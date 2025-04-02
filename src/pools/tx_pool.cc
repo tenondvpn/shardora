@@ -139,7 +139,8 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    ZJC_DEBUG("trace tx success add tx %s, nonce: %lu", 
+    ZJC_DEBUG("trace tx pool: %d, success add tx %s, nonce: %lu", 
+        pool_index_,
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
         tx_ptr->tx_info->nonce());
     return kPoolsSuccess;
@@ -175,7 +176,8 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_DEBUG("trace tx over tx addr: %s, nonce: %lu", 
+        ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+            pool_index_,
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
     }
@@ -233,7 +235,8 @@ void TxPool::GetTxSyncToLeader(
                     tx_ptr->tx_info->nonce(), 
                     tx_ptr->tx_info->step());
             } else {
-                ZJC_DEBUG("trace tx to leader tx addr: %s, nonce: %lu", 
+                ZJC_DEBUG("trace tx pool: %d, to leader tx addr: %s, nonce: %lu", 
+                    pool_index_,
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                     tx_ptr->tx_info->nonce());
                 auto* tx = txs->Add();
@@ -324,7 +327,8 @@ void TxPool::GetTxIdempotently(
 
                 valid_nonce = tx_ptr->tx_info->nonce();
                 res_map.push_back(tx_ptr);
-                ZJC_DEBUG("trace tx consensus leader tx addr: %s, nonce: %lu, res count: %u, count: %u", 
+                ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, nonce: %lu, res count: %u, count: %u", 
+                    pool_index_,
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                     tx_ptr->tx_info->nonce(),
                     res_map.size(),
