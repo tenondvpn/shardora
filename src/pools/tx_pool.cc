@@ -493,6 +493,10 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
         tx_ptr->tx_key = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
+    ZJC_DEBUG("trace tx pool: %d, sync add tx addr: %s, nonce: %lu", 
+        pool_index_,
+        common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+        tx_ptr->tx_info->nonce());
     consensus_added_txs_.push(tx_ptr);
 }
 
