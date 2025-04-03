@@ -211,7 +211,6 @@ public:
     }
 
 private:
-    void SaveBlockStorages(const std::shared_ptr<ViewBlockInfo>& view_block_info, db::DbWriteBatch& db_batch);
     void SaveBlockAccounts(const std::shared_ptr<ViewBlockInfo>& view_block_info, db::DbWriteBatch& db_batch);
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
