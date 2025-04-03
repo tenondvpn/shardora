@@ -184,6 +184,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
 }
 
 void TxPool::GetTxSyncToLeader(
+        uint32_t leader_idx, 
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckAddrNonceValidFunction gid_vlid_func) {
@@ -209,6 +210,10 @@ void TxPool::GetTxSyncToLeader(
         uint64_t valid_nonce = common::kInvalidUint64;
         for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
             auto tx_ptr = nonce_iter->second;
+            if (tx_ptr->synced_leaders_.Valid(leader_idx)) {
+                continue;
+            }
+
             if (valid_nonce == common::kInvalidUint64) {
                 int res = gid_vlid_func(
                         tx_ptr->address_info->addr(), 
@@ -229,6 +234,7 @@ void TxPool::GetTxSyncToLeader(
             }
 
             valid_nonce = tx_ptr->tx_info->nonce();
+            tx_ptr->synced_leaders_.Set(leader_idx);
             if (!IsUserTransaction(tx_ptr->tx_info->step())) {
                 ZJC_DEBUG("nonce invalid: %lu, step is not user tx: %d", 
                     tx_ptr->tx_info->nonce(), 

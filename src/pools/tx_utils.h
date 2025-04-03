@@ -3,6 +3,7 @@
 #include <deque>
 #include <protos/elect.pb.h>
 
+#include "common/bitmap.h"
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/lof.h"
@@ -343,7 +344,8 @@ public:
             : prev_consensus_tm_us(0),
             address_info(addr_info),
             is_consensus_add_tx(false),
-            tx_info_index(tx_info_idx) {
+            tx_info_index(tx_info_idx),
+            synced_leaders_(common::kEachShardMaxNodeCount) {
         msg_ptr = msgp;
         tx_info = nullptr;
         if (tx_info_index < 0) {
@@ -399,6 +401,7 @@ public:
     protos::AddressInfoPtr address_info;
     bool is_consensus_add_tx;
     int32_t tx_info_index;
+    common::Bitmap synced_leaders_;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;

@@ -1085,11 +1085,12 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
 }
 
 void TxPoolManager::GetTxSyncToLeader(
+        uint32_t leader_idx, 
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckAddrNonceValidFunction gid_vlid_func) {
-    tx_pool_[pool_index].GetTxSyncToLeader(count, txs, gid_vlid_func);    
+    tx_pool_[pool_index].GetTxSyncToLeader(leader_idx, count, txs, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxIdempotently(
