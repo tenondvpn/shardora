@@ -71,22 +71,24 @@ public:
 
 class BlockAcceptor : public IBlockAcceptor {
 public:
-    BlockAcceptor(
-            const uint32_t& pool_idx,
-            const std::shared_ptr<security::Security>& security,
-            const std::shared_ptr<block::AccountManager>& account_mgr,
-            const std::shared_ptr<ElectInfo>& elect_info,
-            const std::shared_ptr<vss::VssManager>& vss_mgr,
-            const std::shared_ptr<contract::ContractManager>& contract_mgr,
-            const std::shared_ptr<db::Db>& db,
-            const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
-            std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-            std::shared_ptr<block::BlockManager>& block_mgr,
-            std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
-            std::shared_ptr<elect::ElectManager> elect_mgr,
-            consensus::BlockCacheCallback new_block_cache_callback,
-            std::shared_ptr<ViewBlockChain> view_block_chain);
+    BlockAcceptor();
     ~BlockAcceptor();
+
+    void Init(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<security::Security>& security,
+        const std::shared_ptr<block::AccountManager>& account_mgr,
+        const std::shared_ptr<ElectInfo>& elect_info,
+        const std::shared_ptr<vss::VssManager>& vss_mgr,
+        const std::shared_ptr<contract::ContractManager>& contract_mgr,
+        const std::shared_ptr<db::Db>& db,
+        const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+        std::shared_ptr<elect::ElectManager> elect_mgr,
+        consensus::BlockCacheCallback new_block_cache_callback,
+        std::shared_ptr<ViewBlockChain> view_block_chain);
 
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;

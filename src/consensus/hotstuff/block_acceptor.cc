@@ -31,32 +31,42 @@ namespace shardora {
 
 namespace hotstuff {
 
-BlockAcceptor::BlockAcceptor(
-        const uint32_t &pool_idx,
-        const std::shared_ptr<security::Security> &security,
-        const std::shared_ptr<block::AccountManager> &account_mgr,
-        const std::shared_ptr<ElectInfo> &elect_info,
-        const std::shared_ptr<vss::VssManager> &vss_mgr,
-        const std::shared_ptr<contract::ContractManager> &contract_mgr,
-        const std::shared_ptr<db::Db> &db,
-        const std::shared_ptr<consensus::ContractGasPrepayment> &gas_prepayment,
-        std::shared_ptr<pools::TxPoolManager> &pools_mgr,
-        std::shared_ptr<block::BlockManager> &block_mgr,
-        std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
-        std::shared_ptr<elect::ElectManager> elect_mgr,
-        consensus::BlockCacheCallback new_block_cache_callback,
-        std::shared_ptr<ViewBlockChain> view_block_chain):
-        pool_idx_(pool_idx), elect_mgr_(elect_mgr), security_ptr_(security), account_mgr_(account_mgr),
-        elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
-        db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
-        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), 
-        new_block_cache_callback_(new_block_cache_callback),
-        view_block_chain_(view_block_chain_) {
-    tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
-};
+BlockAcceptor::BlockAcceptor() {}
 
 BlockAcceptor::~BlockAcceptor() {}
+
+void BlockAcceptor::Init(
+        const uint32_t& pool_idx,
+        const std::shared_ptr<security::Security>& security,
+        const std::shared_ptr<block::AccountManager>& account_mgr,
+        const std::shared_ptr<ElectInfo>& elect_info,
+        const std::shared_ptr<vss::VssManager>& vss_mgr,
+        const std::shared_ptr<contract::ContractManager>& contract_mgr,
+        const std::shared_ptr<db::Db>& db,
+        const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+        std::shared_ptr<elect::ElectManager> elect_mgr,
+        consensus::BlockCacheCallback new_block_cache_callback,
+        std::shared_ptr<ViewBlockChain> view_block_chain) {
+    pool_idx_ = pool_idx;
+    elect_mgr_ = elect_mgr;
+    security_ptr_ = security;
+    account_mgr_ = account_mgr;
+    elect_info_ = elect_info;
+    vss_mgr_ = vss_mgr;
+    contract_mgr_ = contract_mgr;
+    db_ = db;
+    gas_prepayment_ = gas_prepayment;
+    pools_mgr_ = pools_mgr;
+    block_mgr_ = block_mgr;
+    tm_block_mgr_ = tm_block_mgr;
+    new_block_cache_callback_ = new_block_cache_callback;
+    view_block_chain_ = view_block_chain;
+    tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
+}
 
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
 Status BlockAcceptor::Accept(

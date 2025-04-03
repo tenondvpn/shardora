@@ -87,7 +87,7 @@ int HotstuffManager::Init(
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto pcrypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
 #endif
-        auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
+        auto chain = std::make_shared<ViewBlockChain>();
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
@@ -101,13 +101,14 @@ int HotstuffManager::Init(
                         ViewDurationMultiplier),
                 std::bind(&ViewBlockChain::HighQC, chain),
                 std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1));
-        auto acceptor = std::make_shared<BlockAcceptor>(
-                pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
-                contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
-                tm_block_mgr, elect_mgr, new_block_cache_callback, chain);
+        auto acceptor = std::make_shared<BlockAcceptor>();
+        chain->Init(pool_idx, db_, account_mgr_, kv_sync, acceptor);
+        acceptor->Init(
+            pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
+            contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
+            tm_block_mgr, elect_mgr, new_block_cache_callback, chain);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
-        
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
                 *this,
                 kv_sync, pool_idx, leader_rotation, chain,

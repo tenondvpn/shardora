@@ -6,22 +6,29 @@
 #include "block/account_manager.h"
 #include "block/account_lru_map.h"
 #include <common/time_utils.h>
-#include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/hotstuff_utils.h>
-#include <protos/prefix_db.h>
+#include "consensus/hotstuff/types.h"
+#include "consensus/hotstuff/hotstuff_utils.h"
+#include "protos/prefix_db.h"
 #include "zjcvm/zjc_host.h"
 
 namespace shardora {
 
 namespace hotstuff {
 
+class IBlockAcceptor
+
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
 class ViewBlockChain {
 public:    
-    ViewBlockChain(uint32_t pool_index, std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager> account_mgr);
+    ViewBlockChain();
     ~ViewBlockChain();
-    
+    void Init(
+        uint32_t pool_index, 
+        std::shared_ptr<db::Db>& db, 
+        std::shared_ptr<block::AccountManager> account_mgr, 
+        std::shared_ptr<sync::KeyValueSync> kv_sync,
+        std::shared_ptr<IBlockAcceptor> block_acceptor);
     ViewBlockChain(const ViewBlockChain&) = delete;
     ViewBlockChain& operator=(const ViewBlockChain&) = delete;
     // Add Node
@@ -55,7 +62,6 @@ public:
             const std::string& parent_hash, 
             const evmc::address& addr,
             const evmc::bytes32& key);
-    bool GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance);
     void MergeAllPrevBalanceMap(
             const std::string& parent_hash, 
             BalanceAndNonceMap& acc_balance_map);
@@ -71,6 +77,7 @@ public:
     void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
     protos::AddressInfoPtr ChainGetAccountInfo(const std::string& acc_id);
     protos::AddressInfoPtr ChainGetPoolAccountInfo(uint32_t pool_index);
+    void Commit(const std::shared_ptr<ViewBlockInfo>& queue_item_ptr);
 
     bool view_commited(uint32_t network_id, View view) const {
         if (commited_view_.find(view) != commited_view_.end()) {
@@ -266,6 +273,7 @@ private:
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     volatile View stored_to_db_view_ = 0llu;
+    volatile View commited_max_view_ = 0llu;
     std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
     std::set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
@@ -279,6 +287,8 @@ private:
     std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
     std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
     block::AccountLruMap<102400> account_lru_map_;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_;
+    std::shared_ptr<IBlockAcceptor> block_acceptor_;
 };
 
 // from db
