@@ -607,75 +607,8 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
 Status HotstuffSyncer::processResponseChain(
         const uint32_t& pool_idx,
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
-    auto& view_block_items = view_block_res.view_block_items();
-    if (view_block_items.size() <= 0) {
-        return Status::kSuccess;
-    }
-    // 对块数量限制
-    // 当出现这么多块，多半是因为共识卡住，不断产生新的无法共识的块，此时同步这些块过来也没有用，早晚会被剪掉
-    if (view_block_items.size() > kMaxSyncBlockNum) {
-        ZJC_ERROR("pool: %d, view block: %lu exceeds max limit", pool_idx, view_block_items.size());
-        return Status::kError;
-    }
-
-    ZJC_DEBUG("response received pool_idx: %d, view_blocks: %d",
-        pool_idx, view_block_items.size());    
-    auto chain = view_block_chain(pool_idx);
-    if (!chain) {
-        return Status::kError;
-    }
-
-    // 将 view_block 放入小根堆排序
-    ViewBlockMinHeap min_heap;
-    const view_block::protobuf::ViewBlockItem* high_commit_view_block = nullptr;
-    for (auto it = view_block_items.begin(); it != view_block_items.end(); it++) {
-        if (it->qc().sign_x().empty() || it->qc().sign_y().empty()) {
-            return Status::kError;
-        }
-
-        auto view_block = std::make_shared<ViewBlock>(*it);
-        auto view_block_hash = GetQCMsgHash(view_block->qc());
-        if (view_block_hash != view_block->qc().view_block_hash()) {
-            return Status::kError;
-        }
-
-        // 如果本地有该 view_block_qc 对应的 view_block，则不用验证 qc 了并且跳过该块，节省 CPU
-        if (!chain->Has(view_block_hash) && 
-                crypto(pool_idx)->VerifyQC(
-                    common::GlobalInfo::Instance()->network_id(), 
-                    view_block->qc()) != Status::kSuccess) {
-            continue;
-        }
-        // 记录同步链中最高的 Qc，用于 commit
-        if (!high_commit_view_block || high_commit_view_block->qc().view() < it->qc().view()) {
-            high_commit_view_block = &(*it);
-        }
-        
-        min_heap.push(view_block);        
-    }
-
-    if (min_heap.empty()) {
-        return Status::kSuccess;
-    }
-
-    // 构造一条临时链，并入 original chain
-    auto tmp_chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
-    while (!min_heap.empty()) {
-        auto view_block = min_heap.top();
-        min_heap.pop();
-        // TODO: check valid
-        tmp_chain->Store(view_block, true, nullptr, nullptr, false);
-    }
-    
-    ZJC_INFO("Sync blocks to chain, pool_idx: %d, view_blocks: %d, syncchain: %s, orichain: %s",
-        pool_idx, view_block_items.size(), tmp_chain->String().c_str(), chain->String().c_str());
-
-    if (!tmp_chain->IsValid()) {
-        ZJC_ERROR("pool: %d, synced chain is invalid", pool_idx);
-        return Status::kSuccess;
-    }
-
-    return MergeChain(pool_idx, chain, tmp_chain, *high_commit_view_block);
+    assert(false);
+    return Status::kSuccess;
 }
 
 Status HotstuffSyncer::MergeChain(
