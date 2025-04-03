@@ -219,7 +219,7 @@ void TxPool::GetTxSyncToLeader(
                         tx_ptr->address_info->addr(), 
                         tx_ptr->tx_info->nonce());
                 if (res != 0) {
-                    if (res < 0) {
+                    if (res > 0) {
                         continue;
                     }
                     
@@ -307,7 +307,7 @@ void TxPool::GetTxIdempotently(
                         tx_ptr->address_info->addr(), 
                         tx_ptr->tx_info->nonce());
                     if (res != 0) {
-                        if (res < 0) {
+                        if (res > 0) {
                             continue;
                         }
                         
