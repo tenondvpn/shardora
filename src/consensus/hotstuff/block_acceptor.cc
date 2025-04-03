@@ -527,7 +527,6 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
         msg_ptr,
-        view_block_chain_, 
         parent_hash, 
         tx_propose.txs(), 
         directly_user_leader_txs, 
