@@ -12,6 +12,7 @@
 #include "common/encode.h"
 #include "common/log.h"
 #include "common/utils.h"
+#include "db/db.h"
 
 namespace shardora {
 
