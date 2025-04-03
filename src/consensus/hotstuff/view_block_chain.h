@@ -15,7 +15,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-class IBlockAcceptor
+class IBlockAcceptor;
 
 // Tree of view blocks, showing the parent-child relationship of view blocks
 // Notice: the status of view block is not memorized here.
