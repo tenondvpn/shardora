@@ -102,7 +102,7 @@ int HotstuffManager::Init(
                 std::bind(&ViewBlockChain::HighQC, chain),
                 std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1));
         auto acceptor = std::make_shared<BlockAcceptor>();
-        chain->Init(pool_idx, db_, account_mgr_, kv_sync, acceptor);
+        chain->Init(pool_idx, db_, account_mgr_, kv_sync, acceptor, new_block_cache_callback);
         acceptor->Init(
             pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
             contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
