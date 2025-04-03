@@ -55,7 +55,6 @@ public:
 
     // Accept a block and txs in it from propose msg.
     virtual Status Accept(
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
