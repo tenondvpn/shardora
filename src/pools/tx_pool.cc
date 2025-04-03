@@ -311,8 +311,9 @@ void TxPool::GetTxIdempotently(
                             continue;
                         }
                         
-                        ZJC_DEBUG("tx_key invalid: %s",
-                            common::Encode::HexEncode(tx_ptr->tx_key).c_str());
+                        ZJC_DEBUG("tx_key invalid addr: %s, nonce: %lu",
+                            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                            tx_ptr->tx_info->nonce());
                         break;
                     }
                 } else {
