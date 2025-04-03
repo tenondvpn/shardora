@@ -771,7 +771,6 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *zjc_host_ptr;
     if (acceptor()->Accept(
-            view_block_chain_, 
             pro_msg_wrap, 
             true, 
             true, 
@@ -869,7 +868,6 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *pro_msg_wrap->zjc_host_ptr;
     Status s = acceptor()->Accept(
-            view_block_chain_, 
             pro_msg_wrap, 
             true, 
             false, 
