@@ -4,6 +4,7 @@
 #include <queue>
 
 #include "block/account_manager.h"
+#include "block/account_lru_map.h"
 #include <common/time_utils.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/hotstuff_utils.h>
@@ -68,6 +69,9 @@ public:
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
     bool ViewBlockIsCheckedParentHash(const std::string& hash);
     void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
+    protos::AddressInfoPtr ChainGetAccountInfo(const std::string& acc_id);
+    protos::AddressInfoPtr ChainGetPoolAccountInfo(uint32_t pool_index);
+
     bool view_commited(uint32_t network_id, View view) const {
         if (commited_view_.find(view) != commited_view_.end()) {
             return true;
@@ -274,6 +278,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
     std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
     std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
+    block::AccountLruMap<102400> account_lru_map_;
 };
 
 // from db

@@ -460,10 +460,13 @@ void HotstuffManager::PopPoolsMessage() {
                         from_id = security_ptr_->GetAddress(tx->pubkey());
                     }
 
+                    uint32_t pool_index = common::kInvalidPoolIndex;
                     if (tx->step() == pools::protobuf::kContractExcute) {
-                        address_info = account_mgr_->GetAccountInfo(tx->to());
+                        pool_index = common::GetAddressPoolIndex(tx->to());
+                        address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
                     } else {
-                        address_info = account_mgr_->GetAccountInfo(from_id);
+                        pool_index = common::GetAddressPoolIndex(tx->to());
+                        address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(from_id);
                     }
             
                     if (!address_info) {

@@ -61,7 +61,7 @@ public:
             block::protobuf::BlockTx& block_tx) {
         uint64_t to_balance = 0;
         uint64_t to_nonce = 0;
-        GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+        GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
         if (to_nonce + 1 != block_tx.nonce()) {
             block_tx.set_status(kConsensusNonceInvalid);
             ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 

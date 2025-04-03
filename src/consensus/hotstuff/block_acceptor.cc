@@ -231,12 +231,12 @@ Status BlockAcceptor::addTxsToPool(
         }
         
         if (tx->step() == pools::protobuf::kContractExcute) {
-            address_info = account_mgr_->GetAccountInfo(tx->to());
+            address_info = view_block_chain->ChainGetAccountInfo(tx->to());
         } else {
             if (pools::IsUserTransaction(tx->step())) {
-                address_info = account_mgr_->GetAccountInfo(from_id);
+                address_info = view_block_chain->ChainGetAccountInfo(from_id);
             } else {
-                address_info = account_mgr_->pools_address_info(pool_idx());
+                address_info = view_block_chain->ChainGetPoolAccountInfo(pool_idx());
             }
         }
 
@@ -469,7 +469,7 @@ Status BlockAcceptor::addTxsToPool(
             if (iter != prevs_balance_map.end()) {
                 now_balance_map[iter->first] = iter->second;
             } else {
-                address_info = account_mgr_->GetAccountInfo(contract_prepayment_id);
+                address_info = view_block_chain->ChainGetAccountInfo(contract_prepayment_id);
                 if (address_info) {
                     now_balance_map[contract_prepayment_id] = std::make_pair<int64_t, uint64_t>(
                         address_info->balance(), address_info->nonce());

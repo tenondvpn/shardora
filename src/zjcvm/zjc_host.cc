@@ -253,7 +253,7 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
     ZJC_DEBUG("now get contract bytes code size: %s", common::Encode::HexEncode(id).c_str());
-    protos::AddressInfoPtr acc_info = acc_mgr_->GetAccountInfo(id);
+    protos::AddressInfoPtr acc_info = view_block_chain_->ChainGetAccountInfo(id);
     if (acc_info == nullptr) {
         ZJC_DEBUG("failed get contract bytes code size: %s", common::Encode::HexEncode(id).c_str());
         assert(false);
@@ -285,7 +285,7 @@ size_t ZjchainHost::copy_code(
     assert(false);
     ZJC_DEBUG("called 6");
     std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
-    protos::AddressInfoPtr acc_info = acc_mgr_->GetAccountInfo(id);
+    protos::AddressInfoPtr acc_info = view_block_chain_->ChainGetAccountInfo(id);
     if (acc_info == nullptr) {
         return 0;
     }
@@ -348,7 +348,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
         ZJC_DEBUG("call default contract failed: %s", common::Encode::HexEncode(origin_address_).c_str());
     } else {
         std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
-        protos::AddressInfoPtr acc_info = acc_mgr_->GetAccountInfo(id);
+        protos::AddressInfoPtr acc_info = view_block_chain_->ChainGetAccountInfo(id);
         if (acc_info != nullptr) {
             if (!acc_info->bytes_code().empty()) {
                 ZJC_DEBUG("get call bytes code success: %s, field: %s",

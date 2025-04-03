@@ -1,6 +1,7 @@
 #include "consensus/zbft/elect_tx_item.h"
 
 #include "common/fts_tree.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
 #include <bls/bls_utils.h>
@@ -25,6 +26,7 @@ int ElectTxItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
+    view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     for (int32_t storage_idx = 0; storage_idx < block_tx.storages_size(); ++storage_idx) {
         if (block_tx.storages(storage_idx).key() == protos::kShardElection) {
@@ -439,8 +441,7 @@ void ElectTxItem::GetIndexNodes(
         }
 
         auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
-        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(
-            id);
+        protos::AddressInfoPtr account_info = view_block_chain_->ChainGetAccountInfo(id);
         if (account_info == nullptr) {
             assert(false);
             return;
@@ -508,7 +509,7 @@ void ElectTxItem::MiningToken(
     if (!stop_mining_) {
         for (uint32_t i = 0; i < valid_nodes.size(); ++i) {
             auto id = sec_ptr_->GetAddress(valid_nodes[i]->pubkey);
-            protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(id);
+            protos::AddressInfoPtr account_info = view_block_chain_->ChainGetAccountInfo(id);
             if (account_info == nullptr) {
                 ZJC_DEBUG("get account info failed: %s",
                           common::Encode::HexEncode(id).c_str());
@@ -737,7 +738,7 @@ int ElectTxItem::CheckWeedout(
             }
         }
         // 构建节点信息，并更新全局最小节点距离
-        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
+        protos::AddressInfoPtr account_info = view_block_chain_->ChainGetAccountInfo((*members)[member_idx]->id);
         if (account_info == nullptr) {
             ZJC_ERROR("get account info failed: %s",
                       common::Encode::HexEncode((*members)[member_idx]->id).c_str());

@@ -6,6 +6,7 @@
 #include "common/limit_hash_map.h"
 #include "common/unique_set.h"
 #include "common/utils.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "evmc/evmc.hpp"
 #include "evmc/mocked_host.hpp"
 #include "protos/address.pb.h"
@@ -24,7 +25,7 @@ class ZjchainHost;
 class Execution {
 public:
     static Execution* Instance();
-    void Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager>& acc_mgr);
+    void Init(std::shared_ptr<db::Db>& db);
     int execute(
         const std::string& contract_address,
         const std::string& input,
@@ -98,7 +99,7 @@ private:
     StorageLruMap<10240> storage_map_[common::kMaxThreadCount];
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     uint64_t pools_max_heights_[common::kInvalidPoolIndex] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(Execution);

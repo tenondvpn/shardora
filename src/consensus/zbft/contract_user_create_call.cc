@@ -1,5 +1,6 @@
 #include "consensus/zbft/contract_user_create_call.h"
 
+#include "consensus/hotstuff/view_block_chain.h"
 #include "contract/contract_manager.h"
 #include "zjcvm/execution.h"
 
@@ -18,7 +19,7 @@ int ContractUserCreateCall::HandleTx(
     uint64_t from_nonce = 0;
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
-    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance, &from_nonce);
+    int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
     ZJC_DEBUG("contract user call create called: %s, balance: %lu", 
         common::Encode::HexEncode(from).c_str(), from_balance);
     uint64_t gas_used = consensus::kTransferGas;
@@ -37,7 +38,7 @@ int ContractUserCreateCall::HandleTx(
             break;
         }
 
-        protos::AddressInfoPtr contract_info = account_mgr_->GetAccountInfo(block_tx.to());
+	    protos::AddressInfoPtr contract_info = zjc_host.view_block_chain_->ChainGetAccountInfo(block_tx.to());
         if (contract_info != nullptr) {
             block_tx.set_status(kConsensusAccountExists);
             break;

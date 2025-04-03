@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block/account_manager.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "elect/elect_manager.h"
 #include "security/security.h"
@@ -146,6 +147,7 @@ private:
   uint32_t network_count_ = 2;
   std::set<std::string> added_nodes_;
   common::MembersPtr elect_members_ = nullptr;
+  std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

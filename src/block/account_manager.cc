@@ -99,8 +99,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
             "get account failed[%s] in thread_idx:%d", 
             common::Encode::HexEncode(addr).c_str(), thread_idx);
     } else {
-        thread_update_accounts_queue_[thread_idx].push(addr_info);
-        update_acc_con_.notify_one();
+        account_lru_map_.insert(addr_info);
     }
 
     return addr_info;

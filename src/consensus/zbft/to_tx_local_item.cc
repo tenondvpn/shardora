@@ -27,7 +27,7 @@ int ToTxLocalItem::HandleTx(
 
     uint64_t to_balance = 0;
     uint64_t to_nonce = 0;
-    GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
     if (to_nonce + 1 != block_tx.nonce()) {
         block_tx.set_status(kConsensusNonceInvalid);
         ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
@@ -43,7 +43,7 @@ int ToTxLocalItem::HandleTx(
         uint64_t to_balance = 0;
         uint64_t nonce = 0;
         // if (to_txs.tos(i).des().size() == security::kUnicastAddressLength) { // only to, for normal to tx
-            int balance_status = GetTempAccountBalance(to_txs.tos(i).des(), acc_balance_map, &to_balance, &nonce);
+            int balance_status = GetTempAccountBalance(zjc_host, to_txs.tos(i).des(), acc_balance_map, &to_balance, &nonce);
             if (balance_status != kConsensusSuccess) {
                 ZJC_DEBUG("create new address: %s, balance: %lu",
                     common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),

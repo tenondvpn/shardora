@@ -15,7 +15,7 @@ int FromTxItem::HandleTx(
     uint64_t from_nonce = 0;
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
-    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance, &from_nonce);
+    int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
     auto src_banalce = from_balance;
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);

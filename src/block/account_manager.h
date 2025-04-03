@@ -55,6 +55,14 @@ public:
 
     const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
 
+    const std::string& pool_base_addrs(uint32_t pool_idx) const {
+        if (pool_idx >= common::kImmutablePoolSize) {
+            return immutable_pool_addr_;
+        }
+
+        return pool_base_addrs_[pool_idx];
+    }
+
 private:
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
@@ -126,7 +134,7 @@ private:
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
     volatile bool thread_valid_[common::kMaxThreadCount] = {false};
-    AccountLruMap<102400> account_lru_map_;
+    AccountLruMap<1024> account_lru_map_;
     std::string immutable_pool_addr_;
     std::string pool_base_addrs_[common::kImmutablePoolSize];
 

@@ -647,7 +647,7 @@ int ViewBlockChain::CheckTxNonceValid(
         phash = it->second->view_block->parent_hash();
     }
 
-    auto addr_info = account_mgr_->GetAccountInfo(addr);
+    auto addr_info = ChainGetAccountInfo(addr);
     if (addr_info == nullptr) {
         ZJC_DEBUG("failed check tx nonce not exists in db: %s, %lu, phash: %s", 
             common::Encode::HexEncode(addr).c_str(), 
@@ -721,6 +721,30 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
             high_view_block_->block_info().tx_list_size());
     }
+}
+
+protos::AddressInfoPtr ViewBlockChain::ChainGetAccountInfo(const std::string& addr) {
+    protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
+    if (addr_info != nullptr && addr_info->type() != address::protobuf::kWaitingRootConfirm) {
+        return addr_info;
+    }
+
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    addr_info = account_mgr_->GetAcountInfoFromDb(addr);
+    if (!addr_info || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+        BLOCK_DEBUG(
+            "get account failed[%s] in thread_idx:%d", 
+            common::Encode::HexEncode(addr).c_str(), thread_idx);
+    } else {
+        account_lru_map_.insert(addr_info);
+    }
+
+    return addr_info;
+}
+
+protos::AddressInfoPtr ViewBlockChain::ChainGetPoolAccountInfo(uint32_t pool_index) {
+    auto& addr = account_mgr_->pool_base_addrs(pool_index);
+    return ChainGetAccountInfo(addr);
 }
 
 } // namespace hotstuff

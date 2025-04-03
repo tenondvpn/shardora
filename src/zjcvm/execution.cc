@@ -26,9 +26,8 @@ Execution* Execution::Instance() {
     return &ins;
 }
 
-void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager>& acc_mgr) {
+void Execution::Init(std::shared_ptr<db::Db>& db) {
     db_ = db;
-    acc_mgr_ = acc_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     evm_ = evmc::VM{ evmc_create_evmone()};
 
@@ -53,7 +52,11 @@ void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::Account
 }
 
 bool Execution::IsAddressExists(const std::string& addr) {
-    protos::AddressInfoPtr address_info = acc_mgr_->GetAccountInfo(addr);
+    if (!view_block_chain_) {
+        return false;
+    }
+
+    protos::AddressInfoPtr address_info = view_block_chain_->ChainGetAccountInfo(addr);
     if (address_info != nullptr) {
         return true;
     }
@@ -191,6 +194,7 @@ int Execution::execute(
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* out_res) {
+    view_block_chain_ = host.view_block_chain_;
     auto btime = common::TimeUtils::TimestampMs();
     const size_t code_size = bytes_code.size();
     if (code_size <= kContractHead.size() ||

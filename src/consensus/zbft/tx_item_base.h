@@ -2,6 +2,7 @@
 
 #include "block/account_manager.h"
 #include "consensus/hotstuff/hotstuff_utils.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "pools/tx_pool.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -85,13 +86,14 @@ protected:
     }
 
     int GetTempAccountBalance(
+            zjcvm::ZjchainHost& zjc_host,
             const std::string& id,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             uint64_t* balance,
             uint64_t* nonce) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            protos::AddressInfoPtr acc_info = account_mgr_->GetAccountInfo(id);
+            protos::AddressInfoPtr acc_info = zjc_host.view_block_chain_->ChainGetAccountInfo(id);
             if (acc_info == nullptr) {
                 ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;

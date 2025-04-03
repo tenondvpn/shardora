@@ -1,5 +1,6 @@
 #include "consensus/zbft/root_to_tx_item.h"
 
+#include "consensus/hotstuff/view_block_chain.h"
 #include "network/network_utils.h"
 #include "protos/tx_storage_key.h"
 #include "vss/vss_manager.h"
@@ -34,14 +35,14 @@ int RootToTxItem::HandleTx(
     protos::AddressInfoPtr account_info = nullptr;
     if (block_tx.to().size() == security::kUnicastAddressLength * 2) {
         // gas prepayment
-        account_info = account_mgr_->GetAccountInfo(
+        account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(
             block_tx.to().substr(0, security::kUnicastAddressLength));
         // if (account_info == nullptr) {
         //     block_tx.set_status(kConsensusAccountNotExists);
         //     return kConsensusSuccess;
         // }
     } else {
-        account_info = account_mgr_->GetAccountInfo(block_tx.to());
+        account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(block_tx.to());
     }
 
     char des_sharding_and_pool[8];

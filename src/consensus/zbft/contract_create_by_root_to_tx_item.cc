@@ -4,6 +4,7 @@
 #include "zjcvm/execution.h"
 #include <common/log.h>
 #include <consensus/consensus_utils.h>
+#include "consensus/hotstuff/view_block_chain.h"
 #include <db/db.h>
 #include <evmc/evmc.h>
 #include <evmc/evmc.hpp>
@@ -49,7 +50,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
-	protos::AddressInfoPtr contract_info = account_mgr_->GetAccountInfo(block_tx.to());
+	protos::AddressInfoPtr contract_info = zjc_host.view_block_chain_->ChainGetAccountInfo(block_tx.to());
 	if (contract_info != nullptr) {
 		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);
