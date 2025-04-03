@@ -85,7 +85,6 @@ public:
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
-        consensus::BlockCacheCallback new_block_cache_callback,
         std::shared_ptr<ViewBlockChain> view_block_chain);
 
     BlockAcceptor(const BlockAcceptor&) = delete;

@@ -27,7 +27,10 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        DefaultTxItem(tx_info, block_tx);
+        if (!DefaultTxItem(tx_info, block_tx)) {
+            return consensus::kConsensusError;
+        }
+        
         // // change
         // if (tx_info.key().empty() ||
         //         tx_info.key() != protos::kNormalTos ||

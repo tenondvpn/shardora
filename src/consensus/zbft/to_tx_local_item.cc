@@ -77,7 +77,8 @@ int ToTxLocalItem::HandleTx(
         to_tx->set_balance(to_balance);
         str_for_hash.append(to_txs.tos(i).des());
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
-        acc_balance_map[to_txs.tos(i).des()] = std::pair<int64_t, uint64_t>(static_cast<int64_t>(to_balance), nonce);
+        acc_balance_map[to_txs.tos(i).des()]->set_balance(to_balance);
+        acc_balance_map[to_txs.tos(i).des()]->set_nonce(nonce);
         ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
             to_balance,
@@ -86,7 +87,8 @@ int ToTxLocalItem::HandleTx(
 
     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-    acc_balance_map[block_tx.to()] = std::pair(to_balance, block_tx.nonce());
+    acc_balance_map[block_tx.to()]->set_balance(to_balance);
+    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kConsensusLocalNormalTos);
     storage->set_value(block_to_txs.SerializeAsString());
@@ -97,7 +99,9 @@ int ToTxLocalItem::HandleTx(
 int ToTxLocalItem::TxToBlockTx(
         const pools::protobuf::TxMessage& tx_info,
         block::protobuf::BlockTx* block_tx) {
-    DefaultTxItem(tx_info, block_tx);
+    if (!DefaultTxItem(tx_info, block_tx)) {
+        return consensus::kConsensusError;
+    }
     // change
     if (tx_info.key().empty()) {
         return consensus::kConsensusError;

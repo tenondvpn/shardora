@@ -152,6 +152,7 @@ public:
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     uint64_t view_ = 0;
     bool contract_to_call_dirty_ = false;
+    db::DbWriteBatch db_batch_;
 
 };
 

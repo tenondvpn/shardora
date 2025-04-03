@@ -35,7 +35,10 @@ protected:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        DefaultTxItem(tx_info, block_tx);
+        if (!DefaultTxItem(tx_info, block_tx)) {
+            return consensus::kConsensusError;
+        }
+
         // change
         if (tx_info.key().empty()) {
             return consensus::kConsensusSuccess;
@@ -47,7 +50,7 @@ protected:
         return consensus::kConsensusSuccess;
     }
 
-    void DefaultTxItem(
+    bool DefaultTxItem(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
         block_tx->set_nonce(tx_info.nonce());
@@ -83,6 +86,7 @@ protected:
             *tx_debug_info = tx_info.tx_debug(i);
         }
 #endif
+        return true;
     }
 
     int GetTempAccountBalance(
@@ -104,18 +108,15 @@ protected:
                 return consensus::kConsensusAccountNotExists;
             }
 
-            acc_balance_map[id] = std::make_pair<int64_t, uint64_t>(acc_info->balance(), acc_info->nonce());
+            acc_balance_map[id]->set_balance(acc_info->balance());
+            acc_balance_map[id]->set_nonce(acc_info->nonce());
             *balance = acc_info->balance();
             *nonce = acc_info->nonce();
             // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
             //     common::Encode::HexEncode(id).c_str(), *balance);
         } else {
-            if (iter->second.first == -1) {
-                return consensus::kConsensusAccountNotExists;
-            }
-
-            *balance = iter->second.first;
-            *nonce = iter->second.second;
+            *balance = iter->second->balance();
+            *nonce = iter->second->nonce();
             // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
             //     common::Encode::HexEncode(id).c_str(), *balance);
         }

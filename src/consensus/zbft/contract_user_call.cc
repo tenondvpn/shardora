@@ -83,7 +83,8 @@ int ContractUserCall::HandleTx(
         }
     }
 
-    acc_balance_map[from] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
+    acc_balance_map[from]->set_balance(from_balance);
+    acc_balance_map[from]->set_nonce(block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu, balance: %lu",

@@ -91,7 +91,8 @@ public:
             }
         }
 
-        acc_balance_map[from] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
+        acc_balance_map[from]->set_balance(from_balance);
+        acc_balance_map[from]->set_nonce(block_tx.nonce());
         block_tx.set_balance(from_balance);
         block_tx.set_gas_used(gas_used);
         ZJC_DEBUG("create library called handle tx success nonce: %lu, %lu, %lu, status: %d",

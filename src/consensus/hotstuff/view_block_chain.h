@@ -211,14 +211,8 @@ public:
     }
 
 private:
-    int SaveContractCreateInfo(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& block_tx,
-        int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more);
-    void SaveBlockStorages(const std::shared_ptr<ViewBlockInfo>& view_block_info);
-    void SaveBlockAccounts(const std::shared_ptr<ViewBlockInfo>& view_block_info);
+    void SaveBlockStorages(const std::shared_ptr<ViewBlockInfo>& view_block_info, db::DbWriteBatch& db_batch);
+    void SaveBlockAccounts(const std::shared_ptr<ViewBlockInfo>& view_block_info, db::DbWriteBatch& db_batch);
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());

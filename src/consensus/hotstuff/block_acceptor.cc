@@ -48,7 +48,6 @@ void BlockAcceptor::Init(
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
-        consensus::BlockCacheCallback new_block_cache_callback,
         std::shared_ptr<ViewBlockChain> view_block_chain) {
     pool_idx_ = pool_idx;
     elect_mgr_ = elect_mgr;
@@ -62,7 +61,6 @@ void BlockAcceptor::Init(
     pools_mgr_ = pools_mgr;
     block_mgr_ = block_mgr;
     tm_block_mgr_ = tm_block_mgr;
-    new_block_cache_callback_ = new_block_cache_callback;
     view_block_chain_ = view_block_chain;
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
@@ -252,8 +250,9 @@ Status BlockAcceptor::addTxsToPool(
         if (iter != prevs_balance_map.end()) {
             now_balance_map[iter->first] = iter->second;
         } else {
-            now_balance_map[address_info->addr()] = std::make_pair<int64_t, uint64_t>(
-                address_info->balance(), address_info->nonce());
+            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
+            *new_addr_info = * address_info;
+            now_balance_map[address_info->addr()] = new_addr_info;
         }
 
         std::string contract_prepayment_id;
@@ -462,8 +461,9 @@ Status BlockAcceptor::addTxsToPool(
             } else {
                 address_info = view_block_chain_->ChainGetAccountInfo(contract_prepayment_id);
                 if (address_info) {
-                    now_balance_map[contract_prepayment_id] = std::make_pair<int64_t, uint64_t>(
-                        address_info->balance(), address_info->nonce());
+                    auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
+                    *new_addr_info = *address_info;
+                    now_balance_map[contract_prepayment_id] = new_addr_info;
                 }
             }
         }

@@ -185,10 +185,10 @@ int ContractCreateByRootToTxItem::HandleTx(
 		from_prepayment = tmp_from_balance;
 		
         auto preppayment_id = block_tx.to() + block_tx.from();
-        acc_balance_map[preppayment_id] = std::make_pair<int64_t, uint64_t>(
-            from_prepayment, block_tx.nonce()) ;
-		acc_balance_map[block_tx.to()] = std::make_pair<int64_t, uint64_t>(
-            block_tx.amount(), 0) ;
+        acc_balance_map[preppayment_id]->set_balance(from_prepayment);
+        acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
+		acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
+		acc_balance_map[block_tx.to()]->set_nonce(0);
 		block_tx.set_contract_prepayment(from_prepayment);
 		block_tx.set_gas_used(gas_used);
 		ZJC_DEBUG("create contract local called to: %s, contract_from: %s, "
@@ -257,6 +257,10 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -272,6 +276,10 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
     }
 

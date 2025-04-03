@@ -192,7 +192,8 @@ int ContractUserCreateCall::HandleTx(
     }
 
     from_balance = tmp_from_balance;
-    acc_balance_map[from] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
+    acc_balance_map[from]->set_balance(from_balance);
+    acc_balance_map[from]->set_nonce(block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("create contract called %s, user: %s, new balance: %lu, "
@@ -233,6 +234,10 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -248,6 +253,10 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
     }
 

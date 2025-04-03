@@ -237,7 +237,8 @@ int ContractCall::HandleTx(
                     destruct_kv->set_key(protos::kContractDestruct);
                     ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
                         common::Encode::HexEncode(protos::kContractDestruct).c_str());
-                    acc_balance_map[block_tx.to()] = std::make_pair<int64_t, uint64_t>(-1, 0);
+                    acc_balance_map[block_tx.to()]->set_balance(0);
+                    acc_balance_map[block_tx.to()]->set_destructed(true);
                     // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
                 }
 
@@ -246,8 +247,9 @@ int ContractCall::HandleTx(
 
         if (block_tx.status() == kConsensusSuccess) {
             from_balance = tmp_from_balance;
-            if (acc_balance_map[block_tx.to()].first != -1) {
-                acc_balance_map[block_tx.to()] = std::make_pair<int64_t, uint64_t>(block_tx.amount(), 0);
+            if (!acc_balance_map[block_tx.to()]->destructed()) {
+                acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
+                acc_balance_map[block_tx.to()]->set_nonce(0);
             }
         }
 
@@ -269,7 +271,8 @@ int ContractCall::HandleTx(
     }
     
     // must prepayment's nonce, not caller or contract
-    acc_balance_map[preppayment_id] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
+    acc_balance_map[preppayment_id]->set_balance(from_balance);
+    acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
@@ -325,6 +328,10 @@ int ContractCall::SaveContractCreateInfo(
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -344,6 +351,10 @@ int ContractCall::SaveContractCreateInfo(
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
     }
 

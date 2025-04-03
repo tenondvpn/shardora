@@ -27,7 +27,9 @@ public:
             common::Encode::HexEncode(tx_info.to()).c_str(), 
             tx_info.nonce(),
             common::Encode::HexEncode(tx_info.value()).c_str());
-        DefaultTxItem(tx_info, block_tx);
+        if (!DefaultTxItem(tx_info, block_tx)) {
+            return consensus::kConsensusError;
+        }
         // change
         if (tx_info.key().empty() ||
                 tx_info.key() != protos::kNormalTos ||
@@ -71,7 +73,8 @@ public:
 
         ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-        acc_balance_map[block_tx.to()] = std::pair(to_balance, block_tx.nonce());
+        acc_balance_map[block_tx.to()]->set_balance(to_balance);
+        acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         return consensus::kConsensusSuccess;
     }
 

@@ -6,11 +6,12 @@
 #include <common/hash.h>
 #include <common/log.h>
 #include "common/node_members.h"
-#include <consensus/hotstuff/types.h>
-#include <protos/block.pb.h>
-#include <protos/hotstuff.pb.h>
-#include <protos/prefix_db.h>
-#include <protos/transport.pb.h>
+#include "consensus/hotstuff/types.h"
+#include "protos/address.pb.h"
+#include "protos/block.pb.h"
+#include "protos/hotstuff.pb.h"
+#include "protos/prefix_db.h"
+#include "protos/transport.pb.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
 
@@ -19,7 +20,7 @@ namespace shardora {
 namespace hotstuff {
 
 using Breakpoint = int;
-using BalanceAndNonceMap = std::unordered_map<std::string, std::pair<int64_t, uint64_t>>;
+using BalanceAndNonceMap = std::unordered_map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>;
 using BalanceAndNonceMapPtr = std::shared_ptr<BalanceAndNonceMap>;
 
 class ProposeMsgWrapper {

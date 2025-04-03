@@ -36,6 +36,11 @@ int FromTxItem::HandleTx(
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
+            auto str_key = block_tx.from() + block_tx.storages(i).key();
+            address::protobuf::KeyValueInfo kv_info;
+            kv_info.set_value(tx_info->value());
+            kv_info.set_height(block_tx.nonce());
+            zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
         }
 
         // 余额不足
@@ -79,7 +84,8 @@ int FromTxItem::HandleTx(
     }
 
     // 剪掉来源账户的金额
-    acc_balance_map[from] = std::make_pair<int64_t, uint64_t>(from_balance, block_tx.nonce());
+    acc_balance_map[from]->set_balance(from_balance);
+    acc_balance_map[from]->set_nonce(block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     // ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",
