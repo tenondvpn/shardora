@@ -228,16 +228,16 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         return;
     }
 
-    if (msg_ptr->header.type() == common::kPoolsMessage && msg_ptr->header.has_tx_proto()) {
-        if (threads_message_queues_[thread_index][priority].size() >= kEachMessagePoolMaxCount) {
-            ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
-                msg_ptr->header.hash64(),
-                msg_ptr->header.type(),
-                msg_ptr->conn->PeerIp().c_str(),
-                msg_ptr->conn->PeerPort());
-            return;
-        }
-    }
+    // if (msg_ptr->header.type() == common::kPoolsMessage && msg_ptr->header.has_tx_proto()) {
+    //     if (threads_message_queues_[thread_index][priority].size() >= kEachMessagePoolMaxCount) {
+    //         ZJC_DEBUG("message filtered: %lu, type: %d, from: %s:%d",
+    //             msg_ptr->header.hash64(),
+    //             msg_ptr->header.type(),
+    //             msg_ptr->conn->PeerIp().c_str(),
+    //             msg_ptr->conn->PeerPort());
+    //         return;
+    //     }
+    // }
 
     if (msg_ptr->header.hop_count() >= kMaxHops) {
         return;

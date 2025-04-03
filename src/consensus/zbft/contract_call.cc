@@ -59,8 +59,6 @@ int ContractCall::HandleTx(
             block_tx.set_status(kConsensusOutOfPrepayment);
             break;
         }
-    
-        
 
         gas_limit -= kCallContractDefaultUseGas;
         check_valid = true;
