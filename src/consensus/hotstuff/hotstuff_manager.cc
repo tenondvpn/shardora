@@ -104,7 +104,7 @@ int HotstuffManager::Init(
         auto acceptor = std::make_shared<BlockAcceptor>(
                 pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
                 contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
-                tm_block_mgr, elect_mgr, new_block_cache_callback);
+                tm_block_mgr, elect_mgr, new_block_cache_callback, chain);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         

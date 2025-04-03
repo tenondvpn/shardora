@@ -6,7 +6,7 @@
 #include "consensus/consensus_utils.h"
 #include "consensus/hotstuff/block_executor.h"
 #include "consensus/hotstuff/types.h"
-#include "consensus/hotstuff/view_block_chain.h"
+#include "consensus/hotstuff/view_block_chain_.h"
 #include "consensus/zbft/contract_call.h"
 #include "consensus/zbft/contract_user_call.h"
 #include "consensus/zbft/contract_user_create_call.h"
@@ -44,12 +44,14 @@ BlockAcceptor::BlockAcceptor(
         std::shared_ptr<block::BlockManager> &block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
-        consensus::BlockCacheCallback new_block_cache_callback):
+        consensus::BlockCacheCallback new_block_cache_callback,
+        std::shared_ptr<ViewBlockChain> view_block_chain):
         pool_idx_(pool_idx), elect_mgr_(elect_mgr), security_ptr_(security), account_mgr_(account_mgr),
         elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
         db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
         block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), 
-        new_block_cache_callback_(new_block_cache_callback) {
+        new_block_cache_callback_(new_block_cache_callback),
+        view_block_chain_(view_block_chain_) {
     tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
 };
@@ -58,7 +60,6 @@ BlockAcceptor::~BlockAcceptor() {}
 
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
 Status BlockAcceptor::Accept(
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
@@ -88,10 +89,10 @@ Status BlockAcceptor::Accept(
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view(),
-                view_block_chain->Has(view_block.qc().view_block_hash()),
+                view_block_chain_->Has(view_block.qc().view_block_hash()),
                 prefix_db_->BlockExists(view_block.qc().view_block_hash()));
-            // view_block_chain->ResetViewBlock(view_block.qc().view_block_hash());
-            if (view_block_chain->Has(view_block.qc().view_block_hash())) {
+            // view_block_chain_->ResetViewBlock(view_block.qc().view_block_hash());
+            if (view_block_chain_->Has(view_block.qc().view_block_hash())) {
                 // assert(false);
                 return Status::kSuccess;
             }
@@ -119,7 +120,6 @@ Status BlockAcceptor::Accept(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = GetAndAddTxsLocally(
         msg_ptr,
-        view_block_chain, 
         view_block.parent_hash(), 
         propose_msg, 
         directly_user_leader_txs, 
@@ -135,7 +135,7 @@ Status BlockAcceptor::Accept(
     // 3. Do txs and create block_tx
     ADD_DEBUG_PROCESS_TIMESTAMP();
     zjc_host.parent_hash_ = view_block.parent_hash();
-    zjc_host.view_block_chain_ = view_block_chain;
+    zjc_host.view_block_chain_ = view_block_chain_;
     zjc_host.view_ = view_block.qc().view();
     s = DoTransactions(txs_ptr, &view_block, balance_and_nonce_map, zjc_host);
     if (s != Status::kSuccess) {
@@ -194,7 +194,6 @@ void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_it
 
 Status BlockAcceptor::addTxsToPool(
         transport::MessagePtr msg_ptr,
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
@@ -207,8 +206,8 @@ Status BlockAcceptor::addTxsToPool(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     BalanceAndNonceMap prevs_balance_map;
-    // view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
-    view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
+    // view_block_chain_->MergeAllPrevStorageMap(parent_hash, zjc_host);
+    view_block_chain_->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
     //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -231,12 +230,12 @@ Status BlockAcceptor::addTxsToPool(
         }
         
         if (tx->step() == pools::protobuf::kContractExcute) {
-            address_info = view_block_chain->ChainGetAccountInfo(tx->to());
+            address_info = view_block_chain_->ChainGetAccountInfo(tx->to());
         } else {
             if (pools::IsUserTransaction(tx->step())) {
-                address_info = view_block_chain->ChainGetAccountInfo(from_id);
+                address_info = view_block_chain_->ChainGetAccountInfo(from_id);
             } else {
-                address_info = view_block_chain->ChainGetPoolAccountInfo(pool_idx());
+                address_info = view_block_chain_->ChainGetPoolAccountInfo(pool_idx());
             }
         }
 
@@ -247,7 +246,7 @@ Status BlockAcceptor::addTxsToPool(
 
         auto now_map_iter = now_balance_map.find(address_info->addr());
         if (now_map_iter == now_balance_map.end()) {
-            if (view_block_chain && view_block_chain->CheckTxNonceValid(
+            if (view_block_chain_ && view_block_chain_->CheckTxNonceValid(
                     address_info->addr(), tx->nonce(), parent_hash) != 0) {
                 ZJC_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
                     common::Encode::HexEncode(address_info->addr()).c_str(),
@@ -335,9 +334,9 @@ Status BlockAcceptor::addTxsToPool(
                 auto tx_item = tx_pools_->GetToTxs(
                     pool_idx(), 
                     all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
-                if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain) {
+                if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain_) {
                     tx_ptr = *(tx_item->txs.begin());
-                    if (view_block_chain->CheckTxNonceValid(
+                    if (view_block_chain_->CheckTxNonceValid(
                             tx_ptr->tx_info->to(), 
                             tx_ptr->tx_info->nonce(), 
                             parent_hash) != 0) {
@@ -469,7 +468,7 @@ Status BlockAcceptor::addTxsToPool(
             if (iter != prevs_balance_map.end()) {
                 now_balance_map[iter->first] = iter->second;
             } else {
-                address_info = view_block_chain->ChainGetAccountInfo(contract_prepayment_id);
+                address_info = view_block_chain_->ChainGetAccountInfo(contract_prepayment_id);
                 if (address_info) {
                     now_balance_map[contract_prepayment_id] = std::make_pair<int64_t, uint64_t>(
                         address_info->balance(), address_info->nonce());
@@ -520,7 +519,6 @@ Status BlockAcceptor::addTxsToPool(
 
 Status BlockAcceptor::GetAndAddTxsLocally(
         transport::MessagePtr msg_ptr,
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& tx_propose,
         bool directly_user_leader_txs,
@@ -529,7 +527,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
         msg_ptr,
-        view_block_chain, 
+        view_block_chain_, 
         parent_hash, 
         tx_propose.txs(), 
         directly_user_leader_txs, 
@@ -648,6 +646,7 @@ void BlockAcceptor::commit(
     new_block_cache_callback_(
         queue_item_ptr->view_block_ptr,
         *queue_item_ptr->final_db_batch);
+    
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
         pools_mgr_->TxOver(pool_idx_, *queue_item_ptr->view_block_ptr);

@@ -85,14 +85,14 @@ public:
             std::shared_ptr<block::BlockManager>& block_mgr,
             std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
             std::shared_ptr<elect::ElectManager> elect_mgr,
-            consensus::BlockCacheCallback new_block_cache_callback);
+            consensus::BlockCacheCallback new_block_cache_callback,
+            std::shared_ptr<ViewBlockChain> view_block_chain);
     ~BlockAcceptor();
 
     BlockAcceptor(const BlockAcceptor&) = delete;
     BlockAcceptor& operator=(const BlockAcceptor&) = delete;
     // Accept a proposed block and exec txs in it.
     Status Accept(
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
@@ -115,7 +115,6 @@ public:
     private:
     Status addTxsToPool(
         transport::MessagePtr msg_ptr,
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
@@ -130,7 +129,6 @@ public:
         zjcvm::ZjchainHost& zjc_host);
     Status GetAndAddTxsLocally(
         transport::MessagePtr msg_ptr,
-        std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& block_info,
         bool directly_user_leader_txs,
@@ -184,6 +182,7 @@ public:
     uint32_t prev_count_ = 0;
     double cur_tps_ = 0;
     common::SpinMutex prev_count_mutex_;
+    std::shared_ptr<ViewBlockChain> view_block_chain_;
 
 };
 
