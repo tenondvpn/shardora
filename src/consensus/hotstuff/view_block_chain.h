@@ -5,9 +5,10 @@
 
 #include "block/account_manager.h"
 #include "block/account_lru_map.h"
-#include <common/time_utils.h>
+#include "common/time_utils.h"
 #include "consensus/hotstuff/types.h"
 #include "consensus/hotstuff/hotstuff_utils.h"
+#include "consensus/hotstuff/storage_lru_map.h"
 #include "protos/prefix_db.h"
 #include "zjcvm/zjc_host.h"
 
@@ -28,7 +29,8 @@ public:
         std::shared_ptr<db::Db>& db, 
         std::shared_ptr<block::AccountManager> account_mgr, 
         std::shared_ptr<sync::KeyValueSync> kv_sync,
-        std::shared_ptr<IBlockAcceptor> block_acceptor);
+        std::shared_ptr<IBlockAcceptor> block_acceptor,
+        consensus::BlockCacheCallback new_block_cache_callback);
     ViewBlockChain(const ViewBlockChain&) = delete;
     ViewBlockChain& operator=(const ViewBlockChain&) = delete;
     // Add Node
@@ -78,6 +80,7 @@ public:
     protos::AddressInfoPtr ChainGetAccountInfo(const std::string& acc_id);
     protos::AddressInfoPtr ChainGetPoolAccountInfo(uint32_t pool_index);
     void Commit(const std::shared_ptr<ViewBlockInfo>& queue_item_ptr);
+    void CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock);
 
     bool view_commited(uint32_t network_id, View view) const {
         if (commited_view_.find(view) != commited_view_.end()) {
@@ -208,6 +211,14 @@ public:
     }
 
 private:
+    int SaveContractCreateInfo(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& block_tx,
+        int64_t& contract_balance_add,
+        int64_t& caller_balance_add,
+        int64_t& gas_more);
+    void SaveBlockStorages(const std::shared_ptr<ViewBlockInfo>& view_block_info);
+    void SaveBlockAccounts(const std::shared_ptr<ViewBlockInfo>& view_block_info);
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());
@@ -289,6 +300,8 @@ private:
     block::AccountLruMap<102400> account_lru_map_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     std::shared_ptr<IBlockAcceptor> block_acceptor_;
+    consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
+    StorageLruMap<10240> storage_lru_map_;
 };
 
 // from db

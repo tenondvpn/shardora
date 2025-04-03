@@ -20,12 +20,14 @@ void ViewBlockChain::Init(
         std::shared_ptr<db::Db>& db, 
         std::shared_ptr<block::AccountManager> account_mgr, 
         std::shared_ptr<sync::KeyValueSync> kv_sync,
-        std::shared_ptr<IBlockAcceptor> block_acceptor) {
+        std::shared_ptr<IBlockAcceptor> block_acceptor,
+        consensus::BlockCacheCallback new_block_cache_callback) {
     db_ = db;
     pool_index_ = pool_index;
     account_mgr_ = account_mgr;
     kv_sync_ = kv_sync;
     block_acceptor_ = block_acceptor;
+    new_block_cache_callback_ = new_block_cache_callback;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
 
@@ -332,37 +334,165 @@ void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_
     }
 }
 
+void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
+    // not this sharding
+    auto db_batch = std::make_shared<db::DbWriteBatch>();
+    new_block_cache_callback_(vblock, *db_batch);
+}
+
+int ViewBlockChain::SaveContractCreateInfo(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& block_tx,
+        int64_t& contract_balance_add,
+        int64_t& caller_balance_add,
+        int64_t& gas_more) {
+    // ZJC_DEBUG("now save contrat call storage acc size: %u", zjc_host.accounts_.size());
+    for (auto account_iter = zjc_host.accounts_.begin();
+            account_iter != zjc_host.accounts_.end(); ++account_iter) {
+        // ZJC_DEBUG("now save contrat call storage acc: %s storage size: %u",
+        //     common::Encode::HexEncode(std::string((char*)account_iter->first.bytes, 20)).c_str(), 
+        //     account_iter->second.storage.size());
+        for (auto storage_iter = account_iter->second.storage.begin();
+                storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+            auto kv = block_tx.add_storages();
+            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
+            kv->set_key(str_key);
+            kv->set_value(std::string(
+                (char*)storage_iter->second.value.bytes,
+                sizeof(storage_iter->second.value.bytes)));
+            // if (str_key.size() > 40)
+            // ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
+            //     common::Encode::HexEncode(str_key).c_str(),
+            //     common::Encode::HexEncode(kv->value()).c_str());
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            gas_more += (sizeof(account_iter->first.bytes) +
+                sizeof(storage_iter->first.bytes) +
+                sizeof(storage_iter->second.value.bytes)) *
+                consensus::kKeyValueStorageEachBytes;
+        }
+
+        for (auto storage_iter = account_iter->second.str_storage.begin();
+                storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+            auto kv = block_tx.add_storages();
+            auto str_key = std::string(
+                (char*)account_iter->first.bytes,
+                sizeof(account_iter->first.bytes)) + storage_iter->first;
+            kv->set_key(str_key);
+            kv->set_value(storage_iter->second.str_val);
+            // if (str_key.size() > 40)
+            // ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
+            //     common::Encode::HexEncode(str_key).c_str(),
+            //     common::Encode::HexEncode(kv->value()).c_str());
+            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
+            gas_more += (sizeof(account_iter->first.bytes) +
+                storage_iter->first.size() +
+                storage_iter->second.str_val.size()) *
+                consensus::kKeyValueStorageEachBytes;
+        }
+    }
+
+    int64_t other_add = 0;
+    for (auto transfer_iter = zjc_host.to_account_value_.begin();
+            transfer_iter != zjc_host.to_account_value_.end(); ++transfer_iter) {
+        // transfer from must caller or contract address, other not allowed.
+        if (transfer_iter->first != block_tx.from() && transfer_iter->first != block_tx.to()) {
+            assert(false);
+            return kConsensusError;
+        }
+
+        for (auto to_iter = transfer_iter->second.begin();
+                to_iter != transfer_iter->second.end(); ++to_iter) {
+            if (transfer_iter->first == to_iter->first) {
+                assert(false);
+                return kConsensusError;
+            }
+
+            if (block_tx.to() != transfer_iter->first) {
+                assert(false);
+                return kConsensusError;
+            }
+
+            contract_balance_add -= to_iter->second;
+            // from and contract itself transfers direct
+            // transfer to other address by cross sharding transfer
+            auto trans_item = block_tx.add_contract_txs();
+            trans_item->set_from(transfer_iter->first);
+            trans_item->set_to(to_iter->first);
+            trans_item->set_amount(to_iter->second);
+            other_add += to_iter->second;
+            ZJC_DEBUG("contract call transfer nonce: %lu, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
+                block_tx.nonce(),
+                common::Encode::HexEncode(transfer_iter->first).c_str(),
+                common::Encode::HexEncode(to_iter->first).c_str(),
+                to_iter->second,
+                contract_balance_add);
+        }
+    }
+
+    if (contract_balance_add > 0) {
+        assert(false);
+        return kConsensusError;
+    }
+
+    if (-contract_balance_add != other_add) {
+        assert(false);
+        return kConsensusError;
+    }
+
+    ZJC_DEBUG("user success call contract.");
+    return kConsensusSuccess;
+}
+
+void ViewBlockChain::SaveBlockStorages(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
+    auto tmp_block = view_block_info->view_block;
+    if (tmp_block->qc().view() > commited_max_view_) {
+        commited_max_view_ = tmp_block->qc().view();
+        auto& zjc_host = *view_block_info->zjc_host_ptr;
+        for (auto account_iter = zjc_host.accounts_.begin();
+            account_iter != zjc_host.accounts_.end(); ++account_iter) {
+            for (auto storage_iter = account_iter->second.storage.begin();
+                    storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+                auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+                    std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
+                auto str_val = std::string(
+                    (char*)storage_iter->second.value.bytes,
+                    sizeof(storage_iter->second.value.bytes));
+            }
+
+            for (auto storage_iter = account_iter->second.str_storage.begin();
+                    storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+                auto str_key = std::string(
+                    (char*)account_iter->first.bytes,
+                    sizeof(account_iter->first.bytes)) + storage_iter->first;
+                auto& str_val = storage_iter->second.str_val;
+            }
+        }
+    } else {
+        // check saved or height invalid
+    }
+}
+
+void ViewBlockChain::SaveBlockAccounts(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
+    auto tmp_block = view_block_info->view_block;
+    if (tmp_block->qc().view() > commited_max_view_) {
+        commited_max_view_ = tmp_block->qc().view();
+    } else {
+        // check saved or height invalid
+    }
+}
+
 void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {
+    std::list<std::shared_ptr<ViewBlockInfo>> to_commit_blocks;
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto tmp_block_info = v_block_info;
+    std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
         auto tmp_block = tmp_block_info->view_block;
-        if (!tmp_block_info->valid && !view_commited(
+        if (!view_commited(
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().view()) &&
                 !tmp_block->qc().sign_x().empty()) {
-            ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(), 
-                tmp_block->qc().view(),
-                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(tmp_block->parent_hash()).c_str());
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            auto db_batch = std::make_shared<db::DbWriteBatch>();
-            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(tmp_block, db_batch);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            SaveBlockCheckedParentHash(
-                tmp_block->parent_hash(), 
-                tmp_block->qc().view());
-            tmp_block_info->valid = true;
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-        } else {
-            ZJC_DEBUG("now ignore commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(), 
-                tmp_block->qc().view(),
-                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(tmp_block->parent_hash()).c_str());
+            to_commit_blocks.push_front(tmp_block_info);
         }
 
         if (tmp_block->qc().sign_x().empty()) {
@@ -394,15 +524,41 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         tmp_block_info = parent_block_info;
-        ADD_DEBUG_PROCESS_TIMESTAMP();
-    }
-    
-    if (!v_block_info->valid) {
-        return;
     }
 
+    auto db_batch = std::make_shared<db::DbWriteBatch>();
+    for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
+        auto tmp_block = (*iter)->view_block;
+        ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
+            tmp_block->qc().network_id(), 
+            tmp_block->qc().pool_index(), 
+            tmp_block->qc().view(),
+            common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(tmp_block->parent_hash()).c_str());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        new_block_cache_callback_(tmp_block, *db_batch);
+        SaveBlockStorages(*iter);
+        SaveBlockAccounts(*iter);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        SaveBlockCheckedParentHash(
+            tmp_block->parent_hash(), 
+            tmp_block->qc().view());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        if (tmp_block->qc().view() > commited_max_view_) {
+            commited_max_view_ = tmp_block->qc().view();
+        }
+
+        view_blocks_info_.erase(tmp_block->qc().view_block_hash());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+    }
+
+    if (!db_->Put(*db_batch).ok()) {
+        ZJC_FATAL("write to db failed!");
+    }
+    
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SetLatestCommittedBlock(v_block_info);
+    
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;

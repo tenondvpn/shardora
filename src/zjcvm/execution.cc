@@ -103,7 +103,6 @@ void Execution::UpdateStorage(
         const std::string& val,
         db::DbWriteBatch& db_batch) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    storage_map_[thread_idx].insert(key, val);
     prefix_db_->SaveTemporaryKv(key, val, db_batch);
 }
 
@@ -120,12 +119,6 @@ bool Execution::GetStorage(
         prefix_db_->GetTemporaryKv(str_key, &val);
     } else {
         prefix_db_->GetTemporaryKv(str_key, &val);
-        // if (!storage_map_[thread_idx].Get(str_key, &val)) {
-        //     // get from db and add to memory cache
-        //     if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-        //         storage_map_[thread_idx].Insert(str_key, val);
-        //     }
-        // }
     }
 
     ZJC_DEBUG("get storage: %s, %s, valid: %d",
@@ -167,13 +160,6 @@ bool Execution::GetStorage(
         prefix_db_->GetTemporaryKv(str_key, val);
     } else {
         prefix_db_->GetTemporaryKv(str_key, val);
-        // if (!storage_map_[thread_idx].Get(str_key, val)) {
-        //     // get from db and add to memory cache
-        //     res = prefix_db_->GetTemporaryKv(str_key, val);
-        //     if (res) {
-        //         storage_map_[thread_idx].Insert(str_key, *val);
-        //     }
-        // }
     }
 
     ZJC_DEBUG("get storage: %s, %s", 

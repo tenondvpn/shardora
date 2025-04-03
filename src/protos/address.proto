@@ -17,6 +17,11 @@ enum AddressType {
     kPoolAddress = 10;
 }
 
+message KeyValueInfo {
+    optional bytes value = 1;
+    optional uint64 height = 2;
+};
+
 message AddressInfo {
     optional bytes pubkey = 1;
     required uint64 balance = 2;

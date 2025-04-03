@@ -63,9 +63,7 @@ public:
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) = 0;
     // Commit a block
-    virtual void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     // Handle Synced Block From KeyValueSyncer
-    virtual void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) = 0;
     virtual double Tps() = 0;
 };
 
@@ -101,13 +99,6 @@ public:
         zjcvm::ZjchainHost& zjc_host) override;
     // Accept a synced block.
     Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) override;
-    // Commit a block and execute its txs.
-    void Commit(transport::MessagePtr msg_ptr, std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
-    // Add txs from hotstuff msg to local pool
-    // Status AddTxs(
-    //     transport::MessagePtr msg_ptr, 
-    //     const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs) override;
-    void CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) override;
 
     inline double Tps() override {
         return cur_tps_;
@@ -136,9 +127,6 @@ public:
         std::shared_ptr<consensus::WaitingTxsItem>&,
         BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
-    void commit(
-        transport::MessagePtr msg_ptr, 
-        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr);
 
     void CalculateTps(uint64_t tx_list_size) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -177,7 +165,6 @@ public:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_tps_tm_us_ = 0;
     uint32_t prev_count_ = 0;

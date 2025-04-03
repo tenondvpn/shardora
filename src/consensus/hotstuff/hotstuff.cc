@@ -1685,8 +1685,6 @@ void Hotstuff::HandleSyncedViewBlock(
         return;
     }
     
-    auto db_batch = std::make_shared<db::DbWriteBatch>();
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(vblock, db_batch);
     ZJC_DEBUG("now handle synced view block %u_%u_%lu, height: %lu",
         vblock->qc().network_id(),
         vblock->qc().pool_index(),
@@ -1720,7 +1718,7 @@ void Hotstuff::HandleSyncedViewBlock(
             }
         }
     } else {
-        acceptor()->CommitSynced(queue_item_ptr);
+        view_block_chain()->CommitSynced(vblock);
     }
 }
 
