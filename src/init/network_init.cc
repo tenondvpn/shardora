@@ -199,7 +199,7 @@ int NetworkInit::Init(int argc, char** argv) {
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
     account_mgr_->Init(db_, pools_mgr_);
-    zjcvm::Execution::Instance()->Init(db_, account_mgr_);
+    zjcvm::Execution::Instance()->Init(db_);
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
