@@ -11,7 +11,6 @@
 #include "evmc/mocked_host.hpp"
 #include "protos/address.pb.h"
 #include "protos/prefix_db.h"
-#include "zjcvm/storage_lru_map.h"
 
 namespace shardora {
 
