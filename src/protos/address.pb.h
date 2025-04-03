@@ -40,7 +40,7 @@ namespace protobuf_protos_2faddress_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[1];
+  static const ::google::protobuf::internal::ParseTable schema[2];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -53,12 +53,16 @@ namespace protobuf {
 class AddressInfo;
 class AddressInfoDefaultTypeInternal;
 extern AddressInfoDefaultTypeInternal _AddressInfo_default_instance_;
+class KeyValueInfo;
+class KeyValueInfoDefaultTypeInternal;
+extern KeyValueInfoDefaultTypeInternal _KeyValueInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace address
 }  // namespace shardora
 namespace google {
 namespace protobuf {
 template<> ::shardora::address::protobuf::AddressInfo* Arena::CreateMaybeMessage<::shardora::address::protobuf::AddressInfo>(Arena*);
+template<> ::shardora::address::protobuf::KeyValueInfo* Arena::CreateMaybeMessage<::shardora::address::protobuf::KeyValueInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace shardora {
@@ -94,6 +98,138 @@ inline bool AddressType_Parse(
     AddressType_descriptor(), name, value);
 }
 // ===================================================================
+
+class KeyValueInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.address.protobuf.KeyValueInfo) */ {
+ public:
+  KeyValueInfo();
+  virtual ~KeyValueInfo();
+
+  KeyValueInfo(const KeyValueInfo& from);
+
+  inline KeyValueInfo& operator=(const KeyValueInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  KeyValueInfo(KeyValueInfo&& from) noexcept
+    : KeyValueInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline KeyValueInfo& operator=(KeyValueInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const KeyValueInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const KeyValueInfo* internal_default_instance() {
+    return reinterpret_cast<const KeyValueInfo*>(
+               &_KeyValueInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  void Swap(KeyValueInfo* other);
+  friend void swap(KeyValueInfo& a, KeyValueInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline KeyValueInfo* New() const final {
+    return CreateMaybeMessage<KeyValueInfo>(NULL);
+  }
+
+  KeyValueInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<KeyValueInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const KeyValueInfo& from);
+  void MergeFrom(const KeyValueInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(KeyValueInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes value = 1;
+  bool has_value() const;
+  void clear_value();
+  static const int kValueFieldNumber = 1;
+  const ::std::string& value() const;
+  void set_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(::std::string&& value);
+  #endif
+  void set_value(const char* value);
+  void set_value(const void* value, size_t size);
+  ::std::string* mutable_value();
+  ::std::string* release_value();
+  void set_allocated_value(::std::string* value);
+
+  // optional uint64 height = 2;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 2;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.address.protobuf.KeyValueInfo)
+ private:
+  void set_has_value();
+  void clear_has_value();
+  void set_has_height();
+  void clear_has_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr value_;
+  ::google::protobuf::uint64 height_;
+  friend struct ::protobuf_protos_2faddress_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
 
 class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.address.protobuf.AddressInfo) */ {
  public:
@@ -137,7 +273,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_AddressInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   void Swap(AddressInfo* other);
   friend void swap(AddressInfo& a, AddressInfo& b) {
@@ -216,7 +352,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
-  // optional bytes addr = 5;
+  // required bytes addr = 5;
   bool has_addr() const;
   void clear_addr();
   static const int kAddrFieldNumber = 5;
@@ -246,28 +382,28 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_bytes_code();
   void set_allocated_bytes_code(::std::string* bytes_code);
 
-  // optional uint64 balance = 2;
+  // required uint64 balance = 2;
   bool has_balance() const;
   void clear_balance();
   static const int kBalanceFieldNumber = 2;
   ::google::protobuf::uint64 balance() const;
   void set_balance(::google::protobuf::uint64 value);
 
-  // optional uint32 sharding_id = 3;
+  // required uint32 sharding_id = 3;
   bool has_sharding_id() const;
   void clear_sharding_id();
   static const int kShardingIdFieldNumber = 3;
   ::google::protobuf::uint32 sharding_id() const;
   void set_sharding_id(::google::protobuf::uint32 value);
 
-  // optional uint32 pool_index = 4;
+  // required uint32 pool_index = 4;
   bool has_pool_index() const;
   void clear_pool_index();
   static const int kPoolIndexFieldNumber = 4;
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
-  // optional .shardora.address.protobuf.AddressType type = 6;
+  // required .shardora.address.protobuf.AddressType type = 6;
   bool has_type() const;
   void clear_type();
   static const int kTypeFieldNumber = 6;
@@ -281,7 +417,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::int32 credit() const;
   void set_credit(::google::protobuf::int32 value);
 
-  // optional uint64 latest_height = 8;
+  // required uint64 latest_height = 8;
   bool has_latest_height() const;
   void clear_latest_height();
   static const int kLatestHeightFieldNumber = 8;
@@ -295,7 +431,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 consensus_gap() const;
   void set_consensus_gap(::google::protobuf::uint64 value);
 
-  // optional uint64 nonce = 14;
+  // required uint64 nonce = 14;
   bool has_nonce() const;
   void clear_nonce();
   static const int kNonceFieldNumber = 14;
@@ -345,6 +481,9 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void set_has_nonce();
   void clear_has_nonce();
 
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
+
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -373,6 +512,100 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// KeyValueInfo
+
+// optional bytes value = 1;
+inline bool KeyValueInfo::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void KeyValueInfo::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void KeyValueInfo::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void KeyValueInfo::clear_value() {
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_value();
+}
+inline const ::std::string& KeyValueInfo::value() const {
+  // @@protoc_insertion_point(field_get:shardora.address.protobuf.KeyValueInfo.value)
+  return value_.GetNoArena();
+}
+inline void KeyValueInfo::set_value(const ::std::string& value) {
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.address.protobuf.KeyValueInfo.value)
+}
+#if LANG_CXX11
+inline void KeyValueInfo::set_value(::std::string&& value) {
+  set_has_value();
+  value_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.address.protobuf.KeyValueInfo.value)
+}
+#endif
+inline void KeyValueInfo::set_value(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.address.protobuf.KeyValueInfo.value)
+}
+inline void KeyValueInfo::set_value(const void* value, size_t size) {
+  set_has_value();
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.address.protobuf.KeyValueInfo.value)
+}
+inline ::std::string* KeyValueInfo::mutable_value() {
+  set_has_value();
+  // @@protoc_insertion_point(field_mutable:shardora.address.protobuf.KeyValueInfo.value)
+  return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* KeyValueInfo::release_value() {
+  // @@protoc_insertion_point(field_release:shardora.address.protobuf.KeyValueInfo.value)
+  if (!has_value()) {
+    return NULL;
+  }
+  clear_has_value();
+  return value_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void KeyValueInfo::set_allocated_value(::std::string* value) {
+  if (value != NULL) {
+    set_has_value();
+  } else {
+    clear_has_value();
+  }
+  value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:shardora.address.protobuf.KeyValueInfo.value)
+}
+
+// optional uint64 height = 2;
+inline bool KeyValueInfo::has_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void KeyValueInfo::set_has_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void KeyValueInfo::clear_has_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void KeyValueInfo::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
+}
+inline ::google::protobuf::uint64 KeyValueInfo::height() const {
+  // @@protoc_insertion_point(field_get:shardora.address.protobuf.KeyValueInfo.height)
+  return height_;
+}
+inline void KeyValueInfo::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.address.protobuf.KeyValueInfo.height)
+}
+
+// -------------------------------------------------------------------
+
 // AddressInfo
 
 // optional bytes pubkey = 1;
@@ -441,7 +674,7 @@ inline void AddressInfo::set_allocated_pubkey(::std::string* pubkey) {
   // @@protoc_insertion_point(field_set_allocated:shardora.address.protobuf.AddressInfo.pubkey)
 }
 
-// optional uint64 balance = 2;
+// required uint64 balance = 2;
 inline bool AddressInfo::has_balance() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -465,7 +698,7 @@ inline void AddressInfo::set_balance(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.address.protobuf.AddressInfo.balance)
 }
 
-// optional uint32 sharding_id = 3;
+// required uint32 sharding_id = 3;
 inline bool AddressInfo::has_sharding_id() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -489,7 +722,7 @@ inline void AddressInfo::set_sharding_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.address.protobuf.AddressInfo.sharding_id)
 }
 
-// optional uint32 pool_index = 4;
+// required uint32 pool_index = 4;
 inline bool AddressInfo::has_pool_index() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -513,7 +746,7 @@ inline void AddressInfo::set_pool_index(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.address.protobuf.AddressInfo.pool_index)
 }
 
-// optional bytes addr = 5;
+// required bytes addr = 5;
 inline bool AddressInfo::has_addr() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -579,7 +812,7 @@ inline void AddressInfo::set_allocated_addr(::std::string* addr) {
   // @@protoc_insertion_point(field_set_allocated:shardora.address.protobuf.AddressInfo.addr)
 }
 
-// optional .shardora.address.protobuf.AddressType type = 6;
+// required .shardora.address.protobuf.AddressType type = 6;
 inline bool AddressInfo::has_type() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -670,7 +903,7 @@ inline void AddressInfo::set_allocated_bytes_code(::std::string* bytes_code) {
   // @@protoc_insertion_point(field_set_allocated:shardora.address.protobuf.AddressInfo.bytes_code)
 }
 
-// optional uint64 latest_height = 8;
+// required uint64 latest_height = 8;
 inline bool AddressInfo::has_latest_height() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
@@ -817,7 +1050,7 @@ inline void AddressInfo::set_consensus_gap(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.address.protobuf.AddressInfo.consensus_gap)
 }
 
-// optional uint64 nonce = 14;
+// required uint64 nonce = 14;
 inline bool AddressInfo::has_nonce() const {
   return (_has_bits_[0] & 0x00000400u) != 0;
 }
@@ -844,6 +1077,8 @@ inline void AddressInfo::set_nonce(::google::protobuf::uint64 value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 

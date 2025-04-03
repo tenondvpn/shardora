@@ -129,7 +129,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         assert(false);
         return nullptr;
     }
-
+/*
     std::cout << " tx nonce: " << nonce << std::endl
         << "tx from: " << common::Encode::HexEncode(security->GetAddress()) << std::endl
         << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
@@ -140,6 +140,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         << "amount: " << amount << std::endl
         << "gas_limit: " << gas_limit << std::endl
         << std::endl;
+*/
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -484,13 +485,13 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 1 == 0) {
+        if (count % 200 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
             
-            usleep(1000000lu);
+            usleep(100000lu);
 
         }
 

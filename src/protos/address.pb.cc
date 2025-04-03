@@ -25,6 +25,11 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf
 namespace shardora {
 namespace address {
 namespace protobuf {
+class KeyValueInfoDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<KeyValueInfo>
+      _instance;
+} _KeyValueInfo_default_instance_;
 class AddressInfoDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<AddressInfo>
@@ -34,6 +39,20 @@ class AddressInfoDefaultTypeInternal {
 }  // namespace address
 }  // namespace shardora
 namespace protobuf_protos_2faddress_2eproto {
+static void InitDefaultsKeyValueInfo() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::address::protobuf::_KeyValueInfo_default_instance_;
+    new (ptr) ::shardora::address::protobuf::KeyValueInfo();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::address::protobuf::KeyValueInfo::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_KeyValueInfo =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsKeyValueInfo}, {}};
+
 static void InitDefaultsAddressInfo() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -50,13 +69,23 @@ static void InitDefaultsAddressInfo() {
       &protobuf_protos_2fbls_2eproto::scc_info_BlsPublicKey.base,}};
 
 void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_KeyValueInfo.base);
   ::google::protobuf::internal::InitSCC(&scc_info_AddressInfo.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[1];
+::google::protobuf::Metadata file_level_metadata[2];
 const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::KeyValueInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::KeyValueInfo, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::KeyValueInfo, value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::KeyValueInfo, height_),
+  0,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -92,10 +121,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   10,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 19, sizeof(::shardora::address::protobuf::AddressInfo)},
+  { 0, 7, sizeof(::shardora::address::protobuf::KeyValueInfo)},
+  { 9, 28, sizeof(::shardora::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::address::protobuf::_KeyValueInfo_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::address::protobuf::_AddressInfo_default_instance_),
 };
 
@@ -114,32 +145,33 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 2);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\024protos/address.proto\022\031shardora.address"
-      ".protobuf\032\020protos/bls.proto\"\344\002\n\013AddressI"
-      "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013"
-      "sharding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n"
-      "\004addr\030\005 \001(\014\0224\n\004type\030\006 \001(\0162&.shardora.add"
-      "ress.protobuf.AddressType\022\022\n\nbytes_code\030"
-      "\007 \001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t"
-      " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
-      "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
-      "94967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rconsensu"
-      "s_gap\030\r \001(\004\022\r\n\005nonce\030\016 \001(\004*\342\001\n\013AddressTy"
-      "pe\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootE"
-      "lect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\031"
-      "\n\025kImmutablePoolAddress\020\005\022\025\n\021kLocalToTxA"
-      "ddress\020\006\022\021\n\rkElectAddress\020\007\022\027\n\023kContract"
-      "Prepayment\020\010\022\027\n\023kWaitingRootConfirm\020\t\022\020\n"
-      "\014kPoolAddress\020\n"
+      ".protobuf\032\020protos/bls.proto\"-\n\014KeyValueI"
+      "nfo\022\r\n\005value\030\001 \001(\014\022\016\n\006height\030\002 \001(\004\"\344\002\n\013A"
+      "ddressInfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 "
+      "\002(\004\022\023\n\013sharding_id\030\003 \002(\r\022\022\n\npool_index\030\004"
+      " \002(\r\022\014\n\004addr\030\005 \002(\014\0224\n\004type\030\006 \002(\0162&.shard"
+      "ora.address.protobuf.AddressType\022\022\n\nbyte"
+      "s_code\030\007 \001(\014\022\025\n\rlatest_height\030\010 \002(\004\022\021\n\006c"
+      "redit\030\t \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.b"
+      "ls.protobuf.BlsPublicKey\022\035\n\telect_pos\030\013 "
+      "\001(\r:\n4294967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rc"
+      "onsensus_gap\030\r \001(\004\022\r\n\005nonce\030\016 \002(\004*\342\001\n\013Ad"
+      "dressType\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n"
+      "\nkRootElect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatis"
+      "tic\020\004\022\031\n\025kImmutablePoolAddress\020\005\022\025\n\021kLoc"
+      "alToTxAddress\020\006\022\021\n\rkElectAddress\020\007\022\027\n\023kC"
+      "ontractPrepayment\020\010\022\027\n\023kWaitingRootConfi"
+      "rm\020\t\022\020\n\014kPoolAddress\020\n"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 655);
+      descriptor, 702);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -180,6 +212,289 @@ bool AddressType_IsValid(int value) {
     default:
       return false;
   }
+}
+
+
+// ===================================================================
+
+void KeyValueInfo::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int KeyValueInfo::kValueFieldNumber;
+const int KeyValueInfo::kHeightFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+KeyValueInfo::KeyValueInfo()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2faddress_2eproto::scc_info_KeyValueInfo.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.address.protobuf.KeyValueInfo)
+}
+KeyValueInfo::KeyValueInfo(const KeyValueInfo& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_value()) {
+    value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
+  }
+  height_ = from.height_;
+  // @@protoc_insertion_point(copy_constructor:shardora.address.protobuf.KeyValueInfo)
+}
+
+void KeyValueInfo::SharedCtor() {
+  value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  height_ = GOOGLE_ULONGLONG(0);
+}
+
+KeyValueInfo::~KeyValueInfo() {
+  // @@protoc_insertion_point(destructor:shardora.address.protobuf.KeyValueInfo)
+  SharedDtor();
+}
+
+void KeyValueInfo::SharedDtor() {
+  value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void KeyValueInfo::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* KeyValueInfo::descriptor() {
+  ::protobuf_protos_2faddress_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2faddress_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const KeyValueInfo& KeyValueInfo::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2faddress_2eproto::scc_info_KeyValueInfo.base);
+  return *internal_default_instance();
+}
+
+
+void KeyValueInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.address.protobuf.KeyValueInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    value_.ClearNonDefaultToEmptyNoArena();
+  }
+  height_ = GOOGLE_ULONGLONG(0);
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool KeyValueInfo::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.address.protobuf.KeyValueInfo)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional bytes value = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_value()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 height = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &height_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.address.protobuf.KeyValueInfo)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.address.protobuf.KeyValueInfo)
+  return false;
+#undef DO_
+}
+
+void KeyValueInfo::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.address.protobuf.KeyValueInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes value = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->value(), output);
+  }
+
+  // optional uint64 height = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->height(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.address.protobuf.KeyValueInfo)
+}
+
+::google::protobuf::uint8* KeyValueInfo::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.address.protobuf.KeyValueInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes value = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->value(), target);
+  }
+
+  // optional uint64 height = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->height(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.address.protobuf.KeyValueInfo)
+  return target;
+}
+
+size_t KeyValueInfo::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.address.protobuf.KeyValueInfo)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional bytes value = 1;
+    if (has_value()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->value());
+    }
+
+    // optional uint64 height = 2;
+    if (has_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->height());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void KeyValueInfo::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.address.protobuf.KeyValueInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  const KeyValueInfo* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const KeyValueInfo>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.address.protobuf.KeyValueInfo)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.address.protobuf.KeyValueInfo)
+    MergeFrom(*source);
+  }
+}
+
+void KeyValueInfo::MergeFrom(const KeyValueInfo& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.address.protobuf.KeyValueInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_value();
+      value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      height_ = from.height_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void KeyValueInfo::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.address.protobuf.KeyValueInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void KeyValueInfo::CopyFrom(const KeyValueInfo& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.address.protobuf.KeyValueInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool KeyValueInfo::IsInitialized() const {
+  return true;
+}
+
+void KeyValueInfo::Swap(KeyValueInfo* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void KeyValueInfo::InternalSwap(KeyValueInfo* other) {
+  using std::swap;
+  value_.Swap(&other->value_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(height_, other->height_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata KeyValueInfo::GetMetadata() const {
+  protobuf_protos_2faddress_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2faddress_2eproto::file_level_metadata[kIndexInFileMessages];
 }
 
 
@@ -329,7 +644,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 balance = 2;
+      // required uint64 balance = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
@@ -343,7 +658,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 sharding_id = 3;
+      // required uint32 sharding_id = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
@@ -357,7 +672,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 pool_index = 4;
+      // required uint32 pool_index = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
@@ -371,7 +686,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes addr = 5;
+      // required bytes addr = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
@@ -383,7 +698,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .shardora.address.protobuf.AddressType type = 6;
+      // required .shardora.address.protobuf.AddressType type = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
@@ -415,7 +730,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 latest_height = 8;
+      // required uint64 latest_height = 8;
       case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
@@ -497,7 +812,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 nonce = 14;
+      // required uint64 nonce = 14;
       case 14: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(112u /* 112 & 0xFF */)) {
@@ -544,28 +859,28 @@ void AddressInfo::SerializeWithCachedSizes(
       1, this->pubkey(), output);
   }
 
-  // optional uint64 balance = 2;
+  // required uint64 balance = 2;
   if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->balance(), output);
   }
 
-  // optional uint32 sharding_id = 3;
+  // required uint32 sharding_id = 3;
   if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->sharding_id(), output);
   }
 
-  // optional uint32 pool_index = 4;
+  // required uint32 pool_index = 4;
   if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->pool_index(), output);
   }
 
-  // optional bytes addr = 5;
+  // required bytes addr = 5;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       5, this->addr(), output);
   }
 
-  // optional .shardora.address.protobuf.AddressType type = 6;
+  // required .shardora.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       6, this->type(), output);
@@ -577,7 +892,7 @@ void AddressInfo::SerializeWithCachedSizes(
       7, this->bytes_code(), output);
   }
 
-  // optional uint64 latest_height = 8;
+  // required uint64 latest_height = 8;
   if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->latest_height(), output);
   }
@@ -611,7 +926,7 @@ void AddressInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(13, this->consensus_gap(), output);
   }
 
-  // optional uint64 nonce = 14;
+  // required uint64 nonce = 14;
   if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(14, this->nonce(), output);
   }
@@ -638,29 +953,29 @@ void AddressInfo::SerializeWithCachedSizes(
         1, this->pubkey(), target);
   }
 
-  // optional uint64 balance = 2;
+  // required uint64 balance = 2;
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->balance(), target);
   }
 
-  // optional uint32 sharding_id = 3;
+  // required uint32 sharding_id = 3;
   if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->sharding_id(), target);
   }
 
-  // optional uint32 pool_index = 4;
+  // required uint32 pool_index = 4;
   if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->pool_index(), target);
   }
 
-  // optional bytes addr = 5;
+  // required bytes addr = 5;
   if (cached_has_bits & 0x00000002u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         5, this->addr(), target);
   }
 
-  // optional .shardora.address.protobuf.AddressType type = 6;
+  // required .shardora.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       6, this->type(), target);
@@ -673,7 +988,7 @@ void AddressInfo::SerializeWithCachedSizes(
         7, this->bytes_code(), target);
   }
 
-  // optional uint64 latest_height = 8;
+  // required uint64 latest_height = 8;
   if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(8, this->latest_height(), target);
   }
@@ -706,7 +1021,7 @@ void AddressInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(13, this->consensus_gap(), target);
   }
 
-  // optional uint64 nonce = 14;
+  // required uint64 nonce = 14;
   if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(14, this->nonce(), target);
   }
@@ -719,6 +1034,60 @@ void AddressInfo::SerializeWithCachedSizes(
   return target;
 }
 
+size_t AddressInfo::RequiredFieldsByteSizeFallback() const {
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:shardora.address.protobuf.AddressInfo)
+  size_t total_size = 0;
+
+  if (has_addr()) {
+    // required bytes addr = 5;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->addr());
+  }
+
+  if (has_balance()) {
+    // required uint64 balance = 2;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->balance());
+  }
+
+  if (has_sharding_id()) {
+    // required uint32 sharding_id = 3;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->sharding_id());
+  }
+
+  if (has_pool_index()) {
+    // required uint32 pool_index = 4;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->pool_index());
+  }
+
+  if (has_type()) {
+    // required .shardora.address.protobuf.AddressType type = 6;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+  }
+
+  if (has_latest_height()) {
+    // required uint64 latest_height = 8;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->latest_height());
+  }
+
+  if (has_nonce()) {
+    // required uint64 nonce = 14;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->nonce());
+  }
+
+  return total_size;
+}
 size_t AddressInfo::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:shardora.address.protobuf.AddressInfo)
   size_t total_size = 0;
@@ -727,6 +1096,44 @@ size_t AddressInfo::ByteSizeLong() const {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
+  }
+  if (((_has_bits_[0] & 0x0000057a) ^ 0x0000057a) == 0) {  // All required fields are present.
+    // required bytes addr = 5;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->addr());
+
+    // required uint64 balance = 2;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->balance());
+
+    // required uint32 sharding_id = 3;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->sharding_id());
+
+    // required uint32 pool_index = 4;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->pool_index());
+
+    // required .shardora.address.protobuf.AddressType type = 6;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+
+    // required uint64 latest_height = 8;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->latest_height());
+
+    // required uint64 nonce = 14;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->nonce());
+
+  } else {
+    total_size += RequiredFieldsByteSizeFallback();
   }
   // repeated .shardora.bls.protobuf.BlsPublicKey g2s = 10;
   {
@@ -739,85 +1146,35 @@ size_t AddressInfo::ByteSizeLong() const {
     }
   }
 
-  if (_has_bits_[0 / 32] & 255u) {
-    // optional bytes pubkey = 1;
-    if (has_pubkey()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->pubkey());
-    }
-
-    // optional bytes addr = 5;
-    if (has_addr()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->addr());
-    }
-
-    // optional bytes bytes_code = 7;
-    if (has_bytes_code()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->bytes_code());
-    }
-
-    // optional uint64 balance = 2;
-    if (has_balance()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->balance());
-    }
-
-    // optional uint32 sharding_id = 3;
-    if (has_sharding_id()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->sharding_id());
-    }
-
-    // optional uint32 pool_index = 4;
-    if (has_pool_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->pool_index());
-    }
-
-    // optional .shardora.address.protobuf.AddressType type = 6;
-    if (has_type()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
-    }
-
-    // optional int32 credit = 9 [default = 0];
-    if (has_credit()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->credit());
-    }
-
+  // optional bytes pubkey = 1;
+  if (has_pubkey()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->pubkey());
   }
-  if (_has_bits_[8 / 32] & 7936u) {
-    // optional uint64 latest_height = 8;
-    if (has_latest_height()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->latest_height());
-    }
 
-    // optional uint64 consensus_gap = 13;
-    if (has_consensus_gap()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->consensus_gap());
-    }
+  // optional bytes bytes_code = 7;
+  if (has_bytes_code()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->bytes_code());
+  }
 
-    // optional uint64 nonce = 14;
-    if (has_nonce()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->nonce());
-    }
+  // optional int32 credit = 9 [default = 0];
+  if (has_credit()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int32Size(
+        this->credit());
+  }
 
+  // optional uint64 consensus_gap = 13;
+  if (has_consensus_gap()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->consensus_gap());
+  }
+
+  if (_has_bits_[8 / 32] & 6144u) {
     // optional bool destructed = 12;
     if (has_destructed()) {
       total_size += 1 + 1;
@@ -925,6 +1282,7 @@ void AddressInfo::CopyFrom(const AddressInfo& from) {
 }
 
 bool AddressInfo::IsInitialized() const {
+  if ((_has_bits_[0] & 0x0000057a) != 0x0000057a) return false;
   return true;
 }
 
@@ -967,6 +1325,9 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
 }  // namespace shardora
 namespace google {
 namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::address::protobuf::KeyValueInfo* Arena::CreateMaybeMessage< ::shardora::address::protobuf::KeyValueInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::address::protobuf::KeyValueInfo >(arena);
+}
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::address::protobuf::AddressInfo* Arena::CreateMaybeMessage< ::shardora::address::protobuf::AddressInfo >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::address::protobuf::AddressInfo >(arena);
 }
