@@ -79,6 +79,7 @@ int ToTxLocalItem::HandleTx(
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
         acc_balance_map[to_txs.tos(i).des()]->set_balance(to_balance);
         acc_balance_map[to_txs.tos(i).des()]->set_nonce(nonce);
+        prefix_db_->AddAddressInfo(to_txs.tos(i).des(), *(acc_balance_map[to_txs.tos(i).des()]), zjc_host.db_batch_);
         ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
             to_balance,
@@ -89,6 +90,7 @@ int ToTxLocalItem::HandleTx(
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+    prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kConsensusLocalNormalTos);
     storage->set_value(block_to_txs.SerializeAsString());

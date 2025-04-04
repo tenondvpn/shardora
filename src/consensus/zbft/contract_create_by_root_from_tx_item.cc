@@ -94,6 +94,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
 
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
+    prefix_db_->AddAddressInfo(from, *(acc_balance_map[from]), zjc_host.db_batch_);
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("set contract create called: %d, from: %s, to: %s, amount: %lu",

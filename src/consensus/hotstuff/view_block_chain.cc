@@ -350,18 +350,6 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
     new_block_cache_callback_(vblock, *db_batch);
 }
 
-void ViewBlockChain::SaveBlockAccounts(
-        const std::shared_ptr<ViewBlockInfo>& view_block_info, 
-        db::DbWriteBatch& db_batch) {
-    auto tmp_block = view_block_info->view_block;
-    if (tmp_block->qc().view() > commited_max_view_) {
-        commited_max_view_ = tmp_block->qc().view();
-
-    } else {
-        // check saved or height invalid
-    }
-}
-
 void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {
     std::list<std::shared_ptr<ViewBlockInfo>> to_commit_blocks;
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -406,7 +394,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         tmp_block_info = parent_block_info;
     }
 
-    auto db_batch = std::make_shared<db::DbWriteBatch>();
     for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
         auto tmp_block = (*iter)->view_block;
         ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s", 
@@ -416,8 +403,8 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(tmp_block->parent_hash()).c_str());
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        new_block_cache_callback_(tmp_block, *db_batch);
-        SaveBlockAccounts(*iter, *db_batch);
+        auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
+        new_block_cache_callback_(tmp_block, db_batch);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         SaveBlockCheckedParentHash(
             tmp_block->parent_hash(), 
@@ -427,17 +414,16 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             commited_max_view_ = tmp_block->qc().view();
         }
 
+        AddNewBlock(tmp_block, db_batch);
         view_blocks_info_.erase(tmp_block->qc().view_block_hash());
-        ADD_DEBUG_PROCESS_TIMESTAMP();
-    }
-
-    if (!db_->Put(*db_batch).ok()) {
-        ZJC_FATAL("write to db failed!");
+        ADD_DEBUG_PROCESS_TIMESTAMP();    
+        if (!db_->Put(db_batch).ok()) {
+            ZJC_FATAL("write to db failed!");
+        }
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SetLatestCommittedBlock(v_block_info);
-    
     // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
@@ -474,6 +460,54 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         v_block->block_info().height(),
         String().c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP();
+}
+
+void ViewBlockChain::AddNewBlock(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
+        db::DbWriteBatch& db_batch) {
+    assert(!view_block_item->qc().sign_x().empty());
+    auto* block_item = &view_block_item->block_info();
+    // TODO: check all block saved success
+    auto btime = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        block_item->height(),
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        block_item->tx_list_size(),
+        common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
+        view_block_item->qc().elect_height(),
+        block_item->timeblock_height(),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
+    assert(view_block_item->qc().elect_height() >= 1);
+    // block 两条信息持久化
+    if (!prefix_db_->SaveBlock(*view_block_item, db_batch)) {
+        ZJC_DEBUG("block saved: %lu", block_item->height());
+        return;
+    }
+
+    // if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+    //     pools_mgr_->OnNewCrossBlock(view_block_item);
+    // } else {
+    //     if (statistic_mgr_) {
+    //         statistic_mgr_->OnNewBlock(view_block_item);
+    //     }
+
+    //     to_txs_pool_->NewBlock(view_block_item);
+    //     zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+    // }
+
+    prefix_db_->SaveValidViewBlockParentHash(
+        view_block_item->parent_hash(), 
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        db_batch);
 }
 
 // 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks

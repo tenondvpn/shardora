@@ -250,6 +250,7 @@ int ContractCall::HandleTx(
             if (!acc_balance_map[block_tx.to()]->destructed()) {
                 acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
                 acc_balance_map[block_tx.to()]->set_nonce(0);
+                prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
             }
         }
 
@@ -273,6 +274,7 @@ int ContractCall::HandleTx(
     // must prepayment's nonce, not caller or contract
     acc_balance_map[preppayment_id]->set_balance(from_balance);
     acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
+    prefix_db_->AddAddressInfo(preppayment_id, *(acc_balance_map[preppayment_id]), zjc_host.db_batch_);
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));

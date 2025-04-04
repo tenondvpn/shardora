@@ -187,8 +187,10 @@ int ContractCreateByRootToTxItem::HandleTx(
         auto preppayment_id = block_tx.to() + block_tx.from();
         acc_balance_map[preppayment_id]->set_balance(from_prepayment);
         acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
+        prefix_db_->AddAddressInfo(preppayment_id, *(acc_balance_map[preppayment_id]), zjc_host.db_batch_);
 		acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
 		acc_balance_map[block_tx.to()]->set_nonce(0);
+        prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
 		block_tx.set_contract_prepayment(from_prepayment);
 		block_tx.set_gas_used(gas_used);
 		ZJC_DEBUG("create contract local called to: %s, contract_from: %s, "

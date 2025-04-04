@@ -364,30 +364,30 @@ public:
 
     bool SaveBlock(const view_block::protobuf::ViewBlockItem& view_block, db::DbWriteBatch& batch) {
         assert(!view_block.qc().view_block_hash().empty());
-        if (BlockExists(view_block.qc().view_block_hash())) {
-            auto* block_item = &view_block.block_info();
-            ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
-                "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-                "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                block_item->height(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                view_block.qc().view(),
-                block_item->tx_list_size(),
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().elect_height(),
-                block_item->timeblock_height());
-            std::string block_hash;
-            assert(GetBlockHashWithBlockHeight(
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                block_item->height(),
-                &block_hash));
-            return false;
-        }
+        // if (BlockExists(view_block.qc().view_block_hash())) {
+        //     auto* block_item = &view_block.block_info();
+        //     ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
+        //         "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+        //         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+        //         view_block.qc().network_id(),
+        //         view_block.qc().pool_index(),
+        //         block_item->height(),
+        //         view_block.qc().network_id(),
+        //         view_block.qc().pool_index(),
+        //         view_block.qc().view(),
+        //         block_item->tx_list_size(),
+        //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+        //         view_block.qc().elect_height(),
+        //         block_item->timeblock_height());
+        //     std::string block_hash;
+        //     assert(GetBlockHashWithBlockHeight(
+        //         view_block.qc().network_id(),
+        //         view_block.qc().pool_index(),
+        //         block_item->height(),
+        //         &block_hash));
+        //     return false;
+        // }
 
         std::string key;
         key.reserve(48);

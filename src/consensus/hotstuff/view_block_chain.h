@@ -211,7 +211,6 @@ public:
     }
 
 private:
-    void SaveBlockAccounts(const std::shared_ptr<ViewBlockInfo>& view_block_info, db::DbWriteBatch& db_batch);
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());
@@ -265,6 +264,10 @@ private:
         view_blocks_info_[hash]->status = status;        
     }
 
+    void AddNewBlock(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
+        db::DbWriteBatch& db_batch);
+        
     static const uint32_t kCachedViewBlockCount = 16u;
 
     std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
