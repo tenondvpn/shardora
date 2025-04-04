@@ -403,6 +403,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(tmp_block->parent_hash()).c_str());
         ADD_DEBUG_PROCESS_TIMESTAMP();
+        assert((*iter)->zjc_host_ptr);
         auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
         new_block_cache_callback_(tmp_block, db_batch);
         ADD_DEBUG_PROCESS_TIMESTAMP();
