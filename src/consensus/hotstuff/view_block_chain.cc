@@ -60,26 +60,36 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
+    if (zjc_host_ptr == nullptr) {
+        zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    }
+
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
-            if (tx.balance() == 0) {
-                continue;
+            if (tx.has_balance()) {
+                auto& addr = account_mgr_->GetTxValidAddress(tx);
+                auto addr_info = ChainGetAccountInfo(addr);
+                auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
+                if (addr_info != nullptr) {
+                    *new_addr_info = *addr_info;
+                } else {
+                    new_addr_info->set_addr(addr);
+                }
+
+                new_addr_info->set_balance(tx.balance());
+                new_addr_info->set_nonce(tx.nonce());
+                (*balane_map_ptr)[addr] = new_addr_info;
+                prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
             }
 
-            auto& addr = account_mgr_->GetTxValidAddress(tx);
-            auto addr_info = ChainGetAccountInfo(addr);
-            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
-            if (addr_info != nullptr) {
-                *new_addr_info = *addr_info;
-            } else {
-                new_addr_info->set_addr(addr);
+            for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                address::protobuf::KeyValueInfo kv_info;
+                kv_info.set_value(tx.storages(storage_idx).value());
+                kv_info.set_height(tx.nonce());
+                zjc_host_ptr->db_batch_.Put(tx.storages(storage_idx).key(), kv_info.SerializeAsString());
             }
-
-            new_addr_info->set_balance(tx.balance());
-            new_addr_info->set_nonce(tx.nonce());
-            (*balane_map_ptr)[addr] = new_addr_info;
         }
     }
 

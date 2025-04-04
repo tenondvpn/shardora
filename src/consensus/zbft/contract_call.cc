@@ -239,7 +239,8 @@ int ContractCall::HandleTx(
                         common::Encode::HexEncode(protos::kContractDestruct).c_str());
                     acc_balance_map[block_tx.to()]->set_balance(0);
                     acc_balance_map[block_tx.to()]->set_destructed(true);
-                    // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
+                    prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+                // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
                 }
 
             } while (0);
