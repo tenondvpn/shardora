@@ -299,7 +299,7 @@ private:
     std::shared_ptr<IBlockAcceptor> block_acceptor_;
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     StorageLruMap<10240> storage_lru_map_;
-    std::shared_ptr<block::BlockManager> block_mgr_,
+    std::shared_ptr<block::BlockManager> block_mgr_;
 };
 
 // from db
