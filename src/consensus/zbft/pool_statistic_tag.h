@@ -33,7 +33,7 @@ public:
             return consensus::kConsensusSuccess;
         }
 
-        ZJC_WARN("failed call pool statistic tag: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        ZJC_WARN("success call pool statistic tag: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());

@@ -430,6 +430,10 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
                     acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {
                 account_lru_map_.insert(acc_iter->second);
+                ZJC_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
+                    common::Encode::HexEncode(acc_iter->second->addr()).c_str(),
+                    acc_iter->second->balance(),
+                    acc_iter->second->nonce());
             }
         }
 
