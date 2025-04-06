@@ -789,7 +789,7 @@ int GenesisBlockInit::CreateElectBlock(
     fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(view_block_ptr, db_batch);
     block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
-    block_mgr_->GenesisNewBlock(view_block_ptr);
+    block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
     root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
     root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
     db_->Put(db_batch);
@@ -889,7 +889,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -962,7 +962,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
@@ -1023,7 +1023,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         // block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
 
         // 选举块、时间块无论 shard 都是要全网同步的
-        block_mgr_->GenesisNewBlock(pb_v_block);
+        block_mgr_->GenesisNewBlock(pb_v_block, db_batch);
         for (int32_t i = 0; i < tenon_block_ptr->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block_ptr->tx_list(i).storages_size(); ++j) {
                 if (tenon_block_ptr->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
@@ -1264,7 +1264,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
         }
         // 出块，并处理块中不同类型的交易
-        block_mgr_->GenesisNewBlock(view_block_ptr);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
         // TODO 感觉重复，可实验
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
@@ -1624,7 +1624,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             view_block_ptr,
             db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         
         // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
         for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
@@ -1763,7 +1763,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             view_block_ptr,
             db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
         auto* heights_item = init_heights.add_heights();
         heights_item->set_min_height(0);

@@ -130,12 +130,6 @@ void BlockManager::OnNewElectBlock(
     }
 }
 
-void BlockManager::GenesisNewBlock(
-    const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item) {
-    db::DbWriteBatch db_batch;
-    AddNewBlock(block_item, db_batch);
-}
-
 void BlockManager::ConsensusAddBlock(
         const BlockToDbItemPtr& block_item) {
     assert(!block_item->view_block_ptr->qc().sign_x().empty());
@@ -786,7 +780,7 @@ void BlockManager::createConsensusLocalToTxs(
 //     }
 // }
 
-void BlockManager::AddNewBlock(
+void BlockManager::GenesisNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch) {
     // TODO: fix
@@ -839,7 +833,7 @@ void BlockManager::AddNewBlock(
 
             to_txs_pool_->NewBlock(view_block_item);
             btime10 = common::TimeUtils::TimestampMs();
-            zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+            // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
         }
 
         btime1 = common::TimeUtils::TimestampMs();
@@ -932,10 +926,10 @@ void BlockManager::AddNewBlock(
         db_batch);
     auto btime3 = common::TimeUtils::TimestampMs();
     auto put_size = db_batch.ApproximateSize();
-    auto st = db_->Put(db_batch);
-    if (!st.ok()) {
-        ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
-    }
+    // auto st = db_->Put(db_batch);
+    // if (!st.ok()) {
+    //     ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString().c_str());
+    // }
 
     if (hotstuff_mgr_ && network::IsSameToLocalShard(view_block_item->qc().network_id())) {
         hotstuff_mgr_->UpdateStoredToDbView(
@@ -1014,6 +1008,48 @@ void BlockManager::AddNewBlock(
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(view_block_item);
     }
+}
+
+void BlockManager::AddNewBlock(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
+        db::DbWriteBatch& db_batch) {
+    assert(!view_block_item->qc().sign_x().empty());
+    auto* block_item = &view_block_item->block_info();
+    // TODO: check all block saved success
+    auto btime = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        block_item->height(),
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        block_item->tx_list_size(),
+        common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
+        view_block_item->qc().elect_height(),
+        block_item->timeblock_height(),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
+    assert(view_block_item->qc().elect_height() >= 1);
+    // 当前节点和 block 分配的 shard 不同，要跨分片交易
+    if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+        pools_mgr_->OnNewCrossBlock(view_block_item);
+        ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+            view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    } else {
+        if (statistic_mgr_) {
+            statistic_mgr_->OnNewBlock(view_block_item);
+        }
+
+        to_txs_pool_->NewBlock(view_block_item);
+        // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+    }
+
+//     if (ck_client_ != nullptr) {
+//         ck_client_->AddNewBlock(view_block_item);
+//     }
 }
 
 // HandleJoinElectTx 持久化 JoinElect 交易相关信息

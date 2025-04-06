@@ -18,12 +18,14 @@ ViewBlockChain::ViewBlockChain() {}
 void ViewBlockChain::Init(
         uint32_t pool_index, 
         std::shared_ptr<db::Db>& db, 
+        std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<block::AccountManager> account_mgr, 
         std::shared_ptr<sync::KeyValueSync> kv_sync,
         std::shared_ptr<IBlockAcceptor> block_acceptor,
         consensus::BlockCacheCallback new_block_cache_callback) {
     db_ = db;
     pool_index_ = pool_index;
+    block_mgr_ = block_mgr;
     account_mgr_ = account_mgr;
     kv_sync_ = kv_sync;
     block_acceptor_ = block_acceptor;
@@ -442,6 +444,8 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         if (!db_->Put(db_batch).ok()) {
             ZJC_FATAL("write to db failed!");
         }
+
+        block_mgr_->ConsensusAddBlock(tmp_block);
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();

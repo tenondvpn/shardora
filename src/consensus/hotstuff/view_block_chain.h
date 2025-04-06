@@ -27,6 +27,7 @@ public:
     void Init(
         uint32_t pool_index, 
         std::shared_ptr<db::Db>& db, 
+        std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<block::AccountManager> account_mgr, 
         std::shared_ptr<sync::KeyValueSync> kv_sync,
         std::shared_ptr<IBlockAcceptor> block_acceptor,
@@ -298,6 +299,7 @@ private:
     std::shared_ptr<IBlockAcceptor> block_acceptor_;
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     StorageLruMap<10240> storage_lru_map_;
+    std::shared_ptr<block::BlockManager> block_mgr_,
 };
 
 // from db
