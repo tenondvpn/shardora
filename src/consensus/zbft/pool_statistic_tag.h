@@ -25,7 +25,15 @@ public:
             block::protobuf::BlockTx& block_tx) {
         uint64_t to_balance = 0;
         uint64_t to_nonce = 0;
-        GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+        if (GetTempAccountBalance(
+                zjc_host, 
+                block_tx.to(), 
+                acc_balance_map, 
+                &to_balance, 
+                &to_nonce) != consensus::kConsensusSuccess) {
+            return consensus::kConsensusError;
+        }
+
         if (to_nonce + 1 != block_tx.nonce()) {
             block_tx.set_status(kConsensusNonceInvalid);
             ZJC_WARN("failed call pool statistic tag: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
@@ -40,6 +48,7 @@ public:
         prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
         return consensus::kConsensusSuccess;
     }
+    
 private:
     DISALLOW_COPY_AND_ASSIGN(PoolStatisticTag);
 };
