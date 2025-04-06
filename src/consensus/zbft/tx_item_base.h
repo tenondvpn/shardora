@@ -113,13 +113,13 @@ protected:
             prefix_db_->AddAddressInfo(id, *(acc_balance_map[id]), zjc_host.db_batch_);
             *balance = acc_info->balance();
             *nonce = acc_info->nonce();
-            // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
-            //     common::Encode::HexEncode(id).c_str(), *balance);
+            ZJC_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
+                common::Encode::HexEncode(id).c_str(), *balance, *nonce);
         } else {
             *balance = iter->second->balance();
             *nonce = iter->second->nonce();
-            // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
-            //     common::Encode::HexEncode(id).c_str(), *balance);
+            ZJC_DEBUG("success get temp account balance from temp map: %s, balance: %lu, nonce: %lu",
+                common::Encode::HexEncode(id).c_str(), *balance, *nonce);
         }
 
         return kConsensusSuccess;
