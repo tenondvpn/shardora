@@ -426,11 +426,13 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         AddNewBlock(tmp_block, db_batch);
-        for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
-                acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {
-            account_lru_map_.insert(acc_iter->second);
+        if ((*iter)->acc_balance_map_ptr) {
+            for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
+                    acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {
+                account_lru_map_.insert(acc_iter->second);
+            }
         }
-        
+
         view_blocks_info_.erase(tmp_block->qc().view_block_hash());
         ADD_DEBUG_PROCESS_TIMESTAMP();    
         if (!db_->Put(db_batch).ok()) {
