@@ -61,7 +61,7 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    void ConsensusAddBlock(const BlockToDbItemPtr& block_item);
+    void ConsensusAddBlock(const ViewBlockPtr& block_item);
     int GetBlockWithHeight(
         uint32_t network_id,
         uint32_t pool_index,
@@ -117,8 +117,7 @@ private:
         const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
-        db::DbWriteBatch& db_batch);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item);
     void HandleNormalToTx(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
         const block::protobuf::BlockTx& tx,
@@ -181,7 +180,7 @@ private:
     static const uint32_t kEachTimeHandleBlocksCount = 64u;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
-    common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;
+    common::ThreadSafeQueue<ViewBlockPtr>* consensus_block_queues_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;

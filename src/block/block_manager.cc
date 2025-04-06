@@ -71,7 +71,7 @@ int BlockManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
-    consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[common::kMaxThreadCount];
+    consensus_block_queues_ = new common::ThreadSafeQueue<ViewBlockPtr>[common::kMaxThreadCount];
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -131,15 +131,14 @@ void BlockManager::OnNewElectBlock(
 }
 
 void BlockManager::ConsensusAddBlock(
-        const BlockToDbItemPtr& block_item) {
-    assert(!block_item->view_block_ptr->qc().sign_x().empty());
+        const ViewBlockPtr& block_item) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     consensus_block_queues_[thread_idx].push(block_item);
     ZJC_DEBUG("add new block thread: %d, size: %u, %u_%u_%lu", 
         thread_idx, consensus_block_queues_[thread_idx].size(),
-        block_item->view_block_ptr->qc().network_id(),
-        block_item->view_block_ptr->qc().pool_index(),
-        block_item->view_block_ptr->qc().view());
+        block_item->qc().network_id(),
+        block_item->qc().pool_index(),
+        block_item->qc().view());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
@@ -159,37 +158,37 @@ void BlockManager::HandleAllConsensusBlocks() {
             for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
                 int32_t count = 0;
                 while (count++ < kEachTimeHandleBlocksCount) {
-                    BlockToDbItemPtr db_item_ptr = nullptr;
-                    consensus_block_queues_[i].pop(&db_item_ptr);
-                    if (db_item_ptr == nullptr) {
+                    ViewBlockPtr view_block_ptr = nullptr;
+                    consensus_block_queues_[i].pop(&view_block_ptr);
+                    if (view_block_ptr == nullptr) {
                         break;
                     }
     
-                    auto* block_ptr = &db_item_ptr->view_block_ptr->block_info();
+                    auto* block_ptr = &view_block_ptr->block_info();
                     ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                        db_item_ptr->view_block_ptr->qc().network_id(),
-                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        view_block_ptr->qc().network_id(),
+                        view_block_ptr->qc().pool_index(),
                         block_ptr->height(),
                         block_ptr->tx_list_size(),
-                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+                        view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height());
                     auto btime = common::TimeUtils::TimestampMs();
-                    AddNewBlock(db_item_ptr->view_block_ptr, *db_item_ptr->final_db_batch);
+                    AddNewBlock(view_block_ptr);
                     auto use_time = (common::TimeUtils::TimestampMs() - btime);
                     if (use_time >= 200)
                     ZJC_INFO(" %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, size: %u",
-                        db_item_ptr->view_block_ptr->qc().network_id(),
-                        db_item_ptr->view_block_ptr->qc().pool_index(),
+                        view_block_ptr->qc().network_id(),
+                        view_block_ptr->qc().pool_index(),
                         block_ptr->height(),
                         block_ptr->tx_list_size(),
-                        common::Encode::HexEncode(db_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
-                        db_item_ptr->view_block_ptr->qc().elect_height(),
+                        common::Encode::HexEncode(view_block_ptr->qc().view_block_hash()).c_str(),
+                        view_block_ptr->qc().elect_height(),
                         block_ptr->timeblock_height(),
                         use_time,
-                        db_item_ptr->final_db_batch->ApproximateSize());
+                        0);
                 }
 
                 if (count >= kEachTimeHandleBlocksCount) {
@@ -1011,8 +1010,7 @@ void BlockManager::GenesisNewBlock(
 }
 
 void BlockManager::AddNewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
-        db::DbWriteBatch& db_batch) {
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item) {
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
