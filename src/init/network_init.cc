@@ -1263,6 +1263,7 @@ void NetworkInit::HandleTimeBlock(
             }
 
             uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
+            hotstuff_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
             vss_mgr_->OnTimeBlock(view_block);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);

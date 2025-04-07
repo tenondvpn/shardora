@@ -183,31 +183,6 @@ public:
 
         recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
         return 0;
-        // highqc 之前连续三个块都是空交易，则认为 stuck
-        // auto v_block1 = view_block_chain()->HighViewBlock();
-        // if (!v_block1) {
-        //     return 0;
-        // }
-
-        // if (v_block1->block_info().tx_list_size() > 0) {
-        //     return 2;
-        // }
-
-        // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
-        // if (!v_block2) {
-        //     return 0;
-        // }
-
-        // if (v_block2->block_info().tx_list_size() > 0) {
-        //     return 3;
-        // }
-
-        // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
-        // if (v_block3 && v_block3->block_info().tx_list_size() > 0) {
-        //     return 4;
-        // }
-
-        // return 0;   
     }
 
     inline uint64_t max_view() {

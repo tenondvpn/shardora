@@ -22,6 +22,7 @@ void ViewBlockChain::Init(
         std::shared_ptr<block::AccountManager> account_mgr, 
         std::shared_ptr<sync::KeyValueSync> kv_sync,
         std::shared_ptr<IBlockAcceptor> block_acceptor,
+        std::shared_ptr<pools::TxPoolManager> pools_mgr,
         consensus::BlockCacheCallback new_block_cache_callback) {
     db_ = db;
     pool_index_ = pool_index;
@@ -29,6 +30,7 @@ void ViewBlockChain::Init(
     account_mgr_ = account_mgr;
     kv_sync_ = kv_sync;
     block_acceptor_ = block_acceptor;
+    pools_mgr_ = pools_mgr;
     new_block_cache_callback_ = new_block_cache_callback;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
@@ -954,6 +956,47 @@ protos::AddressInfoPtr ViewBlockChain::ChainGetAccountInfo(const std::string& ad
 protos::AddressInfoPtr ViewBlockChain::ChainGetPoolAccountInfo(uint32_t pool_index) {
     auto& addr = account_mgr_->pool_base_addrs(pool_index);
     return ChainGetAccountInfo(addr);
+}
+
+void ViewBlockChain::AddPoolStatisticTag(uint64_t height) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->address_info = ChainGetPoolAccountInfo(pool_index_);
+    assert(msg_ptr->address_info != nullptr);
+    auto tx = msg_ptr->header.mutable_tx_proto();
+    tx->set_key(protos::kPoolStatisticTag);
+    char data[8] = {0};
+    uint64_t* udata = (uint64_t*)data;
+    udata[0] = height;
+    tx->set_value(std::string(data, sizeof(data)));
+    tx->set_pubkey("");
+    tx->set_to(msg_ptr->address_info->addr());
+    tx->set_step(pools::protobuf::kPoolStatisticTag);
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_nonce(msg_ptr->address_info->nonce() + 1);
+    pools_mgr_->HandleMessage(msg_ptr);
+    ZJC_INFO("success create kPoolStatisticTag nonce: %lu, pool idx: %u, "
+        "pool addr: %s, addr get pool: %u, height: %lu",
+        tx->nonce(), 
+        pool_index_,
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+        common::GetAddressPoolIndex(msg_ptr->address_info->addr()),
+        height);
+}
+
+void ViewBlockChain::OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random) {
+    ZJC_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
+        latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
+    if (latest_timeblock_height_ >= latest_time_block_height) {
+        return;
+    }
+
+    AddPoolStatisticTag(latest_time_block_height);
+    latest_timeblock_height_ = latest_time_block_height;
 }
 
 } // namespace hotstuff

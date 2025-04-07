@@ -1138,39 +1138,6 @@ void BlockManager::HandleElectTx(
     }
 }
 
-void BlockManager::AddPoolStatisticTag(uint64_t height) {
-    // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-    //     return;
-    // }
-
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        msg_ptr->address_info = account_mgr_->pools_address_info(i);
-        assert(msg_ptr->address_info != nullptr);
-        auto tx = msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kPoolStatisticTag);
-        char data[8] = {0};
-        uint64_t* udata = (uint64_t*)data;
-        udata[0] = height;
-        tx->set_value(std::string(data, sizeof(data)));
-        tx->set_pubkey("");
-        tx->set_to(msg_ptr->address_info->addr());
-        tx->set_step(pools::protobuf::kPoolStatisticTag);
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(msg_ptr->address_info->nonce() + 1);
-        pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("success create kPoolStatisticTag nonce: %lu, pool idx: %u, "
-            "pool addr: %s, addr get pool: %u, height: %lu",
-            tx->nonce(), 
-            i,
-            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
-            common::GetAddressPoolIndex(msg_ptr->address_info->addr()),
-            height);
-    }
-}
-
 void BlockManager::AddMiningToken(
         const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block) {
@@ -1263,8 +1230,6 @@ void BlockManager::LoadLatestBlocks() {
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(tmblock_ptr, db_batch);
             }
-
-            AddPoolStatisticTag(block.block_info().height());
         } else {
             ZJC_FATAL("load latest timeblock failed!");
         }
@@ -1886,7 +1851,6 @@ void BlockManager::OnTimeBlock(
         return;
     }
 
-    AddPoolStatisticTag(latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
     prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;

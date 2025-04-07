@@ -14,6 +14,9 @@
 
 namespace shardora {
 
+namespace pools {
+    class TxPoolManager;
+}
 namespace hotstuff {
 
 class IBlockAcceptor;
@@ -31,6 +34,7 @@ public:
         std::shared_ptr<block::AccountManager> account_mgr, 
         std::shared_ptr<sync::KeyValueSync> kv_sync,
         std::shared_ptr<IBlockAcceptor> block_acceptor,
+        std::shared_ptr<pools::TxPoolManager> pools_mgr,
         consensus::BlockCacheCallback new_block_cache_callback);
     ViewBlockChain(const ViewBlockChain&) = delete;
     ViewBlockChain& operator=(const ViewBlockChain&) = delete;
@@ -82,7 +86,10 @@ public:
     protos::AddressInfoPtr ChainGetPoolAccountInfo(uint32_t pool_index);
     void Commit(const std::shared_ptr<ViewBlockInfo>& queue_item_ptr);
     void CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock);
-
+    void OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random);
     bool view_commited(uint32_t network_id, View view) const {
         if (commited_view_.find(view) != commited_view_.end()) {
             return true;
@@ -212,6 +219,8 @@ public:
     }
 
 private:
+    void AddPoolStatisticTag(uint64_t height);
+
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
         auto it = view_blocks_info_.find(view_block_info->view_block->qc().view_block_hash());
@@ -300,6 +309,8 @@ private:
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     StorageLruMap<10240> storage_lru_map_;
     std::shared_ptr<block::BlockManager> block_mgr_;
+    uint64_t latest_timeblock_height_ = 0;
+    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 };
 
 // from db
