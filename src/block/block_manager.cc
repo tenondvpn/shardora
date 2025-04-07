@@ -841,7 +841,7 @@ void BlockManager::GenesisNewBlock(
                 ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
                 break;
             case pools::protobuf::kNormalTo: {
-                HandleNormalToTx(view_block_item, tx_list[i], db_batch);
+                HandleNormalToTx(view_block_item, tx_list[i]);
                 // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
                 //     "nonce: %lu, bls: %s, %s",
                 //     view_block_item->qc().network_id(),
