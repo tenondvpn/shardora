@@ -13,6 +13,7 @@
 #include "common/log.h"
 #include "common/utils.h"
 #include "db/db.h"
+#include "protos/block.pb.h"
 
 namespace shardora {
 
