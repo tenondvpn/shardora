@@ -870,12 +870,12 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
     zjcvm::ZjchainHost prev_zjc_host;
     zjcvm::ZjchainHost& zjc_host = *pro_msg_wrap->zjc_host_ptr;
     Status s = acceptor()->Accept(
-            pro_msg_wrap, 
-            true, 
-            false, 
-            balance_and_nonce_map,
-            zjc_host);
-    if (s  != Status::kSuccess) {
+        pro_msg_wrap, 
+        true, 
+        false, 
+        balance_and_nonce_map,
+        zjc_host);
+    if (s != Status::kSuccess) {
 #ifndef NDEBUG
         ZJC_DEBUG("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, status: %d",
@@ -892,16 +892,16 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
 #ifndef NDEBUG
     auto etime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("====1.1.2 success Accept pool: %d, verify view block, "
-            "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, "
-            "propose_debug: %s, size: %u, use time: %lu",
-            pool_idx_,
-            proto_msg.view_item().qc().view(),
-            common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
-            view_block_chain()->HighViewBlock()->qc().view(),
-            pro_msg_wrap->msg_ptr->header.hash64(),
-            ProtobufToJson(cons_debug).c_str(),
-            pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose().txs_size(),
-            (etime - btime));
+        "view: %lu, hash: %s, qc_view: %lu, hash64: %lu, "
+        "propose_debug: %s, size: %u, use time: %lu",
+        pool_idx_,
+        proto_msg.view_item().qc().view(),
+        common::Encode::HexEncode(proto_msg.view_item().qc().view_block_hash()).c_str(),
+        view_block_chain()->HighViewBlock()->qc().view(),
+        pro_msg_wrap->msg_ptr->header.hash64(),
+        ProtobufToJson(cons_debug).c_str(),
+        pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg().tx_propose().txs_size(),
+        (etime - btime));
 #endif
     return Status::kSuccess;
 }

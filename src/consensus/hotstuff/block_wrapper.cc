@@ -54,49 +54,47 @@ Status BlockWrapper::Wrap(
 
     // 打包交易
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
-    //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
-    auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> int {
-        return view_block_chain->CheckTxNonceValid(addr, nonce, prev_view_block->qc().view_block_hash());
-    };
-
-    Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
-    if (s != Status::kSuccess && !no_tx_allowed) {
-        // 允许 3 个连续的空交易块
-        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
+    auto txs_ptr = view_block_chain->GetSingleTx(
+        msg_ptr, 
+        pool_idx_, 
+        prev_view_block->qc().view_block_hash());
+    if (txs_ptr == nullptr) {
+        auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> int {
+            return view_block_chain->CheckTxNonceValid(
+                addr, 
+                nonce, 
+                prev_view_block->qc().view_block_hash());
+        };
+    
+        Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
+        if (s != Status::kSuccess && !no_tx_allowed) {
+            // 允许 3 个连续的空交易块
+            ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
+                s, pool_idx_, 
+                view_block->qc().network_id(), 
+                view_block->qc().pool_index(), 
+                view_block->qc().view(), 
+                (txs_ptr != nullptr ? txs_ptr->txs.size() : 0),
+                pools_mgr_->all_tx_size(pool_idx_));
+            return s;
+        }
+    
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        ZJC_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
             s, pool_idx_, 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
-            (txs_ptr != nullptr ? txs_ptr->txs.size() : 0),
-            pools_mgr_->all_tx_size(pool_idx_));
-        return s;
+            (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
     }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
-        s, pool_idx_, 
-        view_block->qc().network_id(), 
-        view_block->qc().pool_index(), 
-        view_block->qc().view(), 
-        (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
+    
     view_block->set_parent_hash(prev_view_block->qc().view_block_hash());
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
             *tx_info = *((*it)->tx_info);
-            // ADD_TX_DEBUG_INFO(tx_info);
-            // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-            //     "step: %d, to: %s, nonce: %lu, tx info: %s",
-            //     view_block->qc().pool_index(),
-            //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-            //     block->height(),
-            //     tx_info->step(),
-            //     common::Encode::HexEncode(tx_info->to()).c_str(),
-            //     tx_info->nonce(),
-            //     "ProtobufToJson(*tx_info).c_str()");
         }
+
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 

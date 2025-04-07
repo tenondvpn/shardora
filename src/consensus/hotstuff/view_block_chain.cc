@@ -519,17 +519,6 @@ void ViewBlockChain::AddNewBlock(
         return;
     }
 
-    // if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
-    //     pools_mgr_->OnNewCrossBlock(view_block_item);
-    // } else {
-    //     if (statistic_mgr_) {
-    //         statistic_mgr_->OnNewBlock(view_block_item);
-    //     }
-
-    //     to_txs_pool_->NewBlock(view_block_item);
-    //     zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
-    // }
-
     prefix_db_->SaveValidViewBlockParentHash(
         view_block_item->parent_hash(), 
         view_block_item->qc().network_id(),
