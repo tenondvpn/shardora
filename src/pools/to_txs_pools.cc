@@ -847,12 +847,15 @@ int ToTxsPools::CreateToTxWithHeights(
         }
     }
 
+    ZJC_DEBUG("sharding id valid: %d, %d, statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+        sharding_id, 
+        heights_valid,
+        ProtobufToJson(*prev_to_heights).c_str(), 
+        ProtobufToJson(leader_to_heights).c_str());
     if (!heights_valid) {
         return kPoolsError;
     }
 
-    ZJC_DEBUG("statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
-        ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
     for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
@@ -871,8 +874,8 @@ int ToTxsPools::CreateToTxWithHeights(
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
         auto& height_map = network_txs_pools_[pool_idx];
-        ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
-            pool_idx, min_height, max_height);
+        // ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
+        //     pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
