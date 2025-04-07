@@ -163,7 +163,8 @@ Status Hotstuff::Propose(
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
         ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
-            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, msg view: %lu, cur view: %lu",
+            "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, "
+            "msg view: %lu, cur view: %lu, propose msg: %s",
             pool_idx_,
             header.hotstuff().pool_index(),
             hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -173,7 +174,8 @@ Status Hotstuff::Propose(
             header.hash64(),
             ProtobufToJson(cons_debug).c_str(),
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
-            pacemaker_->CurView());
+            pacemaker_->CurView(),
+            ProtobufToJson(header.hotstuff().pro_msg()).c_str());
 #endif
         // HandleProposeMsg(latest_leader_propose_message_);
         return Status::kSuccess;
