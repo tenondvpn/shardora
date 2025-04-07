@@ -51,7 +51,6 @@ Status BlockWrapper::Wrap(
 
     uint64_t cur_time = common::TimeUtils::TimestampMs();
     block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
-
     // 打包交易
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
@@ -97,6 +96,7 @@ Status BlockWrapper::Wrap(
             //     tx_info->nonce(),
             //     "ProtobufToJson(*tx_info).c_str()");
         }
+
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 

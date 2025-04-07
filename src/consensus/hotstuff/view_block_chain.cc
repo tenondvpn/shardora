@@ -447,7 +447,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             ZJC_FATAL("write to db failed!");
         }
 
-        block_mgr_->ConsensusAddBlock(tmp_block);
+        block_mgr_->ConsensusAddBlock(*iter);
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();

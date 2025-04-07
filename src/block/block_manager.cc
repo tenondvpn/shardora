@@ -131,9 +131,10 @@ void BlockManager::OnNewElectBlock(
 }
 
 void BlockManager::ConsensusAddBlock(
-        const ViewBlockPtr& block_item) {
+        const std::shared_ptr<hotstuff::ViewBlockInfo>& block_item_info) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    consensus_block_queues_[thread_idx].push(block_item);
+    auto block_item = block_item_info->view_block;
+    consensus_block_queues_[thread_idx].push(block_item_info);
     ZJC_DEBUG("add new block thread: %d, size: %u, %u_%u_%lu", 
         thread_idx, consensus_block_queues_[thread_idx].size(),
         block_item->qc().network_id(),
@@ -158,12 +159,13 @@ void BlockManager::HandleAllConsensusBlocks() {
             for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
                 int32_t count = 0;
                 while (count++ < kEachTimeHandleBlocksCount) {
-                    ViewBlockPtr view_block_ptr = nullptr;
-                    consensus_block_queues_[i].pop(&view_block_ptr);
-                    if (view_block_ptr == nullptr) {
+                    std::shared_ptr<hotstuff::ViewBlockInfo> view_block_info_ptr = nullptr;
+                    consensus_block_queues_[i].pop(&view_block_info_ptr);
+                    if (view_block_info_ptr == nullptr) {
                         break;
                     }
     
+                    auto view_block_ptr = view_block_info_ptr->view_block;
                     auto* block_ptr = &view_block_ptr->block_info();
                     ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
@@ -671,7 +673,6 @@ void BlockManager::createConsensusLocalToTxs(
         to_item->set_pool_index(iter->second->pool_index);
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second->amount);
-
         ZJC_DEBUG("success add local transfer to %s, %lu",
             common::Encode::HexEncode(iter->first).c_str(),
             iter->second->amount);
