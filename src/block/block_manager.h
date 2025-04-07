@@ -117,11 +117,10 @@ private:
         const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item);
+        const std::shared_ptr<hotstuff::ViewBlockInfo>& block_item);
     void HandleNormalToTx(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleStatisticTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
@@ -150,8 +149,7 @@ private:
         const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        pools::protobuf::ToTxMessage& to_txs,
-        db::DbWriteBatch& db_batch);
+        pools::protobuf::ToTxMessage& to_txs);
     void HandleStatisticBlock(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,

@@ -1831,7 +1831,7 @@ public:
     }
 
     void SaveLatestToBlock(
-            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block, 
+            const view_block::protobuf::ViewBlockItem& view_block, 
             db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(64);
@@ -1840,14 +1840,14 @@ public:
         value.resize(24);
         uint64_t* val_data = (uint64_t*)value.data();
         memset(val_data, 0, 24);
-        val_data[0] = view_block->qc().network_id();
-        val_data[1] = view_block->qc().pool_index();
-        val_data[2] = view_block->block_info().height();
+        val_data[0] = view_block.qc().network_id();
+        val_data[1] = view_block.qc().pool_index();
+        val_data[2] = view_block.block_info().height();
         db_batch.Put(key, value);
         ZJC_DEBUG("success save latest to block: %u_%u_%lu",
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
-            view_block->block_info().height());
+            view_block.qc().network_id(), 
+            view_block.qc().pool_index(), 
+            view_block.block_info().height());
     }
 
     bool GetLatestToBlock(view_block::protobuf::ViewBlockItem* block) {

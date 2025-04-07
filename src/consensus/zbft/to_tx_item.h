@@ -37,19 +37,18 @@ public:
             return consensus::kConsensusError;
         }
 
-        pools::protobuf::AllToTxMessage all_to_txs;
-        if (!all_to_txs.ParseFromString(tx_info.value())) {
+        if (!all_to_txs_.ParseFromString(tx_info.value())) {
             return consensus::kConsensusError;
         }
 
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
+        for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
             auto storage = block_tx->add_storages();
             storage->set_key(protos::kNormalToShards);
-            storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
+            storage->set_value(all_to_txs_.to_tx_arr(i).SerializeAsString());
             ZJC_DEBUG("success add normal to %s, val: %s", 
                 protos::kNormalToShards.c_str(), 
-                ProtobufToJson(all_to_txs.to_tx_arr(i)).c_str());
+                ProtobufToJson(all_to_txs_.to_tx_arr(i)).c_str());
             assert(!storage->value().empty());
         }
         
@@ -77,10 +76,48 @@ public:
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
         zjc_host.normal_to_tx_ = &block_tx;
+        for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
+            auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
+            auto& heights = *to_heights->mutable_to_heights();
+            heights.set_block_height(view_block.block_info().height());
+            ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
+                view_block.block_info().height(), 
+                heights.sharding_id(), 
+                ProtobufToJson(*to_heights).c_str(),
+                to_heights->to_heights().sharding_id());
+            prefix_db_->SaveLatestToTxsHeights(heights, zjc_host.db_batch_);
+            for (uint32_t j = 0; j < to_heights->tos_size(); ++j) {
+                auto tos_item = to_heights->tos(j);
+                if (tos_item.step() == pools::protobuf::kJoinElect) {
+                    for (int32_t join_i = 0; join_i < tos_item.join_infos_size(); ++join_i) {
+                        if (tos_item.join_infos(join_i).shard_id() != network::kRootCongressNetworkId) {
+                            continue;
+                        }
+        
+                        prefix_db_->SaveNodeVerificationVector(
+                            tos_item.des(),
+                            tos_item.join_infos(join_i),
+                            zjc_host.db_batch_);
+                        ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, block net: %u, "
+                            "block pool: %u, block height: %lu, local net id: %u", 
+                            common::Encode::HexEncode(tos_item.des()).c_str(), 
+                            tos_item.sharding_id(),
+                            tos_item.pool_index(),
+                            view_block.qc().network_id(), 
+                            view_block.qc().pool_index(), 
+                            view_block.block_info().height(),
+                            common::GlobalInfo::Instance()->network_id());
+                    }
+                }
+            }
+        }
+
+        prefix_db_->SaveLatestToBlock(view_block, zjc_host.db_batch_);
         return consensus::kConsensusSuccess;
     }
 
 private:
+    pools::protobuf::AllToTxMessage all_to_txs_;
     DISALLOW_COPY_AND_ASSIGN(ToTxItem);
 };
 
