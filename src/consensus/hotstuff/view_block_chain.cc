@@ -937,6 +937,10 @@ protos::AddressInfoPtr ViewBlockChain::ChainGetAccountInfo(const std::string& ad
             common::Encode::HexEncode(addr).c_str(), thread_idx);
     } else {
         account_lru_map_.insert(addr_info);
+        ZJC_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
+            common::Encode::HexEncode(addr_info->addr()).c_str(),
+            addr_info->balance(),
+            addr_info->nonce());
     }
 
     return addr_info;
