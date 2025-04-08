@@ -31,9 +31,7 @@ public:
             return consensus::kConsensusError;
         }
         // change
-        if (tx_info.key().empty() ||
-                tx_info.key() != protos::kNormalTos ||
-                tx_info.value().empty()) {
+        if (tx_info.key().empty() || tx_info.value().empty()) {
             return consensus::kConsensusError;
         }
 

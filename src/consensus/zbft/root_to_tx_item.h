@@ -30,29 +30,6 @@ public:
         if (!DefaultTxItem(tx_info, block_tx)) {
             return consensus::kConsensusError;
         }
-        
-        // // change
-        // if (tx_info.key().empty() ||
-        //         tx_info.key() != protos::kNormalTos ||
-        //         tx_info.value().empty()) {
-        //     assert(false);
-        //     return consensus::kConsensusError;
-        // }
-
-        // pools::protobuf::AllToTxMessage all_to_txs;
-        // if (!all_to_txs.ParseFromString(tx_info.value())) {
-        //     assert(false);
-        //     return consensus::kConsensusError;
-        // }
-
-        // uint32_t offset = 0;
-        // for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
-        //     auto storage = block_tx->add_storages();
-        //     storage->set_key(protos::kNormalToShards);
-        //     storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
-        //     ZJC_DEBUG("root to tx add key: %s, value: %s",
-        //         protos::kNormalToShards.c_str(), common::Encode::HexEncode(storage->value()).c_str());
-        // }
 
         return consensus::kConsensusSuccess;
     }

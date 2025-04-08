@@ -1092,7 +1092,6 @@ void BlockManager::AddMiningToken(
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
-
         std::string uinique_tx_str = common::Hash::keccak256(
             view_block.qc().view_block_hash() +
             view_block.qc().sign_x() + 
@@ -1106,7 +1105,7 @@ void BlockManager::AddMiningToken(
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(msg_ptr->address_info->nonce() + 1);
+        tx->set_nonce(0);
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_INFO("mining success create kConsensusLocalTos %s nonce: %lu",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
@@ -1453,7 +1452,12 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
-    tx->set_key(protos::kNormalTos);
+    std::string unique_str;
+    for (uint32_t i = 0; i < heights.heights_size(); ++i) {
+        unique_str += std::to_string(heights.heights(i)) + "_";
+    }
+
+    tx->set_key(common::Hash::keccak256(unique_str));
     // TODO: fix hash invalid
     auto tos_hashs = common::Hash::keccak256(all_to_txs.SerializeAsString());
     tx->set_value(all_to_txs.SerializeAsString());
@@ -1463,7 +1467,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
+    tx->set_nonce(0);
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
     return tx_ptr;
