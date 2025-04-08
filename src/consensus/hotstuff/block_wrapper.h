@@ -67,19 +67,21 @@ public:
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
-        pools::CheckAddrNonceValidFunction gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> bool {
-            return view_block_chain->CheckTxNonceValid(addr, nonce, parent_hash);
+        auto tx_valid_func = [&](
+                const address::protobuf::AddressInfo& addr_info, 
+                const pools::protobuf::TxMessage& tx_info) -> bool {
+            return view_block_chain->CheckTxNonceValid(addr_info.addr(), tx_info.nonce(), parent_hash);
         };
 
-        txs_pools_->GetTxSyncToLeader(leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, txs, gid_valid_func);
+        txs_pools_->GetTxSyncToLeader(leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, txs, tx_valid_func);
     }
 
 private:
     Status LeaderGetTxsIdempotently(
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            pools::CheckAddrNonceValidFunction gid_vlid_func) {
-        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, gid_vlid_func);
+            pools::CheckAddrNonceValidFunction tx_vlid_func) {
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, tx_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }

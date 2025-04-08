@@ -35,14 +35,14 @@ public:
             uint32_t pool_index,
             uint32_t count,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-            pools::CheckAddrNonceValidFunction gid_vlid_func) {
-        pool_mgr_->GetTxSyncToLeader(leader_idx, pool_index, count, txs, gid_vlid_func);
+            pools::CheckAddrNonceValidFunction tx_vlid_func) {
+        pool_mgr_->GetTxSyncToLeader(leader_idx, pool_index, count, txs, tx_vlid_func);
     }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_vlid_func);
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);
@@ -56,7 +56,7 @@ private:
     std::shared_ptr<WaitingTxsItem> GetSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_vlid_func);
 
     WaitingTxs wtxs[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;

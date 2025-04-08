@@ -45,13 +45,13 @@ public:
         uint32_t pool_index,
         uint32_t count,
         std::vector<pools::TxItemPtr>& res_map,
-        pools::CheckAddrNonceValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_vlid_func);
     void GetTxSyncToLeader(
         uint32_t leader_idx, 
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_vlid_func);
     void InitCrossPools();
     void BftCheckInvalidGids(
         uint32_t pool_index, 

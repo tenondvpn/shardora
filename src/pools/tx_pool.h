@@ -68,12 +68,12 @@ public:
         transport::MessagePtr msg_ptr, 
         std::vector<pools::TxItemPtr>& res_map, 
         uint32_t count, 
-        pools::CheckAddrNonceValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_vlid_func);
     void GetTxSyncToLeader(
         uint32_t leader_idx, 
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_vlid_func);
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void ConsensusAddTxs(const pools::TxItemPtr& tx);
     uint64_t UpdateLatestInfo(
