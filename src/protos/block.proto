@@ -37,6 +37,7 @@ message BlockTx {
     optional bytes contract_input = 15;
     repeated TxLog events = 16;
     repeated pools.protobuf.TxDelayTestInfo tx_debug = 17;
+    optional bytes unique_hash = 18;
 }
 
 message Block {

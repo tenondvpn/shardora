@@ -28,12 +28,12 @@ int ToTxLocalItem::HandleTx(
     uint64_t to_balance = 0;
     uint64_t to_nonce = 0;
     GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-    if (to_nonce + 1 != block_tx.nonce()) {
-        block_tx.set_status(kConsensusNonceInvalid);
-        ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-            view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-        return consensus::kConsensusSuccess;
-    }
+    // if (to_nonce + 1 != block_tx.nonce()) {
+    //     block_tx.set_status(kConsensusNonceInvalid);
+    //     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+    //         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+    //     return consensus::kConsensusSuccess;
+    // }
 
     auto str_key = block_tx.to() + unique_hash_;
     std::string val;
@@ -43,10 +43,11 @@ int ToTxLocalItem::HandleTx(
     }
 
     address::protobuf::KeyValueInfo kv_info;
-    kv_info.set_value(tx_info->value());
-    kv_info.set_height(block_tx.nonce());
+    kv_info.set_value("");
+    kv_info.set_height(to_nonce + 1);
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
     zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
+    block_tx.set_unique_hash(unique_hash_);
     block::protobuf::ConsensusToTxs block_to_txs;
     std::string str_for_hash;
     str_for_hash.reserve(to_txs.tos_size() * 48);

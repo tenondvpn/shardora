@@ -63,12 +63,12 @@ public:
         uint64_t to_balance = 0;
         uint64_t to_nonce = 0;
         GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-        if (to_nonce + 1 != block_tx.nonce()) {
-            block_tx.set_status(kConsensusNonceInvalid);
-            ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-                view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-            return consensus::kConsensusSuccess;
-        }
+        // if (to_nonce + 1 != block_tx.nonce()) {
+        //     block_tx.set_status(kConsensusNonceInvalid);
+        //     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        //         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+        //     return consensus::kConsensusSuccess;
+        // }
 
         ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
@@ -84,10 +84,11 @@ public:
         }
 
         address::protobuf::KeyValueInfo kv_info;
-        kv_info.set_value(tx_info->value());
-        kv_info.set_height(block_tx.nonce());
+        kv_info.set_value("1");
+        kv_info.set_height(to_nonce + 1);
         zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
         zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
+        block_tx.set_unique_hash(unique_hash_);
         for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
             auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
             auto& heights = *to_heights->mutable_to_heights();
