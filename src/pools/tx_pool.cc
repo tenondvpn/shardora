@@ -187,7 +187,7 @@ void TxPool::GetTxSyncToLeader(
         uint32_t leader_idx, 
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction tx_vlid_func) {
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
@@ -215,7 +215,7 @@ void TxPool::GetTxSyncToLeader(
             }
 
             if (valid_nonce == common::kInvalidUint64) {
-                int res = tx_vlid_func(
+                int res = tx_valid_func(
                         *tx_ptr->address_info, 
                         *tx_ptr->tx_info);
                 if (res != 0) {
@@ -262,7 +262,7 @@ void TxPool::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         std::vector<pools::TxItemPtr>& res_map,
         uint32_t count,
-        pools::CheckAddrNonceValidFunction tx_vlid_func) {
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
@@ -303,7 +303,7 @@ void TxPool::GetTxIdempotently(
             for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
                 auto tx_ptr = nonce_iter->second;
                 if (valid_nonce == common::kInvalidUint64) {
-                    int res = tx_vlid_func(
+                    int res = tx_valid_func(
                         *tx_ptr->address_info, 
                         *tx_ptr->tx_info);
                     if (res != 0) {

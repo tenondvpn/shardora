@@ -80,8 +80,8 @@ private:
     Status LeaderGetTxsIdempotently(
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            pools::CheckAddrNonceValidFunction tx_vlid_func) {
-        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, tx_vlid_func);
+            pools::CheckAddrNonceValidFunction tx_valid_func) {
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, tx_valid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
