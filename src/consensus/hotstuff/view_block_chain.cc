@@ -362,7 +362,7 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
     // not this sharding
     auto db_batch = std::make_shared<db::DbWriteBatch>();
     auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
-    if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
+    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
             ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
