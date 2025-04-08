@@ -155,7 +155,7 @@ public:
     uint64_t view_ = 0;
     bool contract_to_call_dirty_ = false;
     db::DbWriteBatch db_batch_;
-    block::protobuf::BlockTx* normal_to_tx_ = nullptr;
+    const block::protobuf::BlockTx* normal_to_tx_ = nullptr;
 
 };
 

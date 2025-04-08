@@ -358,10 +358,53 @@ void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_
     }
 }
 
-void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
+void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
     // not this sharding
     auto db_batch = std::make_shared<db::DbWriteBatch>();
-    new_block_cache_callback_(vblock, *db_batch);
+    auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
+        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
+            auto& tx = view_block->block_info().tx_list(i);
+            switch (tx.step()) {
+            case pools::protobuf::kRootCreateAddress:
+                // ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
+                break;
+            case pools::protobuf::kNormalTo: {
+                ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                    "nonce: %lu, bls: %s, %s",
+                    view_block->qc().network_id(),
+                    view_block->qc().pool_index(),
+                    view_block->block_info().height(),
+                    tx.nonce(),
+                    common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
+                    common::Encode::HexEncode(view_block->qc().sign_y()).c_str());
+                zjc_host_ptr->normal_to_tx_ = &tx;
+                break;
+            }
+            case pools::protobuf::kConsensusRootTimeBlock:
+                // prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+                break;
+            case pools::protobuf::kStatistic:
+                // HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kCross:
+                assert(false);
+                break;
+            case pools::protobuf::kConsensusRootElectShard:
+                // HandleElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kJoinElect:
+                // HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    new_block_cache_callback_(view_block, *db_batch);
+    auto block_info_ptr = GetViewBlockInfo(view_block, nullptr, zjc_host_ptr);
+    block_mgr_->ConsensusAddBlock(block_info_ptr);
 }
 
 void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {
