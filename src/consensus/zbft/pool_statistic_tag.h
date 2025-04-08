@@ -36,6 +36,9 @@ public:
         }
 
         unique_hash_ = tx_info.key();
+        auto* storage = block_tx->add_storages();
+        storage->set_key(tx_info.key());
+        storage->set_value(tx_info.value());
         return consensus::kConsensusSuccess;
     }
 
