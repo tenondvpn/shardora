@@ -30,6 +30,7 @@ public:
         if (!DefaultTxItem(tx_info, block_tx)) {
             return consensus::kConsensusError;
         }
+
         // change
         if (tx_info.key().empty() || tx_info.value().empty()) {
             return consensus::kConsensusError;
@@ -39,6 +40,7 @@ public:
             return consensus::kConsensusError;
         }
 
+        unique_hash_ = tx_info.key();
         uint32_t offset = 0;
         for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
             auto storage = block_tx->add_storages();
@@ -74,6 +76,18 @@ public:
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
         zjc_host.normal_to_tx_ = &block_tx;
+        auto str_key = block_tx.to() + unique_hash_;
+        std::string val;
+        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+            return consensus::kConsensusError;
+        }
+
+        address::protobuf::KeyValueInfo kv_info;
+        kv_info.set_value(tx_info->value());
+        kv_info.set_height(block_tx.nonce());
+        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
+        zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
         for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
             auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
             auto& heights = *to_heights->mutable_to_heights();
@@ -116,6 +130,7 @@ public:
 
 private:
     pools::protobuf::AllToTxMessage all_to_txs_;
+    std::string unique_hash_;
     DISALLOW_COPY_AND_ASSIGN(ToTxItem);
 };
 

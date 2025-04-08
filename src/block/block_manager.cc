@@ -1458,8 +1458,6 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     }
 
     tx->set_key(common::Hash::keccak256(unique_str));
-    // TODO: fix hash invalid
-    auto tos_hashs = common::Hash::keccak256(all_to_txs.SerializeAsString());
     tx->set_value(all_to_txs.SerializeAsString());
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());

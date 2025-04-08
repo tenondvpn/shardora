@@ -39,6 +39,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<ContractGasPrepayment> gas_prepayment_ = nullptr;
+    std::string unique_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxLocalItem);
 };

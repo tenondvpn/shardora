@@ -35,6 +35,18 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
+    auto str_key = block_tx.to() + unique_hash_;
+    std::string val;
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
+        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+        return consensus::kConsensusError;
+    }
+
+    address::protobuf::KeyValueInfo kv_info;
+    kv_info.set_value(tx_info->value());
+    kv_info.set_height(block_tx.nonce());
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
+    zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
     block::protobuf::ConsensusToTxs block_to_txs;
     std::string str_for_hash;
     str_for_hash.reserve(to_txs.tos_size() * 48);
@@ -42,7 +54,12 @@ int ToTxLocalItem::HandleTx(
         // dispatch to txs to tx pool
         uint64_t to_balance = 0;
         uint64_t nonce = 0;
-        int balance_status = GetTempAccountBalance(zjc_host, to_txs.tos(i).des(), acc_balance_map, &to_balance, &nonce);
+        int balance_status = GetTempAccountBalance(
+            zjc_host,
+            to_txs.tos(i).des(), 
+            acc_balance_map, 
+            &to_balance, 
+            &nonce);
         if (balance_status != kConsensusSuccess) {
             ZJC_DEBUG("create new address: %s, balance: %lu",
                 common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
@@ -69,7 +86,10 @@ int ToTxLocalItem::HandleTx(
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
         acc_balance_map[to_txs.tos(i).des()]->set_balance(to_balance);
         acc_balance_map[to_txs.tos(i).des()]->set_nonce(nonce);
-        prefix_db_->AddAddressInfo(to_txs.tos(i).des(), *(acc_balance_map[to_txs.tos(i).des()]), zjc_host.db_batch_);
+        prefix_db_->AddAddressInfo(
+            to_txs.tos(i).des(), 
+            *(acc_balance_map[to_txs.tos(i).des()]), 
+            zjc_host.db_batch_);
         ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
             to_balance,
@@ -99,6 +119,7 @@ int ToTxLocalItem::TxToBlockTx(
         return consensus::kConsensusError;
     }
 
+    unique_hash_ = tx_info.key();
     auto storage = block_tx->add_storages();
     storage->set_key(tx_info.key());
     storage->set_value(tx_info.value());

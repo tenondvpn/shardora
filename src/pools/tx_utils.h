@@ -406,7 +406,7 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<int(const std::string& addr, uint64_t nonce)> CheckAddrNonceValidFunction;
+typedef std::function<int(const address::protobuf::AddressInfo& addr, const pools::protobuf::TxMessage)> CheckAddrNonceValidFunction;
 
 };  // namespace pools
 

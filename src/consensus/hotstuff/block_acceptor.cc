@@ -310,6 +310,15 @@ Status BlockAcceptor::addTxsToPool(
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
+            std::string val;
+            if (zjc_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
+                ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                    common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
+                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+                tx_ptr = nullptr;
+                return Status::kError;
+            }
+
             break;
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
@@ -327,6 +336,15 @@ Status BlockAcceptor::addTxsToPool(
                     all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
                 if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain_) {
                     tx_ptr = *(tx_item->txs.begin());
+                    std::string val;
+                    if (zjc_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
+                        ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                            common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
+                            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+                        tx_ptr = nullptr;
+                        return Status::kError;
+                    }
+                    
                     if (view_block_chain_->CheckTxNonceValid(
                             tx_ptr->tx_info->to(), 
                             tx_ptr->tx_info->nonce(), 

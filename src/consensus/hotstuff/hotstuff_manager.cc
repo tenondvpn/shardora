@@ -376,20 +376,22 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            auto gid_valid_func = [&](const std::string& addr, uint64_t nonce) -> int {
+            auto tx_valid_func = [&](
+                    const address::protobuf::AddressInfo& addr_info, 
+                    const pools::protobuf::TxMessage& tx_info) -> int {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
                     return false;
                 }
                 
                 return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
-                    addr, nonce,
+                    addr_info.addr(), tx_info.nonce(),
                     latest_block->qc().view_block_hash());
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
                 prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
-                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, gid_valid_func);
+                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, tx_valid_func);
                 ZJC_DEBUG("pool: %d check hash system tx: %d", pool_idx, has_system_tx);
             }
 
