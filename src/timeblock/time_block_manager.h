@@ -43,7 +43,10 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    pools::TxItemPtr tmblock_tx_ptr(bool leader, uint32_t pool_index);
+    pools::TxItemPtr tmblock_tx_ptr(
+        bool leader, 
+        uint32_t pool_index, 
+        pools::CheckAddrNonceValidFunction tx_valid_func);
     bool HasTimeblockTx(
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func);

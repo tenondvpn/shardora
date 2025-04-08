@@ -96,7 +96,10 @@ bool TimeBlockManager::HasTimeblockTx(
     return false;
 }
 
-pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_index) {
+pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
+        bool leader, 
+        uint32_t pool_index, 
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         // if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
@@ -126,6 +129,10 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info->set_to(account_info->addr());
         tx_info->set_key(common::Hash::keccak256(tx_info->value()));
+        if (tx_valid_func(*account_info, *tx_info) != 0) {
+            return nullptr;
+        }
+
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
         ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s",
             u64_data[0], u64_data[1], leader,
