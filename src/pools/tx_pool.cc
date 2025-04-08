@@ -216,8 +216,8 @@ void TxPool::GetTxSyncToLeader(
 
             if (valid_nonce == common::kInvalidUint64) {
                 int res = tx_vlid_func(
-                        tx_ptr->address_info->addr(), 
-                        tx_ptr->tx_info->nonce());
+                        *tx_ptr->address_info, 
+                        *tx_ptr->tx_info);
                 if (res != 0) {
                     if (res > 0) {
                         continue;
@@ -304,8 +304,8 @@ void TxPool::GetTxIdempotently(
                 auto tx_ptr = nonce_iter->second;
                 if (valid_nonce == common::kInvalidUint64) {
                     int res = tx_vlid_func(
-                        tx_ptr->address_info->addr(), 
-                        tx_ptr->tx_info->nonce());
+                        *tx_ptr->address_info, 
+                        *tx_ptr->tx_info);
                     if (res != 0) {
                         if (res > 0) {
                             continue;
