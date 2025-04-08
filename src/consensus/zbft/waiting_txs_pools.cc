@@ -32,7 +32,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item != nullptr) {
         for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
-            if (addr_nonce_valid_func((*iter)->address_info->addr(), (*iter)->tx_info->nonce()) != 0) {
+            if (addr_nonce_valid_func(*(*iter)->address_info, *(*iter)->tx_info) != 0) {
                 txs_item = nullptr;
                 break;
             }
@@ -78,8 +78,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         if (txs_item) {
             auto iter = txs_item->txs.begin();
             if (iter == txs_item->txs.end() || addr_nonce_valid_func(
-                    (*iter)->address_info->addr(), 
-                    (*iter)->tx_info->nonce()) != 0) {
+                    *(*iter)->address_info, 
+                    *(*iter)->tx_info) != 0) {
                 txs_item = nullptr;
             }
         }
@@ -106,8 +106,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         if (txs_item) {
             auto iter = txs_item->txs.begin();
             if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
-                    (*iter)->address_info->addr(), 
-                    (*iter)->tx_info->nonce())) {
+                    *(*iter)->address_info, 
+                    *(*iter)->tx_info)) {
                 txs_item = nullptr;
             }
         }
@@ -119,8 +119,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         if (txs_item) {
             auto iter = txs_item->txs.begin();
             if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
-                    (*iter)->address_info->addr(), 
-                    (*iter)->tx_info->nonce())) {
+                    *(*iter)->address_info, 
+                    *(*iter)->tx_info)) {
                 txs_item = nullptr;
             }
         }

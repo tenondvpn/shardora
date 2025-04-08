@@ -302,7 +302,7 @@ Status BlockAcceptor::addTxsToPool(
                     address_info);
             contract_prepayment_id = tx->to() + from_id;
             break;
-        case pools::protobuf::kConsensusLocalTos:
+        case pools::protobuf::kConsensusLocalTos: {
             tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
                     msg_ptr, i, 
                     db_, 
@@ -320,6 +320,7 @@ Status BlockAcceptor::addTxsToPool(
             }
 
             break;
+        }
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             pools::protobuf::AllToTxMessage all_to_txs;
@@ -344,7 +345,7 @@ Status BlockAcceptor::addTxsToPool(
                         tx_ptr = nullptr;
                         return Status::kError;
                     }
-                    
+
                     if (view_block_chain_->CheckTxNonceValid(
                             tx_ptr->tx_info->to(), 
                             tx_ptr->tx_info->nonce(), 
