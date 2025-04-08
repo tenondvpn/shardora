@@ -132,7 +132,7 @@ Status Hotstuff::Propose(
         }
     }
 
-//     auto t1 = common::TimeUtils::TimestampMs();
+    auto t1 = common::TimeUtils::TimestampMs();
 //     if (latest_leader_propose_message_ && 
 //             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= 
 //             pacemaker_->CurView()) {
