@@ -125,7 +125,6 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         u64_data[0] = new_time_block_tm;
         u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
         tx_info->set_value(std::string(data, sizeof(data)));
-        // pool_index 一定是 256
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info->set_to(account_info->addr());
         tx_info->set_key(common::Hash::keccak256(tx_info->value()));
