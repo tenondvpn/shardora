@@ -1014,15 +1014,16 @@ void ViewBlockChain::AddPoolStatisticTag(uint64_t height) {
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(msg_ptr->address_info->nonce() + 1);
+    tx->set_nonce(0);
     pools_mgr_->HandleMessage(msg_ptr);
     ZJC_INFO("success create kPoolStatisticTag nonce: %lu, pool idx: %u, "
-        "pool addr: %s, addr get pool: %u, height: %lu",
+        "pool addr: %s, addr get pool: %u, height: %lu, unique_hash: %s",
         tx->nonce(), 
         pool_index_,
         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
         common::GetAddressPoolIndex(msg_ptr->address_info->addr()),
-        height);
+        height,
+        common::Encode::HexEncode(unique_hash).c_str());
 }
 
 void ViewBlockChain::OnTimeBlock(

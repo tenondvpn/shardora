@@ -51,10 +51,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
         if (!txs_item->txs.empty()) {
             auto first_tx = *(txs_item->txs.begin());
             ZJC_DEBUG("success leader get single txs coming thread: %d, "
-                "pool index: %d, tx count: %d, nonce: %lu, step: %d", 
+                "pool index: %d, tx count: %d, nonce: %lu, step: %d, unique hash: %s", 
                 thread_id, pool_index, txs_item->txs.size(), 
                 first_tx->tx_info->nonce(), 
-                first_tx->tx_info->step());
+                first_tx->tx_info->step(),
+                common::Encode::HexEncode(first_tx->tx_info->key()).c_str());
         }
     } else {
         ZJC_DEBUG("failed leader get txs coming thread: %d, pool index: %d, tx count: %d", 
