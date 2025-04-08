@@ -202,6 +202,30 @@ Status BlockAcceptor::addTxsToPool(
     //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& txs_map = txs_ptr->txs;
+    auto tx_valid_func = [&](
+            const address::protobuf::AddressInfo& addr_info, 
+            pools::protobuf::TxMessage& tx_info) -> int {
+        if (pools::IsUserTransaction(tx_info.step())) {
+            return view_block_chain_->CheckTxNonceValid(
+                addr_info.addr(), 
+                tx_info.nonce(), 
+                parent_hash);
+        }
+        
+        std::string val;
+        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s",
+                common::Encode::HexEncode(tx_info.to()).c_str(),
+                common::Encode::HexEncode(tx_info.key()).c_str());
+            return 1;
+        }
+
+        ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+            common::Encode::HexEncode(tx_info.to()).c_str(),
+            common::Encode::HexEncode(tx_info.key()).c_str());
+        return 0;
+    };
+
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
@@ -418,7 +442,7 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = std::make_shared<consensus::TimeBlockTx>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false);
+                auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false, tx_valid_func);
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
                     tx_ptr = *(tx_item->txs.begin());
                 }
