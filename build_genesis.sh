@@ -46,7 +46,8 @@ then
 fi
 root=("r1" "r2" "r3")
 shard3=("s3_1" "s3_2" "s3_3" "s3_4")
-nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4")
+shard4=("s4_1" "s4_2" "s4_3" "s4_4")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s4_1" "s4_2" "s4_3" "s4_4")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
@@ -70,8 +71,9 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 if test $NO_BUILD = 0
 then
     cd /root/zjnodes/zjchain && ./zjchain -U
-    cd /root/zjnodes/zjchain && ./zjchain -S 3 &
-    wait
+    cd /root/zjnodes/zjchain && ./zjchain -S 3
+    cd /root/zjnodes/zjchain && ./zjchain -S 4
+    
 fi
 
 #for node in "${root[@]}"; do
@@ -81,6 +83,11 @@ fi
 
 #for node in "${shard3[@]}"; do
 #	cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${node}/db
+#done
+
+
+#for node in "${shard4[@]}"; do
+#	cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/${node}/db
 #done
 
 

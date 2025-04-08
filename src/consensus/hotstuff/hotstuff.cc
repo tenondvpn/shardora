@@ -686,11 +686,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     std::string followers_gids;
-// #ifndef NDEBUG
-//     for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
-//         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
-//     }
-// #endif
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < uint32_t(vote_msg.txs_size()); ++i) {
+        followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
+    }
+#endif
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(msg_ptr->header.debug());
     // cons_debug.add_timestamps(
@@ -708,6 +708,10 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         followers_gids.c_str(),
         leader_rotation()->GetLocalMemberIdx());
 
+    // 同步 replica 的 txs
+    // 无论是否是合法的 vote msg，都要尝试添加交易，否则剩余 f 个节点的交易同步会丢失
+    acceptor()->AddTxs(msg_ptr, vote_msg.txs());    
+
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_DEBUG("vote message is error: hash64: %lu", msg_ptr->header.hash64());
         return;
@@ -720,8 +724,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.view(),
         msg_ptr->header.hash64());
 
-    // 同步 replica 的 txs
-    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
