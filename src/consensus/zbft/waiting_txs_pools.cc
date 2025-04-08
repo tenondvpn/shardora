@@ -75,16 +75,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pool_index == common::kImmutablePoolSize) {
         ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
-        txs_item = GetTimeblockTx(pool_index, true);
-        if (txs_item) {
-            auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
-                    *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
-                txs_item = nullptr;
-            }
-        }
-
+        txs_item = GetTimeblockTx(pool_index, true, addr_nonce_valid_func);
         ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
     }
 
@@ -184,13 +175,16 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_index, bool leader) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
+        uint32_t pool_index, 
+        bool leader,
+        pools::CheckAddrNonceValidFunction addr_nonce_valid_func) {
     if (pool_index != common::kImmutablePoolSize ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return nullptr;
     }
 
-    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr(leader, pool_index);
+    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr(leader, pool_index, addr_nonce_valid_func);
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
