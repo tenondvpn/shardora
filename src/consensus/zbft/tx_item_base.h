@@ -108,9 +108,7 @@ protected:
                 return consensus::kConsensusAccountNotExists;
             }
 
-            acc_balance_map[id]->set_balance(acc_info->balance());
-            acc_balance_map[id]->set_nonce(acc_info->nonce());
-            prefix_db_->AddAddressInfo(id, *(acc_balance_map[id]), zjc_host.db_batch_);
+            acc_balance_map[id] = acc_info;
             *balance = acc_info->balance();
             *nonce = acc_info->nonce();
             ZJC_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
