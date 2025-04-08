@@ -70,7 +70,20 @@ public:
         auto tx_valid_func = [&](
                 const address::protobuf::AddressInfo& addr_info, 
                 const pools::protobuf::TxMessage& tx_info) -> bool {
-            return view_block_chain->CheckTxNonceValid(addr_info.addr(), tx_info.nonce(), parent_hash);
+            if (pools::IsUserTransaction(tx_info.step())) {
+                return view_block_chain->CheckTxNonceValid(
+                    addr_info.addr(), 
+                    tx_info.nonce(), 
+                    parent_hash);
+            }
+            
+            zjcvm::ZjchainHost zjc_host;
+            zjc_host.parent_hash_ = parent_hash;
+            zjc_host.view_block_chain_ = view_block_chain;
+            std::string val;
+            if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+                return 1;
+            }
         };
 
         txs_pools_->GetTxSyncToLeader(leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, txs, tx_valid_func);

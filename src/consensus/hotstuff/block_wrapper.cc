@@ -4,6 +4,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/view_block_chain.h>
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 namespace hotstuff {
@@ -59,10 +60,20 @@ Status BlockWrapper::Wrap(
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
             const pools::protobuf::TxMessage& tx_info) -> int {
-        return view_block_chain->CheckTxNonceValid(
-            addr_info.addr(), 
-            tx_info.nonce(), 
-            prev_view_block->qc().view_block_hash());
+        if (pools::IsUserTransaction(tx_info.step())) {
+            return view_block_chain->CheckTxNonceValid(
+                addr_info.addr(), 
+                tx_info.nonce(), 
+                prev_view_block->qc().view_block_hash());
+        }
+        
+        zjcvm::ZjchainHost zjc_host;
+        zjc_host.parent_hash_ = prev_view_block->qc().view_block_hash();
+        zjc_host.view_block_chain_ = view_block_chain;
+        std::string val;
+        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+            return 1;
+        }
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);

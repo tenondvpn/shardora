@@ -384,9 +384,20 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                     return false;
                 }
                 
-                return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
-                    addr_info.addr(), tx_info.nonce(),
-                    latest_block->qc().view_block_hash());
+                if (pools::IsUserTransaction(tx_info.step())) {
+                    return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
+                        addr_info.addr(), 
+                        tx_info.nonce(), 
+                        latest_block->qc().view_block_hash());
+                }
+                
+                zjcvm::ZjchainHost zjc_host;
+                zjc_host.parent_hash_ = latest_block->qc().view_block_hash();
+                zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
+                std::string val;
+                if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+                    return 1;
+                }
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
