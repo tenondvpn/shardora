@@ -22,7 +22,7 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("to tx consensus coming: %s, nonce: %lu, val: %s", 
+        ZJC_DEBUG("pools statistic tag tx consensus coming: %s, nonce: %lu, val: %s", 
             common::Encode::HexEncode(tx_info.to()).c_str(), 
             tx_info.nonce(),
             common::Encode::HexEncode(tx_info.value()).c_str());
