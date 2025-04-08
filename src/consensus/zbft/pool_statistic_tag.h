@@ -18,6 +18,27 @@ public:
         protos::AddressInfoPtr& addr_info)
         : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {}
     virtual ~PoolStatisticTag() {}
+
+    virtual int TxToBlockTx(
+            const pools::protobuf::TxMessage& tx_info,
+            block::protobuf::BlockTx* block_tx) {
+        ZJC_DEBUG("to tx consensus coming: %s, nonce: %lu, val: %s", 
+            common::Encode::HexEncode(tx_info.to()).c_str(), 
+            tx_info.nonce(),
+            common::Encode::HexEncode(tx_info.value()).c_str());
+        if (!DefaultTxItem(tx_info, block_tx)) {
+            return consensus::kConsensusError;
+        }
+
+        // change
+        if (tx_info.key().empty() || tx_info.value().empty()) {
+            return consensus::kConsensusError;
+        }
+
+        unique_hash_ = tx_info.key();
+        return consensus::kConsensusSuccess;
+    }
+
     virtual int HandleTx(
             const view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
@@ -34,22 +55,28 @@ public:
             return consensus::kConsensusError;
         }
 
-        if (to_nonce + 1 != block_tx.nonce()) {
-            block_tx.set_status(kConsensusNonceInvalid);
-            ZJC_WARN("failed call pool statistic tag: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-                view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-            return consensus::kConsensusSuccess;
-        }
-
-        ZJC_WARN("success call pool statistic tag: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-            view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+        auto str_key = block_tx.to() + unique_hash_;
+        address::protobuf::KeyValueInfo kv_info;
+        kv_info.set_value("1");
+        kv_info.set_height(to_nonce + 1);
+        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
+        zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
+        block_tx.set_unique_hash(unique_hash_);
+        ZJC_WARN("success call pool statistic tag: %d, view: %lu, "
+            "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
+            view_block.qc().pool_index(), view_block.qc().view(),
+            to_nonce, block_tx.nonce(),
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            common::Encode::HexEncode(unique_hash_).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
-        acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+        acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
         prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
         return consensus::kConsensusSuccess;
     }
     
 private:
+    std::string unique_hash_;
+
     DISALLOW_COPY_AND_ASSIGN(PoolStatisticTag);
 };
 

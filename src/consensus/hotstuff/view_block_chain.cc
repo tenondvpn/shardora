@@ -1000,7 +1000,10 @@ void ViewBlockChain::AddPoolStatisticTag(uint64_t height) {
     msg_ptr->address_info = ChainGetPoolAccountInfo(pool_index_);
     assert(msg_ptr->address_info != nullptr);
     auto tx = msg_ptr->header.mutable_tx_proto();
-    tx->set_key(protos::kPoolStatisticTag);
+    auto unique_hash = common::Hash::keccak256(protos::kPoolStatisticTag + "_" + 
+        std::to_string(pool_index_) + "_" + 
+        std::to_string(height));
+    tx->set_key(unique_hash);
     char data[8] = {0};
     uint64_t* udata = (uint64_t*)data;
     udata[0] = height;

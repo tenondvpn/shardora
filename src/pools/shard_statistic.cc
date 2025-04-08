@@ -298,15 +298,8 @@ void ShardStatistic::HandleStatistic(
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             auto& tx = block.tx_list(i);
             if (tx.step() == pools::protobuf::kPoolStatisticTag) {
-                uint64_t statistic_height = 0;
-                for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-                    if (tx.storages(storage_idx).key() == protos::kPoolStatisticTag) {
-                        uint64_t* udata = (uint64_t*)tx.storages(storage_idx).value().c_str();
-                        statistic_height = udata[0];
-                        break;
-                    }
-                }
-
+                uint64_t* udata = (uint64_t*)tx.storages(0).value().c_str();
+                uint64_t statistic_height = udata[0];
                 auto exist_iter = statistic_pool_info_.find(statistic_height);
                 if (exist_iter == statistic_pool_info_.end()) {
                     StatisticInfoItem statistic_item;
