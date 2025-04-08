@@ -181,13 +181,13 @@ Status Hotstuff::Propose(
 //         return Status::kSuccess;
 //     }
 
-    if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
-        ZJC_WARN("pool: %d construct propose msg failed, %d, "
-            "max_view(): %lu last_leader_propose_view_: %lu",
-            pool_idx_, Status::kError,
-            max_view(), last_leader_propose_view_);
-        return Status::kError;
-    }
+//     if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
+//         ZJC_WARN("pool: %d construct propose msg failed, %d, "
+//             "max_view(): %lu last_leader_propose_view_: %lu",
+//             pool_idx_, Status::kError,
+//             max_view(), last_leader_propose_view_);
+//         return Status::kError;
+//     }
 
     auto t2 = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
