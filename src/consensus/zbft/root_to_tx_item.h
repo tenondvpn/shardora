@@ -24,13 +24,23 @@ public:
         protos::AddressInfoPtr& addr_info);
     virtual ~RootToTxItem();
 
-    virtual int TxToBlockTx(
+     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
+        ZJC_DEBUG("root to tx consensus coming: %s, nonce: %lu, val: %s", 
+            common::Encode::HexEncode(tx_info.to()).c_str(), 
+            tx_info.nonce(),
+            common::Encode::HexEncode(tx_info.value()).c_str());
         if (!DefaultTxItem(tx_info, block_tx)) {
             return consensus::kConsensusError;
         }
 
+        // change
+        if (tx_info.key().empty()) {
+            return consensus::kConsensusError;
+        }
+
+        unique_hash_ = tx_info.key();
         return consensus::kConsensusSuccess;
     }
 
@@ -44,6 +54,7 @@ private:
 
     uint32_t max_sharding_id_ = 0;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+    std::string unique_hash_;
     
     DISALLOW_COPY_AND_ASSIGN(RootToTxItem);
 };

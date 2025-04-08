@@ -48,6 +48,7 @@ int ToTxLocalItem::HandleTx(
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
     prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
     block_tx.set_unique_hash(unique_hash_);
+    block_tx.set_nonce(to_nonce + 1);
     block::protobuf::ConsensusToTxs block_to_txs;
     std::string str_for_hash;
     str_for_hash.reserve(to_txs.tos_size() * 48);
@@ -97,7 +98,7 @@ int ToTxLocalItem::HandleTx(
             to_txs.tos(i).amount());
     }
 
-    ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+    ZJC_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());

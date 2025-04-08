@@ -45,6 +45,23 @@ int RootToTxItem::HandleTx(
         account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(block_tx.to());
     }
 
+    uint64_t to_balance = 0;
+    uint64_t to_nonce = 0;
+    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+    auto str_key = block_tx.to() + unique_hash_;
+    std::string val;
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
+        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+        return consensus::kConsensusError;
+    }
+    
+    address::protobuf::KeyValueInfo kv_info;
+    kv_info.set_value("1");
+    kv_info.set_height(to_nonce + 1);
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
+    prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
+    block_tx.set_unique_hash(unique_hash_);
+    block_tx.set_nonce(to_nonce + 1);
     char des_sharding_and_pool[8];
     uint32_t* des_info = (uint32_t*)des_sharding_and_pool;
     if (account_info != nullptr) {
@@ -52,18 +69,17 @@ int RootToTxItem::HandleTx(
         des_info[1] = account_info->pool_index();
     } else {
         uint32_t sharding_id = 0;
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (block_tx.step() == pools::protobuf::kCreateLibrary || 
+                block_tx.step() == pools::protobuf::kContractCreate) {
             // 合约创建，用户指定 sharding
-            if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
-                uint32_t* data = (uint32_t*)block_tx.storages(i).value().c_str();
-                des_info[0] = data[0];
-                des_info[1] = data[1];
-                break;
-            }
+            uint32_t* data = (uint32_t*)block_tx.storages(0).value().c_str();
+            des_info[0] = data[0];
+            des_info[1] = data[1];
+            sharding_id = data[0];
         }
 
-        std::mt19937_64 g2(view_block.block_info().height() ^ vss_mgr_->EpochRandom());
         if (sharding_id == 0) {
+            std::mt19937_64 g2(view_block.block_info().height() ^ vss_mgr_->EpochRandom());
             des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
                 network::kConsensusShardBeginNetworkId;
             // pool index just binding with address
@@ -72,6 +88,8 @@ int RootToTxItem::HandleTx(
     }
 
     zjc_host.root_create_address_tx_ = &block_tx;
+    acc_balance_map[block_tx.to()]->set_balance(to_balance);
+    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kRootCreateAddressKey);
     storage.set_value(std::string((char*)&des_sharding_and_pool, sizeof(des_sharding_and_pool)));

@@ -462,7 +462,6 @@ void BlockManager::RootHandleNormalToTx(
                 tos_item.step() == pools::protobuf::kContractCreate) {
             // assert(!tos_item.library_bytes().empty());
             tx->set_contract_code(tos_item.library_bytes());
-            tx->set_key(protos::kCreateContractCallerSharding);
             char data[8];
             uint32_t* uint_data = (uint32_t*)data;
             uint_data[0] = tos_item.sharding_id();
@@ -470,27 +469,32 @@ void BlockManager::RootHandleNormalToTx(
             tx->set_value(std::string(data, sizeof(data)));
         }
         
-        auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
+        auto pool_index = common::GetAddressPoolIndex(tos_item.des());
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
-        auto nonce = msg_ptr->address_info->nonce() + 1;
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(nonce++);
+        tx->set_nonce(0);
+        auto unique_hash = common::Hash::keccak256(
+            tx->to() + "_" +
+            std::to_string(block.height()) + "_" +
+            std::to_string(i));
+        tx->set_key(unique_hash);
         if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
             tmp_msg_ptr->address_info = msg_ptr->address_info;
             tmp_msg_ptr->header = msg_ptr->header;
             auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
             tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
-            tmp_tx->set_amount(tos_item.prepayment());
-            auto tmp_gid = common::Hash::keccak256(
+            auto unique_hash = common::Hash::keccak256(
                 tmp_tx->to() + "_" +
                 std::to_string(block.height()) + "_" +
                 std::to_string(i));
-            tmp_tx->set_nonce(nonce++);
+            tmp_tx->set_key(unique_hash);
+            tmp_tx->set_amount(tos_item.prepayment());
+            tmp_tx->set_nonce(0);
             pools_mgr_->HandleMessage(msg_ptr);
             pools_mgr_->HandleMessage(tmp_msg_ptr);
             ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
@@ -499,15 +503,14 @@ void BlockManager::RootHandleNormalToTx(
                 common::Encode::HexEncode(tos_item.contract_from()).c_str(),
                 tos_item.amount(),
                 tos_item.prepayment(),
-                nonce,
-                nonce);
+                0, 0);
         } else {
             pools_mgr_->HandleMessage(msg_ptr);
             ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
                 common::Encode::HexEncode(tos_item.des()).c_str(),
                 tos_item.amount(),
                 tos_item.prepayment(),
-                nonce);
+                0);
         }
     }
 }

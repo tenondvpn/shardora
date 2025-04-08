@@ -89,6 +89,7 @@ public:
         zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
         prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
         block_tx.set_unique_hash(unique_hash_);
+        block_tx.set_nonce(to_nonce + 1);
         for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
             auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
             auto& heights = *to_heights->mutable_to_heights();
@@ -126,6 +127,8 @@ public:
         }
 
         prefix_db_->SaveLatestToBlock(view_block, zjc_host.db_batch_);
+        acc_balance_map[block_tx.to()]->set_balance(to_balance);
+        acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         return consensus::kConsensusSuccess;
     }
 
