@@ -1431,12 +1431,14 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     }
 
     pools::protobuf::AllToTxMessage all_to_txs;
+    pools::protobuf::ShardToTxItem prev_heights;
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
         auto& to_tx = *all_to_txs.add_to_tx_arr();
         if (to_txs_pool_->CreateToTxWithHeights(
                 sharding_id,
                 0,
+                &prev_heights,
                 heights,
                 to_tx) != pools::kPoolsSuccess) {
             all_to_txs.mutable_to_tx_arr()->RemoveLast();
@@ -1453,8 +1455,8 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     std::string unique_str;
-    for (uint32_t i = 0; i < heights.heights_size(); ++i) {
-        unique_str += std::to_string(heights.heights(i)) + "_";
+    for (uint32_t i = 0; i < prev_heights.heights_size(); ++i) {
+        unique_str += std::to_string(prev_heights.heights(i)) + "_";
     }
 
     tx->set_key(common::Hash::keccak256(unique_str));

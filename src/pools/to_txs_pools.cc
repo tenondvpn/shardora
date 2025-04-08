@@ -810,6 +810,7 @@ void ToTxsPools::HandleCrossShard(
 int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
+        pools::protobuf::ShardToTxItem* prev_to_heights,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::ToTxMessage& to_tx) {
 #ifdef TEST_NO_CROSS
@@ -823,10 +824,9 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
-    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
     {
         common::AutoSpinLock lock(prev_to_heights_mutex_);
-        prev_to_heights = prev_to_heights_;
+        *prev_to_heights = *prev_to_heights_;
     }
 
     for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
