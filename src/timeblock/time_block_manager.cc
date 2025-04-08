@@ -125,6 +125,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
         // pool_index 一定是 256
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info->set_to(account_info->addr());
+        tx_info->set_key(common::Hash::keccak256(tx_info->value()));
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
         ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d",
             u64_data[0], u64_data[1], leader);
