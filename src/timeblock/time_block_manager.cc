@@ -102,10 +102,10 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        // if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-        //     ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
-        //     return nullptr;
-        // }
+        if (leader && tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+            ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+            return nullptr;
+        }
 
         if (!CanCallTimeBlockTx()) {
             ZJC_DEBUG("CanCallTimeBlockTx leader: %d", leader);
