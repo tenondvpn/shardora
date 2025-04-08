@@ -133,9 +133,11 @@ private:
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleLocalNormalToTx(
+        const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs,
         const block::protobuf::BlockTx& tx);
     void createConsensusLocalToTxs(
+        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map);
     void createContractCreateByRootToTxs(
@@ -145,7 +147,7 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void AddMiningToken(
-        const std::string& block_hash,
+        const view_block::protobuf::ViewBlockItem& view_block,
         const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
