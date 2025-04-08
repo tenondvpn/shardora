@@ -87,7 +87,7 @@ public:
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction gid_valid_fn);
+        pools::CheckAddrNonceValidFunction tx_valid_func);
 
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
@@ -107,9 +107,9 @@ public:
 
 private:
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
-    bool HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn);
-    bool HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn);
-    bool HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn);
+    bool HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
+    bool HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
+    bool HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
     void HandleAllNewBlock();
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& message);

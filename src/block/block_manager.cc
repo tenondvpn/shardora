@@ -1474,21 +1474,21 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
 bool BlockManager::HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
-        pools::CheckAddrNonceValidFunction gid_valid_fn) {
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (HasToTx(pool_index, gid_valid_fn)) {
+    if (HasToTx(pool_index, tx_valid_func)) {
         // ZJC_DEBUG("success check has to tx.");
         return true;
     }
 
     // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (HasStatisticTx(pool_index, gid_valid_fn)) {
+    // if (HasStatisticTx(pool_index, tx_valid_func)) {
     //     // ZJC_DEBUG("success check has statistic tx.");
     //     return true;
     // }
 
     // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (HasElectTx(pool_index, gid_valid_fn)) {
+    // if (HasElectTx(pool_index, tx_valid_func)) {
     //     // ZJC_DEBUG("success check has elect tx.");
     //     return true;
     // }
@@ -1514,7 +1514,7 @@ void BlockManager::PopTxTicker() {
     pop_tx_tick_.CutOff(50000lu, std::bind(&BlockManager::PopTxTicker, this));
 }
 
-bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn) {
+bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func) {
     if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
         return false;
     }
@@ -1534,7 +1534,7 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFuncti
     return true;
 }
 
-bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn) {
+bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func) {
     if (pool_index != common::kImmutablePoolSize) {
         return false;
     }
@@ -1565,9 +1565,9 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceVali
             return false;
         }
 
-        if (gid_valid_fn(
-                iter->second->tx_ptr->address_info->addr(), 
-                iter->second->tx_ptr->tx_info->nonce()) != 0) {
+        if (tx_valid_func(
+                *iter->second->tx_ptr->address_info, 
+                *iter->second->tx_ptr->tx_info) != 0) {
             return false;
         }
 
@@ -1580,7 +1580,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceVali
     return false;
 }
 
-bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction gid_valid_fn) {
+bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func) {
     for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
         if (i % common::kImmutablePoolSize != pool_index) {
             continue;
@@ -1590,9 +1590,9 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFun
             continue;
         }
 
-        if (gid_valid_fn(
-                shard_elect_tx_[i]->tx_ptr->address_info->addr(), 
-                shard_elect_tx_[i]->tx_ptr->tx_info->nonce()) != 0) {
+        if (tx_valid_func(
+                *shard_elect_tx_[i]->tx_ptr->address_info, 
+                *shard_elect_tx_[i]->tx_ptr->tx_info) != 0) {
             return false;
         }
         

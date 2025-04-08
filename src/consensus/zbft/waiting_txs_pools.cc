@@ -133,12 +133,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
 bool WaitingTxsPools::HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction gid_valid_fn) {
-    if (timeblock_mgr_->HasTimeblockTx(pool_index, gid_valid_fn)) {
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
+    if (timeblock_mgr_->HasTimeblockTx(pool_index, tx_valid_func)) {
         return true;
     }
 
-    if (block_mgr_->HasSingleTx(msg_ptr, pool_index, gid_valid_fn)) {
+    if (block_mgr_->HasSingleTx(msg_ptr, pool_index, tx_valid_func)) {
         return true;
     }
 

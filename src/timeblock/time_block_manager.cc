@@ -69,7 +69,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
 
 bool TimeBlockManager::HasTimeblockTx(
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction gid_valid_fn) {
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
     if (pool_index != common::kImmutablePoolSize ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return false;
@@ -86,7 +86,7 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (gid_valid_fn(tmblock_tx_ptr_->address_info->addr(), tmblock_tx_ptr_->tx_info->nonce()) != 0) {
+        if (tx_valid_func(tmblock_tx_ptr_->address_info->addr(), tmblock_tx_ptr_->tx_info->nonce()) != 0) {
             return false;
         }
         

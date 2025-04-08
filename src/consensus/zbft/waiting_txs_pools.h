@@ -50,7 +50,7 @@ public:
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction gid_valid_fn);
+        pools::CheckAddrNonceValidFunction tx_valid_func);
 
 private:
     std::shared_ptr<WaitingTxsItem> GetSingleTx(

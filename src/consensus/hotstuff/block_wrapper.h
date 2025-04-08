@@ -32,7 +32,7 @@ public:
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) = 0;
     virtual bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
-        pools::CheckAddrNonceValidFunction gid_valid_fn) = 0;
+        pools::CheckAddrNonceValidFunction tx_valid_func) = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -61,7 +61,7 @@ public:
     // 是否存在内置交易
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
-        pools::CheckAddrNonceValidFunction gid_valid_fn) override;
+        pools::CheckAddrNonceValidFunction tx_valid_func) override;
     void GetTxSyncToLeader(
             uint32_t leader_idx, 
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
