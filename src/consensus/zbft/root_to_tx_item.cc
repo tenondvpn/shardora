@@ -71,6 +71,7 @@ int RootToTxItem::HandleTx(
         }
     }
 
+    zjc_host.root_create_address_tx_ = &block_tx;
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kRootCreateAddressKey);
     storage.set_value(std::string((char*)&des_sharding_and_pool, sizeof(des_sharding_and_pool)));
