@@ -59,6 +59,7 @@ protected:
         block_tx->set_step(tx_info.step());
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
+        block_tx->set_unique_hash("");
         if (tx_info.step() == pools::protobuf::kContractCreate ||
             tx_info.step() == pools::protobuf::kCreateLibrary||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||

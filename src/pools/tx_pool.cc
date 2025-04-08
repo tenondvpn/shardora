@@ -148,9 +148,14 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     for (uint32_t i = 0; i < view_block.block_info().tx_list_size(); ++i) {
-        auto& addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
+        auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
             view_block.block_info().tx_list(i).to();
+        if (IsUserTransaction(view_block.block_info().tx_list(i).step()) && 
+                !view_block.block_info().tx_list(i).unique_hash().empty()) {
+            addr = view_block.block_info().tx_list(i).unique_hash();
+        }
+
         if (addr.empty()) {
             ZJC_DEBUG("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
             assert(false);
@@ -174,6 +179,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             }
         };
         
+        remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
         ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
