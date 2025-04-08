@@ -46,7 +46,7 @@ int ToTxLocalItem::HandleTx(
     kv_info.set_value("");
     kv_info.set_height(to_nonce + 1);
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
+    prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
     block_tx.set_unique_hash(unique_hash_);
     block::protobuf::ConsensusToTxs block_to_txs;
     std::string str_for_hash;

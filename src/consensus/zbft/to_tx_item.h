@@ -87,7 +87,7 @@ public:
         kv_info.set_value("1");
         kv_info.set_height(to_nonce + 1);
         zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-        zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
+        prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
         block_tx.set_unique_hash(unique_hash_);
         for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
             auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
