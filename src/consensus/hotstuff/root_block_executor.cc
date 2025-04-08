@@ -19,7 +19,7 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
         case pools::protobuf::kConsensusRootTimeBlock:
         case pools::protobuf::kStatistic:
         case pools::protobuf::kCross:
-            RootDefaultTx(txs_ptr, view_block, balance_map);
+            RootDefaultTx(txs_ptr, view_block, balance_map, zjc_host);
             break;
         default:
             RootCreateAccountAddressBlock(txs_ptr, view_block, balance_map, zjc_host);
@@ -35,13 +35,24 @@ Status RootBlockExecutor::DoTransactionAndCreateTxBlock(
 void RootBlockExecutor::RootDefaultTx(
         const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceAndNonceMap& balance_map) {
+        BalanceAndNonceMap& balance_map,
+        zjcvm::ZjchainHost& zjc_host) {
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr->txs.begin();
     balance_map[tx.to()] = std::make_shared<address::protobuf::AddressInfo>();
     (*iter)->TxToBlockTx(*(*iter)->tx_info, &tx);
+    int do_tx_res = (*iter)->HandleTx(
+        *view_block,
+        zjc_host,
+        balance_map,
+        tx);
+
+    if (do_tx_res != consensus::kConsensusSuccess) {
+        tx_list->RemoveLast();
+        assert(false);
+    }
 }
 
 void RootBlockExecutor::RootCreateAccountAddressBlock(

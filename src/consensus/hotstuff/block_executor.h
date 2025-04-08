@@ -68,7 +68,8 @@ private:
     void RootDefaultTx(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
-            BalanceAndNonceMap& balance_map);
+            BalanceAndNonceMap& balance_map,
+            zjcvm::ZjchainHost& zjc_host);
     void RootCreateAccountAddressBlock(
             const std::shared_ptr<consensus::WaitingTxsItem> &txs_ptr,
             view_block::protobuf::ViewBlockItem* view_block,
