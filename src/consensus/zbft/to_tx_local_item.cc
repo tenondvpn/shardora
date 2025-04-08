@@ -50,6 +50,10 @@ int ToTxLocalItem::HandleTx(
             to_balance = 0;
             auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
             addr_info->set_addr(to_txs.tos(i).des());
+            addr_info->set_sharding_id(view_block.qc().network_id());
+            addr_info->set_pool_index(view_block.qc().pool_index());
+            addr_info->set_type(address::protobuf::kNormal);
+            addr_info->set_latest_height(view_block.block_info().height());
             acc_balance_map[to_txs.tos(i).des()] = addr_info;
         } else {
             ZJC_DEBUG("success get to balance: %s, %lu",
