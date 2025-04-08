@@ -365,19 +365,20 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
     if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
+            ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                "nonce: %lu, bls: %s, %s, step: %d",
+                view_block->qc().network_id(),
+                view_block->qc().pool_index(),
+                view_block->block_info().height(),
+                tx.nonce(),
+                common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
+                common::Encode::HexEncode(view_block->qc().sign_y()).c_str(),
+                tx.step());
             switch (tx.step()) {
             case pools::protobuf::kRootCreateAddress:
                 // ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
                 break;
             case pools::protobuf::kNormalTo: {
-                ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-                    "nonce: %lu, bls: %s, %s",
-                    view_block->qc().network_id(),
-                    view_block->qc().pool_index(),
-                    view_block->block_info().height(),
-                    tx.nonce(),
-                    common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
-                    common::Encode::HexEncode(view_block->qc().sign_y()).c_str());
                 zjc_host_ptr->normal_to_tx_ = &tx;
                 break;
             }
