@@ -59,6 +59,12 @@ public:
         }
 
         auto str_key = block_tx.to() + unique_hash_;
+        std::string val;
+        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+            return consensus::kConsensusError;
+        }
+
         address::protobuf::KeyValueInfo kv_info;
         kv_info.set_value("1");
         kv_info.set_height(to_nonce + 1);

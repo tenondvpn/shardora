@@ -355,13 +355,6 @@ Status BlockAcceptor::addTxsToPool(
                         tx_ptr = nullptr;
                         return Status::kError;
                     }
-
-                    // if (view_block_chain_->CheckTxNonceValid(
-                    //         tx_ptr->tx_info->to(), 
-                    //         tx_ptr->tx_info->nonce(), 
-                    //         parent_hash) != 0) {
-                    //     tx_ptr = nullptr;
-                    // }
                 }
             }
             

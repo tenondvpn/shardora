@@ -399,6 +399,9 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                     return 1;
                 }
 
+                ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+                    common::Encode::HexEncode(tx_info.to()).c_str(),
+                    common::Encode::HexEncode(tx_info.key()).c_str());
                 return 0;
             };
 
