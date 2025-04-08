@@ -24,7 +24,7 @@ public:
         protos::AddressInfoPtr& addr_info);
     virtual ~RootToTxItem();
 
-     virtual int TxToBlockTx(
+    virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
         ZJC_DEBUG("root to tx consensus coming: %s, nonce: %lu, val: %s", 

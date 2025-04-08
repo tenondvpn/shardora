@@ -127,8 +127,9 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
         tx_info->set_to(account_info->addr());
         tx_info->set_key(common::Hash::keccak256(tx_info->value()));
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d",
-            u64_data[0], u64_data[1], leader);
+        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s",
+            u64_data[0], u64_data[1], leader,
+            common::Encode::HexEncode(tx_info->key()).c_str());
     }
 
     return tmblock_tx_ptr_;
