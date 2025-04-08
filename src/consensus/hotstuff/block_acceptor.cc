@@ -236,13 +236,23 @@ Status BlockAcceptor::addTxsToPool(
 
         auto now_map_iter = now_balance_map.find(address_info->addr());
         if (now_map_iter == now_balance_map.end()) {
-            if (view_block_chain_ && view_block_chain_->CheckTxNonceValid(
-                    address_info->addr(), tx->nonce(), parent_hash) != 0) {
-                ZJC_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
-                    common::Encode::HexEncode(address_info->addr()).c_str(),
-                    tx->nonce(), 
-                    common::Encode::HexEncode(parent_hash).c_str());
-                return Status::kError;
+            if (pools::IsUserTransaction(tx->step())) {
+                if (view_block_chain_ && view_block_chain_->CheckTxNonceValid(
+                        address_info->addr(), tx->nonce(), parent_hash) != 0) {
+                    ZJC_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
+                        common::Encode::HexEncode(address_info->addr()).c_str(),
+                        tx->nonce(), 
+                        common::Encode::HexEncode(parent_hash).c_str());
+                    return Status::kError;
+                }
+            } else {
+                std::string val;
+                if (zjc_host.GetKeyValue(tx->to(), tx->key(), &val) == zjcvm::kZjcvmSuccess) {
+                    ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                        common::Encode::HexEncode(tx->to()).c_str(),
+                        common::Encode::HexEncode(tx->key()).c_str());
+                    return Status::kError;
+                }
             }
         }
         
@@ -346,12 +356,12 @@ Status BlockAcceptor::addTxsToPool(
                         return Status::kError;
                     }
 
-                    if (view_block_chain_->CheckTxNonceValid(
-                            tx_ptr->tx_info->to(), 
-                            tx_ptr->tx_info->nonce(), 
-                            parent_hash) != 0) {
-                        tx_ptr = nullptr;
-                    }
+                    // if (view_block_chain_->CheckTxNonceValid(
+                    //         tx_ptr->tx_info->to(), 
+                    //         tx_ptr->tx_info->nonce(), 
+                    //         parent_hash) != 0) {
+                    //     tx_ptr = nullptr;
+                    // }
                 }
             }
             
