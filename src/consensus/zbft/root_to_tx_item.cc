@@ -85,6 +85,14 @@ int RootToTxItem::HandleTx(
             // pool index just binding with address
             des_info[1] = common::GetAddressPoolIndex(block_tx.to());
         }
+
+        auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
+        addr_info->set_addr(block_tx.to());
+        addr_info->set_sharding_id(des_info[0]);
+        addr_info->set_pool_index(common::GetAddressPoolIndex(block_tx.to()));
+        addr_info->set_type(address::protobuf::kNormal);
+        addr_info->set_latest_height(view_block.block_info().height());
+        acc_balance_map[block_tx.to()] = addr_info;
     }
 
     zjc_host.root_create_address_tx_ = &block_tx;
