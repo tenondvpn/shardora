@@ -153,15 +153,7 @@ bool Execution::GetStorage(
         const std::string& key,
         std::string* val) {
     auto str_key = str_id + key;
-    auto res = true;
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
-    if (thread_idx >= thread_count) {
-        prefix_db_->GetTemporaryKv(str_key, val);
-    } else {
-        prefix_db_->GetTemporaryKv(str_key, val);
-    }
-
+    auto res = prefix_db_->GetTemporaryKv(str_key, val);
     ZJC_DEBUG("get storage: %s, %s", 
         common::Encode::HexEncode(str_key).c_str(), 
         common::Encode::HexEncode(*val).c_str());
