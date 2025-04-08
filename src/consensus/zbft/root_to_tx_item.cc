@@ -101,6 +101,7 @@ int RootToTxItem::HandleTx(
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kRootCreateAddressKey);
     storage.set_value(std::string((char*)&des_sharding_and_pool, sizeof(des_sharding_and_pool)));
+    prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
     ZJC_DEBUG("adress: %s, set sharding id: %u, pool index: %d",
         common::Encode::HexEncode(block_tx.to()).c_str(), des_info[0], des_info[1]);
     return kConsensusSuccess;
