@@ -485,13 +485,13 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (count % 200 == 0) {
+        if (count % 1 == 0) {
             ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             //usleep(10000);
             
-            usleep(100000lu);
+            usleep(1000000lu);
 
         }
 
