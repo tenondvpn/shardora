@@ -59,7 +59,7 @@ Status BlockWrapper::Wrap(
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
-            const pools::protobuf::TxMessage& tx_info) -> int {
+            pools::protobuf::TxMessage& tx_info) -> int {
         if (pools::IsUserTransaction(tx_info.step())) {
             return view_block_chain->CheckTxNonceValid(
                 addr_info.addr(), 
@@ -74,6 +74,8 @@ Status BlockWrapper::Wrap(
         if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
             return 1;
         }
+
+        return 0;
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);

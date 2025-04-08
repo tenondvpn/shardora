@@ -170,6 +170,7 @@ private:
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
+    std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;

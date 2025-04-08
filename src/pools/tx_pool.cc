@@ -265,6 +265,11 @@ void TxPool::GetTxIdempotently(
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
+        if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+            system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
+            continue;
+        }
+
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             continue;
         }
@@ -345,7 +350,7 @@ void TxPool::GetTxIdempotently(
         }
     };
 
-    // get_tx_func(tx_map_);
+    get_tx_func(system_tx_map_);
     get_tx_func(consensus_tx_map_);
 }
 

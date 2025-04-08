@@ -69,7 +69,7 @@ public:
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
         auto tx_valid_func = [&](
                 const address::protobuf::AddressInfo& addr_info, 
-                const pools::protobuf::TxMessage& tx_info) -> bool {
+                pools::protobuf::TxMessage& tx_info) -> bool {
             if (pools::IsUserTransaction(tx_info.step())) {
                 return view_block_chain->CheckTxNonceValid(
                     addr_info.addr(), 
@@ -84,6 +84,8 @@ public:
             if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
                 return 1;
             }
+
+            return 0;
         };
 
         txs_pools_->GetTxSyncToLeader(leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, txs, tx_valid_func);

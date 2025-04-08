@@ -378,7 +378,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto tx_valid_func = [&](
                     const address::protobuf::AddressInfo& addr_info, 
-                    const pools::protobuf::TxMessage& tx_info) -> int {
+                    pools::protobuf::TxMessage& tx_info) -> int {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
                     return false;
@@ -398,6 +398,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                 if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
                     return 1;
                 }
+
+                return 0;
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
