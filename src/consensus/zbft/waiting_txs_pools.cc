@@ -30,15 +30,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
     #endif
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (txs_item != nullptr) {
-        for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
-            if (addr_nonce_valid_func(*(*iter)->address_info, *(*iter)->tx_info) != 0) {
-                txs_item = nullptr;
-                break;
-            }
-        }
-    }
-
     if (txs_item == nullptr) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
         txs_item = wtxs[pool_index].LeaderGetValidTxsIdempotently(msg_ptr, addr_nonce_valid_func);
@@ -195,9 +186,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
         
         txs_item->txs.push_back(tx_ptr);
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
-        ZJC_DEBUG("single tx success to get timeblock tx: tx key: %s, nonce: %lu",
+        ZJC_DEBUG("single tx success to get timeblock tx: tx key: %s, nonce: %lu, unique hash: %s",
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(), 
-            tx_ptr->tx_info->nonce());
+            tx_ptr->tx_info->nonce(),
+            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         return txs_item;
     }
 

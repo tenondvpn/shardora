@@ -22,15 +22,18 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("root to tx consensus coming: %s, nonce: %lu, val: %s", 
+        ZJC_DEBUG("root to tx consensus coming: %s, nonce: %lu, key: %s, val: %s", 
             common::Encode::HexEncode(tx_info.to()).c_str(), 
             tx_info.nonce(),
+            common::Encode::HexEncode(tx_info.key()).c_str(),
             common::Encode::HexEncode(tx_info.value()).c_str());
         if (!DefaultTxItem(tx_info, block_tx)) {
+            assert(false);
             return consensus::kConsensusError;
         }
 
         if (tx_info.key().empty()) {
+            assert(false);
             return consensus::kConsensusError;
         }
 
