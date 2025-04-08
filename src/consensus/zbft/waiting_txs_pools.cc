@@ -90,7 +90,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs_item == nullptr && pool_index == common::kImmutablePoolSize) {
         txs_item = GetToTxs(pool_index, "");
-        ZJC_DEBUG("GetToTxs: %d", (txs_item != nullptr));
+        if (txs_item) {
+            auto iter = txs_item->txs.begin();
+            ZJC_DEBUG("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
+        }
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
