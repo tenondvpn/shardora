@@ -1020,6 +1020,12 @@ void BlockManager::AddNewBlock(
     if (view_block_info->zjc_host_ptr->normal_to_tx_ != nullptr) {
         HandleNormalToTx(view_block_item, *view_block_info->zjc_host_ptr->normal_to_tx_);
     }
+
+    if (view_block_info->zjc_host_ptr->root_create_address_tx_ != nullptr) {
+        ConsensusShardHandleRootCreateAddress(
+            *view_block_item, 
+            *view_block_info->zjc_host_ptr->root_create_address_tx_);
+    }
 //     if (ck_client_ != nullptr) {
 //         ck_client_->AddNewBlock(view_block_item);
 //     }

@@ -376,7 +376,7 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
                 tx.step());
             switch (tx.step()) {
             case pools::protobuf::kRootCreateAddress:
-                // ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
+                zjc_host_ptr->root_create_address_tx_ = &tx;
                 break;
             case pools::protobuf::kNormalTo: {
                 zjc_host_ptr->normal_to_tx_ = &tx;
