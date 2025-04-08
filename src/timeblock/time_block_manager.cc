@@ -86,7 +86,7 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (tx_valid_func(tmblock_tx_ptr_->address_info->addr(), tmblock_tx_ptr_->tx_info->nonce()) != 0) {
+        if (tx_valid_func(*tmblock_tx_ptr_->address_info, *tmblock_tx_ptr_->tx_info) != 0) {
             return false;
         }
         
