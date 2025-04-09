@@ -189,44 +189,39 @@ void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     ZJC_DEBUG("handle statistic block now size: %u", tx.storages_size());
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        ZJC_DEBUG("handle statistic block now key: %s", tx.storages(i).key().c_str());
-        if (tx.storages(i).key() == protos::kShardStatistic) {
-            pools::protobuf::ElectStatistic elect_statistic;
-            if (!elect_statistic.ParseFromString(tx.storages(i).value())) {
-                ZJC_ERROR("get statistic val failed: %s",
-                    common::Encode::HexEncode(tx.storages(i).value()).c_str());
-                assert(false);
-                return;
-            }
+    pools::protobuf::ElectStatistic elect_statistic;
+    if (!elect_statistic.ParseFromString(tx.storages(0).value())) {
+        ZJC_ERROR("get statistic val failed: %s",
+            common::Encode::HexEncode(tx.storages(0).value()).c_str());
+        assert(false);
+        return;
+    }
 
-            ZJC_DEBUG("success handle statistic block: %s, latest_statisticed_height_: %lu",
-                ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
-            auto& heights = elect_statistic.height_info();
-            auto st_iter = statistic_pool_info_.begin();
-            while (st_iter != statistic_pool_info_.end()) {
-                if (st_iter->first >= latest_statisticed_height_) {
-                    break;
-                }
-                    
-                ZJC_DEBUG("erase statistic height: %lu", st_iter->first);
-                st_iter = statistic_pool_info_.erase(st_iter);
-                CHECK_MEMORY_SIZE(statistic_pool_info_);
-            }
-
-            latest_statisticed_height_ = elect_statistic.statistic_height();
-            // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
-            // if (iter != tm_height_with_statistic_info_.end()) {
-            //     tm_height_with_statistic_info_.erase(iter);
-            // }
-
-            // prefix_db_->SaveStatisticLatestHeihgts(
-            //     common::GlobalInfo::Instance()->network_id(),
-            //     heights);
-            latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
+    ZJC_DEBUG("success handle statistic block: %s, latest_statisticed_height_: %lu",
+        ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
+    auto& heights = elect_statistic.height_info();
+    auto st_iter = statistic_pool_info_.begin();
+    while (st_iter != statistic_pool_info_.end()) {
+        if (st_iter->first >= latest_statisticed_height_) {
             break;
         }
+            
+        ZJC_DEBUG("erase statistic height: %lu", st_iter->first);
+        st_iter = statistic_pool_info_.erase(st_iter);
+        CHECK_MEMORY_SIZE(statistic_pool_info_);
     }
+
+    latest_statisticed_height_ = elect_statistic.statistic_height();
+    // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
+    // if (iter != tm_height_with_statistic_info_.end()) {
+    //     tm_height_with_statistic_info_.erase(iter);
+    // }
+
+    // prefix_db_->SaveStatisticLatestHeihgts(
+    //     common::GlobalInfo::Instance()->network_id(),
+    //     heights);
+    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
+
 }
 
 void ShardStatistic::HandleStatistic(

@@ -280,29 +280,23 @@ void BlockManager::HandleStatisticTx(
     }
 
     pools::protobuf::ElectStatistic elect_statistic;
-    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-        if (block_tx.storages(i).key() == protos::kShardStatistic) {
-            if (!elect_statistic.ParseFromString(block_tx.storages(i).value())) {
-                assert(false);
-                continue;
-            }
+    if (!elect_statistic.ParseFromString(block_tx.storages(0).value())) {
+        assert(false);
+        return;
+    }
 
-            if (elect_statistic.sharding_id() != net_id) {
-                ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), net_id);
-                continue;
-            }
+    if (elect_statistic.sharding_id() != net_id) {
+        ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), net_id);
+        return;
+    }
 
-            auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
-            if (iter != shard_statistics_map_.end()) {
-                ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
-                shard_statistics_map_.erase(iter);
-                CHECK_MEMORY_SIZE(shard_statistics_map_);
-                auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
-                shard_statistics_map_ptr_queue_.push(tmp_ptr);
-            }
-
-            break;
-        }
+    auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
+    if (iter != shard_statistics_map_.end()) {
+        ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
+        shard_statistics_map_.erase(iter);
+        CHECK_MEMORY_SIZE(shard_statistics_map_);
+        auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
+        shard_statistics_map_ptr_queue_.push(tmp_ptr);
     }
 
     HandleStatisticBlock(view_block, block_tx, elect_statistic, db_batch);
