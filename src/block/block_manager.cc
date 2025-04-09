@@ -1245,16 +1245,18 @@ void BlockManager::CreateStatisticTx() {
     MarkDoneTimeblockHeightStatistic(timeblock_height);
 
     // TODO: fix invalid hash
-    std::string statistic_hash = common::Hash::keccak256(elect_statistic.SerializeAsString());
+    auto unique_hash = common::Hash::keccak256(
+        std::to_string(elect_statistic.sharding_id()) + 
+        std::to_string(elect_statistic.statistic_height()));
     ZJC_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
-        common::Encode::HexEncode(statistic_hash).c_str(), 
+        common::Encode::HexEncode(unique_hash).c_str(), 
         timeblock_height, ProtobufToJson(elect_statistic).c_str());
-    if (!statistic_hash.empty()) {
+    if (!unique_hash.empty()) {
         auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
         if (tm_statistic_iter == shard_statistics_map_.end()) {
-           auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
-            tx->set_key(protos::kShardStatistic);
+            tx->set_key(unique_hash);
             tx->set_value(elect_statistic.SerializeAsString());
             tx->set_pubkey("");
             tx->set_step(pools::protobuf::kStatistic);
@@ -1266,13 +1268,13 @@ void BlockManager::CreateStatisticTx() {
             auto tx_ptr = std::make_shared<BlockTxsItem>();
             tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
             tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
-            tx_ptr->tx_hash = statistic_hash;
+            tx_ptr->tx_hash = unique_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
                 "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
                 "nonce: %lu, timeblock_height: %lu",
-                common::Encode::HexEncode(statistic_hash).c_str(),
+                common::Encode::HexEncode(unique_hash).c_str(),
                 0,
                 "", tx_ptr->timeout,
                 kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
