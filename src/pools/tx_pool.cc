@@ -171,6 +171,10 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                     }
 
                     nonce_iter = tx_iter->second.erase(nonce_iter);
+                    ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+                        pool_index_,
+                        common::Encode::HexEncode(addr).c_str(), 
+                        nonce_iter->first);
                 }
 
                 if (tx_iter->second.empty()) {
