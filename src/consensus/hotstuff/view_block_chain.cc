@@ -454,13 +454,16 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
     for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
         auto tmp_block = (*iter)->view_block;
-        ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d", 
+        uint64_t* udata = (uint64_t*)tmp_block->block_info().tx_list(0).storages(0).value().c_str();
+        uint64_t statistic_height = udata[0];
+        ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
             tmp_block->qc().network_id(), 
             tmp_block->qc().pool_index(), 
             tmp_block->qc().view(),
             common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
-            tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1);
+            tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
+            statistic_height);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         assert((*iter)->zjc_host_ptr);
         auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
