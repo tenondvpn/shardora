@@ -1590,8 +1590,8 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFun
 
 pools::TxItemPtr BlockManager::GetStatisticTx(
         uint32_t pool_index, 
-        uint64_t nonce) {
-    bool leader = (nonce == 0);
+        const std::string& unqiue_hash) {
+    bool leader = unqiue_hash.empty();
     while (shard_statistics_map_ptr_queue_.size() > 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
     }
@@ -1615,7 +1615,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             break;
         }
 
-        if (iter->second->tx_ptr->tx_info->nonce() == nonce) {
+        if (iter->second->tx_ptr->tx_info->key() == unqiue_hash) {
             shard_statistic_tx = iter->second;
             break;
         }

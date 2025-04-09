@@ -393,7 +393,7 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), 0);
+                auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), tx->key());
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
                     tx_ptr = *(tx_item->txs.begin());
                 } else {

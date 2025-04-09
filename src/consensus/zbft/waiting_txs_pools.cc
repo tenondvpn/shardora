@@ -198,7 +198,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         uint32_t pool_index, 
-        const std::string& tx_gid) {
+        const std::string& unqiue_hash) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (pool_index != common::kImmutablePoolSize) {
             return nullptr;
@@ -210,7 +210,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
     }
 
     bool leader = tx_gid.empty();
-    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, 0);
+    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, unqiue_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
