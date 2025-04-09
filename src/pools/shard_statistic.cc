@@ -520,6 +520,17 @@ void ShardStatistic::HandleStatistic(
         }
     };
     
+    if (view_block_ptr->block_info().tx_list_size() > 0 && view_block_ptr->block_info().tx_list(0).step() == 18) {
+        uint64_t* udata = (uint64_t*)view_block_ptr->block_info().tx_list(0).storages(0).value().c_str();
+        uint64_t statistic_height = udata[0];
+        ZJC_DEBUG("now handle statistic block %u_%u_%lu, step: %d, statistic height: %lu, unique hash: %s",
+            view_block_ptr->qc().network_id(),
+            view_block_ptr->qc().pool_index(),
+            view_block_ptr->qc().view(),
+            view_block_ptr->block_info().tx_list(0).step(),
+            statistic_height,
+            common::Encode::HexEncode(view_block_ptr->block_info().tx_list(0).storages(0).key()).c_str());
+    }
     callback(block);
     statistic_info_ptr->all_gas_amount += block_gas;
     std::string leader_id = getLeaderIdFromBlock(*view_block_ptr);
