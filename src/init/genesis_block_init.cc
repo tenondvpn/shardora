@@ -226,7 +226,7 @@ void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
         auto statistic_info = pool_st_info.add_pool_statisitcs();
         statistic_info->set_pool_index(i);
         statistic_info->set_min_height(pools_mgr_->latest_height(i));
-        statistic_info->set_max_height(pools_mgr_->latest_height(i) + 1);
+        statistic_info->set_max_height(pools_mgr_->latest_height(i));
     }
 
     prefix_db_->SaveLatestPoolStatisticTag(shard_id, pool_st_info);
