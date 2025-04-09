@@ -1226,7 +1226,8 @@ void BlockManager::CreateStatisticTx() {
 
     // TODO: fix invalid hash
     auto unique_hash = common::Hash::keccak256(
-        std::to_string(elect_statistic.sharding_id()) + 
+        std::string("create_statistic_tx_") + 
+        std::to_string(elect_statistic.sharding_id()) + "_" +
         std::to_string(elect_statistic.statistic_height()));
     ZJC_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
         common::Encode::HexEncode(unique_hash).c_str(), 

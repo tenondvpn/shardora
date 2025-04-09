@@ -91,9 +91,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
+            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     *(*iter)->address_info, 
-                    *(*iter)->tx_info)) {
+                    *(*iter)->tx_info) != 0) {
                 txs_item = nullptr;
             }
         }
@@ -104,9 +104,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetElectTx(pool_index, "");
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || !addr_nonce_valid_func(
+            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     *(*iter)->address_info, 
-                    *(*iter)->tx_info)) {
+                    *(*iter)->tx_info) != 0) {
                 txs_item = nullptr;
             }
         }
