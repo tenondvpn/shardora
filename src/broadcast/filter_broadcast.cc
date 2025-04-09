@@ -46,8 +46,8 @@ void FilterBroadcast::Broadcasting(
         //     bloomfilter->insert((*iter)->id_hash);
         // }
 
-        // ZJC_DEBUG("random Broadcasting: %lu, size: %u",
-        //     msg_ptr->header.hash64(), nodes.size());
+        ZJC_DEBUG("random Broadcasting: %lu, size: %u",
+            msg_ptr->header.hash64(), nodes.size());
         if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
             return;
         }
