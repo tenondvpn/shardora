@@ -209,7 +209,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         }
     }
 
-    bool leader = tx_gid.empty();
+    bool leader = unqiue_hash.empty();
     auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, unqiue_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
