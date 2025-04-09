@@ -957,8 +957,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             db_batch);
 
         prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
-        prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
-            network::kRootCongressNetworkId, tenon_block_ptr->height(), db_batch);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(view_block_ptr, db_batch);
@@ -1046,8 +1044,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
                 if (tenon_block_ptr->tx_list(i).storages(j).key() == protos::kAttrTimerBlock) {
                     prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
-                    prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
-                        sharding_id, tenon_block_ptr->height(), db_batch);
                 }
             }
         }

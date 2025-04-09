@@ -266,10 +266,6 @@ void BlockManager::HandleStatisticTx(
         const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
-    prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
-        view_block.qc().network_id(),
-        block.timeblock_height(),
-        db_batch);
     uint32_t net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusShardEndNetworkId) {
         net_id -= network::kConsensusWaitingShardOffset;
