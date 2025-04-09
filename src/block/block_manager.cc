@@ -1622,8 +1622,8 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr, nonce: %s, is leader: %d",
-            nonce,
+        ZJC_DEBUG("shard_statistic_tx == nullptr, unqiue_hash: %s, is leader: %d",
+            common::Encode::HexEncode(unqiue_hash).c_str(),
             leader);
         if (pool_index == common::kImmutablePoolSize) {
             assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
