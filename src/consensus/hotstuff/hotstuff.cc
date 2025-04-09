@@ -260,7 +260,7 @@ Status Hotstuff::Propose(
 
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
-    ZJC_DEBUG("leader begin propose_debug: %s", "ProtobufToJson(consensus_debug).c_str()");
+    ZJC_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
 #endif
     auto t5 = common::TimeUtils::TimestampMs();
     s = crypto()->SignMessage(tmp_msg_ptr);
