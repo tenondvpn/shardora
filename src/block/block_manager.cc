@@ -935,7 +935,7 @@ void BlockManager::AddNewBlock(
             *view_block_info->zjc_host_ptr->root_create_address_tx_);
     }
 
-    if (view_block_info->zjc_host_ptr->statisitc_tx_ nullptr) {
+    if (view_block_info->zjc_host_ptr->statisitc_tx_ != nullptr) {
         HandleStatisticTx(*view_block_item, *view_block_info->zjc_host_ptr->statisitc_tx_);
     }
 }
