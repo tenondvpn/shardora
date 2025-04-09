@@ -116,6 +116,10 @@ Status Hotstuff::Propose(
         return Status::kError;
     }
 
+    ZJC_WARN("net: %d, pool %u not has dht ptr size: %d.", 
+        common::GlobalInfo::Instance()->network_id(), 
+        pool_idx_, 
+        readobly_dht->size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
