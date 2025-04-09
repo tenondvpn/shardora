@@ -33,8 +33,11 @@ public:
         }
 
         unique_hash_ = tx_info.key();
+        auto* storage = block_tx->add_storages();
+        storage->set_key(protos::kAttrTimerBlock);
+        storage->set_value(tx_info.value());
         ZJC_DEBUG("root to tx consensus coming: %s, nonce: %lu, key: %s, val: %s", 
-            common::Encode::HexEncode(tx_info.to()).c_str(), 
+            common::Encode::HexEncode(tx_info.to()).c_str(),  
             tx_info.nonce(),
             common::Encode::HexEncode(tx_info.key()).c_str(),
             common::Encode::HexEncode(tx_info.value()).c_str());
