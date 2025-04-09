@@ -20,7 +20,7 @@ void FilterBroadcast::Broadcasting(
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr) {
     assert(dht_ptr);
-    assert(!dht_ptr->readonly_hash_sort_dht()->size() >= 2);
+    assert(dht_ptr->readonly_hash_sort_dht()->size() >= 2u);
     auto& message = msg_ptr->header;
     if (message.broadcast().hop_limit() <= message.hop_count()) {
         BROAD_DEBUG("message.broadcast().hop_limit() <= message.hop_count()[%d, %d] hash: %lu",
