@@ -151,7 +151,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
             view_block.block_info().tx_list(i).to();
-        if (IsUserTransaction(view_block.block_info().tx_list(i).step()) && 
+        if (!IsUserTransaction(view_block.block_info().tx_list(i).step()) && 
                 !view_block.block_info().tx_list(i).unique_hash().empty()) {
             addr = view_block.block_info().tx_list(i).unique_hash();
         }
