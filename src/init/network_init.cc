@@ -1153,28 +1153,7 @@ void NetworkInit::WriteAggBlsSkToFile(const std::string& node_id, const libff::a
 void NetworkInit::AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         db::DbWriteBatch& db_batch) {
-    // TODO: fix
     auto* block = &view_block->block_info();
-    // if (prefix_db_->BlockExists(view_block->qc().view_block_hash())) {
-    //     ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-    //         view_block->qc().network_id(),
-    //         view_block->qc().pool_index(),
-    //         block->height(),
-    //         block->tx_list_size(),
-    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-    //     return;
-    // }
-
-    // if (prefix_db_->BlockExists(view_block->qc().network_id(), view_block->qc().pool_index(), block->height())) {
-    //     ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
-    //         view_block->qc().network_id(),
-    //         view_block->qc().pool_index(),
-    //         block->height(),
-    //         block->tx_list_size(),
-    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
-    //     return;
-    // }
-
     ZJC_DEBUG("cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
         view_block->qc().network_id(),
         view_block->qc().pool_index(),
@@ -1187,40 +1166,7 @@ void NetworkInit::AddBlockItemToCache(
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
     }
 
-    // if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
-    //     return;
-    // }
-
-    // gas_prepayment_->NewBlock(*view_block, db_batch);
-    // one block must be one consensus pool
-    // const auto& tx_list = block->tx_list();
-    // for (int32_t i = 0; i < tx_list.size(); ++i) {
-    //     // if (tx_list[i].status() != consensus::kConsensusSuccess) {
-    //     //     continue;
-    //     // }
-
-    //     switch (tx_list[i].step()) {
-    //     case pools::protobuf::kNormalFrom:
-    //     case pools::protobuf::kRootCreateAddress:
-    //     case pools::protobuf::kJoinElect:
-    //     case pools::protobuf::kContractGasPrepayment:
-    //     case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-    //         break;
-    //     case pools::protobuf::kConsensusLocalTos:
-    //     case pools::protobuf::kContractCreate:
-    //     case pools::protobuf::kContractCreateByRootTo:
-    //     case pools::protobuf::kContractExcute:
-    //     case pools::protobuf::kNormalTo:
-    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-    //         gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
-    //         // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
-    //         zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    // }
+    DbNewBlockCallback(view_block, db_batch);
 }
 
 // pool tx thread, thread safe
