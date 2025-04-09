@@ -71,8 +71,11 @@ public:
         zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
         prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
         block_tx.set_unique_hash(unique_hash_);
-        ZJC_WARN("success call pool statistic tag: %d, view: %lu, "
+        uint64_t* udata = (uint64_t*)block_tx.storages(0).value().c_str();
+        uint64_t statistic_height = udata[0];
+        ZJC_WARN("success call pool statistic height: %lu, pool: %d, view: %lu, "
             "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
+            statistic_height,
             view_block.qc().pool_index(), view_block.qc().view(),
             to_nonce, block_tx.nonce(),
             common::Encode::HexEncode(block_tx.to()).c_str(),
