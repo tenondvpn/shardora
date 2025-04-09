@@ -1053,7 +1053,10 @@ void ViewBlockChain::OnTimeBlock(
         return;
     }
 
-    AddPoolStatisticTag(latest_time_block_height);
+    if (latest_time_block_height > 1) {
+        AddPoolStatisticTag(latest_time_block_height);
+    }
+    
     latest_timeblock_height_ = latest_time_block_height;
 }
 
