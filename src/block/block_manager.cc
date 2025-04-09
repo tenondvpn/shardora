@@ -266,14 +266,10 @@ void BlockManager::HandleStatisticTx(
         const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
-    consensused_timeblock_height_ = block.timeblock_height();
     prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
         view_block.qc().network_id(),
         block.timeblock_height(),
         db_batch);
-    ZJC_DEBUG("success handled statistic block time block height: %lu, net: %u",
-        consensused_timeblock_height_,
-        view_block.qc().network_id());
     uint32_t net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusShardEndNetworkId) {
         net_id -= network::kConsensusWaitingShardOffset;
@@ -1112,12 +1108,6 @@ void BlockManager::AddMiningToken(
 
 void BlockManager::LoadLatestBlocks() {
     ZJC_DEBUG("load latest block called!");
-    if (!prefix_db_->GetConsensusedStatisticTimeBlockHeight(
-            common::GlobalInfo::Instance()->network_id(),
-            &consensused_timeblock_height_)) {
-        ZJC_ERROR("init latest consensused statistic time block height failed!");
-    }
-
     timeblock::protobuf::TimeBlock tmblock;
     db::DbWriteBatch db_batch;
     if (prefix_db_->GetLatestTimeBlock(&tmblock)) {
@@ -1319,11 +1309,6 @@ void BlockManager::HandleStatisticBlock(
 
     prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, db_batch);
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        prefix_db_->SaveStatisticedShardingHeight(
-            view_block.qc().network_id(),
-            block.timeblock_height(),
-            elect_statistic,
-            db_batch);
         for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
             ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
                 elect_statistic.sharding_id(), 

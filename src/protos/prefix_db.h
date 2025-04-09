@@ -62,8 +62,6 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 static const std::string kPresetPolynomialPrefix = "u\x01";
 static const std::string kPresetVerifyValuePrefix = "v\x01";
 static const std::string kStatisticHeightsPrefix = "w\x01";
-static const std::string kConsensusedStatisticPrefix = "x\x01";
-static const std::string kRootStatisticedPrefix = "y\x01";
 static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
@@ -1015,87 +1013,6 @@ public:
         }
 
         return true;
-    }
-
-    void SaveConsensusedStatisticTimeBlockHeight(
-            uint32_t sharding_id,
-            uint64_t timeblock_height,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kConsensusedStatisticPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val((char*)&timeblock_height, sizeof(timeblock_height));
-        db_batch.Put(key, val);
-    }
-
-    bool GetConsensusedStatisticTimeBlockHeight(uint32_t sharding_id, uint64_t* timeblock_height) {
-        std::string key;
-        key.reserve(64);
-        key.append(kConsensusedStatisticPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
-            return false;
-        }
-
-        if (val.size() != sizeof(*timeblock_height)) {
-            return false;
-        }
-
-        uint64_t* tm_height = (uint64_t*)val.c_str();
-        *timeblock_height = tm_height[0];
-        return true;
-    }
-
-    void SaveStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height,
-            const pools::protobuf::ElectStatistic& elect_statistic,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        std::string val = elect_statistic.SerializeAsString();
-        db_batch.Put(key, val);
-    }
-
-    bool GetStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height,
-            pools::protobuf::ElectStatistic* elect_statistic) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_WARN("get data from db failed!");
-            return false;
-        }
-
-        if (!elect_statistic->ParseFromString(val)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool ExistsStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        return db_->Exist(key);
     }
 
     void SaveElectNodeStoke(

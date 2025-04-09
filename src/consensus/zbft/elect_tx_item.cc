@@ -32,15 +32,15 @@ int ElectTxItem::HandleTx(
         if (block_tx.storages(storage_idx).key() == protos::kShardElection) {
             uint64_t* tmp = (uint64_t*)block_tx.storages(storage_idx).value().c_str();
             pools::protobuf::ElectStatistic elect_statistic;
-            if (!prefix_db_->GetStatisticedShardingHeight(
-                    tmp[0],
-                    tmp[1],
-                    &elect_statistic)) {
-                ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
-                    tmp[0],
-                    tmp[1]);
-                return kConsensusError;
-            }
+            // if (!prefix_db_->GetStatisticedShardingHeight(
+            //         tmp[0],
+            //         tmp[1],
+            //         &elect_statistic)) {
+            //     ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
+            //         tmp[0],
+            //         tmp[1]);
+            //     return kConsensusError;
+            // }
 
             ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, "
                 "info sharding: %u, new node size: %u",
