@@ -1313,7 +1313,11 @@ void BlockManager::HandleStatisticBlock(
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kShardElection);
+        std::string unique_hash = common::Hash::keccak256(
+            std::string("root_create_elect_tx_") + 
+            std::to_string(elect_statistic.sharding_id()) + "_" +
+            std::to_string(block.timeblock_height()));
+        tx->set_key(unique_hash);
         char data[16];
         uint64_t* tmp = (uint64_t*)data;
         tmp[0] = view_block.qc().network_id();
