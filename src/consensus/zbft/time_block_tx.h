@@ -71,27 +71,6 @@ public:
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-        pools::protobuf::ElectStatistic elect_statistic;
-        if (!elect_statistic.ParseFromString(block_tx.storages(0).value())) {
-            assert(false);
-            return consensus::kConsensusError;
-        }
-    
-        if (elect_statistic.sharding_id() != view_block.qc().network_id()) {
-            ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
-            return consensus::kConsensusError;
-        }
-
-        pools::protobuf::PoolStatisticTxInfo pool_st_info;
-        pool_st_info.set_height(elect_statistic.statistic_height());
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            auto statistic_info = pool_st_info.add_pool_statisitcs();
-            statistic_info->set_pool_index(i);
-            statistic_info->set_min_height(elect_statistic.height_info().heights(i).min_height());
-            statistic_info->set_max_height(elect_statistic.height_info().heights(i).max_height());
-        }
-
-        prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, zjc_host.db_batch_);
         return consensus::kConsensusSuccess;
     }
 
