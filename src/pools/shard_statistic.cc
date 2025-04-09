@@ -530,6 +530,14 @@ void ShardStatistic::HandleStatistic(
             view_block_ptr->block_info().tx_list(0).step(),
             statistic_height,
             common::Encode::HexEncode(view_block_ptr->block_info().tx_list(0).storages(0).key()).c_str());
+    } else {
+        ZJC_DEBUG("now handle statistic block %u_%u_%lu, step: %d, statistic height: %lu, unique hash: %s",
+            view_block_ptr->qc().network_id(),
+            view_block_ptr->qc().pool_index(),
+            view_block_ptr->qc().view(),
+            -1,
+            0,
+            "");
     }
     callback(block);
     statistic_info_ptr->all_gas_amount += block_gas;
