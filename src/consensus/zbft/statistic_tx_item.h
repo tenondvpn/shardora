@@ -102,6 +102,7 @@ public:
         }
 
         prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, zjc_host.db_batch_);
+        zjc_host.statisitc_tx_ = &block_tx;
         return consensus::kConsensusSuccess;
     }
 

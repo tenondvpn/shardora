@@ -263,8 +263,7 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
 
 void BlockManager::HandleStatisticTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& block_tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& block_tx) {
     auto& block = view_block.block_info();
     uint32_t net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusShardEndNetworkId) {
@@ -291,7 +290,7 @@ void BlockManager::HandleStatisticTx(
         shard_statistics_map_ptr_queue_.push(tmp_ptr);
     }
 
-    HandleStatisticBlock(view_block, block_tx, elect_statistic, db_batch);
+    HandleStatisticBlock(view_block, block_tx, elect_statistic);
 }
 
 void BlockManager::ConsensusShardHandleRootCreateAddress(
@@ -765,7 +764,7 @@ void BlockManager::GenesisNewBlock(
                 prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
                 break;
             case pools::protobuf::kStatistic:
-                HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
+                HandleStatisticTx(*view_block_item, tx_list[i]);
                 break;
             case pools::protobuf::kCross:
                 assert(false);
@@ -935,9 +934,10 @@ void BlockManager::AddNewBlock(
             *view_block_item, 
             *view_block_info->zjc_host_ptr->root_create_address_tx_);
     }
-//     if (ck_client_ != nullptr) {
-//         ck_client_->AddNewBlock(view_block_item);
-//     }
+
+    if (view_block_info->zjc_host_ptr->statisitc_tx_ nullptr) {
+        HandleStatisticTx(*view_block_item, *view_block_info->zjc_host_ptr->statisitc_tx_);
+    }
 }
 
 // HandleJoinElectTx 持久化 JoinElect 交易相关信息
@@ -1274,8 +1274,7 @@ void BlockManager::CreateStatisticTx() {
 void BlockManager::HandleStatisticBlock(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& block_tx,
-        const pools::protobuf::ElectStatistic& elect_statistic,
-        db::DbWriteBatch& db_batch) {
+        const pools::protobuf::ElectStatistic& elect_statistic) {
     auto& block = view_block.block_info();
     if (create_elect_tx_cb_ == nullptr) {
         ZJC_INFO("create_elect_tx_cb_ == nullptr");
@@ -1295,16 +1294,6 @@ void BlockManager::HandleStatisticBlock(
         return;
     }
 
-    pools::protobuf::PoolStatisticTxInfo pool_st_info;
-    pool_st_info.set_height(elect_statistic.statistic_height());
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto statistic_info = pool_st_info.add_pool_statisitcs();
-        statistic_info->set_pool_index(i);
-        statistic_info->set_min_height(elect_statistic.height_info().heights(i).min_height());
-        statistic_info->set_max_height(elect_statistic.height_info().heights(i).max_height());
-    }
-
-    prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, db_batch);
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
             ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 

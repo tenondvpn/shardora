@@ -123,8 +123,7 @@ private:
         const block::protobuf::BlockTx& tx);
     void HandleStatisticTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleElectTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
@@ -155,8 +154,7 @@ private:
     void HandleStatisticBlock(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
-        const pools::protobuf::ElectStatistic& elect_statistic,
-        db::DbWriteBatch& db_batch);
+        const pools::protobuf::ElectStatistic& elect_statistic);
     void CreateStatisticTx();
     void PopTxTicker();
 

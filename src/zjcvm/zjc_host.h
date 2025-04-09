@@ -157,6 +157,7 @@ public:
     db::DbWriteBatch db_batch_;
     const block::protobuf::BlockTx* normal_to_tx_ = nullptr;
     const block::protobuf::BlockTx* root_create_address_tx_ = nullptr;
+    const block::protobuf::BlockTx* statisitc_tx_ = nullptr;
 
 };
 

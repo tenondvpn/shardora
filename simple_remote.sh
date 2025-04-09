@@ -203,7 +203,7 @@ start_all_nodes() {
     echo 'start_all_nodes over'
 }
 
-killall -9 sspass
+killall -9 sshpass
 init
 make_package
 clear_command

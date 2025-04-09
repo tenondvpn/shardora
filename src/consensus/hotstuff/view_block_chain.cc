@@ -386,7 +386,7 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
                 // prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
                 break;
             case pools::protobuf::kStatistic:
-                // HandleStatisticTx(*view_block_item, tx_list[i], db_batch);
+                zjc_host_ptr->statisitc_tx_ = &tx;
                 break;
             case pools::protobuf::kCross:
                 assert(false);
@@ -1056,7 +1056,7 @@ void ViewBlockChain::OnTimeBlock(
     if (latest_time_block_height > 1) {
         AddPoolStatisticTag(latest_time_block_height);
     }
-    
+
     latest_timeblock_height_ = latest_time_block_height;
 }
 
