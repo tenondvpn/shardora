@@ -168,8 +168,7 @@ Status Hotstuff::Propose(
         cons_debug.ParseFromString(header.debug());
         ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, "
-            "msg view: %lu, cur view: %lu, 
-            propose msg: %s",
+            "msg view: %lu, cur view: %lu, propose msg: %s",
             pool_idx_,
             header.hotstuff().pool_index(),
             hotstuff_msg->pro_msg().tx_propose().txs_size(),
