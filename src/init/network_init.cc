@@ -1362,6 +1362,95 @@ void NetworkInit::HandleElectionBlock(
         elect_block->shard_network_id(), 
         common::GlobalInfo::Instance()->network_id(),
         elect_block->prev_members().prev_elect_height());
+
+    if (sharding_id + network::kConsensusWaitingShardOffset ==
+            common::GlobalInfo::Instance()->network_id()) {
+        join_elect_tick_.CutOff(
+            3000000lu,
+            std::bind(&NetworkInit::SendJoinElectTransaction, this));
+        ZJC_DEBUG("now send join elect request transaction. first message.");
+        another_join_elect_msg_needed_ = true;
+    } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
+        join_elect_tick_.CutOff(
+            3000000lu,
+            std::bind(&NetworkInit::SendJoinElectTransaction, this));
+        ZJC_DEBUG("now send join elect request transaction. second message.");
+        another_join_elect_msg_needed_ = false;
+    }
+}
+
+void NetworkInit::SendJoinElectTransaction() {
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardBeginNetworkId) {
+        return;
+    }
+
+    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardEndNetworkId) {
+        return;
+    }
+
+    if (des_sharding_id_ == common::kInvalidUint32) {
+        ZJC_DEBUG("failed get address info: %s",
+            common::Encode::HexEncode(security_->GetAddress()).c_str());
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_sharding_id_);
+    msg.set_src_sharding_id(des_sharding_id_);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    msg.set_hop_count(0);
+    auto new_tx = msg.mutable_tx_proto();
+    std::string gid = common::Hash::keccak256(
+        std::to_string(tm_block_mgr_->LatestTimestamp()) + security_->GetAddress());
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
+    new_tx->set_step(pools::protobuf::kJoinElect);
+    new_tx->set_gas_limit(consensus::kJoinElectGas + 10000000lu);
+    new_tx->set_gas_price(10);
+    new_tx->set_key(protos::kJoinElectVerifyG2);
+    bls::protobuf::JoinElectInfo join_info;
+    uint32_t pos = common::kInvalidUint32;
+    prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
+    join_info.set_member_idx(pos);
+    
+    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+        join_info.set_shard_id(
+            common::GlobalInfo::Instance()->network_id() -
+            network::kConsensusWaitingShardOffset);
+    } else {
+        join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
+    }
+    
+    if (pos == common::kInvalidUint32) {
+        auto* req = join_info.mutable_g2_req();
+        auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);
+        if (!res) {
+            CreateContribution(req);
+        }
+    }
+
+    new_tx->set_value(join_info.SerializeAsString());
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
+    std::string sign;
+    if (security_->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    new_tx->set_sign(sign);
+    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
+        "hash64: %lu, tx hash: %s, pk: %s sign: %s",
+        des_sharding_id_, join_info.shard_id(),
+        common::Encode::HexEncode(gid).c_str(),
+        msg.hash64(),
+        common::Encode::HexEncode(tx_hash).c_str(),
+        common::Encode::HexEncode(new_tx->pubkey()).c_str(),
+        common::Encode::HexEncode(new_tx->sign()).c_str());
 }
 
 }  // namespace init
