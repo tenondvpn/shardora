@@ -1683,7 +1683,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
         auto shard_elect_tx = shard_elect_tx_[i];
         if (!tx_hash.empty()) {
-            if (shard_elect_tx->tx_ptr->tx_key == tx_hash) {
+            if (shard_elect_tx->tx_ptr->tx_info->key() == tx_hash) {
                 // ZJC_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
                 //     pool_index, common::Encode::HexEncode(tx_hash).c_str());
                 return shard_elect_tx->tx_ptr;
@@ -1702,7 +1702,8 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         ZJC_DEBUG("1 success get elect tx pool index: %u, tx hash: %s",
-            pool_index, common::Encode::HexEncode(tx_hash).c_str());
+            pool_index, 
+            common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_info->key()).c_str());
         return shard_elect_tx->tx_ptr;
     }
 

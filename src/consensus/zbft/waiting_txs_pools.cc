@@ -157,9 +157,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
         txs_item->pool_index = pool_index;
         txs_item->txs.push_back(tx_ptr);
         txs_item->tx_type = pools::protobuf::kConsensusRootElectShard;
-        ZJC_DEBUG("single tx success to get elect tx: tx key: %s, nonce: %lu",
+        ZJC_DEBUG("single tx success to get elect tx: tx key: %s, nonce: %lu, unique hash: %s",
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
-            tx_ptr->tx_info->nonce());
+            tx_ptr->tx_info->nonce(),
+            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         return txs_item;
     }
 

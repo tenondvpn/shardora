@@ -427,8 +427,7 @@ Status BlockAcceptor::addTxsToPool(
                     elect_info_->max_consensus_sharding_id() - 1,
                     address_info);
             } else {
-                auto txhash = pools::GetTxMessageHash(*tx);
-                auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
+                auto tx_item = tx_pools_->GetElectTx(pool_idx(), tx->key());           
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
                     tx_ptr = *(tx_item->txs.begin());
                 }
