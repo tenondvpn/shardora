@@ -272,11 +272,11 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    if (pb_pro_msg->tx_propose().txs_size() > 1 ||
-            pools::IsUserTransaction(pb_pro_msg->tx_propose().txs(0).step())) {
-        latest_leader_propose_message_ = tmp_msg_ptr;
-    } else {
+    if (pb_pro_msg->tx_propose().txs_size() == 1 &&
+            !pools::IsUserTransaction(pb_pro_msg->tx_propose().txs(0).step())) {
         latest_leader_propose_message_ = nullptr;
+    } else {
+        latest_leader_propose_message_ = tmp_msg_ptr;
     }
 
     auto t6 = common::TimeUtils::TimestampMs();
