@@ -627,20 +627,16 @@ void BlockManager::createConsensusLocalToTxs(
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
         // 由于是异步的，因此需要持久化 kv 来传递数据，但是 to 需要填充以分配交易池
         // pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
-        auto val = iter->second.SerializeAsString();
-        auto tos_hash = common::Hash::keccak256(val);
-        prefix_db_->SaveTemporaryKv(tos_hash, val);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
-        // 将 tos_hash 存入 kv，用于 HandleTx 时获取 val
         std::string uinique_tx_str = common::Hash::keccak256(
             view_block.qc().view_block_hash() +
             view_block.qc().sign_x() + 
             view_block.qc().sign_y() +
             msg_ptr->address_info->addr());
         tx->set_key(uinique_tx_str);
-        tx->set_value(val);
+        tx->set_value(iter->second.SerializeAsString());
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
@@ -650,7 +646,7 @@ void BlockManager::createConsensusLocalToTxs(
         tx->set_nonce(0);
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
-            common::Encode::HexEncode(tos_hash).c_str(),
+            common::Encode::HexEncode(uinique_tx_str).c_str(),
             msg_ptr->address_info->nonce(),
             0,
             common::Encode::HexEncode(val).c_str());
