@@ -470,7 +470,9 @@ void ShardStatistic::HandleStatistic(
                                 node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
                             ZJC_DEBUG("success get shard election: %lu, %lu, "
                                 "join nodes size: %u, shard: %u",
-                                tmp[0], tmp[1], elect_statistic.join_elect_nodes_size(),
+                                elect_statistic.sharding_id(),
+                                elect_statistic.statistic_height(),
+                                elect_statistic.join_elect_nodes_size(),
                                 elect_statistic.join_elect_nodes(node_idx).shard());
                             if (elect_statistic.join_elect_nodes(node_idx).shard() ==
                                     network::kRootCongressNetworkId) {
