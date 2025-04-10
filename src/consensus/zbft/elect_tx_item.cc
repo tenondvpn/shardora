@@ -63,7 +63,6 @@ int ElectTxItem::HandleTx(
         elect_statistic.join_elect_nodes_size(),
         ProtobufToJson(elect_statistic).c_str(),
         common::Encode::HexEncode(unique_hash_).c_str());
-
     uint64_t to_balance = 0;
     uint64_t to_nonce = 0;
     GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
@@ -87,7 +86,7 @@ int ElectTxItem::HandleTx(
     prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
     block_tx.set_unique_hash(unique_hash_);
     block_tx.set_nonce(to_nonce + 1);
-    ZJC_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+    ZJC_WARN("success call elect block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
