@@ -1743,7 +1743,7 @@ Status Hotstuff::VerifyQC(const QC& qc) {
 
     if (crypto()->VerifyQC(common::GlobalInfo::Instance()->network_id(), qc) != Status::kSuccess) {
         ZJC_ERROR("pool: %d verify qc failed: %lu", pool_idx_, qc.view());
-        assert(false);
+        // assert(false);
         return Status::kError; 
     }
 
