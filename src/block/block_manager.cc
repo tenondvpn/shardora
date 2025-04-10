@@ -1701,7 +1701,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
             continue;
         }
 
-        ZJC_DEBUG("1 success get elect tx pool index: %u, tx hash: %s",
+        ZJC_DEBUG("1 success get elect tx pool index: %u, unique hash: %s",
             pool_index, 
             common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_info->key()).c_str());
         return shard_elect_tx->tx_ptr;
