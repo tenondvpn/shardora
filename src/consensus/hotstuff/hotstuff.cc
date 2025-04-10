@@ -272,7 +272,13 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    latest_leader_propose_message_ = tmp_msg_ptr;
+    if (pb_pro_msg->tx_propose().txs_size() > 1 ||
+            pools::IsUserTransaction(pb_pro_msg->tx_propose().txs(0).step())) {
+        latest_leader_propose_message_ = tmp_msg_ptr;
+    } else {
+        latest_leader_propose_message_ = nullptr;
+    }
+
     auto t6 = common::TimeUtils::TimestampMs();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
