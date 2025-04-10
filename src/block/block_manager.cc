@@ -649,7 +649,7 @@ void BlockManager::createConsensusLocalToTxs(
             common::Encode::HexEncode(uinique_tx_str).c_str(),
             msg_ptr->address_info->nonce(),
             0,
-            common::Encode::HexEncode(val).c_str());
+            ProtobufToJson(iter->second).c_str());
     }
 }
 
