@@ -276,18 +276,15 @@ void BlockManager::HandleStatisticTx(
         return;
     }
 
-    if (elect_statistic.sharding_id() != net_id) {
-        ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), net_id);
-        return;
-    }
-
-    auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
-    if (iter != shard_statistics_map_.end()) {
-        ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
-        shard_statistics_map_.erase(iter);
-        CHECK_MEMORY_SIZE(shard_statistics_map_);
-        auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
-        shard_statistics_map_ptr_queue_.push(tmp_ptr);
+    if (elect_statistic.sharding_id() == net_id) {
+        auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
+        if (iter != shard_statistics_map_.end()) {
+            ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
+            shard_statistics_map_.erase(iter);
+            CHECK_MEMORY_SIZE(shard_statistics_map_);
+            auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
+            shard_statistics_map_ptr_queue_.push(tmp_ptr);
+        }
     }
 
     HandleStatisticBlock(view_block, block_tx, elect_statistic);
@@ -1281,67 +1278,60 @@ void BlockManager::HandleStatisticBlock(
         return;
     }
 
-    // 时间粒度一个 epoch, 10min 一个选举块
-    if (prefix_db_->ExistsStatisticedShardingHeight(
-            view_block.qc().network_id(),
-            block.timeblock_height())) {
-        ZJC_INFO("prefix_db_->ExistsStatisticedShardingHeight net: %u, tm height: %lu",
-            view_block.qc().network_id(), block.timeblock_height());
-        return;
-    }
-
     if (elect_statistic.statistics_size() <= 0) {
         return;
     }
 
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
-            ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
-                elect_statistic.sharding_id(), 
-                common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
-                elect_statistic.join_elect_nodes(i).stoke(),
-                elect_statistic.join_elect_nodes(i).shard(),
-                elect_statistic.join_elect_nodes(i).elect_pos());
-        }
-
-        assert(view_block.qc().network_id() == elect_statistic.sharding_id());
-        ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, "
-            "pool: %u, height: %lu, elect height: %lu",
-            view_block.qc().network_id(), elect_statistic.sharding_id(), view_block.qc().pool_index(), 
-            block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());
-        // create elect transaction now for block.network_id
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
-        auto* tx = new_msg_ptr->header.mutable_tx_proto();
-        std::string unique_hash = common::Hash::keccak256(
-            std::string("root_create_elect_tx_") + 
-            std::to_string(elect_statistic.sharding_id()) + "_" +
-            std::to_string(block.timeblock_height()));
-        tx->set_key(unique_hash);
-        char data[16];
-        uint64_t* tmp = (uint64_t*)data;
-        tmp[0] = view_block.qc().network_id();
-        tmp[1] = block.timeblock_height();
-        tx->set_value(std::string(data, sizeof(data)));
-        tx->set_pubkey("");
-        tx->set_to(new_msg_ptr->address_info->addr());
-        tx->set_step(pools::protobuf::kConsensusRootElectShard);
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
-        auto shard_elect_tx = std::make_shared<BlockTxsItem>();
-        shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
-        shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
-        shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
-        shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
-        shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
-        ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, statistic elect height: %lu",
-            view_block.qc().network_id(), block.timeblock_height(),
-            tx->nonce(),
-            common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_key).c_str(),
-            0);
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return;
     }
+
+    for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
+            elect_statistic.sharding_id(), 
+            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
+            elect_statistic.join_elect_nodes(i).stoke(),
+            elect_statistic.join_elect_nodes(i).shard(),
+            elect_statistic.join_elect_nodes(i).elect_pos());
+    }
+
+    assert(view_block.qc().network_id() == elect_statistic.sharding_id());
+    ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, "
+        "pool: %u, height: %lu, elect height: %lu",
+        view_block.qc().network_id(), elect_statistic.sharding_id(), view_block.qc().pool_index(), 
+        block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());
+    // create elect transaction now for block.network_id
+    auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
+    auto* tx = new_msg_ptr->header.mutable_tx_proto();
+    std::string unique_hash = common::Hash::keccak256(
+        std::string("root_create_elect_tx_") + 
+        std::to_string(elect_statistic.sharding_id()) + "_" +
+        std::to_string(block.timeblock_height()));
+    tx->set_key(unique_hash);
+    char data[16];
+    uint64_t* tmp = (uint64_t*)data;
+    tmp[0] = view_block.qc().network_id();
+    tmp[1] = block.timeblock_height();
+    tx->set_value(std::string(data, sizeof(data)));
+    tx->set_pubkey("");
+    tx->set_to(new_msg_ptr->address_info->addr());
+    tx->set_step(pools::protobuf::kConsensusRootElectShard);
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
+    auto shard_elect_tx = std::make_shared<BlockTxsItem>();
+    shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
+    shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
+    shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
+    shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
+    shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
+    ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, statistic elect height: %lu",
+        view_block.qc().network_id(), block.timeblock_height(),
+        tx->nonce(),
+        common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_key).c_str(),
+        0);
 }
 
 pools::TxItemPtr BlockManager::GetToTx(

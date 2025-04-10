@@ -191,7 +191,6 @@ void HotstuffSyncer::HandleSyncedBlocks() {
         }
         
     }    
-    return;
 }
 
 Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {

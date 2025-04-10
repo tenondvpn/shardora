@@ -62,7 +62,6 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 static const std::string kPresetPolynomialPrefix = "u\x01";
 static const std::string kPresetVerifyValuePrefix = "v\x01";
 static const std::string kStatisticHeightsPrefix = "w\x01";
-static const std::string kRootStatisticedPrefix = "y\x01";
 static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
@@ -1014,54 +1013,6 @@ public:
         }
 
         return true;
-    }
-
-    void SaveStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height,
-            const pools::protobuf::ElectStatistic& elect_statistic,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        std::string val = elect_statistic.SerializeAsString();
-        db_batch.Put(key, val);
-    }
-
-    bool GetStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height,
-            pools::protobuf::ElectStatistic* elect_statistic) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_WARN("get data from db failed!");
-            return false;
-        }
-
-        if (!elect_statistic->ParseFromString(val)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool ExistsStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        return db_->Exist(key);
     }
 
     void SaveElectNodeStoke(
