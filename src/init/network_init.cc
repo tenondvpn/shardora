@@ -1442,10 +1442,11 @@ void NetworkInit::SendJoinElectTransaction() {
     new_tx->set_sign(sign);
     // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
+    ZJC_DEBUG("success send join elect request transaction: %u, join: %u, addr: %s, nonce: %lu, "
         "hash64: %lu, tx hash: %s, pk: %s sign: %s",
         des_sharding_id_, join_info.shard_id(),
-        common::Encode::HexEncode(gid).c_str(),
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+        new_tx->nonce(),
         msg.hash64(),
         common::Encode::HexEncode(tx_hash).c_str(),
         common::Encode::HexEncode(new_tx->pubkey()).c_str(),
