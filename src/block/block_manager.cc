@@ -488,11 +488,13 @@ void BlockManager::RootHandleNormalToTx(
                 0, 0);
         } else {
             pools_mgr_->HandleMessage(msg_ptr);
-            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
+            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
+                "nonce: %lu, unique hash: %s",
                 common::Encode::HexEncode(tos_item.des()).c_str(),
                 tos_item.amount(),
                 tos_item.prepayment(),
-                0);
+                0,
+                common::Encode::HexEncode(unique_hash).c_str());
         }
     }
 }

@@ -139,9 +139,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    ZJC_DEBUG("trace tx pool: %d, success add tx %s, nonce: %lu", 
+    ZJC_DEBUG("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu", 
         pool_index_,
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+        common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
         tx_ptr->tx_info->nonce());
     return kPoolsSuccess;
 }
@@ -340,10 +341,11 @@ void TxPool::GetTxIdempotently(
 
                 valid_nonce = tx_ptr->tx_info->nonce();
                 res_map.push_back(tx_ptr);
-                ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, nonce: %lu, "
+                ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, key: %s, nonce: %lu, "
                     "res count: %u, count: %u, tx_map size: %u, addr tx size: %u", 
                     pool_index_,
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
                     tx_ptr->tx_info->nonce(),
                     res_map.size(),
                     count,
