@@ -51,7 +51,7 @@ int ElectTxItem::HandleTx(
     view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     pools::protobuf::ElectStatistic elect_statistic;
-    if (!elect_statistic.ParseFromString(block_tx.storages(0).vale())) {
+    if (!elect_statistic.ParseFromString(block_tx.storages(0).value())) {
         ZJC_DEBUG("elect tx parse elect info failed!");
         return kConsensusError;
     }
