@@ -164,8 +164,8 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         }
 
         auto remove_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
-            auto tx_iter = tx_map_.find(addr);
-            if (tx_iter != tx_map_.end()) {
+            auto tx_iter = tx_map.find(addr);
+            if (tx_iter != tx_map.end()) {
                 for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
                     if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
                         break;
@@ -179,7 +179,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                 }
 
                 if (tx_iter->second.empty()) {
-                    tx_map_.erase(tx_iter);
+                    tx_map.erase(tx_iter);
                 }
             }
         };
