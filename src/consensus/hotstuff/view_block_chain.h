@@ -220,7 +220,7 @@ public:
 
 private:
     void AddPoolStatisticTag(uint64_t height);
-    void SaveTxInfoToDb(zjcvm::ZjchainHost& zjc_host, block::protobuf::BlockTx& tx);
+    void SaveElectTxInfoToDb(zjcvm::ZjchainHost& zjc_host, block::protobuf::BlockTx& tx);
 
     void SetViewBlockToMap(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         assert(!view_block_info->view_block->qc().view_block_hash().empty());
