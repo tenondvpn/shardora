@@ -55,6 +55,9 @@ public:
         stop_mining_(stop_mining),
         network_count_(network_count) {}
     virtual ~ElectTxItem() {}
+    virtual int TxToBlockTx(
+        const pools::protobuf::TxMessage& tx_info,
+        block::protobuf::BlockTx* block_tx);
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost &zjc_host,
@@ -148,6 +151,7 @@ private:
   std::set<std::string> added_nodes_;
   common::MembersPtr elect_members_ = nullptr;
   std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
+  std::string unique_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

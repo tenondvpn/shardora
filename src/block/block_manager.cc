@@ -1285,7 +1285,7 @@ void BlockManager::HandleStatisticBlock(
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return;
     }
-
+#ifdef NDEBUG
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
         ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
             elect_statistic.sharding_id(), 
@@ -1300,6 +1300,7 @@ void BlockManager::HandleStatisticBlock(
         "pool: %u, height: %lu, elect height: %lu",
         view_block.qc().network_id(), elect_statistic.sharding_id(), view_block.qc().pool_index(), 
         block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());
+#endif
     // create elect transaction now for block.network_id
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
@@ -1309,11 +1310,7 @@ void BlockManager::HandleStatisticBlock(
         std::to_string(elect_statistic.sharding_id()) + "_" +
         std::to_string(block.timeblock_height()));
     tx->set_key(unique_hash);
-    char data[16];
-    uint64_t* tmp = (uint64_t*)data;
-    tmp[0] = view_block.qc().network_id();
-    tmp[1] = block.timeblock_height();
-    tx->set_value(std::string(data, sizeof(data)));
+    tx->set_value(elect_statistic.SerializeAsString());
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kConsensusRootElectShard);

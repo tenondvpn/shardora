@@ -21,6 +21,28 @@ inline bool ElectNodeBalanceDiffCompare(
     return left->stoke_diff < right->stoke_diff;
 }
 
+int ElectTxItem::TxToBlockTx(
+        const pools::protobuf::TxMessage& tx_info,
+        block::protobuf::BlockTx* block_tx) {
+    ZJC_DEBUG("pools statistic tag tx consensus coming: %s, nonce: %lu, val: %s", 
+        common::Encode::HexEncode(tx_info.to()).c_str(), 
+        tx_info.nonce(),
+        common::Encode::HexEncode(tx_info.value()).c_str());
+    if (!DefaultTxItem(tx_info, block_tx)) {
+        return consensus::kConsensusError;
+    }
+
+    // change
+    if (tx_info.key().empty() || tx_info.value().empty()) {
+        return consensus::kConsensusError;
+    }
+
+    unique_hash_ = tx_info.key();
+    auto* storage = block_tx->add_storages();
+    storage->set_key(protos::kShardElection);
+    storage->set_value(tx_info.value());
+    return consensus::kConsensusSuccess;
+}
 int ElectTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
@@ -28,38 +50,19 @@ int ElectTxItem::HandleTx(
         block::protobuf::BlockTx& block_tx) {
     view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
-    for (int32_t storage_idx = 0; storage_idx < block_tx.storages_size(); ++storage_idx) {
-        if (block_tx.storages(storage_idx).key() == protos::kShardElection) {
-            uint64_t* tmp = (uint64_t*)block_tx.storages(storage_idx).value().c_str();
-            pools::protobuf::ElectStatistic elect_statistic;
-            // if (!prefix_db_->GetStatisticedShardingHeight(
-            //         tmp[0],
-            //         tmp[1],
-            //         &elect_statistic)) {
-            //     ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
-            //         tmp[0],
-            //         tmp[1]);
-            //     return kConsensusError;
-            // }
-
-            ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, "
-                "info sharding: %u, new node size: %u",
-                tmp[0], tmp[1], elect_statistic.sharding_id(), elect_statistic.join_elect_nodes_size());
-            {
-                std::string json_str;
-                google::protobuf::util::JsonPrintOptions options;
-                options.add_whitespace = false;
-                auto st = google::protobuf::util::MessageToJsonString(elect_statistic, &json_str, options);
-                if (st.ok()) {
-                    ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
-                }
-            }
-            return processElect(elect_statistic, view_block, block_tx);
-        }
+    pools::protobuf::ElectStatistic elect_statistic;
+    if (!elect_statistic.ParseFromString(block_tx.storages(0).vale())) {
+        ZJC_DEBUG("elect tx parse elect info failed!");
+        return kConsensusError;
     }
 
-    ZJC_DEBUG("consensus elect tx error.");
-    return kConsensusError;
+    ZJC_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, new node size: %u, %s",
+        elect_statistic.sharding_id(), 
+        elect_statistic.statistic_height(), 
+        elect_statistic.join_elect_nodes_size(),
+        ProtobufToJson(elect_statistic).c_str());
+    block_tx.set_unique_hash(unique_hash_);
+    return processElect(elect_statistic, view_block, block_tx);
 }
 
 int ElectTxItem::processElect(

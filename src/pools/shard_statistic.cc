@@ -461,18 +461,10 @@ void ShardStatistic::HandleStatistic(
                     }
 
                     if (tx.storages(storage_idx).key() == protos::kShardElection) {
-                        assert(false);
-                        uint64_t* tmp = (uint64_t*)tx.storages(storage_idx).value().c_str();
                         pools::protobuf::ElectStatistic elect_statistic;
-                        // if (!prefix_db_->GetStatisticedShardingHeight(
-                        //         tmp[0],
-                        //         tmp[1],
-                        //         &elect_statistic)) {
-                        //     ZJC_DEBUG("get statistic elect statistic failed! net: %u, height: %lu",
-                        //         tmp[0],
-                        //         tmp[1]);
-                        //     break;
-                        // }
+                        if(!elect_statistic.ParseFromString(tx.storages(storage_idx).value())) {
+                            continue;
+                        }
 
                         for (int32_t node_idx = 0;
                                 node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
