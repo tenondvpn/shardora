@@ -75,7 +75,13 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetToTxs(pool_index, "");
         if (txs_item) {
             auto iter = txs_item->txs.begin();
-            ZJC_DEBUG("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
+            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
+                    *(*iter)->address_info, 
+                    *(*iter)->tx_info) != 0) {
+                txs_item = nullptr;
+            } else {
+                ZJC_DEBUG("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
+            }
         }
     }
 
