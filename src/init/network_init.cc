@@ -1395,6 +1395,7 @@ void NetworkInit::SendJoinElectTransaction() {
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->address_info = account_mgr_->GetAccountInfo(security_->GetAddress());
     transport::protobuf::Header& msg = msg_ptr->header;
     dht::DhtKeyManager dht_key(des_sharding_id_);
     msg.set_src_sharding_id(des_sharding_id_);
@@ -1402,13 +1403,11 @@ void NetworkInit::SendJoinElectTransaction() {
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
     auto new_tx = msg.mutable_tx_proto();
-    std::string gid = common::Hash::keccak256(
-        std::to_string(tm_block_mgr_->LatestTimestamp()) + security_->GetAddress());
-    new_tx->set_gid(gid);
+    new_tx->set_nonce(msg_ptr->address_info->nonce() + 1);
     new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kJoinElect);
     new_tx->set_gas_limit(consensus::kJoinElectGas + 10000000lu);
-    new_tx->set_gas_price(10);
+    new_tx->set_gas_price(1);
     new_tx->set_key(protos::kJoinElectVerifyG2);
     bls::protobuf::JoinElectInfo join_info;
     uint32_t pos = common::kInvalidUint32;
@@ -1451,6 +1450,41 @@ void NetworkInit::SendJoinElectTransaction() {
         common::Encode::HexEncode(tx_hash).c_str(),
         common::Encode::HexEncode(new_tx->pubkey()).c_str(),
         common::Encode::HexEncode(new_tx->sign()).c_str());
+}
+
+
+void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
+    auto n = common::GlobalInfo::Instance()->each_shard_max_members();
+    auto t = common::GetSignerCount(n);
+    libBLS::Dkg dkg_instance(t, n);
+    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
+    bls::protobuf::LocalPolynomial local_poly;
+    for (uint32_t i = 0; i < polynomial.size(); ++i) {
+        local_poly.add_polynomial(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
+    }
+
+    auto g2_vec = dkg_instance.VerificationVector(polynomial);
+    for (uint32_t i = 0; i < t; ++i) {
+        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+        verify_item.set_y_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+        verify_item.set_z_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+        verify_item.set_z_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+
+    }
+    
+    auto str = bls_verify_req->SerializeAsString();
+    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), *bls_verify_req);
+    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
 }
 
 }  // namespace init

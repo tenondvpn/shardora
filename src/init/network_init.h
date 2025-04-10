@@ -90,7 +90,8 @@ private:
     int InitWsServer();
     void CreateInitAddress(uint32_t net_id);
     void SendJoinElectTransaction();
-
+    void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
+        
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
 
