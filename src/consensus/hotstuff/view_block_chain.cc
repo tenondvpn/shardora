@@ -405,6 +405,7 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
 
     new_block_cache_callback_(view_block, zjc_host_ptr->db_batch_);
     auto block_info_ptr = GetViewBlockInfo(view_block, nullptr, zjc_host_ptr);
+    AddNewBlock(view_block, zjc_host_ptr->db_batch_);
     block_mgr_->ConsensusAddBlock(block_info_ptr);
 }
 
