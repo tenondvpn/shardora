@@ -272,13 +272,7 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    // if (pb_pro_msg->tx_propose().txs_size() == 1 &&
-    //         !pools::IsUserTransaction(pb_pro_msg->tx_propose().txs(0).step())) {
-    //     latest_leader_propose_message_ = nullptr;
-    // } else {
-        latest_leader_propose_message_ = tmp_msg_ptr;
-    // }
-
+    latest_leader_propose_message_ = tmp_msg_ptr;
     auto t6 = common::TimeUtils::TimestampMs();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
@@ -2213,21 +2207,20 @@ void Hotstuff::TryRecoverFromStuck(
         has_user_tx_tag_ = true;
     }
 
-    if (!has_user_tx_tag_ && !has_system_tx) {
-        // ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
-        return;
-    }
-
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
         // ZJC_DEBUG("leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32, pool: %u", pool_idx_);
         return;
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    // if (now_tm_ms >= prev_sync_latest_view_tm_ms_ + 3000lu) {
-    //     kv_sync_->AddSyncHeight();
-    //     prev_sync_latest_view_tm_ms_ = now_tm_ms;
-    // }
+    if (now_tm_ms >= prev_sync_latest_view_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
+        prev_sync_latest_view_tm_ms_ = now_tm_ms;
+    } else {
+        if (!has_user_tx_tag_ && !has_system_tx) {
+            return;
+        }
+    }
+
     if (now_tm_ms < latest_propose_msg_tm_ms_ + kLatestPoposeSendTxToLeaderPeriodMs) {
         // ZJC_WARN("pool: %u now_tm_ms < latest_propose_msg_tm_ms_ + "
         //     "kLatestPoposeSendTxToLeaderPeriodMs: %lu, %lu",
