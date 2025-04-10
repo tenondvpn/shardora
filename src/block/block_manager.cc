@@ -767,7 +767,7 @@ void BlockManager::GenesisNewBlock(
                 assert(false);
                 break;
             case pools::protobuf::kConsensusRootElectShard:
-                HandleElectTx(*view_block_item, tx_list[i], db_batch);
+                HandleElectTx(*view_block_item, tx_list[i]);
                 break;
             case pools::protobuf::kJoinElect:
                 HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
@@ -935,6 +935,10 @@ void BlockManager::AddNewBlock(
     if (view_block_info->zjc_host_ptr->statisitc_tx_ != nullptr) {
         HandleStatisticTx(*view_block_item, *view_block_info->zjc_host_ptr->statisitc_tx_);
     }
+
+    if (view_block_info->zjc_host_ptr->elect_tx_ != nullptr) {
+        HandleElectTx(*view_block_item, *view_block_info->zjc_host_ptr->elect_tx_);
+    }
 }
 
 // HandleJoinElectTx 持久化 JoinElect 交易相关信息
@@ -979,16 +983,13 @@ void BlockManager::HandleJoinElectTx(
 
 void BlockManager::HandleElectTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     auto& block = view_block.block_info();
     ZJC_DEBUG("handle elect tx storage size: %u, %u_%u_%lu, elect height: %lu",
         tx.storages_size(), view_block.qc().network_id(),
         view_block.qc().pool_index(), block.height(), 
         view_block.qc().elect_height());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        // ZJC_DEBUG("handle elect tx storage index: %u, key: %s, protos::kElectNodeAttrElectBlock: %s",
-        //     i, tx.storages(i).key().c_str(), protos::kElectNodeAttrElectBlock.c_str());
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             elect::protobuf::ElectBlock elect_block;
             if (!elect_block.ParseFromString(tx.storages(i).value())) {
@@ -1013,14 +1014,6 @@ void BlockManager::HandleElectTx(
                 common::Encode::HexEncode(
                 elect_block.prev_members().common_pubkey().SerializeAsString()).c_str(),
                 elect_block.prev_members().prev_elect_height());
-            // 将 elect block 中的 common_pk 持久化
-            if (elect_block.prev_members().prev_elect_height() > 0) {
-                prefix_db_->SaveElectHeightCommonPk(
-                    elect_block.shard_network_id(),
-                    elect_block.prev_members().prev_elect_height(),
-                    elect_block.prev_members(),
-                    db_batch);
-            }
         }
     }
 }

@@ -74,7 +74,7 @@ int ElectTxItem::HandleTx(
     }
 
     block_tx.set_unique_hash(unique_hash_);
-    auto res = processElect(elect_statistic, view_block, block_tx);
+    auto res = processElect(zjc_host, elect_statistic, view_block, block_tx);
     if (res != consensus::kConsensusSuccess) {
         return kConsensusError;
     }
@@ -91,10 +91,12 @@ int ElectTxItem::HandleTx(
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+    zjc_host.elect_tx_ = &block_tx;
     return consensus::kConsensusSuccess;
 }
 
 int ElectTxItem::processElect(
+        zjcvm::ZjchainHost& zjc_host,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         const view_block::protobuf::ViewBlockItem& view_block,
         shardora::block::protobuf::BlockTx &block_tx) {
@@ -191,6 +193,7 @@ int ElectTxItem::processElect(
     }
 
     CreateNewElect(
+        zjc_host,
         block,
         elect_nodes,
         elect_statistic,
@@ -631,6 +634,7 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
 }
 
 int ElectTxItem::CreateNewElect(
+        zjcvm::ZjchainHost& zjc_host,
         const block::protobuf::Block &block,
         const std::vector<NodeDetailPtr> &elect_nodes,
         const pools::protobuf::ElectStatistic &elect_statistic,
@@ -687,6 +691,11 @@ int ElectTxItem::CreateNewElect(
                   elect_statistic.sharding_id(),
                   elect_block.prev_members().prev_elect_height());
         SetPrevElectInfo(elect_block, block_tx);
+        prefix_db_->SaveElectHeightCommonPk(
+            elect_block.shard_network_id(),
+            elect_block.prev_members().prev_elect_height(),
+            elect_block.prev_members(),
+            zjc_host.db_batch_);
     }
     
     std::string val = elect_block.SerializeAsString();

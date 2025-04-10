@@ -126,8 +126,7 @@ private:
         const block::protobuf::BlockTx& tx);
     void HandleElectTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void ConsensusShardHandleRootCreateAddress(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
