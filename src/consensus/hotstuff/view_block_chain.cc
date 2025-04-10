@@ -415,7 +415,7 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
 
 void ViewBlockChain::SaveElectTxInfoToDb(
         zjcvm::ZjchainHost& zjc_host, 
-        block::protobuf::BlockTx& tx) {
+        const block::protobuf::BlockTx& tx) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             elect::protobuf::ElectBlock elect_block;
