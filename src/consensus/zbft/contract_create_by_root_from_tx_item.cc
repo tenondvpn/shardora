@@ -10,31 +10,23 @@ namespace consensus {
 int ContractCreateByRootFromTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost &zjc_host,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        std::unordered_map<std::string, int64_t> &acc_balance_map,
         block::protobuf::BlockTx &block_tx) {
 	uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;
-    uint64_t from_nonce = 0;
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
-    int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
+    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
+    if (balance_status != kConsensusSuccess) {
+        block_tx.set_status(balance_status);
+        // will never happen
+        assert(false);
+        return kConsensusSuccess;
+    }
+
     do  {
         gas_used = consensus::kTransferGas;
-        if (balance_status != kConsensusSuccess) {
-            block_tx.set_status(balance_status);
-            // will never happen
-            assert(false);
-            break;
-        }
-
-        if (from_nonce + 1 != block_tx.nonce()) {
-            block_tx.set_status(kConsensusNonceInvalid);
-            // will never happen
-            assert(false);
-            break;
-        }
-
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
@@ -92,9 +84,7 @@ int ContractCreateByRootFromTxItem::HandleTx(
         // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code(), true);
 	}
 
-    acc_balance_map[from]->set_balance(from_balance);
-    acc_balance_map[from]->set_nonce(block_tx.nonce());
-    prefix_db_->AddAddressInfo(from, *(acc_balance_map[from]), zjc_host.db_batch_);
+    acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("set contract create called: %d, from: %s, to: %s, amount: %lu",

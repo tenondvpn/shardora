@@ -18,8 +18,7 @@ static void GetTxProtoHash(
         std::string* msg) {
     std::string& msg_for_hash = *msg;
     msg_for_hash.reserve(1024);
-    uint64_t nonce = pools_msg.nonce();
-    msg_for_hash.append(std::string((char*)&nonce, sizeof(nonce)));
+    msg_for_hash.append(pools_msg.gid());
     msg_for_hash.append(pools_msg.pubkey());
     uint64_t gas_limit = pools_msg.gas_limit();
     msg_for_hash.append(std::string((char*)&gas_limit, sizeof(gas_limit)));

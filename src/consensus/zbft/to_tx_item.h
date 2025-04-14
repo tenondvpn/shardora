@@ -23,118 +23,37 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("to tx consensus coming: %s, nonce: %lu, val: %s", 
-            common::Encode::HexEncode(tx_info.to()).c_str(), 
-            tx_info.nonce(),
-            common::Encode::HexEncode(tx_info.value()).c_str());
-        if (!DefaultTxItem(tx_info, block_tx)) {
-            return consensus::kConsensusError;
-        }
-
+        ZJC_DEBUG("to tx consensus coming: %s, gid: %s", 
+            "common::Encode::HexEncode(tx_info.value()).c_str()", 
+            common::Encode::HexEncode(tx_info.gid()).c_str());
+        DefaultTxItem(tx_info, block_tx);
         // change
-        if (tx_info.key().empty() || tx_info.value().empty()) {
+        if (tx_info.key().empty() ||
+                tx_info.key() != protos::kNormalTos ||
+                tx_info.value().empty()) {
             return consensus::kConsensusError;
         }
 
-        if (!all_to_txs_.ParseFromString(tx_info.value())) {
+        pools::protobuf::AllToTxMessage all_to_txs;
+        if (!all_to_txs.ParseFromString(tx_info.value())) {
             return consensus::kConsensusError;
         }
 
-        unique_hash_ = tx_info.key();
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
+        for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
             auto storage = block_tx->add_storages();
             storage->set_key(protos::kNormalToShards);
-            storage->set_value(all_to_txs_.to_tx_arr(i).SerializeAsString());
+            storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
             ZJC_DEBUG("success add normal to %s, val: %s", 
                 protos::kNormalToShards.c_str(), 
-                ProtobufToJson(all_to_txs_.to_tx_arr(i)).c_str());
+                ProtobufToJson(all_to_txs.to_tx_arr(i)).c_str());
             assert(!storage->value().empty());
         }
         
         return consensus::kConsensusSuccess;
     }
 
-    virtual int HandleTx(
-            const view_block::protobuf::ViewBlockItem& view_block,
-            zjcvm::ZjchainHost& zjc_host,
-            hotstuff::BalanceAndNonceMap& acc_balance_map,
-            block::protobuf::BlockTx& block_tx) {
-        uint64_t to_balance = 0;
-        uint64_t to_nonce = 0;
-        GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-        // if (to_nonce + 1 != block_tx.nonce()) {
-        //     block_tx.set_status(kConsensusNonceInvalid);
-        //     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-        //         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-        //     return consensus::kConsensusSuccess;
-        // }
-
-        ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-            view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-        acc_balance_map[block_tx.to()]->set_balance(to_balance);
-        acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-        zjc_host.normal_to_tx_ = &block_tx;
-        auto str_key = block_tx.to() + unique_hash_;
-        std::string val;
-        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
-            return consensus::kConsensusError;
-        }
-
-        address::protobuf::KeyValueInfo kv_info;
-        kv_info.set_value("1");
-        kv_info.set_height(to_nonce + 1);
-        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-        prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
-        block_tx.set_unique_hash(unique_hash_);
-        block_tx.set_nonce(to_nonce + 1);
-        for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
-            auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
-            auto& heights = *to_heights->mutable_to_heights();
-            heights.set_block_height(view_block.block_info().height());
-            ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
-                view_block.block_info().height(), 
-                heights.sharding_id(), 
-                ProtobufToJson(*to_heights).c_str(),
-                to_heights->to_heights().sharding_id());
-            prefix_db_->SaveLatestToTxsHeights(heights, zjc_host.db_batch_);
-            for (uint32_t j = 0; j < to_heights->tos_size(); ++j) {
-                auto tos_item = to_heights->tos(j);
-                if (tos_item.step() == pools::protobuf::kJoinElect) {
-                    for (int32_t join_i = 0; join_i < tos_item.join_infos_size(); ++join_i) {
-                        if (tos_item.join_infos(join_i).shard_id() != network::kRootCongressNetworkId) {
-                            continue;
-                        }
-        
-                        prefix_db_->SaveNodeVerificationVector(
-                            tos_item.des(),
-                            tos_item.join_infos(join_i),
-                            zjc_host.db_batch_);
-                        ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, block net: %u, "
-                            "block pool: %u, block height: %lu, local net id: %u", 
-                            common::Encode::HexEncode(tos_item.des()).c_str(), 
-                            tos_item.sharding_id(),
-                            tos_item.pool_index(),
-                            view_block.qc().network_id(), 
-                            view_block.qc().pool_index(), 
-                            view_block.block_info().height(),
-                            common::GlobalInfo::Instance()->network_id());
-                    }
-                }
-            }
-        }
-
-        prefix_db_->SaveLatestToBlock(view_block, zjc_host.db_batch_);
-        acc_balance_map[block_tx.to()]->set_balance(to_balance);
-        acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        return consensus::kConsensusSuccess;
-    }
-
 private:
-    pools::protobuf::AllToTxMessage all_to_txs_;
-    std::string unique_hash_;
     DISALLOW_COPY_AND_ASSIGN(ToTxItem);
 };
 

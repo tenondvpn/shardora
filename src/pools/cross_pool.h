@@ -163,7 +163,7 @@ protected:
     uint32_t des_sharding_id_ = common::kInvalidUint32;
     uint64_t latest_height_ = common::kInvalidUint64;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
-    uint32_t pool_index_ = common::kImmutablePoolSize;
+    uint32_t pool_index_ = common::kRootChainPoolIndex;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t synced_height_ = 0;

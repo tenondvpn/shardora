@@ -199,7 +199,7 @@ int NetworkInit::Init(int argc, char** argv) {
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_, account_mgr_);
     account_mgr_->Init(db_, pools_mgr_);
-    zjcvm::Execution::Instance()->Init(db_);
+    zjcvm::Execution::Instance()->Init(db_, account_mgr_);
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
@@ -934,7 +934,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        // account_mgr_->Init(db, pools_mgr_);
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
@@ -982,7 +981,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        // account_mgr_->Init(db, pools_mgr_);
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
@@ -1056,7 +1054,6 @@ void NetworkInit::GetNetworkNodesFromConf(
         auto keypair = bls::AggBls::Instance()->GetKeyPair();
         node_ptr->agg_bls_pk = keypair->pk();
         node_ptr->agg_bls_pk_proof = keypair->proof();
-        node_ptr->nonce = 0;
         root_genesis_nodes.push_back(node_ptr);
         ZJC_DEBUG("root private key: %s, id: %s", 
             common::Encode::HexEncode(sk).c_str(), 
@@ -1087,7 +1084,6 @@ void NetworkInit::GetNetworkNodesFromConf(
             auto keypair = bls::AggBls::Instance()->GetKeyPair();
             node_ptr->agg_bls_pk = keypair->pk();
             node_ptr->agg_bls_pk_proof = keypair->proof();
-            node_ptr->nonce = 0;
             cons_genesis_nodes.push_back(node_ptr);   
             ZJC_DEBUG("shard: %d private key: %s, id: %s", 
                 net_i,
@@ -1153,7 +1149,28 @@ void NetworkInit::WriteAggBlsSkToFile(const std::string& node_id, const libff::a
 void NetworkInit::AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         db::DbWriteBatch& db_batch) {
+    // TODO: fix
     auto* block = &view_block->block_info();
+    // if (prefix_db_->BlockExists(view_block->qc().view_block_hash())) {
+    //     ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
+    //         view_block->qc().network_id(),
+    //         view_block->qc().pool_index(),
+    //         block->height(),
+    //         block->tx_list_size(),
+    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+    //     return;
+    // }
+
+    // if (prefix_db_->BlockExists(view_block->qc().network_id(), view_block->qc().pool_index(), block->height())) {
+    //     ZJC_DEBUG("failed cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
+    //         view_block->qc().network_id(),
+    //         view_block->qc().pool_index(),
+    //         block->height(),
+    //         block->tx_list_size(),
+    //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
+    //     return;
+    // }
+
     ZJC_DEBUG("cache new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
         view_block->qc().network_id(),
         view_block->qc().pool_index(),
@@ -1166,7 +1183,40 @@ void NetworkInit::AddBlockItemToCache(
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
     }
 
-    DbNewBlockCallback(view_block, db_batch);
+    // if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
+    //     return;
+    // }
+
+    // gas_prepayment_->NewBlock(*view_block, db_batch);
+    // one block must be one consensus pool
+    // const auto& tx_list = block->tx_list();
+    // for (int32_t i = 0; i < tx_list.size(); ++i) {
+    //     // if (tx_list[i].status() != consensus::kConsensusSuccess) {
+    //     //     continue;
+    //     // }
+
+    //     switch (tx_list[i].step()) {
+    //     case pools::protobuf::kNormalFrom:
+    //     case pools::protobuf::kRootCreateAddress:
+    //     case pools::protobuf::kJoinElect:
+    //     case pools::protobuf::kContractGasPrepayment:
+    //     case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
+    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         break;
+    //     case pools::protobuf::kConsensusLocalTos:
+    //     case pools::protobuf::kContractCreate:
+    //     case pools::protobuf::kContractCreateByRootTo:
+    //     case pools::protobuf::kContractExcute:
+    //     case pools::protobuf::kNormalTo:
+    //         // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+    //         // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
+    //         zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    // }
 }
 
 // pool tx thread, thread safe
@@ -1209,7 +1259,6 @@ void NetworkInit::HandleTimeBlock(
             }
 
             uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
-            hotstuff_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
             vss_mgr_->OnTimeBlock(view_block);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
@@ -1362,130 +1411,6 @@ void NetworkInit::HandleElectionBlock(
         elect_block->shard_network_id(), 
         common::GlobalInfo::Instance()->network_id(),
         elect_block->prev_members().prev_elect_height());
-
-    if (sharding_id + network::kConsensusWaitingShardOffset ==
-            common::GlobalInfo::Instance()->network_id()) {
-        join_elect_tick_.CutOff(
-            3000000lu,
-            std::bind(&NetworkInit::SendJoinElectTransaction, this));
-        ZJC_DEBUG("now send join elect request transaction. first message.");
-        another_join_elect_msg_needed_ = true;
-    } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
-        join_elect_tick_.CutOff(
-            3000000lu,
-            std::bind(&NetworkInit::SendJoinElectTransaction, this));
-        ZJC_DEBUG("now send join elect request transaction. second message.");
-        another_join_elect_msg_needed_ = false;
-    }
-}
-
-void NetworkInit::SendJoinElectTransaction() {
-    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardBeginNetworkId) {
-        return;
-    }
-
-    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardEndNetworkId) {
-        return;
-    }
-
-    if (des_sharding_id_ == common::kInvalidUint32) {
-        ZJC_DEBUG("failed get address info: %s",
-            common::Encode::HexEncode(security_->GetAddress()).c_str());
-        return;
-    }
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->address_info = account_mgr_->GetAccountInfo(security_->GetAddress());
-    transport::protobuf::Header& msg = msg_ptr->header;
-    dht::DhtKeyManager dht_key(des_sharding_id_);
-    msg.set_src_sharding_id(des_sharding_id_);
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kPoolsMessage);
-    msg.set_hop_count(0);
-    auto new_tx = msg.mutable_tx_proto();
-    new_tx->set_nonce(msg_ptr->address_info->nonce() + 1);
-    new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
-    new_tx->set_step(pools::protobuf::kJoinElect);
-    new_tx->set_gas_limit(consensus::kJoinElectGas + 10000000lu);
-    new_tx->set_gas_price(1);
-    new_tx->set_key(protos::kJoinElectVerifyG2);
-    bls::protobuf::JoinElectInfo join_info;
-    uint32_t pos = common::kInvalidUint32;
-    prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
-    join_info.set_member_idx(pos);
-    
-    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-        join_info.set_shard_id(
-            common::GlobalInfo::Instance()->network_id() -
-            network::kConsensusWaitingShardOffset);
-    } else {
-        join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
-    }
-    
-    if (pos == common::kInvalidUint32) {
-        auto* req = join_info.mutable_g2_req();
-        auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);
-        if (!res) {
-            CreateContribution(req);
-        }
-    }
-
-    new_tx->set_value(join_info.SerializeAsString());
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto tx_hash = pools::GetTxMessageHash(*new_tx);
-    std::string sign;
-    if (security_->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
-        assert(false);
-        return;
-    }
-
-    new_tx->set_sign(sign);
-    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
-    network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success send join elect request transaction: %u, join: %u, addr: %s, nonce: %lu, "
-        "hash64: %lu, tx hash: %s, pk: %s sign: %s",
-        des_sharding_id_, join_info.shard_id(),
-        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
-        new_tx->nonce(),
-        msg.hash64(),
-        common::Encode::HexEncode(tx_hash).c_str(),
-        common::Encode::HexEncode(new_tx->pubkey()).c_str(),
-        common::Encode::HexEncode(new_tx->sign()).c_str());
-}
-
-
-void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
-    auto n = common::GlobalInfo::Instance()->each_shard_max_members();
-    auto t = common::GetSignerCount(n);
-    libBLS::Dkg dkg_instance(t, n);
-    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
-    bls::protobuf::LocalPolynomial local_poly;
-    for (uint32_t i = 0; i < polynomial.size(); ++i) {
-        local_poly.add_polynomial(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
-    }
-
-    auto g2_vec = dkg_instance.VerificationVector(polynomial);
-    for (uint32_t i = 0; i < t; ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-
-    }
-    
-    auto str = bls_verify_req->SerializeAsString();
-    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), *bls_verify_req);
-    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
 }
 
 }  // namespace init

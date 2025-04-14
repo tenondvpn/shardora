@@ -26,8 +26,9 @@ Execution* Execution::Instance() {
     return &ins;
 }
 
-void Execution::Init(std::shared_ptr<db::Db>& db) {
+void Execution::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<block::AccountManager>& acc_mgr) {
     db_ = db;
+    acc_mgr_ = acc_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     evm_ = evmc::VM{ evmc_create_evmone()};
 
@@ -52,11 +53,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
 }
 
 bool Execution::IsAddressExists(const std::string& addr) {
-    if (!view_block_chain_) {
-        return false;
-    }
-
-    protos::AddressInfoPtr address_info = view_block_chain_->ChainGetAccountInfo(addr);
+    protos::AddressInfoPtr address_info = acc_mgr_->GetAccountInfo(addr);
     if (address_info != nullptr) {
         return true;
     }
@@ -103,6 +100,7 @@ void Execution::UpdateStorage(
         const std::string& val,
         db::DbWriteBatch& db_batch) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    storage_map_[thread_idx].insert(key, val);
     prefix_db_->SaveTemporaryKv(key, val, db_batch);
 }
 
@@ -113,12 +111,25 @@ bool Execution::GetStorage(
     auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
         std::string((char*)key.bytes, sizeof(key.bytes));
     std::string val;
-    auto res = prefix_db_->GetTemporaryKv(str_key, &val);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
+    if (thread_idx >= thread_count) {
+        prefix_db_->GetTemporaryKv(str_key, &val);
+    } else {
+        prefix_db_->GetTemporaryKv(str_key, &val);
+        // if (!storage_map_[thread_idx].Get(str_key, &val)) {
+        //     // get from db and add to memory cache
+        //     if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+        //         storage_map_[thread_idx].Insert(str_key, val);
+        //     }
+        // }
+    }
+
     ZJC_DEBUG("get storage: %s, %s, valid: %d",
         common::Encode::HexEncode(str_key).c_str(), 
         common::Encode::HexEncode(val).c_str(),
         !val.empty());
-    if (!res) {
+    if (val.empty()) {
         return false;
     }
 
@@ -146,7 +157,22 @@ bool Execution::GetStorage(
         const std::string& key,
         std::string* val) {
     auto str_key = str_id + key;
-    auto res = prefix_db_->GetTemporaryKv(str_key, val);
+    auto res = true;
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
+    if (thread_idx >= thread_count) {
+        prefix_db_->GetTemporaryKv(str_key, val);
+    } else {
+        prefix_db_->GetTemporaryKv(str_key, val);
+        // if (!storage_map_[thread_idx].Get(str_key, val)) {
+        //     // get from db and add to memory cache
+        //     res = prefix_db_->GetTemporaryKv(str_key, val);
+        //     if (res) {
+        //         storage_map_[thread_idx].Insert(str_key, *val);
+        //     }
+        // }
+    }
+
     ZJC_DEBUG("get storage: %s, %s", 
         common::Encode::HexEncode(str_key).c_str(), 
         common::Encode::HexEncode(*val).c_str());
@@ -165,7 +191,6 @@ int Execution::execute(
         uint32_t call_mode,
         ZjchainHost& host,
         evmc::Result* out_res) {
-    view_block_chain_ = host.view_block_chain_;
     auto btime = common::TimeUtils::TimestampMs();
     const size_t code_size = bytes_code.size();
     if (code_size <= kContractHead.size() ||

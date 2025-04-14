@@ -44,14 +44,18 @@ public:
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
-        std::vector<pools::TxItemPtr>& res_map,
-        pools::CheckAddrNonceValidFunction tx_valid_func);
+        std::map<std::string, TxItemPtr>& res_map,
+        pools::CheckGidValidFunction gid_vlid_func);
     void GetTxSyncToLeader(
-        uint32_t leader_idx, 
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction tx_valid_func);
+        pools::CheckGidValidFunction gid_vlid_func);
+    void PopTxs(
+        uint32_t pool_index, 
+        bool pop_all, 
+        bool* has_user_tx, 
+        bool* has_system_tx);
     void InitCrossPools();
     void BftCheckInvalidGids(
         uint32_t pool_index, 
@@ -83,7 +87,7 @@ public:
             return;
         }
 
-        if (view_block->qc().pool_index() != common::kImmutablePoolSize) {
+        if (view_block->qc().pool_index() != common::kRootChainPoolIndex) {
             return;
         }
 

@@ -767,6 +767,21 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
       tx_debug() const;
 
+  // optional bytes gid = 1;
+  bool has_gid() const;
+  void clear_gid();
+  static const int kGidFieldNumber = 1;
+  const ::std::string& gid() const;
+  void set_gid(const ::std::string& value);
+  #if LANG_CXX11
+  void set_gid(::std::string&& value);
+  #endif
+  void set_gid(const char* value);
+  void set_gid(const void* value, size_t size);
+  ::std::string* mutable_gid();
+  ::std::string* release_gid();
+  void set_allocated_gid(::std::string* gid);
+
   // optional bytes from = 2;
   bool has_from() const;
   void clear_from();
@@ -827,28 +842,6 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_contract_input();
   void set_allocated_contract_input(::std::string* contract_input);
 
-  // optional bytes unique_hash = 18;
-  bool has_unique_hash() const;
-  void clear_unique_hash();
-  static const int kUniqueHashFieldNumber = 18;
-  const ::std::string& unique_hash() const;
-  void set_unique_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_unique_hash(::std::string&& value);
-  #endif
-  void set_unique_hash(const char* value);
-  void set_unique_hash(const void* value, size_t size);
-  ::std::string* mutable_unique_hash();
-  ::std::string* release_unique_hash();
-  void set_allocated_unique_hash(::std::string* unique_hash);
-
-  // optional uint64 nonce = 1;
-  bool has_nonce() const;
-  void clear_nonce();
-  static const int kNonceFieldNumber = 1;
-  ::google::protobuf::uint64 nonce() const;
-  void set_nonce(::google::protobuf::uint64 value);
-
   // optional uint64 amount = 4;
   bool has_amount() const;
   void clear_amount();
@@ -907,8 +900,8 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.BlockTx)
  private:
-  void set_has_nonce();
-  void clear_has_nonce();
+  void set_has_gid();
+  void clear_has_gid();
   void set_has_from();
   void clear_has_from();
   void set_has_to();
@@ -933,8 +926,6 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_contract_code();
   void set_has_contract_input();
   void clear_has_contract_input();
-  void set_has_unique_hash();
-  void clear_has_unique_hash();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -943,12 +934,11 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TransferItem > contract_txs_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TxLog > events_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo > tx_debug_;
+  ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::internal::ArenaStringPtr to_;
   ::google::protobuf::internal::ArenaStringPtr contract_code_;
   ::google::protobuf::internal::ArenaStringPtr contract_input_;
-  ::google::protobuf::internal::ArenaStringPtr unique_hash_;
-  ::google::protobuf::uint64 nonce_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 gas_limit_;
   ::google::protobuf::uint64 gas_used_;
@@ -5609,39 +5599,81 @@ TxLog::mutable_topics() {
 
 // BlockTx
 
-// optional uint64 nonce = 1;
-inline bool BlockTx::has_nonce() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+// optional bytes gid = 1;
+inline bool BlockTx::has_gid() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void BlockTx::set_has_nonce() {
-  _has_bits_[0] |= 0x00000020u;
+inline void BlockTx::set_has_gid() {
+  _has_bits_[0] |= 0x00000001u;
 }
-inline void BlockTx::clear_has_nonce() {
-  _has_bits_[0] &= ~0x00000020u;
+inline void BlockTx::clear_has_gid() {
+  _has_bits_[0] &= ~0x00000001u;
 }
-inline void BlockTx::clear_nonce() {
-  nonce_ = GOOGLE_ULONGLONG(0);
-  clear_has_nonce();
+inline void BlockTx::clear_gid() {
+  gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_gid();
 }
-inline ::google::protobuf::uint64 BlockTx::nonce() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.BlockTx.nonce)
-  return nonce_;
+inline const ::std::string& BlockTx::gid() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.BlockTx.gid)
+  return gid_.GetNoArena();
 }
-inline void BlockTx::set_nonce(::google::protobuf::uint64 value) {
-  set_has_nonce();
-  nonce_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.BlockTx.nonce)
+inline void BlockTx::set_gid(const ::std::string& value) {
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.BlockTx.gid)
+}
+#if LANG_CXX11
+inline void BlockTx::set_gid(::std::string&& value) {
+  set_has_gid();
+  gid_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.BlockTx.gid)
+}
+#endif
+inline void BlockTx::set_gid(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.BlockTx.gid)
+}
+inline void BlockTx::set_gid(const void* value, size_t size) {
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.BlockTx.gid)
+}
+inline ::std::string* BlockTx::mutable_gid() {
+  set_has_gid();
+  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.BlockTx.gid)
+  return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlockTx::release_gid() {
+  // @@protoc_insertion_point(field_release:shardora.block.protobuf.BlockTx.gid)
+  if (!has_gid()) {
+    return NULL;
+  }
+  clear_has_gid();
+  return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlockTx::set_allocated_gid(::std::string* gid) {
+  if (gid != NULL) {
+    set_has_gid();
+  } else {
+    clear_has_gid();
+  }
+  gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
+  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.BlockTx.gid)
 }
 
 // optional bytes from = 2;
 inline bool BlockTx::has_from() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void BlockTx::set_has_from() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void BlockTx::clear_has_from() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void BlockTx::clear_from() {
   from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -5701,13 +5733,13 @@ inline void BlockTx::set_allocated_from(::std::string* from) {
 
 // optional bytes to = 3;
 inline bool BlockTx::has_to() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void BlockTx::set_has_to() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void BlockTx::clear_has_to() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void BlockTx::clear_to() {
   to_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -5767,13 +5799,13 @@ inline void BlockTx::set_allocated_to(::std::string* to) {
 
 // optional uint64 amount = 4;
 inline bool BlockTx::has_amount() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void BlockTx::set_has_amount() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void BlockTx::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void BlockTx::clear_amount() {
   amount_ = GOOGLE_ULONGLONG(0);
@@ -5791,13 +5823,13 @@ inline void BlockTx::set_amount(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_limit = 5;
 inline bool BlockTx::has_gas_limit() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void BlockTx::set_has_gas_limit() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void BlockTx::clear_has_gas_limit() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void BlockTx::clear_gas_limit() {
   gas_limit_ = GOOGLE_ULONGLONG(0);
@@ -5815,13 +5847,13 @@ inline void BlockTx::set_gas_limit(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_used = 6;
 inline bool BlockTx::has_gas_used() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void BlockTx::set_has_gas_used() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void BlockTx::clear_has_gas_used() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void BlockTx::clear_gas_used() {
   gas_used_ = GOOGLE_ULONGLONG(0);
@@ -5839,13 +5871,13 @@ inline void BlockTx::set_gas_used(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_price = 7;
 inline bool BlockTx::has_gas_price() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void BlockTx::set_has_gas_price() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void BlockTx::clear_has_gas_price() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void BlockTx::clear_gas_price() {
   gas_price_ = GOOGLE_ULONGLONG(0);
@@ -5863,13 +5895,13 @@ inline void BlockTx::set_gas_price(::google::protobuf::uint64 value) {
 
 // optional uint64 balance = 8;
 inline bool BlockTx::has_balance() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void BlockTx::set_has_balance() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void BlockTx::clear_has_balance() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void BlockTx::clear_balance() {
   balance_ = GOOGLE_ULONGLONG(0);
@@ -5887,13 +5919,13 @@ inline void BlockTx::set_balance(::google::protobuf::uint64 value) {
 
 // optional .shardora.pools.protobuf.StepType step = 9;
 inline bool BlockTx::has_step() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void BlockTx::set_has_step() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void BlockTx::clear_has_step() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void BlockTx::clear_step() {
   step_ = 0;
@@ -5912,13 +5944,13 @@ inline void BlockTx::set_step(::shardora::pools::protobuf::StepType value) {
 
 // optional uint32 status = 10;
 inline bool BlockTx::has_status() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void BlockTx::set_has_status() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void BlockTx::clear_has_status() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void BlockTx::clear_status() {
   status_ = 0u;
@@ -5996,13 +6028,13 @@ BlockTx::contract_txs() const {
 
 // optional uint64 contract_prepayment = 13;
 inline bool BlockTx::has_contract_prepayment() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void BlockTx::set_has_contract_prepayment() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void BlockTx::clear_has_contract_prepayment() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void BlockTx::clear_contract_prepayment() {
   contract_prepayment_ = GOOGLE_ULONGLONG(0);
@@ -6020,13 +6052,13 @@ inline void BlockTx::set_contract_prepayment(::google::protobuf::uint64 value) {
 
 // optional bytes contract_code = 14;
 inline bool BlockTx::has_contract_code() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void BlockTx::set_has_contract_code() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void BlockTx::clear_has_contract_code() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void BlockTx::clear_contract_code() {
   contract_code_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6086,13 +6118,13 @@ inline void BlockTx::set_allocated_contract_code(::std::string* contract_code) {
 
 // optional bytes contract_input = 15;
 inline bool BlockTx::has_contract_input() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void BlockTx::set_has_contract_input() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void BlockTx::clear_has_contract_input() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void BlockTx::clear_contract_input() {
   contract_input_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6205,72 +6237,6 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::
 BlockTx::tx_debug() const {
   // @@protoc_insertion_point(field_list:shardora.block.protobuf.BlockTx.tx_debug)
   return tx_debug_;
-}
-
-// optional bytes unique_hash = 18;
-inline bool BlockTx::has_unique_hash() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void BlockTx::set_has_unique_hash() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void BlockTx::clear_has_unique_hash() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void BlockTx::clear_unique_hash() {
-  unique_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_unique_hash();
-}
-inline const ::std::string& BlockTx::unique_hash() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.BlockTx.unique_hash)
-  return unique_hash_.GetNoArena();
-}
-inline void BlockTx::set_unique_hash(const ::std::string& value) {
-  set_has_unique_hash();
-  unique_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.BlockTx.unique_hash)
-}
-#if LANG_CXX11
-inline void BlockTx::set_unique_hash(::std::string&& value) {
-  set_has_unique_hash();
-  unique_hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.BlockTx.unique_hash)
-}
-#endif
-inline void BlockTx::set_unique_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_unique_hash();
-  unique_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.BlockTx.unique_hash)
-}
-inline void BlockTx::set_unique_hash(const void* value, size_t size) {
-  set_has_unique_hash();
-  unique_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.BlockTx.unique_hash)
-}
-inline ::std::string* BlockTx::mutable_unique_hash() {
-  set_has_unique_hash();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.BlockTx.unique_hash)
-  return unique_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlockTx::release_unique_hash() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.BlockTx.unique_hash)
-  if (!has_unique_hash()) {
-    return NULL;
-  }
-  clear_has_unique_hash();
-  return unique_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlockTx::set_allocated_unique_hash(::std::string* unique_hash) {
-  if (unique_hash != NULL) {
-    set_has_unique_hash();
-  } else {
-    clear_has_unique_hash();
-  }
-  unique_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), unique_hash);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.BlockTx.unique_hash)
 }
 
 // -------------------------------------------------------------------

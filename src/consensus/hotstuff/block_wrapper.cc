@@ -4,7 +4,6 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/view_block_chain.h>
-#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 namespace hotstuff {
@@ -52,44 +51,20 @@ Status BlockWrapper::Wrap(
 
     uint64_t cur_time = common::TimeUtils::TimestampMs();
     block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
+
     // 打包交易
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
-    auto tx_valid_func = [&](
-            const address::protobuf::AddressInfo& addr_info, 
-            pools::protobuf::TxMessage& tx_info) -> int {
-        if (pools::IsUserTransaction(tx_info.step())) {
-            return view_block_chain->CheckTxNonceValid(
-                addr_info.addr(), 
-                tx_info.nonce(), 
-                prev_view_block->qc().view_block_hash());
-        }
-        
-        zjcvm::ZjchainHost zjc_host;
-        zjc_host.parent_hash_ = prev_view_block->qc().view_block_hash();
-        zjc_host.view_block_chain_ = view_block_chain;
-        std::string val;
-        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str(),
-                tx_info.step());
-            return 1;
-        }
-
-        ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-            common::Encode::HexEncode(tx_info.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str());
-        return 0;
+    auto gid_valid_func = [&](const std::string& gid) -> bool {
+        return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
     };
 
-    Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);
+    Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
         // 允许 3 个连续的空交易块
-        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, "
-            "pool: %d, %u_%u_%lu size: %u, pool size: %u",
+        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
             s, pool_idx_, 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
@@ -110,19 +85,19 @@ Status BlockWrapper::Wrap(
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
-            *tx_info = *((*it)->tx_info);
+            *tx_info = *it->second->tx_info;
+            assert(tx_info->gid().size() == 32);
             // ADD_TX_DEBUG_INFO(tx_info);
             // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-            //     "step: %d, to: %s, nonce: %lu, tx info: %s",
+            //     "step: %d, to: %s, gid: %s, tx info: %s",
             //     view_block->qc().pool_index(),
             //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
             //     block->height(),
             //     tx_info->step(),
             //     common::Encode::HexEncode(tx_info->to()).c_str(),
-            //     tx_info->nonce(),
+            //     common::Encode::HexEncode(tx_info->gid()).c_str(),
             //     "ProtobufToJson(*tx_info).c_str()");
         }
-
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 
@@ -150,8 +125,8 @@ Status BlockWrapper::Wrap(
 
 bool BlockWrapper::HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
-        pools::CheckAddrNonceValidFunction tx_valid_func) {
-    return txs_pools_->HasSingleTx(msg_ptr, pool_idx_, tx_valid_func);
+        pools::CheckGidValidFunction gid_valid_fn) {
+    return txs_pools_->HasSingleTx(msg_ptr, pool_idx_, gid_valid_fn);
 }
         
 }

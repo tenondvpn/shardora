@@ -47,30 +47,25 @@ void TimeBlockManager::CreateTimeBlockTx() {
         return;
     }
 
+    auto gid = common::Hash::keccak256(kTimeBlockGidPrefix +
+        std::to_string(latest_time_block_tm_));
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
-    assert(msg_ptr->address_info != nullptr);
-    assert(!msg_ptr->address_info->addr().empty());
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
-    tx_info.set_to(msg_ptr->address_info->addr());
-    tx_info.set_nonce(msg_ptr->address_info->nonce() + 1);
+    tx_info.set_gid(gid);
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
-    ZJC_INFO("success create timeblock tx key: %s",
-        common::Encode::HexEncode(pools::GetTxKey(
-            msg_ptr->address_info->addr(), 
-            msg_ptr->address_info->nonce())).c_str());
+    ZJC_INFO("success create timeblock gid: %s", common::Encode::HexEncode(gid).c_str());
 }
 
 bool TimeBlockManager::HasTimeblockTx(
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction tx_valid_func) {
-    if (pool_index != common::kImmutablePoolSize ||
+        pools::CheckGidValidFunction gid_valid_fn) {
+    if (pool_index != common::kRootChainPoolIndex ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return false;
     }
@@ -86,7 +81,7 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (tx_valid_func(*tmblock_tx_ptr_->address_info, *tmblock_tx_ptr_->tx_info) != 0) {
+        if (!gid_valid_fn(tmblock_tx_ptr_->tx_info->gid())) {
             return false;
         }
         
@@ -96,16 +91,13 @@ bool TimeBlockManager::HasTimeblockTx(
     return false;
 }
 
-pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
-        bool leader, 
-        uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction tx_valid_func) {
+pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_index) {
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        if (leader && tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-            // ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
-            return nullptr;
-        }
+        // if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+        //     ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+        //     return nullptr;
+        // }
 
         if (!CanCallTimeBlockTx()) {
             ZJC_DEBUG("CanCallTimeBlockTx leader: %d", leader);
@@ -125,17 +117,12 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         u64_data[0] = new_time_block_tm;
         u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
         tx_info->set_value(std::string(data, sizeof(data)));
+        // pool_index 一定是 256
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info->set_to(account_info->addr());
-        tx_info->set_key(common::Hash::keccak256(tx_info->value()));
-        if (tx_valid_func(*account_info, *tx_info) != 0) {
-            return nullptr;
-        }
-
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s",
-            u64_data[0], u64_data[1], leader,
-            common::Encode::HexEncode(tx_info->key()).c_str());
+        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d",
+            u64_data[0], u64_data[1], leader);
     }
 
     return tmblock_tx_ptr_;

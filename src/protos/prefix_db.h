@@ -62,6 +62,8 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 static const std::string kPresetPolynomialPrefix = "u\x01";
 static const std::string kPresetVerifyValuePrefix = "v\x01";
 static const std::string kStatisticHeightsPrefix = "w\x01";
+static const std::string kConsensusedStatisticPrefix = "x\x01";
+static const std::string kRootStatisticedPrefix = "y\x01";
 static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
@@ -115,12 +117,30 @@ public:
 
     void AddAddressInfo(
             const std::string& addr,
+            const address::protobuf::AddressInfo& addr_info) {
+        AddAddressInfo(addr, addr_info.SerializeAsString());
+    }
+
+    void AddAddressInfo(
+            const std::string& addr,
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-        ZJC_DEBUG("success add addr: %s, value: %s", 
-            common::Encode::HexEncode(kAddressPrefix + addr).c_str(), 
-            ProtobufToJson(addr_info).c_str());
+        ZJC_DEBUG("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+    }
+
+    void AddAddressInfo(const std::string& addr, const std::string& val) {
+        auto st = db_->Put(kAddressPrefix + addr, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+        }
+    }
+
+    void AddAddressInfo(
+            const std::string& addr,
+            const std::string& val,
+            db::DbWriteBatch& write_batch) {
+        write_batch.Put(kAddressPrefix + addr, val);
     }
 
     void AddNowElectHeight2Plege(const std::string& addr , const uint64_t height , db::DbWriteBatch& db_batch) {
@@ -136,13 +156,13 @@ public:
         std::string val;
         auto st = db_->Get(kAddressPrefix + addr, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(addr).c_str());
+            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
             return nullptr;
         }
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
         if (!addr_info->ParseFromString(val)) {
-            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
+            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
             return nullptr;
         }
 
@@ -362,30 +382,30 @@ public:
 
     bool SaveBlock(const view_block::protobuf::ViewBlockItem& view_block, db::DbWriteBatch& batch) {
         assert(!view_block.qc().view_block_hash().empty());
-        // if (BlockExists(view_block.qc().view_block_hash())) {
-        //     auto* block_item = &view_block.block_info();
-        //     ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
-        //         "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-        //         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-        //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-        //         view_block.qc().network_id(),
-        //         view_block.qc().pool_index(),
-        //         block_item->height(),
-        //         view_block.qc().network_id(),
-        //         view_block.qc().pool_index(),
-        //         view_block.qc().view(),
-        //         block_item->tx_list_size(),
-        //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-        //         view_block.qc().elect_height(),
-        //         block_item->timeblock_height());
-        //     std::string block_hash;
-        //     assert(GetBlockHashWithBlockHeight(
-        //         view_block.qc().network_id(),
-        //         view_block.qc().pool_index(),
-        //         block_item->height(),
-        //         &block_hash));
-        //     return false;
-        // }
+        if (BlockExists(view_block.qc().view_block_hash())) {
+            auto* block_item = &view_block.block_info();
+            ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
+                "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+                "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+                view_block.qc().network_id(),
+                view_block.qc().pool_index(),
+                block_item->height(),
+                view_block.qc().network_id(),
+                view_block.qc().pool_index(),
+                view_block.qc().view(),
+                block_item->tx_list_size(),
+                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+                view_block.qc().elect_height(),
+                block_item->timeblock_height());
+            std::string block_hash;
+            assert(GetBlockHashWithBlockHeight(
+                view_block.qc().network_id(),
+                view_block.qc().pool_index(),
+                block_item->height(),
+                &block_hash));
+            return false;
+        }
 
         std::string key;
         key.reserve(48);
@@ -427,28 +447,22 @@ public:
         return db_->Exist(view_key);
     }
 
-    void SaveUserNonceWithBlockHash(
-            const std::string& addr,
-            uint64_t nonce,
+    void SaveGidWithBlockHash(
+            const std::string& gid, 
             const std::string& hash, 
             db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
         key.append(kGidWithBlockHash);
-        key.append(addr);
-        key.append(std::string((char*)&nonce, sizeof(nonce)));
+        key.append(gid);
         batch.Put(key, hash);
     }
 
-    bool GetBlockWithUserNonce(
-            const std::string& addr,
-            uint64_t nonce,
-            view_block::protobuf::ViewBlockItem* block) {
+    bool GetBlockWithGid(const std::string& gid, view_block::protobuf::ViewBlockItem* block) {
         std::string key;
         key.reserve(48);
         key.append(kGidWithBlockHash);
-        key.append(addr);
-        key.append(std::string((char*)&nonce, sizeof(nonce)));
+        key.append(gid);
         std::string hash;
         auto st = db_->Get(key, &hash);
         if (!st.ok()) {
@@ -727,6 +741,23 @@ public:
         }
 
         return true;
+    }
+
+    bool JustCheckCommitedGidExists(const std::string& gid) {
+        std::string key = kCommitedGidPrefix + gid;
+        if (db_->Exist(key)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    void SaveCommittedGid(
+            const block::protobuf::BlockTx& tx, 
+            db::DbWriteBatch& db_batch) {
+        std::string key = kCommitedGidPrefix + tx.gid();
+        db_batch.Put(key, "1");
+        ZJC_DEBUG("success save tx gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
     }
 
     void SaveContractUserPrepayment(
@@ -1013,6 +1044,87 @@ public:
         }
 
         return true;
+    }
+
+    void SaveConsensusedStatisticTimeBlockHeight(
+            uint32_t sharding_id,
+            uint64_t timeblock_height,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kConsensusedStatisticPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val((char*)&timeblock_height, sizeof(timeblock_height));
+        db_batch.Put(key, val);
+    }
+
+    bool GetConsensusedStatisticTimeBlockHeight(uint32_t sharding_id, uint64_t* timeblock_height) {
+        std::string key;
+        key.reserve(64);
+        key.append(kConsensusedStatisticPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        if (val.size() != sizeof(*timeblock_height)) {
+            return false;
+        }
+
+        uint64_t* tm_height = (uint64_t*)val.c_str();
+        *timeblock_height = tm_height[0];
+        return true;
+    }
+
+    void SaveStatisticedShardingHeight(
+            uint32_t sharding_id,
+            uint64_t tm_height,
+            const pools::protobuf::ElectStatistic& elect_statistic,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kRootStatisticedPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&tm_height, sizeof(tm_height));
+        std::string val = elect_statistic.SerializeAsString();
+        db_batch.Put(key, val);
+    }
+
+    bool GetStatisticedShardingHeight(
+            uint32_t sharding_id,
+            uint64_t tm_height,
+            pools::protobuf::ElectStatistic* elect_statistic) {
+        std::string key;
+        key.reserve(64);
+        key.append(kRootStatisticedPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&tm_height, sizeof(tm_height));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_WARN("get data from db failed!");
+            return false;
+        }
+
+        if (!elect_statistic->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool ExistsStatisticedShardingHeight(
+            uint32_t sharding_id,
+            uint64_t tm_height) {
+        std::string key;
+        key.reserve(64);
+        key.append(kRootStatisticedPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&tm_height, sizeof(tm_height));
+        return db_->Exist(key);
     }
 
     void SaveElectNodeStoke(
@@ -1748,7 +1860,7 @@ public:
     }
 
     void SaveLatestToBlock(
-            const view_block::protobuf::ViewBlockItem& view_block, 
+            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block, 
             db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(64);
@@ -1757,14 +1869,14 @@ public:
         value.resize(24);
         uint64_t* val_data = (uint64_t*)value.data();
         memset(val_data, 0, 24);
-        val_data[0] = view_block.qc().network_id();
-        val_data[1] = view_block.qc().pool_index();
-        val_data[2] = view_block.block_info().height();
+        val_data[0] = view_block->qc().network_id();
+        val_data[1] = view_block->qc().pool_index();
+        val_data[2] = view_block->block_info().height();
         db_batch.Put(key, value);
         ZJC_DEBUG("success save latest to block: %u_%u_%lu",
-            view_block.qc().network_id(), 
-            view_block.qc().pool_index(), 
-            view_block.block_info().height());
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->block_info().height());
     }
 
     bool GetLatestToBlock(view_block::protobuf::ViewBlockItem* block) {

@@ -91,6 +91,7 @@ private:
         FILE* root_gens_init_block_file,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes);
+    std::string GetValidPoolBaseAddr(uint32_t pool_index);
     void CreateDefaultAccount();
     void AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
@@ -116,10 +117,8 @@ private:
         uint64_t view,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes, 
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
-    void CreatePoolsAddressInfo(uint16_t network_id);
-    void PrintGenisisAccounts();
 
-    std::map<uint32_t, std::map<uint32_t, std::map<std::string, uint64_t>>> net_pool_index_map_; // net => (pool => addr)
+    std::map<uint32_t, std::map<uint32_t, std::set<std::string>>> net_pool_index_map_; // net => (pool => addr)
     uint32_t net_pool_index_map_addr_count_ = 0;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
@@ -132,8 +131,6 @@ private:
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
     YAML::Node genesis_config_;
     nlohmann::json bls_pk_json_;
-    std::shared_ptr<address::protobuf::AddressInfo> immutable_pool_address_info_;
-    std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize];
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };

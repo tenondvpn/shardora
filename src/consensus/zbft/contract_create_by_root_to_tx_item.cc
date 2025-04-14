@@ -4,7 +4,6 @@
 #include "zjcvm/execution.h"
 #include <common/log.h>
 #include <consensus/consensus_utils.h>
-#include "consensus/hotstuff/view_block_chain.h"
 #include <db/db.h>
 #include <evmc/evmc.h>
 #include <evmc/evmc.hpp>
@@ -19,7 +18,7 @@ namespace consensus {
 int ContractCreateByRootToTxItem::HandleTx(
 		const view_block::protobuf::ViewBlockItem& view_block,
 		zjcvm::ZjchainHost& zjc_host,
-		hotstuff::BalanceAndNonceMap& acc_balance_map,
+		std::unordered_map<std::string, int64_t>& acc_balance_map,
 		block::protobuf::BlockTx& block_tx) {
 	if (block_tx.storages_size() != 1) {
         block_tx.set_status(kConsensusError);
@@ -50,7 +49,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
-	protos::AddressInfoPtr contract_info = zjc_host.view_block_chain_->ChainGetAccountInfo(block_tx.to());
+	protos::AddressInfoPtr contract_info = account_mgr_->GetAccountInfo(block_tx.to());
 	if (contract_info != nullptr) {
 		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);
@@ -184,22 +183,18 @@ int ContractCreateByRootToTxItem::HandleTx(
 
 		from_prepayment = tmp_from_balance;
 		
-        auto preppayment_id = block_tx.to() + block_tx.from();
-        acc_balance_map[preppayment_id]->set_balance(from_prepayment);
-        acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
-        prefix_db_->AddAddressInfo(preppayment_id, *(acc_balance_map[preppayment_id]), zjc_host.db_batch_);
-		acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
-		acc_balance_map[block_tx.to()]->set_nonce(0);
-        prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+    auto preppayment_id = block_tx.to() + block_tx.from();
+    acc_balance_map[preppayment_id] = from_prepayment;
+		acc_balance_map[block_tx.to()] = block_tx.amount();
+		
 		block_tx.set_contract_prepayment(from_prepayment);
 		block_tx.set_gas_used(gas_used);
-		ZJC_DEBUG("create contract local called to: %s, contract_from: %s, "
-            "prepayment: %lu, gas used: %lu, gas_price: %lu",
-            common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(block_tx.from()).c_str(),
-            from_prepayment,
-            gas_used,
-            block_tx.gas_price());
+		ZJC_DEBUG("create contract local called to: %s, contract_from: %s, prepayment: %lu, gas used: %lu, gas_price: %lu",
+				  common::Encode::HexEncode(block_tx.to()).c_str(),
+				  common::Encode::HexEncode(block_tx.from()).c_str(),
+				  from_prepayment,
+				  gas_used,
+				  block_tx.gas_price());
 	}
 	return kConsensusSuccess;
 }
@@ -259,10 +254,6 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
-            address::protobuf::KeyValueInfo kv_info;
-            kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
-            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -278,10 +269,6 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
-            address::protobuf::KeyValueInfo kv_info;
-            kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
-            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
     }
 

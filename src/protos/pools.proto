@@ -160,7 +160,7 @@ message TxDelayTestInfo {
 
 message TxMessage {
     optional uint32 version = 1;
-    optional uint64 nonce = 2;
+    optional bytes gid = 2;
     optional bytes pubkey = 3;
     optional uint64 gas_limit = 4;
     optional uint64 gas_price = 5;

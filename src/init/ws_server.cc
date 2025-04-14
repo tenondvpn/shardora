@@ -699,8 +699,7 @@ void WsServer::CloseCallback(websocketpp::connection_hdl hdl) {
 std::string WsServer::GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
-    uint64_t nonce = tx_info.nonce();
-    message.append(std::string((char*)&nonce, sizeof(nonce)));
+    message.append(tx_info.gid());
     message.append(tx_info.pubkey());
     message.append(tx_info.to());
     uint64_t amount = tx_info.amount();
@@ -763,7 +762,7 @@ int WsServer::CreateTransactionWithAttr(
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     // auto* broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
-    new_tx->set_nonce(tx_info.nonce());
+    new_tx->set_gid(tx_info.gid());
     new_tx->set_pubkey(tx_info.pubkey());
     new_tx->set_step(static_cast<pools::protobuf::StepType>(tx_info.step()));
     new_tx->set_to(tx_info.to());
@@ -1477,8 +1476,8 @@ void WsServer::Transaction(websocketpp::connection_hdl hdl, const std::string& e
         }
 
         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-        ZJC_DEBUG("success send chain message: %s:%d, nonce: %lu, hash64: %lu",
-            item[0], port, tx.nonce(), chain_msg.hash64());
+        ZJC_DEBUG("success send chain message: %s:%d, gid: %s, hash64: %lu",
+            item[0], port, common::Encode::HexEncode(tx.gid()).c_str(), chain_msg.hash64());
     }
 
     C2cResponse(hdl, c2c_msg.msg_id(), 0, "ok");

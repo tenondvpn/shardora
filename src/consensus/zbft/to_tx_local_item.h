@@ -29,7 +29,7 @@ public:
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
     virtual int TxToBlockTx(
         const pools::protobuf::TxMessage& tx_info,
@@ -39,7 +39,6 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<ContractGasPrepayment> gas_prepayment_ = nullptr;
-    std::string unique_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxLocalItem);
 };

@@ -31,47 +31,38 @@ namespace shardora {
 
 namespace hotstuff {
 
-BlockAcceptor::BlockAcceptor() {}
+BlockAcceptor::BlockAcceptor(
+        const uint32_t &pool_idx,
+        const std::shared_ptr<security::Security> &security,
+        const std::shared_ptr<block::AccountManager> &account_mgr,
+        const std::shared_ptr<ElectInfo> &elect_info,
+        const std::shared_ptr<vss::VssManager> &vss_mgr,
+        const std::shared_ptr<contract::ContractManager> &contract_mgr,
+        const std::shared_ptr<db::Db> &db,
+        const std::shared_ptr<consensus::ContractGasPrepayment> &gas_prepayment,
+        std::shared_ptr<pools::TxPoolManager> &pools_mgr,
+        std::shared_ptr<block::BlockManager> &block_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager> &tm_block_mgr,
+        std::shared_ptr<elect::ElectManager> elect_mgr,
+        consensus::BlockCacheCallback new_block_cache_callback):
+        pool_idx_(pool_idx), elect_mgr_(elect_mgr), security_ptr_(security), account_mgr_(account_mgr),
+        elect_info_(elect_info), vss_mgr_(vss_mgr), contract_mgr_(contract_mgr),
+        db_(db), gas_prepayment_(gas_prepayment), pools_mgr_(pools_mgr),
+        block_mgr_(block_mgr), tm_block_mgr_(tm_block_mgr), 
+        new_block_cache_callback_(new_block_cache_callback) {
+    tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
+};
 
 BlockAcceptor::~BlockAcceptor() {}
 
-void BlockAcceptor::Init(
-        const uint32_t& pool_idx,
-        const std::shared_ptr<security::Security>& security,
-        const std::shared_ptr<block::AccountManager>& account_mgr,
-        const std::shared_ptr<ElectInfo>& elect_info,
-        const std::shared_ptr<vss::VssManager>& vss_mgr,
-        const std::shared_ptr<contract::ContractManager>& contract_mgr,
-        const std::shared_ptr<db::Db>& db,
-        const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        std::shared_ptr<block::BlockManager>& block_mgr,
-        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
-        std::shared_ptr<elect::ElectManager> elect_mgr,
-        std::shared_ptr<ViewBlockChain> view_block_chain) {
-    pool_idx_ = pool_idx;
-    elect_mgr_ = elect_mgr;
-    security_ptr_ = security;
-    account_mgr_ = account_mgr;
-    elect_info_ = elect_info;
-    vss_mgr_ = vss_mgr;
-    contract_mgr_ = contract_mgr;
-    db_ = db;
-    gas_prepayment_ = gas_prepayment;
-    pools_mgr_ = pools_mgr;
-    block_mgr_ = block_mgr;
-    tm_block_mgr_ = tm_block_mgr;
-    view_block_chain_ = view_block_chain;
-    tx_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr_, block_mgr_, tm_block_mgr_);
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
-}
-
 // Accept 验证 Leader 新提案信息，并执行 txs，修改 block
 Status BlockAcceptor::Accept(
+        std::shared_ptr<ViewBlockChain>& view_block_chain,
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
         bool directly_user_leader_txs,
-        BalanceAndNonceMap& balance_and_nonce_map,
+        BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto& msg_ptr = pro_msg_wrap->msg_ptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -97,10 +88,10 @@ Status BlockAcceptor::Accept(
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view(),
-                view_block_chain_->Has(view_block.qc().view_block_hash()),
+                view_block_chain->Has(view_block.qc().view_block_hash()),
                 prefix_db_->BlockExists(view_block.qc().view_block_hash()));
-            // view_block_chain_->ResetViewBlock(view_block.qc().view_block_hash());
-            if (view_block_chain_->Has(view_block.qc().view_block_hash())) {
+            // view_block_chain->ResetViewBlock(view_block.qc().view_block_hash());
+            if (view_block_chain->Has(view_block.qc().view_block_hash())) {
                 // assert(false);
                 return Status::kSuccess;
             }
@@ -128,11 +119,12 @@ Status BlockAcceptor::Accept(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     s = GetAndAddTxsLocally(
         msg_ptr,
+        view_block_chain, 
         view_block.parent_hash(), 
         propose_msg, 
         directly_user_leader_txs, 
         txs_ptr, 
-        balance_and_nonce_map,
+        balance_map,
         zjc_host);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
@@ -143,9 +135,9 @@ Status BlockAcceptor::Accept(
     // 3. Do txs and create block_tx
     ADD_DEBUG_PROCESS_TIMESTAMP();
     zjc_host.parent_hash_ = view_block.parent_hash();
-    zjc_host.view_block_chain_ = view_block_chain_;
+    zjc_host.view_block_chain_ = view_block_chain;
     zjc_host.view_ = view_block.qc().view();
-    s = DoTransactions(txs_ptr, &view_block, balance_and_nonce_map, zjc_host);
+    s = DoTransactions(txs_ptr, &view_block, balance_map, zjc_host);
     if (s != Status::kSuccess) {
         ZJC_WARN("DoTransactions error!");
         return s;
@@ -182,54 +174,55 @@ Status BlockAcceptor::AcceptSync(const view_block::protobuf::ViewBlockItem& view
     return Status::kSuccess;
 }
 
+void BlockAcceptor::Commit(
+        transport::MessagePtr msg_ptr, 
+        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+    // commit block
+    commit(msg_ptr, queue_item_ptr);
+}
+
+void BlockAcceptor::CommitSynced(std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+    transport::MessagePtr msg_ptr;
+    commit(msg_ptr, queue_item_ptr);
+    auto block_ptr = &queue_item_ptr->view_block_ptr->block_info();
+    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+        queue_item_ptr->view_block_ptr->qc().network_id(),
+        queue_item_ptr->view_block_ptr->qc().pool_index(),
+        block_ptr->height(),
+        common::Encode::HexEncode(GetBlockHash(*queue_item_ptr->view_block_ptr)).c_str());
+}
+
 Status BlockAcceptor::addTxsToPool(
         transport::MessagePtr msg_ptr,
+        std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>& txs,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceAndNonceMap& now_balance_map,
+        BalanceMap& now_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     if (txs.size() == 0) {
         return Status::kAcceptorTxsEmpty;
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    BalanceAndNonceMap prevs_balance_map;
-    // view_block_chain_->MergeAllPrevStorageMap(parent_hash, zjc_host);
-    view_block_chain_->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
+    BalanceMap prevs_balance_map;
+    // view_block_chain->MergeAllPrevStorageMap(parent_hash, zjc_host);
+    view_block_chain->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
     // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
     //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto& txs_map = txs_ptr->txs;
-    auto tx_valid_func = [&](
-            const address::protobuf::AddressInfo& addr_info, 
-            pools::protobuf::TxMessage& tx_info) -> int {
-        if (pools::IsUserTransaction(tx_info.step())) {
-            return view_block_chain_->CheckTxNonceValid(
-                addr_info.addr(), 
-                tx_info.nonce(), 
-                parent_hash);
-        }
-        
-        std::string val;
-        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str(),
-                tx_info.step());
-            return 1;
-        }
-
-        ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-            common::Encode::HexEncode(tx_info.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str());
-        return 0;
-    };
-
+    std::map<std::string, pools::TxItemPtr>& txs_map = txs_ptr->txs;
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
+        if (view_block_chain && !view_block_chain->CheckTxGidValid(tx->gid(), parent_hash)) {
+            ZJC_WARN("check tx gid failed: %s, phash: %s", 
+                common::Encode::HexEncode(tx->gid()).c_str(), 
+                common::Encode::HexEncode(parent_hash).c_str());
+            return Status::kError;
+        }
+
         protos::AddressInfoPtr address_info = nullptr;
         std::string from_id;
         if (pools::IsUserTransaction(tx->step())) {
@@ -243,51 +236,26 @@ Status BlockAcceptor::addTxsToPool(
                 from_id = security_ptr_->GetAddress(tx->pubkey());
             }
         }
-        
         if (tx->step() == pools::protobuf::kContractExcute) {
-            address_info = view_block_chain_->ChainGetAccountInfo(tx->to());
+            address_info = account_mgr_->GetAccountInfo(tx->to());
         } else {
             if (pools::IsUserTransaction(tx->step())) {
-                address_info = view_block_chain_->ChainGetAccountInfo(from_id);
+                address_info = account_mgr_->GetAccountInfo(from_id);
             } else {
-                address_info = view_block_chain_->ChainGetPoolAccountInfo(pool_idx());
+                address_info = account_mgr_->pools_address_info(pool_idx());
             }
         }
 
         if (!address_info) {
-            ZJC_WARN("get address failed nonce: %lu", tx->nonce());
+            ZJC_WARN("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
             return Status::kError;
         }
 
-        auto now_map_iter = now_balance_map.find(address_info->addr());
-        if (now_map_iter == now_balance_map.end()) {
-            if (pools::IsUserTransaction(tx->step())) {
-                if (view_block_chain_ && view_block_chain_->CheckTxNonceValid(
-                        address_info->addr(), tx->nonce(), parent_hash) != 0) {
-                    ZJC_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
-                        common::Encode::HexEncode(address_info->addr()).c_str(),
-                        tx->nonce(), 
-                        common::Encode::HexEncode(parent_hash).c_str());
-                    return Status::kError;
-                }
-            } else {
-                std::string val;
-                if (zjc_host.GetKeyValue(tx->to(), tx->key(), &val) == zjcvm::kZjcvmSuccess) {
-                    ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
-                        common::Encode::HexEncode(tx->to()).c_str(),
-                        common::Encode::HexEncode(tx->key()).c_str());
-                    return Status::kError;
-                }
-            }
-        }
-        
         auto iter = prevs_balance_map.find(address_info->addr());
         if (iter != prevs_balance_map.end()) {
             now_balance_map[iter->first] = iter->second;
         } else {
-            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
-            *new_addr_info = * address_info;
-            now_balance_map[address_info->addr()] = new_addr_info;
+            now_balance_map[address_info->addr()] = address_info->balance();
         }
 
         std::string contract_prepayment_id;
@@ -337,7 +305,7 @@ Status BlockAcceptor::addTxsToPool(
                     address_info);
             contract_prepayment_id = tx->to() + from_id;
             break;
-        case pools::protobuf::kConsensusLocalTos: {
+        case pools::protobuf::kConsensusLocalTos:
             tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
                     msg_ptr, i, 
                     db_, 
@@ -345,17 +313,7 @@ Status BlockAcceptor::addTxsToPool(
                     account_mgr_, 
                     security_ptr_, 
                     address_info);
-            std::string val;
-            if (zjc_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
-                ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
-                    common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
-                    common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
-                tx_ptr = nullptr;
-                return Status::kError;
-            }
-
             break;
-        }
         case pools::protobuf::kNormalTo: {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
             pools::protobuf::AllToTxMessage all_to_txs;
@@ -367,18 +325,13 @@ Status BlockAcceptor::addTxsToPool(
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::ToTxItem>(msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto tx_item = tx_pools_->GetToTxs(
-                    pool_idx(), 
-                    all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
-                if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain_) {
-                    tx_ptr = *(tx_item->txs.begin());
-                    std::string val;
-                    if (zjc_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
-                        ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
-                            common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
-                            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
-                        tx_ptr = nullptr;
-                        return Status::kError;
+                auto gid = tx_pools_->GetToTxGid();
+                if (view_block_chain->CheckTxGidValid(gid, parent_hash)) {
+                    auto tx_item = tx_pools_->GetToTxs(
+                        pool_idx(), 
+                        all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
+                    if (tx_item != nullptr && !tx_item->txs.empty()) {
+                        tx_ptr = tx_item->txs.begin()->second;
                     }
                 }
             }
@@ -393,12 +346,12 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), tx->key());
+                auto tx_item = tx_pools_->GetStatisticTx(pool_idx(), tx->gid());
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
-                    tx_ptr = *(tx_item->txs.begin());
+                    tx_ptr = tx_item->txs.begin()->second;
                 } else {
-                    ZJC_WARN("failed get statistic nonce: %lu, pool: %u, tx_proto: %s",
-                        tx->nonce(), pool_idx_, ProtobufToJson(*tx).c_str());
+                    ZJC_WARN("failed get statistic gid: %s, pool: %u, tx_proto: %s",
+                        common::Encode::HexEncode(tx->gid()).c_str(), pool_idx_, ProtobufToJson(*tx).c_str());
                     // assert(false);
                 }
             }
@@ -427,9 +380,10 @@ Status BlockAcceptor::addTxsToPool(
                     elect_info_->max_consensus_sharding_id() - 1,
                     address_info);
             } else {
-                auto tx_item = tx_pools_->GetElectTx(pool_idx(), tx->key());           
+                auto txhash = pools::GetTxMessageHash(*tx);
+                auto tx_item = tx_pools_->GetElectTx(pool_idx(), txhash);           
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
-                    tx_ptr = *(tx_item->txs.begin());
+                    tx_ptr = tx_item->txs.begin()->second;
                 }
             }
                 
@@ -442,9 +396,9 @@ Status BlockAcceptor::addTxsToPool(
                 tx_ptr = std::make_shared<consensus::TimeBlockTx>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
             } else {
-                auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false, tx_valid_func);
+                auto tx_item = tx_pools_->GetTimeblockTx(pool_idx(), false);
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
-                    tx_ptr = *(tx_item->txs.begin());
+                    tx_ptr = tx_item->txs.begin()->second;
                 }
             }
             break;
@@ -505,24 +459,22 @@ Status BlockAcceptor::addTxsToPool(
             if (iter != prevs_balance_map.end()) {
                 now_balance_map[iter->first] = iter->second;
             } else {
-                address_info = view_block_chain_->ChainGetAccountInfo(contract_prepayment_id);
+                address_info = account_mgr_->GetAccountInfo(contract_prepayment_id);
                 if (address_info) {
-                    auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
-                    *new_addr_info = *address_info;
-                    now_balance_map[contract_prepayment_id] = new_addr_info;
+                    now_balance_map[contract_prepayment_id] = address_info->balance();
                 }
             }
         }
         
         if (tx_ptr != nullptr) {
-            auto tx_hash = pools::GetTxMessageHash(*tx);
-            txs_map.push_back(tx_ptr);
+            tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
+            txs_map[tx_ptr->unique_tx_hash] = tx_ptr;
             if (pools::IsUserTransaction(tx_ptr->tx_info->step())) {
                 if (!msg_ptr->is_leader) {
                     if (tx->pubkey().size() == 64u) {
                         security::GmSsl gmssl;
                         if (gmssl.Verify(
-                                tx_hash,
+                                tx_ptr->unique_tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                             assert(false);
@@ -531,7 +483,7 @@ Status BlockAcceptor::addTxsToPool(
                     } else if (tx->pubkey().size() > 128u) {
                         security::Oqs oqs;
                         if (oqs.Verify(
-                                tx_hash,
+                                tx_ptr->unique_tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                             assert(false);
@@ -539,7 +491,7 @@ Status BlockAcceptor::addTxsToPool(
                         }
                     } else {
                         if (security_ptr_->Verify(
-                                tx_hash,
+                                tx_ptr->unique_tx_hash,
                                 tx_ptr->tx_info->pubkey(),
                                 tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                             assert(false);
@@ -557,14 +509,16 @@ Status BlockAcceptor::addTxsToPool(
 
 Status BlockAcceptor::GetAndAddTxsLocally(
         transport::MessagePtr msg_ptr,
+        std::shared_ptr<ViewBlockChain>& view_block_chain,
         const std::string& parent_hash,
         const hotstuff::protobuf::TxPropose& tx_propose,
         bool directly_user_leader_txs,
         std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-        BalanceAndNonceMap& balance_map,
+        BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     auto add_txs_status = addTxsToPool(
         msg_ptr,
+        view_block_chain, 
         parent_hash, 
         tx_propose.txs(), 
         directly_user_leader_txs, 
@@ -621,7 +575,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
 Status BlockAcceptor::DoTransactions(
         const std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
         view_block::protobuf::ViewBlockItem* view_block,
-        BalanceAndNonceMap& balance_map,
+        BalanceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     Status s = BlockExecutorFactory().Create(security_ptr_)->DoTransactionAndCreateTxBlock(
             txs_ptr, view_block, balance_map, zjc_host);
@@ -674,6 +628,45 @@ Status BlockAcceptor::DoTransactions(
 // #endif
 
     return s;
+}
+
+void BlockAcceptor::commit(
+        transport::MessagePtr msg_ptr, 
+        std::shared_ptr<block::BlockToDbItem>& queue_item_ptr) {
+    auto block = &queue_item_ptr->view_block_ptr->block_info();
+    new_block_cache_callback_(
+        queue_item_ptr->view_block_ptr,
+        *queue_item_ptr->final_db_batch);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    if (network::IsSameToLocalShard(queue_item_ptr->view_block_ptr->qc().network_id())) {
+        pools_mgr_->TxOver(pool_idx_, *queue_item_ptr->view_block_ptr);
+        // tps measurement
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        CalculateTps(block->tx_list_size());
+        auto now_ms = common::TimeUtils::TimestampMs();
+        uint64_t b_tm = 0;
+        common::StringUtil::ToUint64(queue_item_ptr->view_block_ptr->debug(), &b_tm);
+        ZJC_DEBUG("[NEW BLOCK] hash: %s, prehash: %s, view: %u_%u_%lu, "
+            "key: %u_%u_%u_%u, timestamp:%lu, txs: %lu, propose_debug: %s, use time ms: %lu",
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(queue_item_ptr->view_block_ptr->parent_hash()).c_str(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            queue_item_ptr->view_block_ptr->qc().view(),
+            queue_item_ptr->view_block_ptr->qc().network_id(),
+            queue_item_ptr->view_block_ptr->qc().pool_index(),
+            block->height(),
+            queue_item_ptr->view_block_ptr->qc().elect_height(),
+            block->timestamp(),
+            block->tx_list_size(),
+            "",
+            (now_ms - b_tm));
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+    }
+    
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    block_mgr_->ConsensusAddBlock(queue_item_ptr);
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 } // namespace hotstuff

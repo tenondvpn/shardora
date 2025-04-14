@@ -130,7 +130,6 @@ public:
     }
 
     int GetTempAccountBalance(
-            zjcvm::ZjchainHost& zjc_host,
             uint8_t thread_idx,
             const std::string& id,
             std::unordered_map<std::string, int64_t>& acc_balance_map,

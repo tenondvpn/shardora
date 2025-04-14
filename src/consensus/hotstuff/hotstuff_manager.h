@@ -90,14 +90,6 @@ public:
         common::MembersPtr& members,
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& sec_key);
-    void OnTimeBlock(
-            uint64_t lastest_time_block_tm,
-            uint64_t latest_time_block_height,
-            uint64_t vss_random) {
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            chain(i)->OnTimeBlock(lastest_time_block_tm, latest_time_block_height, vss_random);
-        }
-    }
     
     HotstuffManager();
     virtual ~HotstuffManager();

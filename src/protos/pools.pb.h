@@ -3110,6 +3110,21 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo >&
       tx_debug() const;
 
+  // optional bytes gid = 2;
+  bool has_gid() const;
+  void clear_gid();
+  static const int kGidFieldNumber = 2;
+  const ::std::string& gid() const;
+  void set_gid(const ::std::string& value);
+  #if LANG_CXX11
+  void set_gid(::std::string&& value);
+  #endif
+  void set_gid(const char* value);
+  void set_gid(const void* value, size_t size);
+  ::std::string* mutable_gid();
+  ::std::string* release_gid();
+  void set_allocated_gid(::std::string* gid);
+
   // optional bytes pubkey = 3;
   bool has_pubkey() const;
   void clear_pubkey();
@@ -3215,13 +3230,6 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::std::string* release_sign();
   void set_allocated_sign(::std::string* sign);
 
-  // optional uint64 nonce = 2;
-  bool has_nonce() const;
-  void clear_nonce();
-  static const int kNonceFieldNumber = 2;
-  ::google::protobuf::uint64 nonce() const;
-  void set_nonce(::google::protobuf::uint64 value);
-
   // optional uint64 gas_limit = 4;
   bool has_gas_limit() const;
   void clear_gas_limit();
@@ -3275,8 +3283,8 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
  private:
   void set_has_version();
   void clear_has_version();
-  void set_has_nonce();
-  void clear_has_nonce();
+  void set_has_gid();
+  void clear_has_gid();
   void set_has_pubkey();
   void clear_has_pubkey();
   void set_has_gas_limit();
@@ -3308,6 +3316,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::TxDelayTestInfo > tx_debug_;
+  ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr key_;
   ::google::protobuf::internal::ArenaStringPtr value_;
@@ -3315,7 +3324,6 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::internal::ArenaStringPtr contract_code_;
   ::google::protobuf::internal::ArenaStringPtr contract_input_;
   ::google::protobuf::internal::ArenaStringPtr sign_;
-  ::google::protobuf::uint64 nonce_;
   ::google::protobuf::uint64 gas_limit_;
   ::google::protobuf::uint64 gas_price_;
   ::google::protobuf::uint32 version_;
@@ -6033,39 +6041,81 @@ inline void TxMessage::set_version(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.version)
 }
 
-// optional uint64 nonce = 2;
-inline bool TxMessage::has_nonce() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+// optional bytes gid = 2;
+inline bool TxMessage::has_gid() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void TxMessage::set_has_nonce() {
-  _has_bits_[0] |= 0x00000080u;
+inline void TxMessage::set_has_gid() {
+  _has_bits_[0] |= 0x00000001u;
 }
-inline void TxMessage::clear_has_nonce() {
-  _has_bits_[0] &= ~0x00000080u;
+inline void TxMessage::clear_has_gid() {
+  _has_bits_[0] &= ~0x00000001u;
 }
-inline void TxMessage::clear_nonce() {
-  nonce_ = GOOGLE_ULONGLONG(0);
-  clear_has_nonce();
+inline void TxMessage::clear_gid() {
+  gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_gid();
 }
-inline ::google::protobuf::uint64 TxMessage::nonce() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxMessage.nonce)
-  return nonce_;
+inline const ::std::string& TxMessage::gid() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.TxMessage.gid)
+  return gid_.GetNoArena();
 }
-inline void TxMessage::set_nonce(::google::protobuf::uint64 value) {
-  set_has_nonce();
-  nonce_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.nonce)
+inline void TxMessage::set_gid(const ::std::string& value) {
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.TxMessage.gid)
+}
+#if LANG_CXX11
+inline void TxMessage::set_gid(::std::string&& value) {
+  set_has_gid();
+  gid_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.pools.protobuf.TxMessage.gid)
+}
+#endif
+inline void TxMessage::set_gid(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.pools.protobuf.TxMessage.gid)
+}
+inline void TxMessage::set_gid(const void* value, size_t size) {
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.pools.protobuf.TxMessage.gid)
+}
+inline ::std::string* TxMessage::mutable_gid() {
+  set_has_gid();
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.TxMessage.gid)
+  return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxMessage::release_gid() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.TxMessage.gid)
+  if (!has_gid()) {
+    return NULL;
+  }
+  clear_has_gid();
+  return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxMessage::set_allocated_gid(::std::string* gid) {
+  if (gid != NULL) {
+    set_has_gid();
+  } else {
+    clear_has_gid();
+  }
+  gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.TxMessage.gid)
 }
 
 // optional bytes pubkey = 3;
 inline bool TxMessage::has_pubkey() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void TxMessage::set_has_pubkey() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void TxMessage::clear_has_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void TxMessage::clear_pubkey() {
   pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6173,13 +6223,13 @@ inline void TxMessage::set_gas_price(::google::protobuf::uint64 value) {
 
 // optional bytes key = 6;
 inline bool TxMessage::has_key() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void TxMessage::set_has_key() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void TxMessage::clear_has_key() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void TxMessage::clear_key() {
   key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6239,13 +6289,13 @@ inline void TxMessage::set_allocated_key(::std::string* key) {
 
 // optional bytes value = 7;
 inline bool TxMessage::has_value() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void TxMessage::set_has_value() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void TxMessage::clear_has_value() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void TxMessage::clear_value() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6305,13 +6355,13 @@ inline void TxMessage::set_allocated_value(::std::string* value) {
 
 // optional bytes to = 8;
 inline bool TxMessage::has_to() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void TxMessage::set_has_to() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void TxMessage::clear_has_to() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void TxMessage::clear_to() {
   to_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6444,13 +6494,13 @@ inline void TxMessage::set_contract_prepayment(::google::protobuf::uint64 value)
 
 // optional bytes contract_code = 12;
 inline bool TxMessage::has_contract_code() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void TxMessage::set_has_contract_code() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void TxMessage::clear_has_contract_code() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void TxMessage::clear_contract_code() {
   contract_code_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6510,13 +6560,13 @@ inline void TxMessage::set_allocated_contract_code(::std::string* contract_code)
 
 // optional bytes contract_input = 13;
 inline bool TxMessage::has_contract_input() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void TxMessage::set_has_contract_input() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void TxMessage::clear_has_contract_input() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void TxMessage::clear_contract_input() {
   contract_input_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6576,13 +6626,13 @@ inline void TxMessage::set_allocated_contract_input(::std::string* contract_inpu
 
 // optional bytes sign = 14;
 inline bool TxMessage::has_sign() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void TxMessage::set_has_sign() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void TxMessage::clear_has_sign() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void TxMessage::clear_sign() {
   sign_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());

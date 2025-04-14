@@ -1,7 +1,6 @@
 #include "consensus/zbft/elect_tx_item.h"
 
 #include "common/fts_tree.h"
-#include "consensus/hotstuff/view_block_chain.h"
 #include "elect_tx_item.h"
 #include "protos/get_proto_hash.h"
 #include <bls/bls_utils.h>
@@ -21,82 +20,47 @@ inline bool ElectNodeBalanceDiffCompare(
     return left->stoke_diff < right->stoke_diff;
 }
 
-int ElectTxItem::TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx) {
-    ZJC_DEBUG("pools statistic tag tx consensus coming: %s, nonce: %lu, val: %s", 
-        common::Encode::HexEncode(tx_info.to()).c_str(), 
-        tx_info.nonce(),
-        common::Encode::HexEncode(tx_info.value()).c_str());
-    if (!DefaultTxItem(tx_info, block_tx)) {
-        return consensus::kConsensusError;
-    }
-
-    // change
-    if (tx_info.key().empty() || tx_info.value().empty()) {
-        return consensus::kConsensusError;
-    }
-
-    unique_hash_ = tx_info.key();
-    auto* storage = block_tx->add_storages();
-    storage->set_key(protos::kShardElection);
-    storage->set_value(tx_info.value());
-    return consensus::kConsensusSuccess;
-}
-
 int ElectTxItem::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
-    pools::protobuf::ElectStatistic elect_statistic;
-    if (!elect_statistic.ParseFromString(block_tx.storages(0).value())) {
-        ZJC_DEBUG("elect tx parse elect info failed!");
-        return kConsensusError;
+    for (int32_t storage_idx = 0; storage_idx < block_tx.storages_size(); ++storage_idx) {
+        if (block_tx.storages(storage_idx).key() == protos::kShardElection) {
+            uint64_t* tmp = (uint64_t*)block_tx.storages(storage_idx).value().c_str();
+            pools::protobuf::ElectStatistic elect_statistic;
+            if (!prefix_db_->GetStatisticedShardingHeight(
+                    tmp[0],
+                    tmp[1],
+                    &elect_statistic)) {
+                ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
+                    tmp[0],
+                    tmp[1]);
+                return kConsensusError;
+            }
+
+            ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, "
+                "info sharding: %u, new node size: %u",
+                tmp[0], tmp[1], elect_statistic.sharding_id(), elect_statistic.join_elect_nodes_size());
+            {
+                std::string json_str;
+                google::protobuf::util::JsonPrintOptions options;
+                options.add_whitespace = false;
+                auto st = google::protobuf::util::MessageToJsonString(elect_statistic, &json_str, options);
+                if (st.ok()) {
+                    ZJC_DEBUG("LLLLL elect_statistic:%s", json_str.c_str() );
+                }
+            }
+            return processElect(elect_statistic, view_block, block_tx);
+        }
     }
 
-    ZJC_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, new node size: %u, %s, unique_hash_: %s",
-        elect_statistic.sharding_id(), 
-        elect_statistic.statistic_height(), 
-        elect_statistic.join_elect_nodes_size(),
-        ProtobufToJson(elect_statistic).c_str(),
-        common::Encode::HexEncode(unique_hash_).c_str());
-    uint64_t to_balance = 0;
-    uint64_t to_nonce = 0;
-    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-    auto str_key = block_tx.to() + unique_hash_;
-    std::string val;
-    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
-        return consensus::kConsensusError;
-    }
-
-    block_tx.set_unique_hash(unique_hash_);
-    auto res = processElect(zjc_host, elect_statistic, view_block, block_tx);
-    if (res != consensus::kConsensusSuccess) {
-        return kConsensusError;
-    }
-
-    address::protobuf::KeyValueInfo kv_info;
-    kv_info.set_value("1");
-    kv_info.set_height(to_nonce + 1);
-    zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
-    block_tx.set_unique_hash(unique_hash_);
-    block_tx.set_nonce(to_nonce + 1);
-    ZJC_WARN("success call elect block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-        view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-    acc_balance_map[block_tx.to()]->set_balance(to_balance);
-    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-    prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-    zjc_host.elect_tx_ = &block_tx;
-    return consensus::kConsensusSuccess;
+    ZJC_DEBUG("consensus elect tx error.");
+    return kConsensusError;
 }
 
 int ElectTxItem::processElect(
-        zjcvm::ZjchainHost& zjc_host,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         const view_block::protobuf::ViewBlockItem& view_block,
         shardora::block::protobuf::BlockTx &block_tx) {
@@ -193,7 +157,6 @@ int ElectTxItem::processElect(
     }
 
     CreateNewElect(
-        zjc_host,
         block,
         elect_nodes,
         elect_statistic,
@@ -476,7 +439,8 @@ void ElectTxItem::GetIndexNodes(
         }
 
         auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
-        protos::AddressInfoPtr account_info = view_block_chain_->ChainGetAccountInfo(id);
+        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(
+            id);
         if (account_info == nullptr) {
             assert(false);
             return;
@@ -544,7 +508,7 @@ void ElectTxItem::MiningToken(
     if (!stop_mining_) {
         for (uint32_t i = 0; i < valid_nodes.size(); ++i) {
             auto id = sec_ptr_->GetAddress(valid_nodes[i]->pubkey);
-            protos::AddressInfoPtr account_info = view_block_chain_->ChainGetAccountInfo(id);
+            protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(id);
             if (account_info == nullptr) {
                 ZJC_DEBUG("get account info failed: %s",
                           common::Encode::HexEncode(id).c_str());
@@ -590,7 +554,7 @@ void ElectTxItem::SetPrevElectInfo(
     if (!res) {
         ELECT_ERROR("get prev block error[%d][%d][%lu].",
                     network::kRootCongressNetworkId,
-                    common::kImmutablePoolSize,
+                    common::kRootChainPoolIndex,
                     elect_block.prev_members().prev_elect_height());
         return;
     }
@@ -634,7 +598,6 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
 }
 
 int ElectTxItem::CreateNewElect(
-        zjcvm::ZjchainHost& zjc_host,
         const block::protobuf::Block &block,
         const std::vector<NodeDetailPtr> &elect_nodes,
         const pools::protobuf::ElectStatistic &elect_statistic,
@@ -691,11 +654,6 @@ int ElectTxItem::CreateNewElect(
                   elect_statistic.sharding_id(),
                   elect_block.prev_members().prev_elect_height());
         SetPrevElectInfo(elect_block, block_tx);
-        prefix_db_->SaveElectHeightCommonPk(
-            elect_block.shard_network_id(),
-            elect_block.prev_members().prev_elect_height(),
-            elect_block.prev_members(),
-            zjc_host.db_batch_);
     }
     
     std::string val = elect_block.SerializeAsString();
@@ -736,7 +694,7 @@ int ElectTxItem::CheckWeedout(
     std::vector<TxItem> member_tx_count;
     for (int32_t member_idx = 0; member_idx < statistic_item.tx_count_size(); ++member_idx) {
         max_tx_count = std::max(max_tx_count, statistic_item.tx_count(member_idx));
-        *min_tx_count = (std::min)(*min_tx_count, statistic_item.tx_count(member_idx));
+        *min_tx_count = std::min(*min_tx_count, statistic_item.tx_count(member_idx));
 
         member_tx_count.push_back(std::make_pair(member_idx, statistic_item.tx_count(member_idx)));
     }
@@ -779,7 +737,7 @@ int ElectTxItem::CheckWeedout(
             }
         }
         // 构建节点信息，并更新全局最小节点距离
-        protos::AddressInfoPtr account_info = view_block_chain_->ChainGetAccountInfo((*members)[member_idx]->id);
+        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo((*members)[member_idx]->id);
         if (account_info == nullptr) {
             ZJC_ERROR("get account info failed: %s",
                       common::Encode::HexEncode((*members)[member_idx]->id).c_str());

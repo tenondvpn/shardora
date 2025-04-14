@@ -12,8 +12,6 @@
 #include "common/encode.h"
 #include "common/log.h"
 #include "common/utils.h"
-#include "db/db.h"
-#include "protos/block.pb.h"
 
 namespace shardora {
 
@@ -154,11 +152,6 @@ public:
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     uint64_t view_ = 0;
     bool contract_to_call_dirty_ = false;
-    db::DbWriteBatch db_batch_;
-    const block::protobuf::BlockTx* normal_to_tx_ = nullptr;
-    const block::protobuf::BlockTx* root_create_address_tx_ = nullptr;
-    const block::protobuf::BlockTx* statisitc_tx_ = nullptr;
-    const block::protobuf::BlockTx* elect_tx_ = nullptr;
 
 };
 

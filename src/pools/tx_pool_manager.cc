@@ -184,11 +184,11 @@ void TxPoolManager::SyncCrossPool() {
             for (uint64_t i = ex_height; i < cross_synced_max_heights_[i] && count < 64; ++i, ++count) {
                 ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
                     network::kRootCongressNetworkId,
-                    common::kImmutablePoolSize,
+                    common::kRootChainPoolIndex,
                     i);
                 kv_sync_->AddSyncHeight(
                     network::kRootCongressNetworkId,
-                    common::kImmutablePoolSize,
+                    common::kRootChainPoolIndex,
                     i,
                     sync::kSyncHigh);
             }
@@ -469,12 +469,12 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
-        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, nonce: %lu",
+        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, gid: %s",
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
             common::Encode::HexEncode(tx_msg.to()).c_str(),
             tx_msg.step(),
-            tx_msg.nonce());
+            common::Encode::HexEncode(tx_msg.gid()).c_str());
         switch (tx_msg.step()) {
         case pools::protobuf::kJoinElect:
             HandleElectTx(msg_ptr);
@@ -502,11 +502,11 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             }
             
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu nonce: %lu", 
+            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu gid: %s", 
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
                 common::Encode::HexEncode(tx_msg.to()).c_str(),
                 tx_msg.amount(),
-                tx_msg.nonce());
+                common::Encode::HexEncode(tx_msg.gid()).c_str());
             pool_index = common::GetAddressPoolIndex(
                 tx_msg.to().substr(0, security::kUnicastAddressLength)) % common::kImmutablePoolSize;
             break;
@@ -519,9 +519,9 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local to tx message hash: %s, nonce: %lu",
+            ZJC_DEBUG("get local to tx message hash: %s, gid: %s",
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
-                msg_ptr->header.tx_proto().nonce());
+                common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
             break;
         }
         case pools::protobuf::kRootCross: {
@@ -1051,6 +1051,36 @@ void TxPoolManager::BftCheckInvalidGids(
     }
 }
 
+void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx, bool* has_system_tx) {
+    // uint32_t count = 0;
+    // while (!destroy_) {
+    //     transport::MessagePtr msg_ptr = nullptr;
+    //     if (!msg_queues_[pool_index].pop(&msg_ptr)) {
+    //         break;
+    //     }
+
+    //     ZJC_DEBUG("success pop tx gid: %s, step: %d",
+    //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
+    //         msg_ptr->header.tx_proto().step());
+    //     if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
+    //         if (has_user_tx != nullptr) {
+    //             *has_user_tx = true;
+    //         }
+    //     } else {
+    //         if (has_system_tx != nullptr) {
+    //             *has_system_tx = true;
+    //         }
+    //     }
+
+    //     // auto now_tm_ms = common::TimeUtils::TimestampMs();
+    //     DispatchTx(pool_index, msg_ptr);
+    //     if (!pop_all && ++count >= 1024) {
+    //         break;
+    //     }
+    // }
+    assert(false);
+}
+
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
@@ -1071,35 +1101,35 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         return;
     }
 
+    tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
     // 交易池增加 msg 中的交易
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("trace tx success add local transfer to tx pool: %u, step: %d, addr: %s, nonce: %lu, from pk: %s, to: %s",
+    ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
         pool_index,
         msg_ptr->header.tx_proto().step(),
-        common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
-        tx_ptr->tx_info->nonce(),
+        common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
+        common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
 void TxPoolManager::GetTxSyncToLeader(
-        uint32_t leader_idx, 
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction tx_valid_func) {
-    tx_pool_[pool_index].GetTxSyncToLeader(leader_idx, count, txs, tx_valid_func);    
+        pools::CheckGidValidFunction gid_vlid_func) {
+    tx_pool_[pool_index].GetTxSyncToLeader(count, txs, gid_vlid_func);    
 }
 
 void TxPoolManager::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
-        std::vector<pools::TxItemPtr>& res_map,
-        pools::CheckAddrNonceValidFunction tx_valid_func) {
-    tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, tx_valid_func);    
+        std::map<std::string, TxItemPtr>& res_map,
+        pools::CheckGidValidFunction gid_vlid_func) {
+    tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
 }
 
 }  // namespace pools

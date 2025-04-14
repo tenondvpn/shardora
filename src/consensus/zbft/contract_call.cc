@@ -9,18 +9,16 @@ namespace consensus {
 int ContractCall::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
     auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("contract called now.");
     uint64_t from_balance = 0;
-    uint64_t from_nonce = 0;
     auto preppayment_id = block_tx.to() + block_tx.from();
-    GetTempAccountBalance(zjc_host, preppayment_id, acc_balance_map, &from_balance, &from_nonce);
+    GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance);
     uint64_t src_to_balance = 0;
-    uint64_t src_to_nonce = 0;
-    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
+    GetTempAccountBalance(block_tx.to(), acc_balance_map, &src_to_balance);
     int64_t new_contract_balance = static_cast<int64_t>(src_to_balance);
     uint64_t test_from_balance = from_balance;
     bool check_valid = false;
@@ -30,12 +28,6 @@ int ContractCall::HandleTx(
     do {
         if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price() + block_tx.amount()) {
             block_tx.set_status(kConsensusOutOfGas);
-            // assert(false);
-            break;
-        }
-
-        if (from_nonce + 1 != block_tx.nonce()) {
-            block_tx.set_status(kConsensusNonceInvalid);
             // assert(false);
             break;
         }
@@ -59,6 +51,8 @@ int ContractCall::HandleTx(
             block_tx.set_status(kConsensusOutOfPrepayment);
             break;
         }
+    
+        
 
         gas_limit -= kCallContractDefaultUseGas;
         check_valid = true;
@@ -225,9 +219,9 @@ int ContractCall::HandleTx(
                     trans_item->set_to(destruct_to);
                     trans_item->set_amount(new_contract_balance);
                     new_contract_balance = 0;
-                    ZJC_ERROR("self destruct success nonce: %lu, %s, %s, "
+                    ZJC_ERROR("self destruct success gid: %s, %s, %s, "
                         "beneficiary: %s, amount: %lu, status: %d",
-                        block_tx.nonce(),
+                        common::Encode::HexEncode(block_tx.gid()).c_str(),
                         common::Encode::HexEncode(destruct_from).c_str(),
                         common::Encode::HexEncode(block_tx.to()).c_str(),
                         common::Encode::HexEncode(destruct_to).c_str(),
@@ -237,10 +231,8 @@ int ContractCall::HandleTx(
                     destruct_kv->set_key(protos::kContractDestruct);
                     ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
                         common::Encode::HexEncode(protos::kContractDestruct).c_str());
-                    acc_balance_map[block_tx.to()]->set_balance(0);
-                    acc_balance_map[block_tx.to()]->set_destructed(true);
-                    prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-                // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
+                    acc_balance_map[block_tx.to()] = -1;
+                    // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
                 }
 
             } while (0);
@@ -248,10 +240,8 @@ int ContractCall::HandleTx(
 
         if (block_tx.status() == kConsensusSuccess) {
             from_balance = tmp_from_balance;
-            if (!acc_balance_map[block_tx.to()]->destructed()) {
-                acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
-                acc_balance_map[block_tx.to()]->set_nonce(0);
-                prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+            if (acc_balance_map[block_tx.to()] != -1) {
+                acc_balance_map[block_tx.to()] = block_tx.amount();
             }
         }
 
@@ -272,19 +262,16 @@ int ContractCall::HandleTx(
         block_tx.set_amount(src_to_balance);
     }
     
-    // must prepayment's nonce, not caller or contract
-    acc_balance_map[preppayment_id]->set_balance(from_balance);
-    acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
-    prefix_db_->AddAddressInfo(preppayment_id, *(acc_balance_map[preppayment_id]), zjc_host.db_batch_);
+    acc_balance_map[preppayment_id] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("contract nonce %lu, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
+    ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
         "amount: %ld, to_balance: %ld, contract_balance_add: %ld, "
         "contract new balance: %lu, use time: %lu",
-        block_tx.nonce(),
+        common::Encode::HexEncode(block_tx.gid()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         test_from_balance,
@@ -331,10 +318,6 @@ int ContractCall::SaveContractCreateInfo(
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
-            address::protobuf::KeyValueInfo kv_info;
-            kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
-            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -354,10 +337,6 @@ int ContractCall::SaveContractCreateInfo(
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
-            address::protobuf::KeyValueInfo kv_info;
-            kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
-            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
         }
     }
 
@@ -390,8 +369,8 @@ int ContractCall::SaveContractCreateInfo(
             trans_item->set_to(to_iter->first);
             trans_item->set_amount(to_iter->second);
             other_add += to_iter->second;
-            ZJC_DEBUG("contract call transfer nonce: %lu, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
-                block_tx.nonce(),
+            ZJC_DEBUG("contract call transfer gid: %s, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
+                common::Encode::HexEncode(block_tx.gid()).c_str(),
                 common::Encode::HexEncode(transfer_iter->first).c_str(),
                 common::Encode::HexEncode(to_iter->first).c_str(),
                 to_iter->second,

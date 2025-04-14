@@ -12,7 +12,7 @@ int ElectPlege::gen_elect_plege_GensisBlocks(uint64_t shard_id, block::protobuf:
     auto contract_code = common::Encode::HexDecode(CONTRACTCODE);
 
 
-    tx_info->set_nonce(0);
+    tx_info->set_gid(common::CreateGID(""));
     tx_info->set_from(contract_addr);
     tx_info->set_to(contract_addr);
     tx_info->set_amount(0);
@@ -27,10 +27,9 @@ int ElectPlege::gen_elect_plege_GensisBlocks(uint64_t shard_id, block::protobuf:
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_value(contract_code);
-    ZJC_DEBUG("gen_elect_plege_GensisBlocks contract_addr: %s , nonce: %s ,",
+    ZJC_DEBUG("gen_elect_plege_GensisBlocks contract_addr: %s , gid: %s ,",
                                             common::Encode::HexEncode(contract_addr).c_str(),
-                                            tx_info->nonce());
-    assert(false);
+                                            common::Encode::HexEncode(tx_info->gid()).c_str());
     return kElectSuccess;
 }
 std::string  ElectPlege::toHexString(uint64_t shard_id, size_t width) {

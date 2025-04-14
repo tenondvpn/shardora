@@ -183,6 +183,31 @@ public:
 
         recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
         return 0;
+        // highqc 之前连续三个块都是空交易，则认为 stuck
+        // auto v_block1 = view_block_chain()->HighViewBlock();
+        // if (!v_block1) {
+        //     return 0;
+        // }
+
+        // if (v_block1->block_info().tx_list_size() > 0) {
+        //     return 2;
+        // }
+
+        // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
+        // if (!v_block2) {
+        //     return 0;
+        // }
+
+        // if (v_block2->block_info().tx_list_size() > 0) {
+        //     return 3;
+        // }
+
+        // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
+        // if (v_block3 && v_block3->block_info().tx_list_size() > 0) {
+        //     return 4;
+        // }
+
+        // return 0;   
     }
 
     inline uint64_t max_view() {
@@ -262,7 +287,7 @@ private:
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 3000lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 300lu;
 
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS
@@ -292,7 +317,6 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
     volatile View db_stored_view_ = 0llu;
-    uint64_t prev_sync_latest_view_tm_ms_ = 0;
     
 };
 

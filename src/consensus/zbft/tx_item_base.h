@@ -1,8 +1,6 @@
 #pragma once
 
 #include "block/account_manager.h"
-#include "consensus/hotstuff/hotstuff_utils.h"
-#include "consensus/hotstuff/view_block_chain.h"
 #include "pools/tx_pool.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -27,7 +25,7 @@ protected:
     virtual int HandleTx(
             const view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
-            hotstuff::BalanceAndNonceMap& acc_balance_map,
+            std::unordered_map<std::string, int64_t>& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         return consensus::kConsensusSuccess;
     }
@@ -35,10 +33,7 @@ protected:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        if (!DefaultTxItem(tx_info, block_tx)) {
-            return consensus::kConsensusError;
-        }
-
+        DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty()) {
             return consensus::kConsensusSuccess;
@@ -50,16 +45,15 @@ protected:
         return consensus::kConsensusSuccess;
     }
 
-    bool DefaultTxItem(
+    void DefaultTxItem(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        block_tx->set_nonce(tx_info.nonce());
+        block_tx->set_gid(tx_info.gid());
         block_tx->set_gas_limit(tx_info.gas_limit());
         block_tx->set_gas_price(tx_info.gas_price());
         block_tx->set_step(tx_info.step());
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
-        block_tx->set_unique_hash("");
         if (tx_info.step() == pools::protobuf::kContractCreate ||
             tx_info.step() == pools::protobuf::kCreateLibrary||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||
@@ -87,18 +81,15 @@ protected:
             *tx_debug_info = tx_info.tx_debug(i);
         }
 #endif
-        return true;
     }
 
     int GetTempAccountBalance(
-            zjcvm::ZjchainHost& zjc_host,
             const std::string& id,
-            hotstuff::BalanceAndNonceMap& acc_balance_map,
-            uint64_t* balance,
-            uint64_t* nonce) {
+            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            uint64_t* balance) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            protos::AddressInfoPtr acc_info = zjc_host.view_block_chain_->ChainGetAccountInfo(id);
+            protos::AddressInfoPtr acc_info = account_mgr_->GetAccountInfo(id);
             if (acc_info == nullptr) {
                 ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
@@ -109,16 +100,18 @@ protected:
                 return consensus::kConsensusAccountNotExists;
             }
 
-            acc_balance_map[id] = acc_info;
+            acc_balance_map[id] = acc_info->balance();
             *balance = acc_info->balance();
-            *nonce = acc_info->nonce();
-            ZJC_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
-                common::Encode::HexEncode(id).c_str(), *balance, *nonce);
+            // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
+            //     common::Encode::HexEncode(id).c_str(), *balance);
         } else {
-            *balance = iter->second->balance();
-            *nonce = iter->second->nonce();
-            ZJC_DEBUG("success get temp account balance from temp map: %s, balance: %lu, nonce: %lu",
-                common::Encode::HexEncode(id).c_str(), *balance, *nonce);
+            if (iter->second == -1) {
+                return consensus::kConsensusAccountNotExists;
+            }
+
+            *balance = iter->second;
+            // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
+            //     common::Encode::HexEncode(id).c_str(), *balance);
         }
 
         return kConsensusSuccess;

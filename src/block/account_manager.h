@@ -45,23 +45,15 @@ public:
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
-    std::shared_ptr<address::protobuf::AddressInfo> pools_address_info(uint32_t pool_idx) {
-        if (pool_idx == common::kImmutablePoolSize) {
-            return GetAccountInfo(immutable_pool_addr_);
+    std::shared_ptr<address::protobuf::AddressInfo>& pools_address_info(uint32_t pool_idx) {
+        if (pool_idx == common::kRootChainPoolIndex) {
+            return root_pool_address_info_;
         }
 
-        return GetAccountInfo(pool_base_addrs_[pool_idx]);
+        return pool_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
     const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
-
-    const std::string& pool_base_addrs(uint32_t pool_idx) const {
-        if (pool_idx >= common::kImmutablePoolSize) {
-            return immutable_pool_addr_;
-        }
-
-        return pool_base_addrs_[pool_idx];
-    }
 
 private:
     void SendRefreshHeightsRequest();
@@ -82,6 +74,10 @@ private:
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    // void HandleContractCreateByRootTo(
+    //     const view_block::protobuf::ViewBlockItem& view_block,
+    //     const block::protobuf::BlockTx& tx,
+    //     db::DbWriteBatch& db_batch);
     void HandleLocalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
@@ -103,10 +99,6 @@ private:
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    void HandleDefaultTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
     void UpdateAccountsThread();
     void RunUpdateAccounts();
     void UpdateContractPrepayment(
@@ -124,6 +116,8 @@ private:
     bool inited_{ false };
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
+    std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
     common::ThreadSafeQueue<protos::AddressInfoPtr> thread_update_accounts_queue_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> merge_update_accounts_thread_ = nullptr;
     // common::ThreadSafeQueue<protos::AddressInfoPtr> thread_valid_accounts_queue_[common::kMaxThreadCount];
@@ -134,9 +128,7 @@ private:
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
     volatile bool thread_valid_[common::kMaxThreadCount] = {false};
-    AccountLruMap<1024> account_lru_map_;
-    std::string immutable_pool_addr_;
-    std::string pool_base_addrs_[common::kImmutablePoolSize];
+    AccountLruMap<102400> account_lru_map_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

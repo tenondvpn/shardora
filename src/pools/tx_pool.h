@@ -66,14 +66,13 @@ public:
     int AddTx(TxItemPtr& tx_ptr);
     void GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
-        std::vector<pools::TxItemPtr>& res_map, 
+        std::map<std::string, TxItemPtr>& res_map, 
         uint32_t count, 
-        pools::CheckAddrNonceValidFunction tx_valid_func);
+        pools::CheckGidValidFunction gid_vlid_func);
     void GetTxSyncToLeader(
-        uint32_t leader_idx, 
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction tx_valid_func);
+        pools::CheckGidValidFunction gid_vlid_func);
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void ConsensusAddTxs(const pools::TxItemPtr& tx);
     uint64_t UpdateLatestInfo(
@@ -85,7 +84,7 @@ public:
     void TxOver(view_block::protobuf::ViewBlockItem& view_block);
 
     uint32_t all_tx_size() const {
-        return added_txs_.size() + consensus_added_txs_.size() + tx_map_.size() + consensus_tx_map_.size() + system_tx_map_.size();
+        return added_txs_.size() + consensus_added_txs_.size() + local_tx_map_.size() + local_tx_queue_.size();
     }
     
     uint64_t oldest_timestamp() const {
@@ -168,9 +167,9 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
-    std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
-    std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
-    std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;
+    std::unordered_map<std::string, TxItemPtr> local_tx_map_;
+    std::queue<TxItemPtr> local_tx_queue_;
+    AccountQpsLruMap<10240> account_tx_qps_check_;
 
     // TODO: check it
     common::SpinMutex tx_pool_mutex_;

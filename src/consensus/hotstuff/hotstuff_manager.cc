@@ -87,7 +87,7 @@ int HotstuffManager::Init(
         auto crypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
         auto pcrypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
 #endif
-        auto chain = std::make_shared<ViewBlockChain>();
+        auto chain = std::make_shared<ViewBlockChain>(pool_idx, db_, account_mgr_);
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         auto pacemaker = std::make_shared<Pacemaker>(
                 pool_idx,
@@ -101,16 +101,13 @@ int HotstuffManager::Init(
                         ViewDurationMultiplier),
                 std::bind(&ViewBlockChain::HighQC, chain),
                 std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1));
-        auto acceptor = std::make_shared<BlockAcceptor>();
-        chain->Init(
-            pool_idx, db_, block_mgr_, account_mgr_, 
-            kv_sync, acceptor, pool_mgr, new_block_cache_callback);
-        acceptor->Init(
-            pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
-            contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
-            tm_block_mgr, elect_mgr, chain);
+        auto acceptor = std::make_shared<BlockAcceptor>(
+                pool_idx, security_ptr, account_mgr, elect_info_, vss_mgr,
+                contract_mgr, db, gas_prepayment, pool_mgr, block_mgr,
+                tm_block_mgr, elect_mgr, new_block_cache_callback);
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
+        
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
                 *this,
                 kv_sync, pool_idx, leader_rotation, chain,
@@ -376,42 +373,20 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            auto tx_valid_func = [&](
-                    const address::protobuf::AddressInfo& addr_info, 
-                    pools::protobuf::TxMessage& tx_info) -> int {
+            auto gid_valid_func = [&](const std::string& gid) -> bool {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
                     return false;
                 }
                 
-                if (pools::IsUserTransaction(tx_info.step())) {
-                    return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
-                        addr_info.addr(), 
-                        tx_info.nonce(), 
-                        latest_block->qc().view_block_hash());
-                }
-                
-                zjcvm::ZjchainHost zjc_host;
-                zjc_host.parent_hash_ = latest_block->qc().view_block_hash();
-                zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
-                std::string val;
-                if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                    ZJC_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
-                        common::Encode::HexEncode(tx_info.to()).c_str(),
-                        common::Encode::HexEncode(tx_info.key()).c_str(),
-                        tx_info.step());
-                    return 1;
-                }
-
-                ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-                    common::Encode::HexEncode(tx_info.to()).c_str(),
-                    common::Encode::HexEncode(tx_info.key()).c_str());
-                return 0;
+                return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxGidValid(
+                    gid, 
+                    latest_block->qc().view_block_hash());
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
                 prev_check_timer_single_tm_ms_[pool_idx] = now_tm_ms;
-                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, tx_valid_func);
+                has_system_tx = block_wrapper(pool_idx)->HasSingleTx(msg_ptr, gid_valid_func);
                 ZJC_DEBUG("pool: %d check hash system tx: %d", pool_idx, has_system_tx);
             }
 
@@ -485,17 +460,14 @@ void HotstuffManager::PopPoolsMessage() {
                         from_id = security_ptr_->GetAddress(tx->pubkey());
                     }
 
-                    uint32_t pool_index = common::kInvalidPoolIndex;
                     if (tx->step() == pools::protobuf::kContractExcute) {
-                        pool_index = common::GetAddressPoolIndex(tx->to());
-                        address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
+                        address_info = account_mgr_->GetAccountInfo(tx->to());
                     } else {
-                        pool_index = common::GetAddressPoolIndex(tx->to());
-                        address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(from_id);
+                        address_info = account_mgr_->GetAccountInfo(from_id);
                     }
             
                     if (!address_info) {
-                        ZJC_WARN("get address failed nonce: %lu", tx->nonce());
+                        ZJC_WARN("get address failed gid: %s", common::Encode::HexEncode(tx->gid()).c_str());
                         continue;
                     }
             
@@ -565,11 +537,11 @@ void HotstuffManager::PopPoolsMessage() {
                     }
                     
                     if (tx_ptr != nullptr) {
-                        auto tx_hash = pools::GetTxMessageHash(*tx);
+                        tx_ptr->unique_tx_hash = pools::GetTxMessageHash(*tx);
                         if (tx_ptr->tx_info->pubkey().size() == 64u) {
                             security::GmSsl gmssl;
                             if (gmssl.Verify(
-                                    tx_hash,
+                                    tx_ptr->unique_tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                                 assert(false);
@@ -579,7 +551,7 @@ void HotstuffManager::PopPoolsMessage() {
                         } else if (tx_ptr->tx_info->pubkey().size() > 128u) {
                             security::Oqs oqs;
                             if (oqs.Verify(
-                                    tx_hash,
+                                    tx_ptr->unique_tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                                 assert(false);
@@ -588,7 +560,7 @@ void HotstuffManager::PopPoolsMessage() {
                             }
                         } else {
                             if (security_ptr_->Verify(
-                                    tx_hash,
+                                    tx_ptr->unique_tx_hash,
                                     tx_ptr->tx_info->pubkey(),
                                     tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
                                 assert(false);

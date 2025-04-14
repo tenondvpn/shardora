@@ -37,7 +37,7 @@ public:
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& block,
         zjcvm::ZjchainHost& zjchost,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
 
 private:
@@ -57,7 +57,7 @@ private:
     void GetTempPerpaymentBalance(
         const view_block::protobuf::ViewBlockItem& block,
         const block::protobuf::BlockTx& block_tx,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
         uint64_t* balance);
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;

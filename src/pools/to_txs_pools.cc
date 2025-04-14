@@ -157,8 +157,8 @@ void ToTxsPools::StatisticToInfo(
     //     common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list.size());
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            ZJC_INFO("tx status error: %d, nonce: %lu, net: %u, pool: %u, height: %lu, hash: %s",
-                tx_list[i].status(), tx_list[i].nonce(),
+            ZJC_INFO("tx status error: %d, gid: %s, net: %u, pool: %u, height: %lu, hash: %s",
+                tx_list[i].status(), common::Encode::HexEncode(tx_list[i].gid()).c_str(),
                 view_block.qc().network_id(), view_block.qc().pool_index(), block.height(),
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
 //                 assert(false);
@@ -257,10 +257,10 @@ void ToTxsPools::HandleContractExecute(
 void ToTxsPools::HandleContractGasPrepayment(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
-    ZJC_DEBUG("now get contract address: %s, from: %s, nonce: %lu, prepayment: %lu, amount: %lu",
+    ZJC_DEBUG("now get contract address: %s, from: %s, gid: %s, prepayment: %lu, amount: %lu",
         common::Encode::HexEncode(tx.to()).c_str(),
         common::Encode::HexEncode(tx.from()).c_str(),
-        tx.nonce(),
+        common::Encode::HexEncode(tx.gid()).c_str(),
         tx.contract_prepayment(),
         tx.amount());
     if (tx.amount() > 0) {
@@ -273,18 +273,18 @@ void ToTxsPools::HandleContractGasPrepayment(
         protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
-            ZJC_DEBUG("success get contract address: %s, from: %s, nonce: %lu, "
+            ZJC_DEBUG("success get contract address: %s, from: %s, gid: %s, "
                 "prepayment: %lu, sharding_id: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 common::Encode::HexEncode(tx.from()).c_str(),
-                tx.nonce(),
+                common::Encode::HexEncode(tx.gid()).c_str(),
                 tx.contract_prepayment(),
                 sharding_id);
         } else {
-            ZJC_DEBUG("failed get contract address: %s, from: %s, nonce: %lu, prepayment: %lu",
+            ZJC_DEBUG("failed get contract address: %s, from: %s, gid: %s, prepayment: %lu",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 common::Encode::HexEncode(tx.from()).c_str(),
-                tx.nonce(),
+                common::Encode::HexEncode(tx.gid()).c_str(),
                 tx.contract_prepayment());
         }
 
@@ -662,34 +662,12 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
         to_heights.add_heights(cons_height);
     }
 
-    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
-    {
-        common::AutoSpinLock lock(prev_to_heights_mutex_);
-        prev_to_heights = prev_to_heights_;
-    }
-
     if (!valid) {
         ZJC_DEBUG("final leader get to heights error, pool: %u, height: %lu", 0, 0);
         return kPoolsError;
     }
 
-    for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
-        if (prev_to_heights->heights(i) > to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
-                i, prev_to_heights->heights(i), to_heights.heights(i));
-            return kPoolsError;
-        }
-    }
-
-    for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
-        if (prev_to_heights->heights(i) < to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
-                i, prev_to_heights->heights(i), to_heights.heights(i));
-            return kPoolsSuccess;
-        }
-    }
-
-    return kPoolsError;
+    return kPoolsSuccess;
 }
 
 void ToTxsPools::HandleCrossShard(
@@ -810,7 +788,6 @@ void ToTxsPools::HandleCrossShard(
 int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
-        pools::protobuf::ShardToTxItem* prev_to_heights,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::ToTxMessage& to_tx) {
 #ifdef TEST_NO_CROSS
@@ -824,38 +801,14 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
+    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights = nullptr;
     {
         common::AutoSpinLock lock(prev_to_heights_mutex_);
-        *prev_to_heights = *prev_to_heights_;
+        prev_to_heights = prev_to_heights_;
     }
 
-    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
-        if (prev_to_heights->heights(i) > leader_to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
-                i, prev_to_heights->heights(i), leader_to_heights.heights(i));
-            return kPoolsError;
-        }
-    }
-
-    bool heights_valid = false;
-    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
-        if (prev_to_heights->heights(i) < leader_to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
-                i, prev_to_heights->heights(i), leader_to_heights.heights(i));
-            heights_valid = true;
-            break;
-        }
-    }
-
-    ZJC_DEBUG("sharding id valid: %d, %d, statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
-        sharding_id, 
-        heights_valid,
-        ProtobufToJson(*prev_to_heights).c_str(), 
-        ProtobufToJson(leader_to_heights).c_str());
-    if (!heights_valid) {
-        return kPoolsError;
-    }
-
+    ZJC_DEBUG("statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+        ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     // std::unordered_set<CrossItem, CrossItemRecordHash> cross_set;
     for (int32_t pool_idx = 0; pool_idx < leader_to_heights.heights_size(); ++pool_idx) {
         uint64_t min_height = 1llu;
@@ -874,13 +827,13 @@ int ToTxsPools::CreateToTxWithHeights(
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
         auto& height_map = network_txs_pools_[pool_idx];
-        // ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
-        //     pool_idx, min_height, max_height);
+        ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
+            pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
-                // assert(false);
+                assert(false);
                 return kPoolsError;
             }
 

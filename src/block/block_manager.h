@@ -55,20 +55,19 @@ public:
         DbBlockCallback new_block_callback);
     // just for genesis create new block
     void GenesisNewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
-        db::DbWriteBatch& db_batch);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    void ConsensusAddBlock(const std::shared_ptr<hotstuff::ViewBlockInfo>& block_item);
+    void ConsensusAddBlock(const BlockToDbItemPtr& block_item);
     int GetBlockWithHeight(
         uint32_t network_id,
         uint32_t pool_index,
         uint64_t height,
         view_block::protobuf::ViewBlockItem& block_item);
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
-    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string&);
+    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
@@ -87,7 +86,8 @@ public:
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction tx_valid_func);
+        pools::CheckGidValidFunction gid_valid_fn);
+    std::string GetToTxGid();
 
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
@@ -107,9 +107,9 @@ public:
 
 private:
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
-    bool HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
-    bool HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
-    bool HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
+    bool HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    bool HasStatisticTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
+    bool HasElectTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn);
     void HandleAllNewBlock();
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& message);
@@ -117,25 +117,27 @@ private:
         const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();
     void AddNewBlock(
-        const std::shared_ptr<hotstuff::ViewBlockInfo>& block_item);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
+        db::DbWriteBatch& db_batch);
     void HandleNormalToTx(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
-        const block::protobuf::BlockTx& tx);
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleStatisticTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx);
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleElectTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx);
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void ConsensusShardHandleRootCreateAddress(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleLocalNormalToTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs,
         const block::protobuf::BlockTx& tx);
     void createConsensusLocalToTxs(
-        const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map);
     void createContractCreateByRootToTxs(
@@ -145,15 +147,18 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void AddMiningToken(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        const std::string& block_hash,
         const elect::protobuf::ElectBlock& elect_block);
+    void AddPoolStatisticTag(uint64_t height);
     void RootHandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        pools::protobuf::ToTxMessage& to_txs);
+        pools::protobuf::ToTxMessage& to_txs,
+        db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx,
-        const pools::protobuf::ElectStatistic& elect_statistic);
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        db::DbWriteBatch& db_batch);
     void CreateStatisticTx();
     void PopTxTicker();
 
@@ -176,7 +181,7 @@ private:
     static const uint32_t kEachTimeHandleBlocksCount = 64u;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<hotstuff::ViewBlockInfo>>* consensus_block_queues_ = nullptr;
+    common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
@@ -198,6 +203,7 @@ private:
     uint64_t prev_timeblock_tm_sec_ = 0;
     uint64_t latest_timeblock_tm_sec_ = 0;
     uint64_t prev_timeblock_height_ = 0;
+    uint64_t consensused_timeblock_height_ = 0;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
     common::MembersPtr latest_members_ = nullptr;

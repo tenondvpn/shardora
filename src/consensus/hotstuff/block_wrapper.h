@@ -32,7 +32,7 @@ public:
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) = 0;
     virtual bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
-        pools::CheckAddrNonceValidFunction tx_valid_func) = 0;
+        pools::CheckGidValidFunction gid_valid_fn) = 0;
 };
 
 class BlockWrapper : public IBlockWrapper {
@@ -61,49 +61,25 @@ public:
     // 是否存在内置交易
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
-        pools::CheckAddrNonceValidFunction tx_valid_func) override;
+        pools::CheckGidValidFunction gid_valid_fn) override;
     void GetTxSyncToLeader(
             uint32_t leader_idx, 
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
-        auto tx_valid_func = [&](
-                const address::protobuf::AddressInfo& addr_info, 
-                pools::protobuf::TxMessage& tx_info) -> bool {
-            if (pools::IsUserTransaction(tx_info.step())) {
-                return view_block_chain->CheckTxNonceValid(
-                    addr_info.addr(), 
-                    tx_info.nonce(), 
-                    parent_hash);
-            }
-            
-            zjcvm::ZjchainHost zjc_host;
-            zjc_host.parent_hash_ = parent_hash;
-            zjc_host.view_block_chain_ = view_block_chain;
-            std::string val;
-            if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                ZJC_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
-                    common::Encode::HexEncode(tx_info.to()).c_str(),
-                    common::Encode::HexEncode(tx_info.key()).c_str(),
-                    tx_info.step());
-                return 1;
-            }
-
-            ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str());
-            return 0;
+        pools::CheckGidValidFunction gid_valid_func = [&](const std::string& gid) -> bool {
+            return view_block_chain->CheckTxGidValid(gid, parent_hash);
         };
 
-        txs_pools_->GetTxSyncToLeader(leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, txs, tx_valid_func);
+        txs_pools_->GetTxSyncToLeader(pool_idx_, consensus::kSyncToLeaderTxCount, txs, gid_valid_func);
     }
 
 private:
     Status LeaderGetTxsIdempotently(
             const transport::MessagePtr& msg_ptr, 
             std::shared_ptr<consensus::WaitingTxsItem>& txs_ptr,
-            pools::CheckAddrNonceValidFunction tx_valid_func) {
-        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, tx_valid_func);
+            pools::CheckGidValidFunction gid_vlid_func) {
+        txs_ptr = txs_pools_->LeaderGetValidTxsIdempotently(msg_ptr, pool_idx_, gid_vlid_func);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         return txs_ptr != nullptr ? Status::kSuccess : Status::kWrapperTxsEmpty;
     }
