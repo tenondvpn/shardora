@@ -18,8 +18,6 @@ RUN mkdir -p /root/shardora/
 COPY ./cbuild_Debug /root/shardora/
 COPY ./zjnodes_local /root/shardora/
 COPY ./docker_simple_dep.sh /root/shardora/
-COPY ./shards* /root/shardora/
-COPY ./root_nodes /root/shardora/
 ENV LD_LIBRARY_PATH=/root/lib64/:$LD_LIBRARY_PATH
 WORKDIR /root/node
 
