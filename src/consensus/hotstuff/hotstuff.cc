@@ -1478,7 +1478,12 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     assert(v_block1->parent_hash() != qc.view_block_hash());
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
-        ZJC_DEBUG("Failed get v block 2 ref: %s", common::Encode::HexEncode(v_block1->parent_hash()).c_str());
+        ZJC_DEBUG("Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(), 
+            qc.network_id(), 
+            qc.pool_index(), 
+            v_block1->qc().view() - 1,
+            view_block_chain_->String().c_str());
         if (v_block1->qc().view() > 0 && !view_block_chain()->view_commited(
                 v_block1->qc().network_id(), v_block1->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
@@ -1511,11 +1516,12 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
     if (!v_block3_info) {
-        ZJC_DEBUG("Failed get v block 3 block hash: %s, %u_%u_%lu", 
+        ZJC_DEBUG("Failed get v block 3 block hash: %s, %u_%u_%lu, now chain: %s", 
             common::Encode::HexEncode(v_block2->parent_hash()).c_str(), 
             qc.network_id(), 
             qc.pool_index(), 
-            v_block1->block_info().height());
+            v_block2->qc().view() - 1,
+            view_block_chain_->String().c_str());
         if (v_block2->qc().view() > 0 && !view_block_chain()->view_commited(
                 v_block2->qc().network_id(), v_block2->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
@@ -2255,6 +2261,10 @@ void Hotstuff::TryRecoverFromStuck(
                 latest_qc_item_ptr_->network_id(), 
                 latest_qc_item_ptr_->pool_index(), 
                 latest_qc_item_ptr_->view());
+        }
+
+        if (latest_propose_msg_tm_ms_ > prev_sync_latest_view_tm_ms_) {
+            prev_sync_latest_view_tm_ms_ = latest_propose_msg_tm_ms_;
         }
 
         return;

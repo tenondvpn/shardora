@@ -96,7 +96,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
         vss_random, height, timeblock_height, timestamp,
         common::Encode::HexEncode(msg).c_str());
-    return common::Hash::keccak256(msg);
+    return hash;
 }
 
 } // namespace consensus

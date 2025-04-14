@@ -675,7 +675,8 @@ int ShardStatistic::StatisticWithHeights(
                 std::to_string(titer->second.statistic_min_height) + ":" + 
                 std::to_string(titer->second.statistic_max_height) + ",";
         }
-        ZJC_DEBUG("pool not full statistic height: %lu, now: %u, all: %u, now_size: %u, %s, latest_statisticed_height_: %lu", 
+        ZJC_DEBUG("pool not full statistic height: %lu, now: %u, all: %u, "
+            "now_size: %u, %s, latest_statisticed_height_: %lu", 
             piter->first,
             piter->second.size(), 
             common::kInvalidPoolIndex, 
