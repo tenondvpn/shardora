@@ -20,7 +20,7 @@ COPY ./cbuild_Debug /root/shardora/cbuild_Debug
 COPY ./zjnodes_local /root/shardora/zjnodes_local
 COPY ./docker_simple_dep.sh /root/shardora/
 ENV LD_LIBRARY_PATH=/root/lib64/:$LD_LIBRARY_PATH
-WORKDIR /root/node
+WORKDIR /root/shardora
 
 # 创建一个默认的命令来查看系统状态
 CMD ["sh", "docker_simple_dep.sh"]
