@@ -13,6 +13,7 @@ RUN yum groupinstall -y "Development Tools" && \
     yum install -y sshpass && \
     yum clean all
 
+RUN mkdir -p /root/shardora/
 # 设置工作目录
 COPY /root/shardora/cbuild_Debug /root/shardora/cbuild_Debug
 COPY /root/shardora/zjnodes_local /root/shardora/zjnodes_local
