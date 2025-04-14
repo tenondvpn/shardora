@@ -14,9 +14,11 @@ RUN yum groupinstall -y "Development Tools" && \
     yum clean all
 
 # 设置工作目录
-COPY . /root
+COPY /root/shardora/cbuild_Debug /root/shardora/cbuild_Debug
+COPY /root/shardora/zjnodes_local /root/shardora/zjnodes_local
+COPY /root/shardora/docker_simple_dep.sh /root/shardora/
 ENV LD_LIBRARY_PATH=/root/lib64/:$LD_LIBRARY_PATH
 WORKDIR /root/node
 
 # 创建一个默认的命令来查看系统状态
-CMD ["sh", "run_container_node.sh"]
+CMD ["sh", "docker_simple_dep.sh"]
