@@ -8,13 +8,13 @@ VALGRIND=''
 now_dir=`pwd`
 cd /root/shardora && sh build.sh a $TARGET
 cd $now_dir
-sudo cp -rf /root/shardora/cbuild_$TARGET ./
-sudo cp -rf /root/shardora/zjnodes ./
-sudo cp -rf /root/shardora/zjnodes_local ./
-sudo rm -rf /root/zjnodes
-sudo cp -rf ./zjnodes_local /root/zjnodes
-sudo cp -rf ./deploy /root
-sudo cp ./fetch.sh /root
+cp -rf /root/shardora/cbuild_$TARGET ./
+cp -rf /root/shardora/zjnodes ./
+cp -rf /root/shardora/zjnodes_local ./
+rm -rf /root/zjnodes
+cp -rf ./zjnodes_local /root/zjnodes
+cp -rf ./deploy /root
+cp ./fetch.sh /root
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
 cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
@@ -22,10 +22,10 @@ cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
 mkdir -p /root/zjnodes/zjchain/log
 
 
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
 
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 nodes_count=$1
 if [[ "$nodes_count" -eq "" ]]; then
    nodes_count=4 

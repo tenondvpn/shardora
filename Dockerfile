@@ -15,8 +15,8 @@ RUN yum groupinstall -y "Development Tools" && \
 
 RUN mkdir -p /root/shardora/
 # 设置工作目录
-COPY ./cbuild_Debug /root/shardora/
-COPY ./zjnodes_local /root/shardora/
+COPY ./cbuild_Debug /root/shardora/cbuild_Debug
+COPY ./zjnodes_local /root/shardora/zjnodes_local
 COPY ./docker_simple_dep.sh /root/shardora/
 ENV LD_LIBRARY_PATH=/root/lib64/:$LD_LIBRARY_PATH
 WORKDIR /root/node
