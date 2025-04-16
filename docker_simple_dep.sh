@@ -4,7 +4,7 @@ killall -9 txcli
 TARGET=$2
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
-local_ip=`hostname -i`
+local_ip=$(ip -4 addr show scope global | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
 #sh build.sh a $TARGET
 rm -rf /root/zjnodes
 cp -rf ./zjnodes_local /root/zjnodes
@@ -14,9 +14,6 @@ cp -rf ./zjnodes_local/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
 cp -rf ./zjnodes_local/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
 mkdir -p /root/zjnodes/zjchain/log
 
-
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
 
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 nodes_count=$1
