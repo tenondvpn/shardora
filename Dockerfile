@@ -11,12 +11,23 @@ RUN yum groupinstall -y "Development Tools" && \
     yum install -y glibc-devel glibc-headers && \
     yum install -y openssl-devel && \
     yum install -y sshpass && \
+    yum install -y net-tools && \
+    yum install -y gdb && \
+    yum install -y iproute && \
     yum clean all
 
+RUN mkdir -p /root/shardora/cbuild_Debug
+RUN mkdir -p /root/shardora/cbuild_Release
+RUN mkdir -p /root/shardora/zjnodes_local
 # 设置工作目录
-COPY . /root
-ENV LD_LIBRARY_PATH=/root/lib64/:$LD_LIBRARY_PATH
-WORKDIR /root/node
+COPY ./cbuild_Release/zjchain /root/shardora/cbuild_Release/zjchain
+COPY ./cbuild_Debug/zjchain /root/shardora/cbuild_Debug/zjchain
+COPY ./zjnodes_local /root/shardora/zjnodes_local
+COPY ./docker_simple_dep.sh /root/shardora/
+COPY ./init_accounts3 /root/shardora/
+COPY ./shards3 /root/shardora/
+COPY ./root_nodes /root/shardora/
+WORKDIR /root/shardora
 
 # 创建一个默认的命令来查看系统状态
-CMD ["sh", "run_container_node.sh"]
+# CMD ["sh", "docker_simple_dep.sh 4 Debug"]

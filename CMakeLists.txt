@@ -183,6 +183,7 @@ set(LINK_ARGS
     ${LINK_YAML}
     pthread
     gmp
+    -static-libstdc++
 )
 
 target_link_libraries(pkicli ${LINK_ARGS})
