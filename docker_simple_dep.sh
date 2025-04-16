@@ -5,19 +5,12 @@ TARGET=Release
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
 #sh build.sh a $TARGET
-now_dir=`pwd`
-# cd /root/shardora && sh build.sh a $TARGET
-cd $now_dir
-cp -rf /root/shardora/cbuild_$TARGET ./
-cp -rf /root/shardora/zjnodes_local ./
 rm -rf /root/zjnodes
 cp -rf ./zjnodes_local /root/zjnodes
-cp -rf ./deploy /root
-cp ./fetch.sh /root
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
-cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
-cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
+cp -rf ./zjnodes_local/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
+cp -rf ./zjnodes_local/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
 mkdir -p /root/zjnodes/zjchain/log
 
 
