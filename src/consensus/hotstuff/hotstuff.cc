@@ -1723,8 +1723,6 @@ void Hotstuff::HandleSyncedViewBlock(
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         transport::MessagePtr msg_ptr;
-        TryCommit(msg_ptr, *latest_qc_item_ptr_, 99999999lu);
-        TryCommit(msg_ptr, vblock->qc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 vblock->qc().view() >= latest_qc_item_ptr_->view()) {
 
@@ -1732,6 +1730,8 @@ void Hotstuff::HandleSyncedViewBlock(
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
         }
+        TryCommit(msg_ptr, *latest_qc_item_ptr_, 99999999lu);
+        TryCommit(msg_ptr, vblock->qc(), 99999999lu);
     } else {
         view_block_chain()->CommitSynced(vblock);
     }
