@@ -6,10 +6,9 @@ TARGET=Release
 VALGRIND=''
 #sh build.sh a $TARGET
 now_dir=`pwd`
-cd /root/shardora && sh build.sh a $TARGET
+# cd /root/shardora && sh build.sh a $TARGET
 cd $now_dir
 cp -rf /root/shardora/cbuild_$TARGET ./
-cp -rf /root/shardora/zjnodes ./
 cp -rf /root/shardora/zjnodes_local ./
 rm -rf /root/zjnodes
 cp -rf ./zjnodes_local /root/zjnodes
