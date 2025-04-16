@@ -13,6 +13,7 @@ RUN yum groupinstall -y "Development Tools" && \
     yum install -y sshpass && \
     yum install -y net-tools && \
     yum install -y gdb && \
+    yum install -y iproute && \
     yum clean all
 
 RUN mkdir -p /root/shardora/cbuild_Debug
