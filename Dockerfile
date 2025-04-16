@@ -11,6 +11,7 @@ RUN yum groupinstall -y "Development Tools" && \
     yum install -y glibc-devel glibc-headers && \
     yum install -y openssl-devel && \
     yum install -y sshpass && \
+    yum install -y net-tools && \
     yum clean all
 
 RUN mkdir -p /root/shardora/cbuild_Debug
