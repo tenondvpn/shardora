@@ -22,4 +22,4 @@ COPY ./docker_simple_dep.sh /root/shardora/
 WORKDIR /root/shardora
 
 # 创建一个默认的命令来查看系统状态
-CMD ["sh", "docker_simple_dep.sh"]
+CMD ["sh", "docker_simple_dep.sh 4"]
