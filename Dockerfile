@@ -14,12 +14,14 @@ RUN yum groupinstall -y "Development Tools" && \
     yum clean all
 
 RUN mkdir -p /root/shardora/cbuild_Debug
+RUN mkdir -p /root/shardora/cbuild_Release
 RUN mkdir -p /root/shardora/zjnodes_local
 # 设置工作目录
+COPY ./cbuild_Release/zjchain /root/shardora/cbuild_Release/zjchain
 COPY ./cbuild_Debug/zjchain /root/shardora/cbuild_Debug/zjchain
 COPY ./zjnodes_local /root/shardora/zjnodes_local
 COPY ./docker_simple_dep.sh /root/shardora/
 WORKDIR /root/shardora
 
 # 创建一个默认的命令来查看系统状态
-CMD ["sh", "docker_simple_dep.sh 4"]
+CMD ["sh", "docker_simple_dep.sh 4 Debug"]
