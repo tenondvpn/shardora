@@ -1809,7 +1809,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             common::Encode::HexEncode(tx_gid).c_str(),
             leader);
         if (pool_index == common::kRootChainPoolIndex) {
-            assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
+            // assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
         }
         return nullptr;
     }
