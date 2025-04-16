@@ -76,21 +76,21 @@ public:
     static CRS SETUP(int lambda) {
      //   long long p = CryptoUtils::sieve_of_eratosthenes(lambda);
         long long p =57697;
-        long long a = CryptoUtils::rand_int(2, p-2);
+        long long a = 57654; // CryptoUtils::rand_int(2, p-2);
         long long g = 2;
-        long long b = CryptoUtils::rand_int(2, p-2);
+        long long b = 57614;  // CryptoUtils::rand_int(2, p-2);
         long long h = CryptoUtils::mod_pow(g, b, p);
         long long Z = CryptoUtils::mod_pow(g, a, p);
 
-        long long t0 = CryptoUtils::rand_int(2, p-2);
-        long long t1 = CryptoUtils::rand_int(2, p-2);
+        long long t0 = 51614;  // CryptoUtils::rand_int(2, p-2);
+        long long t1 = 51114;  // CryptoUtils::rand_int(2, p-2);
         long long A0 = CryptoUtils::mod_pow(g, t0, p);
         long long A1 = CryptoUtils::mod_pow(g, t1, p);
         long long B0 = CryptoUtils::mod_pow(g, a + t0*b, p);
         long long B1 = CryptoUtils::mod_pow(g, a + t1*b, p);
 
-        long long u0 = CryptoUtils::rand_int(2, p-2);
-        long long u1 = CryptoUtils::rand_int(2, p-2);
+        long long u0 = 58914;  // CryptoUtils::rand_int(2, p-2);
+        long long u1 = 57914;  // CryptoUtils::rand_int(2, p-2);
         long long U0 = CryptoUtils::mod_pow(g, u0, p);
         long long U1 = CryptoUtils::mod_pow(g, u1, p);
         long long W01 = CryptoUtils::mod_pow(A0, u1, p);
@@ -103,7 +103,7 @@ public:
 
     static pair<long long, tuple<long long, long long>> KEYGEN(const CRS& crs, int i) {
         long long p = crs.p;
-        long long r = CryptoUtils::rand_int(2, p-2);
+        long long r = 52914;  // CryptoUtils::rand_int(2, p-2);
         long long g = crs.g;
         long long T = CryptoUtils::mod_pow(g, r, p);
 
@@ -146,9 +146,9 @@ public:
             long long U1 = get<5>(mpk);
 
             // 生成随机参数
-            long long q0 = CryptoUtils::rand_int(2, p-2);
-            long long q1 = CryptoUtils::rand_int(2, p-2);
-            long long h1 = CryptoUtils::rand_int(2, p-2);
+            long long q0 = 47914;  // CryptoUtils::rand_int(2, p-2);
+            long long q1 = 47915;  // CryptoUtils::rand_int(2, p-2);
+            long long h1 = 47916;  // CryptoUtils::rand_int(2, p-2);
 
             // 计算中间值
             long long s = (q0 + q1) % p;
@@ -251,7 +251,7 @@ public:
         long long B_inv = CryptoUtils::inverse(B, p);
         long long Ask = CryptoUtils::mod_pow(A, sk, p);
 
-        long long o = CryptoUtils::rand_int(2, p-2);
+        long long o = 37915;  // CryptoUtils::rand_int(2, p-2);
         long long rk1 = CryptoUtils::mod_pow((Ask * B_inv) % p, o, p);
         long long rk2 = CryptoUtils::mod_pow(A, o, p);
 
