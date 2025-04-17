@@ -313,7 +313,7 @@ public:
     // 包含ENCRYPT, DEC, RKGEN, REENC, DECRE等完整方法
 
 
-int test_rabpre_main() {
+static inline int test_rabpre_main() {
     try {
         // 参数初始化
         auto crs = Rabpre::SETUP(32);
