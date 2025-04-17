@@ -91,6 +91,9 @@ int ElectTxItem::HandleTx(
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+    ZJC_DEBUG("success add addr: %s, value: %s", 
+        common::Encode::HexEncode(from).c_str(), 
+        ProtobufToJson(*(acc_balance_map[from])).c_str());
     zjc_host.elect_tx_ = &block_tx;
     return consensus::kConsensusSuccess;
 }

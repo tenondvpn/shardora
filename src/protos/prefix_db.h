@@ -118,9 +118,6 @@ public:
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-        ZJC_DEBUG("success add addr: %s, value: %s", 
-            common::Encode::HexEncode(kAddressPrefix + addr).c_str(), 
-            ProtobufToJson(addr_info).c_str());
     }
 
     void AddNowElectHeight2Plege(const std::string& addr , const uint64_t height , db::DbWriteBatch& db_batch) {

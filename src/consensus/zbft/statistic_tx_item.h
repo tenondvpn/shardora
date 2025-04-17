@@ -65,22 +65,6 @@ public:
             return consensus::kConsensusError;
         }
 
-        address::protobuf::KeyValueInfo kv_info;
-        kv_info.set_value("1");
-        kv_info.set_height(to_nonce + 1);
-        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-        prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
-        block_tx.set_unique_hash(unique_hash_);
-        ZJC_WARN("success call statistic tx pool: %d, view: %lu, "
-            "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
-            view_block.qc().pool_index(), view_block.qc().view(),
-            to_nonce, block_tx.nonce(),
-            common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(unique_hash_).c_str());
-        acc_balance_map[block_tx.to()]->set_balance(to_balance);
-        acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
-        prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-
         pools::protobuf::ElectStatistic elect_statistic;
         if (!elect_statistic.ParseFromString(block_tx.storages(0).value())) {
             assert(false);
@@ -91,6 +75,26 @@ public:
             ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
             return consensus::kConsensusError;
         }
+
+        address::protobuf::KeyValueInfo kv_info;
+        kv_info.set_value("1");
+        kv_info.set_height(to_nonce + 1);
+        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
+        prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
+        block_tx.set_unique_hash(unique_hash_);
+        block_tx.set_nonce(to_nonce + 1);
+        ZJC_WARN("success call statistic tx pool: %d, view: %lu, "
+            "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
+            view_block.qc().pool_index(), view_block.qc().view(),
+            to_nonce, block_tx.nonce(),
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            common::Encode::HexEncode(unique_hash_).c_str());
+        acc_balance_map[block_tx.to()]->set_balance(to_balance);
+        acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
+        prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+        ZJC_DEBUG("success add addr: %s, value: %s", 
+            common::Encode::HexEncode(block_tx.to()).c_str(), 
+            ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
 
         pools::protobuf::PoolStatisticTxInfo pool_st_info;
         pool_st_info.set_height(elect_statistic.statistic_height());
