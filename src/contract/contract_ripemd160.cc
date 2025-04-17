@@ -367,20 +367,24 @@ void Ripemd160::SaveAgg(
     char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
-    auto mpk_size = std::tuple_size<decltype(mpk)>::value;
-    for (uint32_t i = 0; i < mpk_size; ++i) {
-        ldata[idx++] = std::get<i>(mpk);
-    }
+    ldata[idx++] = std::get<0>(mpk);
+    ldata[idx++] = std::get<1>(mpk);
+    ldata[idx++] = std::get<2>(mpk);
+    ldata[idx++] = std::get<3>(mpk);
+    ldata[idx++] = std::get<4>(mpk);
+    ldata[idx++] = std::get<5>(mpk);
 
-    auto hsk0_size = std::tuple_size<decltype(hsk0)>::value;
-    for (uint32_t i = 0; i < hsk0_size; ++i) {
-        ldata[idx++] = std::get<i>(hsk0);
-    }
+    ldata[idx++] = std::get<0>(hsk0);
+    ldata[idx++] = std::get<1>(hsk0);
+    ldata[idx++] = std::get<2>(hsk0);
+    ldata[idx++] = std::get<3>(hsk0);
+    ldata[idx++] = std::get<4>(hsk0);
 
-    auto hsk1_size = std::tuple_size<decltype(hsk1)>::value;
-    for (uint32_t i = 0; i < hsk1_size; ++i) {
-        ldata[idx++] = std::get<i>(hsk1);
-    }
+    ldata[idx++] = std::get<0>(hsk1);
+    ldata[idx++] = std::get<1>(hsk1);
+    ldata[idx++] = std::get<2>(hsk1);
+    ldata[idx++] = std::get<3>(hsk1);
+    ldata[idx++] = std::get<4>(hsk1);
 
     *val = std::string(data, idx * sizeof(ldata[0]));
 }
@@ -472,11 +476,16 @@ void Ripemd160::SaveEncVal(
     char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
-    auto enc_size = std::tuple_size<decltype(enc)>::value;
-    for (uint32_t i = 0; i < enc_size; ++i) {
-        ldata[idx++] = std::get<i>(enc);
-    }
-
+    ldata[idx++] = std::get<0>(enc);
+    ldata[idx++] = std::get<1>(enc);
+    ldata[idx++] = std::get<2>(enc);
+    ldata[idx++] = std::get<3>(enc);
+    ldata[idx++] = std::get<4>(enc);
+    ldata[idx++] = std::get<5>(enc);
+    ldata[idx++] = std::get<6>(enc);
+    ldata[idx++] = std::get<7>(enc);
+    ldata[idx++] = std::get<8>(enc);
+    ldata[idx++] = std::get<9>(enc);
     *val = std::string(data, idx * sizeof(ldata[0]));
 }
 
@@ -602,10 +611,16 @@ void Ripemd160::SaveReenc(
     ldata[idx++] = std::get<0>(std::get<1>(reenc));
     ldata[idx++] = std::get<1>(std::get<1>(reenc));
     atuo third_val = std::get<2>(reenc);
-    auto enc_size = std::tuple_size<decltype(third_val)>::value;
-    for (uint32_t i = 0; i < enc_size; ++i) {
-        ldata[idx++] = std::get<i>(third_val);
-    }
+    ldata[idx++] = std::get<0>(third_val);
+    ldata[idx++] = std::get<1>(third_val);
+    ldata[idx++] = std::get<2>(third_val);
+    ldata[idx++] = std::get<3>(third_val);
+    ldata[idx++] = std::get<4>(third_val);
+    ldata[idx++] = std::get<5>(third_val);
+    ldata[idx++] = std::get<6>(third_val);
+    ldata[idx++] = std::get<7>(third_val);
+    ldata[idx++] = std::get<8>(third_val);
+    ldata[idx++] = std::get<9>(third_val);
 
     ldata[idx++] = std::get<3>(reenc);
     *val = std::string(data, idx * sizeof(ldata[0]));
