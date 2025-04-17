@@ -1,6 +1,6 @@
 #include <iostream>
-#include <std::vector>
-#include <std::tuple>
+#include <vector>
+#include <tuple>
 #include <random>
 #include <stdexcept>
 #include <chrono>
