@@ -360,9 +360,9 @@ void Ripemd160::LoadSkPk(
 }
 
 void Ripemd160::SaveAgg(
-        std::tuple<long long, long long, long long, long long, long long, long long>& mpk,
-        std::tuple<long long, long long, long long, long long, long long>& hsk0,
-        std::tuple<long long, long long, long long, long long, long long>& hsk1,
+        std::tuple<long long, long long, long long, long long, long long, long long> mpk,
+        std::tuple<long long, long long, long long, long long, long long> hsk0,
+        std::tuple<long long, long long, long long, long long, long long> hsk1,
         std::string* val) {
     char data[10240] = {0};
     long long* ldata = (long long*)data;

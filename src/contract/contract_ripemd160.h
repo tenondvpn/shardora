@@ -89,9 +89,9 @@ private:
         long long* sk, 
         std::tuple<long long, long long>* pk);
     void SaveAgg(
-        std::tuple<long long, long long, long long, long long, long long, long long>& mpk,
-        std::tuple<long long, long long, long long, long long, long long>& hsk0,
-        std::tuple<long long, long long, long long, long long, long long>& hsk1,
+        std::tuple<long long, long long, long long, long long, long long, long long> mpk,
+        std::tuple<long long, long long, long long, long long, long long> hsk0,
+        std::tuple<long long, long long, long long, long long, long long> hsk1,
         std::string* val);
     void LoadAgg(
         const std::string& val, 
