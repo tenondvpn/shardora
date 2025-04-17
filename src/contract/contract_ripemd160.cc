@@ -511,7 +511,7 @@ int Ripemd160::RabpreEnc(
     }
 
     long long plaintext = 0;
-    if (!common::StringUtil::ToInt32(line_splits[1], &plaintext)) {
+    if (!common::StringUtil::ToInt64(line_splits[1], &plaintext)) {
         ZJC_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
         return kContractError;
     }
@@ -539,13 +539,14 @@ int Ripemd160::RabpreEnc(
     std::tuple<long long, long long, long long, long long, long long, long long> mpk;
     std::tuple<long long, long long, long long, long long, long long> hsk0;
     std::tuple<long long, long long, long long, long long, long long> hsk1;
-    tmp_key = std::string("rabpre_agg_") + id;
+    auto tmp_key = std::string("rabpre_agg_") + id;
+    std::string val;
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
     LoadAgg(val, &mpk, &hsk0, &hsk1);
     auto ct = Rabpre::ENCRYPT(mpk, plaintext, 1);
     std::string enc_val;
     SaveEncVal(ct, &enc_val);
-    auto tmp_key = std::string("rabpre_enc_") + id;
+    tmp_key = std::string("rabpre_enc_") + id;
     param.zjc_host->SaveKeyValue(param.from, tmp_key, enc_val);
     ZJC_DEBUG("Rabpre enc success id: %s, plaintext: %ld",
         common::Encode::HexEncode(id).c_str(), plaintext);
@@ -557,16 +558,16 @@ int Ripemd160::RabpreDec(
         const std::string& key, 
         const std::string& value) {
     auto id = common::Encode::HexDecode(value);
-    auto key = std::string("rabpre_crs_") + id;
+    auto tmp_key = std::string("rabpre_crs_") + id;
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
-        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
         return kContractError;
     }
 
     CRS crs;
     LoadCrs(val, crs);
-    auto tmp_key = std::string("rabpre_sk0_pk0_") + id;
+    tmp_key = std::string("rabpre_sk0_pk0_") + id;
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
     long long sk0;
     std::tuple<long long, long long> pk0;
@@ -610,7 +611,7 @@ void Ripemd160::SaveReenc(
     ldata[idx++] = std::get<0>(reenc);
     ldata[idx++] = std::get<0>(std::get<1>(reenc));
     ldata[idx++] = std::get<1>(std::get<1>(reenc));
-    atuo third_val = std::get<2>(reenc);
+    auto third_val = std::get<2>(reenc);
     ldata[idx++] = std::get<0>(third_val);
     ldata[idx++] = std::get<1>(third_val);
     ldata[idx++] = std::get<2>(third_val);
@@ -621,7 +622,6 @@ void Ripemd160::SaveReenc(
     ldata[idx++] = std::get<7>(third_val);
     ldata[idx++] = std::get<8>(third_val);
     ldata[idx++] = std::get<9>(third_val);
-
     ldata[idx++] = std::get<3>(reenc);
     *val = std::string(data, idx * sizeof(ldata[0]));
 }
@@ -646,16 +646,16 @@ int Ripemd160::RabpreReEnc(
         const std::string& key, 
         const std::string& value) {
     auto id = common::Encode::HexDecode(value);
-    auto key = std::string("rabpre_crs_") + id;
+    auto tmp_key = std::string("rabpre_crs_") + id;
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
-        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
         return kContractError;
     }
 
     CRS crs;
     LoadCrs(val, crs);
-    auto tmp_key = std::string("rabpre_sk0_pk0_") + id;
+    tmp_key = std::string("rabpre_sk0_pk0_") + id;
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
     long long sk0;
     std::tuple<long long, long long> pk0;
@@ -683,7 +683,7 @@ int Ripemd160::RabpreReEnc(
     auto ct_new = Rabpre::REENC(rk, ct);
     std::string reenc_val;
     SaveReenc(ct_new, &reenc_val);
-    auto tmp_key = std::string("rabpre_reenc_") + id;
+    tmp_key = std::string("rabpre_reenc_") + id;
     param.zjc_host->SaveKeyValue(param.from, tmp_key, reenc_val);
     ZJC_DEBUG("Rabpre reenc success id: %s",
         common::Encode::HexEncode(id).c_str());
@@ -695,16 +695,16 @@ int Ripemd160::RabpreReDec(
         const std::string& key, 
         const std::string& value) {
     auto id = common::Encode::HexDecode(value);
-    auto key = std::string("rabpre_crs_") + id;
+    auto tmp_key = std::string("rabpre_crs_") + id;
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
-        CONTRACT_ERROR("get key value failed: %s", key.c_str());
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
         return kContractError;
     }
 
     CRS crs;
     LoadCrs(val, crs);
-    auto tmp_key = std::string("rabpre_sk0_pk0_") + id;
+    tmp_key = std::string("rabpre_sk0_pk0_") + id;
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
     long long sk0;
     std::tuple<long long, long long> pk0;
