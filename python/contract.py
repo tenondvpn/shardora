@@ -11,7 +11,7 @@ import time
 from eth_utils import decode_hex, encode_hex
 from eth_abi import encode
 from web3 import Web3
-from eth_abi import decode_abi
+from eth_abi import decode
 import json
 import argparse
 
@@ -74,7 +74,7 @@ class StructParser:
             # 解码数据
             if isinstance(result, (list, tuple)) and len(result) == 1:
                 result = result[0]  # 处理单返回值的情况
-            decoded_data = decode_abi(field_types, result)
+            decoded_data = decode(field_types, result)
 
             # 解析嵌套结构
             parsed_result = self._parse_nested_data(decoded_data, struct_info['components'])
