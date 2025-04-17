@@ -510,7 +510,7 @@ int Ripemd160::RabpreEnc(
         return kContractError;
     }
 
-    long long plaintext = 0;
+    int64_t plaintext = 0;
     if (!common::StringUtil::ToInt64(line_splits[1], &plaintext)) {
         ZJC_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
         return kContractError;
