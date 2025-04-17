@@ -294,7 +294,7 @@ int Ripemd160::call(
 }
 
 void Ripemd160::SaveCrs(const CRS& crs, std::string* val) {
-    char data[10240] = {0}
+    char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
     ldata[idx++] = crs.p;
@@ -341,7 +341,7 @@ void Ripemd160::SaveSkPk(
         long long sk, 
         const std::tuple<long long, long long>& pk, 
         std::string* val) {
-    char data[10240] = {0}
+    char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
     ldata[idx++] = sk;
@@ -363,8 +363,8 @@ void Ripemd160::SaveAgg(
         const std::tuple<long long, long long, long long, long long, long long, long long>& mpk,
         const std::tuple<long long, long long, long long, long long, long long>& hsk0,
         const std::tuple<long long, long long, long long, long long, long long>& hsk1,
-    std::string* val) {
-    char data[10240] = {0}
+        std::string* val) {
+    char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
     auto mpk_size = std::tuple_size<decltype(mpk)>::value;
@@ -469,7 +469,7 @@ void Ripemd160::SaveEncVal(
         long long, long long, long long, long long,
         long long, long long>& enc,
         std::string* val) {
-    char data[10240] = {0}
+    char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
     auto enc_size = std::tuple_size<decltype(enc)>::value;
@@ -595,7 +595,7 @@ void Ripemd160::SaveReenc(
                 long long, long long>, 
             long long>& reenc,
         std::string* val) {
-    char data[10240] = {0}
+    char data[10240] = {0};
     long long* ldata = (long long*)data;
     uint32_t idx = 0;
     ldata[idx++] = std::get<0>(reenc);
