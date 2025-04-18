@@ -81,7 +81,7 @@ Status ViewBlockChain::Store(
                 } else {
                     new_addr_info->set_addr(addr);
                     new_addr_info->set_sharding_id(view_block->qc().network_id());
-                    new_addr_info->set_pool_index(ew_block->qc().pool_index());
+                    new_addr_info->set_pool_index(view_block->qc().pool_index());
                     new_addr_info->set_type(address::protobuf::kNormal);
                     new_addr_info->set_latest_height(view_block->block_info().height());
                     new_addr_info->set_balance(0);
