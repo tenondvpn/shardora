@@ -837,49 +837,15 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
         ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        msg_ptr->address_info = nullptr;
         return;
     }
 
-    uint64_t height = 0;
-    uint64_t prepayment = 0;
-    // TODO: test check
-    // if (!prefix_db_->GetContractUserPrepayment(
-    //         tx_msg.to(),
-    //         from,
-    //         &height,
-    //         &prepayment)) {
-    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    //     return;
-    // }
-
-    // if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
-    //     ZJC_ERROR("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, "
-    //         "tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
-    //         common::Encode::HexEncode(tx_msg.to()).c_str(),
-    //         prepayment,
-    //         tx_msg.amount(),
-    //         tx_msg.gas_limit(),
-    //         tx_msg.gas_price(),
-    //         (tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()));
-    //     return;
-    // }
-
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    // auto pool_index = msg_ptr->address_info->pool_index();
-    // if (security_->Verify(
-    //         msg_ptr->msg_hash,
-    //         tx_msg.pubkey(),
-    //         tx_msg.sign()) != security::kSecuritySuccess) {
-    //     ZJC_ERROR("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
-    //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
-    //         msg_ptr->address_info->balance(),
-    //         tx_msg.amount(),
-    //         tx_msg.contract_prepayment(),
-    //         consensus::kCallContractDefaultUseGas,
-    //         common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     assert(false);
-    //     return;
-    // }
+    ZJC_DEBUG("success add tx contract execute prepyament id: %s, prepayment: %lu, nonce: %lu",
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(), 
+        msg_ptr->address_info->balance(), 
+        msg_ptr->address_info->nonce());
 }
 
 void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr) {

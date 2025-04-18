@@ -139,11 +139,12 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    ZJC_DEBUG("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu", 
+    ZJC_DEBUG("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu, step: %d", 
         pool_index_,
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
         common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
-        tx_ptr->tx_info->nonce());
+        tx_ptr->tx_info->nonce(),
+        tx_ptr->tx_info->step());
     return kPoolsSuccess;
 }
 
