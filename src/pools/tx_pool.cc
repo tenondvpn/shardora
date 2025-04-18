@@ -202,6 +202,10 @@ void TxPool::GetTxSyncToLeader(
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
+            ZJC_DEBUG("failed get tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(), 
+                tx_ptr->tx_info->nonce());
             continue;
         }
 
@@ -209,6 +213,10 @@ void TxPool::GetTxSyncToLeader(
         if (iter != consensus_tx_map_.end()) {
             auto nonce_iter = iter->second.find(tx_ptr->tx_info->nonce());
             if (nonce_iter != iter->second.end()) {
+                ZJC_DEBUG("exists failed add tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
+                    common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                    tx_ptr->address_info->nonce(), 
+                    tx_ptr->tx_info->nonce());
                 continue;
             }
         }
