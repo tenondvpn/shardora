@@ -145,6 +145,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
         tx_ptr->tx_info->nonce(),
         tx_ptr->tx_info->step());
+    if (tx_ptr->tx_info->step() == pools::protobuf::kContractExcute) {
+        assert(tx_ptr->address_info->addr().size() == 40);
+    }
+    
     return kPoolsSuccess;
 }
 
