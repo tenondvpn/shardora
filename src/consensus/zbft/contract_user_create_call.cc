@@ -17,7 +17,6 @@ int ContractUserCreateCall::HandleTx(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t from_nonce = 0;
-    uint64_t to_balance = 0;
     auto& from = address_info->addr();
     int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
     ZJC_DEBUG("contract user call create called: %s, balance: %lu", 
@@ -188,6 +187,17 @@ int ContractUserCreateCall::HandleTx(
             tmp_from_balance -= dec_amount;
             // change contract create amount
             block_tx.set_amount(static_cast<int64_t>(block_tx.amount()) + contract_balance_add);
+            auto contract_info = std::make_shared<address::protobuf::AddressInfo>();
+            contract_info->set_addr(block_tx.to());
+            contract_info->set_balance(block_tx.amount());
+            contract_info->set_sharding_id(view_block.qc().network_id());
+            contract_info->set_sharding_id(view_block.qc().pool_index());
+            contract_info->set_type(address::protobuf::kWaitingRootConfirm);
+            contract_info->set_bytes_code(zjc_host.create_bytes_code_);
+            contract_info->set_latest_height(view_block.block_info().height());
+            contract_info->set_nonce(0);
+            prefix_db_->AddAddressInfo(*contract_info, zjc_host.db_batch_);
+            ZJC_DEBUG("success add contract address info: %s", common::Encode::HexEncode(block_tx.to()).c_str());
         } while (0);
     }
 
