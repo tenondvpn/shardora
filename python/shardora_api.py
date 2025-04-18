@@ -48,13 +48,17 @@ def transfer(
         check_tx_valid=True,
         gas_limit=999999):
     keypair = get_keypair(bytes.fromhex(str_prikey))
+    addr = keypair.account_id
+    if step == 8:
+        addr = to + keypair.account_id
+
     if nonce == -1:
-        add_info = get_account_info(keypair.account_id)
+        add_info = get_account_info(addr)
         if add_info is None:
-            print(f"get address from chain failed: {keypair.account_id}")
+            print(f"get address from chain failed: {addr}")
             return False
         
-        print(f"get address: {keypair.account_id} info: {add_info}")
+        print(f"get address: {addr} info: {add_info}")
         nonce = int(add_info["nonce"]) + 1
         
     param = get_transfer_params(
@@ -69,11 +73,7 @@ def transfer(
     if not check_tx_valid:
         return True
     
-    print(f"check step: {nonce}")
-    addr = keypair.account_id
-    if step == 8:
-        addr = to + keypair.account_id
-
+    print(f"check nonce: {addr} {nonce}")
     return check_addr_nonce_valid(addr, nonce)
 
 def get_account_info(address):
