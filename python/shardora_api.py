@@ -54,7 +54,7 @@ def transfer(
             print(f"get address from chain failed: {keypair.account_id}")
             return False
         
-        print(f"get address info: {add_info}")
+        print(f"get address: {keypair.account_id} info: {add_info}")
         nonce = int(add_info["nonce"]) + 1
         
     param = get_transfer_params(
