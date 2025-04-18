@@ -72,7 +72,7 @@ Status ViewBlockChain::Store(
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
             auto& tx = view_block->block_info().tx_list(i);
-            if (tx.has_balance()) {
+            if (tx.has_nonce()) {
                 auto& addr = account_mgr_->GetTxValidAddress(tx);
                 auto addr_info = ChainGetAccountInfo(addr);
                 auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
@@ -82,10 +82,16 @@ Status ViewBlockChain::Store(
                     new_addr_info->set_addr(addr);
                 }
 
-                new_addr_info->set_balance(tx.balance());
+                if (tx.has_balance()) {
+                    new_addr_info->set_balance(tx.balance());
+                }
+                
                 new_addr_info->set_nonce(tx.nonce());
                 (*balane_map_ptr)[addr] = new_addr_info;
                 prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
+                ZJC_DEBUG("success add addr: %s, value: %s", 
+                    common::Encode::HexEncode(addr).c_str(), 
+                    ProtobufToJson(*new_addr_info).c_str());
             }
 
             for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
