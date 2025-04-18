@@ -51,7 +51,7 @@ def transfer(
     if nonce == -1:
         add_info = get_account_info(keypair.account_id)
         print(f"get address info: {add_info}")
-        nonce = add_info["nonce"]
+        nonce = int(add_info["nonce"]) + 1
         
     param = get_transfer_params(
         nonce, to, amount, gas_limit, 1, 
