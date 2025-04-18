@@ -1015,7 +1015,10 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
 
     address::protobuf::KeyValueInfo kv_info;
     if (!kv_info.ParseFromString(tmp_encdata)) {
-        return false;
+        std::string res = common::StringUtil::Format("get encdata is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
     }
 
     std::string dec_data;
