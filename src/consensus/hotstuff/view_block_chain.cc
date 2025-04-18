@@ -529,7 +529,25 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         view_blocks_info_.erase(tmp_block->qc().view_block_hash());
-        ADD_DEBUG_PROCESS_TIMESTAMP();    
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+#ifndef NDEBUG
+        for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
+            if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
+                address::protobuf::AddressInfo addr_info;
+                if (!addr_info.ParseFromString(iter->second)) {
+                    assert(false);
+                }
+
+                ZJC_DEBUG("new addr commit %u_%u_%lu, success update addr: %s, balance: %lu, nonce: %lu",
+                    tmp_block->qc().network_id(), 
+                    tmp_block->qc().pool_index(), 
+                    tmp_block->qc().view(),
+                    common::Encode::HexEncode(addr_info.addr()).c_str(),
+                    addr_info.balance(),
+                    addr_info.nonce());
+            }
+        }
+#endif
         if (!db_->Put(db_batch).ok()) {
             ZJC_FATAL("write to db failed!");
         }
@@ -575,6 +593,8 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         v_block->qc().view(), 
         v_block->block_info().height(),
         String().c_str());
+
+    
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 

@@ -99,43 +99,32 @@ public:
     }
 
     void Put(const std::string& key, const std::string& value) {
-        // if (data_map_.find(key) == data_map_.end()) {
-        //     data_map_[key] = value;
-        //     CHECK_MEMORY_SIZE(data_map_);
-        // }
+#ifndef NDEBUG
+        if (data_map_.find(key) == data_map_.end()) {
+            data_map_[key] = value;
+            CHECK_MEMORY_SIZE(data_map_);
+        }
+#endif
 
         db_batch_.Put(key, value);
         count_ += key.size() + value.size();
     }
 
-    bool Exist(const std::string& key) {
-        assert(false);
-        return false;
-        // return data_map_.find(key) != data_map_.end();
-    }
-
-    bool Get(const std::string& key, std::string* value) {
-        // auto iter = data_map_.find(key);
-        // if (iter == data_map_.end()) {
-        //     return false;
-        // }
-        
-        // *value = iter->second;
-        assert(false);
-        return false;
-    }
-
     void Delete(const std::string& key) {
-        // auto iter = data_map_.find(key);
-        // if (iter != data_map_.end()) {
-        //     data_map_.erase(iter);
-        //     CHECK_MEMORY_SIZE(data_map_);
-            db_batch_.Delete(key);
-        // }
+#ifndef NDEBUG
+        auto iter = data_map_.find(key);
+        if (iter != data_map_.end()) {
+            data_map_.erase(iter);
+            CHECK_MEMORY_SIZE(data_map_);
+        }
+#endif
+        db_batch_.Delete(key);
     }
 
     void Clear() {
-        // data_map_.clear();
+#ifndef NDEBUG
+        data_map_.clear();
+#endif
         db_batch_.Clear();
         count_ = 0;
     }
@@ -156,7 +145,9 @@ public:
     
     TmpDbWriteBatch db_batch_;
     uint32_t count_ = 0;
-    // std::unordered_map<std::string, std::string> data_map_;
+#ifndef NDEBUG
+    std::unordered_map<std::string, std::string> data_map_;
+#endif
 };
 
 class Db {

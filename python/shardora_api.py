@@ -27,7 +27,7 @@ from coincurve import PrivateKey as cPrivateKey
 w3 = Web3(Web3.IPCProvider('/Users/myuser/Library/Ethereum/geth.ipc'))
 
 http_ip = "127.0.0.1"
-http_port = "23001"
+http_port = "http_port"
 
 Keypair = namedtuple('Keypair', ['skbytes', 'pkbytes', 'account_id'])
 Sign = namedtuple('Sign', ['r', 's', 'v'])
@@ -38,21 +38,18 @@ def transfer(
         str_prikey: str, 
         to: str, 
         amount: int, 
+        nonce: int, 
         step=0, 
-        gid="", 
         contract_bytes="", 
         input="", 
         key="", 
         val="", 
         prepayment=0, 
-        check_gid_valid=True,
+        check_tx_valid=True,
         gas_limit=999999):
-    if gid == "":
-        gid = _gen_gid()
-
     keypair = get_keypair(bytes.fromhex(str_prikey))
     param = get_transfer_params(
-        gid, to, amount, gas_limit, 1, 
+        nonce, to, amount, gas_limit, 1, 
         keypair, 3, contract_bytes, input, 
         prepayment, step, key, val)
     res = _call_tx(param)
@@ -60,20 +57,20 @@ def transfer(
         print(f"invalid status {res.status_code}, message: {res.text}")
         return False
     
-    if not check_gid_valid:
+    if not check_tx_valid:
         return True
     
-    print(f"check gid: {gid}")
-    return check_transaction_gid_valid(gid)
+    print(f"check step: {nonce}")
+    return check_transaction_gid_valid(nonce)
 
 def get_account_info(address):
-    return _post_data("http://{}:{}/query_account".format(http_ip, 23001), {'address': address})
+    return _post_data("http://{}:{}/query_account".format(http_ip, http_port), {'address': address})
 
 
-def call_tx(gid, to, amount, gas_limit, sign_r, sign_s, sign_v, pkbytes_str, key, value):
+def call_tx(nonce, to, amount, gas_limit, sign_r, sign_s, sign_v, pkbytes_str, key, value):
     params = _get_tx_params(sign=sign,
                             pkbytes=pkbytes,
-                            gid=gid,
+                            nonce=nonce,
                             to=to,
                             amount=amount,
                             prepay=0,
@@ -98,7 +95,7 @@ def keccak256_str(s: str) -> str:
 
 def check_address_valid(address, balance=0):
     post_data = {"addrs":[address], "balance": balance}
-    res = _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
+    res = _post_data("http://{}:{}/accounts_valid".format(http_ip, http_port), post_data)
     if res.status_code != 200:
         return False
     
@@ -112,16 +109,16 @@ def check_address_valid(address, balance=0):
 
 
 def check_accounts_valid(post_data: dict):
-    return _post_data("http://{}:{}/accounts_valid".format(http_ip, 23001), post_data)
+    return _post_data("http://{}:{}/accounts_valid".format(http_ip, http_port), post_data)
 
 def check_prepayments_valid(post_data: dict):
-    return _post_data("http://{}:{}/prepayment_valid".format(http_ip, 23001), post_data)
+    return _post_data("http://{}:{}/prepayment_valid".format(http_ip, http_port), post_data)
 
-def check_gid_valid(post_data: dict):
-    return _post_data("http://{}:{}/commit_gid_valid".format(http_ip, 23001), post_data)
+def check_addr_nonce_valid(post_data: dict):
+    return _post_data("http://{}:{}/check_addr_nonce_valid".format(http_ip, http_port), post_data)
 
 def get_transfer_params(
-        gid: str, 
+        nonce: int, 
         to: str, 
         amount: int, 
         gas_limit: int, 
@@ -134,10 +131,8 @@ def get_transfer_params(
         step: 0,
         key: str,
         val: str):
-    if gid == '':
-        gid = _gen_gid()
     sign = _sign_message(keypair=keypair,
-                        gid=gid,
+                        nonce=nonce,
                         to=to,
                         amount=amount,
                         gas_limit=gas_limit,
@@ -150,7 +145,7 @@ def get_transfer_params(
                         val=val)
     params = _get_tx_params(sign=sign,
                             pkbytes=keypair.pkbytes,
-                            gid=gid,
+                            nonce=nonce,
                             to=to,
                             amount=amount,
                             prepay=prepay,
@@ -199,11 +194,12 @@ def get_keypair(skbytes: bytes) -> Keypair:
 def deploy_contract(
         private_key: str, 
         amount: int, 
+        nonce: int,
         sol_file_path: str, 
         constructor_types: list, 
         constructor_params: list,
         prepayment=0,
-        check_gid_valid=False,
+        check_tx_valid=False,
         is_library=False,
         in_libraries="",
         contract_address=None):
@@ -244,9 +240,8 @@ def deploy_contract(
 
     print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}", flush=True)
     call_str = bytes_codes + func_param
-    gid = gen_gid()
     if contract_address is None:
-        contract_address_hash = keccak256_str(call_str+gid)
+        contract_address_hash = keccak256_str(call_str+str(nonce))
         contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
         
     step = 6
@@ -258,14 +253,14 @@ def deploy_contract(
         to=contract_address, 
         amount=amount, 
         step=step, 
-        gid=gid,
+        nonce=nonce,
         contract_bytes=call_str, 
         prepayment=prepayment,
-        check_gid_valid=check_gid_valid)
+        check_tx_valid=check_tx_valid)
     if not res:
         return None
     
-    if check_gid_valid:
+    if check_tx_valid:
         for i in range(0, 30):
             if prepayment > 0:
                 keypair = get_keypair(bytes.fromhex(private_key))
@@ -279,13 +274,13 @@ def deploy_contract(
 
     return None
 
-def contract_prepayment(private_key: str, contract_address: str, prepayment: int, check_res: bool, gid: str):
+def contract_prepayment(private_key: str, contract_address: str, prepayment: int, check_res: bool, nonce: int):
     if not transfer(
             str_prikey=private_key, 
             to=contract_address, 
             amount=0, 
-            check_gid_valid=check_res,
-            gid=gid,
+            check_tx_valid=check_res,
+            nonce=nonce,
             step=7, 
             prepayment=prepayment):
         return False
@@ -333,19 +328,19 @@ def query_contract_function(
 
     return res
 
-def check_transaction_gid_valid(in_gid):
+def check_transaction_gid_valid(addr, in_nonce):
     for i in range(0, 30):
-        res = check_gid_valid({"gids": [in_gid]})
+        res = check_addr_nonce_valid({"addrs": [addr]})
         if res.status_code != 200:
             print("post check gids failed!")
         else:
             json_res = json.loads(res.text)
             print(json_res)
-            print(in_gid)
+            print(in_nonce)
             if json_res["gids"] is not None:
-                for gid in json_res["gids"]:
-                    print(f"{in_gid} == {gid} : {(in_gid == gid)}")
-                    if in_gid == gid:
+                for nonce in json_res["nonces"]:
+                    print(f"{in_nonce} == {nonce} : {(in_nonce == nonce)}")
+                    if in_nonce == nonce:
                         return True
         time.sleep(3)
 
@@ -370,7 +365,7 @@ def _keccak256_str(s: str) -> str:
     
 def _sign_message(
         keypair: Keypair, 
-        gid: str, 
+        nonce: int, 
         to: str, 
         amount: int, 
         gas_limit: int, 
@@ -382,7 +377,7 @@ def _sign_message(
         key:str,
         val:str):
     frompk = keypair.pkbytes
-    b = decode_hex(gid) + \
+    b = _long_to_bytes(nonce) + \
          frompk + \
          decode_hex(to) + \
          _long_to_bytes(amount) + \
@@ -433,11 +428,11 @@ def _gen_gid() -> str:
     return (64 - len(ret)) * '0' + ret
 
 
-def _get_tx_params(sign, pkbytes: bytes, gid: str, gas_limit: int, gas_price: int,
+def _get_tx_params(sign, pkbytes: bytes, nonce: int, gas_limit: int, gas_price: int,
                    to: str, amount: int, prepay: int, contract_bytes: str, des_shard_id: int,
                    input: str, step: int, key: str, val: str):
     ret = {
-        'gid': gid,
+        'nonce': nonce,
         'pubkey': encode_hex(pkbytes)[2:],
         'to': to,
         'type': step,
