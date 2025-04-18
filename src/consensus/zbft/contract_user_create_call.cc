@@ -197,7 +197,9 @@ int ContractUserCreateCall::HandleTx(
             contract_info->set_latest_height(view_block.block_info().height());
             contract_info->set_nonce(0);
             prefix_db_->AddAddressInfo(block_tx.to(), *contract_info, zjc_host.db_batch_);
-            ZJC_DEBUG("success add contract address info: %s", common::Encode::HexEncode(block_tx.to()).c_str());
+            ZJC_DEBUG("success add contract address info: %s, %s", 
+                common::Encode::HexEncode(block_tx.to()).c_str(), 
+                ProtobufToJson(*contract_info).c_str());
         } while (0);
     }
 
