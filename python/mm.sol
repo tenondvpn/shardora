@@ -96,8 +96,11 @@ contract mm {
         string memory _assetId,
         uint8 _rightType
     ) public {
+        emit DIDDeleted("4");
         bytes32 didHash = keccak256(abi.encodePacked(_did));
+        emit DIDDeleted("5");
         require(bytes(didDocuments[didHash].created).length != 0, "DID does not exist");
+        emit DIDDeleted("6");
 
         AssetData memory newAsset = AssetData({
             assetId: _assetId,
