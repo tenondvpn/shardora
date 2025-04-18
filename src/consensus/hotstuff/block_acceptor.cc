@@ -245,7 +245,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         
         if (tx->step() == pools::protobuf::kContractExcute) {
-            address_info = view_block_chain_->ChainGetAccountInfo(tx->to());
+            address_info = view_block_chain_->ChainGetAccountInfo(tx->to() + from_id);
         } else {
             if (pools::IsUserTransaction(tx->step())) {
                 address_info = view_block_chain_->ChainGetAccountInfo(from_id);
