@@ -70,7 +70,11 @@ def transfer(
         return True
     
     print(f"check step: {nonce}")
-    return check_addr_nonce_valid(keypair.account_id, nonce)
+    addr = keypair.account_id
+    if step == 8:
+        addr = to + keypair.account_id
+
+    return check_addr_nonce_valid(addr, nonce)
 
 def get_account_info(address):
     res = _post_data("http://{}:{}/query_account".format(http_ip, http_port), {'address': address})
