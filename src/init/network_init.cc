@@ -551,7 +551,7 @@ void NetworkInit::InitLocalNetworkId() {
             ZJC_FATAL("failed!");
         }
 
-        auto& in = block_ptr->in();
+        auto& in = elect_block.in();
         for (int32_t member_idx = 0; member_idx < in.size(); ++member_idx) {
             auto id = security_->GetAddress(in[member_idx].pubkey());
             ZJC_DEBUG("network: %d get member id: %s, local id: %s",
