@@ -22,22 +22,6 @@ namespace shardora {
 namespace elect {
 
 int ElectManager::Init() {
-//     for (uint32_t i = network::kRootCongressNetworkId;
-//             i < network::kConsensusShardEndNetworkId; ++i) {
-//         auto block_ptr = elect_block_mgr_.GetLatestElectBlock(i);
-//         if (block_ptr == nullptr) {
-//             break;
-//         }
-// 
-//         OnNewElectBlock(
-//             0,
-//             block_ptr->elect_height(),
-//             block_ptr);
-//         vss::VssManager::Instance()->OnElectBlock(
-//             elect_block.shard_network_id(),
-//             latest_elect_block_height);
-//     }
-
     return kElectSuccess;
 }
 

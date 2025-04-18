@@ -145,33 +145,6 @@ void ShardStatistic::ThreadToStatistic(
         pool_blocks_info->latest_consensus_height_ = block_ptr->height();
         cleanUpBlocks(*pool_blocks_info);
     }
-
-    {
-        uint64_t first_block_tm_height = common::kInvalidUint64;
-        uint64_t first_block_elect_height = common::kInvalidUint64;
-        auto& block_map = pool_blocks_info->blocks;
-        if (!block_map.empty()) {
-            first_block_tm_height = block_map.begin()->second->block_info().timeblock_height();
-            first_block_elect_height = block_map.begin()->second->qc().elect_height();
-        }
-
-        auto latest_elect_item = elect_mgr_->GetLatestElectBlock(common::GlobalInfo::Instance()->network_id());
-        ZJC_DEBUG(
-            "block coming pool: %u, height: %lu, latest height: %lu, "
-            "block map size: %u, first_block_tm_height: %lu, "
-            "first_block_elect_height: %lu, now elect height: %lu, "
-            "block_map.empty(): %d, block tm height: %lu, block elect height: %lu",
-            view_block_ptr->qc().pool_index(),
-            block_ptr->height(),
-            pool_blocks_info->latest_consensus_height_,
-            block_map.size(),
-            first_block_tm_height,
-            first_block_elect_height,
-            latest_elect_item->elect_height(),
-            block_map.empty(),
-            block_ptr->timeblock_height(),
-            view_block_ptr->qc().elect_height());
-    }
 }
 
 void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {

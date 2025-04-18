@@ -544,16 +544,11 @@ void NetworkInit::InitLocalNetworkId() {
         ZJC_DEBUG("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
     }
 
-    elect::ElectBlockManager elect_block_mgr;
-    // 加载最新的选举块到 cache
-    // 从最新的选举块中，获取 node 所在 shard_id(对于种子节点，创世的时候已经写入这部分信息了)
-    elect_block_mgr.Init(db_);
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id < network::kConsensusShardEndNetworkId; ++sharding_id) {
-        auto block_ptr = elect_block_mgr.GetLatestElectBlock(sharding_id);
-        if (block_ptr == nullptr) {
-            ZJC_DEBUG("failed get elect block shard: %d", sharding_id);
-            break;
+        elect::protobuf::ElectBlock elect_block;
+        if (!prefix_db_->GetLatestElectBlock(sharding_id, &elect_block)) {
+            ZJC_FATAL("failed!");
         }
 
         auto& in = block_ptr->in();

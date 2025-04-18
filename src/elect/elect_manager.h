@@ -11,7 +11,6 @@
 #include "common/utils.h"
 #include "common/tick.h"
 #include "dht/base_dht.h"
-#include "elect/elect_block_manager.h"
 #include "elect/elect_utils.h"
 #include "elect/height_with_elect_blocks.h"
 #include "network/shard_network.h"
@@ -53,10 +52,6 @@ public:
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,
         const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block,
         db::DbWriteBatch& db_batch);
-    std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
-        return elect_block_mgr_.GetLatestElectBlock(sharding_id);
-    }
-
     common::MembersPtr GetNetworkMembersWithHeight(
         uint64_t elect_height,
         uint32_t network_id,
@@ -141,7 +136,6 @@ private:
     bool local_node_is_super_leader_{ false };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
-    ElectBlockManager elect_block_mgr_;
     std::shared_ptr<db::Db> db_ = nullptr;
     NewElectBlockCallback new_elect_cb_ = nullptr;
     uint32_t max_sharding_id_ = 3;
