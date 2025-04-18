@@ -345,7 +345,7 @@ def check_addr_nonce_valid(addr, in_nonce):
             print(f"get address info: {add_info}")
             return True
         
-        time.sleep(3)
+        time.sleep(1)
 
     return False
 
