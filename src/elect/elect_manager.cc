@@ -39,7 +39,6 @@ ElectManager::ElectManager(
     security_ = security;
     db_ = db;
     new_elect_cb_ = new_elect_cb;
-    elect_block_mgr_.Init(db_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     bls_mgr_ = bls_mgr;
@@ -141,7 +140,6 @@ common::MembersPtr ElectManager::OnNewElectBlock(
     }
 
     ElectedToConsensusShard(elect_block, elected);
-    elect_block_mgr_.OnNewElectBlock(height, elect_block, db_batch);
     // assert(members_ptr_[elect_block.shard_network_id()] != nullptr);
     return members_ptr_[elect_block.shard_network_id()];
 //     if (new_elect_cb_ != nullptr) {
