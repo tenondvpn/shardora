@@ -80,12 +80,17 @@ Status ViewBlockChain::Store(
                     *new_addr_info = *addr_info;
                 } else {
                     new_addr_info->set_addr(addr);
+                    new_addr_info->set_sharding_id(view_block->qc().network_id());
+                    new_addr_info->set_pool_index(ew_block->qc().pool_index());
+                    new_addr_info->set_type(address::protobuf::kNormal);
+                    new_addr_info->set_latest_height(view_block->block_info().height());
+                    new_addr_info->set_balance(0);
                 }
 
                 if (tx.has_balance()) {
                     new_addr_info->set_balance(tx.balance());
                 }
-                
+
                 new_addr_info->set_nonce(tx.nonce());
                 (*balane_map_ptr)[addr] = new_addr_info;
                 prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
