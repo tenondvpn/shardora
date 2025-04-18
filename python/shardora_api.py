@@ -50,6 +50,10 @@ def transfer(
     keypair = get_keypair(bytes.fromhex(str_prikey))
     if nonce == -1:
         add_info = get_account_info(keypair.account_id)
+        if add_info is None:
+            print(f"get address from chain failed: {keypair.account_id}")
+            return False
+        
         print(f"get address info: {add_info}")
         nonce = int(add_info["nonce"]) + 1
         
@@ -66,7 +70,7 @@ def transfer(
         return True
     
     print(f"check step: {nonce}")
-    return check_transaction_gid_valid(nonce)
+    return check_addr_nonce_valid(keypair.account_id, nonce)
 
 def get_account_info(address):
     res = _post_data("http://{}:{}/query_account".format(http_ip, http_port), {'address': address})
@@ -122,9 +126,6 @@ def check_accounts_valid(post_data: dict):
 
 def check_prepayments_valid(post_data: dict):
     return _post_data("http://{}:{}/prepayment_valid".format(http_ip, http_port), post_data)
-
-def check_addr_nonce_valid(post_data: dict):
-    return _post_data("http://{}:{}/check_addr_nonce_valid".format(http_ip, http_port), post_data)
 
 def get_transfer_params(
         nonce: int, 
@@ -337,20 +338,13 @@ def query_contract_function(
 
     return res
 
-def check_transaction_gid_valid(addr, in_nonce):
+def check_addr_nonce_valid(addr, in_nonce):
     for i in range(0, 30):
-        res = check_addr_nonce_valid({"addrs": [addr]})
-        if res.status_code != 200:
-            print("post check gids failed!")
-        else:
-            json_res = json.loads(res.text)
-            print(json_res)
-            print(in_nonce)
-            if json_res["gids"] is not None:
-                for nonce in json_res["nonces"]:
-                    print(f"{in_nonce} == {nonce} : {(in_nonce == nonce)}")
-                    if in_nonce == nonce:
-                        return True
+        add_info = get_account_info(addr)
+        if add_info is not None and int(add_info['nonce']) >= in_nonce:
+            print(f"get address info: {add_info}")
+            return True
+        
         time.sleep(3)
 
     return False
