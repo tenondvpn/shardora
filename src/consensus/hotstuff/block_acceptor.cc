@@ -231,6 +231,7 @@ Status BlockAcceptor::addTxsToPool(
         auto* tx = &txs[i];
         // ADD_TX_DEBUG_INFO(const_cast<pools::protobuf::TxMessage*>(tx));
         protos::AddressInfoPtr address_info = nullptr;
+        protos::AddressInfoPtr contract_address_info = nullptr;
         std::string from_id;
         if (pools::IsUserTransaction(tx->step())) {
             if (tx->pubkey().size() == 64u) {
@@ -246,6 +247,12 @@ Status BlockAcceptor::addTxsToPool(
         
         if (tx->step() == pools::protobuf::kContractExcute) {
             address_info = view_block_chain_->ChainGetAccountInfo(tx->to() + from_id);
+            contract_address_info = view_block_chain_->ChainGetAccountInfo(tx->to());
+            if (!contract_address_info) {
+                ZJC_WARN("get contract address failed %s, nonce: %lu", 
+                    common::Encode::HexEncode(tx->to()).c_str(), tx->nonce());
+                return Status::kError;
+            }
         } else {
             if (pools::IsUserTransaction(tx->step())) {
                 address_info = view_block_chain_->ChainGetAccountInfo(from_id);
@@ -286,7 +293,7 @@ Status BlockAcceptor::addTxsToPool(
             now_balance_map[iter->first] = iter->second;
         } else {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
-            *new_addr_info = * address_info;
+            *new_addr_info = *address_info;
             now_balance_map[address_info->addr()] = new_addr_info;
         }
 
@@ -325,7 +332,7 @@ Status BlockAcceptor::addTxsToPool(
                     msg_ptr, i,
                     account_mgr_, 
                     security_ptr_, 
-                    address_info);
+                    contract_address_info);
             contract_prepayment_id = tx->to() + from_id;
             break;
         case pools::protobuf::kContractGasPrepayment:
