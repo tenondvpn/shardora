@@ -45,7 +45,9 @@ contract mm {
         string memory _signatureValue
     ) public {
         bytes32 didHash = keccak256(abi.encodePacked(_did));
+        emit DIDDeleted("0");
         require(bytes(didDocuments[didHash].created).length == 0, "DID already exists");
+        emit DIDDeleted("1");
 
         string memory currentTime = uint2str(block.timestamp);
         DIDDocument storage newDocument = didDocuments[didHash];
@@ -56,8 +58,10 @@ contract mm {
         newDocument.publicKey2 = _publicKey2;
         newDocument.signatureValue = _signatureValue;
 
+        emit DIDDeleted("2");
         dids.push(_did);  // 将 DID 存入列表中
         emit DIDRegistered(_did, _userType, currentTime);
+        emit DIDDeleted("3");
     }
 
     function deposit(string memory _did, uint256 amount) public {

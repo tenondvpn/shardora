@@ -813,20 +813,22 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
-    if (msg_ptr->address_info == nullptr) {
+    auto from = security_->GetAddress(tx_msg.pubkey());
+    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    if (contract_info == nullptr) {
         ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
-    if (msg_ptr->address_info->destructed()) {
+    if (contract_info->destructed()) {
         ZJC_ERROR("contract destructed: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
-    auto from = security_->GetAddress(tx_msg.pubkey());
-    if (msg_ptr->address_info->addr() == from) {
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    auto prepayment_id = tx_msg.to() + from;
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(prepayment_id);
+    if (msg_ptr->address_info == nullptr) {
+        ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
