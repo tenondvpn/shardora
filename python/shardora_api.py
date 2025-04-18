@@ -27,7 +27,7 @@ from coincurve import PrivateKey as cPrivateKey
 w3 = Web3(Web3.IPCProvider('/Users/myuser/Library/Ethereum/geth.ipc'))
 
 http_ip = "127.0.0.1"
-http_port = "http_port"
+http_port = 23001
 
 Keypair = namedtuple('Keypair', ['skbytes', 'pkbytes', 'account_id'])
 Sign = namedtuple('Sign', ['r', 's', 'v'])
