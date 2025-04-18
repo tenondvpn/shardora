@@ -375,14 +375,14 @@ if __name__ == "__main__":
                 private_key,
                 to,
                 0,
-                1,
+                -1,
                 7,
                 "",
                 "",
                 "",
                 "",
                 prepayment=prepayment,
-                check_gid_valid=True)
+                check_tx_valid=True)
             if not res:
                 print("prepayment contract failed!")
                 sys.exit(1)
@@ -400,12 +400,12 @@ if __name__ == "__main__":
         contract_address = shardora_api.deploy_contract(
             private_key,
             0,
-            1,
             sol_file,
             function_types,
             tmp_function_args,
+            -1,
             prepayment=prepayment,
-            check_gid_valid=True,
+            check_tx_valid=True,
             is_library=create_library,
             in_libraries=libraries,
             contract_address=to)
@@ -419,14 +419,14 @@ if __name__ == "__main__":
             private_key,
             to,
             0,
-            1,
+            -1,
             8,
             "",
             func_param,
             "",
             "",
             0,
-            check_gid_valid=True,
+            check_tx_valid=True,
             gas_limit=90000000)
         if not res:
             print("call contract failed!")

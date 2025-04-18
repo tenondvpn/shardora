@@ -38,7 +38,7 @@ def transfer(
         str_prikey: str, 
         to: str, 
         amount: int, 
-        nonce: int, 
+        nonce=-1, 
         step=0, 
         contract_bytes="", 
         input="", 
@@ -48,6 +48,11 @@ def transfer(
         check_tx_valid=True,
         gas_limit=999999):
     keypair = get_keypair(bytes.fromhex(str_prikey))
+    if nonce == -1:
+        add_info = get_account_info(keypair.account_id)
+        print(f"get address info: {add_info}")
+        nonce = add_info["nonce"]
+        
     param = get_transfer_params(
         nonce, to, amount, gas_limit, 1, 
         keypair, 3, contract_bytes, input, 
@@ -64,8 +69,12 @@ def transfer(
     return check_transaction_gid_valid(nonce)
 
 def get_account_info(address):
-    return _post_data("http://{}:{}/query_account".format(http_ip, http_port), {'address': address})
-
+    res = _post_data("http://{}:{}/query_account".format(http_ip, http_port), {'address': address})
+    if res.status_code != 200:
+        return None
+    
+    json_res = json.loads(res.text)
+    return json_res
 
 def call_tx(nonce, to, amount, gas_limit, sign_r, sign_s, sign_v, pkbytes_str, key, value):
     params = _get_tx_params(sign=sign,
@@ -194,10 +203,10 @@ def get_keypair(skbytes: bytes) -> Keypair:
 def deploy_contract(
         private_key: str, 
         amount: int, 
-        nonce: int,
         sol_file_path: str, 
         constructor_types: list, 
         constructor_params: list,
+        nonce = -1,
         prepayment=0,
         check_tx_valid=False,
         is_library=False,
@@ -241,7 +250,7 @@ def deploy_contract(
     print(f"bytes_codes: {bytes_codes}, \nstdout: {stdout}, \nstderr: {stderr}, \nfunc_param: {func_param}", flush=True)
     call_str = bytes_codes + func_param
     if contract_address is None:
-        contract_address_hash = keccak256_str(call_str+str(nonce))
+        contract_address_hash = keccak256_str(call_str+gen_gid())
         contract_address = contract_address_hash[len(contract_address_hash)-40: len(contract_address_hash)]
         
     step = 6
