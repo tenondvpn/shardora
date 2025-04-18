@@ -1005,27 +1005,32 @@ static void ProxDecryption(evhtp_request_t* req, void* req_data) {
     std::string res_data;
     prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
     std::string hash256 = common::Hash::Hash256(res_data);
-    std::string encdata;
-    if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + hash256, &encdata)) {
+    std::string tmp_encdata;
+    if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + hash256, &tmp_encdata)) {
         std::string res = common::StringUtil::Format("get encdata is null");
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
+    address::protobuf::KeyValueInfo kv_info;
+    if (!kv_info.ParseFromString(tmp_encdata)) {
+        return false;
+    }
+
     std::string dec_data;
-    secptr->Decrypt(encdata, hash256, &dec_data);
+    secptr->Decrypt(kv_info.value(), hash256, &dec_data);
     ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         dec_data.c_str(), 
         common::Encode::HexEncode(dec_data).c_str(),
         common::Encode::HexEncode(res_data).c_str(), 
         common::Encode::HexEncode(hash256).c_str(),
-        common::Encode::HexEncode(encdata).c_str());
+        common::Encode::HexEncode(kv_info.value()).c_str());
     nlohmann::json res_json;
     res_json["status"] = 0;
     res_json["seckey"] = common::Encode::HexEncode(res_data);
     res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
-    res_json["encdata"] = common::Encode::HexEncode(encdata);
+    res_json["encdata"] = common::Encode::HexEncode(kv_info.value());
     res_json["decdata"] = std::string(dec_data.c_str());
     auto json_str = res_json.dump();
     ZJC_WARN("ProxDecryption coming 3.");

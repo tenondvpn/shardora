@@ -122,14 +122,19 @@ bool Execution::GetStorage(
         return false;
     }
 
-    uint32_t offset = 0;
-    uint32_t length = sizeof(res_val->bytes);
-    if (val.size() < sizeof(res_val->bytes)) {
-        offset = sizeof(res_val->bytes) - val.size();
-        length = val.size();
+    address::protobuf::KeyValueInfo kv_info;
+    if (!kv_info.ParseFromString(val)) {
+        return false;
     }
 
-    memcpy(res_val->bytes + offset, val.c_str(), length);
+    uint32_t offset = 0;
+    uint32_t length = sizeof(res_val->bytes);
+    if (kv_info.value().size() < sizeof(res_val->bytes)) {
+        offset = sizeof(res_val->bytes) - kv_info.value().size();
+        length = kv_info.value().size();
+    }
+
+    memcpy(res_val->bytes + offset, kv_info.value().c_str(), length);
     return true;
 }
 
@@ -146,7 +151,14 @@ bool Execution::GetStorage(
         const std::string& key,
         std::string* val) {
     auto str_key = str_id + key;
-    auto res = prefix_db_->GetTemporaryKv(str_key, val);
+    std::string tmp_val;
+    auto res = prefix_db_->GetTemporaryKv(str_key, &tmp_val);
+    address::protobuf::KeyValueInfo kv_info;
+    if (!kv_info.ParseFromString(tmp_val)) {
+        return false;
+    }
+
+    *val = kv_info.value();
     ZJC_DEBUG("get storage: %s, %s", 
         common::Encode::HexEncode(str_key).c_str(), 
         common::Encode::HexEncode(*val).c_str());

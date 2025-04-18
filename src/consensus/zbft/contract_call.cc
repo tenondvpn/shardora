@@ -342,7 +342,7 @@ int ContractCall::SaveContractCreateInfo(
             address::protobuf::KeyValueInfo kv_info;
             kv_info.set_value(kv->value());
             kv_info.set_height(block_tx.nonce());
-            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
+            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -365,7 +365,7 @@ int ContractCall::SaveContractCreateInfo(
             address::protobuf::KeyValueInfo kv_info;
             kv_info.set_value(kv->value());
             kv_info.set_height(block_tx.nonce());
-            zjc_host.db_batch_.Put(kv->key(), kv_info.SerializeAsString());
+            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
         }
     }
 
