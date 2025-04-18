@@ -17,10 +17,18 @@ int ContractCall::HandleTx(
     uint64_t from_balance = 0;
     uint64_t from_nonce = 0;
     auto preppayment_id = block_tx.to() + block_tx.from();
-    GetTempAccountBalance(zjc_host, preppayment_id, acc_balance_map, &from_balance, &from_nonce);
+    auto res = GetTempAccountBalance(zjc_host, preppayment_id, acc_balance_map, &from_balance, &from_nonce);
+    if (res != kConsensusSuccess) {
+        return kConsensusError;
+    }
+
     uint64_t src_to_balance = 0;
     uint64_t src_to_nonce = 0;
-    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
+    res = GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
+    if (res != kConsensusSuccess) {
+        return kConsensusError;
+    }
+    
     int64_t new_contract_balance = static_cast<int64_t>(src_to_balance);
     uint64_t test_from_balance = from_balance;
     bool check_valid = false;
