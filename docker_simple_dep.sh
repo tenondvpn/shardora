@@ -1,31 +1,21 @@
 killall -9 zjchain
 killall -9 txcli
 
-TARGET=Release
+TARGET=$2
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
+local_ip=$(ip -4 addr show scope global | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
 #sh build.sh a $TARGET
-now_dir=`pwd`
-cd /root/shardora && sh build.sh a $TARGET
-cd $now_dir
-sudo cp -rf /root/shardora/cbuild_$TARGET ./
-sudo cp -rf /root/shardora/zjnodes ./
-sudo cp -rf /root/shardora/zjnodes_local ./
-sudo rm -rf /root/zjnodes
-sudo cp -rf ./zjnodes_local /root/zjnodes
-sudo cp -rf ./deploy /root
-sudo cp ./fetch.sh /root
+rm -rf /root/zjnodes
+cp -rf ./zjnodes_local /root/zjnodes
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
-cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
-cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
+cp -rf ./zjnodes_local/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
+cp -rf ./zjnodes_local/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
 mkdir -p /root/zjnodes/zjchain/log
 
 
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 nodes_count=$1
 if [[ "$nodes_count" -eq "" ]]; then
    nodes_count=4 
@@ -53,13 +43,13 @@ bootstrap=""
 echo $shard3_node_count $root_node_count
 for ((i=1; i<=$root_node_count;i++)); do
     tmppubkey=`sed -n "$i""p" /root/shardora/root_nodes | awk -F'\t' '{print $2}'`
-    node_info=$tmppubkey":127.0.0.1:1200"$i
+    node_info=$tmppubkey":"$local_ip":1200"$i
     bootstrap=$node_info","$bootstrap
 done
 
 for ((i=1; i<=3;i++)); do
     tmppubkey=`sed -n "$i""p" /root/shardora/shards3| awk -F'\t' '{print $2}'`
-    node_info=$tmppubkey":127.0.0.1:1300"$i
+    node_info=$tmppubkey":"$local_ip":1300"$i
     bootstrap=$node_info","$bootstrap
 done
 
@@ -73,7 +63,7 @@ for ((i=1; i<=$root_node_count;i++)); do
     sed -i 's/LOCAL_PORT/1200'$i'/g' /root/zjnodes/r$i/conf/zjchain.conf
     sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/r$i/conf/zjchain.conf
     sed -i 's/HTTP_PORT/'0'/g' /root/zjnodes/r$i/conf/zjchain.conf
-    sed -i 's/LOCAL_IP/127.0.0.1/g' /root/zjnodes/r$i/conf/zjchain.conf
+    sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/r$i/conf/zjchain.conf
     ln /root/zjnodes/zjchain/zjchain /root/zjnodes/r$i/zjchain
     ln /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/r$i/conf/GeoLite2-City.mmdb
     ln /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/r$i/conf/log4cpp.properties
@@ -93,7 +83,7 @@ for ((i=1; i<=$shard3_node_count;i++)); do
     echo $prikey
     cp -rf /root/zjnodes/temp /root/zjnodes/s3_$i
     sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
-    sed -i 's/LOCAL_IP/127.0.0.1/g' /root/zjnodes/s3_$i/conf/zjchain.conf
+    sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     if ((i>=100)); then
         sed -i 's/HTTP_PORT/23'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
