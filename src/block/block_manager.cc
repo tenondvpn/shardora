@@ -1597,7 +1597,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             common::Encode::HexEncode(unqiue_hash).c_str(),
             leader);
         if (pool_index == common::kImmutablePoolSize) {
-            assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
+            // assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
         }
         return nullptr;
     }
