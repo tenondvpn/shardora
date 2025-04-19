@@ -7,15 +7,10 @@ RUN curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Ce
     yum makecache
 
 # 安装开发工具和依赖包
-RUN yum groupinstall -y "Development Tools" && \
-    yum install -y glibc-devel glibc-headers && \
-    yum install -y openssl-devel && \
-    yum install -y sshpass && \
-    yum install -y net-tools && \
-    yum install -y gdb && \
-    yum install -y iproute && \
-    yum install -y psmisc && \
-    yum clean all
+RUN yum install -y net-tools
+RUN yum install -y gdb
+RUN yum install -y iproute
+RUN yum install -y psmisc
 
 RUN mkdir -p /root/shardora/cbuild_Debug
 RUN mkdir -p /root/shardora/cbuild_Release
