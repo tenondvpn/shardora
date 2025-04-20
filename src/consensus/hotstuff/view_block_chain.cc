@@ -99,7 +99,39 @@ Status ViewBlockChain::Store(
                     ProtobufToJson(*new_addr_info).c_str());
             }
 
+            
+
             for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+                if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos &&
+                        tx.status() == consensus::kConsensusSuccess && 
+                        tx.step() == pools::protobuf::kConsensusLocalTos) {
+                    block::protobuf::ConsensusToTxs block_to_txs;
+                    if (block_to_txs.ParseFromString(tx.storages(storage_idx))) {
+                        for (uint32_t to_idx = 0; to_idx < block_to_txs.tos_size(); ++to_idx) {
+                            auto& addr = block_to_txs.tos(to_idx).to();
+                            auto addr_info = ChainGetAccountInfo(addr);
+                            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
+                            if (addr_info != nullptr) {
+                                *new_addr_info = *addr_info;
+                            } else {
+                                new_addr_info->set_addr(addr);
+                                new_addr_info->set_sharding_id(view_block->qc().network_id());
+                                new_addr_info->set_pool_index(view_block->qc().pool_index());
+                                new_addr_info->set_type(address::protobuf::kNormal);
+                                new_addr_info->set_latest_height(view_block->block_info().height());
+                            }
+
+                            new_addr_info->set_balance(block_to_txs.tos(to_idx).balance());
+                            new_addr_info->set_nonce(block_to_txs.tos(to_idx).nonce());
+                            (*balane_map_ptr)[addr] = new_addr_info;
+                            prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
+                            ZJC_DEBUG("success add addr: %s, value: %s", 
+                                common::Encode::HexEncode(addr).c_str(), 
+                                ProtobufToJson(*new_addr_info).c_str());
+                        }
+                    }
+                }
+
                 address::protobuf::KeyValueInfo kv_info;
                 kv_info.set_value(tx.storages(storage_idx).value());
                 kv_info.set_height(tx.nonce());

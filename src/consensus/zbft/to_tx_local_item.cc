@@ -50,8 +50,6 @@ int ToTxLocalItem::HandleTx(
     block_tx.set_unique_hash(unique_hash_);
     block_tx.set_nonce(to_nonce + 1);
     block::protobuf::ConsensusToTxs block_to_txs;
-    std::string str_for_hash;
-    str_for_hash.reserve(to_txs.tos_size() * 48);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint64_t to_balance = 0;
@@ -84,8 +82,7 @@ int ToTxLocalItem::HandleTx(
         to_balance += to_txs.tos(i).amount();
         to_tx->set_to(to_txs.tos(i).des());
         to_tx->set_balance(to_balance);
-        str_for_hash.append(to_txs.tos(i).des());
-        str_for_hash.append((char*)&to_balance, sizeof(to_balance));
+        to_tx->set_nonce(nonce);
         acc_balance_map[to_txs.tos(i).des()]->set_balance(to_balance);
         acc_balance_map[to_txs.tos(i).des()]->set_nonce(nonce);
         prefix_db_->AddAddressInfo(
