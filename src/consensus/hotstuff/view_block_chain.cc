@@ -106,7 +106,7 @@ Status ViewBlockChain::Store(
                         tx.status() == consensus::kConsensusSuccess && 
                         tx.step() == pools::protobuf::kConsensusLocalTos) {
                     block::protobuf::ConsensusToTxs block_to_txs;
-                    if (block_to_txs.ParseFromString(tx.storages(storage_idx))) {
+                    if (block_to_txs.ParseFromString(tx.storages(storage_idx).value())) {
                         for (uint32_t to_idx = 0; to_idx < block_to_txs.tos_size(); ++to_idx) {
                             auto& addr = block_to_txs.tos(to_idx).to();
                             auto addr_info = ChainGetAccountInfo(addr);
