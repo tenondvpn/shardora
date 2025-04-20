@@ -114,7 +114,9 @@ int ToTxLocalItem::HandleTx(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kConsensusLocalNormalTos);
     storage->set_value(block_to_txs.SerializeAsString());
-    ZJC_DEBUG("success consensus local transfer to");
+    ZJC_DEBUG("success consensus local transfer to unique hash: %s, %s",
+        common::Encode::HexEncode(unique_hash_).c_str(), 
+        ProtobufToJson(block_to_txs).c_str());
     return consensus::kConsensusSuccess;
 }
 

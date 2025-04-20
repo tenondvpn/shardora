@@ -2277,7 +2277,7 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("now timeout reset get tx sync to leader.");
+    // ZJC_DEBUG("now timeout reset get tx sync to leader.");
     // 存在内置交易或普通交易时尝试 reset timer
     // TODO 发送 PreResetPacemakerTimerMsg To Leader
     auto trans_msg = std::make_shared<transport::TransportMessage>();
@@ -2293,7 +2293,7 @@ void Hotstuff::TryRecoverFromStuck(
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (txs->empty()) {
-        ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
+        // ZJC_DEBUG("pool: %u txs.empty().", pool_idx_);
         return;
     }
     
