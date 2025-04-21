@@ -69,14 +69,6 @@ public:
             block.height());
     }
     
-    void NewBlockWithTx(
-            const view_block::protobuf::ViewBlockItem& view_block,
-            const block::protobuf::BlockTx& tx,
-            db::DbWriteBatch& db_batch);
-    void UpdateStorage(
-            const std::string& key,
-            const std::string& val,
-            db::DbWriteBatch& db_batch);
     bool GetStorage(
             const evmc::address& addr,
             const evmc::bytes32& key,

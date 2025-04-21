@@ -74,38 +74,6 @@ bool Execution::StorageKeyWarm(
     return false;
 }
 
-void Execution::NewBlockWithTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
-    if (tx.step() != pools::protobuf::kContractCreate &&
-            tx.step() != pools::protobuf::kContractExcute) {
-        return;
-    }
-
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-            continue;
-        }
-
-        UpdateStorage(tx.storages(i).key(), tx.storages(i).value(), db_batch);
-        // ZJC_DEBUG("UpdateStoredToDbView %u_%u_%lu, update storage: %s, %s", 
-        //     view_block.qc().network_id(),
-        //     view_block.qc().pool_index(),
-        //     view_block.qc().view(),
-        //     common::Encode::HexEncode(tx.storages(i).key()).c_str(), 
-        //     common::Encode::HexEncode(tx.storages(i).value()).c_str());
-    }
-}
-
-void Execution::UpdateStorage(
-        const std::string& key,
-        const std::string& val,
-        db::DbWriteBatch& db_batch) {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    prefix_db_->SaveTemporaryKv(key, val, db_batch);
-}
-
 bool Execution::GetStorage(
         const evmc::address& addr,
         const evmc::bytes32& key,

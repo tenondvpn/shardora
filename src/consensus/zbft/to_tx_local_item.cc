@@ -43,11 +43,7 @@ int ToTxLocalItem::HandleTx(
     }
 
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    block::protobuf::KeyValueInfo kv_info;
-    kv_info.set_value("");
-    kv_info.set_nonce(to_nonce + 1);
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
     block_tx.set_unique_hash(unique_hash_);
     block_tx.set_nonce(to_nonce + 1);
     block::protobuf::ConsensusToTxs block_to_txs;

@@ -80,11 +80,7 @@ int ElectTxItem::HandleTx(
         return kConsensusError;
     }
 
-    block::protobuf::KeyValueInfo kv_info;
-    kv_info.set_value("1");
-    kv_info.set_nonce(to_nonce + 1);
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
     block_tx.set_unique_hash(unique_hash_);
     block_tx.set_nonce(to_nonce + 1);
     ZJC_WARN("success call elect block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
