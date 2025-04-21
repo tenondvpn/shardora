@@ -1090,12 +1090,12 @@ class KeyValueInfo : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::std::string* release_value();
   void set_allocated_value(::std::string* value);
 
-  // optional uint64 nonce = 3;
-  bool has_nonce() const;
-  void clear_nonce();
-  static const int kNonceFieldNumber = 3;
-  ::google::protobuf::uint64 nonce() const;
-  void set_nonce(::google::protobuf::uint64 value);
+  // optional uint64 height = 3;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 3;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.KeyValueInfo)
  private:
@@ -1103,15 +1103,15 @@ class KeyValueInfo : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_key();
   void set_has_value();
   void clear_has_value();
-  void set_has_nonce();
-  void clear_has_nonce();
+  void set_has_height();
+  void clear_has_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr key_;
   ::google::protobuf::internal::ArenaStringPtr value_;
-  ::google::protobuf::uint64 nonce_;
+  ::google::protobuf::uint64 height_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -6613,28 +6613,28 @@ inline void KeyValueInfo::set_allocated_value(::std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.KeyValueInfo.value)
 }
 
-// optional uint64 nonce = 3;
-inline bool KeyValueInfo::has_nonce() const {
+// optional uint64 height = 3;
+inline bool KeyValueInfo::has_height() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void KeyValueInfo::set_has_nonce() {
+inline void KeyValueInfo::set_has_height() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void KeyValueInfo::clear_has_nonce() {
+inline void KeyValueInfo::clear_has_height() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void KeyValueInfo::clear_nonce() {
-  nonce_ = GOOGLE_ULONGLONG(0);
-  clear_has_nonce();
+inline void KeyValueInfo::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
 }
-inline ::google::protobuf::uint64 KeyValueInfo::nonce() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.KeyValueInfo.nonce)
-  return nonce_;
+inline ::google::protobuf::uint64 KeyValueInfo::height() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.KeyValueInfo.height)
+  return height_;
 }
-inline void KeyValueInfo::set_nonce(::google::protobuf::uint64 value) {
-  set_has_nonce();
-  nonce_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.KeyValueInfo.nonce)
+inline void KeyValueInfo::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.KeyValueInfo.height)
 }
 
 // -------------------------------------------------------------------
