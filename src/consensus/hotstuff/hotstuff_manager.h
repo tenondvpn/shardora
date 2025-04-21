@@ -20,10 +20,9 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
-#include <consensus/zbft/contract_create_by_root_from_tx_item.h>
 #include <consensus/zbft/contract_create_by_root_to_tx_item.h>
-#include <consensus/zbft/contract_user_call.h>
-#include <consensus/zbft/contract_user_create_call.h>
+#include <consensus/zbft/contract_prepayment.h>
+#include <consensus/zbft/contract_create.h>
 #include <consensus/zbft/create_library.h>
 #include <consensus/zbft/cross_tx_item.h>
 #include <consensus/zbft/elect_tx_item.h>
@@ -39,7 +38,6 @@
 #include "common/utils.h"
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
-#include "consensus/zbft/contract_gas_prepayment.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
@@ -50,8 +48,6 @@
 #include "security/security.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
-
-
 
 namespace shardora {
 
@@ -72,7 +68,6 @@ public:
     int Init(
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
-        std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
@@ -295,16 +290,6 @@ private:
                 msg_ptr->address_info);
     }
 
-	// pools::TxItemPtr CreateContractByRootFromTx(const transport::MessagePtr& msg_ptr) {
-    //     return std::make_shared<ContractCreateByRootFromTxItem>(
-    //             contract_mgr_, 
-    //             db_, 
-    //             msg_ptr, -1, 
-    //             account_mgr_, 
-    //             security_ptr_, 
-    //             msg_ptr->address_info);
-    // }
-
 	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCreateByRootToTxItem>(
                 contract_mgr_, 
@@ -316,7 +301,7 @@ private:
     }
 
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractUserCall>(
+        return std::make_shared<ContractPrepayment>(
                 db_, msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
@@ -343,7 +328,6 @@ private:
     
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;

@@ -2,7 +2,6 @@
 
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
-#include "consensus/zbft/contract_gas_prepayment.h"
 #include "security/security.h"
 
 namespace shardora {
@@ -15,7 +14,6 @@ public:
             const transport::MessagePtr& msg_ptr,
             int32_t tx_index,
             std::shared_ptr<db::Db>& db,
-            std::shared_ptr<ContractGasPrepayment>& gas_prepayment,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr,
             protos::AddressInfoPtr& addr_info)
@@ -38,7 +36,6 @@ public:
 private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::string unique_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxLocalItem);

@@ -1,40 +1,39 @@
-#include "consensus/zbft/contract_create_by_root_from_tx_item.h"
+#include "consensus/zbft/contract_user_call.h"
 
-#include "contract/contract_manager.h"
 #include "zjcvm/execution.h"
 
 namespace shardora {
 
 namespace consensus {
 
-int ContractCreateByRootFromTxItem::HandleTx(
+int ContractPrepayment::HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost &zjc_host,
+        zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
-        block::protobuf::BlockTx &block_tx) {
-	uint64_t gas_used = 0;
+        block::protobuf::BlockTx& block_tx) {
+    uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t from_nonce = 0;
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
     int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
+    if (balance_status != kConsensusSuccess) {
+        block_tx.set_status(balance_status);
+        // will never happen
+        assert(false);
+        return kConsensusSuccess;
+    }
+
     do  {
         gas_used = consensus::kTransferGas;
-        if (balance_status != kConsensusSuccess) {
-            block_tx.set_status(balance_status);
-            // will never happen
-            assert(false);
-            break;
-        }
-
         if (from_nonce + 1 != block_tx.nonce()) {
             block_tx.set_status(kConsensusNonceInvalid);
             // will never happen
             assert(false);
             break;
         }
-
+        
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
@@ -84,28 +83,20 @@ int ContractCreateByRootFromTxItem::HandleTx(
         }
     }
 
-	// 放入 bytes code
-	if (block_tx.status() == kConsensusSuccess) {
-		auto storage = block_tx.add_storages();
-		storage->set_key(protos::kCreateContractBytesCode);
-		storage->set_value(block_tx.contract_code());
-        // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, block_tx.contract_code(), true);
-	}
-
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
     prefix_db_->AddAddressInfo(from, *(acc_balance_map[from]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());
-
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("set contract create called: %d, from: %s, to: %s, amount: %lu",
+    ZJC_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu, balance: %lu",
         block_tx.status(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
-        block_tx.contract_prepayment());
+        block_tx.contract_prepayment(),
+        from_balance);
     return kConsensusSuccess;
 }
 

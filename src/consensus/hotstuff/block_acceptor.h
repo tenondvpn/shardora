@@ -5,7 +5,6 @@
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/hotstuff_utils.h>
-#include <consensus/zbft/contract_gas_prepayment.h>
 #include <consensus/zbft/waiting_txs_pools.h>
 #include <dht/dht_key.h>
 #include <functional>
@@ -26,10 +25,6 @@ class ContractManager;
 
 namespace pools {
 class TxPoolManager;
-}
-
-namespace consensus {
-class ContractGasPrepayment;
 }
 
 namespace block {
@@ -80,7 +75,6 @@ public:
         const std::shared_ptr<vss::VssManager>& vss_mgr,
         const std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::shared_ptr<db::Db>& db,
-        const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
@@ -160,7 +154,6 @@ public:
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
-    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;

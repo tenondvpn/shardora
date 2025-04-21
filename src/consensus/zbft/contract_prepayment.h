@@ -11,9 +11,9 @@ namespace shardora {
 
 namespace consensus {
 
-class ContractUserCall : public TxItemBase {
+class ContractPrepayment : public TxItemBase {
 public:
-    ContractUserCall(
+    ContractPrepayment(
             std::shared_ptr<db::Db>& db,
             const transport::MessagePtr& msg_ptr,
             int32_t tx_index,
@@ -24,7 +24,7 @@ public:
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
-    virtual ~ContractUserCall() {}
+    virtual ~ContractPrepayment() {}
     virtual int HandleTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
@@ -34,7 +34,7 @@ public:
 private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
-    DISALLOW_COPY_AND_ASSIGN(ContractUserCall);
+    DISALLOW_COPY_AND_ASSIGN(ContractPrepayment);
 };
 
 };  // namespace consensus

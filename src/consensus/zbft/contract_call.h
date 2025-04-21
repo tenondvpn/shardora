@@ -1,7 +1,6 @@
 #pragma once
 
 #include "block/account_manager.h"
-#include "consensus/zbft/contract_gas_prepayment.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
@@ -20,7 +19,6 @@ class ContractCall : public TxItemBase {
 public:
     ContractCall(
             std::shared_ptr<contract::ContractManager>& contract_mgr,
-            std::shared_ptr<ContractGasPrepayment>& prepayment,
             std::shared_ptr<db::Db>& db,
             const transport::MessagePtr& msg_ptr,
             int32_t tx_index,
@@ -62,7 +60,6 @@ private:
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<ContractGasPrepayment> prepayment_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(ContractCall);
 };
 

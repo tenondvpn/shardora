@@ -43,7 +43,6 @@ void BlockAcceptor::Init(
         const std::shared_ptr<vss::VssManager>& vss_mgr,
         const std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::shared_ptr<db::Db>& db,
-        const std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
@@ -336,7 +335,7 @@ Status BlockAcceptor::addTxsToPool(
             contract_prepayment_id = tx->to() + from_id;
             break;
         case pools::protobuf::kContractGasPrepayment:
-            tx_ptr = std::make_shared<consensus::ContractUserCall>(
+            tx_ptr = std::make_shared<consensus::ContractPrepayment>(
                     db_, 
                     msg_ptr, i,
                     account_mgr_, 

@@ -132,7 +132,6 @@ int NetworkInit::Init(int argc, char** argv) {
     // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>();
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
-    gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
     ZJC_DEBUG("init 0 4");
     InitLocalNetworkId();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
