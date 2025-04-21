@@ -2,6 +2,7 @@ syntax = "proto2";
 
 package shardora.block.protobuf;
 import "protos/pools.proto";
+import "protos/address.proto";
 
 message StorageItem {
     optional bytes key = 1;
@@ -56,7 +57,7 @@ message Block {
     repeated bytes change_leader_invalid_hashs = 7;
     repeated KeyValueInfo key_value_array = 8;
     repeated TransferItem contract_txs = 9;
-    repeated address.AddressInfo address_array = 10;
+    repeated address.protobuf.AddressInfo address_array = 10;
 }
 
 message ConsensusToTxsItem {
