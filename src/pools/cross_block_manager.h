@@ -138,70 +138,7 @@ private:
                                 sync::kSyncPriLow);
                     }
                 }
-                break;
-            }
 
-            auto& block = view_block.block_info();
-            bool height_valid = true;
-            for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
-                if (block.tx_list(tx_idx).step() != pools::protobuf::kNormalTo &&
-                        block.tx_list(tx_idx).step() != pools::protobuf::kRootCreateAddress) {
-                    continue;
-                }
-               
-                auto& block_tx = block.tx_list(tx_idx);
-                for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                    pools::protobuf::ToTxMessage to_txs;
-                    ZJC_DEBUG("handle cross tx sharding id: %u, key: %s",
-                    sharding_id, block_tx.storages(i).key().c_str());
-            
-                    if (block_tx.storages(i).key() != protos::kNormalToShards) {
-                        continue;
-                    }
-
-                    if (!to_txs.ParseFromString(block_tx.storages(i).value())) {
-                        assert(false);
-                        break;
-                    }
-
-                    ZJC_DEBUG("handle cross tx sharding id: %u, key: %s, crosses_size: %u",
-                        sharding_id, block_tx.storages(i).key().c_str(), to_txs.crosses_size());
-                    for (int32_t cross_idx = 0; cross_idx < to_txs.crosses_size(); ++cross_idx) {
-                        auto& cross = to_txs.crosses(cross_idx);
-                        ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu,"
-                            "des net: %u, local_sharding_id: %u",
-                            cross.src_shard(),
-                            cross.src_pool(),
-                            cross.height(),
-                            cross.des_shard(),
-                            local_sharding_id);
-                        if (cross.des_shard() != local_sharding_id &&
-                                cross.des_shard() != network::kNodeNetworkId &&
-                                cross.des_shard() + network::kConsensusWaitingShardOffset !=
-                                local_sharding_id) {
-                            continue;
-                        }
-
-                        if (!prefix_db_->BlockExists(
-                                cross.src_shard(),
-                                cross.src_pool(),
-                                cross.height())) {
-                            ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
-                                cross.src_shard(),
-                                cross.src_pool(),
-                                cross.height());
-                            kv_sync_->AddSyncHeight(
-                                cross.src_shard(),
-                                cross.src_pool(),
-                                cross.height(),
-                                sync::kSyncPriLow);
-                            height_valid = false;
-                        }
-                    }
-                }
-            }
-
-            if (!height_valid) {
                 break;
             }
 

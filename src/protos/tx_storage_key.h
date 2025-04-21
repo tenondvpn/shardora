@@ -13,7 +13,6 @@ static const std::string kContractBytesStartCode = common::Encode::HexDecode("60
 static const std::string kContractDestruct = "__destruct";
 static const std::string kLibrary = "__library";
 static const std::string kNormalTos = "__normal_tos";
-static const std::string kNormalToShards = "__normal_tos_";
 static const std::string kConsensusLocalNormalTos = "__consensus_local_tos";
 static const std::string kCreateContractCallerSharding = "__new_contract_user_shard";
 static const std::string kCreateContractBytesCode = "__kCreateContractBytesCode";
