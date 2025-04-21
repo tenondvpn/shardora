@@ -203,7 +203,7 @@ int ContractCall::HandleTx(
                 // change contract 's amount, now is contract 's new balance
                 new_contract_balance += contract_balance_add;
                 if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
-                    auto trans_item = block_tx.add_contract_txs();
+                    auto trans_item = view_block.mutable_block_info()->add_contract_txs();
                     std::string destruct_from = std::string(
                         (char*)zjc_host.recorded_selfdestructs_->selfdestructed.bytes,
                         sizeof(zjc_host.recorded_selfdestructs_->selfdestructed.bytes));
@@ -255,7 +255,7 @@ int ContractCall::HandleTx(
 
         if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
             if (from_balance > 0) {
-                auto trans_item = block_tx.add_contract_txs();
+                auto trans_item = view_block.mutable_block_info()->add_contract_txs();
                 trans_item->set_from(block_tx.to());
                 trans_item->set_to(block_tx.from());
                 trans_item->set_amount(from_balance);
@@ -381,7 +381,7 @@ int ContractCall::SaveContractCreateInfo(
             contract_balance_add -= to_iter->second;
             // from and contract itself transfers direct
             // transfer to other address by cross sharding transfer
-            auto trans_item = block_tx.add_contract_txs();
+            auto trans_item = view_block.mutable_block_info()->add_contract_txs();
             trans_item->set_from(transfer_iter->first);
             trans_item->set_to(to_iter->first);
             trans_item->set_amount(to_iter->second);
