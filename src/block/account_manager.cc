@@ -645,13 +645,13 @@ void AccountManager::HandleRootCreateAddressTx(
     }
 
     uint32_t sharding_id = common::kInvalidUint32;
-    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
-    //     if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
-    //         uint32_t* tmp = (uint32_t*)tx.storages(i).value().c_str();
-    //         sharding_id = tmp[0];
-    //         break;
-    //     }
-    // }
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
+            uint32_t* tmp = (uint32_t*)tx.storages(i).value().c_str();
+            sharding_id = tmp[0];
+            break;
+        }
+    }
 
     if (sharding_id == common::kInvalidUint32) {
         assert(false);

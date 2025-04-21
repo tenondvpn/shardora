@@ -288,7 +288,7 @@ private:
         }
 
         assert(block.tx_list_size() > 0);
-        elect::protobuf::ElectBlock& elect_block = block.elect_block();
+        auto& elect_block = block.elect_block();
         auto shard_members_ptr = std::make_shared<common::Members>();
         auto& in = elect_block.in();
         uint32_t member_index = 0;

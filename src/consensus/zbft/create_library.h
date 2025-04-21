@@ -47,11 +47,11 @@ public:
                 break;
             }
 
-            for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                // TODO(): check key exists and reserve gas
+            if (tx_info->has_key()) {
                 gas_used += network::kConsensusWaitingShardOffset * (
-                    block_tx.storages(i).key().size() + tx_info->value().size()) *
+                    tx_info->key().size() + tx_info->value().size()) *
                     consensus::kKeyValueStorageEachBytes;
+                zjc_host.SaveKeyValue(from, tx_info->key(), tx_info->value());
             }
 
             if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {

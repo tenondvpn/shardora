@@ -48,16 +48,17 @@ int RootToTxItem::HandleTx(
     uint64_t to_balance = 0;
     uint64_t to_nonce = 0;
     GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-    auto str_key = block_tx.to() + unique_hash_;
+    auto& unique_hash = tx_info->key();
+    auto str_key = block_tx.to() + unique_hash;
     std::string val;
-    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
     
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    block_tx.set_unique_hash(unique_hash_);
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
+    block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(to_nonce + 1);
     char des_sharding_and_pool[8];
     uint32_t* des_info = (uint32_t*)des_sharding_and_pool;

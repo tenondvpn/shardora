@@ -35,12 +35,6 @@ public:
             return consensus::kConsensusError;
         }
 
-        // change
-        if (tx_info.key().empty()) {
-            return consensus::kConsensusError;
-        }
-
-        unique_hash_ = tx_info.key();
         return consensus::kConsensusSuccess;
     }
 
@@ -54,7 +48,6 @@ private:
 
     uint32_t max_sharding_id_ = 0;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
-    std::string unique_hash_;
     
     DISALLOW_COPY_AND_ASSIGN(RootToTxItem);
 };

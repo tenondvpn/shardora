@@ -37,11 +37,7 @@ int ElectTxItem::TxToBlockTx(
         return consensus::kConsensusError;
     }
 
-    unique_hash_ = tx_info.key();
-    if (!elect_statistic_.ParseFromString(tx_info.value()) {
-        ZJC_DEBUG("elect tx parse elect info failed!");
-        return consensus::kConsensusError;
-    }
+    
 
     return consensus::kConsensusSuccess;
 }
@@ -54,30 +50,36 @@ int ElectTxItem::HandleTx(
     view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    ZJC_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, new node size: %u, %s, unique_hash_: %s",
+    auto& unique_hash = tx_info.key();
+    if (!elect_statistic_.ParseFromString(tx_info.value()) {
+        ZJC_DEBUG("elect tx parse elect info failed!");
+        return consensus::kConsensusError;
+    }
+
+    ZJC_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, new node size: %u, %s, unique_hash: %s",
         elect_statistic_.sharding_id(), 
         elect_statistic_.statistic_height(), 
         elect_statistic_.join_elect_nodes_size(),
         ProtobufToJson(elect_statistic_).c_str(),
-        common::Encode::HexEncode(unique_hash_).c_str());
+        common::Encode::HexEncode(unique_hash).c_str());
     uint64_t to_balance = 0;
     uint64_t to_nonce = 0;
     GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-    auto str_key = block_tx.to() + unique_hash_;
+    auto str_key = block_tx.to() + unique_hash;
     std::string val;
-    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
 
-    block_tx.set_unique_hash(unique_hash_);
+    block_tx.set_unique_hash(unique_hash);
     auto res = processElect(zjc_host, elect_statistic_, view_block, block_tx);
     if (res != consensus::kConsensusSuccess) {
         return kConsensusError;
     }
 
-    zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    block_tx.set_unique_hash(unique_hash_);
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
+    block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(to_nonce + 1);
     ZJC_WARN("success call elect block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());

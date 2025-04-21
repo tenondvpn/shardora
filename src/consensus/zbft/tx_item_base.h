@@ -39,14 +39,6 @@ protected:
             return consensus::kConsensusError;
         }
 
-        // change
-        if (tx_info.key().empty()) {
-            return consensus::kConsensusSuccess;
-        }
-
-        auto storage = block_tx->add_storages();
-        storage->set_key(tx_info.key());
-        storage->set_value(tx_info.value());
         return consensus::kConsensusSuccess;
     }
 

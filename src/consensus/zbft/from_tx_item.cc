@@ -33,10 +33,9 @@ int FromTxItem::HandleTx(
             break;
         }
 
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (tx_info->has_key()) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                consensus::kKeyValueStorageEachBytes;
+            gas_used += (tx_info->key().size() + tx_info->value().size()) * consensus::kKeyValueStorageEachBytes;
             zjc_host.SaveKeyValue(block_tx.from(), block_tx.storages(i).key(), block_tx.storages(i).value());
         }
 

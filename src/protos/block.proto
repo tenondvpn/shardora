@@ -64,6 +64,7 @@ message Block {
     optional elect.protobuf.ElectBlock elect_block = 12;
     optional elect.protobuf.ElectBlock prev_elect_block = 13;
     optional pools.protobuf.ToTxMessage normal_to = 14;
+    repeated address.protobuf.AddressInfo to_address_array = 15;  // 跨分片交易
 }
 
 message ConsensusToTxsItem {
