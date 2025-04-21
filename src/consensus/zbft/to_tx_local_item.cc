@@ -85,10 +85,7 @@ int ToTxLocalItem::HandleTx(
         to_tx->set_nonce(nonce);
         acc_balance_map[to_txs.tos(i).des()]->set_balance(to_balance);
         acc_balance_map[to_txs.tos(i).des()]->set_nonce(nonce);
-        // prefix_db_->AddAddressInfo(
-            to_txs.tos(i).des(), 
-            *(acc_balance_map[to_txs.tos(i).des()]), 
-            zjc_host.db_batch_);
+        // prefix_db_->AddAddressInfo(to_txs.tos(i).des(), *(acc_balance_map[to_txs.tos(i).des()]), zjc_host.db_batch_);
         ZJC_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
             ProtobufToJson(*(acc_balance_map[to_txs.tos(i).des()])).c_str());
