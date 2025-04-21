@@ -159,18 +159,27 @@ Status BlockAcceptor::Accept(
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
                 storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
             auto& kv_info = *view_block.mutable_block_info()->add_key_value_array();
-            kv_info.set_value(kv->value());
-            kv_info.set_nonce(block_tx.nonce());
-            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
+            kv_info.set_key(str_key);
+            kv_info.set_value(std::string(
+                (char*)storage_iter->second.value.bytes,
+                sizeof(storage_iter->second.value.bytes)));
+            kv_info.set_height(view_block.block_info().height());
+            prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
                 storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+            auto str_key = std::string(
+                (char*)account_iter->first.bytes,
+                sizeof(account_iter->first.bytes)) + storage_iter->first;
             auto& kv_info = *view_block.mutable_block_info()->add_key_value_array();
-            kv_info.set_value(kv->value());
-            kv_info.set_nonce(block_tx.nonce());
-            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
+            kv_info.set_key(str_key);
+            kv_info.set_value(storage_iter->second.str_val);
+            kv_info.set_height(view_block.block_info().height());
+            prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
         }
     }
 
