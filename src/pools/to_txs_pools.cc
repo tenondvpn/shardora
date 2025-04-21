@@ -446,7 +446,11 @@ void ToTxsPools::AddTxToMap(
         item.from = from;
         item.prepayment = prepayment;
         height_iter->second[to] = item;
-        ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
+        ZJC_DEBUG("to tx add from: %s, to %s step: %u, prepayment: %lu",
+            common::Encode::HexEncode(from).c_str(),
+             common::Encode::HexEncode(to).c_str(), 
+             type, 
+             prepayment);
     }
     
     height_iter->second[to].amount += amount;
