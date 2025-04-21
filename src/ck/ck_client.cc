@@ -154,20 +154,20 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         tx_hash->Append(std::to_string(tx.nonce()));
         call_contract_step->Append(tx.step());
         std::string storage_str;
-        if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
-            storage_str = tx.storages(0).value();
-        }
+        // if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
+        //     storage_str = tx.storages(0).value();
+        // }
 
-        if (tx.step() == pools::protobuf::kContractExcute) {
-            for (int32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
-                if (tx.storages(st_idx).key().find(std::string("ars_create_agg_sign")) != std::string::npos && tx.storages(st_idx).value().size() < 2048) {
-                    storage_str += "," + tx.storages(st_idx).value();
-                    ZJC_DEBUG("success get key: %s, value: %s",
-                        tx.storages(st_idx).key().c_str(), 
-                        tx.storages(st_idx).value().c_str());
-                }
-            }
-        }
+        // if (tx.step() == pools::protobuf::kContractExcute) {
+        //     for (int32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
+        //         if (tx.storages(st_idx).key().find(std::string("ars_create_agg_sign")) != std::string::npos && tx.storages(st_idx).value().size() < 2048) {
+        //             storage_str += "," + tx.storages(st_idx).value();
+        //             ZJC_DEBUG("success get key: %s, value: %s",
+        //                 tx.storages(st_idx).key().c_str(), 
+        //                 tx.storages(st_idx).value().c_str());
+        //         }
+        //     }
+        // }
       
         storages->Append(common::Encode::HexEncode(storage_str));
         transfers->Append("");
@@ -188,12 +188,12 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             attr_tx_type->Append(tx.step());
             attr_to->Append(common::Encode::HexEncode(tx.to()));
             attr_shard_id->Append(view_block_item->qc().network_id());
-            std::string val;
-            attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
-            attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
-            ZJC_DEBUG("hash to ck add key: %s, val: %s", 
-                tx.storages(j).key().c_str(), 
-                "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
+            // std::string val;
+            // attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
+            // attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
+            // ZJC_DEBUG("hash to ck add key: %s, val: %s", 
+            //     tx.storages(j).key().c_str(), 
+            //     "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
         }
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
@@ -255,12 +255,12 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         while (tx.step() == pools::protobuf::kConsensusLocalTos) {
             ZJC_DEBUG("now handle local to txs.");
             const std::string* to_txs_str = nullptr;
-            for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-                if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos) {
-                    to_txs_str = &tx.storages(storage_idx).value();
-                    break;
-                }
-            }
+            // for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
+            //     if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos) {
+            //         to_txs_str = &tx.storages(storage_idx).value();
+            //         break;
+            //     }
+            // }
 
             if (to_txs_str == nullptr) {
                 ZJC_WARN("get local tos info failed!");
