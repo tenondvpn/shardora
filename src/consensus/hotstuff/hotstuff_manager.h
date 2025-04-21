@@ -289,16 +289,6 @@ private:
                 msg_ptr->address_info);
     }
 
-	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractCreateByRootToTxItem>(
-                contract_mgr_, 
-                db_, 
-                msg_ptr, -1, 
-                account_mgr_, 
-                security_ptr_, 
-                msg_ptr->address_info);
-    }
-
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractPrepayment>(
                 db_, msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
