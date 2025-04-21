@@ -49,17 +49,16 @@ public:
             return consensus::kConsensusError;
         }
 
-        auto str_key = block_tx.to() + tx_info.key();
         std::string val;
-        if (zjc_host.GetKeyValue(block_tx.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(tx_info.key()).c_str());
+        if (zjc_host.GetKeyValue(block_tx.to(), tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
             return consensus::kConsensusError;
         }
 
         InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-        zjc_host.SaveKeyValue(block_tx.to(), tx_info.key(), tx_info.value());
-        block_tx.set_unique_hash(tx_info.key());
-        uint64_t* udata = (uint64_t*)tx_info.value().c_str();
+        zjc_host.SaveKeyValue(block_tx.to(), tx_info->key(), tx_info->value());
+        block_tx.set_unique_hash(tx_info->key());
+        uint64_t* udata = (uint64_t*)tx_info->value().c_str();
         uint64_t statistic_height = udata[0];
         block_tx.set_nonce(to_nonce + 1);
         ZJC_WARN("success call pool statistic height: %lu, pool: %d, view: %lu, "
@@ -68,7 +67,7 @@ public:
             view_block.qc().pool_index(), view_block.qc().view(),
             to_nonce, block_tx.nonce(),
             common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str());
+            common::Encode::HexEncode(tx_info->key()).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
         // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
