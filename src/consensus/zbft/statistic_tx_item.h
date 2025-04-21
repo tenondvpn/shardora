@@ -35,10 +35,6 @@ public:
             return consensus::kConsensusError;
         }
 
-        unique_hash_ = tx_info.key();
-        auto* storage = block_tx->add_storages();
-        storage->set_key(tx_info.key());
-        storage->set_value(tx_info.value());
         return consensus::kConsensusSuccess;
     }
 
@@ -58,34 +54,34 @@ public:
             return consensus::kConsensusError;
         }
 
-        auto str_key = block_tx.to() + unique_hash_;
+        auto& unique_hash = tx_info->key();
         std::string val;
-        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
-        if (!view_block.has_elect_statistic())) {
+        pools::protobuf::ElectStatistic elect_statistic;
+        if (!elect_statistic.ParseFromString(tx_info->value())) {
             assert(false);
             return consensus::kConsensusError;
         }
     
-        auto& elect_statistic = view_block.elect_statistic();
         if (elect_statistic.sharding_id() != view_block.qc().network_id()) {
             ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
             return consensus::kConsensusError;
         }
 
         InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-        block_tx.set_unique_hash(unique_hash_);
+        zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
+        block_tx.set_unique_hash(unique_hash);
         block_tx.set_nonce(to_nonce + 1);
         ZJC_WARN("success call statistic tx pool: %d, view: %lu, "
             "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
             view_block.qc().pool_index(), view_block.qc().view(),
             to_nonce, block_tx.nonce(),
             common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(unique_hash_).c_str());
+            common::Encode::HexEncode(unique_hash).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
         // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
@@ -108,7 +104,7 @@ public:
     }
 
 private:
-    std::string unique_hash_;
+    std::string unique_hash;
 
     DISALLOW_COPY_AND_ASSIGN(StatisticTxItem);
 };
