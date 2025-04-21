@@ -42,7 +42,7 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusError;
     }
 
-    address::protobuf::KeyValueInfo kv_info;
+    block::protobuf::KeyValueInfo kv_info;
     kv_info.set_value("");
     kv_info.set_height(to_nonce + 1);
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");

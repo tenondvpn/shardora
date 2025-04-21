@@ -327,7 +327,7 @@ int ContractCall::SaveContractCreateInfo(
     //             sizeof(storage_iter->first.bytes) +
     //             sizeof(storage_iter->second.value.bytes)) *
     //             consensus::kKeyValueStorageEachBytes;
-    //         address::protobuf::KeyValueInfo kv_info;
+    //         block::protobuf::KeyValueInfo kv_info;
     //         kv_info.set_value(kv->value());
     //         kv_info.set_height(block_tx.nonce());
     //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
@@ -350,7 +350,7 @@ int ContractCall::SaveContractCreateInfo(
     //             storage_iter->first.size() +
     //             storage_iter->second.str_val.size()) *
     //             consensus::kKeyValueStorageEachBytes;
-    //         address::protobuf::KeyValueInfo kv_info;
+    //         block::protobuf::KeyValueInfo kv_info;
     //         kv_info.set_value(kv->value());
     //         kv_info.set_height(block_tx.nonce());
     //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);

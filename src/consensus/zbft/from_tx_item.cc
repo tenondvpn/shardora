@@ -37,7 +37,7 @@ int FromTxItem::HandleTx(
             gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             auto str_key = block_tx.from() + block_tx.storages(i).key();
-            address::protobuf::KeyValueInfo kv_info;
+            block::protobuf::KeyValueInfo kv_info;
             kv_info.set_value(tx_info->value());
             kv_info.set_height(block_tx.nonce());
             zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());

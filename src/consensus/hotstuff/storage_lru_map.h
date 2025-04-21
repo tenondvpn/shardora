@@ -13,13 +13,13 @@ namespace shardora {
 
 namespace hotstuff {
 
-using KeyValuePairPtr = std::shared_ptr<std::pair<std::string, address::protobuf::KeyValueInfo>>;
+using KeyValuePairPtr = std::shared_ptr<std::pair<std::string, block::protobuf::KeyValueInfo>>;
 template<uint32_t kBucketSize>
 class StorageLruMap {
 public:
     ~StorageLruMap() {}
 
-    void insert(const std::string& key, const address::protobuf::KeyValueInfo& value) {
+    void insert(const std::string& key, const block::protobuf::KeyValueInfo& value) {
         auto kv_pair_ptr = std::make_shared<std::pair<std::string, std::string>>(
             std::make_pair(key, value));
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
