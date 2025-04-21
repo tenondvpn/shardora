@@ -1218,6 +1218,12 @@ void HotstuffMessage::CopyFrom(const HotstuffMessage& from) {
 }
 
 bool HotstuffMessage::IsInitialized() const {
+  if (has_pro_msg()) {
+    if (!this->pro_msg_->IsInitialized()) return false;
+  }
+  if (has_newview_msg()) {
+    if (!this->newview_msg_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -1568,6 +1574,9 @@ void NewViewMsg::CopyFrom(const NewViewMsg& from) {
 }
 
 bool NewViewMsg::IsInitialized() const {
+  if (has_qc_view()) {
+    if (!this->qc_view_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -1961,6 +1970,9 @@ void ProposeMsg::CopyFrom(const ProposeMsg& from) {
 }
 
 bool ProposeMsg::IsInitialized() const {
+  if (has_view_item()) {
+    if (!this->view_item_->IsInitialized()) return false;
+  }
   return true;
 }
 

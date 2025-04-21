@@ -21,10 +21,10 @@
 
 namespace protobuf_protos_2fblock_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<18> scc_info_BlockMessage;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingStatisticMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingTosMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ElectBlockMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<4> scc_info_Block;
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<5> scc_info_BlsMessage;
@@ -3494,6 +3494,33 @@ void Header::CopyFrom(const Header& from) {
 }
 
 bool Header::IsInitialized() const {
+  if (has_zbft()) {
+    if (!this->zbft_->IsInitialized()) return false;
+  }
+  if (has_block_proto()) {
+    if (!this->block_proto_->IsInitialized()) return false;
+  }
+  if (has_cross_tos()) {
+    if (!this->cross_tos_->IsInitialized()) return false;
+  }
+  if (has_cross_statistic()) {
+    if (!this->cross_statistic_->IsInitialized()) return false;
+  }
+  if (has_elect_block()) {
+    if (!this->elect_block_->IsInitialized()) return false;
+  }
+  if (has_init_proto()) {
+    if (!this->init_proto_->IsInitialized()) return false;
+  }
+  if (has_block()) {
+    if (!this->block_->IsInitialized()) return false;
+  }
+  if (has_view_block_proto()) {
+    if (!this->view_block_proto_->IsInitialized()) return false;
+  }
+  if (has_hotstuff()) {
+    if (!this->hotstuff_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -5192,6 +5219,27 @@ void OldHeader::CopyFrom(const OldHeader& from) {
 }
 
 bool OldHeader::IsInitialized() const {
+  if (has_zbft()) {
+    if (!this->zbft_->IsInitialized()) return false;
+  }
+  if (has_block_proto()) {
+    if (!this->block_proto_->IsInitialized()) return false;
+  }
+  if (has_cross_tos()) {
+    if (!this->cross_tos_->IsInitialized()) return false;
+  }
+  if (has_cross_statistic()) {
+    if (!this->cross_statistic_->IsInitialized()) return false;
+  }
+  if (has_elect_block()) {
+    if (!this->elect_block_->IsInitialized()) return false;
+  }
+  if (has_init_proto()) {
+    if (!this->init_proto_->IsInitialized()) return false;
+  }
+  if (has_block()) {
+    if (!this->block_->IsInitialized()) return false;
+  }
   return true;
 }
 

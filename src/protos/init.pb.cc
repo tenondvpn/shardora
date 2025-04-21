@@ -757,6 +757,9 @@ void GetAddressInfoResponse::CopyFrom(const GetAddressInfoResponse& from) {
 }
 
 bool GetAddressInfoResponse::IsInitialized() const {
+  if (has_view_block()) {
+    if (!this->view_block_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -2111,6 +2114,9 @@ void InitMessage::CopyFrom(const InitMessage& from) {
 }
 
 bool InitMessage::IsInitialized() const {
+  if (has_addr_res()) {
+    if (!this->addr_res_->IsInitialized()) return false;
+  }
   return true;
 }
 
