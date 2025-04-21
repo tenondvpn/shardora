@@ -1,4 +1,4 @@
-#include "consensus/zbft/contract_user_call.h"
+#include "consensus/zbft/contract_prepayment.h"
 
 #include "zjcvm/execution.h"
 

@@ -1,4 +1,4 @@
-#include "consensus/zbft/contract_user_create_call.h"
+#include "consensus/zbft/contract_create.h"
 
 #include "consensus/hotstuff/view_block_chain.h"
 #include "contract/contract_manager.h"
