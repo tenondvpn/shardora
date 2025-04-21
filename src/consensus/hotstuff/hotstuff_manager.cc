@@ -620,9 +620,9 @@ void HotstuffManager::RegisterCreateTxCallbacks() {
     // pools_mgr_->RegisterCreateTxFunction(
     //     pools::protobuf::kContractCreateByRootTo,
     //     std::bind(&HotstuffManager::CreateContractByRootToTx, this, std::placeholders::_1));
-    // pools_mgr_->RegisterCreateTxFunction(
-    //     pools::protobuf::kRootCreateAddress,
-    //     std::bind(&HotstuffManager::CreateRootToTxItem, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kRootCreateAddress,
+        std::bind(&HotstuffManager::CreateRootToTxItem, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kContractCreate,
         std::bind(&HotstuffManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
