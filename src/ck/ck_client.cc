@@ -254,7 +254,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 
         while (tx.step() == pools::protobuf::kConsensusLocalTos) {
             ZJC_DEBUG("now handle local to txs.");
-            block::protobuf::ConsensusToTxs& to_txs = block_item->local_to();
+            auto& to_txs = block_item->local_to();
             ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
             for (int32_t to_tx_idx = 0; to_tx_idx < to_txs.tos_size(); ++to_tx_idx) {
                 ZJC_DEBUG("0 now handle local to idx: %d", to_tx_idx);
