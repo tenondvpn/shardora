@@ -1282,6 +1282,13 @@ class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::uint64 balance() const;
   void set_balance(::google::protobuf::uint64 value);
 
+  // optional uint64 nonce = 4;
+  bool has_nonce() const;
+  void clear_nonce();
+  static const int kNonceFieldNumber = 4;
+  ::google::protobuf::uint64 nonce() const;
+  void set_nonce(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.ConsensusToTxsItem)
  private:
   void set_has_to();
@@ -1290,6 +1297,8 @@ class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insert
   void clear_has_balance();
   void set_has_contract_from();
   void clear_has_contract_from();
+  void set_has_nonce();
+  void clear_has_nonce();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1297,6 +1306,7 @@ class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::internal::ArenaStringPtr to_;
   ::google::protobuf::internal::ArenaStringPtr contract_from_;
   ::google::protobuf::uint64 balance_;
+  ::google::protobuf::uint64 nonce_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -6654,6 +6664,30 @@ inline void ConsensusToTxsItem::set_allocated_contract_from(::std::string* contr
   }
   contract_from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_from);
   // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.ConsensusToTxsItem.contract_from)
+}
+
+// optional uint64 nonce = 4;
+inline bool ConsensusToTxsItem::has_nonce() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ConsensusToTxsItem::set_has_nonce() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ConsensusToTxsItem::clear_has_nonce() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ConsensusToTxsItem::clear_nonce() {
+  nonce_ = GOOGLE_ULONGLONG(0);
+  clear_has_nonce();
+}
+inline ::google::protobuf::uint64 ConsensusToTxsItem::nonce() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ConsensusToTxsItem.nonce)
+  return nonce_;
+}
+inline void ConsensusToTxsItem::set_nonce(::google::protobuf::uint64 value) {
+  set_has_nonce();
+  nonce_ = value;
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ConsensusToTxsItem.nonce)
 }
 
 // -------------------------------------------------------------------
