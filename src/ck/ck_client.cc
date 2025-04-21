@@ -183,18 +183,18 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             acc_balance->Append(tx.balance());
         }
 
-        for (int32_t j = 0; j < tx.storages_size(); ++j) {
-            attr_account->Append(common::Encode::HexEncode(tx.from()));
-            attr_tx_type->Append(tx.step());
-            attr_to->Append(common::Encode::HexEncode(tx.to()));
-            attr_shard_id->Append(view_block_item->qc().network_id());
-            // std::string val;
-            // attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
-            // attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
-            // ZJC_DEBUG("hash to ck add key: %s, val: %s", 
-            //     tx.storages(j).key().c_str(), 
-            //     "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
-        }
+        // for (int32_t j = 0; j < tx.storages_size(); ++j) {
+        //     attr_account->Append(common::Encode::HexEncode(tx.from()));
+        //     attr_tx_type->Append(tx.step());
+        //     attr_to->Append(common::Encode::HexEncode(tx.to()));
+        //     attr_shard_id->Append(view_block_item->qc().network_id());
+        //     std::string val;
+        //     attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
+        //     attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
+        //     ZJC_DEBUG("hash to ck add key: %s, val: %s", 
+        //         tx.storages(j).key().c_str(), 
+        //         "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
+        // }
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             {
