@@ -31,26 +31,6 @@ public:
             return consensus::kConsensusError;
         }
 
-        // change
-        if (tx_info.key().empty() || tx_info.value().empty()) {
-            return consensus::kConsensusError;
-        }
-
-        if (!all_to_txs.ParseFromString(tx_info.value())) {
-            return consensus::kConsensusError;
-        }
-
-        uint32_t offset = 0;
-        for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
-            auto storage = block_tx->add_storages();
-            storage->set_key(protos::kNormalToShards);
-            storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
-            ZJC_DEBUG("success add normal to %s, val: %s", 
-                protos::kNormalToShards.c_str(), 
-                ProtobufToJson(all_to_txs.to_tx_arr(i)).c_str());
-            assert(!storage->value().empty());
-        }
-        
         return consensus::kConsensusSuccess;
     }
 
@@ -85,7 +65,7 @@ public:
         zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
         block_tx.set_unique_hash(unique_hash);
         block_tx.set_nonce(to_nonce + 1);
-        auto& all_to_txs = view_block.mutable_block_info()->mutable_normal_to();
+        auto& all_to_txs = *view_block.mutable_block_info()->mutable_normal_to();
         if (!all_to_txs.ParseFromString(tx_info->value())) {
             return consensus::kConsensusError;
         }
