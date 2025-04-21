@@ -221,7 +221,6 @@ int NetworkInit::Init(int argc, char** argv) {
     auto consensus_init_res = hotstuff_mgr_->Init(
         kv_sync_,
         contract_mgr_,
-        gas_prepayment_,
         vss_mgr_,
         account_mgr_,
         block_mgr_,

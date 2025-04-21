@@ -56,7 +56,6 @@ void BlockAcceptor::Init(
     vss_mgr_ = vss_mgr;
     contract_mgr_ = contract_mgr;
     db_ = db;
-    gas_prepayment_ = gas_prepayment;
     pools_mgr_ = pools_mgr;
     block_mgr_ = block_mgr;
     tm_block_mgr_ = tm_block_mgr;
@@ -326,7 +325,6 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kContractExcute:
             tx_ptr = std::make_shared<consensus::ContractCall>(
                     contract_mgr_, 
-                    gas_prepayment_, 
                     db_, 
                     msg_ptr, i,
                     account_mgr_, 
@@ -347,7 +345,6 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
                     msg_ptr, i, 
                     db_, 
-                    gas_prepayment_, 
                     account_mgr_, 
                     security_ptr_, 
                     address_info);

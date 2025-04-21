@@ -208,7 +208,7 @@ private:
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxLocalItem>(
-                msg_ptr, -1, db_, gas_prepayment_, 
+                msg_ptr, -1, db_, 
                 account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
@@ -308,7 +308,6 @@ private:
     pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCall>(
                 contract_mgr_, 
-                gas_prepayment_, 
                 db_, 
                 msg_ptr, -1, 
                 account_mgr_, 

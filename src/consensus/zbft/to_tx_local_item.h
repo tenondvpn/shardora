@@ -19,7 +19,6 @@ public:
             protos::AddressInfoPtr& addr_info)
             : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info), db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-        gas_prepayment_ = gas_prepayment;
     }
 
 

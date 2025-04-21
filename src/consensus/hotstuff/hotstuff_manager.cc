@@ -62,7 +62,6 @@ int HotstuffManager::Init(
         BlockCacheCallback new_block_cache_callback) {
     kv_sync_ = kv_sync;
     contract_mgr_ = contract_mgr;
-    gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
     account_mgr_ = account_mgr;
     block_mgr_ = block_mgr;
@@ -527,7 +526,6 @@ void HotstuffManager::PopPoolsMessage() {
                     case pools::protobuf::kContractExcute:
                         tx_ptr = std::make_shared<consensus::ContractCall>(
                                 contract_mgr_, 
-                                gas_prepayment_, 
                                 db_, 
                                 msg_ptr, i,
                                 account_mgr_, 

@@ -27,7 +27,6 @@ public:
             protos::AddressInfoPtr& addr_info)
             : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {
         contract_mgr_ = contract_mgr;
-        prepayment_ = prepayment;
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
