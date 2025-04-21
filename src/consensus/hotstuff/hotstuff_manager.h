@@ -20,7 +20,6 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
-#include <consensus/zbft/contract_create_by_root_to_tx_item.h>
 #include <consensus/zbft/contract_prepayment.h>
 #include <consensus/zbft/contract_create.h>
 #include <consensus/zbft/create_library.h>
