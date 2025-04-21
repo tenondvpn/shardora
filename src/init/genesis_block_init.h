@@ -108,7 +108,7 @@ private:
             const std::shared_ptr<hotstuff::ViewBlock>& vblock);
     void SetPrevElectInfo(
         const elect::protobuf::ElectBlock& elect_block,
-        block::protobuf::BlockTx& block_tx);
+        block::protobuf::Block& block);
     void SaveGenisisPoolHeights(uint32_t shard_id);
     int CreateAllQc(
         uint32_t  network_id,

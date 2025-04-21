@@ -59,7 +59,7 @@ public:
         const pools::protobuf::TxMessage& tx_info,
         block::protobuf::BlockTx* block_tx);
     virtual int HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost &zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx &block_tx);
@@ -67,12 +67,10 @@ public:
 private:
     int processElect(
         zjcvm::ZjchainHost& zjc_host,
-        shardora::pools::protobuf::ElectStatistic &elect_statistic,
-        const view_block::protobuf::ViewBlockItem& view_block,
+        view_block::protobuf::ViewBlockItem& view_block,
         shardora::block::protobuf::BlockTx &block_tx);
 
     int getMaxElectHeightInfo(
-        shardora::pools::protobuf::ElectStatistic &elect_statistic, 
         const shardora::pools::protobuf::PoolStatisticItem *&statistic, 
         shardora::common::MembersPtr &members);
 
@@ -80,8 +78,7 @@ private:
         shardora::common::MembersPtr &members,
         std::vector<shardora::consensus::NodeDetailPtr> &elect_nodes,
         uint32_t min_area_weight,
-        uint32_t min_tx_count,
-        shardora::pools::protobuf::ElectStatistic &elect_statistic);
+        uint32_t min_tx_count);
 
     int CheckWeedout(
         common::MembersPtr &members,
@@ -91,7 +88,6 @@ private:
         std::vector<NodeDetailPtr> &elect_nodes);
     int GetJoinElectNodesCredit(
         uint32_t index,
-        const pools::protobuf::ElectStatistic &elect_statistic,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
         std::vector<NodeDetailPtr> &elect_nodes_to_choose,
@@ -106,9 +102,8 @@ private:
         uint64_t *max_fts_val);
     int CreateNewElect(
         zjcvm::ZjchainHost& zjc_host,
-        const block::protobuf::Block &block,
+        block::protobuf::Block &block,
         const std::vector<NodeDetailPtr> &elect_nodes,
-        const pools::protobuf::ElectStatistic &elect_statistic,
         uint64_t gas_for_root,
         block::protobuf::BlockTx &block_tx);
     void MiningToken(
@@ -121,17 +116,15 @@ private:
         uint32_t index,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
-        const pools::protobuf::ElectStatistic &elect_statistic,
         std::vector<NodeDetailPtr> *elect_nodes_to_choose);
     void ChooseNodeForEachIndex(
         bool hold_pos,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
-        const pools::protobuf::ElectStatistic &elect_statistic,
         std::vector<NodeDetailPtr> &elect_nodes);
     void SetPrevElectInfo(
         const elect::protobuf::ElectBlock &elect_block,
-        block::protobuf::BlockTx &block_tx);
+        block::protobuf::Block &block_item);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;
@@ -158,6 +151,7 @@ private:
     common::MembersPtr elect_members_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     std::string unique_hash_;
+    pools::protobuf::ElectStatistic elect_statistic_;
 
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

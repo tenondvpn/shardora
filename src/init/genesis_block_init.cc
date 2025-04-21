@@ -618,7 +618,7 @@ std::unordered_map<std::string, uint64_t> GenesisBlockInit::GetGenesisAccountBal
 
 void GenesisBlockInit::SetPrevElectInfo(
         const elect::protobuf::ElectBlock& elect_block,
-        block::protobuf::BlockTx& block_tx) {
+        block::protobuf::Block& block) {
     view_block::protobuf::ViewBlockItem view_block_item;
     auto res = prefix_db_->GetBlockWithHeight(
         network::kRootCongressNetworkId,
@@ -640,25 +640,7 @@ void GenesisBlockInit::SetPrevElectInfo(
         return;
     }
 
-    elect::protobuf::ElectBlock prev_elect_block;
-    bool ec_block_loaded = false;
-    for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
-        if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            prev_elect_block.ParseFromString(block_item.tx_list(0).storages(i).value());
-            ec_block_loaded = true;
-            break;
-        }
-    }
-
-    if (!ec_block_loaded) {
-        assert(false);
-        return;
-    }
-
-    auto kv = block_tx.add_storages();
-    kv->set_key(protos::kShardElectionPrevInfo);
-    kv->set_value(prev_elect_block.SerializeAsString());
-    return;
+    block.set_prev_elect_block(block_item.elect_block());
 }
 
 int GenesisBlockInit::CreateElectBlock(
@@ -742,7 +724,7 @@ int GenesisBlockInit::CreateElectBlock(
         prefix_db_->SaveElectHeightCommonPk(shard_netid, prev_height, *prev_members, db_batch);
         auto st = db_->Put(db_batch);
         assert(st.ok());
-        SetPrevElectInfo(ec_block, *tx_info);
+        SetPrevElectInfo(ec_block, *tenon_block);
         ZJC_WARN("genesis elect shard: %u, prev_height: %lu, "
             "init bls common public key: %s, %s, %s, %s", 
             shard_netid, prev_height, 
@@ -761,10 +743,7 @@ int GenesisBlockInit::CreateElectBlock(
         bls_pk_json_.push_back(item);
     }
 
-    auto storage = tx_info->add_storages();
-    storage->set_key(protos::kElectNodeAttrElectBlock);
-    std::string val = ec_block.SerializeAsString();
-    storage->set_value(ec_block.SerializeAsString());
+    tenon_block->set_elect_block(ec_block);
     tenon_block->set_version(common::kTransactionVersion);
     // 这个 pool index 用了 shard 的值而已
     view_block_ptr->set_parent_hash(root_pre_vb_hash);
@@ -1022,21 +1001,17 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
         // 选举块、时间块无论 shard 都是要全网同步的
         block_mgr_->GenesisNewBlock(pb_v_block, db_batch);
+        if (tenon_block_ptr->has_elect_block()) {
+            prefix_db_->SaveLatestElectBlock(tenon_block_ptr->elect_block(), db_batch);
+            ZJC_DEBUG("save elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
+                ec_block.shard_network_id(),
+                ec_block.elect_height(),
+                ec_block.has_prev_members(),
+                ec_block.prev_members().has_common_pubkey());
+        }
+        
         for (int32_t i = 0; i < tenon_block_ptr->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block_ptr->tx_list(i).storages_size(); ++j) {
-                if (tenon_block_ptr->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
-                    elect::protobuf::ElectBlock ec_block;
-                    if (!ec_block.ParseFromString(ec_block_str)) {
-                        assert(false);
-                    }
-
-                    prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
-                    ZJC_DEBUG("save elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
-                        ec_block.shard_network_id(),
-                        ec_block.elect_height(),
-                        ec_block.has_prev_members(),
-                        ec_block.prev_members().has_common_pubkey());
-                }
                 // 同步时间块
                 if (tenon_block_ptr->tx_list(i).storages(j).key() == protos::kAttrGenesisTimerBlock) {
                     prefix_db_->SaveGenesisTimeblock(tenon_block_ptr->height(), tenon_block_ptr->timestamp(), db_batch);

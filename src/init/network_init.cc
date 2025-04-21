@@ -1228,27 +1228,12 @@ void NetworkInit::HandleElectionBlock(
         view_block->qc().network_id(), view_block->qc().pool_index(), block->height());
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
-    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-        if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            ZJC_DEBUG("now handle storage index: %d, key: %s, val size: %u, value: %s",
-                i,
-                block_tx.storages(i).key().c_str(),
-                block_tx.storages(i).value().size(),
-                common::Encode::HexEncode(block_tx.storages(i).value()).c_str());
-            if (!elect_block->ParseFromString(block_tx.storages(i).value())) {
-                ZJC_FATAL("parse elect block failed!");
-                return;
-            }
-        }
+    if (block->has_elect_block()) {
+        *elect_block = block->elect_block();
+    }
 
-        if (block_tx.storages(i).key() == protos::kShardElectionPrevInfo) {
-            if (!prev_elect_block->ParseFromString(block_tx.storages(i).value())) {
-                ZJC_FATAL("parse elect block failed!");
-                return;
-            }
-
-            ZJC_INFO("success get prev elect block.");
-        }
+    if (block->has_prev_elect_block()) {
+        *prev_elect_block = block->prev_elect_block();
     }
 
     if (!elect_block->has_shard_network_id() ||

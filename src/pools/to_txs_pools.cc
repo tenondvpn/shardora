@@ -176,9 +176,6 @@ void ToTxsPools::StatisticToInfo(
         case pools::protobuf::kContractCreate:
             HandleCreateContractUserCall(view_block, tx_list[i]);
             break;
-        case pools::protobuf::kContractCreateByRootFrom:
-            HandleCreateContractByRootFrom(view_block, tx_list[i]);
-            break;
         case pools::protobuf::kContractGasPrepayment:
             HandleContractGasPrepayment(view_block, tx_list[i]);
             break;
@@ -1015,21 +1012,6 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::Encode::HexEncode(to).c_str(),
                 common::GlobalInfo::Instance()->network_id(),
                 iter->second.type);        
-        } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
-            assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            ZJC_DEBUG("library bytes: %s, to: %s, from: %s",
-                common::Encode::HexEncode(iter->second.library_bytes).c_str(),
-                common::Encode::HexEncode(to).c_str(),
-                common::Encode::HexEncode(iter->second.from).c_str());
-            to_item->set_library_bytes(iter->second.library_bytes);
-            // ContractCreate 需要 from 地址，用于 prepayment 创建
-            to_item->set_contract_from(iter->second.from);
-            to_item->set_prepayment(iter->second.prepayment);
-            auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
-            to_item->set_sharding_id(net_id);
-            ZJC_DEBUG("create contract use caller sharding address: %s, %u",
-                common::Encode::HexEncode(to).c_str(),
-                common::GlobalInfo::Instance()->network_id());
 		} else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
             assert(sharding_id != network::kRootCongressNetworkId);
             ZJC_DEBUG(

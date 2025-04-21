@@ -384,10 +384,18 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
             case pools::protobuf::kCross:
                 assert(false);
                 break;
-            case pools::protobuf::kConsensusRootElectShard:
+            case pools::protobuf::kConsensusRootElectShard: {
                 zjc_host_ptr->elect_tx_ = &tx;
-                SaveElectTxInfoToDb(*zjc_host_ptr, tx);
+                auto& elect_block = view_block->block_info().elect_block();
+                if (elect_block.prev_members().prev_elect_height() > 0) {
+                    prefix_db_->SaveElectHeightCommonPk(
+                        elect_block.shard_network_id(),
+                        elect_block.prev_members().prev_elect_height(),
+                        elect_block.prev_members(),
+                        zjc_host.db_batch_);
+                }
                 break;
+            }
             case pools::protobuf::kJoinElect:
                 // HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
                 break;
@@ -405,28 +413,6 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
     }
 
     block_mgr_->ConsensusAddBlock(block_info_ptr);
-}
-
-void ViewBlockChain::SaveElectTxInfoToDb(
-        zjcvm::ZjchainHost& zjc_host, 
-        const block::protobuf::BlockTx& tx) {
-    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
-    //     if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
-    //         elect::protobuf::ElectBlock elect_block;
-    //         if (!elect_block.ParseFromString(tx.storages(i).value())) {
-    //             assert(false);
-    //             return;
-    //         }
-
-    //         if (elect_block.prev_members().prev_elect_height() > 0) {
-    //             prefix_db_->SaveElectHeightCommonPk(
-    //                 elect_block.shard_network_id(),
-    //                 elect_block.prev_members().prev_elect_height(),
-    //                 elect_block.prev_members(),
-    //                 zjc_host.db_batch_);
-    //         }
-    //     }
-    // }
 }
 
 void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {

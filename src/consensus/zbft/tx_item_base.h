@@ -25,7 +25,7 @@ protected:
     virtual ~TxItemBase() {}
 
     virtual int HandleTx(
-            const view_block::protobuf::ViewBlockItem& view_block,
+            view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
@@ -55,7 +55,7 @@ protected:
             const block::protobuf::BlockTx& tx, 
             uint64_t gas_limit, 
             uint64_t gas_price, 
-            const view_block::protobuf::ViewBlockItem& view_block) {
+            view_block::protobuf::ViewBlockItem& view_block) {
         zjcvm::Uint64ToEvmcBytes32(
             zjc_host.tx_context_.tx_gas_price,
             gas_price);
@@ -86,8 +86,6 @@ protected:
         if (tx_info.step() == pools::protobuf::kContractCreate ||
             tx_info.step() == pools::protobuf::kCreateLibrary||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||
-            tx_info.step() == pools::protobuf::kContractCreateByRootFrom ||
-            // tx_info.step() == pools::protobuf::kContractCreateByRootTo ||
             tx_info.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());

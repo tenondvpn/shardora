@@ -20,7 +20,7 @@ public:
         : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {}
     virtual ~CreateLibrary() {}
     int HandleTx(
-            const view_block::protobuf::ViewBlockItem& view_block,
+            view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {

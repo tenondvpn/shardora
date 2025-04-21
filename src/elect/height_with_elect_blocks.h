@@ -282,37 +282,13 @@ private:
         }
 
         auto& block = view_block.block_info();
-        bool eb_valid = false;
-        assert(block.tx_list_size() > 0);
-        elect::protobuf::ElectBlock elect_block;
-        for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
-            ZJC_DEBUG("get tx step %d, %d, network_id: %u",
-                tx_idx, block.tx_list(tx_idx).step(), network_id); 
-            if (block.tx_list(tx_idx).step() != pools::protobuf::kConsensusRootElectShard) {
-                continue;
-            }
-
-            ZJC_DEBUG("success get elect block step: %d", block.tx_list(tx_idx).step());
-            for (int32_t i = 0; i < block.tx_list(tx_idx).storages_size(); ++i) {
-                ZJC_DEBUG("get elect block key: %s", block.tx_list(tx_idx).storages(i).key().c_str());
-                if (block.tx_list(tx_idx).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                    ZJC_DEBUG("success get elect block key: %s", block.tx_list(tx_idx).storages(i).key().c_str());
-                    if (!elect_block.ParseFromString(block.tx_list(0).storages(i).value())) {
-                        assert(false);
-                        return nullptr;
-                    }
-
-                    eb_valid = true;
-                    break;
-                }
-            }
-        }
-
-        if (!eb_valid) {
+        if (!block.has_elect_block()) {
             assert(false);
             return nullptr;
         }
 
+        assert(block.tx_list_size() > 0);
+        elect::protobuf::ElectBlock& elect_block = block.elect_block();
         auto shard_members_ptr = std::make_shared<common::Members>();
         auto& in = elect_block.in();
         uint32_t member_index = 0;

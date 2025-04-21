@@ -1,8 +1,9 @@
 syntax = "proto2";
 
 package shardora.block.protobuf;
-import "protos/pools.proto";
 import "protos/address.proto";
+import "protos/elect.proto";
+import "protos/pools.proto";
 
 message StorageItem {
     optional bytes key = 1;
@@ -59,6 +60,10 @@ message Block {
     repeated KeyValueInfo key_value_array = 8;
     repeated TransferItem contract_txs = 9;
     repeated address.protobuf.AddressInfo address_array = 10;
+    optional pools.protobuf.ElectStatistic elect_statistic = 11;
+    optional elect.protobuf.ElectBlock elect_block = 12;
+    optional elect.protobuf.ElectBlock prev_elect_block = 13;
+    optional pools.protobuf.ToTxMessage normal_to = 14;
 }
 
 message ConsensusToTxsItem {

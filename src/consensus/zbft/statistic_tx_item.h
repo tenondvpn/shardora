@@ -43,7 +43,7 @@ public:
     }
 
     virtual int HandleTx(
-            const view_block::protobuf::ViewBlockItem& view_block,
+            view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
@@ -65,12 +65,12 @@ public:
             return consensus::kConsensusError;
         }
 
-        pools::protobuf::ElectStatistic elect_statistic;
-        if (!elect_statistic.ParseFromString(block_tx.storages(0).value())) {
+        if (!view_block.has_elect_statistic())) {
             assert(false);
             return consensus::kConsensusError;
         }
     
+        auto& elect_statistic = view_block.elect_statistic();
         if (elect_statistic.sharding_id() != view_block.qc().network_id()) {
             ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
             return consensus::kConsensusError;

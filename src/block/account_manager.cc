@@ -827,9 +827,6 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kContractGasPrepayment:
         HandleContractPrepayment(view_block_item, tx, db_batch);
         break;
-    case pools::protobuf::kContractCreateByRootFrom:
-        HandleCreateContractByRootFrom(view_block_item, tx, db_batch);
-        break;
     case pools::protobuf::kConsensusCreateGenesisAcount:
         HandleCreateGenesisAcount(view_block_item, tx, db_batch);
         break;
