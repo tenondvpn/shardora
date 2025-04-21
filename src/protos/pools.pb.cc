@@ -873,7 +873,7 @@ void AddDescriptorsImpl() {
       "ntract_code\030\014 \001(\014\022\026\n\016contract_input\030\r \001("
       "\014\022\014\n\004sign\030\016 \001(\014\022:\n\010tx_debug\030\017 \003(\0132(.shar"
       "dora.pools.protobuf.TxDelayTestInfo\022 \n\030t"
-      "x_debug_timeout_seconds\030\020 \001(\004*\204\003\n\010StepTy"
+      "x_debug_timeout_seconds\030\020 \001(\004*\345\002\n\010StepTy"
       "pe\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kC"
       "onsensusRootElectShard\020\002\022\033\n\027kConsensusRo"
       "otTimeBlock\020\003\022!\n\035kConsensusCreateGenesis"
@@ -882,11 +882,10 @@ void AddDescriptorsImpl() {
       "\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRootCreateAdd"
       "ress\020\t\022\016\n\nkStatistic\020\014\022\016\n\nkJoinElect\020\r\022\022"
       "\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016\n\nkRootC"
-      "ross\020\020\022\035\n\031kContractCreateByRootFrom\020\021\022\025\n"
-      "\021kPoolStatisticTag\020\022"
+      "ross\020\020\022\025\n\021kPoolStatisticTag\020\022"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3380);
+      descriptor, 3349);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -928,7 +927,6 @@ bool StepType_IsValid(int value) {
     case 14:
     case 15:
     case 16:
-    case 17:
     case 18:
       return true;
     default:

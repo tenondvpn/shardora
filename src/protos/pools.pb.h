@@ -154,7 +154,6 @@ enum StepType {
   kCreateLibrary = 14,
   kCross = 15,
   kRootCross = 16,
-  kContractCreateByRootFrom = 17,
   kPoolStatisticTag = 18
 };
 bool StepType_IsValid(int value);
