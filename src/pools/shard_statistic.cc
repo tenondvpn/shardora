@@ -12,7 +12,6 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 #include <bls/bls_utils.h>
-#include <elect/elect_pledge.h>
 #include <protos/elect.pb.h>
 #include <protos/tx_storage_key.h>
 // #include <iostream>

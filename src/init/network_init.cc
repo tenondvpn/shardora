@@ -29,7 +29,6 @@
 #include "db/db.h"
 #include "db/db_utils.h"
 #include "elect/elect_manager.h"
-#include "elect/elect_pledge.h"
 #include "http/http_server.h"
 #include "http/http_client.h"
 #include "init/genesis_block_init.h"
