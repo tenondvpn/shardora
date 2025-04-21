@@ -336,12 +336,12 @@ void AccountManager::HandleLocalToTx(
     }
 
     const std::string* to_txs_str = nullptr;
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-            to_txs_str = &tx.storages(i).value();
-            break;
-        }
-    }
+    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //     if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
+    //         to_txs_str = &tx.storages(i).value();
+    //         break;
+    //     }
+    // }
 
     if (to_txs_str == nullptr) {
         ZJC_WARN("get local tos info failed!");
@@ -455,36 +455,36 @@ void AccountManager::HandleCreateContract(
             return;
         }
 
-        for (int32_t i = 0; i < tx.storages_size(); ++i) {
-            if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-                account_info = std::make_shared<address::protobuf::AddressInfo>();
-                auto& bytes_code = tx.storages(i).value();
-                account_info->set_type(address::protobuf::kWaitingRootConfirm);
-                account_info->set_pool_index(view_block.qc().pool_index());
-                account_info->set_addr(tx.to());
-                account_info->set_sharding_id(view_block.qc().network_id());
-                account_info->set_latest_height(block.height());
-                account_info->set_balance(tx.amount());
-                account_info->set_bytes_code(bytes_code);
-                account_info->set_nonce(0);
-                // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
-                thread_update_accounts_queue_[thread_idx].push(account_info);
-                ZJC_INFO("1 get address info failed create new address to this id: %s,"
-                    "shard: %u, local shard: %u",
-                    common::Encode::HexEncode(tx.to()).c_str(), view_block.qc().network_id(),
-                    common::GlobalInfo::Instance()->network_id());
+        // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        //     if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+        //         account_info = std::make_shared<address::protobuf::AddressInfo>();
+        //         auto& bytes_code = tx.storages(i).value();
+        //         account_info->set_type(address::protobuf::kWaitingRootConfirm);
+        //         account_info->set_pool_index(view_block.qc().pool_index());
+        //         account_info->set_addr(tx.to());
+        //         account_info->set_sharding_id(view_block.qc().network_id());
+        //         account_info->set_latest_height(block.height());
+        //         account_info->set_balance(tx.amount());
+        //         account_info->set_bytes_code(bytes_code);
+        //         account_info->set_nonce(0);
+        //         // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+        //         thread_update_accounts_queue_[thread_idx].push(account_info);
+        //         ZJC_INFO("1 get address info failed create new address to this id: %s,"
+        //             "shard: %u, local shard: %u",
+        //             common::Encode::HexEncode(tx.to()).c_str(), view_block.qc().network_id(),
+        //             common::GlobalInfo::Instance()->network_id());
 
-                ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u, nonce: %lu",
-                    common::Encode::HexEncode(tx.to()).c_str(),
-                    tx.amount(),
-                    view_block.qc().network_id(),
-                    view_block.qc().pool_index(),
-                    account_info->nonce());
-                break;
-            }
-        }
+        //         ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u, nonce: %lu",
+        //             common::Encode::HexEncode(tx.to()).c_str(),
+        //             tx.amount(),
+        //             view_block.qc().network_id(),
+        //             view_block.qc().pool_index(),
+        //             account_info->nonce());
+        //         break;
+        //     }
+        // }
                 
-        update_acc_con_.notify_one();
+        // update_acc_con_.notify_one();
     }
 }
 
@@ -597,11 +597,11 @@ void AccountManager::HandleContractExecuteTx(
         return;
     }
 
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kContractDestruct) {
-            account_info->set_destructed(true);
-        }
-    }
+    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //     if (tx.storages(i).key() == protos::kContractDestruct) {
+    //         account_info->set_destructed(true);
+    //     }
+    // }
 
     account_info->set_latest_height(block.height());
     // amount is contract 's new balance
@@ -645,13 +645,13 @@ void AccountManager::HandleRootCreateAddressTx(
     }
 
     uint32_t sharding_id = common::kInvalidUint32;
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
-            uint32_t* tmp = (uint32_t*)tx.storages(i).value().c_str();
-            sharding_id = tmp[0];
-            break;
-        }
-    }
+    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //     if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
+    //         uint32_t* tmp = (uint32_t*)tx.storages(i).value().c_str();
+    //         sharding_id = tmp[0];
+    //         break;
+    //     }
+    // }
 
     if (sharding_id == common::kInvalidUint32) {
         assert(false);
@@ -698,16 +698,16 @@ void AccountManager::HandleJoinElectTx(
         db::DbWriteBatch& db_batch) {
     auto& block = view_block.block_info();
     bls::protobuf::JoinElectInfo join_info;
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-            if (!join_info.ParseFromString(tx.storages(i).value())) {
-                assert(false);
-                break;
-            }
+    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //     if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
+    //         if (!join_info.ParseFromString(tx.storages(i).value())) {
+    //             assert(false);
+    //             break;
+    //         }
 
-            break;
-        }
-    }
+    //         break;
+    //     }
+    // }
 
     if (!join_info.has_member_idx()) {
         ZJC_WARN("get local tos info failed!");
