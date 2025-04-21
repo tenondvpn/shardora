@@ -39,7 +39,7 @@ int FromTxItem::HandleTx(
             auto str_key = block_tx.from() + block_tx.storages(i).key();
             block::protobuf::KeyValueInfo kv_info;
             kv_info.set_value(tx_info->value());
-            kv_info.set_height(block_tx.nonce());
+            kv_info.set_nonce(block_tx.nonce());
             zjc_host.db_batch_.Put(str_key, kv_info.SerializeAsString());
         }
 

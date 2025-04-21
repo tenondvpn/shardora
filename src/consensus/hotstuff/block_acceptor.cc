@@ -161,7 +161,7 @@ Status BlockAcceptor::Accept(
                 storage_iter != account_iter->second.storage.end(); ++storage_iter) {
             auto& kv_info = *view_block.mutable_block_info()->add_key_value_array();
             kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
+            kv_info.set_nonce(block_tx.nonce());
             prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
         }
 
@@ -169,7 +169,7 @@ Status BlockAcceptor::Accept(
                 storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
             auto& kv_info = *view_block.mutable_block_info()->add_key_value_array();
             kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
+            kv_info.set_nonce(block_tx.nonce());
             prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
         }
     }

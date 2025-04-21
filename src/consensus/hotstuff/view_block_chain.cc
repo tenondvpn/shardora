@@ -135,7 +135,7 @@ Status ViewBlockChain::Store(
 
                 block::protobuf::KeyValueInfo kv_info;
                 kv_info.set_value(tx.storages(storage_idx).value());
-                kv_info.set_height(tx.nonce());
+                kv_info.set_nonce(tx.nonce());
                 zjc_host_ptr->db_batch_.Put(tx.storages(storage_idx).key(), kv_info.SerializeAsString());
             }
         }

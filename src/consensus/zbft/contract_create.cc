@@ -243,7 +243,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
     //             consensus::kKeyValueStorageEachBytes;
     //         block::protobuf::KeyValueInfo kv_info;
     //         kv_info.set_value(kv->value());
-    //         kv_info.set_height(block_tx.nonce());
+    //         kv_info.set_nonce(block_tx.nonce());
     //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
     //     }
 
@@ -262,7 +262,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
     //             consensus::kKeyValueStorageEachBytes;
     //         block::protobuf::KeyValueInfo kv_info;
     //         kv_info.set_value(kv->value());
-    //         kv_info.set_height(block_tx.nonce());
+    //         kv_info.set_nonce(block_tx.nonce());
     //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
     //     }
     // }
