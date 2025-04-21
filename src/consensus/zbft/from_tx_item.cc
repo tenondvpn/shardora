@@ -24,6 +24,7 @@ int FromTxItem::HandleTx(
         return kConsensusSuccess;
     }
 
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     do  {
         gas_used = consensus::kTransferGas; // 转账交易费计算
         if (from_nonce + 1 != block_tx.nonce()) {

@@ -55,6 +55,7 @@ int RootToTxItem::HandleTx(
         return consensus::kConsensusError;
     }
     
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     block::protobuf::KeyValueInfo kv_info;
     kv_info.set_value("1");
     kv_info.set_nonce(to_nonce + 1);

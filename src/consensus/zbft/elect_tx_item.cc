@@ -57,6 +57,7 @@ int ElectTxItem::HandleTx(
         return kConsensusError;
     }
 
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     ZJC_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, new node size: %u, %s, unique_hash_: %s",
         elect_statistic.sharding_id(), 
         elect_statistic.statistic_height(), 
