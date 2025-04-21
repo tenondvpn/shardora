@@ -1187,35 +1187,29 @@ void NetworkInit::HandleTimeBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("time block coming %u_%u_%lu, %u_%u_%lu",
+    ZJC_DEBUG("time block coming %u_%u_%lu, %u_%u_%lu, tm: %lu, vss: %lu",
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
         view_block->qc().view(), 
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
-        view_block->block_info().height());
+        view_block->block_info().height(),
+        block.timer_block().timestamp(),
+        block.timer_block().vss_random());
     auto& block = view_block->block_info();
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kAttrTimerBlock) {
-            if (tx.storages(i).value().size() != 16) {
-                return;
-            }
+    if (block.has_timer_block()) {
+        auto vss_random = block.timer_block().vss_random();
+        hotstuff_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        vss_mgr_->OnTimeBlock(view_block);
+        tm_block_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        bls_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        shard_statistic_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        block_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        ZJC_DEBUG("new time block called height: %lu, tm: %lu", block.height(), vss_random);
+    }
 
-            uint64_t* data_arr = (uint64_t*)tx.storages(i).value().c_str();
-            hotstuff_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
-            vss_mgr_->OnTimeBlock(view_block);
-            tm_block_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
-            bls_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
-            shard_statistic_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
-            block_mgr_->OnTimeBlock(data_arr[0], block.height(), data_arr[1]);
-            ZJC_DEBUG("new time block called height: %lu, tm: %lu", block.height(), data_arr[1]);
-        }
-
-        if (tx.storages(i).key() == protos::kAttrGenesisTimerBlock) {
-            if (tx.storages(i).key() == protos::kAttrGenesisTimerBlock) {
-                prefix_db_->SaveGenesisTimeblock(block.height(), block.timestamp(), db_batch);
-            }
-        }
+    if (block.is_genesis_timer_block()) {
+        prefix_db_->SaveGenesisTimeblock(block.height(), block.timestamp(), db_batch);
     }
 }
 

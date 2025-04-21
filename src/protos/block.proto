@@ -4,6 +4,7 @@ package shardora.block.protobuf;
 import "protos/address.proto";
 import "protos/elect.proto";
 import "protos/pools.proto";
+import "protos/timeblock.proto";
 
 message StorageItem {
     optional bytes key = 1;
@@ -65,6 +66,8 @@ message Block {
     optional elect.protobuf.ElectBlock prev_elect_block = 13;
     optional pools.protobuf.ToTxMessage normal_to = 14;
     repeated address.protobuf.AddressInfo to_address_array = 15;  // 跨分片交易
+    optional timeblock.protobuf.TimeBlock timer_block = 16;
+    optional bool is_genesis_timer_block = 17;
 }
 
 message ConsensusToTxsItem {

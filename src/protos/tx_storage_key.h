@@ -30,10 +30,8 @@ static const std::string kElectNodeAttrKeyAllPickBloomfilter = "__elect_allpickb
 static const std::string kElectNodeAttrKeyPickInBloomfilter = "__elect_pickinbloomfilter";
 static const std::string kElectNodeAttrElectBlock = "__elect_block";
 
-static const std::string kAttrTimerBlock = "__tmblock_tmblock";
 static const std::string kAttrTimerBlockHeight = "__tmblock_tmblock_height";
 static const std::string kAttrTimerBlockTm = "__tmblock_tmblock_tm";
-static const std::string kAttrGenesisTimerBlock = "__tmblock_genesis";
 static const std::string kVssRandomAttr = "__vssrandomattr";
 
 static const std::string kStatisticAttr = "__kStatisticAttr";

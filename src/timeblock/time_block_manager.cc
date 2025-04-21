@@ -59,7 +59,6 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
     ZJC_INFO("success create timeblock tx key: %s",
         common::Encode::HexEncode(pools::GetTxKey(
@@ -122,9 +121,10 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
             new_time_block_tm += common::kTimeBlockCreatePeriodSeconds;
         }
 
-        u64_data[0] = new_time_block_tm;
-        u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
-        tx_info->set_value(std::string(data, sizeof(data)));
+        timeblock::protobuf::TimeBlock timer_block;
+        timer_block.set_timestamp(new_time_block_tm);
+        timer_block.set_vss_random(vss_mgr_->GetConsensusFinalRandom());
+        tx_info->set_value(timer_block.SerializeAsString());
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info->set_to(account_info->addr());
         tx_info->set_key(common::Hash::keccak256(tx_info->value()));

@@ -901,7 +901,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(common::Random::RandomUint64());
-        timeblock_storage->set_key(protos::kAttrTimerBlock);
         
         char data[16];
         uint64_t* u64_data = (uint64_t*)data;
@@ -909,10 +908,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         u64_data[1] = tm_block.vss_random();
         timeblock_storage->set_value(std::string(data, sizeof(data)));
         auto genesis_tmblock = tx_info->add_storages();
-        genesis_tmblock->set_key(protos::kAttrGenesisTimerBlock);
-//         auto vss_random_attr = tx_info->add_attr();
-//         vss_random_attr->set_key(tmblock::kVssRandomAttr);
-//         vss_random_attr->set_value(std::to_string(now_tm));
+        genesis_tmblock->set_is_genesis_timer_block(true);
         tenon_block->set_version(common::kTransactionVersion);
         // TODO network_id 一定是 root
         view_block_ptr->set_parent_hash(root_pre_vb_hash);
@@ -1009,18 +1005,16 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 ec_block.has_prev_members(),
                 ec_block.prev_members().has_common_pubkey());
         }
-        
-        for (int32_t i = 0; i < tenon_block_ptr->tx_list_size(); ++i) {
-            for (int32_t j = 0; j < tenon_block_ptr->tx_list(i).storages_size(); ++j) {
-                // 同步时间块
-                if (tenon_block_ptr->tx_list(i).storages(j).key() == protos::kAttrGenesisTimerBlock) {
-                    prefix_db_->SaveGenesisTimeblock(tenon_block_ptr->height(), tenon_block_ptr->timestamp(), db_batch);
-                }
 
-                if (tenon_block_ptr->tx_list(i).storages(j).key() == protos::kAttrTimerBlock) {
-                    prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
-                }
-            }
+        if (tenon_block_ptr->is_timer_block()) {
+            prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
+        }
+
+        if (tenon_block_ptr->is_genesis_timer_block()) {
+            prefix_db_->SaveLatestTimeBlock(
+                tenon_block_ptr->height(), 
+                tenon_block_ptr->timestamp(),
+                db_batch);
         }
     }
     fclose(root_gens_init_block_file);

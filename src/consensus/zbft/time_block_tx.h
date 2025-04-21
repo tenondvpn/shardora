@@ -2,6 +2,7 @@
 
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
+#include "protos/timeblock.pb.h"
 #include "security/security.h"
 
 namespace shardora {
@@ -27,20 +28,6 @@ public:
             return consensus::kConsensusError;
         }
 
-        if (tx_info.key().empty()) {
-            assert(false);
-            return consensus::kConsensusError;
-        }
-
-        unique_hash_ = tx_info.key();
-        auto* storage = block_tx->add_storages();
-        storage->set_key(protos::kAttrTimerBlock);
-        storage->set_value(tx_info.value());
-        ZJC_DEBUG("root to tx consensus coming: %s, nonce: %lu, key: %s, val: %s", 
-            common::Encode::HexEncode(tx_info.to()).c_str(),  
-            tx_info.nonce(),
-            common::Encode::HexEncode(tx_info.key()).c_str(),
-            common::Encode::HexEncode(tx_info.value()).c_str());
         return consensus::kConsensusSuccess;
     }
 
@@ -52,22 +39,27 @@ public:
         uint64_t to_balance = 0;
         uint64_t to_nonce = 0;
         GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
-        auto str_key = block_tx.to() + unique_hash_;
+        auto& unique_hash = tx_info->key();
         std::string val;
-        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            return consensus::kConsensusError;
+        }
+
+        timeblock::protobuf::TimeBlock timer_block;
+        if (!timer_block.ParseFromString(tx_info->value())) {
             return consensus::kConsensusError;
         }
 
         InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-        block_tx.set_unique_hash(unique_hash_);
+        zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
+        block_tx.set_unique_hash(unique_hash);
         block_tx.set_nonce(to_nonce + 1);
         ZJC_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+        view_block.mutable_block_info()->set_timer_block(timer_block);
         ZJC_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
@@ -76,7 +68,6 @@ public:
     }
 
 private:
-    std::string unique_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(TimeBlockTx);
 };
