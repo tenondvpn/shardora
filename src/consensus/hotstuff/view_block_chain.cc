@@ -70,74 +70,24 @@ Status ViewBlockChain::Store(
 
     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
-        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            auto& tx = view_block->block_info().tx_list(i);
-            if (tx.has_nonce()) {
-                auto& addr = account_mgr_->GetTxValidAddress(tx);
-                auto addr_info = ChainGetAccountInfo(addr);
-                auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
-                if (addr_info != nullptr) {
-                    *new_addr_info = *addr_info;
-                } else {
-                    new_addr_info->set_addr(addr);
-                    new_addr_info->set_sharding_id(view_block->qc().network_id());
-                    new_addr_info->set_pool_index(view_block->qc().pool_index());
-                    new_addr_info->set_type(address::protobuf::kNormal);
-                    new_addr_info->set_latest_height(view_block->block_info().height());
-                    new_addr_info->set_balance(0);
-                }
+        for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
+            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
+                view_block->block_info().address_array(i));
+            prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
+            (*balane_map_ptr)[new_addr_info->addr()] = new_addr_info;
+            ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
+                tx.step(),
+                common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
+                ProtobufToJson(*new_addr_info).c_str());
+        }
 
-                if (tx.has_balance()) {
-                    new_addr_info->set_balance(tx.balance());
-                }
-
-                new_addr_info->set_nonce(tx.nonce());
-                (*balane_map_ptr)[addr] = new_addr_info;
-                // prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
-                ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
-                    tx.step(),
-                    common::Encode::HexEncode(addr).c_str(), 
-                    ProtobufToJson(*new_addr_info).c_str());
-            }
-
-            
-
-            for (uint32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-                if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos &&
-                        tx.status() == consensus::kConsensusSuccess && 
-                        tx.step() == pools::protobuf::kConsensusLocalTos) {
-                    block::protobuf::ConsensusToTxs block_to_txs;
-                    if (block_to_txs.ParseFromString(tx.storages(storage_idx).value())) {
-                        for (uint32_t to_idx = 0; to_idx < block_to_txs.tos_size(); ++to_idx) {
-                            auto& addr = block_to_txs.tos(to_idx).to();
-                            auto addr_info = ChainGetAccountInfo(addr);
-                            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
-                            if (addr_info != nullptr) {
-                                *new_addr_info = *addr_info;
-                            } else {
-                                new_addr_info->set_addr(addr);
-                                new_addr_info->set_sharding_id(view_block->qc().network_id());
-                                new_addr_info->set_pool_index(view_block->qc().pool_index());
-                                new_addr_info->set_type(address::protobuf::kNormal);
-                                new_addr_info->set_latest_height(view_block->block_info().height());
-                            }
-
-                            new_addr_info->set_balance(block_to_txs.tos(to_idx).balance());
-                            new_addr_info->set_nonce(block_to_txs.tos(to_idx).nonce());
-                            (*balane_map_ptr)[addr] = new_addr_info;
-                            // prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
-                            ZJC_DEBUG("to tx success add addr: %s, value: %s", 
-                                common::Encode::HexEncode(addr).c_str(), 
-                                ProtobufToJson(*new_addr_info).c_str());
-                        }
-                    }
-                }
-
-                block::protobuf::KeyValueInfo kv_info;
-                kv_info.set_value(tx.storages(storage_idx).value());
-                kv_info.set_nonce(tx.nonce());
-                zjc_host_ptr->db_batch_.Put(tx.storages(storage_idx).key(), kv_info.SerializeAsString());
-            }
+        for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
+            auto key = view_block->block_info().key_value_array(i).addr() + 
+                view_block->block_info().key_value_array(i).key();
+            prefix_db_->SaveTemporaryKv(
+                key, 
+                view_block->block_info().key_value_array(i).value(), 
+                zjc_host_ptr->db_batch_);
         }
     }
 
