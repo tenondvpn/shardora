@@ -254,25 +254,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
 
         while (tx.step() == pools::protobuf::kConsensusLocalTos) {
             ZJC_DEBUG("now handle local to txs.");
-            const std::string* to_txs_str = nullptr;
-            // for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-            //     if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos) {
-            //         to_txs_str = &tx.storages(storage_idx).value();
-            //         break;
-            //     }
-            // }
-
-            if (to_txs_str == nullptr) {
-                ZJC_WARN("get local tos info failed!");
-                break;
-            }
-
-            block::protobuf::ConsensusToTxs to_txs;
-            if (!to_txs.ParseFromString(*to_txs_str)) {
-                assert(false);
-                break;
-            }
-
+            block::protobuf::ConsensusToTxs& to_txs = block_item->local_to();
             ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
             for (int32_t to_tx_idx = 0; to_tx_idx < to_txs.tos_size(); ++to_tx_idx) {
                 ZJC_DEBUG("0 now handle local to idx: %d", to_tx_idx);

@@ -335,25 +335,12 @@ void AccountManager::HandleLocalToTx(
         return;
     }
 
-    const std::string* to_txs_str = nullptr;
-    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
-    //     if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
-    //         to_txs_str = &tx.storages(i).value();
-    //         break;
-    //     }
-    // }
-
-    if (to_txs_str == nullptr) {
+    if (!view_block.block_info().has_local_to()) {
         ZJC_WARN("get local tos info failed!");
         return;
     }
 
-    block::protobuf::ConsensusToTxs to_txs;
-    if (!to_txs.ParseFromString(*to_txs_str)) {
-        assert(false);
-        return;
-    }
-
+    block::protobuf::ConsensusToTxs& to_txs = view_block.block_info().local_to();
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2 &&
                 to_txs.tos(i).to().size() != security::kUnicastAddressLength) {

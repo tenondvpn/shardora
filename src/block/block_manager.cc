@@ -343,7 +343,7 @@ void BlockManager::HandleNormalToTx(
         return;
     }
 
-    pools::protobuf::ToTxMessage& to_txs = view_block.block_info().normal_to();
+    pools::protobuf::ToTxMessage& to_txs = view_block.block_info().local_to();
     ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, nonce: %lu",
         to_txs.to_heights().sharding_id(),
         common::GlobalInfo::Instance()->network_id(),

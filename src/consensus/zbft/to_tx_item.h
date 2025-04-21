@@ -36,19 +36,18 @@ public:
             return consensus::kConsensusError;
         }
 
-        if (!all_to_txs_.ParseFromString(tx_info.value())) {
+        if (!all_to_txs.ParseFromString(tx_info.value())) {
             return consensus::kConsensusError;
         }
 
-        unique_hash_ = tx_info.key();
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
+        for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
             auto storage = block_tx->add_storages();
             storage->set_key(protos::kNormalToShards);
-            storage->set_value(all_to_txs_.to_tx_arr(i).SerializeAsString());
+            storage->set_value(all_to_txs.to_tx_arr(i).SerializeAsString());
             ZJC_DEBUG("success add normal to %s, val: %s", 
                 protos::kNormalToShards.c_str(), 
-                ProtobufToJson(all_to_txs_.to_tx_arr(i)).c_str());
+                ProtobufToJson(all_to_txs.to_tx_arr(i)).c_str());
             assert(!storage->value().empty());
         }
         
@@ -75,19 +74,24 @@ public:
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         zjc_host.normal_to_tx_ = &block_tx;
-        auto str_key = block_tx.to() + unique_hash_;
+        auto& unique_hash = tx_info->key();
         std::string val;
-        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
         InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-        zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-        block_tx.set_unique_hash(unique_hash_);
+        zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
+        block_tx.set_unique_hash(unique_hash);
         block_tx.set_nonce(to_nonce + 1);
-        for (uint32_t i = 0; i < all_to_txs_.to_tx_arr_size(); ++i) {
-            auto to_heights = all_to_txs_.mutable_to_tx_arr(i);
+        auto& all_to_txs = view_block.mutable_block_info()->mutable_normal_to();
+        if (!all_to_txs.ParseFromString(tx_info->value())) {
+            return consensus::kConsensusError;
+        }
+        
+        for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
+            auto to_heights = all_to_txs.mutable_to_tx_arr(i);
             auto& heights = *to_heights->mutable_to_heights();
             heights.set_block_height(view_block.block_info().height());
             ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
@@ -136,8 +140,6 @@ public:
     }
 
 private:
-    pools::protobuf::AllToTxMessage all_to_txs_;
-    std::string unique_hash_;
     DISALLOW_COPY_AND_ASSIGN(ToTxItem);
 };
 

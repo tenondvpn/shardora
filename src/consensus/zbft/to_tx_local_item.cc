@@ -35,18 +35,18 @@ int ToTxLocalItem::HandleTx(
     //     return consensus::kConsensusSuccess;
     // }
 
-    auto str_key = block_tx.to() + unique_hash_;
+    auto& unique_hash = tx_info->key();
     std::string val;
-    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash_, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash_).c_str());
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
 
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    zjc_host.SaveKeyValue(block_tx.to(), unique_hash_, "1");
-    block_tx.set_unique_hash(unique_hash_);
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
+    block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(to_nonce + 1);
-    block::protobuf::ConsensusToTxs block_to_txs;
+    block::protobuf::ConsensusToTxs& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint64_t to_balance = 0;
@@ -101,12 +101,8 @@ int ToTxLocalItem::HandleTx(
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
-
-    auto storage = block_tx.add_storages();
-    storage->set_key(protos::kConsensusLocalNormalTos);
-    storage->set_value(block_to_txs.SerializeAsString());
     ZJC_DEBUG("success consensus local transfer to unique hash: %s, %s",
-        common::Encode::HexEncode(unique_hash_).c_str(), 
+        common::Encode::HexEncode(unique_hash).c_str(), 
         ProtobufToJson(block_to_txs).c_str());
     return consensus::kConsensusSuccess;
 }
@@ -117,15 +113,7 @@ int ToTxLocalItem::TxToBlockTx(
     if (!DefaultTxItem(tx_info, block_tx)) {
         return consensus::kConsensusError;
     }
-    // change
-    if (tx_info.key().empty()) {
-        return consensus::kConsensusError;
-    }
 
-    unique_hash_ = tx_info.key();
-    auto storage = block_tx->add_storages();
-    storage->set_key(tx_info.key());
-    storage->set_value(tx_info.value());
     return consensus::kConsensusSuccess;
 }
 

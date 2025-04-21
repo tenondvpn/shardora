@@ -46,7 +46,7 @@ public:
             return consensus::kConsensusError;
         }
 
-        timeblock::protobuf::TimeBlock timer_block;
+        auto& timer_block = *view_block.mutable_block_info()->mutable_timer_block();
         if (!timer_block.ParseFromString(tx_info->value())) {
             return consensus::kConsensusError;
         }
@@ -59,7 +59,6 @@ public:
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        view_block.mutable_block_info()->set_timer_block(timer_block);
         ZJC_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());

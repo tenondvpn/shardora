@@ -64,10 +64,11 @@ message Block {
     optional pools.protobuf.ElectStatistic elect_statistic = 11;
     optional elect.protobuf.ElectBlock elect_block = 12;
     optional elect.protobuf.ElectBlock prev_elect_block = 13;
-    optional pools.protobuf.ToTxMessage normal_to = 14;
+    optional pools.protobuf.ConsensusToTxs local_to = 14;
     repeated address.protobuf.AddressInfo to_address_array = 15;  // 跨分片交易
     optional timeblock.protobuf.TimeBlock timer_block = 16;
     optional bool is_genesis_timer_block = 17;
+    optional pools.protobuf.AllToTxMessage normal_to = 18; 
 }
 
 message ConsensusToTxsItem {
