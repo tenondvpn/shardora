@@ -37,7 +37,7 @@ int FromTxItem::HandleTx(
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
-            zjc_host.SaveKeyValue(block_tx.from(), block_tx.storages(i).key(), block_tx.storages(i).value()));
+            zjc_host.SaveKeyValue(block_tx.from(), block_tx.storages(i).key(), block_tx.storages(i).value());
         }
 
         // 余额不足
