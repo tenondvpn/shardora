@@ -149,6 +149,31 @@ Status BlockAcceptor::Accept(
         return s;
     }
 
+    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
+        auto* addr_info = view_block.mutable_block_info()->add_address_array();
+        *addr_info = *iter->second;
+        // prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, zjc_host.db_batch_);
+    }
+
+    for (auto account_iter = zjc_host.accounts_.begin();
+            account_iter != zjc_host.accounts_.end(); ++account_iter) {
+        for (auto storage_iter = account_iter->second.storage.begin();
+                storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+            auto& kv_info = *view_block.mutable_block_info()->add_key_value_array();
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
+        }
+
+        for (auto storage_iter = account_iter->second.str_storage.begin();
+                storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+            auto& kv_info = *view_block.mutable_block_info()->add_key_value_array();
+            kv_info.set_value(kv->value());
+            kv_info.set_height(block_tx.nonce());
+            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
+        }
+    }
+
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 

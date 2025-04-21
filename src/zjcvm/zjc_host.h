@@ -136,25 +136,31 @@ public:
         // CHECK_MEMORY_SIZE(prev_storages_map_);
     // }
 
-    std::map<evmc::address, MockedAccount> accounts_;
     evmc_tx_context tx_context_ = {};
     std::string parent_hash_;
+
+    // each tx must reset
     std::vector<log_record> recorded_logs_;
     std::shared_ptr<selfdestuct_record> recorded_selfdestructs_ = nullptr;
-
     std::string my_address_;
     uint64_t gas_price_{ 0 };
     std::string origin_address_;
     uint32_t depth_{ 0 };
-    std::map<std::string, std::map<std::string, uint64_t>> to_account_value_;
-    std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
+    uint64_t gas_more_ = 0lu;
     std::string create_bytes_code_;
-    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     uint64_t view_ = 0;
     bool contract_to_call_dirty_ = false;
+    std::map<std::string, std::map<std::string, uint64_t>> to_account_value_;
+
+    // block's all tx shared
+    std::map<evmc::address, MockedAccount> accounts_;
+    std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
+
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     db::DbWriteBatch db_batch_;
+
+    // bellow one block just one tx
     const block::protobuf::BlockTx* normal_to_tx_ = nullptr;
     const block::protobuf::BlockTx* root_create_address_tx_ = nullptr;
     const block::protobuf::BlockTx* statisitc_tx_ = nullptr;

@@ -389,7 +389,6 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         zjc_host.tx_context_.chain_id,
         chanin_id);
     zjc_host.contract_mgr_ = contract_mgr;
-    zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = prepayment;
     // user caller prepayment 's gas
@@ -505,7 +504,6 @@ static void AbiQueryContract(evhtp_request_t* req, void* data) {
         zjc_host.tx_context_.chain_id,
         chanin_id);
     zjc_host.contract_mgr_ = contract_mgr;
-    zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = prepayment;
     // user caller prepayment 's gas

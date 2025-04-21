@@ -175,7 +175,7 @@ void AccountManager::HandleNormalFromTx(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     account_info->set_nonce(tx.nonce());
-    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
@@ -216,7 +216,7 @@ void AccountManager::HandleCreateGenesisAcount(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     account_info->set_nonce(tx.nonce());
-    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
@@ -249,7 +249,7 @@ void AccountManager::HandleContractPrepayment(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     account_info->set_nonce(tx.nonce());
-    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
@@ -292,7 +292,7 @@ void AccountManager::HandleDefaultTx(
         account_info->set_latest_height(block.height());
         account_info->set_balance(0);
         account_info->set_nonce(tx.nonce());
-        prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+        // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     } else {
         if (account_info->latest_height() > block.height()) {
             ZJC_ERROR("addr: %s, step: %d, account_info->latest_height() > block.height(): %lu, %lu, nonce: %lu, %lu",
@@ -314,7 +314,7 @@ void AccountManager::HandleDefaultTx(
         account_info->set_latest_height(block.height());
         account_info->set_balance(0);
         account_info->set_nonce(tx.nonce());
-        prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+        // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     }
 
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
@@ -383,7 +383,7 @@ void AccountManager::HandleLocalToTx(
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
             account_info->set_nonce(0);
-            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
+            // prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         } else {
             if (account_info->latest_height() > block.height()) {
                 ZJC_ERROR("account_info->latest_height() > block.height(): %lu, %lu",
@@ -393,7 +393,7 @@ void AccountManager::HandleLocalToTx(
 
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
-            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
+            // prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         }
 
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
@@ -433,14 +433,14 @@ void AccountManager::HandleCreateContract(
             account_info->set_latest_height(block.height());
             account_info->set_balance(tx.balance());
             account_info->set_nonce(tx.nonce());
-            prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+            // prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
             thread_update_accounts_queue_[thread_idx].push(account_info);
         } else {
             if (account_info->latest_height() < block.height() && account_info->nonce() < tx.nonce()) {
                 account_info->set_latest_height(block.height());
                 account_info->set_balance(tx.balance());
                 account_info->set_nonce(tx.nonce());
-                prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+                // prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
                 thread_update_accounts_queue_[thread_idx].push(account_info);
             }
         }
@@ -467,7 +467,7 @@ void AccountManager::HandleCreateContract(
                 account_info->set_balance(tx.amount());
                 account_info->set_bytes_code(bytes_code);
                 account_info->set_nonce(0);
-                prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+                // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
                 thread_update_accounts_queue_[thread_idx].push(account_info);
                 ZJC_INFO("1 get address info failed create new address to this id: %s,"
                     "shard: %u, local shard: %u",
@@ -519,7 +519,7 @@ void AccountManager::HandleCreateContractByRootFrom(
     
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
-    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     UpdateContractPrepayment(view_block, tx, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
@@ -563,7 +563,7 @@ void AccountManager::UpdateContractPrepayment(
         account_info->set_balance(tx.balance());
     }
 
-    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     ZJC_INFO("contract create by root from new balance %s: %lu, height: %lu, pool: %u",
@@ -607,7 +607,7 @@ void AccountManager::HandleContractExecuteTx(
     // amount is contract 's new balance
     account_info->set_balance(tx.amount());
     account_info->set_nonce(tx.nonce());
-    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     UpdateContractPrepayment(view_block, tx, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
@@ -631,7 +631,7 @@ void AccountManager::HandleRootCreateAddressTx(
         if (account_info->type() == address::protobuf::kWaitingRootConfirm) {
             account_info->set_type(address::protobuf::kContract);
             ZJC_DEBUG("root confirmed contract address: %s", common::Encode::HexEncode(tx.to()).c_str());
-            prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+            // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
             thread_update_accounts_queue_[thread_idx].push(account_info);
             update_acc_con_.notify_one();
@@ -676,7 +676,7 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info->set_sharding_id(sharding_id);
     account_info->set_latest_height(block.height());
     account_info->set_balance(0);  // root address balance invalid
-    prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+    // prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     thread_update_accounts_queue_[thread_idx].push(account_info);
     update_acc_con_.notify_one();
@@ -727,7 +727,7 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_balance(tx.balance());
         account_info->set_nonce(tx.nonce());
         account_info->set_elect_pos(join_info.member_idx());
-        prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+        // prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u, elect pos: %u",
             common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),
@@ -743,7 +743,7 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_balance(tx.balance());
         account_info->set_nonce(tx.nonce());
         account_info->set_elect_pos(join_info.member_idx());
-        prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+        // prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
         ZJC_INFO("3 1 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u, elect pos: %u",
             common::Encode::HexEncode(tx.from()).c_str(), view_block.qc().network_id(),

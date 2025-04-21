@@ -50,6 +50,28 @@ protected:
         return consensus::kConsensusSuccess;
     }
 
+    virtual void InitHost(
+            zjcvm::ZjchainHost& zjc_host, 
+            uint64_t gas_limit, 
+            uint64_t gas_price, 
+            const view_block::protobuf::ViewBlockItem& view_block) {
+        zjcvm::Uint64ToEvmcBytes32(
+            zjc_host.tx_context_.tx_gas_price,
+            gas_price);
+        zjc_host.contract_mgr_ = contract_mgr_;
+        zjc_host.my_address_ = block_tx.to();
+        zjc_host.recorded_selfdestructs_ = nullptr;
+        zjc_host.gas_more_ = 0lu;
+        zjc_host.create_bytes_code_ = "";
+        zjc_host.contract_to_call_dirty_ = false;
+        zjc_host.recorded_logs_.clear();
+        zjc_host.to_account_value_.clear();
+        zjc_host.view_ = view_block.qc().view();
+        zjc_host.tx_context_.block_gas_limit = gas_limit;
+        zjc_host.tx_context_.block_number = view_block.block_info().height();
+        zjc_host.tx_context_.block_timestamp= view_block.block_info().timestamp();
+    }
+
     bool DefaultTxItem(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
@@ -125,6 +147,7 @@ protected:
     }
 
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<security::Security> sec_ptr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 };

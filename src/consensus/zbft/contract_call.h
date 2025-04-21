@@ -48,16 +48,13 @@ private:
     int SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
-        int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more);
+        int64_t& contract_balance_add);
     void GetTempPerpaymentBalance(
         const view_block::protobuf::ViewBlockItem& block,
         const block::protobuf::BlockTx& block_tx,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         uint64_t* balance);
 
-    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(ContractCall);
 };

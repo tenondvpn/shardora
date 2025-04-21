@@ -93,7 +93,7 @@ Status ViewBlockChain::Store(
 
                 new_addr_info->set_nonce(tx.nonce());
                 (*balane_map_ptr)[addr] = new_addr_info;
-                prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
+                // prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
                 ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
                     tx.step(),
                     common::Encode::HexEncode(addr).c_str(), 
@@ -125,7 +125,7 @@ Status ViewBlockChain::Store(
                             new_addr_info->set_balance(block_to_txs.tos(to_idx).balance());
                             new_addr_info->set_nonce(block_to_txs.tos(to_idx).nonce());
                             (*balane_map_ptr)[addr] = new_addr_info;
-                            prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
+                            // prefix_db_->AddAddressInfo(addr, *new_addr_info, zjc_host_ptr->db_batch_);
                             ZJC_DEBUG("to tx success add addr: %s, value: %s", 
                                 common::Encode::HexEncode(addr).c_str(), 
                                 ProtobufToJson(*new_addr_info).c_str());

@@ -511,7 +511,6 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
         zjc_host.tx_context_.chain_id,
         chanin_id);
     zjc_host.contract_mgr_ = contract_mgr_;
-    zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = 10000000000lu;
     // user caller prepayment 's gas

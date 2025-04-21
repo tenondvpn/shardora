@@ -71,14 +71,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		return kConsensusSuccess;
 	}
 
-	block::protobuf::BlockTx contract_tx;
-    zjcvm::Uint64ToEvmcBytes32(zjc_host.tx_context_.tx_gas_price, block_tx.gas_price());
-	
-    zjc_host.contract_mgr_ = contract_mgr_;
-    zjc_host.acc_mgr_ = account_mgr_;
-    zjc_host.my_address_ = block_tx.to();
-    zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
-
+    InitHost(zjc_host, block_tx.gas_limit(), block_tx.gas_price(), view_block);
 	zjc_host.AddTmpAccountBalance(block_tx.from(), from_prepayment);
 	zjc_host.AddTmpAccountBalance(block_tx.to(), block_tx.amount());
 
@@ -145,9 +138,9 @@ int ContractCreateByRootToTxItem::HandleTx(
 	if (block_tx.status() == kConsensusSuccess) {
 		int64_t contract_balance_add = 0;
 		int64_t caller_balance_add = 0;
-		int64_t gas_more = 0;
+		int64_t gas_more = zjc_host.gas_more_;
 
-		int res = SaveContractCreateInfo(zjc_host, block_tx, contract_balance_add, caller_balance_add, gas_more);
+		int res = SaveContractCreateInfo(zjc_host, block_tx, contract_balance_add, caller_balance_add);
 		gas_used += gas_more;
 		do {
             if (res != kConsensusSuccess) {
@@ -187,10 +180,10 @@ int ContractCreateByRootToTxItem::HandleTx(
         auto preppayment_id = block_tx.to() + block_tx.from();
         acc_balance_map[preppayment_id]->set_balance(from_prepayment);
         acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
-        prefix_db_->AddAddressInfo(preppayment_id, *(acc_balance_map[preppayment_id]), zjc_host.db_batch_);
+        // prefix_db_->AddAddressInfo(preppayment_id, *(acc_balance_map[preppayment_id]), zjc_host.db_batch_);
 		acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
 		acc_balance_map[block_tx.to()]->set_nonce(0);
-        prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+        // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
         ZJC_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(preppayment_id).c_str(), 
             ProtobufToJson(*(acc_balance_map[preppayment_id])).c_str());
@@ -243,53 +236,52 @@ int ContractCreateByRootToTxItem::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx,
         int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more) {
-    auto storage = block_tx.add_storages();
-    storage->set_key(protos::kCreateContractBytesCode);
-    storage->set_value(zjc_host.create_bytes_code_);
-    // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
-    for (auto account_iter = zjc_host.accounts_.begin();
-            account_iter != zjc_host.accounts_.end(); ++account_iter) {
-        for (auto storage_iter = account_iter->second.storage.begin();
-            storage_iter != account_iter->second.storage.end(); ++storage_iter) {
-            auto kv = block_tx.add_storages();
-            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
-                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
-            kv->set_key(str_key);
-            kv->set_value(std::string(
-                (char*)storage_iter->second.value.bytes,
-                sizeof(storage_iter->second.value.bytes)));
-            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
-            gas_more += (sizeof(account_iter->first.bytes) +
-                sizeof(storage_iter->first.bytes) +
-                sizeof(storage_iter->second.value.bytes)) *
-                consensus::kKeyValueStorageEachBytes;
-            address::protobuf::KeyValueInfo kv_info;
-            kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
-            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
-        }
+        int64_t& caller_balance_add) {
+    // auto storage = block_tx.add_storages();
+    // storage->set_key(protos::kCreateContractBytesCode);
+    // storage->set_value(zjc_host.create_bytes_code_);
+    // // zjc_host.SavePrevStorages(protos::kCreateContractBytesCode, zjc_host.create_bytes_code_, true);
+    // for (auto account_iter = zjc_host.accounts_.begin();
+    //         account_iter != zjc_host.accounts_.end(); ++account_iter) {
+    //     for (auto storage_iter = account_iter->second.storage.begin();
+    //         storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+    //         auto kv = block_tx.add_storages();
+    //         auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+    //             std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
+    //         kv->set_key(str_key);
+    //         kv->set_value(std::string(
+    //             (char*)storage_iter->second.value.bytes,
+    //             sizeof(storage_iter->second.value.bytes)));
+    //         // zjc_host.SavePrevStorages(str_key, kv->value(), true);
+    //         gas_more += (sizeof(account_iter->first.bytes) +
+    //             sizeof(storage_iter->first.bytes) +
+    //             sizeof(storage_iter->second.value.bytes)) *
+    //             consensus::kKeyValueStorageEachBytes;
+    //         address::protobuf::KeyValueInfo kv_info;
+    //         kv_info.set_value(kv->value());
+    //         kv_info.set_height(block_tx.nonce());
+    //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
+    //     }
 
-        for (auto storage_iter = account_iter->second.str_storage.begin();
-                storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-            auto kv = block_tx.add_storages();
-            auto str_key = std::string(
-                (char*)account_iter->first.bytes,
-                sizeof(account_iter->first.bytes)) + storage_iter->first;
-            kv->set_key(str_key);
-            kv->set_value(storage_iter->second.str_val);
-            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
-            gas_more += (sizeof(account_iter->first.bytes) +
-                storage_iter->first.size() +
-                storage_iter->second.str_val.size()) *
-                consensus::kKeyValueStorageEachBytes;
-            address::protobuf::KeyValueInfo kv_info;
-            kv_info.set_value(kv->value());
-            kv_info.set_height(block_tx.nonce());
-            prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
-        }
-    }
+    //     for (auto storage_iter = account_iter->second.str_storage.begin();
+    //             storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+    //         auto kv = block_tx.add_storages();
+    //         auto str_key = std::string(
+    //             (char*)account_iter->first.bytes,
+    //             sizeof(account_iter->first.bytes)) + storage_iter->first;
+    //         kv->set_key(str_key);
+    //         kv->set_value(storage_iter->second.str_val);
+    //         // zjc_host.SavePrevStorages(str_key, kv->value(), true);
+    //         gas_more += (sizeof(account_iter->first.bytes) +
+    //             storage_iter->first.size() +
+    //             storage_iter->second.str_val.size()) *
+    //             consensus::kKeyValueStorageEachBytes;
+    //         address::protobuf::KeyValueInfo kv_info;
+    //         kv_info.set_value(kv->value());
+    //         kv_info.set_height(block_tx.nonce());
+    //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
+    //     }
+    // }
 
     int64_t other_add = 0;
     for (auto transfer_iter = zjc_host.to_account_value_.begin();

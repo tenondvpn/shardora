@@ -194,8 +194,13 @@ evmc_storage_status ZjchainHost::set_storage(
         it = accounts_.find(addr);
     }
 
-    it->second.storage[key] = value;
+    auto& old = it->second.storage[key];
+    if (!old.dirty) {
+        gas_more_ += (sizeof(addr.bytes) + sizeof(key.bytes) + sizeof(value.bytes)) * consensus::kKeyValueStorageEachBytes;
+    }
 
+    old.value = value;
+    old.dirty = true;
     // auto storage_iter = it->second.storage.find(key);
     // if (storage_iter != it->second.storage.end()) {
     //     if (storage_iter->second.value == value) {
@@ -391,6 +396,11 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
         } else {
             std::string from_str = std::string((char*)msg.sender.bytes, sizeof(msg.sender.bytes));
             std::string dest_str = std::string((char*)msg.recipient.bytes, sizeof(msg.recipient.bytes));
+            if (from_str == dest_str) {
+                evmc_res.status_code = EVMC_INSUFFICIENT_BALANCE;
+                return evmc_res;
+            }
+
             auto sender_iter = to_account_value_.find(from_str);
             if (sender_iter == to_account_value_.end()) {
                 to_account_value_[from_str] = std::map<std::string, uint64_t>();
@@ -498,6 +508,15 @@ int ZjchainHost::SaveKeyValue(
     }
 
     auto& old = it->second.str_storage[key];
+    if (old.dirty) {
+        if (val.size() > old.str_val.size()) {
+            gas_more_ += (val.size() - old.str_val.size()) * consensus::kKeyValueStorageEachBytes;
+        }
+    } else {
+        gas_more_ += (val.size() + key.size() + sizeof(addr.bytes)) * consensus::kKeyValueStorageEachBytes;
+    }
+
+    old.dirty = true;
     old.str_val = val;
     contract_to_call_dirty_ = true;
     return kZjcvmSuccess;

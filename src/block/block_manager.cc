@@ -258,7 +258,7 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
               account_info->balance(),
               des_sharding_id);
     
-    prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);    
+    // prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);    
 }
 
 void BlockManager::HandleStatisticTx(
@@ -426,7 +426,7 @@ void BlockManager::RootHandleNormalToTx(
         //     account_info->set_sharding_id(tos_item.sharding_id());
         //     account_info->set_latest_height(block.height());
         //     account_info->set_balance(tos_item.amount());
-        //     prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
+        //     // prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
         //     ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
         //         common::Encode::HexEncode(tos_item.des()).c_str(),
         //         tos_item.amount(),
