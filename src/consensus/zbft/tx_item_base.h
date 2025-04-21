@@ -52,6 +52,7 @@ protected:
 
     virtual void InitHost(
             zjcvm::ZjchainHost& zjc_host, 
+            const block::protobuf::BlockTx& tx, 
             uint64_t gas_limit, 
             uint64_t gas_price, 
             const view_block::protobuf::ViewBlockItem& view_block) {
@@ -59,7 +60,7 @@ protected:
             zjc_host.tx_context_.tx_gas_price,
             gas_price);
         zjc_host.contract_mgr_ = contract_mgr_;
-        zjc_host.my_address_ = view_block.block_info().to();
+        zjc_host.my_address_ = tx.to();
         zjc_host.recorded_selfdestructs_ = nullptr;
         zjc_host.gas_more_ = 0lu;
         zjc_host.create_bytes_code_ = "";

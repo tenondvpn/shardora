@@ -63,7 +63,7 @@ int ContractUserCreateCall::HandleTx(
 
     int64_t tmp_from_balance = from_balance;
     if (block_tx.status() == kConsensusSuccess) {
-        InitHost(zjc_host, block_tx.gas_limit() - gas_used, block_tx.gas_price(), view_block);
+        InitHost(zjc_host, block_tx, block_tx.gas_limit() - gas_used, block_tx.gas_price(), view_block);
         // get caller prepaid gas
         zjc_host.AddTmpAccountBalance(
             block_tx.from(),

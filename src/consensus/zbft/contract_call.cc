@@ -80,7 +80,7 @@ int ContractCall::HandleTx(
         }
     } else {
         new_contract_balance += block_tx.amount();
-        InitHost(zjc_host, gas_limit, block_tx.gas_price(), view_block);
+        InitHost(zjc_host, block_tx, gas_limit, block_tx.gas_price(), view_block);
         // user caller prepayment 's gas
         zjc_host.AddTmpAccountBalance(
             block_tx.from(),

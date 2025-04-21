@@ -71,7 +71,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 		return kConsensusSuccess;
 	}
 
-    InitHost(zjc_host, block_tx.gas_limit(), block_tx.gas_price(), view_block);
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
 	zjc_host.AddTmpAccountBalance(block_tx.from(), from_prepayment);
 	zjc_host.AddTmpAccountBalance(block_tx.to(), block_tx.amount());
 
