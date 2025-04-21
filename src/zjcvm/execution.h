@@ -42,33 +42,6 @@ public:
     bool StorageKeyWarm(
             const evmc::address& addr,
             const evmc::bytes32& key);
-    void NewBlock(
-            const view_block::protobuf::ViewBlockItem& view_block,
-            db::DbWriteBatch& db_batch) {
-        auto& block = view_block.block_info();
-        if (block.height() <= pools_max_heights_[view_block.qc().pool_index()]) {
-            // ZJC_DEBUG("block.height() <= pools_max_heights_[view_block.qc().pool_index()] "
-            //     " %lu, %lu", 
-            //     block.height(), 
-            //     pools_max_heights_[view_block.qc().pool_index()]);
-            // ZJC_INFO("failed save contract prepayment pool: %u, height: %lu",
-            //     view_block.qc().pool_index(),
-            //     block.height());
-            // assert(false);
-            return;
-        }
-
-        const auto& tx_list = block.tx_list();
-        for (int32_t i = 0; i < tx_list.size(); ++i) {
-            NewBlockWithTx(view_block, tx_list[i], db_batch);
-        }
-
-        pools_max_heights_[view_block.qc().pool_index()] = block.height();
-        ZJC_DEBUG("success new block pool: %u, height: %lu",
-            view_block.qc().pool_index(),
-            block.height());
-    }
-    
     bool GetStorage(
             const evmc::address& addr,
             const evmc::bytes32& key,
