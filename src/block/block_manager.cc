@@ -289,10 +289,6 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
-        if (tx.storages(i).key() != protos::kRootCreateAddressKey) {
-            continue;
-        }
-
         uint32_t* des_sharding_and_pool = (uint32_t*)(tx.storages(i).value().c_str());
         if (des_sharding_and_pool[0] != common::GlobalInfo::Instance()->network_id()) {
             return;

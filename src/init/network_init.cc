@@ -467,20 +467,6 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
     }
 
     uint32_t sharding_id = common::kInvalidUint32;
-    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-        if (block.tx_list(i).to() == security_->GetAddress()) {
-            for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
-                if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
-                    uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).value().c_str();
-                    sharding_id = tmp[0];
-                    break;
-                }
-            }
-
-            break;
-        }
-    }
-
     if (sharding_id == common::kInvalidUint32) {
         return;
     }

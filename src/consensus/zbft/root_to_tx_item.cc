@@ -96,9 +96,20 @@ int RootToTxItem::HandleTx(
     zjc_host.root_create_address_tx_ = &block_tx;
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-    auto& storage = *block_tx.add_storages();
-    storage.set_key(protos::kRootCreateAddressKey);
-    storage.set_value(std::string((char*)&des_sharding_and_pool, sizeof(des_sharding_and_pool)));
+    if (block_tx.status() == kConsensusSuccess) {
+        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+        std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+        if (iter == zjc_host.cross_to_map_.end()) {
+            to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr->set_des(block_tx.to());
+            to_item_ptr->set_amount(block_tx.amount());
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+        } else {
+            to_item_ptr = iter->second;
+            to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
+        }
+    }
+
     // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
