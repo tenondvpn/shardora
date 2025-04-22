@@ -164,14 +164,6 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
 void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
-    ZJC_DEBUG("handle statistic block now size: %u", tx.storages_size());
-    if (!block.hash_elect_statistic()) {
-        ZJC_ERROR("get statistic val failed: %s",
-            common::Encode::HexEncode(tx.storages(0).value()).c_str());
-        assert(false);
-        return;
-    }
-
     auto& elect_statistic = block.elect_statistic();
     ZJC_DEBUG("success handle statistic block: %s, latest_statisticed_height_: %lu",
         ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
@@ -188,14 +180,6 @@ void ShardStatistic::HandleStatisticBlock(
     }
 
     latest_statisticed_height_ = elect_statistic.statistic_height();
-    // auto iter = tm_height_with_statistic_info_.find(heights.tm_height());
-    // if (iter != tm_height_with_statistic_info_.end()) {
-    //     tm_height_with_statistic_info_.erase(iter);
-    // }
-
-    // prefix_db_->SaveStatisticLatestHeihgts(
-    //     common::GlobalInfo::Instance()->network_id(),
-    //     heights);
     latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
 
 }
@@ -320,45 +304,116 @@ void ShardStatistic::HandleStatistic(
         handle_joins_func(block.joins(i));
     }
 
+    if (block.has_pool_statistic_height()) {
+        auto exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
+        if (exist_iter == statistic_pool_info_.end()) {
+            StatisticInfoItem statistic_item;
+            statistic_item.statistic_min_height = block.height() + 1;
+            std::map<uint32_t, StatisticInfoItem> pool_map;
+            pool_map[pool_idx] = statistic_item;
+            statistic_pool_info_[block.pool_statistic_height()] = pool_map;
+            CHECK_MEMORY_SIZE(statistic_pool_info_);
+            ZJC_DEBUG(
+                "new success handle kPoolStatisticTag tx statistic_height: %lu, "
+                "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
+                block.pool_statistic_height(), 
+                pool_idx, 
+                block.height(), 
+                statistic_item.statistic_min_height,
+                tx.nonce());
+        } else {
+            StatisticInfoItem statistic_item;
+            statistic_item.statistic_min_height = block.height() + 1;
+            exist_iter->second[pool_idx] = statistic_item;
+            ZJC_DEBUG(
+                "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
+                "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
+                block.pool_statistic_height(), 
+                pool_idx, 
+                block.height(), 
+                statistic_item.statistic_min_height,
+                tx.nonce());
+        }
+
+        statistic_info_ptr->statistic_max_height = block.height();
+    }
+
+    if (block.has_elect_block) {
+        auto& elect_block = block.elect_block();
+        if (!elect_block.ParseFromString(
+                tx.storages(storage_idx).value())) {
+            assert(false);
+            break;
+        }
+
+        if (elect_block.gas_for_root() > 0) {
+            statistic_info_ptr->root_all_gas_amount += elect_block.gas_for_root();
+        }
+
+        for(auto node : elect_block.in()) {
+            auto addr = secptr_->GetAddress(node.pubkey());
+            auto acc_iter = accout_poce_info_map_.find(addr);
+            if (acc_iter == accout_poce_info_map_.end()) {
+                accout_poce_info_map_[addr] = std::make_shared<AccoutPoceInfoItem>();
+                CHECK_MEMORY_SIZE(accout_poce_info_map_);
+                acc_iter = accout_poce_info_map_.find(addr);
+            }
+
+            auto& accoutPoceInfoIterm = acc_iter->second;
+            accoutPoceInfoIterm->consensus_gap += 1;
+            accoutPoceInfoIterm->credit += node.fts_value();;
+            ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
+                common::Encode::HexEncode(addr).c_str(), 
+                accoutPoceInfoIterm->consensus_gap, 
+                accoutPoceInfoIterm->credit);
+        }
+    }
+
+    if (block.has_elect_statistic()) {
+        auto& elect_statistic = block.elect_statistic();
+        for (int32_t node_idx = 0;
+                node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
+            ZJC_DEBUG("success get shard election: %lu, %lu, "
+                "join nodes size: %u, shard: %u",
+                elect_statistic.sharding_id(),
+                elect_statistic.statistic_height(),
+                elect_statistic.join_elect_nodes_size(),
+                elect_statistic.join_elect_nodes(node_idx).shard());
+            if (elect_statistic.join_elect_nodes(node_idx).shard() ==
+                    network::kRootCongressNetworkId) {
+                auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
+                if (eiter == join_elect_stoke_map.end()) {
+                    join_elect_stoke_map[view_block_ptr->qc().elect_height()] =
+                        std::unordered_map<std::string, uint64_t>();
+                }
+
+                auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
+                uint64_t* tmp_stoke = (uint64_t*)tx.storages(
+                        storage_idx).value().c_str();
+                elect_stoke_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] =
+                    elect_statistic.join_elect_nodes(node_idx).stoke();
+                auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
+                if (shard_iter == join_elect_shard_map.end()) {
+                    join_elect_shard_map[view_block_ptr->qc().elect_height()] = 
+                        std::unordered_map<std::string, uint32_t>();
+                }
+
+                auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
+                elect_shard_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] = 
+                    network::kRootCongressNetworkId;
+                ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, "
+                    "stoke: %lu, elect height: %lu",
+                    common::Encode::HexEncode(
+                        elect_statistic.join_elect_nodes(node_idx).pubkey()).c_str(),
+                    elect_statistic.join_elect_nodes(node_idx).stoke(),
+                    view_block_ptr->qc().elect_height());
+            }
+        }
+    }
+
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             auto& tx = block.tx_list(i);
-            if (tx.step() == pools::protobuf::kPoolStatisticTag) {
-                uint64_t* udata = (uint64_t*)tx.storages(0).value().c_str();
-                uint64_t statistic_height = udata[0];
-                auto exist_iter = statistic_pool_info_.find(statistic_height);
-                if (exist_iter == statistic_pool_info_.end()) {
-                    StatisticInfoItem statistic_item;
-                    statistic_item.statistic_min_height = block.height() + 1;
-                    std::map<uint32_t, StatisticInfoItem> pool_map;
-                    pool_map[pool_idx] = statistic_item;
-                    statistic_pool_info_[statistic_height] = pool_map;
-                    CHECK_MEMORY_SIZE(statistic_pool_info_);
-                    ZJC_DEBUG(
-                        "new success handle kPoolStatisticTag tx statistic_height: %lu, "
-                        "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
-                        statistic_height, 
-                        pool_idx, 
-                        block.height(), 
-                        statistic_item.statistic_min_height,
-                        tx.nonce());
-                } else {
-                    StatisticInfoItem statistic_item;
-                    statistic_item.statistic_min_height = block.height() + 1;
-                    exist_iter->second[pool_idx] = statistic_item;
-                    ZJC_DEBUG(
-                        "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
-                        "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
-                        statistic_height, 
-                        pool_idx, 
-                        block.height(), 
-                        statistic_item.statistic_min_height,
-                        tx.nonce());
-                }
-
-                statistic_info_ptr->statistic_max_height = block.height();
-            }
-
             if (tx.step() == pools::protobuf::kNormalFrom ||
                     tx.step() == pools::protobuf::kCreateLibrary || 
                     tx.step() == pools::protobuf::kContractCreate ||
@@ -367,112 +422,8 @@ void ShardStatistic::HandleStatistic(
                     tx.step() == pools::protobuf::kContractGasPrepayment) {
                 block_gas += tx.gas_price() * tx.gas_used();
             }
-
-            if (tx.status() != consensus::kConsensusSuccess) {
-                ZJC_DEBUG("success handle block pool: %u, height: %lu, "
-                    "tm height: %lu, tx: %d, status: %d", 
-                    view_block_ptr->qc().pool_index(), block.height(), 
-                    block.timeblock_height(), i, tx.status());
-                continue;
-            }
-
-            if (tx.step() == pools::protobuf::kConsensusRootElectShard && is_root) {
-                ZJC_DEBUG("success handle kConsensusRootElectShard");
-                if (block.has_elect_block) {
-                    auto& elect_block = block.elect_block();
-                    if (!elect_block.ParseFromString(
-                            tx.storages(storage_idx).value())) {
-                        assert(false);
-                        break;
-                    }
-
-                    if (elect_block.gas_for_root() > 0) {
-                        statistic_info_ptr->root_all_gas_amount += elect_block.gas_for_root();
-                    }
-
-                    for(auto node : elect_block.in()) {
-                        auto addr = secptr_->GetAddress(node.pubkey());
-                        auto acc_iter = accout_poce_info_map_.find(addr);
-                        if (acc_iter == accout_poce_info_map_.end()) {
-                            accout_poce_info_map_[addr] = std::make_shared<AccoutPoceInfoItem>();
-                            CHECK_MEMORY_SIZE(accout_poce_info_map_);
-                            acc_iter = accout_poce_info_map_.find(addr);
-                        }
-
-                        auto& accoutPoceInfoIterm = acc_iter->second;
-                        accoutPoceInfoIterm->consensus_gap += 1;
-                        accoutPoceInfoIterm->credit += node.fts_value();;
-                        ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
-                            common::Encode::HexEncode(addr).c_str(), 
-                            accoutPoceInfoIterm->consensus_gap, 
-                            accoutPoceInfoIterm->credit);
-                    }
-                }
-
-                if(block.has_elect_statistic()) {
-                    auto& elect_statistic = block.elect_statistic();
-                    for (int32_t node_idx = 0;
-                            node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
-                        ZJC_DEBUG("success get shard election: %lu, %lu, "
-                            "join nodes size: %u, shard: %u",
-                            elect_statistic.sharding_id(),
-                            elect_statistic.statistic_height(),
-                            elect_statistic.join_elect_nodes_size(),
-                            elect_statistic.join_elect_nodes(node_idx).shard());
-                        if (elect_statistic.join_elect_nodes(node_idx).shard() ==
-                                network::kRootCongressNetworkId) {
-                            auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
-                            if (eiter == join_elect_stoke_map.end()) {
-                                join_elect_stoke_map[view_block_ptr->qc().elect_height()] =
-                                    std::unordered_map<std::string, uint64_t>();
-                            }
-
-                            auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
-                            uint64_t* tmp_stoke = (uint64_t*)tx.storages(
-                                    storage_idx).value().c_str();
-                            elect_stoke_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] =
-                                elect_statistic.join_elect_nodes(node_idx).stoke();
-                            auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
-                            if (shard_iter == join_elect_shard_map.end()) {
-                                join_elect_shard_map[view_block_ptr->qc().elect_height()] = 
-                                    std::unordered_map<std::string, uint32_t>();
-                            }
-
-                            auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
-                            elect_shard_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] = 
-                                network::kRootCongressNetworkId;
-                            ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, "
-                                "stoke: %lu, elect height: %lu",
-                                common::Encode::HexEncode(
-                                    elect_statistic.join_elect_nodes(node_idx).pubkey()).c_str(),
-                                elect_statistic.join_elect_nodes(node_idx).stoke(),
-                                view_block_ptr->qc().elect_height());
-                        }
-                    }
-                }
-            }
         }
     };
-    
-    if (view_block_ptr->block_info().tx_list_size() > 0 && view_block_ptr->block_info().tx_list(0).step() == 18) {
-        uint64_t* udata = (uint64_t*)view_block_ptr->block_info().tx_list(0).storages(0).value().c_str();
-        uint64_t statistic_height = udata[0];
-        ZJC_DEBUG("now handle statistic block %u_%u_%lu, step: %d, statistic height: %lu, unique hash: %s",
-            view_block_ptr->qc().network_id(),
-            view_block_ptr->qc().pool_index(),
-            view_block_ptr->qc().view(),
-            view_block_ptr->block_info().tx_list(0).step(),
-            statistic_height,
-            common::Encode::HexEncode(view_block_ptr->block_info().tx_list(0).storages(0).key()).c_str());
-    } else {
-        ZJC_DEBUG("now handle statistic block %u_%u_%lu, step: %d, statistic height: %lu, unique hash: %s",
-            view_block_ptr->qc().network_id(),
-            view_block_ptr->qc().pool_index(),
-            view_block_ptr->qc().view(),
-            -1,
-            0,
-            "");
-    }
     
     callback(block);
     statistic_info_ptr->all_gas_amount += block_gas;

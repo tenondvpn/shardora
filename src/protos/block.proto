@@ -68,7 +68,7 @@ message ToAddressItemInfo {
     optional uint32 sharding_id = 3;
     optional bytes des = 4;
     optional bytes elect_join_g2_value = 6;
-    repeated bls.protobuf.JoinElectInfo join_info = 7;
+    optional bls.protobuf.JoinElectInfo join_info = 7;
     optional bytes library_bytes = 8;
     optional bytes from = 9;
     optional uint64 prepayment = 10;
@@ -94,6 +94,9 @@ message Block {
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
     repeated ToAddressItemInfo cross_shard_to_array = 19; 
     optional pools.protobuf.ShardToTxItem to_heights = 20;
+    optional uint64 pool_statistic_height = 21;
+    optional uint64 all_gas = 22;
+    repeated bls.protobuf.JoinElectInfo joins = 23;
 }
 
 message GetTxBlockRequest {
