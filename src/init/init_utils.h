@@ -12,6 +12,7 @@
 #include "common/log.h"
 #include "common/node_members.h"
 #include "common/utils.h"
+#include "protos/bls.pb.h"
 
 #define INIT_DEBUG(fmt, ...) ZJC_DEBUG("[init]" fmt, ## __VA_ARGS__)
 #define INIT_INFO(fmt, ...) ZJC_INFO("[init]" fmt, ## __VA_ARGS__)
