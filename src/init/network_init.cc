@@ -1179,8 +1179,8 @@ void NetworkInit::HandleTimeBlock(
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
         view_block->block_info().height(),
-        block.timer_block().timestamp(),
-        block.timer_block().vss_random());
+        view_block->block_info().timer_block().timestamp(),
+        view_block->block_info().timer_block().vss_random());
     auto& block = view_block->block_info();
     if (block.has_timer_block()) {
         auto vss_random = block.timer_block().vss_random();

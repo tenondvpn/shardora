@@ -34,12 +34,8 @@ int ContractPrepayment::HandleTx(
             break;
         }
         
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-            // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                consensus::kKeyValueStorageEachBytes;
-        }
-
+        gas_used += (tx_info->key().size() + tx_info->value().size()) *
+            consensus::kKeyValueStorageEachBytes;
         if (from_balance < gas_used  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
             ZJC_DEBUG("balance error: %lu, %lu, %lu",

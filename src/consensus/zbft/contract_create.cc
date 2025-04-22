@@ -94,15 +94,12 @@ int ContractUserCreateCall::HandleTx(
         if (from_balance > gas_used * block_tx.gas_price()) {
             from_balance -= gas_used * block_tx.gas_price();
             gas_used = 0;
-            for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                // TODO(): check key exists and reserve gas
-                gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                    consensus::kKeyValueStorageEachBytes;
-                ZJC_DEBUG("create contract key: %s, value: %s", 
-                    block_tx.storages(i).key().c_str(), 
-                    block_tx.storages(i).value().c_str());
-            }
-
+            // TODO(): check key exists and reserve gas
+            gas_used += (tx_info->key().size() + tx_info->value().size()) *
+                consensus::kKeyValueStorageEachBytes;
+            ZJC_DEBUG("create contract key: %s, value: %s", 
+                tx_info->key().c_str(), 
+                tx_info->value().c_str());
             if (block_tx.gas_limit() < gas_used) {
                 block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
                 ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
