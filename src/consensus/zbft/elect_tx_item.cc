@@ -90,8 +90,8 @@ int ElectTxItem::HandleTx(
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
     zjc_host.elect_tx_ = &block_tx;
-    *view_block.mutable_elect_statistic() = elect_statistic_;
-    *view_block.mutable_elect_block() = elect_block_;
+    *view_block.mutable_block_info()->mutable_elect_statistic() = elect_statistic_;
+    *view_block.mutable_block_info()->mutable_elect_block() = elect_block_;
     return consensus::kConsensusSuccess;
 }
 

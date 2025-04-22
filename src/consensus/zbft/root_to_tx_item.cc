@@ -70,7 +70,7 @@ int RootToTxItem::HandleTx(
         if (block_tx.step() == pools::protobuf::kCreateLibrary || 
                 block_tx.step() == pools::protobuf::kContractCreate) {
             // 合约创建，用户指定 sharding
-            uint32_t* data = (uint32_t*)block_tx.storages(0).value().c_str();
+            uint32_t* data = (uint32_t*)tx_info->value().c_str();
             des_info[0] = data[0];
             des_info[1] = data[1];
             sharding_id = data[0];
