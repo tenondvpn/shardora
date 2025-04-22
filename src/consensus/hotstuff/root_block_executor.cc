@@ -41,7 +41,6 @@ void RootBlockExecutor::RootDefaultTx(
     auto tx_list = block->mutable_tx_list();
     auto& tx = *tx_list->Add();
     auto iter = txs_ptr->txs.begin();
-    balance_map[tx.to()] = std::make_shared<address::protobuf::AddressInfo>();
     (*iter)->TxToBlockTx(*(*iter)->tx_info, &tx);
     int do_tx_res = (*iter)->HandleTx(
         *view_block,
