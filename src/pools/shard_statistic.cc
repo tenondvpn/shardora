@@ -265,6 +265,61 @@ void ShardStatistic::HandleStatistic(
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
     uint64_t block_gas = 0;
+    auto handle_joins_func = [&](bls::protobuf::JoinElectInfo& join_info) {
+        ZJC_DEBUG("join elect tx comming.");
+        auto join_addr = secptr_->GetAddress(join_info.public_key());
+        id_pk_map[join_addr] =join_info.public_key();
+        {
+            auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
+            if (eiter == join_elect_stoke_map.end()) {
+                join_elect_stoke_map[view_block_ptr->qc().elect_height()] = 
+                    std::unordered_map<std::string, uint64_t>();
+            }
+
+            auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
+            elect_stoke_map[join_addr] = join_info.stoke();
+            ZJC_DEBUG("success add elect node stoke %s, %lu, "
+                "elect height: %lu, tm height: %lu",
+                common::Encode::HexEncode(join_addr).c_str(), 
+                join_info.stoke(),
+                view_block_ptr->qc().elect_height(),
+                block.timeblock_height());
+        }
+
+        if (join_info.has_bls_pk()) {
+            auto agg_bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>(join_info.bls_pk());
+            id_agg_bls_pk_map[block.tx_list(i).from()] = agg_bls_pk_proto;
+        }
+
+        if (join_info.has_bls_proof()) {
+            auto proof_proto = std::make_shared<elect::protobuf::BlsPopProof>(join_info.bls_proof());
+            id_agg_bls_pk_proof_map[block.tx_list(i).from()] = proof_proto;
+        }                    
+
+        {
+            auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
+            if (shard_iter == join_elect_shard_map.end()) {
+                join_elect_shard_map[view_block_ptr->qc().elect_height()] =
+                    std::unordered_map<std::string, uint32_t>();
+            }
+
+            auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
+            elect_shard_map[join_addr] = join_info.shard_id();
+            ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, "
+                "height: %lu, elect height: %lu, tm height: %lu",
+                common::Encode::HexEncode(join_addr).c_str(),
+                join_info.shard_id(),
+                view_block_ptr->qc().pool_index(),
+                block.height(),
+                view_block_ptr->qc().elect_height(),
+                block.timeblock_height());
+        }
+    };
+
+    for (uint32_t i = 0; i < block.joins_size(); ++i) {
+        handle_joins_func(block.joins(i));
+    }
+
     auto callback = [&](const block::protobuf::Block& block) {
         for (int32_t i = 0; i < block.tx_list_size(); ++i) {
             auto& tx = block.tx_list(i);
@@ -319,84 +374,6 @@ void ShardStatistic::HandleStatistic(
                     view_block_ptr->qc().pool_index(), block.height(), 
                     block.timeblock_height(), i, tx.status());
                 continue;
-            }
-
-            if (tx.step() == pools::protobuf::kJoinElect) {
-                ZJC_DEBUG("join elect tx comming.");
-                for (int32_t storage_idx = 0;
-                        storage_idx < tx.storages_size(); ++storage_idx) {
-                    if (tx.storages(storage_idx).key() == protos::kElectNodeStoke) {
-                        auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
-                        if (eiter == join_elect_stoke_map.end()) {
-                            join_elect_stoke_map[view_block_ptr->qc().elect_height()] = 
-                                std::unordered_map<std::string, uint64_t>();
-                        }
-
-                        auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
-                        uint64_t* tmp_stoke = (uint64_t*)tx.storages(
-                            storage_idx).value().c_str();
-                        elect_stoke_map[tx.from()] = tmp_stoke[0];
-                        ZJC_DEBUG("success add elect node stoke %s, %lu, "
-                            "elect height: %lu, tm height: %lu",
-                            common::Encode::HexEncode(tx.from()).c_str(), 
-                            tmp_stoke[0],
-                            view_block_ptr->qc().elect_height(),
-                            block.timeblock_height());
-                    }
-
-                    if (tx.storages(storage_idx).key() == protos::kNodePublicKey) {
-                        auto tmp_id = secptr_->GetAddress(
-                            tx.storages(storage_idx).value());
-                        if (tmp_id != tx.from()) {
-                            assert(false);
-                            continue;
-                        }
-
-                        id_pk_map[tx.from()] = tx.storages(storage_idx).value();
-                    }
-
-                    if (block.tx_list(i).storages(storage_idx).key() == protos::kAggBlsPublicKey) {
-                        auto agg_bls_pk_proto_str = block.tx_list(i).storages(storage_idx).value();
-                        auto agg_bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>();
-                        if (agg_bls_pk_proto->ParseFromString(agg_bls_pk_proto_str)) {
-                            id_agg_bls_pk_map[block.tx_list(i).from()] = agg_bls_pk_proto.get();
-                        }
-                    }
-
-                    if (block.tx_list(i).storages(storage_idx).key() == protos::kAggBlsPopProof) {
-                        auto proof_proto_str = block.tx_list(i).storages(storage_idx).value();
-                        auto proof_proto = std::make_shared<elect::protobuf::BlsPopProof>();
-                        if (proof_proto->ParseFromString(proof_proto_str)) {
-                            id_agg_bls_pk_proof_map[block.tx_list(i).from()] = proof_proto.get();
-                        }
-                    }                    
-
-                    if (tx.storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
-                        bls::protobuf::JoinElectInfo join_info;
-                        if (!join_info.ParseFromString(
-                                tx.storages(storage_idx).value())) {
-                            assert(false);
-                            break;
-                        }
-
-                    auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
-                    if (shard_iter == join_elect_shard_map.end()) {
-                        join_elect_shard_map[view_block_ptr->qc().elect_height()] =
-                            std::unordered_map<std::string, uint32_t>();
-                    }
-
-                    auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
-                    elect_shard_map[tx.from()] = join_info.shard_id();
-                    ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, "
-                        "height: %lu, elect height: %lu, tm height: %lu",
-                        common::Encode::HexEncode(tx.from()).c_str(),
-                        join_info.shard_id(),
-                        view_block_ptr->qc().pool_index(),
-                        block.height(),
-                        view_block_ptr->qc().elect_height(),
-                        block.timeblock_height());
-                    }
-                }
             }
 
             if (tx.step() == pools::protobuf::kConsensusRootElectShard && is_root) {
@@ -496,6 +473,7 @@ void ShardStatistic::HandleStatistic(
             0,
             "");
     }
+    
     callback(block);
     statistic_info_ptr->all_gas_amount += block_gas;
     std::string leader_id = getLeaderIdFromBlock(*view_block_ptr);

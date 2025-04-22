@@ -61,9 +61,6 @@ private:
     void HandleContractExecute(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
-    void HandleJoinElect(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx);
     void AddTxToMap(
         const view_block::protobuf::ViewBlockItem& view_block,
         const std::string& to,

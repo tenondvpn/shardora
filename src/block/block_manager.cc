@@ -674,88 +674,110 @@ void BlockManager::GenesisNewBlock(
         auto btime11 = common::TimeUtils::TimestampMs();
         auto btime1 = common::TimeUtils::TimestampMs();
 #ifndef TEST_NO_CROSS
-        // 当前节点和 block 分配的 shard 不同，要跨分片交易
-        if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
-            pools_mgr_->OnNewCrossBlock(view_block_item);
-            ZJC_DEBUG("new cross block coming: %u, %u, %lu",
-                view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
-            btime10 = common::TimeUtils::TimestampMs();
-        } else {
-            if (statistic_mgr_) {
-                statistic_mgr_->OnNewBlock(view_block_item);
-            }
-
-            to_txs_pool_->NewBlock(view_block_item);
-            btime10 = common::TimeUtils::TimestampMs();
-            // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+    // 当前节点和 block 分配的 shard 不同，要跨分片交易
+    if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+        pools_mgr_->OnNewCrossBlock(view_block_item);
+        ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+            view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+        btime10 = common::TimeUtils::TimestampMs();
+    } else {
+        if (statistic_mgr_) {
+            statistic_mgr_->OnNewBlock(view_block_item);
         }
 
-        btime1 = common::TimeUtils::TimestampMs();
-            // 处理交易信息
-        for (int32_t i = 0; i < tx_list.size(); ++i) {
-            // ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
-            //     "tx size: %u, hash: %s, phash: %s, elect height: %lu, "
-            //     "tm height: %lu, from: %s, to: %s, nonce: %lu, status: %d, step: %d",
+        to_txs_pool_->NewBlock(view_block_item);
+        btime10 = common::TimeUtils::TimestampMs();
+        // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
+    }
+
+    btime1 = common::TimeUtils::TimestampMs();
+        // 处理交易信息
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        // ZJC_DEBUG("0 new block coming sharding id: %u_%d_%lu, "
+        //     "tx size: %u, hash: %s, phash: %s, elect height: %lu, "
+        //     "tm height: %lu, from: %s, to: %s, nonce: %lu, status: %d, step: %d",
+        //     view_block_item->qc().network_id(),
+        //     view_block_item->qc().pool_index(),
+        //     block_item->height(),
+        //     block_item->tx_list_size(),
+        //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+        //     common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
+        //     view_block_item->qc().elect_height(),
+        //     block_item->timeblock_height(),
+        //     common::Encode::HexEncode(tx_list[i].from()).c_str(),
+        //     common::Encode::HexEncode(tx_list[i].to()).c_str(),
+        //     tx_list[i].nonce(),
+        //     tx_list[i].status(),
+        //     tx_list[i].step());
+//         // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
+        if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount &&
+                network::IsSameToLocalShard(view_block_item->qc().network_id())) {
+            account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+        }
+        
+        if (tx_list[i].status() != consensus::kConsensusSuccess) {
+            continue;
+        }
+
+        switch (tx_list[i].step()) {
+        case pools::protobuf::kRootCreateAddress:
+            // ZJC_DEBUG("success handle root create address tx.");
+            ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
+            break;
+        case pools::protobuf::kNormalTo: {
+            HandleNormalToTx(view_block_item, tx_list[i]);
+            // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+            //     "nonce: %lu, bls: %s, %s",
             //     view_block_item->qc().network_id(),
             //     view_block_item->qc().pool_index(),
             //     block_item->height(),
-            //     block_item->tx_list_size(),
-            //     common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
-            //     view_block_item->qc().elect_height(),
-            //     block_item->timeblock_height(),
-            //     common::Encode::HexEncode(tx_list[i].from()).c_str(),
-            //     common::Encode::HexEncode(tx_list[i].to()).c_str(),
-            //     tx_list[i].nonce(),
-            //     tx_list[i].status(),
-            //     tx_list[i].step());
-    //         // ADD_TX_DEBUG_INFO(const_cast<block::protobuf::Block*>(block_item)->mutable_tx_list(i));
-            if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount &&
-                    network::IsSameToLocalShard(view_block_item->qc().network_id())) {
-                account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
-            }
-            
-            if (tx_list[i].status() != consensus::kConsensusSuccess) {
-                continue;
-            }
-
-            switch (tx_list[i].step()) {
-            case pools::protobuf::kRootCreateAddress:
-                // ZJC_DEBUG("success handle root create address tx.");
-                ConsensusShardHandleRootCreateAddress(*view_block_item, tx_list[i]);
-                break;
-            case pools::protobuf::kNormalTo: {
-                HandleNormalToTx(view_block_item, tx_list[i]);
-                // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-                //     "nonce: %lu, bls: %s, %s",
-                //     view_block_item->qc().network_id(),
-                //     view_block_item->qc().pool_index(),
-                //     block_item->height(),
-                //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-                //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
-                //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
-                break;
-            }
-            case pools::protobuf::kConsensusRootTimeBlock:
-                prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
-                break;
-            case pools::protobuf::kStatistic:
-                HandleStatisticTx(*view_block_item, tx_list[i]);
-                break;
-            case pools::protobuf::kCross:
-                assert(false);
-                break;
-            case pools::protobuf::kConsensusRootElectShard:
-                HandleElectTx(*view_block_item, tx_list[i]);
-                break;
-            case pools::protobuf::kJoinElect:
-                HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
-                break;
-            default:
-                break;
-            }
+            //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
+            //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
+            break;
         }
+        case pools::protobuf::kConsensusRootTimeBlock:
+            prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+            break;
+        case pools::protobuf::kStatistic:
+            HandleStatisticTx(*view_block_item, tx_list[i]);
+            break;
+        case pools::protobuf::kCross:
+            assert(false);
+            break;
+        case pools::protobuf::kConsensusRootElectShard:
+            HandleElectTx(*view_block_item, tx_list[i]);
+            break;
+        default:
+            break;
+        }
+    }
+
+    for (uint32_t i = 0; i < block_item->joins_size(); ++i) {
+        auto& join_info = block_item->joins(i);
+        // 存放了一个 from => balance 的映射
+        prefix_db_->SaveElectNodeStoke(
+            join_info.addr(),
+            view_block_item->qc().elect_height(),
+            join_info.balance(),
+            db_batch);
+        
+        if (join_info.g2_req().verify_vec_size() <= 0) {
+            ZJC_DEBUG("success handle kElectJoin tx: %s, not has verfications.",
+                common::Encode::HexEncode(join_info.addr()).c_str());
+            continue;
+        }
+
+        prefix_db_->SaveNodeVerificationVector(join_info.addr(), join_info, db_batch);
+        ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
+            common::Encode::HexEncode(join_info.addr()).c_str(), 
+            view_block_item->qc().network_id(), 
+            view_block_item->qc().pool_index(), 
+            block_item->height(),
+            common::GlobalInfo::Instance()->network_id());
+    }
 #endif
+
     auto btime2 = common::TimeUtils::TimestampMs();
     if (new_block_callback_ != nullptr) {
         // ZJC_DEBUG("new db callback called: %u_%u_%lu, %u_%u_%lu", 
@@ -917,46 +939,6 @@ void BlockManager::AddNewBlock(
 
     if (view_block_info->zjc_host_ptr->elect_tx_ != nullptr) {
         HandleElectTx(*view_block_item, *view_block_info->zjc_host_ptr->elect_tx_);
-    }
-}
-
-// HandleJoinElectTx 持久化 JoinElect 交易相关信息
-void BlockManager::HandleJoinElectTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
-    auto& block = view_block.block_info();
-    // 存放了一个 from => balance 的映射
-    prefix_db_->SaveElectNodeStoke(
-        tx.from(),
-        view_block.qc().elect_height(),
-        tx.balance(),
-        db_batch);
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-            // 解析参与选举的信息
-            bls::protobuf::JoinElectInfo join_info;
-            // ZJC_DEBUG("now parse join elect info: %u", tx.storages(i).value().size());
-            if (!join_info.ParseFromString(tx.storages(i).value())) {
-                assert(false);
-                break;
-            }
-
-            if (join_info.g2_req().verify_vec_size() <= 0) {
-                ZJC_DEBUG("success handle kElectJoin tx: %s, not has verfications.",
-                    common::Encode::HexEncode(tx.from()).c_str());
-                break;
-            }
-
-            prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
-            ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
-                common::Encode::HexEncode(tx.from()).c_str(), 
-                view_block.qc().network_id(), 
-                view_block.qc().pool_index(), 
-                block.height(),
-                common::GlobalInfo::Instance()->network_id());
-            break;
-        }
     }
 }
 

@@ -188,39 +188,25 @@ void ToTxsPools::StatisticToInfo(
         case pools::protobuf::kContractExcute:
             HandleContractExecute(view_block, tx_list[i]);
             break;
-        case pools::protobuf::kJoinElect:
-            HandleJoinElect(view_block, tx_list[i]);
-            break;
         default:
             break;
         }
     }
 
+    for (uint32_t i = 0; i < block.joins_size(); ++i) {
+        AddTxToMap(
+            view_block,
+            tx.from(),
+            pools::protobuf::kJoinElect,
+            0,
+            network::kRootCongressNetworkId,
+            view_block.qc().pool_index(),
+            block.joins(i).SerilizeToString(), "", "", 0);
+    }
+
     if (!cross_map.empty()) {
         cross_sharding_map_[view_block.qc().pool_index()][block.height()] = cross_map;
         CHECK_MEMORY_SIZE(cross_sharding_map_[view_block.qc().pool_index()]);
-    }
-}
-
-void ToTxsPools::HandleJoinElect(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx) {
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-            // distinct with transfer transaction
-            ZJC_DEBUG("success add join elect value: %d, %s, %d",
-                network::kRootCongressNetworkId, 
-                tx.storages(i).key().c_str(), 
-                tx.storages(i).value().size());
-            AddTxToMap(
-                view_block,
-                tx.from(),
-                tx.step(),
-                0,
-                network::kRootCongressNetworkId,
-                view_block.qc().pool_index(),
-                tx.storages(i).value(), "", "", 0);
-        }
     }
 }
 

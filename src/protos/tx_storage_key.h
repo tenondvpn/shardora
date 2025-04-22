@@ -32,9 +32,6 @@ static const std::string kAttrTimerBlockTm = "__tmblock_tmblock_tm";
 static const std::string kVssRandomAttr = "__vssrandomattr";
 
 static const std::string kStatisticAttr = "__kStatisticAttr";
-static const std::string kNodePublicKey = "__node_pk";
-static const std::string kAggBlsPublicKey = "__agg_bls_pk";
-static const std::string kAggBlsPopProof = "__agg_bls_pk_proof";
 
 static const std::string kSingleTxHashTag = "__single_tx_hash";
 static const std::string kPoolStatisticTag = "__pool_st_tag";

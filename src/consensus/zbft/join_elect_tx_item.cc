@@ -23,7 +23,7 @@ int JoinElectTxItem::HandleTx(
         block_tx.set_status(consensus::kConsensusError);
         // will never happen
         assert(false);
-        return kConsensusSuccess;
+        return kConsensusError;
     }
 
     int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
@@ -31,10 +31,12 @@ int JoinElectTxItem::HandleTx(
         block_tx.set_status(balance_status);
         // will never happen
         assert(false);
-        return kConsensusSuccess;
+        return kConsensusError;
     }
 
     bls::protobuf::JoinElectInfo join_info;
+    
+
     do {
         gas_used = consensus::kJoinElectGas;
         if (from_nonce + 1 != block_tx.nonce()) {
@@ -42,24 +44,18 @@ int JoinElectTxItem::HandleTx(
             // will never happen
             break;
         }
+        
+        if (!join_info.ParseFromString(tx_info->value())) {
+            break;
+        }
 
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-            // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                consensus::kKeyValueStorageEachBytes;
-            if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
-                if (!join_info.ParseFromString(block_tx.storages(i).value())) {
-                    break;
-                }
-
-                if (join_info.shard_id() != network::kRootCongressNetworkId) {
-                    if (join_info.shard_id() != common::GlobalInfo::Instance()->network_id() ||
-                            join_info.shard_id() != address_info->sharding_id()) {
-                        block_tx.set_status(consensus::kConsensusError);
-                        ZJC_DEBUG("shard error: %lu", join_info.shard_id());
-                        break;
-                    }
-                }
+        join_info.set_addr(from);
+        if (join_info.shard_id() != network::kRootCongressNetworkId) {
+            if (join_info.shard_id() != common::GlobalInfo::Instance()->network_id() ||
+                    join_info.shard_id() != address_info->sharding_id()) {
+                block_tx.set_status(consensus::kConsensusError);
+                ZJC_DEBUG("shard error: %lu", join_info.shard_id());
+                break;
             }
         }
 
@@ -104,25 +100,19 @@ int JoinElectTxItem::HandleTx(
     } else {
         uint64_t stoke = 0;
         prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stoke);
-        auto stoke_storage = block_tx.add_storages();
-        stoke_storage->set_key(protos::kElectNodeStoke);
-        char data[8];
-        uint64_t* tmp = (uint64_t*)data;
-        tmp[0] = stoke;
-        stoke_storage->set_value(std::string(data, sizeof(data)));
-        auto pk_storage = block_tx.add_storages();
-        pk_storage->set_key(protos::kNodePublicKey);
-        pk_storage->set_value(from_pk_);
         auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(from_agg_bls_pk_);
         if (agg_bls_pk_proto) {
-            pk_storage->set_key(protos::kAggBlsPublicKey);
-            pk_storage->set_value(agg_bls_pk_proto->SerializeAsString());
+            *join_info.mutable_bls_pk() = *agg_bls_pk_proto;
         }
+
         auto proof_proto = bls::BlsPopProof2Proto(from_agg_bls_pk_proof_);
         if (proof_proto) {
-            pk_storage->set_key(protos::kAggBlsPopProof);
-            pk_storage->set_value(proof_proto->SerializeAsString());
+            *join_info.mutable_bls_proof() = *proof_proto;
         }
+
+        join_info.set_stoke(stoke);
+        join_info.set_public_key(from_pk_);
+        join_info.set_bls_public_key(from_agg_bls_pk_);
     }
 
     acc_balance_map[from]->set_balance(from_balance);
@@ -133,6 +123,8 @@ int JoinElectTxItem::HandleTx(
         ProtobufToJson(*(acc_balance_map[from])).c_str());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
+    auto* block_join_info = block.add_joins();
+    *block_join_info = join_info;
     ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
         block_tx.status(), common::Encode::HexEncode(from).c_str(),
         view_block.qc().pool_index(),

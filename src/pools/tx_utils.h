@@ -225,8 +225,8 @@ struct StatisticInfoItem {
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
     std::unordered_map<std::string, std::string> id_pk_map;
-    std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> id_agg_bls_pk_map;
-    std::unordered_map<std::string, elect::protobuf::BlsPopProof*> id_agg_bls_pk_proof_map;
+    std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> id_agg_bls_pk_map;
+    std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> id_agg_bls_pk_proof_map;
     uint64_t statistic_min_height;
     uint64_t statistic_max_height;
 };
