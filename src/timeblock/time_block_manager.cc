@@ -133,9 +133,10 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         }
 
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s",
+        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s, to: %s",
             u64_data[0], u64_data[1], leader,
-            common::Encode::HexEncode(tx_info->key()).c_str());
+            common::Encode::HexEncode(tx_info->key()).c_str(),
+            common::Encode::HexEncode(tx_info->to()).c_str());
     }
 
     return tmblock_tx_ptr_;
