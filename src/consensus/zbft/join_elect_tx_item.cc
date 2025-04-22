@@ -110,7 +110,6 @@ int JoinElectTxItem::HandleTx(
 
         join_info.set_stoke(stoke);
         join_info.set_public_key(from_pk_);
-        join_info.set_bls_public_key(from_agg_bls_pk_);
     }
 
     acc_balance_map[from]->set_balance(from_balance);

@@ -15,7 +15,7 @@ int ToTxLocalItem::HandleTx(
     if (!to_txs.ParseFromString(tx_info->value())) {
         block_tx.set_status(kConsensusError);
         ZJC_WARN("local get to txs info failed: %s",
-            common::Encode::HexEncode(tx_info->.value()).c_str());
+            common::Encode::HexEncode(tx_info->value()).c_str());
         return consensus::kConsensusSuccess;
     }
 
