@@ -1219,13 +1219,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
         // TODO 感觉重复，可实验
-        for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
-            for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-                if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-                    block_mgr_->HandleJoinElectTx(*view_block_ptr, tenon_block->tx_list(tx_idx), db_batch);
-                }
-            }
-        }
+        // for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
+        //     for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
+        //         if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
+        //             block_mgr_->HandleJoinElectTx(*view_block_ptr, tenon_block->tx_list(tx_idx), db_batch);
+        //         }
+        //     }
+        // }
 
         auto* height_info = init_heights.add_heights();
         height_info->set_min_height(0);
@@ -1579,11 +1579,11 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         
         // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
-        for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-            if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-                block_mgr_->HandleJoinElectTx(*view_block_ptr, tenon_block->tx_list(tx_idx), db_batch);
-            }
-        }
+        // for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
+        //     if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
+        //         block_mgr_->HandleJoinElectTx(*view_block_ptr, tenon_block->tx_list(tx_idx), db_batch);
+        //     }
+        // }
         // }
         // root 网络节点账户状态都在 shard3 中
         if (net_id == network::kRootCongressNetworkId) {
