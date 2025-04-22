@@ -248,8 +248,7 @@ void ShardStatistic::HandleStatistic(
     auto& id_pk_map = statistic_info_ptr->id_pk_map;
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
-    uint64_t block_gas = 0;
-    auto handle_joins_func = [&](bls::protobuf::JoinElectInfo& join_info) {
+    auto handle_joins_func = [&](const bls::protobuf::JoinElectInfo& join_info) {
         ZJC_DEBUG("join elect tx comming.");
         auto join_addr = secptr_->GetAddress(join_info.public_key());
         id_pk_map[join_addr] =join_info.public_key();
@@ -272,12 +271,12 @@ void ShardStatistic::HandleStatistic(
 
         if (join_info.has_bls_pk()) {
             auto agg_bls_pk_proto = std::make_shared<elect::protobuf::BlsPublicKey>(join_info.bls_pk());
-            id_agg_bls_pk_map[block.tx_list(i).from()] = agg_bls_pk_proto;
+            id_agg_bls_pk_map[join_addr] = agg_bls_pk_proto;
         }
 
         if (join_info.has_bls_proof()) {
             auto proof_proto = std::make_shared<elect::protobuf::BlsPopProof>(join_info.bls_proof());
-            id_agg_bls_pk_proof_map[block.tx_list(i).from()] = proof_proto;
+            id_agg_bls_pk_proof_map[join_addr] = proof_proto;
         }                    
 
         {
@@ -320,7 +319,7 @@ void ShardStatistic::HandleStatistic(
                 pool_idx, 
                 block.height(), 
                 statistic_item.statistic_min_height,
-                tx.nonce());
+                0);
         } else {
             StatisticInfoItem statistic_item;
             statistic_item.statistic_min_height = block.height() + 1;
@@ -332,20 +331,14 @@ void ShardStatistic::HandleStatistic(
                 pool_idx, 
                 block.height(), 
                 statistic_item.statistic_min_height,
-                tx.nonce());
+                0);
         }
 
         statistic_info_ptr->statistic_max_height = block.height();
     }
 
-    if (block.has_elect_block) {
+    if (block.has_elect_block()) {
         auto& elect_block = block.elect_block();
-        if (!elect_block.ParseFromString(
-                tx.storages(storage_idx).value())) {
-            assert(false);
-            break;
-        }
-
         if (elect_block.gas_for_root() > 0) {
             statistic_info_ptr->root_all_gas_amount += elect_block.gas_for_root();
         }
@@ -411,22 +404,7 @@ void ShardStatistic::HandleStatistic(
         }
     }
 
-    auto callback = [&](const block::protobuf::Block& block) {
-        for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-            auto& tx = block.tx_list(i);
-            if (tx.step() == pools::protobuf::kNormalFrom ||
-                    tx.step() == pools::protobuf::kCreateLibrary || 
-                    tx.step() == pools::protobuf::kContractCreate ||
-                    tx.step() == pools::protobuf::kContractExcute ||
-                    tx.step() == pools::protobuf::kJoinElect ||
-                    tx.step() == pools::protobuf::kContractGasPrepayment) {
-                block_gas += tx.gas_price() * tx.gas_used();
-            }
-        }
-    };
-    
-    callback(block);
-    statistic_info_ptr->all_gas_amount += block_gas;
+    statistic_info_ptr->all_gas_amount += block.all_gas();
     std::string leader_id = getLeaderIdFromBlock(*view_block_ptr);
     if (leader_id.empty()) {
         // assert(false);
@@ -451,7 +429,7 @@ void ShardStatistic::HandleStatistic(
     }
 
     auto& node_info = node_iter->second;
-    node_info.gas_sum += block_gas;
+    node_info.gas_sum += block.all_gas();
     node_info.tx_count += block.tx_list_size();
     std::string debug_str = ", height_node_collect_info_map height: ";
     for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
