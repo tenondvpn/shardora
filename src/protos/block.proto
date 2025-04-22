@@ -62,6 +62,20 @@ message ConsensusToTxs {
     repeated ConsensusToTxsItem tos = 1;
 }
 
+message ToAddressItemInfo {
+    optional uint64 amount = 1;
+    optional int32 pool_index = 2;
+    optional uint32 sharding_id = 3;
+    optional pools.protobuf.StepType type = 4;
+    optional int32 src_step = 5;
+    optional bytes elect_join_g2_value = 6;
+    repeated bls.protobuf.JoinElectInfo verify_reqs = 7;
+    // for kContractCreate
+    optional bytes library_bytes = 8;
+    optional bytes from = 9;
+    optional uint64 prepayment = 10;
+};
+
 message Block {
     optional uint32 version = 1;
     optional uint64 height = 2;
@@ -82,6 +96,7 @@ message Block {
     optional bool is_genesis_timer_block = 17;
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
     repeated bls.protobuf.JoinElectInfo joins = 19;
+    optional ToAddressItemInfo cross_shard_to_array = 20; 
 }
 
 message GetTxBlockRequest {

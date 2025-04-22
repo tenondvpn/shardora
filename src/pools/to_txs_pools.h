@@ -72,11 +72,6 @@ private:
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
-    void HandleCrossShard(
-        bool is_root,
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx,
-        std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
     void StatisticToInfo(
         const view_block::protobuf::ViewBlockItem& view_block);
     void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
@@ -114,11 +109,6 @@ private:
     common::SpinMutex prev_to_heights_mutex_;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::unordered_map<
-        uint64_t, 
-        std::unordered_map<
-            uint32_t, 
-            std::unordered_set<CrossItem, CrossItemRecordHash>>> cross_sharding_map_[common::kInvalidPoolIndex];
     std::shared_ptr<std::thread> handle_block_thread_;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> view_block_queue_;
     std::condition_variable thread_wait_conn_;
