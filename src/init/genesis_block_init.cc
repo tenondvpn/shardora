@@ -491,7 +491,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         genesis_nodes[idx]->verification = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
         secret_key_contribution[idx] = dkg_instance.SecretKeyContribution(
             genesis_nodes[idx]->polynomial, valid_n, valid_t);
-        bls::protobuf::JoinElectInfo join_info;
+        bls::protobuf::JoinElectInfo& join_info = genesis_nodes[idx]->g2_val;
         join_info.set_member_idx(idx);
         join_info.set_shard_id(sharding_id);
         join_info.set_addr(genesis_nodes[idx]->id);
@@ -513,7 +513,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
                 libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
         }
 
-        genesis_nodes[idx]->g2_val = join_info.SerializeAsString();
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
     };
@@ -1130,10 +1129,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 join_elect_tx_info->set_balance(0);
                 join_elect_tx_info->set_status(0);
                 bls::protobuf::JoinElectInfo* join_info = tenon_block->add_joins();
-                if (!join_info->ParseFromString(root_genesis_nodes[member_idx]->g2_val)) {
-                    assert(false);
-                }
-
+                *join_info = root_genesis_nodes[member_idx]->g2_val;
                 // root 节点选举涉及账户分配到 shard3 网络
                 tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
             }
@@ -1156,10 +1152,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     join_elect_tx_info->set_balance(0);
                     join_elect_tx_info->set_status(0);
                     bls::protobuf::JoinElectInfo* join_info = tenon_block->add_joins();
-                    if (!join_info->ParseFromString(root_genesis_nodes[member_idx]->g2_val)) {
-                        assert(false);
-                    }
-                    
+                    *join_info = cons_genesis_nodes[member_idx]->g2_val;
                     // 选举交易涉及账户分配到对应 shard
                     tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
                 }
@@ -1529,10 +1522,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 join_elect_tx_info->set_gas_used(0);
                 join_elect_tx_info->set_status(0);
                 bls::protobuf::JoinElectInfo* join_info = tenon_block->add_joins();
-                if (!join_info->ParseFromString(root_genesis_nodes[member_idx]->g2_val)) {
-                    assert(false);
-                }
-                
+                *join_info = cons_genesis_nodes[member_idx]->g2_val;
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
             }
