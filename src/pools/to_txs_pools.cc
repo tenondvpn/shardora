@@ -185,9 +185,6 @@ void ToTxsPools::StatisticToInfo(
         case pools::protobuf::kRootCreateAddress:
             HandleRootCreateAddress(view_block, tx_list[i]);
             break;
-        case pools::protobuf::kContractExcute:
-            HandleContractExecute(view_block, tx_list[i]);
-            break;
         default:
             break;
         }
@@ -196,44 +193,39 @@ void ToTxsPools::StatisticToInfo(
     for (uint32_t i = 0; i < block.joins_size(); ++i) {
         AddTxToMap(
             view_block,
-            tx.from(),
+            block.joins(i).addr(),
             pools::protobuf::kJoinElect,
             0,
             network::kRootCongressNetworkId,
             view_block.qc().pool_index(),
-            block.joins(i).SerilizeToString(), "", "", 0);
+            block.joins(i).SerializeToString(), "", "", 0);
     }
 
-    if (!cross_map.empty()) {
-        cross_sharding_map_[view_block.qc().pool_index()][block.height()] = cross_map;
-        CHECK_MEMORY_SIZE(cross_sharding_map_[view_block.qc().pool_index()]);
-    }
-}
-
-void ToTxsPools::HandleContractExecute(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx) {
-    for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
+    for (uint32_t i = 0; i < block.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
-        // 如果需要 root 创建则此时没有 addr info 
-        protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(tx.contract_txs(i).to());
+        protos::AddressInfoPtr addr_info = acc_mgr_->GetAccountInfo(block.contract_txs(i).from());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
         }
 
         ZJC_DEBUG("add contract execute to: %s, %lu",
-            common::Encode::HexEncode(tx.contract_txs(i).to()).c_str(),
-            tx.contract_txs(i).amount());
+            common::Encode::HexEncode(block.contract_txs(i).to()).c_str(),
+            block.contract_txs(i).amount());
         
         AddTxToMap(
             view_block,
-            tx.contract_txs(i).to(),
+            block.contract_txs(i).to(),
             pools::protobuf::kNormalFrom,
-            tx.contract_txs(i).amount(),
+            block.contract_txs(i).amount(),
             sharding_id,
             pool_index,
             "", "", "", 0);
+    }
+
+    if (!cross_map.empty()) {
+        cross_sharding_map_[view_block.qc().pool_index()][block.height()] = cross_map;
+        CHECK_MEMORY_SIZE(cross_sharding_map_[view_block.qc().pool_index()]);
     }
 }
 
