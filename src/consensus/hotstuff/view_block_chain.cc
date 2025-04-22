@@ -76,7 +76,7 @@ Status ViewBlockChain::Store(
             prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
             (*balane_map_ptr)[new_addr_info->addr()] = new_addr_info;
             ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
-                tx.step(),
+                0,
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
         }
@@ -392,7 +392,7 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
                         elect_block.shard_network_id(),
                         elect_block.prev_members().prev_elect_height(),
                         elect_block.prev_members(),
-                        zjc_host.db_batch_);
+                        zjc_host_ptr->db_batch_);
                 }
                 break;
             }
@@ -462,8 +462,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
         auto tmp_block = (*iter)->view_block;
         if (tmp_block->block_info().tx_list_size() > 0 && tmp_block->block_info().tx_list(0).step() == 18) {
-            uint64_t* udata = (uint64_t*)tmp_block->block_info().tx_list(0).storages(0).value().c_str();
-            uint64_t statistic_height = udata[0];
             ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().pool_index(), 
@@ -471,7 +469,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
                 common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
                 tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
-                statistic_height);
+                0);
         } else {
             ZJC_DEBUG("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
                 tmp_block->qc().network_id(), 
