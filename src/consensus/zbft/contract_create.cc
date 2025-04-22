@@ -221,6 +221,7 @@ int ContractUserCreateCall::HandleTx(
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
             to_item_ptr->set_sharding_id(view_block.qc().network_id());
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
@@ -235,6 +236,7 @@ int ContractUserCreateCall::HandleTx(
                 to_item_ptr->set_des(preypayment_id);
                 to_item_ptr->set_prepayment(block_tx.contract_prepayment());
                 to_item_ptr->set_sharding_id(view_block.qc().network_id());
+                zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
             } else {
                 to_item_ptr = iter->second;
                 to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());

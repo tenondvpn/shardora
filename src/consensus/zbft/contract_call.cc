@@ -225,6 +225,7 @@ int ContractCall::HandleTx(
                         to_item_ptr->set_from(destruct_from);
                         to_item_ptr->set_des(destruct_to);
                         to_item_ptr->set_amount(new_contract_balance);
+                        cross_to_map_[to_item_ptr->des()] = to_item_ptr;
                     } else {
                         to_item_ptr = iter->second;
                         to_item_ptr->set_amount(new_contract_balance + to_item_ptr->amount());
@@ -263,6 +264,7 @@ int ContractCall::HandleTx(
                     to_item_ptr->set_from(block_tx.to());
                     to_item_ptr->set_des(block_tx.from());
                     to_item_ptr->set_amount(from_balance);
+                    cross_to_map_[to_item_ptr->des()] = to_item_ptr;
                 } else {
                     to_item_ptr = iter->second;
                     to_item_ptr->set_amount(from_balance + to_item_ptr->amount());
@@ -317,7 +319,7 @@ int ContractCall::HandleTx(
             }
         }
     }
-    
+
     return kConsensusSuccess;
 }
 
@@ -354,6 +356,7 @@ int ContractCall::SaveContractCreateInfo(
                 to_item_ptr->set_from(transfer_iter->first);
                 to_item_ptr->set_des(to_iter->first);
                 to_item_ptr->set_amount(to_iter->second);
+                cross_to_map_[to_item_ptr->des()] = to_item_ptr;
             } else {
                 to_item_ptr = iter->second;
                 to_item_ptr->set_amount(to_iter->second + to_item_ptr->amount());

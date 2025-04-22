@@ -66,6 +66,7 @@ message ToAddressItemInfo {
     optional uint64 amount = 1;
     optional int32 pool_index = 2;
     optional uint32 sharding_id = 3;
+    optional bytes des = 4;
     optional bytes elect_join_g2_value = 6;
     repeated bls.protobuf.JoinElectInfo join_info = 7;
     optional bytes library_bytes = 8;

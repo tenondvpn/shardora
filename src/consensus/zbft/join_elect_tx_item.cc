@@ -135,6 +135,7 @@ int JoinElectTxItem::HandleTx(
         if (iter == zjc_host.cross_to_map_.end()) {
             to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
             to_item_ptr->set_des(block_tx.from());
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {
             to_item_ptr = iter->second;
         }

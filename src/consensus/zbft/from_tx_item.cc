@@ -86,6 +86,7 @@ int FromTxItem::HandleTx(
             to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());

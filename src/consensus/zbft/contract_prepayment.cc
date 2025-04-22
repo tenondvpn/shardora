@@ -105,6 +105,7 @@ int ContractPrepayment::HandleTx(
             to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
             to_item_ptr->set_des(preypayment_id);
             to_item_ptr->set_prepayment(block_tx.contract_prepayment());
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
