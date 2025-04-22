@@ -641,7 +641,7 @@ void GenesisBlockInit::SetPrevElectInfo(
         return;
     }
 
-    block.set_prev_elect_block(block_item.elect_block());
+    *block.mutable_prev_elect_block() = block_item.elect_block();
 }
 
 int GenesisBlockInit::CreateElectBlock(
@@ -744,7 +744,7 @@ int GenesisBlockInit::CreateElectBlock(
         bls_pk_json_.push_back(item);
     }
 
-    tenon_block->set_elect_block(ec_block);
+    *tenon_block->mutable_elect_block() = ec_block;
     tenon_block->set_version(common::kTransactionVersion);
     // 这个 pool index 用了 shard 的值而已
     view_block_ptr->set_parent_hash(root_pre_vb_hash);
@@ -896,7 +896,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tx_info->set_gas_limit(0llu);
         tx_info->set_amount(0);
         
-        auto timeblock_storage = tx_info->add_storages();
         tenon_block->set_height(root_single_block_height++);
         timeblock::protobuf::TimeBlock& tm_block = *tenon_block->mutable_timer_block();
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
@@ -992,6 +991,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         // 选举块、时间块无论 shard 都是要全网同步的
         block_mgr_->GenesisNewBlock(pb_v_block, db_batch);
         if (tenon_block_ptr->has_elect_block()) {
+            auto& ec_block = tenon_block_ptr->elect_block();
             prefix_db_->SaveLatestElectBlock(tenon_block_ptr->elect_block(), db_batch);
             ZJC_DEBUG("save elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
                 ec_block.shard_network_id(),
@@ -1000,15 +1000,8 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 ec_block.prev_members().has_common_pubkey());
         }
 
-        if (tenon_block_ptr->is_timer_block()) {
+        if (tenon_block_ptr->has_timer_block()) {
             prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
-        }
-
-        if (tenon_block_ptr->is_genesis_timer_block()) {
-            prefix_db_->SaveLatestTimeBlock(
-                tenon_block_ptr->height(), 
-                tenon_block_ptr->timestamp(),
-                db_batch);
         }
     }
     fclose(root_gens_init_block_file);
