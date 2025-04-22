@@ -124,7 +124,7 @@ public:
             auto to_heights = all_to_txs.mutable_to_tx_arr(0);
             auto& heights = *to_heights->mutable_to_heights();
             heights.set_block_height(view_block.block_info().height());
-            *block_tx.mutable_to_heights() = heights;
+            *view_block.mutable_block_info()->mutable_to_heights() = heights;
         }
 
         return consensus::kConsensusSuccess;
