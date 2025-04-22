@@ -11,17 +11,11 @@ int ToTxLocalItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    // gas just consume by from
-    if (block_tx.storages_size() != 1) {
-        block_tx.set_status(kConsensusError);
-        return consensus::kConsensusSuccess;
-    }
-
     pools::protobuf::ToTxMessage to_txs;
-    if (!to_txs.ParseFromString(block_tx.storages(0).value())) {
+    if (!to_txs.ParseFromString(tx_info->value())) {
         block_tx.set_status(kConsensusError);
         ZJC_WARN("local get to txs info failed: %s",
-            common::Encode::HexEncode(block_tx.storages(0).value()).c_str());
+            common::Encode::HexEncode(tx_info->.value()).c_str());
         return consensus::kConsensusSuccess;
     }
 
