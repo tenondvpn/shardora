@@ -903,8 +903,8 @@ void ShardStatistic::addNewNode2JoinStatics(
     for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string node_id = elect_nodes[i];
         std::string pubkey;
-        elect::protobuf::BlsPublicKey* agg_bls_pk;
-        elect::protobuf::BlsPopProof* agg_bls_pk_proof;
+        std::shared_ptr<elect::protobuf::BlsPublicKey> agg_bls_pk;
+        std::shared_ptr<elect::protobuf::BlsPopProof> agg_bls_pk_proof;
         if (node_id.size() == security::kUnicastAddressLength) {
             auto iter = id_pk_map.find(node_id);
             if (iter == id_pk_map.end()) {
@@ -937,8 +937,14 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_consensus_gap(0);
         join_elect_node->set_credit(0);
         join_elect_node->set_pubkey(pubkey);
-        join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk);
-        join_elect_node->mutable_agg_bls_pk_proof()->CopyFrom(*agg_bls_pk_proof);
+        if (agg_bls_pk) {
+            join_elect_node->mutable_agg_bls_pk()->CopyFrom(*agg_bls_pk);
+        }
+        
+        if (agg_bls_pk_proof) {
+            join_elect_node->mutable_agg_bls_pk_proof()->CopyFrom(*agg_bls_pk_proof);
+        }
+
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(0);
