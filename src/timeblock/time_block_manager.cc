@@ -113,8 +113,6 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
 
 
         auto& tx_info = tmblock_tx_ptr_->tx_info;
-        char data[16];
-        uint64_t* u64_data = (uint64_t*)data;
         uint64_t now_tm_sec = now_tm_us / 1000000lu;
         uint64_t new_time_block_tm = latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds;
         while (new_time_block_tm < now_tm_sec && now_tm_sec - new_time_block_tm >= 30lu) {
@@ -134,7 +132,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
 
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
         ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s, to: %s",
-            u64_data[0], u64_data[1], leader,
+            timer_block.timestamp(), timer_block.vss_random(), leader,
             common::Encode::HexEncode(tx_info->key()).c_str(),
             common::Encode::HexEncode(tx_info->to()).c_str());
     }
