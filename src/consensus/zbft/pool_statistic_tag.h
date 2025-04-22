@@ -74,7 +74,7 @@ public:
         ZJC_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
-        view_block.mutable_block_info()->set_height(statistic_height);
+        view_block.mutable_block_info()->set_pool_statistic_height(statistic_height);
         return consensus::kConsensusSuccess;
     }
     
