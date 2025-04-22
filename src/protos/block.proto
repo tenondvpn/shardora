@@ -81,7 +81,7 @@ message Block {
     optional timeblock.protobuf.TimeBlock timer_block = 16;
     optional bool is_genesis_timer_block = 17;
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
-    repeated bls.protobuf.JoinElectInfo joins = 19
+    repeated bls.protobuf.JoinElectInfo joins = 19;
 }
 
 message GetTxBlockRequest {
