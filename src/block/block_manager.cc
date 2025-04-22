@@ -324,54 +324,54 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 void BlockManager::HandleNormalToTx(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
         const block::protobuf::BlockTx& tx) {
-    auto& view_block = *view_block_ptr;
-    if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
-        auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-        latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
-        latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
-            view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
-    }
+//     auto& view_block = *view_block_ptr;
+//     if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
+//         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
+//         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
+//         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
+//         ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
+//             view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
+//     }
 
-    ZJC_DEBUG("success handle nonce: %lu", tx.nonce());
-    if (!view_block.block_info().has_normal_to()) {
-        assert(false);
-        return;
-    }
+//     ZJC_DEBUG("success handle nonce: %lu", tx.nonce());
+//     if (!view_block.block_info().has_normal_to()) {
+//         assert(false);
+//         return;
+//     }
 
-    auto& to_txs = view_block.block_info().normal_to();
-    ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, nonce: %lu",
-        to_txs.to_heights().sharding_id(),
-        common::GlobalInfo::Instance()->network_id(),
-        tx.step(),
-        tx.nonce());
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
-        if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_WARN("sharding invalid: %u, %u",
-                to_txs.to_heights().sharding_id(),
-                common::GlobalInfo::Instance()->network_id());
-//             assert(false);
-            return;
-        }
+//     auto& to_txs = view_block.block_info().normal_to();
+//     ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, nonce: %lu",
+//         to_txs.to_heights().sharding_id(),
+//         common::GlobalInfo::Instance()->network_id(),
+//         tx.step(),
+//         tx.nonce());
+//     if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+//         if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+//             ZJC_WARN("sharding invalid: %u, %u",
+//                 to_txs.to_heights().sharding_id(),
+//                 common::GlobalInfo::Instance()->network_id());
+// //             assert(false);
+//             return;
+//         }
 
-        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-            ZJC_DEBUG("success add local transfer tx tos %u_%u_%lu, "
-                "view height: %lu, address: %s, amount: %lu",
-                view_block.qc().network_id(), 
-                view_block.qc().pool_index(), 
-                view_block.block_info().height(), 
-                view_block.qc().view(),
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-                to_txs.tos(i).amount());
-        }
+//         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+//             ZJC_DEBUG("success add local transfer tx tos %u_%u_%lu, "
+//                 "view height: %lu, address: %s, amount: %lu",
+//                 view_block.qc().network_id(), 
+//                 view_block.qc().pool_index(), 
+//                 view_block.block_info().height(), 
+//                 view_block.qc().view(),
+//                 common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
+//                 to_txs.tos(i).amount());
+//         }
 
-        HandleLocalNormalToTx(*view_block_ptr, to_txs, tx);
-    } else {
-        if (to_txs.to_heights().sharding_id() == network::kRootCongressNetworkId) {
-            ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
-            RootHandleNormalToTx(view_block, to_txs);
-        }
-    }
+//         HandleLocalNormalToTx(*view_block_ptr, to_txs, tx);
+//     } else {
+//         if (to_txs.to_heights().sharding_id() == network::kRootCongressNetworkId) {
+//             ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
+//             RootHandleNormalToTx(view_block, to_txs);
+//         }
+//     }
 }
 
 void BlockManager::RootHandleNormalToTx(
