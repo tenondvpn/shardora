@@ -124,6 +124,15 @@ Status BlockAcceptor::Accept(
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
     ADD_DEBUG_PROCESS_TIMESTAMP();
+
+#ifndef NDEBUG
+    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
+        if (iter->first.size() != 20 && iter->first.size() != 40) {
+            assert(false);
+        }
+    }
+#endif
+
     s = GetAndAddTxsLocally(
         msg_ptr,
         view_block.parent_hash(), 
@@ -138,6 +147,14 @@ Status BlockAcceptor::Accept(
         return s;
     }
     
+#ifndef NDEBUG
+    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
+        if (iter->first.size() != 20 && iter->first.size() != 40) {
+            assert(false);
+        }
+    }
+#endif
+
     // 3. Do txs and create block_tx
     ADD_DEBUG_PROCESS_TIMESTAMP();
     zjc_host.parent_hash_ = view_block.parent_hash();
@@ -148,6 +165,14 @@ Status BlockAcceptor::Accept(
         ZJC_WARN("DoTransactions error!");
         return s;
     }
+
+#ifndef NDEBUG
+    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
+        if (iter->first.size() != 20 && iter->first.size() != 40) {
+            assert(false);
+        }
+    }
+#endif
 
     for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
         if (iter->first.size() != 20 && iter->first.size() != 40) {
@@ -337,10 +362,12 @@ Status BlockAcceptor::addTxsToPool(
         
         auto iter = prevs_balance_map.find(address_info->addr());
         if (iter != prevs_balance_map.end()) {
+            assert(iter->first.size() == 20 || iter->first.size() == 40);
             now_balance_map[iter->first] = iter->second;
         } else {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
             *new_addr_info = *address_info;
+            assert(address_info->addr().size() == 20 || address_info->addr().size() == 40);
             now_balance_map[address_info->addr()] = new_addr_info;
         }
 
@@ -555,12 +582,14 @@ Status BlockAcceptor::addTxsToPool(
         if (!contract_prepayment_id.empty()) {
             auto iter = prevs_balance_map.find(contract_prepayment_id);
             if (iter != prevs_balance_map.end()) {
+                assert(iter->first.size() == 20 || iter->first.size() == 40);
                 now_balance_map[iter->first] = iter->second;
             } else {
                 address_info = view_block_chain_->ChainGetAccountInfo(contract_prepayment_id);
                 if (address_info) {
                     auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
                     *new_addr_info = *address_info;
+                    assert(contract_prepayment_id.size() == 40);
                     now_balance_map[contract_prepayment_id] = new_addr_info;
                 }
             }
