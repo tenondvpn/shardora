@@ -287,38 +287,38 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
         return;
     }
 
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
-        uint32_t* des_sharding_and_pool = (uint32_t*)(tx.storages(i).value().c_str());
-        if (des_sharding_and_pool[0] != common::GlobalInfo::Instance()->network_id()) {
-            return;
-        }
+    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //     ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
+    //     uint32_t* des_sharding_and_pool = (uint32_t*)(tx.storages(i).value().c_str());
+    //     if (des_sharding_and_pool[0] != common::GlobalInfo::Instance()->network_id()) {
+    //         return;
+    //     }
 
-        if (des_sharding_and_pool[1] >= common::kInvalidPoolIndex) {
-            return;
-        }
+    //     if (des_sharding_and_pool[1] >= common::kInvalidPoolIndex) {
+    //         return;
+    //     }
         
-        pools::protobuf::ToTxMessage to_txs;
-        auto* tos = to_txs.add_tos();
-        tos->set_amount(tx.amount());
-        tos->set_des(tx.to());
-        tos->set_sharding_id(des_sharding_and_pool[0]);
-        tos->set_pool_index(des_sharding_and_pool[1]);
-        tos->set_library_bytes(tx.contract_code());
-        to_txs.mutable_to_heights()->set_sharding_id(des_sharding_and_pool[0]);
-        ZJC_DEBUG("address: %s, amount: %lu, success handle root create address: %u, "
-            "local net: %u, step: %d, %u_%u_%lu, block height: %lu",
-            common::Encode::HexEncode(tx.to()).c_str(),
-            tx.amount(),
-            to_txs.to_heights().sharding_id(),
-            common::GlobalInfo::Instance()->network_id(),
-            tx.step(),
-            view_block.qc().network_id(),
-            view_block.qc().pool_index(),
-            view_block.qc().view(),
-            view_block.block_info().height());
-        HandleLocalNormalToTx(view_block, to_txs, tx);
-    }
+    //     pools::protobuf::ToTxMessage to_txs;
+    //     auto* tos = to_txs.add_tos();
+    //     tos->set_amount(tx.amount());
+    //     tos->set_des(tx.to());
+    //     tos->set_sharding_id(des_sharding_and_pool[0]);
+    //     tos->set_pool_index(des_sharding_and_pool[1]);
+    //     tos->set_library_bytes(tx.contract_code());
+    //     to_txs.mutable_to_heights()->set_sharding_id(des_sharding_and_pool[0]);
+    //     ZJC_DEBUG("address: %s, amount: %lu, success handle root create address: %u, "
+    //         "local net: %u, step: %d, %u_%u_%lu, block height: %lu",
+    //         common::Encode::HexEncode(tx.to()).c_str(),
+    //         tx.amount(),
+    //         to_txs.to_heights().sharding_id(),
+    //         common::GlobalInfo::Instance()->network_id(),
+    //         tx.step(),
+    //         view_block.qc().network_id(),
+    //         view_block.qc().pool_index(),
+    //         view_block.qc().view(),
+    //         view_block.block_info().height());
+    //     HandleLocalNormalToTx(view_block, to_txs, tx);
+    // }
 }
 
 void BlockManager::HandleNormalToTx(
@@ -339,7 +339,7 @@ void BlockManager::HandleNormalToTx(
         return;
     }
 
-    pools::protobuf::ToTxMessage& to_txs = view_block.block_info().local_to();
+    auto& to_txs = view_block.block_info().local_to();
     ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, nonce: %lu",
         to_txs.to_heights().sharding_id(),
         common::GlobalInfo::Instance()->network_id(),
@@ -351,7 +351,7 @@ void BlockManager::HandleNormalToTx(
                 to_txs.to_heights().sharding_id(),
                 common::GlobalInfo::Instance()->network_id());
 //             assert(false);
-            continue;
+            return;
         }
 
         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
@@ -755,7 +755,7 @@ void BlockManager::GenesisNewBlock(
         prefix_db_->SaveElectNodeStoke(
             join_info.addr(),
             view_block_item->qc().elect_height(),
-            join_info.balance(),
+            join_info.stoke(),
             db_batch);
         
         if (join_info.g2_req().verify_vec_size() <= 0) {
@@ -941,38 +941,38 @@ void BlockManager::AddNewBlock(
 void BlockManager::HandleElectTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx) {
-    auto& block = view_block.block_info();
-    ZJC_DEBUG("handle elect tx storage size: %u, %u_%u_%lu, elect height: %lu",
-        tx.storages_size(), view_block.qc().network_id(),
-        view_block.qc().pool_index(), block.height(), 
-        view_block.qc().elect_height());
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (block.has_elect_block()) {
-            elect::protobuf::ElectBlock& elect_block = block.elect_block();
-            if (!elect_block.ParseFromString(tx.storages(i).value())) {
-                assert(false);
-                return;
-            }
+    // auto& block = view_block.block_info();
+    // ZJC_DEBUG("handle elect tx storage size: %u, %u_%u_%lu, elect height: %lu",
+    //     tx.storages_size(), view_block.qc().network_id(),
+    //     view_block.qc().pool_index(), block.height(), 
+    //     view_block.qc().elect_height());
+    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //     if (block.has_elect_block()) {
+    //         elect::protobuf::ElectBlock& elect_block = block.elect_block();
+    //         if (!elect_block.ParseFromString(tx.storages(i).value())) {
+    //             assert(false);
+    //             return;
+    //         }
 
-            AddMiningToken(view_block, elect_block);
-            if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
-                if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info->nonce() == tx.nonce()) {
-                    shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
-                    ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
-                }
-            }
+    //         AddMiningToken(view_block, elect_block);
+    //         if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
+    //             if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info->nonce() == tx.nonce()) {
+    //                 shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
+    //                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
+    //             }
+    //         }
 
-            ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
-                "pool: %u, height: %lu, common pk: %s, prev elect height: %lu", 
-                view_block.qc().elect_height(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                block.height(),
-                common::Encode::HexEncode(
-                elect_block.prev_members().common_pubkey().SerializeAsString()).c_str(),
-                elect_block.prev_members().prev_elect_height());
-        }
-    }
+    //         ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
+    //             "pool: %u, height: %lu, common pk: %s, prev elect height: %lu", 
+    //             view_block.qc().elect_height(),
+    //             view_block.qc().network_id(),
+    //             view_block.qc().pool_index(),
+    //             block.height(),
+    //             common::Encode::HexEncode(
+    //             elect_block.prev_members().common_pubkey().SerializeAsString()).c_str(),
+    //             elect_block.prev_members().prev_elect_height());
+    //     }
+    // }
 }
 
 void BlockManager::AddMiningToken(
