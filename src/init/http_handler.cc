@@ -709,8 +709,7 @@ static void GetBlockWithGid(evhtp_request_t* req, void* data) {
     res_json["msg"] = "success";
     view_block::protobuf::ViewBlockItem view_block;
     
-    bool res = prefix_db->GetBlockWithUserNonce(
-        common::Encode::HexDecode(addr), tmp_nonce, &view_block);
+    bool res = false;  // prefix_db->GetBlockWithUserNonce(common::Encode::HexDecode(addr), tmp_nonce, &view_block);
     if (res) {
         res_json["block"]["height"] = view_block.block_info().height();
         res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());

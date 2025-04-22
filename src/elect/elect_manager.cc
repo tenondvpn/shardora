@@ -328,12 +328,6 @@ bool ElectManager::ProcessPrevElectMembers(
             elect_net_heights_map_[prev_elect_block.shard_network_id()]) {
         elect_net_heights_map_[prev_elect_block.shard_network_id()] =
             elect_block.prev_members().prev_elect_height();
-
-        {// hack 质押合约中 nowElectHeight 字段 
-         // src/contract/tests/contracts/ElectPlegde/ElectPledgeContract.sol
-            auto plege_addr = elect::ElectPlege::gen_elect_plege_contract_addr(prev_elect_block.shard_network_id());
-            prefix_db_->AddNowElectHeight2Plege(plege_addr, elect_block.prev_members().prev_elect_height(), db_batch);
-        }
         ELECT_DEBUG("set netid: %d, elect height: %lu",
             prev_elect_block.shard_network_id(), elect_block.prev_members().prev_elect_height());
     }

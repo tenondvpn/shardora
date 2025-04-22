@@ -898,18 +898,11 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         
         auto timeblock_storage = tx_info->add_storages();
         tenon_block->set_height(root_single_block_height++);
-        timeblock::protobuf::TimeBlock tm_block;
+        timeblock::protobuf::TimeBlock& tm_block = *tenon_block->mutable_timer_block();
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(common::Random::RandomUint64());
-        
-        char data[16];
-        uint64_t* u64_data = (uint64_t*)data;
-        u64_data[0] = tm_block.timestamp();
-        u64_data[1] = tm_block.vss_random();
-        timeblock_storage->set_value(std::string(data, sizeof(data)));
-        auto genesis_tmblock = tx_info->add_storages();
-        genesis_tmblock->set_is_genesis_timer_block(true);
+        tenon_block->set_is_genesis_timer_block(true);
         tenon_block->set_version(common::kTransactionVersion);
         // TODO network_id 一定是 root
         view_block_ptr->set_parent_hash(root_pre_vb_hash);
