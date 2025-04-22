@@ -72,6 +72,11 @@ private:
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
+    void HandleCrossShard(
+        bool is_root,
+        const view_block::protobuf::ViewBlockItem& view_block,
+        const block::protobuf::BlockTx& tx,
+        std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
     void StatisticToInfo(
         const view_block::protobuf::ViewBlockItem& view_block);
     void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);

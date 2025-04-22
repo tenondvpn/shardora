@@ -372,8 +372,7 @@ void ShardStatistic::HandleStatistic(
                 elect_statistic.statistic_height(),
                 elect_statistic.join_elect_nodes_size(),
                 elect_statistic.join_elect_nodes(node_idx).shard());
-            if (elect_statistic.join_elect_nodes(node_idx).shard() ==
-                    network::kRootCongressNetworkId) {
+            if (elect_statistic.join_elect_nodes(node_idx).shard() == network::kRootCongressNetworkId) {
                 auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
                 if (eiter == join_elect_stoke_map.end()) {
                     join_elect_stoke_map[view_block_ptr->qc().elect_height()] =
@@ -381,8 +380,6 @@ void ShardStatistic::HandleStatistic(
                 }
 
                 auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
-                uint64_t* tmp_stoke = (uint64_t*)tx.storages(
-                        storage_idx).value().c_str();
                 elect_stoke_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] =
                     elect_statistic.join_elect_nodes(node_idx).stoke();
                 auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
