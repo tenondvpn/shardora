@@ -73,7 +73,7 @@ int ElectTxItem::HandleTx(
     }
 
     block_tx.set_unique_hash(unique_hash);
-    auto res = processElect(zjc_host, elect_statistic_, view_block, block_tx);
+    auto res = processElect(zjc_host, view_block, block_tx);
     if (res != consensus::kConsensusSuccess) {
         return kConsensusError;
     }
@@ -90,7 +90,8 @@ int ElectTxItem::HandleTx(
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
     zjc_host.elect_tx_ = &block_tx;
-    view_block.set_elect_statistic(elect_statistic_);
+    *view_block.mutable_elect_statistic() = elect_statistic_;
+    *view_block.mutable_elect_block() = elect_block_;
     return consensus::kConsensusSuccess;
 }
 
@@ -101,7 +102,7 @@ int ElectTxItem::processElect(
     auto& block = *view_block.mutable_block_info();
     const pools::protobuf::PoolStatisticItem *statistic = nullptr;
     shardora::common::MembersPtr members = nullptr;
-    int retVal = getMaxElectHeightInfo(elect_statistic_, statistic, members);
+    int retVal = getMaxElectHeightInfo(statistic, members);
     if ( retVal != kConsensusSuccess) {
         ZJC_DEBUG("getMaxElectHeightInfo failed ret val: %d", retVal);
         assert(false);
@@ -141,7 +142,7 @@ int ElectTxItem::processElect(
         }
     }
 
-    JoinNewNodes2ElectNodes(members, elect_nodes, min_area_weight, min_tx_count, elect_statistic_);
+    JoinNewNodes2ElectNodes(members, elect_nodes, min_area_weight, min_tx_count);
     std::string random_str;
     int32_t expect_leader_count = (int32_t)pow(
         2.0,
@@ -194,7 +195,6 @@ int ElectTxItem::processElect(
         zjc_host,
         block,
         elect_nodes,
-        elect_statistic_,
         gas_for_root,
         block_tx);
 
@@ -594,7 +594,7 @@ void ElectTxItem::SetPrevElectInfo(
         return;
     }
 
-    block_item.set_prev_elect_block(prev_block_item.elect_block());
+    *block_item.mutable_prev_elect_block() = prev_block_item.elect_block();
 }
 
 uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
@@ -614,7 +614,7 @@ int ElectTxItem::CreateNewElect(
         const std::vector<NodeDetailPtr> &elect_nodes,
         uint64_t gas_for_root,
         block::protobuf::BlockTx &block_tx) {
-    auto& elect_block = *block.mutable_elect_block();
+    auto& elect_block = elect_block_;
     for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         if (elect_nodes[i] == nullptr) {
             if (i >= elect_members_->size()) {
@@ -672,11 +672,6 @@ int ElectTxItem::CreateNewElect(
             zjc_host.db_batch_);
     }
     
-    std::string val = elect_block.SerializeAsString();
-    auto &storage = *block_tx.add_storages();
-    storage.set_key(protos::kElectNodeAttrElectBlock);
-    storage.set_value(val);
-    ZJC_DEBUG("create elect success: %u", elect_statistic_.sharding_id());
     return kConsensusSuccess;
 }
 /**

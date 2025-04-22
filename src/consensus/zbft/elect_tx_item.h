@@ -151,7 +151,8 @@ private:
     common::MembersPtr elect_members_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     pools::protobuf::ElectStatistic elect_statistic_;
-
+    elect::protobuf::ElectBlock elect_block_;
+    
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };
 

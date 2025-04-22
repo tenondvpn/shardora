@@ -1184,12 +1184,12 @@ void NetworkInit::HandleTimeBlock(
     auto& block = view_block->block_info();
     if (block.has_timer_block()) {
         auto vss_random = block.timer_block().vss_random();
-        hotstuff_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        hotstuff_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         vss_mgr_->OnTimeBlock(view_block);
-        tm_block_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
-        bls_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
-        shard_statistic_->OnTimeBlock(data_arr[0], block.height(), vss_random);
-        block_mgr_->OnTimeBlock(data_arr[0], block.height(), vss_random);
+        tm_block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
+        bls_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
+        shard_statistic_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
+        block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         ZJC_DEBUG("new time block called height: %lu, tm: %lu", block.height(), vss_random);
     }
 
