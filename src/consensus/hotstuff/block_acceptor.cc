@@ -166,7 +166,10 @@ Status BlockAcceptor::Accept(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
             kv_info.set_height(view_block.block_info().height());
-            prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
+            prefix_db_->SaveTemporaryKv(
+                kv_info.addr() + kv_info.key(), 
+                kv_info.SerializeAsString(), 
+                zjc_host.db_batch_);
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -178,12 +181,15 @@ Status BlockAcceptor::Accept(
             kv_info.set_key(storage_iter->first);
             kv_info.set_value(storage_iter->second.str_val);
             kv_info.set_height(view_block.block_info().height());
-            prefix_db_->SaveTemporaryKv(str_key, kv_info.SerializeAsString(), zjc_host.db_batch_);
+            prefix_db_->SaveTemporaryKv(
+                kv_info.addr() + kv_info.key(), 
+                kv_info.SerializeAsString(), 
+                zjc_host.db_batch_);
         }
     }
 
     for (auto iter = zjc_host.cross_to_map_.begin(); iter != zjc_host.cross_to_map_.end(); ++iter) {
-        auto* cross_to_item = view_block.mutabile_block_info()->add_cross_shard_to_array();
+        auto* cross_to_item = view_block.mutable_block_info()->add_cross_shard_to_array();
         *cross_to_item = *iter->second;
     }
 
