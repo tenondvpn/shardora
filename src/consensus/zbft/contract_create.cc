@@ -239,6 +239,17 @@ int ContractUserCreateCall::HandleTx(
                 to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
             }
         }
+
+        for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
+            auto iter = zjc_host.cross_to_map_.find(exists_iter->first);
+            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            if (iter == zjc_host.cross_to_map_.end()) {
+                zjc_host.cross_to_map_[exists_iter->first] = exists_iter->second;
+            } else {
+                to_item_ptr = iter->second;
+                to_item_ptr->set_amount(exists_iter->second->amount() + to_item_ptr->amount());
+            }
+        }
     }
     return kConsensusSuccess;
 }
@@ -279,12 +290,19 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             }
 
             if (to_iter->first != block_tx.to() && to_iter->first != block_tx.from()) {
-                // from and contract itself transfers direct
-                // transfer to other address by cross sharding transfer
-                auto trans_item = view_block.mutable_block_info()->add_contract_txs();
-                trans_item->set_from(transfer_iter->first);
-                trans_item->set_to(to_iter->first);
-                trans_item->set_amount(to_iter->second);
+                auto iter = cross_to_map_.find(to_iter->first);
+                std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+                if (iter == cross_to_map_.end()) {
+                    to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                    to_item_ptr->set_from(transfer_iter->first);
+                    to_item_ptr->set_des(to_iter->first);
+                    to_item_ptr->set_amount(to_iter->second);
+                    cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+                } else {
+                    to_item_ptr = iter->second;
+                    to_item_ptr->set_amount(to_iter->second + to_item_ptr->amount());
+                }
+                
                 other_add += to_iter->second;
             }
         }

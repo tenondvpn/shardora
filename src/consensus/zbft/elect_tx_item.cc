@@ -50,8 +50,8 @@ int ElectTxItem::HandleTx(
     view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    auto& unique_hash = tx_info.key();
-    if (!elect_statistic_.ParseFromString(tx_info.value()) {
+    auto& unique_hash = tx_info->key();
+    if (!elect_statistic_.ParseFromString(tx_info->value())) {
         ZJC_DEBUG("elect tx parse elect info failed!");
         return consensus::kConsensusError;
     }

@@ -49,6 +49,7 @@ private:
         int64_t& caller_balance_add);
     
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::map<std::string, std::shared_ptr<block::protobuf::ToAddressItemInfo>> cross_to_map_;
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
 };
 
