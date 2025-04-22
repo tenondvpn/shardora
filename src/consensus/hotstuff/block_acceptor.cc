@@ -182,6 +182,11 @@ Status BlockAcceptor::Accept(
         }
     }
 
+    for (auto iter = zjc_host.cross_to_map_.begin(); iter != zjc_host.cross_to_map_.end(); ++iter) {
+        auto* cross_to_item = view_block.mutabile_block_info()->add_cross_shard_to_array();
+        *cross_to_item = *iter->second;
+    }
+
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 

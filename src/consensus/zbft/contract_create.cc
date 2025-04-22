@@ -213,6 +213,34 @@ int ContractUserCreateCall::HandleTx(
         block_tx.gas_price(),
         block_tx.contract_prepayment(),
         block_tx.amount());
+    if (block_tx.status() == kConsensusSuccess) {
+        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+        std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+        if (iter == zjc_host.cross_to_map_.end()) {
+            to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr->set_des(block_tx.to());
+            to_item_ptr->set_amount(block_tx.amount());
+            to_item_ptr->set_sharding_id(view_block.qc().network_id());
+        } else {
+            to_item_ptr = iter->second;
+            to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
+        }
+
+        if (block_tx.contract_prepayment() > 0) {
+            auto preypayment_id = block_tx.to() + block_tx.from();
+            auto iter = zjc_host.cross_to_map_.find(preypayment_id);
+            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            if (iter == zjc_host.cross_to_map_.end()) {
+                to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                to_item_ptr->set_des(preypayment_id);
+                to_item_ptr->set_prepayment(block_tx.contract_prepayment());
+                to_item_ptr->set_sharding_id(view_block.qc().network_id());
+            } else {
+                to_item_ptr = iter->second;
+                to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
+            }
+        }
+    }
     return kConsensusSuccess;
 }
 

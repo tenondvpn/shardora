@@ -155,6 +155,7 @@ public:
     // block's all tx shared
     std::map<evmc::address, MockedAccount> accounts_;
     std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
+    std::map<std::string, std::shared_ptr<block::protobuf::ToAddressItemInfo>> cross_to_map_;
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;

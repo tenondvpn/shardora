@@ -79,6 +79,19 @@ int FromTxItem::HandleTx(
         }
     }
 
+    if (block_tx.status() == kConsensusSuccess) {
+        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+        std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+        if (iter == zjc_host.cross_to_map_.end()) {
+            to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr->set_des(block_tx.to());
+            to_item_ptr->set_amount(block_tx.amount());
+        } else {
+            to_item_ptr = iter->second;
+            to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
+        }
+    }
+
     // 剪掉来源账户的金额
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());

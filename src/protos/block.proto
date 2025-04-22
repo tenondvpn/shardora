@@ -66,11 +66,8 @@ message ToAddressItemInfo {
     optional uint64 amount = 1;
     optional int32 pool_index = 2;
     optional uint32 sharding_id = 3;
-    optional pools.protobuf.StepType type = 4;
-    optional int32 src_step = 5;
     optional bytes elect_join_g2_value = 6;
-    repeated bls.protobuf.JoinElectInfo verify_reqs = 7;
-    // for kContractCreate
+    repeated bls.protobuf.JoinElectInfo join_info = 7;
     optional bytes library_bytes = 8;
     optional bytes from = 9;
     optional uint64 prepayment = 10;
@@ -91,12 +88,11 @@ message Block {
     optional elect.protobuf.ElectBlock elect_block = 12;
     optional elect.protobuf.ElectBlock prev_elect_block = 13;
     optional ConsensusToTxs local_to = 14;
-    repeated address.protobuf.AddressInfo to_address_array = 15;  // 跨分片交易
     optional timeblock.protobuf.TimeBlock timer_block = 16;
     optional bool is_genesis_timer_block = 17;
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
-    repeated bls.protobuf.JoinElectInfo joins = 19;
-    optional ToAddressItemInfo cross_shard_to_array = 20; 
+    repeated ToAddressItemInfo cross_shard_to_array = 19; 
+    optional pools.protobuf.ShardToTxItem to_heights = 20;
 }
 
 message GetTxBlockRequest {

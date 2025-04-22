@@ -10,7 +10,6 @@ namespace protos {
 
 static const std::string kRootCreateAddressKey = "_kRootCreateAddressKey";
 static const std::string kContractBytesStartCode = common::Encode::HexDecode("60806040");
-static const std::string kContractDestruct = "__destruct";
 static const std::string kLibrary = "__library";
 static const std::string kCreateContractBytesCode = "__kCreateContractBytesCode";
 static const std::string kCreateContractLocalInfo = "__kCreateContractLocalInfo";

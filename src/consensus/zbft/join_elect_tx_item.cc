@@ -35,8 +35,6 @@ int JoinElectTxItem::HandleTx(
     }
 
     bls::protobuf::JoinElectInfo join_info;
-    
-
     do {
         gas_used = consensus::kJoinElectGas;
         if (from_nonce + 1 != block_tx.nonce()) {
@@ -130,18 +128,19 @@ int JoinElectTxItem::HandleTx(
         view_block.qc().pool_index(),
         block.height(),
         join_info.shard_id());
-#ifndef NDEBUG
-    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-        ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, "
-            "des shard: %d, key: %s, value size: %d",
-            block_tx.status(), common::Encode::HexEncode(from).c_str(),
-            view_block.qc().pool_index(),
-            block.height(),
-            join_info.shard_id(),
-            block_tx.storages(i).key().c_str(),
-            block_tx.storages(i).value().size());
+
+    if (block_tx.status() == kConsensusSuccess) {
+        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+        std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+        if (iter == zjc_host.cross_to_map_.end()) {
+            to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr->set_des(block_tx.from());
+        } else {
+            to_item_ptr = iter->second;
+        }
+
+        *to_item_ptr->mutable_join_info() = join_info;
     }
-#endif
 
     return kConsensusSuccess;
 }

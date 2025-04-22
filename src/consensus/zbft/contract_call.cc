@@ -203,7 +203,6 @@ int ContractCall::HandleTx(
                 // change contract 's amount, now is contract 's new balance
                 new_contract_balance += contract_balance_add;
                 if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
-                    auto trans_item = view_block.mutable_block_info()->add_contract_txs();
                     std::string destruct_from = std::string(
                         (char*)zjc_host.recorded_selfdestructs_->selfdestructed.bytes,
                         sizeof(zjc_host.recorded_selfdestructs_->selfdestructed.bytes));
@@ -218,27 +217,30 @@ int ContractCall::HandleTx(
                             common::Encode::HexEncode(destruct_to).c_str());
                         break;
                     }
-                    
-                    trans_item->set_from(destruct_from);
-                    trans_item->set_to(destruct_to);
-                    trans_item->set_amount(new_contract_balance);
-                    new_contract_balance = 0;
+
+                    auto iter = cross_to_map_.find(destruct_to);
+                    std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+                    if (iter == cross_to_map_.end()) {
+                        to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                        to_item_ptr->set_from(destruct_from);
+                        to_item_ptr->set_des(destruct_to);
+                        to_item_ptr->set_amount(new_contract_balance);
+                    } else {
+                        to_item_ptr = iter->second;
+                        to_item_ptr->set_amount(new_contract_balance + to_item_ptr->amount());
+                    }
+
                     ZJC_ERROR("self destruct success nonce: %lu, %s, %s, "
                         "beneficiary: %s, amount: %lu, status: %d",
                         block_tx.nonce(),
                         common::Encode::HexEncode(destruct_from).c_str(),
                         common::Encode::HexEncode(block_tx.to()).c_str(),
                         common::Encode::HexEncode(destruct_to).c_str(),
-                        trans_item->amount(),
+                        new_contract_balance,
                         block_tx.status());
-                    auto destruct_kv = block_tx.add_storages();
-                    destruct_kv->set_key(protos::kContractDestruct);
-                    ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
-                        common::Encode::HexEncode(protos::kContractDestruct).c_str());
+                    new_contract_balance = 0;
                     acc_balance_map[block_tx.to()]->set_balance(0);
                     acc_balance_map[block_tx.to()]->set_destructed(true);
-                    // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-                // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
                 }
 
             } while (0);
@@ -249,16 +251,23 @@ int ContractCall::HandleTx(
             if (!acc_balance_map[block_tx.to()]->destructed()) {
                 acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
                 acc_balance_map[block_tx.to()]->set_nonce(0);
-                // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
             }
         }
 
         if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
             if (from_balance > 0) {
-                auto trans_item = view_block.mutable_block_info()->add_contract_txs();
-                trans_item->set_from(block_tx.to());
-                trans_item->set_to(block_tx.from());
-                trans_item->set_amount(from_balance);
+                auto iter = cross_to_map_.find(block_tx.from());
+                std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+                if (iter == cross_to_map_.end()) {
+                    to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                    to_item_ptr->set_from(block_tx.to());
+                    to_item_ptr->set_des(block_tx.from());
+                    to_item_ptr->set_amount(from_balance);
+                } else {
+                    to_item_ptr = iter->second;
+                    to_item_ptr->set_amount(from_balance + to_item_ptr->amount());
+                }
+                
                 from_balance = 0;
             }
         }
@@ -296,6 +305,19 @@ int ContractCall::HandleTx(
         contract_balance_add,
         new_contract_balance,
         (etime - btime));
+    if (block_tx.status() == kConsensusSuccess) {
+        for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
+            auto iter = zjc_host.cross_to_map_.find(exists_iter->first);
+            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            if (iter == zjc_host.cross_to_map_.end()) {
+                zjc_host.cross_to_map_[exists_iter->first] = exists_iter->second;
+            } else {
+                to_item_ptr = iter->second;
+                to_item_ptr->set_amount(exists_iter->second->amount() + to_item_ptr->amount());
+            }
+        }
+    }
+    
     return kConsensusSuccess;
 }
 
@@ -303,60 +325,6 @@ int ContractCall::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx,
         int64_t& contract_balance_add) {
-    // ZJC_DEBUG("now save contrat call storage acc size: %u", zjc_host.accounts_.size());
-    // for (auto account_iter = zjc_host.accounts_.begin();
-    //         account_iter != zjc_host.accounts_.end(); ++account_iter) {
-    //     // ZJC_DEBUG("now save contrat call storage acc: %s storage size: %u",
-    //     //     common::Encode::HexEncode(std::string((char*)account_iter->first.bytes, 20)).c_str(), 
-    //     //     account_iter->second.storage.size());
-    //     for (auto storage_iter = account_iter->second.storage.begin();
-    //             storage_iter != account_iter->second.storage.end(); ++storage_iter) {
-    //         auto kv = block_tx.add_storages();
-    //         auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
-    //             std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
-    //         kv->set_key(str_key);
-    //         kv->set_value(std::string(
-    //             (char*)storage_iter->second.value.bytes,
-    //             sizeof(storage_iter->second.value.bytes)));
-    //         // if (str_key.size() > 40)
-    //         // ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
-    //         //     common::Encode::HexEncode(str_key).c_str(),
-    //         //     common::Encode::HexEncode(kv->value()).c_str());
-    //         // zjc_host.SavePrevStorages(str_key, kv->value(), true);
-    //         gas_more += (sizeof(account_iter->first.bytes) +
-    //             sizeof(storage_iter->first.bytes) +
-    //             sizeof(storage_iter->second.value.bytes)) *
-    //             consensus::kKeyValueStorageEachBytes;
-    //         block::protobuf::KeyValueInfo kv_info;
-    //         kv_info.set_value(kv->value());
-    //         kv_info.set_nonce(block_tx.nonce());
-    //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
-    //     }
-
-    //     for (auto storage_iter = account_iter->second.str_storage.begin();
-    //             storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-    //         auto kv = block_tx.add_storages();
-    //         auto str_key = std::string(
-    //             (char*)account_iter->first.bytes,
-    //             sizeof(account_iter->first.bytes)) + storage_iter->first;
-    //         kv->set_key(str_key);
-    //         kv->set_value(storage_iter->second.str_val);
-    //         // if (str_key.size() > 40)
-    //         // ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
-    //         //     common::Encode::HexEncode(str_key).c_str(),
-    //         //     common::Encode::HexEncode(kv->value()).c_str());
-    //         // zjc_host.SavePrevStorages(str_key, kv->value(), true);
-    //         gas_more += (sizeof(account_iter->first.bytes) +
-    //             storage_iter->first.size() +
-    //             storage_iter->second.str_val.size()) *
-    //             consensus::kKeyValueStorageEachBytes;
-    //         block::protobuf::KeyValueInfo kv_info;
-    //         kv_info.set_value(kv->value());
-    //         kv_info.set_nonce(block_tx.nonce());
-    //         prefix_db_->SaveTemporaryKv(kv->key(), kv_info.SerializeAsString(), zjc_host.db_batch_);
-    //     }
-    // }
-
     int64_t other_add = 0;
     for (auto transfer_iter = zjc_host.to_account_value_.begin();
             transfer_iter != zjc_host.to_account_value_.end(); ++transfer_iter) {
@@ -379,12 +347,18 @@ int ContractCall::SaveContractCreateInfo(
             }
 
             contract_balance_add -= to_iter->second;
-            // from and contract itself transfers direct
-            // transfer to other address by cross sharding transfer
-            auto trans_item = view_block.mutable_block_info()->add_contract_txs();
-            trans_item->set_from(transfer_iter->first);
-            trans_item->set_to(to_iter->first);
-            trans_item->set_amount(to_iter->second);
+            auto iter = cross_to_map_.find(to_iter->first);
+            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            if (iter == cross_to_map_.end()) {
+                to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                to_item_ptr->set_from(transfer_iter->first);
+                to_item_ptr->set_des(to_iter->first);
+                to_item_ptr->set_amount(to_iter->second);
+            } else {
+                to_item_ptr = iter->second;
+                to_item_ptr->set_amount(to_iter->second + to_item_ptr->amount());
+            }
+            
             other_add += to_iter->second;
             ZJC_DEBUG("contract call transfer nonce: %lu, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
                 block_tx.nonce(),

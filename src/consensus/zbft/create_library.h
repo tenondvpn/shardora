@@ -104,6 +104,17 @@ public:
             block_tx.balance(),
             block_tx.gas_used(),
             block_tx.status());
+        if (block_tx.status() == kConsensusSuccess) {
+            auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            if (iter == zjc_host.cross_to_map_.end()) {
+                to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                to_item_ptr->set_des(block_tx.to());
+            }
+            
+            to_item_ptr->set_library_bytes(tx_info->value());
+        }
+
         return kConsensusSuccess;
     }
 

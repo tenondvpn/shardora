@@ -584,12 +584,6 @@ void AccountManager::HandleContractExecuteTx(
         return;
     }
 
-    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
-    //     if (tx.storages(i).key() == protos::kContractDestruct) {
-    //         account_info->set_destructed(true);
-    //     }
-    // }
-
     account_info->set_latest_height(block.height());
     // amount is contract 's new balance
     account_info->set_balance(tx.amount());
