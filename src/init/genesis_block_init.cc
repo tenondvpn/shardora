@@ -985,7 +985,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 int GenesisBlockInit::CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
+        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map) {
     // 256 个 root 创世账号
     // GenerateRootAccounts();
     // 256 x shard_num 个 shard 创世账号
@@ -1034,27 +1034,27 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 pool_address_info_[i]->addr(), 0, tx_info->nonce());
         }
 
-        for (auto shard_iter = net_pool_index_map_.begin(); shard_iter != net_pool_index_map_.end(); ++shard_iter) {
-            auto& pool_map = shard_iter->second;
-            uint32_t net_id = shard_iter->first;
-            auto pool_iter = pool_map.find(i);
-            if (pool_iter != pool_map.end()) {
-                for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
-                    // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
-                    auto tx_info = tx_list->Add();
-                    tx_info->set_nonce(addr_iter->second++);
-                    tx_info->set_from("");
-                    tx_info->set_to(addr_iter->first);
-                    tx_info->set_amount(0);
-                    tx_info->set_balance(0);
-                    tx_info->set_gas_limit(0);
-                    tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                    address_info_map[addr_iter->first] = CreateAddress(
-                        "", 0, network::kConsensusShardBeginNetworkId, i, 
-                        addr_iter->first, 0, tx_info->nonce());
-                }
-            }
-        }
+        // for (auto shard_iter = net_pool_index_map_.begin(); shard_iter != net_pool_index_map_.end(); ++shard_iter) {
+        //     auto& pool_map = shard_iter->second;
+        //     uint32_t net_id = shard_iter->first;
+        //     auto pool_iter = pool_map.find(i);
+        //     if (pool_iter != pool_map.end()) {
+        //         for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
+        //             // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
+        //             auto tx_info = tx_list->Add();
+        //             tx_info->set_nonce(addr_iter->second++);
+        //             tx_info->set_from("");
+        //             tx_info->set_to(addr_iter->first);
+        //             tx_info->set_amount(0);
+        //             tx_info->set_balance(0);
+        //             tx_info->set_gas_limit(0);
+        //             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+        //             address_info_map[addr_iter->first] = CreateAddress(
+        //                 "", 0, network::kConsensusShardBeginNetworkId, i, 
+        //                 addr_iter->first, 0, tx_info->nonce());
+        //         }
+        //     }
+        // }
 
         for (uint32_t member_idx = 0; member_idx < root_genesis_nodes.size(); ++member_idx) {
             // 将 root 节点的选举交易打包到对应的 pool 块中
@@ -1455,7 +1455,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         uint32_t net_id,
         uint64_t* pool_with_heights,
         hotstuff::View* pool_latest_view,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
+        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map) {
     std::map<std::string, GenisisNodeInfoPtr> valid_ids;
     for (auto iter = root_genesis_nodes.begin(); iter != root_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
@@ -1506,27 +1506,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             address_info_map[iter->first] = CreateAddress(
                 "", tx_info->balance(), net_id == network::kRootCongressNetworkId ? network::kConsensusShardBeginNetworkId : net_id, pool_index, 
                 iter->first, 0, tx_info->nonce());
-        }
-
-        // 一个节点地址对应一个 pool index，将 shard 节点的选举交易分配到不同的 pool 中
-        for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
-            if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == pool_index) {
-                auto join_elect_tx_info = tx_list->Add();
-                join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
-                join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
-                join_elect_tx_info->set_to("");
-                join_elect_tx_info->set_gas_limit(0);
-                join_elect_tx_info->set_nonce(cons_genesis_nodes[member_idx]->nonce++);
-                join_elect_tx_info->set_gas_used(0);
-                join_elect_tx_info->set_status(0);
-                bls::protobuf::JoinElectInfo* join_info = tenon_block->add_joins();
-                *join_info = cons_genesis_nodes[member_idx]->g2_val;
-                join_elect_tx_info->set_amount(0);
-                join_elect_tx_info->set_balance(genesis_account_balance);
-                address_info_map[cons_genesis_nodes[member_idx]->id] = CreateAddress(
-                    "", join_elect_tx_info->balance(), net_id == network::kRootCongressNetworkId ? network::kConsensusShardBeginNetworkId : net_id, pool_index, 
-                    cons_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
-            }
         }
 
         tenon_block->set_version(common::kTransactionVersion);
@@ -1599,12 +1578,11 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
+        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map) {
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
-    uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / net_pool_index_map_addr_count_; // 两个分片
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
@@ -1646,26 +1624,28 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 pool_address_info_[i]->addr(), 0, tx_info->nonce());
         }
         
-        auto& pool_map = net_pool_index_map_[net_id];
-        auto pool_iter = pool_map.find(i);
-        if (pool_iter != pool_map.end()) {
-            for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
-                // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
-                auto tx_info = tx_list->Add();
-                tx_info->set_from("");
-                tx_info->set_to(addr_iter->first);
-                tx_info->set_nonce(addr_iter->second++);
-                tx_info->set_amount(genesis_account_balance);
-                tx_info->set_balance(genesis_account_balance);
-                tx_info->set_gas_limit(0);
-                tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                ZJC_DEBUG("net_id: %d, success add address: %s, balance: %lu",
-                    net_id, common::Encode::HexEncode(addr_iter->first).c_str(), genesis_account_balance);
-                    address_info_map[addr_iter->first] = CreateAddress(
-                    "", tx_info->balance(), net_id, i, 
-                    addr_iter->first, 0, tx_info->nonce());
-            }
-        }
+        // auto& pool_map = net_pool_index_map_[net_id];
+        // auto pool_iter = pool_map.find(i);
+        // if (pool_iter != pool_map.end()) {
+        //     for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
+        //         // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
+        //         auto balance_iter = genesis_acount_balance_map.find(addr_iter->first);
+        //         assert(balance_iter != genesis_acount_balance_map.end());
+        //         auto tx_info = tx_list->Add();
+        //         tx_info->set_from("");
+        //         tx_info->set_to(addr_iter->first);
+        //         tx_info->set_nonce(addr_iter->second++);
+        //         tx_info->set_amount(balance_iter->second);
+        //         tx_info->set_balance(balance_iter->second);
+        //         tx_info->set_gas_limit(0);
+        //         tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+        //         ZJC_DEBUG("net_id: %d, success add address: %s, balance: %lu",
+        //             net_id, common::Encode::HexEncode(addr_iter->first).c_str(), balance_iter->second);
+        //         address_info_map[addr_iter->first] = CreateAddress(
+        //             "", tx_info->balance(), net_id, i, 
+        //             addr_iter->first, 0, tx_info->nonce());
+        //     }
+        // }
         
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_height(pool_with_heights[i]++);

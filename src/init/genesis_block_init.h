@@ -54,12 +54,12 @@ private:
     int CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
+        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map);
     int CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
+        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map);
     void PrepareCreateGenesisBlocks(uint32_t shard_node_net_id);
     void ComputeG2sForNodes(const std::vector<std::string>& prikeys);
     int CreateShardNodesBlocks(
@@ -70,7 +70,7 @@ private:
         uint32_t net_id,
         uint64_t* init_heights,
         hotstuff::View* pool_latest_view,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map); // 节点对应的余额
+        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map); // 节点对应的余额
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
     const std::map<uint32_t, std::string> GetGenesisAccount(uint32_t net_id);
     void InitShardGenesisAccount();
