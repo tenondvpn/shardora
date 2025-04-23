@@ -68,7 +68,7 @@ private:
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        pools::protobuf::StatisticTxItem& init_heights,
+        uint64_t* init_heights,
         hotstuff::View* pool_latest_view,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map); // 节点对应的余额
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);

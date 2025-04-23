@@ -1263,10 +1263,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     pool_prev_vb_hash_map[network::kRootCongressNetworkId] = vb_prehashes[network::kRootCongressNetworkId];
-    auto* height_item = init_heights.mutable_heights(network::kRootCongressNetworkId);
-    height_item->set_min_height(2);
-    // init_heights.set_heights(network::kRootCongressNetworkId, 2);
-    init_heights.set_tm_height(0);
     // prehashes 不是 pool 当中前一个块的 hash 吗，为什么是 prehashes[network_id] 而不是 prehashes[pool_index]
     for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
         uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
@@ -1355,7 +1351,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
-        pools::protobuf::PoolStatisticTxInfo& pool_st_info = *enon_block->mutable_pool_st_info();
+        pools::protobuf::PoolStatisticTxInfo& pool_st_info = *tenon_block->mutable_pool_st_info();
         pool_st_info.set_height(1);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             auto statistic_info = pool_st_info.add_pool_statisitcs();
@@ -1749,7 +1745,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
 
         pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
-        pools::protobuf::PoolStatisticTxInfo& pool_st_info = *enon_block->mutable_pool_st_info();
+        pools::protobuf::PoolStatisticTxInfo& pool_st_info = *tenon_block->mutable_pool_st_info();
         pool_st_info.set_height(1);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             auto statistic_info = pool_st_info.add_pool_statisitcs();
