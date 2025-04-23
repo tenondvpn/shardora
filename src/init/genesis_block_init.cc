@@ -1441,8 +1441,9 @@ void GenesisBlockInit::AddBlockItemToCache(
     pool_info.set_view(view_block->qc().view());
     prefix_db_->SaveLatestPoolInfo(
         view_block->qc().network_id(), view_block->qc().pool_index(), pool_info, db_batch);
-    ZJC_DEBUG("success add pool latest info: %u, %u, %lu, %lu",
-        view_block->qc().network_id(), view_block->qc().pool_index(), block->height(), block->timestamp());
+    ZJC_DEBUG("success add pool latest info: %u_%u_%lu, block height: %lu, tm: %lu",
+        view_block->qc().network_id(), view_block->qc().pool_index(), 
+        view_block->qc().view(), block->height(), block->timestamp());
 }
 
 // 在 net_id 中为 shard 节点创建块
