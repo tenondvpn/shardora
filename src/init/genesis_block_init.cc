@@ -61,9 +61,6 @@ int GenesisBlockInit::CreateGenesisBlocks(
     const std::set<uint32_t>& valid_net_ids_set) {
     int res = kInitSuccess;    
     // 事先计算一下每个节点账户要分配的余额
-    std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
-    genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
-
     std::vector<GenisisNodeInfoPtr> real_root_genesis_nodes;
     std::vector<GenisisNodeInfoPtrVector> real_cons_genesis_nodes_of_shards(cons_genesis_nodes_of_shards.size());
     // 根据 valid_net_ids_set 去掉不处理的 nodes
@@ -95,8 +92,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         PrepareCreateGenesisBlocks(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(real_root_genesis_nodes,
-                                      real_cons_genesis_nodes_of_shards,
-                                      genesis_acount_balance_map);
+                                      real_cons_genesis_nodes_of_shards);
         for (uint32_t i = 0; i < real_root_genesis_nodes.size(); ++i) {
             prikeys.push_back(real_root_genesis_nodes[i]->prikey);
         }
@@ -123,8 +119,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
             PrepareCreateGenesisBlocks(shard_node_net_id);            
             res = CreateShardGenesisBlocks(real_root_genesis_nodes,
                                            cons_genesis_nodes,
-                                           shard_node_net_id,
-                                           genesis_acount_balance_map); // root 节点账户创建在第一个 shard 网络
+                                           shard_node_net_id); // root 节点账户创建在第一个 shard 网络
             assert(res == kInitSuccess);
 
             for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
@@ -557,47 +552,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     return true;
 }
 
-// GetGenesisAccountBalanceMap 计算每个节点要分配的余额
-std::unordered_map<std::string, uint64_t> GenesisBlockInit::GetGenesisAccountBalanceMap(
-        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
-    // 去个重
-    std::set<std::string> valid_ids;
-    for (auto iter = root_genesis_nodes.begin(); iter != root_genesis_nodes.end(); ++iter) {
-        if (valid_ids.find((*iter)->id) != valid_ids.end()) {
-            continue;
-        }
-
-        valid_ids.insert((*iter)->id);
-    }
-
-    for (auto cons_genesis_nodes : cons_genesis_nodes_of_shards) {
-        for (auto iter = cons_genesis_nodes.begin(); iter != cons_genesis_nodes.end(); ++iter) {
-            if (valid_ids.find((*iter)->id) != valid_ids.end()) {
-                continue;
-            }
-
-            valid_ids.insert((*iter)->id);
-        }
-    }
-
-    uint64_t aver_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
-    uint64_t rest_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
-    
-    std::unordered_map<std::string, uint64_t> node_balance_map;
-    // 平均分配余额，剩下的都给最后一个
-    uint32_t count = 0;
-    for (auto it = valid_ids.begin(); it != valid_ids.end(); ++it, ++count) {
-        uint64_t balance = aver_balance;
-        if (count == valid_ids.size() - 1) {
-            balance += rest_balance;
-        }
-        node_balance_map.insert(std::pair<std::string, uint64_t>(*it, balance));
-    }
-
-    return node_balance_map;
-}
-
 void GenesisBlockInit::SetPrevElectInfo(
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::Block& block) {
@@ -984,8 +938,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 // CreateRootGenesisBlocks 为 root 网络的每个 pool 生成创世块
 int GenesisBlockInit::CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map) {
+        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
     // 256 个 root 创世账号
     // GenerateRootAccounts();
     // 256 x shard_num 个 shard 创世账号
@@ -1226,8 +1179,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             all_cons_genesis_nodes,
             network::kRootCongressNetworkId,
             pool_with_heights,
-            vb_latest_view,
-            genesis_acount_balance_map);
+            vb_latest_view);
     }
 
     // 统计信息初始化
@@ -1454,8 +1406,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
         uint64_t* pool_with_heights,
-        hotstuff::View* pool_latest_view,
-        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map) {
+        hotstuff::View* pool_latest_view) {
     std::map<std::string, GenisisNodeInfoPtr> valid_ids;
     for (auto iter = root_genesis_nodes.begin(); iter != root_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
@@ -1486,8 +1437,8 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
         uint64_t genesis_account_balance = 0;
-        auto balance_iter = genesis_acount_balance_map.find(iter->first);
-        if (balance_iter != genesis_acount_balance_map.end()) {
+        auto balance_iter = genesis_acount_balance_map_.find(iter->first);
+        if (balance_iter != genesis_acount_balance_map_.end()) {
             genesis_account_balance = balance_iter->second;
             expect_all_balance += genesis_account_balance;
         }
@@ -1573,12 +1524,10 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 // root_genesis_nodes root 网络的创世节点
 // cons_genesis_nodes 目标 shard 网络的创世节点
 // net_id 网络 ID
-// genesis_acount_balance_map 节点账户分配余额表
 int GenesisBlockInit::CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
-        uint32_t net_id,
-        std::unordered_map<std::string, uint64_t>& genesis_acount_balance_map) {
+        uint32_t net_id) {
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();
@@ -1629,8 +1578,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         if (pool_iter != pool_map.end()) {
             for (auto addr_iter = pool_iter->second.begin(); addr_iter != pool_iter->second.end(); ++addr_iter) {
                 // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
-                auto balance_iter = genesis_acount_balance_map.find(addr_iter->first);
-                assert(balance_iter != genesis_acount_balance_map.end());
+                auto balance_iter = genesis_acount_balance_map_.find(addr_iter->first);
+                assert(balance_iter != genesis_acount_balance_map_.end());
                 auto tx_info = tx_list->Add();
                 tx_info->set_from("");
                 tx_info->set_to(addr_iter->first);
@@ -1680,8 +1629,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     //         cons_genesis_nodes,
     //         net_id,
     //         pool_with_heights,
-    //         vb_latest_view,
-    //         genesis_acount_balance_map);
+    //         vb_latest_view);
     // 统计信息初始化
     {
         uint32_t pool_index = common::kImmutablePoolSize;
@@ -1739,7 +1687,7 @@ uint32_t GenesisBlockInit::GetNetworkIdOfGenesisAddress(const std::string& addre
 void GenesisBlockInit::InitShardGenesisAccount() {
     // Execute once
     static bool hasRunOnce = false;
-
+    std::set<std::string> valid_ids;
     auto load_addrs_func = [&](uint32_t net_id, const char* filename) {
         auto fd = fopen(filename, "r");
         assert(fd != nullptr);
@@ -1760,6 +1708,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
             ++net_pool_index_map_addr_count_;
             ZJC_DEBUG("success add address net: %d, pool: %d, addr: %s", 
                 net_id, pool_idx, common::Encode::HexEncode(secptr->GetAddress()).c_str());
+            valid_ids.insert(secptr->GetAddress());
         }
 
         fclose(fd);
@@ -1772,6 +1721,21 @@ void GenesisBlockInit::InitShardGenesisAccount() {
             load_addrs_func(net_id, (std::string("/root/shardora/init_accounts") + std::to_string(net_id)).c_str());
             load_addrs_func(net_id, (std::string("/root/shardora/shards") + std::to_string(net_id)).c_str());
         }    
+    }
+
+
+    uint64_t aver_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
+    uint64_t rest_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
+    
+    std::unordered_map<std::string, uint64_t> node_balance_map;
+    // 平均分配余额，剩下的都给最后一个
+    uint32_t count = 0;
+    for (auto it = valid_ids.begin(); it != valid_ids.end(); ++it, ++count) {
+        uint64_t balance = aver_balance;
+        if (count == valid_ids.size() - 1) {
+            balance += rest_balance;
+        }
+        node_balance_map.insert(std::pair<std::string, uint64_t>(*it, balance));
     }
 
     hasRunOnce = true;
