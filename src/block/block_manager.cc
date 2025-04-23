@@ -625,7 +625,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->has_elect_statistic()) {
-       HandleStatisticTx(*view_block_info);
+       HandleStatisticTx(*view_block_item);
     }
 }
 
