@@ -1197,18 +1197,6 @@ class OldHeader : public ::google::protobuf::Message /* @@protoc_insertion_point
 
   // accessors -------------------------------------------------------
 
-  // repeated .shardora.pools.protobuf.ShardToTxItem invalid_bfts = 28;
-  int invalid_bfts_size() const;
-  void clear_invalid_bfts();
-  static const int kInvalidBftsFieldNumber = 28;
-  ::shardora::pools::protobuf::ShardToTxItem* mutable_invalid_bfts(int index);
-  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ShardToTxItem >*
-      mutable_invalid_bfts();
-  const ::shardora::pools::protobuf::ShardToTxItem& invalid_bfts(int index) const;
-  ::shardora::pools::protobuf::ShardToTxItem* add_invalid_bfts();
-  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ShardToTxItem >&
-      invalid_bfts() const;
-
   // optional bytes des_dht_key = 2;
   bool has_des_dht_key() const;
   void clear_des_dht_key();
@@ -1600,7 +1588,6 @@ class OldHeader : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ShardToTxItem > invalid_bfts_;
   ::google::protobuf::internal::ArenaStringPtr des_dht_key_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
   ::google::protobuf::internal::ArenaStringPtr sign_;
@@ -5270,33 +5257,6 @@ inline void OldHeader::set_allocated_block(::shardora::block::protobuf::Block* b
   }
   block_ = block;
   // @@protoc_insertion_point(field_set_allocated:shardora.transport.protobuf.OldHeader.block)
-}
-
-// repeated .shardora.pools.protobuf.ShardToTxItem invalid_bfts = 28;
-inline int OldHeader::invalid_bfts_size() const {
-  return invalid_bfts_.size();
-}
-inline ::shardora::pools::protobuf::ShardToTxItem* OldHeader::mutable_invalid_bfts(int index) {
-  // @@protoc_insertion_point(field_mutable:shardora.transport.protobuf.OldHeader.invalid_bfts)
-  return invalid_bfts_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ShardToTxItem >*
-OldHeader::mutable_invalid_bfts() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.transport.protobuf.OldHeader.invalid_bfts)
-  return &invalid_bfts_;
-}
-inline const ::shardora::pools::protobuf::ShardToTxItem& OldHeader::invalid_bfts(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.transport.protobuf.OldHeader.invalid_bfts)
-  return invalid_bfts_.Get(index);
-}
-inline ::shardora::pools::protobuf::ShardToTxItem* OldHeader::add_invalid_bfts() {
-  // @@protoc_insertion_point(field_add:shardora.transport.protobuf.OldHeader.invalid_bfts)
-  return invalid_bfts_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ShardToTxItem >&
-OldHeader::invalid_bfts() const {
-  // @@protoc_insertion_point(field_list:shardora.transport.protobuf.OldHeader.invalid_bfts)
-  return invalid_bfts_;
 }
 
 // optional uint32 from_public_port = 29;

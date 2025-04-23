@@ -20,11 +20,11 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2fblock_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<12> scc_info_Block;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<18> scc_info_BlockMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingStatisticMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingTosMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ElectBlockMessage;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<7> scc_info_Block;
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<5> scc_info_BlsMessage;
@@ -51,7 +51,6 @@ namespace protobuf_protos_2fnetwork_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_NetworkMessage;
 }  // namespace protobuf_protos_2fnetwork_2eproto
 namespace protobuf_protos_2fpools_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ShardToTxItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncPoolsMaxHeight;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ToTxHeights;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_TxMessage;
@@ -176,8 +175,8 @@ static void InitDefaultsOldHeader() {
   ::shardora::transport::protobuf::OldHeader::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<21> scc_info_OldHeader =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 21, InitDefaultsOldHeader}, {
+::google::protobuf::internal::SCCInfo<20> scc_info_OldHeader =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 20, InitDefaultsOldHeader}, {
       &protobuf_protos_2ftransport_2eproto::scc_info_BroadcastParam.base,
       &protobuf_protos_2fnetwork_2eproto::scc_info_NetworkMessage.base,
       &protobuf_protos_2fdht_2eproto::scc_info_DhtMessage.base,
@@ -197,7 +196,6 @@ static void InitDefaultsOldHeader() {
       &protobuf_protos_2finit_2eproto::scc_info_InitMessage.base,
       &protobuf_protos_2fpools_2eproto::scc_info_SyncPoolsMaxHeight.base,
       &protobuf_protos_2fblock_2eproto::scc_info_Block.base,
-      &protobuf_protos_2fpools_2eproto::scc_info_ShardToTxItem.base,
       &protobuf_protos_2fc2c_2eproto::scc_info_C2cMessage.base,}};
 
 void InitDefaults() {
@@ -359,7 +357,6 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::OldHeader, init_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::OldHeader, sync_heights_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::OldHeader, block_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::OldHeader, invalid_bfts_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::OldHeader, from_public_port_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::transport::protobuf::OldHeader, c2c_),
   23,
@@ -389,7 +386,6 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   19,
   20,
   21,
-  ~0u,
   28,
   22,
 };
@@ -397,7 +393,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, 19, sizeof(::shardora::transport::protobuf::BroadcastParam)},
   { 33, 41, sizeof(::shardora::transport::protobuf::ConsensusDebug)},
   { 44, 83, sizeof(::shardora::transport::protobuf::Header)},
-  { 117, 152, sizeof(::shardora::transport::protobuf::OldHeader)},
+  { 117, 151, sizeof(::shardora::transport::protobuf::OldHeader)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -487,7 +483,7 @@ void AddDescriptorsImpl() {
       ".view_block.protobuf.TimeoutMessage\022=\n\010h"
       "otstuff\030\" \001(\0132+.shardora.hotstuff.protob"
       "uf.HotstuffMessage\022\024\n\014ecdh_encrypt\030# \001(\014"
-      "\"\230\013\n\tOldHeader\022\027\n\017src_sharding_id\030\001 \001(\005\022"
+      "\"\332\n\n\tOldHeader\022\027\n\017src_sharding_id\030\001 \001(\005\022"
       "\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003 \001(\r:"
       "\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014\n\004typ"
       "e\030\006 \001(\r\022>\n\tbroadcast\030\007 \001(\0132+.shardora.tr"
@@ -519,13 +515,12 @@ void AddDescriptorsImpl() {
       "init.protobuf.InitMessage\022A\n\014sync_height"
       "s\030\032 \001(\0132+.shardora.pools.protobuf.SyncPo"
       "olsMaxHeight\022-\n\005block\030\033 \001(\0132\036.shardora.b"
-      "lock.protobuf.Block\022<\n\014invalid_bfts\030\034 \003("
-      "\0132&.shardora.pools.protobuf.ShardToTxIte"
-      "m\022\030\n\020from_public_port\030\035 \001(\r\022.\n\003c2c\030\036 \001(\013"
-      "2!.shardora.c2c.protobuf.C2cMessage"
+      "lock.protobuf.Block\022\030\n\020from_public_port\030"
+      "\035 \001(\r\022.\n\003c2c\030\036 \001(\0132!.shardora.c2c.protob"
+      "uf.C2cMessage"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3795);
+      descriptor, 3733);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
@@ -3696,9 +3691,6 @@ void OldHeader::clear_block() {
   if (block_ != NULL) block_->Clear();
   clear_has_block();
 }
-void OldHeader::clear_invalid_bfts() {
-  invalid_bfts_.Clear();
-}
 void OldHeader::clear_c2c() {
   if (c2c_ != NULL) c2c_->Clear();
   clear_has_c2c();
@@ -3731,7 +3723,6 @@ const int OldHeader::kElectBlockFieldNumber;
 const int OldHeader::kInitProtoFieldNumber;
 const int OldHeader::kSyncHeightsFieldNumber;
 const int OldHeader::kBlockFieldNumber;
-const int OldHeader::kInvalidBftsFieldNumber;
 const int OldHeader::kFromPublicPortFieldNumber;
 const int OldHeader::kC2CFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -3746,8 +3737,7 @@ OldHeader::OldHeader()
 OldHeader::OldHeader(const OldHeader& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_),
-      invalid_bfts_(from.invalid_bfts_) {
+      _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   des_dht_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_des_dht_key()) {
@@ -3927,7 +3917,6 @@ void OldHeader::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  invalid_bfts_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -4378,18 +4367,6 @@ bool OldHeader::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .shardora.pools.protobuf.ShardToTxItem invalid_bfts = 28;
-      case 28: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(226u /* 226 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_invalid_bfts()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       // optional uint32 from_public_port = 29;
       case 29: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -4600,15 +4577,6 @@ void OldHeader::SerializeWithCachedSizes(
       27, this->_internal_block(), output);
   }
 
-  // repeated .shardora.pools.protobuf.ShardToTxItem invalid_bfts = 28;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->invalid_bfts_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      28,
-      this->invalid_bfts(static_cast<int>(i)),
-      output);
-  }
-
   // optional uint32 from_public_port = 29;
   if (cached_has_bits & 0x10000000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(29, this->from_public_port(), output);
@@ -4814,14 +4782,6 @@ void OldHeader::SerializeWithCachedSizes(
         27, this->_internal_block(), deterministic, target);
   }
 
-  // repeated .shardora.pools.protobuf.ShardToTxItem invalid_bfts = 28;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->invalid_bfts_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        28, this->invalid_bfts(static_cast<int>(i)), deterministic, target);
-  }
-
   // optional uint32 from_public_port = 29;
   if (cached_has_bits & 0x10000000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(29, this->from_public_port(), target);
@@ -4851,17 +4811,6 @@ size_t OldHeader::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .shardora.pools.protobuf.ShardToTxItem invalid_bfts = 28;
-  {
-    unsigned int count = static_cast<unsigned int>(this->invalid_bfts_size());
-    total_size += 2UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->invalid_bfts(static_cast<int>(i)));
-    }
-  }
-
   if (_has_bits_[0 / 32] & 255u) {
     // optional bytes des_dht_key = 2;
     if (has_des_dht_key()) {
@@ -5100,7 +5049,6 @@ void OldHeader::MergeFrom(const OldHeader& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  invalid_bfts_.MergeFrom(from.invalid_bfts_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -5249,7 +5197,6 @@ void OldHeader::Swap(OldHeader* other) {
 }
 void OldHeader::InternalSwap(OldHeader* other) {
   using std::swap;
-  CastToBase(&invalid_bfts_)->InternalSwap(CastToBase(&other->invalid_bfts_));
   des_dht_key_.Swap(&other->des_dht_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   debug_.Swap(&other->debug_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),

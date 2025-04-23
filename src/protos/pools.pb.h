@@ -1847,13 +1847,28 @@ class AllToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_
   const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage >&
       to_tx_arr() const;
 
+  // optional .shardora.pools.protobuf.ShardToTxItem to_heights = 2;
+  bool has_to_heights() const;
+  void clear_to_heights();
+  static const int kToHeightsFieldNumber = 2;
+  private:
+  const ::shardora::pools::protobuf::ShardToTxItem& _internal_to_heights() const;
+  public:
+  const ::shardora::pools::protobuf::ShardToTxItem& to_heights() const;
+  ::shardora::pools::protobuf::ShardToTxItem* release_to_heights();
+  ::shardora::pools::protobuf::ShardToTxItem* mutable_to_heights();
+  void set_allocated_to_heights(::shardora::pools::protobuf::ShardToTxItem* to_heights);
+
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.AllToTxMessage)
  private:
+  void set_has_to_heights();
+  void clear_has_to_heights();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessage > to_tx_arr_;
+  ::shardora::pools::protobuf::ShardToTxItem* to_heights_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1967,26 +1982,33 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_hash();
   void set_allocated_hash(::std::string* hash);
 
-  // optional uint64 height = 1;
+  // optional uint64 height = 1 [default = 0];
   bool has_height() const;
   void clear_height();
   static const int kHeightFieldNumber = 1;
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
-  // optional uint64 synced_height = 3;
+  // optional uint64 synced_height = 3 [default = 0];
   bool has_synced_height() const;
   void clear_synced_height();
   static const int kSyncedHeightFieldNumber = 3;
   ::google::protobuf::uint64 synced_height() const;
   void set_synced_height(::google::protobuf::uint64 value);
 
-  // optional uint64 timestamp = 4;
+  // optional uint64 timestamp = 4 [default = 0];
   bool has_timestamp() const;
   void clear_timestamp();
   static const int kTimestampFieldNumber = 4;
   ::google::protobuf::uint64 timestamp() const;
   void set_timestamp(::google::protobuf::uint64 value);
+
+  // optional uint64 view = 5 [default = 0];
+  bool has_view() const;
+  void clear_view();
+  static const int kViewFieldNumber = 5;
+  ::google::protobuf::uint64 view() const;
+  void set_view(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.PoolLatestInfo)
  private:
@@ -1998,6 +2020,8 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_synced_height();
   void set_has_timestamp();
   void clear_has_timestamp();
+  void set_has_view();
+  void clear_has_view();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2006,6 +2030,7 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint64 synced_height_;
   ::google::protobuf::uint64 timestamp_;
+  ::google::protobuf::uint64 view_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -4840,11 +4865,69 @@ AllToTxMessage::to_tx_arr() const {
   return to_tx_arr_;
 }
 
+// optional .shardora.pools.protobuf.ShardToTxItem to_heights = 2;
+inline bool AllToTxMessage::has_to_heights() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AllToTxMessage::set_has_to_heights() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AllToTxMessage::clear_has_to_heights() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AllToTxMessage::clear_to_heights() {
+  if (to_heights_ != NULL) to_heights_->Clear();
+  clear_has_to_heights();
+}
+inline const ::shardora::pools::protobuf::ShardToTxItem& AllToTxMessage::_internal_to_heights() const {
+  return *to_heights_;
+}
+inline const ::shardora::pools::protobuf::ShardToTxItem& AllToTxMessage::to_heights() const {
+  const ::shardora::pools::protobuf::ShardToTxItem* p = to_heights_;
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.AllToTxMessage.to_heights)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::pools::protobuf::ShardToTxItem*>(
+      &::shardora::pools::protobuf::_ShardToTxItem_default_instance_);
+}
+inline ::shardora::pools::protobuf::ShardToTxItem* AllToTxMessage::release_to_heights() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.AllToTxMessage.to_heights)
+  clear_has_to_heights();
+  ::shardora::pools::protobuf::ShardToTxItem* temp = to_heights_;
+  to_heights_ = NULL;
+  return temp;
+}
+inline ::shardora::pools::protobuf::ShardToTxItem* AllToTxMessage::mutable_to_heights() {
+  set_has_to_heights();
+  if (to_heights_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::pools::protobuf::ShardToTxItem>(GetArenaNoVirtual());
+    to_heights_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.AllToTxMessage.to_heights)
+  return to_heights_;
+}
+inline void AllToTxMessage::set_allocated_to_heights(::shardora::pools::protobuf::ShardToTxItem* to_heights) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete to_heights_;
+  }
+  if (to_heights) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      to_heights = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, to_heights, submessage_arena);
+    }
+    set_has_to_heights();
+  } else {
+    clear_has_to_heights();
+  }
+  to_heights_ = to_heights;
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.AllToTxMessage.to_heights)
+}
+
 // -------------------------------------------------------------------
 
 // PoolLatestInfo
 
-// optional uint64 height = 1;
+// optional uint64 height = 1 [default = 0];
 inline bool PoolLatestInfo::has_height() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -4934,7 +5017,7 @@ inline void PoolLatestInfo::set_allocated_hash(::std::string* hash) {
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.PoolLatestInfo.hash)
 }
 
-// optional uint64 synced_height = 3;
+// optional uint64 synced_height = 3 [default = 0];
 inline bool PoolLatestInfo::has_synced_height() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -4958,7 +5041,7 @@ inline void PoolLatestInfo::set_synced_height(::google::protobuf::uint64 value) 
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolLatestInfo.synced_height)
 }
 
-// optional uint64 timestamp = 4;
+// optional uint64 timestamp = 4 [default = 0];
 inline bool PoolLatestInfo::has_timestamp() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -4980,6 +5063,30 @@ inline void PoolLatestInfo::set_timestamp(::google::protobuf::uint64 value) {
   set_has_timestamp();
   timestamp_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolLatestInfo.timestamp)
+}
+
+// optional uint64 view = 5 [default = 0];
+inline bool PoolLatestInfo::has_view() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void PoolLatestInfo::set_has_view() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void PoolLatestInfo::clear_has_view() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void PoolLatestInfo::clear_view() {
+  view_ = GOOGLE_ULONGLONG(0);
+  clear_has_view();
+}
+inline ::google::protobuf::uint64 PoolLatestInfo::view() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.PoolLatestInfo.view)
+  return view_;
+}
+inline void PoolLatestInfo::set_view(::google::protobuf::uint64 value) {
+  set_has_view();
+  view_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.PoolLatestInfo.view)
 }
 
 // -------------------------------------------------------------------
