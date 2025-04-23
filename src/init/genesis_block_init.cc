@@ -1235,7 +1235,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
             vb_prehashes[network::kRootCongressNetworkId],
-            pool_with_heights[common::kImmutablePoolSize]++,
+            pool_with_heights[common::kImmutablePoolSize],
             common::kInvalidUint64,
             vb_latest_view[network::kRootCongressNetworkId]++,
             root_gens_init_block_file,
@@ -1245,12 +1245,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
+    pool_with_heights[common::kImmutablePoolSize]++,
     if (CreateElectBlock(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
             vb_prehashes[network::kRootCongressNetworkId],
-            pool_with_heights[common::kImmutablePoolSize]++,
-            pool_with_heights[common::kImmutablePoolSize] - 2 ,
+            pool_with_heights[common::kImmutablePoolSize],
+            pool_with_heights[common::kImmutablePoolSize] - 1 ,
             vb_latest_view[network::kRootCongressNetworkId]++,
             root_gens_init_block_file,
             root_genesis_nodes,
@@ -1259,6 +1260,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
+    pool_with_heights[common::kImmutablePoolSize]++,
     // 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     pool_prev_vb_hash_map[network::kRootCongressNetworkId] = vb_prehashes[network::kRootCongressNetworkId];
@@ -1270,7 +1272,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 net_id,
                 prehashes[net_id],
                 vb_prehashes[net_id],
-                pool_with_heights[net_id]++,
+                pool_with_heights[net_id],
                 common::kInvalidUint64,
                 vb_latest_view[net_id]++,
                 root_gens_init_block_file,
@@ -1280,12 +1282,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             return kInitError;
         }
 
+        pool_with_heights[net_id]++,
         if (CreateElectBlock(
                 net_id,
                 prehashes[net_id],
                 vb_prehashes[net_id],
-                pool_with_heights[net_id]++,
-                pool_with_heights[net_id] - 2,
+                pool_with_heights[net_id],
+                pool_with_heights[net_id] - 1,
                 vb_latest_view[net_id]++,
                 root_gens_init_block_file,
                 root_genesis_nodes,
@@ -1294,6 +1297,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             return kInitError;
         }
 
+        pool_with_heights[net_id]++,
         pool_prev_hash_map[net_id] = prehashes[net_id];
         pool_prev_vb_hash_map[net_id] = vb_prehashes[net_id];
     }
