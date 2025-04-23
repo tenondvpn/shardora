@@ -58,16 +58,17 @@ void ToTxsPools::ThreadToStatistic(
     pool_max_heihgts_[pool_idx] = block.height();
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
-    cons_debug.ParseFromString( view_block_ptr->debug());
+    cons_debug.ParseFromString(view_block_ptr->debug());
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, "
-        "cons height: %lu, tx size: %d, propose_debug: %s, step: %d, tx status: %d",
+        "cons height: %lu, tx size: %d, propose_debug: %s, step: %d, tx status: %d, block: %s",
         pool_idx, 
         block.height(), 
         pool_consensus_heihgts_[pool_idx], 
         view_block_ptr->block_info().tx_list_size(),
         ProtobufToJson(cons_debug).c_str(),
         (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).step() : -1),
-        (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1));
+        (view_block_ptr->block_info().tx_list_size() > 0 ? view_block_ptr->block_info().tx_list(0).status() : -1),
+        ProtobufToJson(block).c_str());
 #endif
 
     {
