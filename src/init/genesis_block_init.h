@@ -94,6 +94,7 @@ private:
     void CreateDefaultAccount();
     void AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
+        const std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>& address_info_map
         db::DbWriteBatch& db_batch);
     bool CreateNodePrivateInfo(
         uint32_t shard_id,
@@ -142,7 +143,6 @@ private:
     nlohmann::json bls_pk_json_;
     std::shared_ptr<address::protobuf::AddressInfo> immutable_pool_address_info_;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize];
-    std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map_;
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };

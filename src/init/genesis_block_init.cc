@@ -654,7 +654,8 @@ int GenesisBlockInit::CreateElectBlock(
     tx_info->set_gas_used(0);
     tx_info->set_balance(0);
     tx_info->set_status(0);
-    address_info_map_[account_info->addr()] = CreateAddress(
+    std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
+    address_info_map[account_info->addr()] = CreateAddress(
         "", tx_info->balance(), shard_netid, account_info->pool_index(), 
         account_info->addr(), 0, tx_info->nonce());
     elect::protobuf::ElectBlock ec_block;
@@ -748,7 +749,7 @@ int GenesisBlockInit::CreateElectBlock(
     std::string ec_val = common::Encode::HexEncode(view_block_ptr->SerializeAsString()) +
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";    
     fputs(ec_val.c_str(), root_gens_init_block_file);
-    AddBlockItemToCache(view_block_ptr, db_batch);
+    AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
     root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
     root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
     db_->Put(db_batch);
@@ -820,7 +821,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
         tx_info->set_nonce(immutable_pool_address_info_->nonce());
-        address_info_map_[immutable_pool_address_info_->addr()] = CreateAddress(
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
+        address_info_map[immutable_pool_address_info_->addr()] = CreateAddress(
             "", tx_info->balance(), network::kConsensusShardBeginNetworkId, 
             immutable_pool_address_info_->pool_index(), 
             immutable_pool_address_info_->addr(), 0, tx_info->nonce());
@@ -845,7 +847,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -871,7 +873,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tx_info->set_step(pools::protobuf::kConsensusRootTimeBlock);
         tx_info->set_gas_limit(0llu);
         tx_info->set_amount(0);
-        address_info_map_[immutable_pool_address_info_->addr()] = CreateAddress(
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
+        address_info_map[immutable_pool_address_info_->addr()] = CreateAddress(
             "", tx_info->balance(), network::kConsensusShardBeginNetworkId, 
             immutable_pool_address_info_->pool_index(), 
             immutable_pool_address_info_->addr(), 0, tx_info->nonce());
@@ -899,7 +902,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -998,6 +1001,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
     uint64_t pool_with_heights[common::kInvalidPoolIndex] = { 0llu };
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
         while (true) {
             auto private_key = common::Random::RandomString(32);
@@ -1023,7 +1027,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            address_info_map_[pool_address_info_[i]->addr()] = CreateAddress(
+            address_info_map[pool_address_info_[i]->addr()] = CreateAddress(
                 "", 0, network::kConsensusShardBeginNetworkId, i, 
                 pool_address_info_[i]->addr(), 0, tx_info->nonce());
         }
@@ -1043,7 +1047,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     tx_info->set_balance(0);
                     tx_info->set_gas_limit(0);
                     tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                    address_info_map_[addr_iter->first] = CreateAddress(
+                    address_info_map[addr_iter->first] = CreateAddress(
                         "", 0, network::kConsensusShardBeginNetworkId, i, 
                         addr_iter->first, 0, tx_info->nonce());
                 }
@@ -1065,7 +1069,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 join_elect_tx_info->set_status(0);
                 bls::protobuf::JoinElectInfo* join_info = tenon_block->add_joins();
                 *join_info = root_genesis_nodes[member_idx]->g2_val;
-                address_info_map_[root_genesis_nodes[member_idx]->id] = CreateAddress(
+                address_info_map[root_genesis_nodes[member_idx]->id] = CreateAddress(
                     "", 0, network::kConsensusShardBeginNetworkId, i, 
                     root_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
             }
@@ -1089,7 +1093,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                     join_elect_tx_info->set_status(0);
                     bls::protobuf::JoinElectInfo* join_info = tenon_block->add_joins();
                     *join_info = cons_genesis_nodes[member_idx]->g2_val;
-                    address_info_map_[cons_genesis_nodes[member_idx]->id] = CreateAddress(
+                    address_info_map[cons_genesis_nodes[member_idx]->id] = CreateAddress(
                         "", 0, net_id, i, 
                         cons_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
                 }
@@ -1127,7 +1131,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         fputs(
             (common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(), 
             root_gens_init_block_file);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         db_->Put(db_batch);
     }
 
@@ -1344,6 +1348,7 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
 
 void GenesisBlockInit::AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
+        const std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>& address_info_map
         db::DbWriteBatch& db_batch) {
     auto* block = &view_block->block_info();
     pools::protobuf::PoolLatestInfo pool_info;
@@ -1356,7 +1361,7 @@ void GenesisBlockInit::AddBlockItemToCache(
     ZJC_DEBUG("success add pool latest info: %u_%u_%lu, block height: %lu, tm: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), block->height(), block->timestamp());
-    for (auto iter = address_info_map_.begin(); iter != address_info_map_.end(); ++iter) {
+    for (auto iter = address_info_map.begin(); iter != address_info_map.end(); ++iter) {
         auto* addr_info = view_block->mutable_block_info()->add_address_array();
         *addr_info = *iter->second;
         prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, db_batch);
@@ -1471,6 +1476,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     int32_t idx = 0;
     // 每个节点都要创建一个块
     for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter, ++idx) {
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -1492,7 +1498,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            address_info_map_[iter->first] = CreateAddress(
+            address_info_map[iter->first] = CreateAddress(
                 "", 0, net_id, pool_index, 
                 iter->first, 0, tx_info->nonce());
         }
@@ -1512,7 +1518,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 *join_info = cons_genesis_nodes[member_idx]->g2_val;
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
-                address_info_map_[cons_genesis_nodes[member_idx]->id] = CreateAddress(
+                address_info_map[cons_genesis_nodes[member_idx]->id] = CreateAddress(
                     "", join_elect_tx_info->balance(), net_id, pool_index, 
                     cons_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
             }
@@ -1551,7 +1557,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(iter->first);
         if (account_ptr == nullptr) {
@@ -1602,6 +1608,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i) {
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
         auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto* tenon_block = view_block_ptr->mutable_block_info();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -1616,7 +1623,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            address_info_map_[address_info->addr()] = CreateAddress(
+            address_info_map[address_info->addr()] = CreateAddress(
                 "", tx_info->balance(), net_id, i, 
                 address_info->addr(), 0, tx_info->nonce());
         } else {
@@ -1629,7 +1636,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            address_info_map_[pool_address_info_[i]->addr()] = CreateAddress(
+            address_info_map[pool_address_info_[i]->addr()] = CreateAddress(
                 "", tx_info->balance(), net_id, i, 
                 pool_address_info_[i]->addr(), 0, tx_info->nonce());
         }
@@ -1649,7 +1656,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
                 ZJC_DEBUG("net_id: %d, success add address: %s, balance: %lu",
                     net_id, common::Encode::HexEncode(addr_iter->first).c_str(), genesis_account_balance);
-                address_info_map_[addr_iter->first] = CreateAddress(
+                    address_info_map[addr_iter->first] = CreateAddress(
                     "", tx_info->balance(), net_id, i, 
                     addr_iter->first, 0, tx_info->nonce());
             }
@@ -1677,7 +1684,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto& db_batch = *db_batch_ptr;
         // 更新 pool 最新信息
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         db_->Put(db_batch);
     }
 
