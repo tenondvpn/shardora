@@ -235,8 +235,9 @@ private:
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
         if (first_timeblock_timestamp_ == 0) {
-            uint64_t height = 0;
-            prefix_db_->GetLatestTimeBlock(&height, &first_timeblock_timestamp_);
+            timeblock::protobuf::TimeBlock tmblock;
+            prefix_db_->GetLatestTimeBlock(&tmblock);
+            first_timeblock_timestamp_ = tmblock.timestamp();
         }
 
         return std::make_shared<ElectTxItem>(
