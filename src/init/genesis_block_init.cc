@@ -692,7 +692,6 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_height(height);
     ec_block.set_shard_network_id(shard_netid);
     ec_block.set_elect_height(tenon_block->height());
-    
     if (prev_height != common::kInvalidUint64) {
         auto prev_members = ec_block.mutable_prev_members();
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
@@ -718,7 +717,6 @@ int GenesisBlockInit::CreateElectBlock(
         prefix_db_->SaveElectHeightCommonPk(shard_netid, prev_height, *prev_members, db_batch);
         auto st = db_->Put(db_batch);
         assert(st.ok());
-        SetPrevElectInfo(ec_block, *tenon_block);
         ZJC_WARN("genesis elect shard: %u, prev_height: %lu, "
             "init bls common public key: %s, %s, %s, %s", 
             shard_netid, prev_height, 
@@ -735,6 +733,7 @@ int GenesisBlockInit::CreateElectBlock(
         item["y_c0"] = common_pk_strs->at(2);
         item["y_c1"] = common_pk_strs->at(3);
         bls_pk_json_.push_back(item);
+        SetPrevElectInfo(ec_block, *tenon_block);
     }
 
     *tenon_block->mutable_elect_block() = ec_block;
