@@ -718,7 +718,7 @@ Status GetLatestViewBlockFromDb(
     }
 
     // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
-    View view = GenesisView;
+    View view = pool_info.view();
     uint32_t leader_idx = 0;
     HashStr parent_hash = "";
     auto& pb_view_block = *view_block;
@@ -744,21 +744,6 @@ Status GetLatestViewBlockFromDb(
         common::Encode::HexEncode(view_block->qc().sign_y()).c_str());    
     
     return Status::kSuccess;
-}
-
-void GetQCWrappedByGenesis(uint32_t pool_index, QC* qc) {
-    auto net_id = common::GlobalInfo::Instance()->network_id();
-    if (net_id > network::kConsensusShardEndNetworkId) {
-        net_id -= network::kConsensusWaitingShardOffset;
-    }
-
-    QC& qc_item = *qc;
-    qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
-    qc_item.set_pool_index(pool_index);
-    qc_item.set_view(BeforeGenesisView);
-    qc_item.set_view_block_hash("");
-    qc_item.set_elect_height(1);
-    qc_item.set_leader_idx(0);
 }
 
 bool ViewBlockChain::GetPrevStorageKeyValue(
