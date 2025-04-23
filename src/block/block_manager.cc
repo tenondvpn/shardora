@@ -957,18 +957,20 @@ void BlockManager::HandleStatisticBlock(
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
+    tx->set_nonce(0);
     auto shard_elect_tx = std::make_shared<BlockTxsItem>();
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
     shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
-    ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, statistic elect height: %lu",
+    ZJC_INFO("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, "
+        "statistic elect height: %lu, unique hash: %s",
         view_block.qc().network_id(), block.timeblock_height(),
         tx->nonce(),
         common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_key).c_str(),
-        0);
+        0,
+        common::Encode::HexEncode(unique_hash).c_str());
 }
 
 pools::TxItemPtr BlockManager::GetToTx(
