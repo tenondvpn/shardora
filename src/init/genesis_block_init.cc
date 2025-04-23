@@ -1368,6 +1368,7 @@ void GenesisBlockInit::AddBlockItemToCache(
         auto* addr_info = view_block->mutable_block_info()->add_address_array();
         addr_info->set_latest_height(block->height());
         *addr_info = *iter->second;
+        assert(addr_info->sharding_id() != network::kRootCongressNetworkId);
         prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, db_batch);
         ZJC_DEBUG("success add address info: %s, %s",
             common::Encode::HexEncode(addr_info->addr()).c_str(), 
