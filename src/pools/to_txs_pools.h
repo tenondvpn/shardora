@@ -82,22 +82,8 @@ private:
     void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     void ThreadCallback();
 
-    struct ToAddressItemInfo {
-        uint64_t amount;
-        int32_t pool_index;
-        uint32_t sharding_id;
-        pools::protobuf::StepType type;
-        int32_t src_step;
-        std::string elect_join_g2_value;
-        std::vector<bls::protobuf::JoinElectInfo> verify_reqs;
-         // for kContractCreate
-        std::string library_bytes;
-        std::string from;
-		uint64_t prepayment;
-    };
-
     // destination shard -> pool -> height -> items
-    typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
+    typedef std::unordered_map<std::string, block::protobuf::ToAddressItemInfo> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     HeightMap network_txs_pools_[common::kInvalidPoolIndex];
     common::SpinMutex network_txs_pools_mutex_;
@@ -114,10 +100,6 @@ private:
     common::SpinMutex prev_to_heights_mutex_;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::shared_ptr<std::thread> handle_block_thread_;
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> view_block_queue_;
-    std::condition_variable thread_wait_conn_;
-    std::mutex thread_wait_mutex_;
     volatile bool destroy_ = false;
     
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
