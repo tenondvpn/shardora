@@ -566,6 +566,7 @@ void GenesisBlockInit::SetPrevElectInfo(
             network::kRootCongressNetworkId,
             common::kImmutablePoolSize,
             elect_block.prev_members().prev_elect_height());
+        assert(false);
         return;
     }
 
@@ -577,6 +578,7 @@ void GenesisBlockInit::SetPrevElectInfo(
     }
 
     *block.mutable_prev_elect_block() = block_item.elect_block();
+    ZJC_DEBUG("success set prev elect block: %s", ProtobufToJson(block_item.elect_block()).c_str());
 }
 
 int GenesisBlockInit::CreateElectBlock(
@@ -1732,7 +1734,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         if (count == valid_ids.size() - 1) {
             balance += rest_balance;
         }
-        
+
         genesis_acount_balance_map_.insert(std::pair<std::string, uint64_t>(*it, balance));
     }
 
