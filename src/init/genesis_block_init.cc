@@ -734,7 +734,6 @@ int GenesisBlockInit::CreateElectBlock(
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";    
     fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(view_block_ptr, db_batch);
-    block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
     root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
     root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
     db_->Put(db_batch);
@@ -828,7 +827,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -880,7 +878,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -1556,20 +1553,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
-        // for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-        //     if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-        //         block_mgr_->HandleJoinElectTx(*view_block_ptr, tenon_block->tx_list(tx_idx), db_batch);
-        //     }
-        // }
-        // }
-        // root 网络节点账户状态都在 shard3 中
-        if (net_id == network::kRootCongressNetworkId) {
-            block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
-        } else {
-            block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
-        }
-        
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(iter->first);
         if (account_ptr == nullptr) {
@@ -1688,7 +1671,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         // 更新 pool 最新信息
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
         db_->Put(db_batch);
     }
 

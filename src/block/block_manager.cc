@@ -215,43 +215,6 @@ void BlockManager::HandleAllConsensusBlocks() {
     }
 }
 
-void BlockManager::GenesisAddAllAccount(
-        uint32_t des_sharding_id,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBatch& db_batch) {
-    // (TODO: XX): for create contract error, check address's shard and pool index valid, fix it
-    const auto& tx_list = block_item->tx_list();
-    if (tx_list.empty()) {
-        return;
-    }
-
-    // one block must be one consensus pool
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        GenesisAddOneAccount(des_sharding_id, tx_list[i], block_item->height(), db_batch);
-    }
-}
-
-void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
-                                        const block::protobuf::BlockTx& tx,
-                                        const uint64_t& latest_height,
-                                        db::DbWriteBatch& db_batch) {
-    auto& account_id = account_mgr_->GetTxValidAddress(tx);
-    auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-    account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
-    account_info->set_addr(account_id);
-    account_info->set_type(address::protobuf::kNormal);
-    account_info->set_sharding_id(des_sharding_id);
-    account_info->set_latest_height(latest_height);
-    account_info->set_balance(tx.balance());
-    account_info->set_nonce(tx.nonce());
-    ZJC_DEBUG("genesis add new account %s : %lu, shard: %u",
-              common::Encode::HexEncode(account_info->addr()).c_str(),
-              account_info->balance(),
-              des_sharding_id);
-    
-    prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);    
-}
-
 void BlockManager::HandleStatisticTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& block_tx) {
