@@ -1716,7 +1716,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 net_id,
                 pool_index,
                 vb_latest_view[pool_index]++, 
-                root_genesis_nodes, 
+                cons_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
