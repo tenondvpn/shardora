@@ -25,6 +25,7 @@ ToTxsPools::ToTxsPools(
         LoadLatestHeights();
     }
 
+    assert(prev_to_heights_ != nullptr);
     handle_block_thread_ = std::make_shared<std::thread>(
         std::bind(&ToTxsPools::ThreadCallback, this));
 }
