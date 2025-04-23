@@ -1408,23 +1408,23 @@ void GenesisBlockInit::AddBlockItemToCache(
     ZJC_DEBUG("success add pool latest info: %u_%u_%lu, block height: %lu, tm: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), block->height(), block->timestamp());
-    if (block.has_pool_st_info()) {
+    if (block->has_pool_st_info()) {
         prefix_db_->SaveLatestPoolStatisticTag(
             view_block->qc().network_id(), 
-            block.pool_st_info(), 
+            block->pool_st_info(), 
             db_batch);
     }
 
-    if (block.has_to_heights()) {
-        prefix_db_->SaveLatestToTxsHeights(block.to_heights(), db_batch);
+    if (block->has_to_heights()) {
+        prefix_db_->SaveLatestToTxsHeights(block->to_heights(), db_batch);
     }
 
-    if (block.has_elect_block()) {
-        prefix_db_->SaveLatestElectBlock(block.elect_block(), db_batch);
+    if (block->has_elect_block()) {
+        prefix_db_->SaveLatestElectBlock(block->elect_block(), db_batch);
     }
 
-    if (block.has_timer_block()) {
-        prefix_db_->SaveLatestTimeBlock(block.timer_block(), db_batch);
+    if (block->has_timer_block()) {
+        prefix_db_->SaveLatestTimeBlock(block->timer_block(), db_batch);
     }
 }
 
