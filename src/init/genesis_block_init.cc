@@ -1360,6 +1360,9 @@ void GenesisBlockInit::AddBlockItemToCache(
         auto* addr_info = view_block->mutable_block_info()->add_address_array();
         *addr_info = *iter->second;
         prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, db_batch);
+        ZJC_DEBUG("success add address info: %s, %s",
+            common::Encode::HexEncode(addr_info->addr()).c_str(), 
+            ProtobufToJson(*addr_info).c_str());
     }
 
     if (block->has_pool_st_info()) {
