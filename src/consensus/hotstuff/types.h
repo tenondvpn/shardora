@@ -25,8 +25,6 @@ static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 typedef uint64_t View;
 typedef std::string HashStr;
 
-static const View GenesisView = 1;
-static const View BeforeGenesisView = 0;
 // ViewDuration Init Params
 static const uint64_t ViewDurationSampleSize = 10;
 static const double ViewDurationStartTimeoutMs = 300;

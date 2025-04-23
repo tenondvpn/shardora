@@ -105,7 +105,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         // 验证部分私钥并保存多项式承诺，如果不需要轮换可以注释掉，大幅度节约创世块计算时间和部分空间
         ComputeG2sForNodes(prikeys);
 #endif
-        SaveGenisisPoolHeights(network::kRootCongressNetworkId);
+        // SaveGenisisPoolHeights(network::kRootCongressNetworkId);
     } else { // 构建某 shard 创世网络
         // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
@@ -134,7 +134,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 #ifndef DISABLE_GENESIS_BLS_VERIFY            
             ComputeG2sForNodes(prikeys);
 #endif
-            SaveGenisisPoolHeights(shard_node_net_id);
+            // SaveGenisisPoolHeights(shard_node_net_id);
         }
     }
 
@@ -221,15 +221,9 @@ void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
     }
 
     pools::protobuf::PoolStatisticTxInfo pool_st_info;
-    pool_st_info.set_height(tmblock.height());
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto statistic_info = pool_st_info.add_pool_statisitcs();
-        statistic_info->set_pool_index(i);
-        statistic_info->set_min_height(pools_mgr_->latest_height(i));
-        statistic_info->set_max_height(pools_mgr_->latest_height(i));
+    if (!prefix_db_->GetLatestPoolStatisticTag(shard_id, &pool_st_info)) {
+        ZJC_FATAL("failed!");
     }
-
-    prefix_db_->SaveLatestPoolStatisticTag(shard_id, pool_st_info);
 }
 
 void ComputeG2ForNode(
@@ -750,7 +744,7 @@ int GenesisBlockInit::CreateElectBlock(
     if (CreateAllQc(
             network::kRootCongressNetworkId,
             shard_netid,
-            hotstuff::BeforeGenesisView, 
+            view, 
             root_genesis_nodes, 
             view_block_ptr) != kInitSuccess) {
         assert(false);
@@ -824,9 +818,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         return kInitError;
     }
 
-    // GenerateRootAccounts();
-    uint64_t root_single_block_height = 0llu;
-    hotstuff::View root_single_block_view = 0;
     // for root single block chain
     // 呃，这个账户不是已经创建了么
     std::string root_pre_hash;
@@ -846,13 +837,13 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         immutable_pool_address_info_->set_nonce(immutable_pool_address_info_->nonce() + 1);
         tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         tenon_block->set_version(common::kTransactionVersion);
-        tenon_block->set_height(root_single_block_height++);
+        tenon_block->set_height(root_pool_height[common::kImmutablePoolSize]++);
         // TODO 此处 network_id 一定是 root
         view_block_ptr->set_parent_hash(root_pre_vb_hash);
         if (CreateAllQc(
                 common::GlobalInfo::Instance()->network_id(),
                 common::kImmutablePoolSize,
-                root_single_block_view++, 
+                root_pool_view[common::kImmutablePoolSize]++, 
                 genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
@@ -895,7 +886,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tx_info->set_gas_limit(0llu);
         tx_info->set_amount(0);
         
-        tenon_block->set_height(root_single_block_height++);
+        tenon_block->set_height(root_pool_height[common::kImmutablePoolSize]++);
         timeblock::protobuf::TimeBlock& tm_block = *tenon_block->mutable_timer_block();
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
         tm_block.set_height(tenon_block->height());
@@ -907,7 +898,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         if (CreateAllQc(
                 common::GlobalInfo::Instance()->network_id(),
                 common::kImmutablePoolSize,
-                root_single_block_view++, 
+                root_pool_view[common::kImmutablePoolSize]++, 
                 genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
@@ -938,7 +929,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         db_->Put(db_batch);
     }
 
-    *root_pool_height = root_single_block_height - 1;
     return kInitSuccess;
 }
 
@@ -1036,19 +1026,18 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     InitShardGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
-    pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     std::string prehashes[common::kImmutablePoolSize]; // 256
     std::string vb_prehashes[common::kImmutablePoolSize] = {""};
     // view 从 0 开始
     hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
-    
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
     uint32_t address_count_now = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
+    uint64_t pool_with_heights[common::kInvalidPoolIndex] = { 0llu };
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         std::string address = common::Encode::HexDecode("0000000000000000000000000000000000000000");
         while (true) {
@@ -1161,7 +1150,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         tenon_block->set_version(common::kTransactionVersion);
         // 为此 shard 的此 pool 打包一个块，这个块中有某些创世账户的生成交易，有某些root和shard节点的选举交易
-        tenon_block->set_height(0);
+        tenon_block->set_height(pool_with_heights[i]++);
         tenon_block->set_timeblock_height(0);
         // 块所属的 network 自然是要创建的网络，这个函数是 root 网络，network_id 自然是 root
         // 所有 root 节点对块进行签名
@@ -1220,9 +1209,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         //     }
         // }
 
-        auto* height_info = init_heights.add_heights();
-        height_info->set_min_height(0);
-        // init_heights.add_heights(0);
         db_->Put(db_batch);
          // 获取该 pool 对应的 root 账户，做一些余额校验，这里 root 账户中余额其实是 0
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
@@ -1250,7 +1236,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
             vb_prehashes[network::kRootCongressNetworkId],
-            1,
+            pool_with_heights[common::kImmutablePoolSize]++,
             common::kInvalidUint64,
             vb_latest_view[network::kRootCongressNetworkId]++,
             root_gens_init_block_file,
@@ -1264,8 +1250,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
             vb_prehashes[network::kRootCongressNetworkId],
-            2,
-            1,
+            pool_with_heights[common::kImmutablePoolSize]++,
+            pool_with_heights[common::kImmutablePoolSize] - 2 ,
             vb_latest_view[network::kRootCongressNetworkId]++,
             root_gens_init_block_file,
             root_genesis_nodes,
@@ -1289,7 +1275,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 net_id,
                 prehashes[net_id],
                 vb_prehashes[net_id],
-                1,
+                pool_with_heights[net_id]++,
                 common::kInvalidUint64,
                 vb_latest_view[net_id]++,
                 root_gens_init_block_file,
@@ -1303,8 +1289,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 net_id,
                 prehashes[net_id],
                 vb_prehashes[net_id],
-                2,
-                1,
+                pool_with_heights[net_id]++,
+                pool_with_heights[net_id] - 2,
                 vb_latest_view[net_id]++,
                 root_gens_init_block_file,
                 root_genesis_nodes,
@@ -1315,9 +1301,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         pool_prev_hash_map[net_id] = prehashes[net_id];
         pool_prev_vb_hash_map[net_id] = vb_prehashes[net_id];
-        auto* height_item = init_heights.mutable_heights(net_id);
-        height_item->set_min_height(2);
-        // init_heights.set_heights(net_id, 2);
     }
     
     if (all_balance != 0) {
@@ -1325,15 +1308,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
-    uint64_t root_pool_height = 0;
-    hotstuff::View root_pool_view = 0;
     // pool256 中创建时间块 
-    int res = GenerateRootSingleBlock(root_genesis_nodes, root_gens_init_block_file, &root_pool_height, &root_pool_view);
+    int res = GenerateRootSingleBlock(
+        root_genesis_nodes, 
+        root_gens_init_block_file, 
+        pool_with_heights, 
+        vb_latest_view);
     if (res == kInitSuccess) {
-        auto* height_item = init_heights.add_heights();
-        height_item->set_min_height(root_pool_height);
-        // init_heights.add_heights(root_pool_height);
-        
         std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
         for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
             all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
@@ -1346,17 +1327,51 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             root_genesis_nodes,
             all_cons_genesis_nodes,
             network::kRootCongressNetworkId,
-            init_heights,
+            pool_with_heights,
             vb_latest_view,
             genesis_acount_balance_map);
-        // prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
-        std::string init_consensus_height;
-        for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
-            init_consensus_height += std::to_string(init_heights.heights(i).min_height()) + " ";
+    }
+
+    // 统计信息初始化
+    {
+        uint32_t net_id = network::kRootCongressNetworkId;
+        uint32_t pool_index = common::kImmutablePoolSize;
+        auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        auto* tenon_block = view_block_ptr->mutable_block_info();
+        tenon_block->set_version(common::kTransactionVersion);
+        tenon_block->set_height(pool_with_heights[pool_index]++);
+        tenon_block->set_timeblock_height(0);
+        // TODO network 就是 net_id
+        view_block_ptr->set_parent_hash(pool_prev_vb_hash_map[pool_index]);
+        if (CreateAllQc(
+                net_id,
+                pool_index,
+                vb_latest_view[pool_index]++, 
+                root_genesis_nodes, 
+                view_block_ptr) != kInitSuccess) {
+            assert(false);
+            return kInitError;
         }
 
-        ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
-            network::kRootCongressNetworkId, init_consensus_height.c_str());
+        pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
+        pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
+        pools::protobuf::PoolStatisticTxInfo& pool_st_info = *enon_block->mutable_pool_st_info();
+        pool_st_info.set_height(1);
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            auto statistic_info = pool_st_info.add_pool_statisitcs();
+            statistic_info->set_pool_index(i);
+            statistic_info->set_min_height(pool_with_heights[i]);
+            statistic_info->set_max_height(pool_with_heights[i]);
+        }
+
+        auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
+        auto& db_batch = *db_batch_ptr;
+        auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
+        pools_mgr_->UpdateLatestInfo(
+            view_block_ptr,
+            db_batch);
+        AddBlockItemToCache(view_block_ptr, db_batch);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
     }
 
     fclose(root_gens_init_block_file);
@@ -1453,7 +1468,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        pools::protobuf::StatisticTxItem& init_heights,
+        uint64_t* pool_with_heights,
         hotstuff::View* pool_latest_view,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
     std::map<std::string, GenisisNodeInfoPtr> valid_ids;
@@ -1478,12 +1493,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     // valid_ids 为所有节点（包括 root 和 shard）address
     uint64_t all_balance = 0llu;
     uint64_t expect_all_balance = 0;
-    // 统计每个 pool 的链长度
-    std::map<uint32_t, uint64_t> pool_height;
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        pool_height[i] = init_heights.heights(i).min_height();
-    }
-
     int32_t idx = 0;
     // 每个节点都要创建一个块
     for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter, ++idx) {
@@ -1529,8 +1538,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         }
 
         tenon_block->set_version(common::kTransactionVersion);
-        tenon_block->set_height(pool_height[pool_index] + 1);
-        pool_height[pool_index] = pool_height[pool_index] + 1;
+        tenon_block->set_height(pool_with_heights[pool_index]++);
         tenon_block->set_timeblock_height(0);
         // TODO network 就是 net_id
         view_block_ptr->set_parent_hash(pool_prev_vb_hash_map[pool_index]);
@@ -1582,8 +1590,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
         }
         
-        auto* height_item = init_heights.mutable_heights(pool_index);
-        height_item->set_min_height(tenon_block->height());
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(iter->first);
         if (account_ptr == nullptr) {
@@ -1626,11 +1632,11 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     InitShardGenesisAccount();
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / net_pool_index_map_addr_count_; // 两个分片
-    pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::unordered_map<uint32_t, hotstuff::HashStr> pool_prev_vb_hash_map;
     // view 从 0 开始
-    hotstuff::View vb_latest_view[common::kImmutablePoolSize+1] = {0};
+    hotstuff::View vb_latest_view[common::kInvalidPoolIndex] = {0};
+    uint64_t pool_with_heights[common::kInvalidPoolIndex] = {0};
     
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
     for (uint32_t i = 0; i < common::kImmutablePoolSize + 1; ++i) {
@@ -1680,7 +1686,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
         
         tenon_block->set_version(common::kTransactionVersion);
-        tenon_block->set_height(0);
+        tenon_block->set_height(pool_with_heights[i]++);
         tenon_block->set_timeblock_height(0);
         view_block_ptr->set_parent_hash("");
         if (CreateAllQc(
@@ -1707,8 +1713,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
-        auto* heights_item = init_heights.add_heights();
-        heights_item->set_min_height(0);
         db_->Put(db_batch);
     }
 
@@ -1718,19 +1722,50 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             root_genesis_nodes,
             cons_genesis_nodes,
             net_id,
-            init_heights,
+            pool_with_heights,
             vb_latest_view,
             genesis_acount_balance_map);
     // prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
-    std::string init_consensus_height;
-    for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
-        init_consensus_height += std::to_string(init_heights.heights(i).min_height()) + " ";
-    }
+    // 统计信息初始化
+    {
+        uint32_t pool_index = common::kImmutablePoolSize;
+        auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
+        auto* tenon_block = view_block_ptr->mutable_block_info();
+        tenon_block->set_version(common::kTransactionVersion);
+        tenon_block->set_height(pool_with_heights[pool_index]++);
+        tenon_block->set_timeblock_height(0);
+        // TODO network 就是 net_id
+        view_block_ptr->set_parent_hash(pool_prev_vb_hash_map[pool_index]);
+        if (CreateAllQc(
+                net_id,
+                pool_index,
+                vb_latest_view[pool_index]++, 
+                root_genesis_nodes, 
+                view_block_ptr) != kInitSuccess) {
+            assert(false);
+            return kInitError;
+        }
 
-    ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
-        net_id, init_consensus_height.c_str());
-    // 通过文件同步 RootSingleBlock
-    // 包含 root 网络中的 root pool 账户、选举块和时间块
+        pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
+        pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
+        pools::protobuf::PoolStatisticTxInfo& pool_st_info = *enon_block->mutable_pool_st_info();
+        pool_st_info.set_height(1);
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            auto statistic_info = pool_st_info.add_pool_statisitcs();
+            statistic_info->set_pool_index(i);
+            statistic_info->set_min_height(pool_with_heights[i]);
+            statistic_info->set_max_height(pool_with_heights[i]);
+        }
+
+        auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
+        auto& db_batch = *db_batch_ptr;
+        auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
+        pools_mgr_->UpdateLatestInfo(
+            view_block_ptr,
+            db_batch);
+        AddBlockItemToCache(view_block_ptr, db_batch);
+        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
+    }
     return GenerateShardSingleBlock(net_id);
 }
 
