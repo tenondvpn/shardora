@@ -1354,6 +1354,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         prefix_db_->SaveLatestPoolStatisticTag(net_id, pool_st_info, db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
+        db_->Put(db_batch);
     }
 
     fclose(root_gens_init_block_file);
@@ -1740,6 +1741,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         prefix_db_->SaveLatestPoolStatisticTag(net_id, pool_st_info, db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
+        db_->Put(db_batch);
     }
     return GenerateShardSingleBlock(net_id);
 }

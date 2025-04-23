@@ -55,7 +55,7 @@ int ShardStatistic::Init() {
             pool_map[i] = statistic_item;
         }
     } else {
-        ZJC_DEBUG("failed load latest pool statistic tag.");
+        ZJC_DEBUG("failed load latest pool statistic tag: %d", common::GlobalInfo::Instance()->network_id());
         assert(false);
         return kPoolsError;
     }
