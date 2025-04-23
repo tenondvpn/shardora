@@ -93,7 +93,6 @@ int RootToTxItem::HandleTx(
         acc_balance_map[block_tx.to()] = addr_info;
     }
 
-    zjc_host.root_create_address_tx_ = &block_tx;
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     if (block_tx.status() == kConsensusSuccess) {

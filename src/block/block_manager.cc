@@ -629,24 +629,6 @@ void BlockManager::AddNewBlock(
         to_txs_pool_->NewBlock(view_block_item);
         // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
     }
-
-    if (view_block_info->zjc_host_ptr->normal_to_tx_ != nullptr) {
-        HandleNormalToTx(view_block_item, *view_block_info->zjc_host_ptr->normal_to_tx_);
-    }
-
-    if (view_block_info->zjc_host_ptr->root_create_address_tx_ != nullptr) {
-        ConsensusShardHandleRootCreateAddress(
-            *view_block_item, 
-            *view_block_info->zjc_host_ptr->root_create_address_tx_);
-    }
-
-    if (view_block_info->zjc_host_ptr->statisitc_tx_ != nullptr) {
-        HandleStatisticTx(*view_block_item, *view_block_info->zjc_host_ptr->statisitc_tx_);
-    }
-
-    if (view_block_info->zjc_host_ptr->elect_tx_ != nullptr) {
-        HandleElectTx(*view_block_item, *view_block_info->zjc_host_ptr->elect_tx_);
-    }
 }
 
 void BlockManager::HandleElectTx(
