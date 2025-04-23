@@ -639,7 +639,7 @@ int GenesisBlockInit::CreateElectBlock(
         return kInitSuccess;
     }
     
-    auto account_info = immutable_pool_address_info_;
+    auto& account_info = immutable_pool_address_info_;
     auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
     auto* tenon_block = view_block_ptr->mutable_block_info();
     auto tx_list = tenon_block->mutable_tx_list();
@@ -656,7 +656,8 @@ int GenesisBlockInit::CreateElectBlock(
     tx_info->set_status(0);
     std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
     address_info_map[account_info->addr()] = CreateAddress(
-        "", tx_info->balance(), shard_netid, account_info->pool_index(), 
+        "", tx_info->balance(), (shard_netid == network::kRootCongressNetworkId ? 
+            network::kConsensusShardBeginNetworkId : shard_netid), account_info->pool_index(), 
         account_info->addr(), 0, tx_info->nonce());
     elect::protobuf::ElectBlock ec_block;
     // 期望 leader 数量
