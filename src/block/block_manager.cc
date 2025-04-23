@@ -627,43 +627,25 @@ void BlockManager::AddNewBlock(
     if (block_item->has_elect_statistic()) {
        HandleStatisticTx(*view_block_item);
     }
+
+    if (block_item->has_elect_block()) {
+        HandleElectTx(*view_block_item)
+    }
 }
 
-void BlockManager::HandleElectTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx) {
-    // auto& block = view_block.block_info();
-    // ZJC_DEBUG("handle elect tx storage size: %u, %u_%u_%lu, elect height: %lu",
-    //     tx.storages_size(), view_block.qc().network_id(),
-    //     view_block.qc().pool_index(), block.height(), 
-    //     view_block.qc().elect_height());
-    // for (int32_t i = 0; i < tx.storages_size(); ++i) {
-    //     if (block.has_elect_block()) {
-    //         elect::protobuf::ElectBlock& elect_block = block.elect_block();
-    //         if (!elect_block.ParseFromString(tx.storages(i).value())) {
-    //             assert(false);
-    //             return;
-    //         }
-
-    //         AddMiningToken(view_block, elect_block);
-    //         if (shard_elect_tx_[elect_block.shard_network_id()] != nullptr) {
-    //             if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->tx_info->nonce() == tx.nonce()) {
-    //                 shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
-    //                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
-    //             }
-    //         }
-
-    //         ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
-    //             "pool: %u, height: %lu, common pk: %s, prev elect height: %lu", 
-    //             view_block.qc().elect_height(),
-    //             view_block.qc().network_id(),
-    //             view_block.qc().pool_index(),
-    //             block.height(),
-    //             common::Encode::HexEncode(
-    //             elect_block.prev_members().common_pubkey().SerializeAsString()).c_str(),
-    //             elect_block.prev_members().prev_elect_height());
-    //     }
-    // }
+void BlockManager::HandleElectTx(const view_block::protobuf::ViewBlockItem& view_block) {
+    auto& block = view_block.block_info();
+    elect::protobuf::ElectBlock& elect_block = block.elect_block();
+    AddMiningToken(view_block, elect_block);
+    ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
+        "pool: %u, height: %lu, common pk: %s, prev elect height: %lu", 
+        view_block.qc().elect_height(),
+        view_block.qc().network_id(),
+        view_block.qc().pool_index(),
+        block.height(),
+        common::Encode::HexEncode(
+        elect_block.prev_members().common_pubkey().SerializeAsString()).c_str(),
+        elect_block.prev_members().prev_elect_height());
 }
 
 void BlockManager::AddMiningToken(
