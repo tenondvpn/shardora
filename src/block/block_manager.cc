@@ -635,7 +635,7 @@ void BlockManager::AddNewBlock(
 
 void BlockManager::HandleElectTx(const view_block::protobuf::ViewBlockItem& view_block) {
     auto& block = view_block.block_info();
-    elect::protobuf::ElectBlock& elect_block = block.elect_block();
+    auto& elect_block = block.elect_block();
     AddMiningToken(view_block, elect_block);
     ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
         "pool: %u, height: %lu, common pk: %s, prev elect height: %lu", 
