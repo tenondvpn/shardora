@@ -53,10 +53,6 @@ public:
         std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
-    // just for genesis create new block
-    void GenesisNewBlock(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block_item,
-        db::DbWriteBatch& db_batch);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,

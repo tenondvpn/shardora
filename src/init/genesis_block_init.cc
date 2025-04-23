@@ -1426,6 +1426,57 @@ void GenesisBlockInit::AddBlockItemToCache(
     if (block->has_timer_block()) {
         prefix_db_->SaveLatestTimeBlock(block->timer_block(), db_batch);
     }
+
+    prefix_db_->SaveBlock(*view_block, db_batch);
+    for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
+        auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
+            view_block->block_info().address_array(i));
+        prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
+        ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
+            0,
+            common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
+            ProtobufToJson(*new_addr_info).c_str());
+    }
+
+    for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
+        auto key = view_block->block_info().key_value_array(i).addr() + 
+            view_block->block_info().key_value_array(i).key();
+        prefix_db_->SaveTemporaryKv(
+            key, 
+            view_block->block_info().key_value_array(i).value(), 
+            zjc_host_ptr->db_batch_);
+    }
+
+    for (uint32_t i = 0; i < block->joins_size(); ++i) {
+        auto& join_info = block->joins(i);
+        // 存放了一个 from => balance 的映射
+        prefix_db_->SaveElectNodeStoke(
+            join_info.addr(),
+            view_block->qc().elect_height(),
+            join_info.stoke(),
+            db_batch);
+        
+        if (join_info.g2_req().verify_vec_size() <= 0) {
+            ZJC_DEBUG("success handle kElectJoin tx: %s, not has verfications.",
+                common::Encode::HexEncode(join_info.addr()).c_str());
+            continue;
+        }
+
+        prefix_db_->SaveNodeVerificationVector(join_info.addr(), join_info, db_batch);
+        ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
+            common::Encode::HexEncode(join_info.addr()).c_str(), 
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            block->height(),
+            common::GlobalInfo::Instance()->network_id());
+    }
+
+    prefix_db_->SaveValidViewBlockParentHash(
+        view_block->parent_hash(), 
+        view_block->qc().network_id(),
+        view_block->qc().pool_index(),
+        view_block->qc().view(),
+        db_batch);
 }
 
 // 在 net_id 中为 shard 节点创建块
