@@ -629,7 +629,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->has_elect_block()) {
-        HandleElectTx(*view_block_item)
+        HandleElectTx(*view_block_item);
     }
 }
 
