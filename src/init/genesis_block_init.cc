@@ -204,7 +204,7 @@ std::shared_ptr<address::protobuf::AddressInfo> GenesisBlockInit::CreateAddress(
         uint64_t nonce) {
     auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
     addr_info->set_pubkey("");
-    addr_info->set_balance(0);
+    addr_info->set_balance(balance);
     addr_info->set_sharding_id(network_id);
     addr_info->set_pool_index(pool_idx);
     addr_info->set_addr(addr);
@@ -1504,7 +1504,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
             address_info_map[iter->first] = CreateAddress(
-                "", 0, net_id == network::kRootCongressNetworkId ? network::kConsensusShardBeginNetworkId : net_id, pool_index, 
+                "", tx_info->balance(), net_id == network::kRootCongressNetworkId ? network::kConsensusShardBeginNetworkId : net_id, pool_index, 
                 iter->first, 0, tx_info->nonce());
         }
 
