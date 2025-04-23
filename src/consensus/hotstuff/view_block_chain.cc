@@ -369,22 +369,18 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
                 tx.step());
             switch (tx.step()) {
             case pools::protobuf::kRootCreateAddress:
-                zjc_host_ptr->root_create_address_tx_ = &tx;
                 break;
             case pools::protobuf::kNormalTo: {
-                zjc_host_ptr->normal_to_tx_ = &tx;
                 break;
             }
             case pools::protobuf::kConsensusRootTimeBlock:
                 break;
             case pools::protobuf::kStatistic:
-                zjc_host_ptr->statisitc_tx_ = &tx;
                 break;
             case pools::protobuf::kCross:
                 assert(false);
                 break;
             case pools::protobuf::kConsensusRootElectShard: {
-                zjc_host_ptr->elect_tx_ = &tx;
                 auto& elect_block = view_block->block_info().elect_block();
                 if (elect_block.prev_members().prev_elect_height() > 0) {
                     prefix_db_->SaveElectHeightCommonPk(

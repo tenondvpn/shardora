@@ -57,7 +57,6 @@ public:
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        zjc_host.normal_to_tx_ = &block_tx;
         auto& unique_hash = tx_info->key();
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
