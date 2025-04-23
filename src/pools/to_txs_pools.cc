@@ -51,7 +51,7 @@ void ToTxsPools::ThreadToStatistic(
     }
 
     auto pool_idx = view_block_ptr->qc().pool_index();
-    if (block.height() <= pool_max_heihgts_[pool_idx]) {
+    if (block.height() < pool_max_heihgts_[pool_idx]) {
         return;
     }
 
