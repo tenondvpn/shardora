@@ -345,18 +345,8 @@ int ToTxsPools::CreateToTxWithHeights(
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto des_sharding_id = to_iter->second.sharding_id();
-#ifndef NDEBUG
-                uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
-                uint32_t step = tmp_data[0];
-                std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                ZJC_DEBUG("statistic shard: %u, new tx coming sharding id: %u, to: %s, step: %u, pool: %u, min height: %lu, max height: %lu",
-                    sharding_id, des_sharding_id, common::Encode::HexEncode(to).c_str(), step, pool_idx, min_height, max_height);
-#endif
                 if (to_iter->second.sharding_id() == common::kInvalidUint32) {
-                    uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
-                    uint32_t step = tmp_data[0];
-                    std::string to(to_iter->first.c_str() + 4, to_iter->first.size() - 4);
-                    protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to);
+                    protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to_iter->first);
                     if (account_info == nullptr) {
                         if (sharding_id != network::kRootCongressNetworkId) {
                             continue;
@@ -421,14 +411,6 @@ int ToTxsPools::CreateToTxWithHeights(
 
     ZJC_DEBUG("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
         ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
-    // for (auto iter = cross_set.begin(); iter != cross_set.end(); ++iter) {
-    //     auto cross_item = to_tx.add_crosses();
-    //     cross_item->set_src_shard((*iter).src_shard);
-    //     cross_item->set_src_pool((*iter).src_pool);
-    //     cross_item->set_height((*iter).height);
-    //     cross_item->set_des_shard(sharding_id);
-    // }
-
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         uint32_t* tmp_data = (uint32_t*)iter->first.c_str();
         uint32_t step = tmp_data[0];
