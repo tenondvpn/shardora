@@ -50,6 +50,10 @@ public:
     }
 
     uint64_t UpdateLatestInfo(uint64_t height) {
+        if (!kv_sync_) {
+            return common::kInvalidUint64;
+        }
+        
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
         }

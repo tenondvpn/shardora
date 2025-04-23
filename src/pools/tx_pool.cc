@@ -442,6 +442,10 @@ uint64_t TxPool::UpdateLatestInfo(
         const std::string& hash,
         const std::string& prehash,
         const uint64_t timestamp) {
+    if (!kv_sync_) {
+        return common::kInvalidUint64;
+    }
+    
     CheckThreadIdValid();
     auto tmp_height_tree_ptr = height_tree_ptr_;
     if (!tmp_height_tree_ptr) {
