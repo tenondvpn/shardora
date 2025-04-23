@@ -221,6 +221,7 @@ Status BlockAcceptor::Accept(
     for (auto iter = zjc_host.cross_to_map_.begin(); iter != zjc_host.cross_to_map_.end(); ++iter) {
         auto* cross_to_item = view_block.mutable_block_info()->add_cross_shard_to_array();
         *cross_to_item = *iter->second;
+        UpdateDesShardingId(cross_to_item, zjc_host);
     }
 
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
@@ -243,6 +244,21 @@ Status BlockAcceptor::Accept(
     }
 
     return Status::kSuccess;
+}
+
+void BlockAcceptor::UpdateDesShardingId(
+        block::protobuf::ToAddressItemInfo* to_addr_info, 
+        zjcvm::ZjchainHost& zjc_host) {
+    if (to_addr_info->has_des_sharding_id()) {
+        return;
+    }
+
+    auto addr_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr_info->des().substr(0, 20));
+    if (addr_info) {
+        to_addr_info->set_des_sharding_id(addr_info->network_id());
+    } else {
+        to_addr_info->set_des_sharding_id(network::kRootCongressNetworkId);
+    }
 }
 
 // AcceptSync 验证同步来的 block 信息，并更新交易池

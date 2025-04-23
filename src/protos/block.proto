@@ -72,6 +72,7 @@ message ToAddressItemInfo {
     optional bytes library_bytes = 8;
     optional bytes from = 9;
     optional uint64 prepayment = 10;
+    optional uint32 des_sharding_id = 11;
 };
 
 message Block {

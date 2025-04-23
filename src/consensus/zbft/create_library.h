@@ -109,7 +109,9 @@ public:
             std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
             if (iter == zjc_host.cross_to_map_.end()) {
                 to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                to_item_ptr->set_from(block_tx.from());
                 to_item_ptr->set_des(block_tx.to());
+                to_item_ptr->set_des_sharding_id(network::kRootCongressNetworkId);
                 zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
             }
 

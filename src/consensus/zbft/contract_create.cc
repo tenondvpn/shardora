@@ -215,29 +215,18 @@ int ContractUserCreateCall::HandleTx(
         std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
         if (iter == zjc_host.cross_to_map_.end()) {
             to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr->set_from(block_tx.from());
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
             to_item_ptr->set_sharding_id(view_block.qc().network_id());
+            to_item_ptr->set_des_sharding_id(network::kRootCongressNetworkId);
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+            if (block_tx.contract_prepayment() > 0) {
+                to_item_ptr->set_prepayment(block_tx.contract_prepayment());
+            }
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
-        }
-
-        if (block_tx.contract_prepayment() > 0) {
-            auto preypayment_id = block_tx.to() + block_tx.from();
-            auto iter = zjc_host.cross_to_map_.find(preypayment_id);
-            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
-            if (iter == zjc_host.cross_to_map_.end()) {
-                to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
-                to_item_ptr->set_des(preypayment_id);
-                to_item_ptr->set_prepayment(block_tx.contract_prepayment());
-                to_item_ptr->set_sharding_id(view_block.qc().network_id());
-                zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
-            } else {
-                to_item_ptr = iter->second;
-                to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
-            }
         }
 
         for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
