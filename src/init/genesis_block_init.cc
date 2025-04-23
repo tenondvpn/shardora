@@ -862,7 +862,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(common::Random::RandomUint64());
-        tenon_block->set_is_genesis_timer_block(true);
         tenon_block->set_version(common::kTransactionVersion);
         // TODO network_id 一定是 root
         view_block_ptr->set_parent_hash(root_pre_vb_hash);
@@ -1311,7 +1310,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         pools::protobuf::ShardToTxItem& heights = *tenon_block->mutable_to_heights();
         heights.set_sharding_id(net_id);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            heights.add_heights(pool_with_heights[i]));
+            heights.add_heights(pool_with_heights[i]);
         }
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
