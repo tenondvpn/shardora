@@ -68,16 +68,6 @@ public:
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
-    // just genesis call
-    void GenesisAddAllAccount(
-        uint32_t des_sharding_id,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBatch& db_batch);
-    void GenesisAddOneAccount(
-        uint32_t des_sharding_id,
-        const block::protobuf::BlockTx& tx,
-        const uint64_t& latest_height,
-        db::DbWriteBatch& db_batch);
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     bool HasSingleTx(

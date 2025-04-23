@@ -735,7 +735,6 @@ int GenesisBlockInit::CreateElectBlock(
     fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(view_block_ptr, db_batch);
     block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
-    block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
     root_pre_hash = hotstuff::GetQCMsgHash(view_block_ptr->qc());
     root_pre_vb_hash = view_block_ptr->qc().view_block_hash();
     db_->Put(db_batch);
@@ -830,7 +829,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -882,7 +880,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
@@ -937,12 +934,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(pb_v_block->block_info());
         AddBlockItemToCache(pb_v_block, db_batch);
-        // 同步 root_gens_init_block_file 中 block 中的账户和 block
-        // 无非就是各节点账户，上文中已经加过了，这里不好区分 root_blocks 不同 shard 的账户
-        // block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-
-        // 选举块、时间块无论 shard 都是要全网同步的
-        block_mgr_->GenesisNewBlock(pb_v_block, db_batch);
     }
     fclose(root_gens_init_block_file);
     // flush 磁盘
@@ -1133,29 +1124,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             (common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(), 
             root_gens_init_block_file);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
-        // 包括 root 创世账户，shard 创世账户，root 和 shard 节点账户
-
-        // 这里将 block 中涉及的账户信息，在不同的 network 中创建
-        // 其实和 CraeteShartGenesisBlocks 中对于 shard 创世账户的持久化部分重复了，但由于是 kv 所以没有影响
-        for (auto it = tx2net_map_for_account.begin(); it != tx2net_map_for_account.end(); ++it) {
-            auto tx = it->first;
-            uint32_t net_id = it->second;
-            
-            block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
-        }
-        // 出块，并处理块中不同类型的交易
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
-        // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
-        // TODO 感觉重复，可实验
-        // for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
-        //     for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-        //         if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
-        //             block_mgr_->HandleJoinElectTx(*view_block_ptr, tenon_block->tx_list(tx_idx), db_batch);
-        //         }
-        //     }
-        // }
-
         db_->Put(db_batch);
          // 获取该 pool 对应的 root 账户，做一些余额校验，这里 root 账户中余额其实是 0
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
@@ -1317,7 +1285,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         db_->Put(db_batch);
     }
 
@@ -1589,8 +1556,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
-        
         // for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
         // for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
         //     if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
@@ -1723,7 +1688,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         // 更新 pool 最新信息
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
         db_->Put(db_batch);
     }
@@ -1778,7 +1742,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
         AddBlockItemToCache(view_block_ptr, db_batch);
-        block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         db_->Put(db_batch);
     }
     return GenerateShardSingleBlock(net_id);
