@@ -1366,6 +1366,7 @@ void GenesisBlockInit::AddBlockItemToCache(
         view_block->qc().view(), block->height(), block->timestamp());
     for (auto iter = address_info_map.begin(); iter != address_info_map.end(); ++iter) {
         auto* addr_info = view_block->mutable_block_info()->add_address_array();
+        addr_info->set_latest_height(block->height());
         *addr_info = *iter->second;
         prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, db_batch);
         ZJC_DEBUG("success add address info: %s, %s",
