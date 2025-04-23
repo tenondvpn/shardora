@@ -1337,7 +1337,7 @@ void GenesisBlockInit::AddBlockItemToCache(
     }
 
     if (block->has_normal_to()) {
-        prefix_db_->SaveLatestToTxsHeights(block->normal_to().to_tx_arr(0).to_heights(), db_batch);
+        prefix_db_->SaveLatestToTxsHeights(block->normal_to().to_heights(), db_batch);
     }
 
     if (block->has_elect_block()) {

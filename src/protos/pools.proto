@@ -45,6 +45,12 @@ message ToTxMessageItem {
     optional uint64 prepayment = 9; // for contract create prepayment
 }
 
+message ShardToTxItem {
+    optional uint32 sharding_id = 1;
+    repeated uint64 heights = 2;
+    optional uint64 block_height = 3;
+}
+
 message PoolStatisticTxItem {
     optional uint32 pool_index = 1;
     optional uint64 min_height = 2;
@@ -92,8 +98,7 @@ message ToTxMessage {
 
 message AllToTxMessage {
     repeated ToTxMessage to_tx_arr = 1;
-    optional uint32 sharding_id = 2;
-    repeated uint64 heights = 3;
+    optional ShardToTxItem to_heights = 2;
 }
 
 message PoolLatestInfo {

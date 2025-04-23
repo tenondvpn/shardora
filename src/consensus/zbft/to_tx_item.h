@@ -73,6 +73,7 @@ public:
             return consensus::kConsensusError;
         }
         
+        prefix_db_->SaveLatestToTxsHeights(all_to_txs.to_heights(), zjc_host.db_batch_);
         // for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
         //     auto to_heights = all_to_txs.mutable_to_tx_arr(i);
         //     auto& heights = *to_heights->mutable_to_heights();
@@ -82,7 +83,6 @@ public:
         //         heights.sharding_id(), 
         //         ProtobufToJson(*to_heights).c_str(),
         //         to_heights->to_heights().sharding_id());
-        //     prefix_db_->SaveLatestToTxsHeights(heights, zjc_host.db_batch_);
         //     for (uint32_t j = 0; j < to_heights->tos_size(); ++j) {
         //         auto tos_item = to_heights->tos(j);
         //         if (tos_item.step() == pools::protobuf::kJoinElect) {

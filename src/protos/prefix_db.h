@@ -489,17 +489,17 @@ public:
     }
 
     void SaveLatestToTxsHeights(
-            const pools::protobuf::ShardToTxItem& heights,
+            const pools::protobuf::ShardToTxItem& to_heights,
             db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
         key.append(kLatestToTxsHeightsPrefix);
-        uint32_t sharding_id = heights.sharding_id();
+        uint32_t sharding_id = to_heights.sharding_id();
         key.append((char*)&sharding_id, sizeof(sharding_id));
-        batch.Put(key, heights.SerializeAsString());
+        batch.Put(key, to_heights.SerializeAsString());
     }
 
-    bool GetLatestToTxsHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem* heights) {
+    bool GetLatestToTxsHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem* to_heights) {
         std::string key;
         key.reserve(48);
         key.append(kLatestToTxsHeightsPrefix);
@@ -510,7 +510,7 @@ public:
             return false;
         }
 
-        if (!heights->ParseFromString(val)) {
+        if (!to_heights->ParseFromString(val)) {
             return false;
         }
 
