@@ -1216,7 +1216,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             statistic_info->set_max_height(pool_with_heights[i]);
         }
 
-        auto* heights = tenon_block->mutable_normal_to()->add_to_tx_arr()->mutable_to_heights();
+        auto* heights = tenon_block->mutable_normal_to()->mutable_to_heights();
         heights->set_sharding_id(net_id);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             heights->add_heights(pool_with_heights[i]);
@@ -1663,7 +1663,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             statistic_info->set_max_height(pool_with_heights[i]);
         }
 
-        auto* heights = tenon_block->mutable_normal_to()->add_to_tx_arr()->mutable_to_heights();
+        auto* heights = tenon_block->mutable_normal_to()->mutable_to_heights();
         heights->set_sharding_id(net_id);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             heights->add_heights(pool_with_heights[i]);
