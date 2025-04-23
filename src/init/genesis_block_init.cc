@@ -1720,7 +1720,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         pools::protobuf::ShardToTxItem& heights = *tenon_block->mutable_to_heights();
         heights.set_sharding_id(net_id);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            heights.add_heights(pool_with_heights[i]));
+            heights.add_heights(pool_with_heights[i]);
         }
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
