@@ -215,17 +215,11 @@ void BlockManager::HandleAllConsensusBlocks() {
     }
 }
 
-void BlockManager::HandleStatisticTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& block_tx) {
+void BlockManager::HandleStatisticTx(const view_block::protobuf::ViewBlockItem& view_block) {
     auto& block = view_block.block_info();
     uint32_t net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusShardEndNetworkId) {
         net_id -= network::kConsensusWaitingShardOffset;
-    }
-
-    if (!view_block.block_info().has_elect_statistic()) {
-        return;
     }
 
     auto& elect_statistic = view_block.block_info().elect_statistic();
@@ -240,7 +234,7 @@ void BlockManager::HandleStatisticTx(
         }
     }
 
-    HandleStatisticBlock(view_block, block_tx, elect_statistic);
+    HandleStatisticBlock(view_block, elect_statistic);
 }
 
 void BlockManager::ConsensusShardHandleRootCreateAddress(
@@ -629,6 +623,10 @@ void BlockManager::AddNewBlock(
         to_txs_pool_->NewBlock(view_block_item);
         // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
     }
+
+    if (block_item->has_elect_statistic()) {
+       HandleStatisticTx(*view_block_info);
+    }
 }
 
 void BlockManager::HandleElectTx(
@@ -913,7 +911,6 @@ void BlockManager::CreateStatisticTx() {
 // Only for root
 void BlockManager::HandleStatisticBlock(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& block_tx,
         const pools::protobuf::ElectStatistic& elect_statistic) {
     auto& block = view_block.block_info();
     if (create_elect_tx_cb_ == nullptr) {

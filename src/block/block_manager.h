@@ -107,9 +107,7 @@ private:
     void HandleNormalToTx(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
         const block::protobuf::BlockTx& tx);
-    void HandleStatisticTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx);
+    void HandleStatisticTx(const view_block::protobuf::ViewBlockItem& view_block);
     void HandleElectTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
