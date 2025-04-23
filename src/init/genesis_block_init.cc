@@ -1395,7 +1395,7 @@ void GenesisBlockInit::AddBlockItemToCache(
     for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
         auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
             view_block->block_info().address_array(i));
-        prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
+        prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, db_batch);
         ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
             0,
             common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
@@ -1408,7 +1408,7 @@ void GenesisBlockInit::AddBlockItemToCache(
         prefix_db_->SaveTemporaryKv(
             key, 
             view_block->block_info().key_value_array(i).value(), 
-            zjc_host_ptr->db_batch_);
+            db_batch);
     }
 
     for (uint32_t i = 0; i < block->joins_size(); ++i) {
