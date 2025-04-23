@@ -1200,11 +1200,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         pool_prev_vb_hash_map[net_id] = vb_prehashes[net_id];
     }
     
-    if (all_balance != 0) {
-        ZJC_FATAL("balance all error[%llu][%llu]", all_balance, common::kGenesisFoundationMaxZjc);
-        return kInitError;
-    }
-
     // pool256 中创建时间块 
     int res = GenerateRootSingleBlock(
         root_genesis_nodes, 
@@ -1513,9 +1508,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 *join_info = cons_genesis_nodes[member_idx]->g2_val;
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
-                address_info_map_[ons_genesis_nodes[member_idx]->id] = CreateAddress(
+                address_info_map_[cons_genesis_nodes[member_idx]->id] = CreateAddress(
                     "", join_elect_tx_info->balance(), net_id, pool_index, 
-                    ons_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
+                    cons_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
             }
         }
 
