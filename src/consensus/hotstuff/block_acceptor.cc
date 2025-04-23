@@ -255,7 +255,7 @@ void BlockAcceptor::UpdateDesShardingId(
 
     auto addr_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr_info->des().substr(0, 20));
     if (addr_info) {
-        to_addr_info->set_des_sharding_id(addr_info->network_id());
+        to_addr_info->set_des_sharding_id(addr_info->sharding_id());
     } else {
         to_addr_info->set_des_sharding_id(network::kRootCongressNetworkId);
     }
