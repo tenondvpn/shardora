@@ -160,13 +160,6 @@ public:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     db::DbWriteBatch db_batch_;
-
-    // bellow one block just one tx
-    const block::protobuf::BlockTx* normal_to_tx_ = nullptr;
-    const block::protobuf::BlockTx* root_create_address_tx_ = nullptr;
-    const block::protobuf::BlockTx* statisitc_tx_ = nullptr;
-    const block::protobuf::BlockTx* elect_tx_ = nullptr;
-
 };
 
 }  // namespace zjcvm

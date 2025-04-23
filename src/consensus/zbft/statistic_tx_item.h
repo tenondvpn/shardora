@@ -99,7 +99,8 @@ public:
         }
 
         prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, zjc_host.db_batch_);
-        zjc_host.statisitc_tx_ = &block_tx;
+        *view_block->mutable_block_info()->mutable_elect_statistic() = elect_statistic;
+        *view_block->mutable_block_info()->mutable_pool_st_info() = pool_st_info;
         return consensus::kConsensusSuccess;
     }
 
