@@ -1348,7 +1348,7 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
 
 void GenesisBlockInit::AddBlockItemToCache(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-        const std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>& address_info_map
+        const std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>& address_info_map,
         db::DbWriteBatch& db_batch) {
     auto* block = &view_block->block_info();
     pools::protobuf::PoolLatestInfo pool_info;
