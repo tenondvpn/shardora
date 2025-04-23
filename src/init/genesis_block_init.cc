@@ -753,7 +753,6 @@ int GenesisBlockInit::CreateElectBlock(
     auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
     auto& db_batch = *db_batch_ptr;
     auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-    pools_mgr_->UpdateLatestInfo(view_block_ptr, db_batch);
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     ZJC_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
     std::string ec_val = common::Encode::HexEncode(view_block_ptr->SerializeAsString()) +
@@ -854,8 +853,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        pools_mgr_->UpdateLatestInfo(view_block_ptr, db_batch);
-
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
@@ -909,10 +906,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto& db_batch = *db_batch_ptr;
         prefix_db_->SaveGenesisTimeblock(tm_block.height(), tm_block.timestamp(), db_batch);
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        pools_mgr_->UpdateLatestInfo(
-            view_block_ptr,
-            db_batch);
-
         prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
@@ -1177,10 +1170,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         // 提交 view block
         // 更新交易池最新信息
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(view_block_ptr->block_info());
-        pools_mgr_->UpdateLatestInfo(
-            view_block_ptr,
-            db_batch);
-        // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
         fputs(
             (common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(), 
             root_gens_init_block_file);
@@ -1362,9 +1351,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        // pools_mgr_->UpdateLatestInfo(
-        //     view_block_ptr,
-        //     db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
     }
@@ -1566,9 +1552,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        pools_mgr_->UpdateLatestInfo(
-            view_block_ptr,
-            db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         
@@ -1703,9 +1686,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto& db_batch = *db_batch_ptr;
         // 更新 pool 最新信息
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        pools_mgr_->UpdateLatestInfo(
-            view_block_ptr,
-            db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         block_mgr_->GenesisAddAllAccount(net_id, tenon_block_ptr, db_batch);
@@ -1756,9 +1736,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        pools_mgr_->UpdateLatestInfo(
-            view_block_ptr,
-            db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
     }
