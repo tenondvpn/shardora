@@ -1357,8 +1357,9 @@ void GenesisBlockInit::AddBlockItemToCache(
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), block->height(), block->timestamp());
     for (auto iter = address_info_map_.begin(); iter != address_info_map_.end(); ++iter) {
-        auto addr_info = view_block->mutable_block_info()->add_address_array();
+        auto* addr_info = view_block->mutable_block_info()->add_address_array();
         *addr_info = *iter->second;
+        prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, db_batch);
     }
 
     if (block->has_pool_st_info()) {
