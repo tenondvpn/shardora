@@ -1586,6 +1586,13 @@ class ToAddressItemInfo : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::uint64 prepayment() const;
   void set_prepayment(::google::protobuf::uint64 value);
 
+  // optional uint32 des_sharding_id = 11;
+  bool has_des_sharding_id() const;
+  void clear_des_sharding_id();
+  static const int kDesShardingIdFieldNumber = 11;
+  ::google::protobuf::uint32 des_sharding_id() const;
+  void set_des_sharding_id(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.block.protobuf.ToAddressItemInfo)
  private:
   void set_has_amount();
@@ -1606,6 +1613,8 @@ class ToAddressItemInfo : public ::google::protobuf::Message /* @@protoc_inserti
   void clear_has_from();
   void set_has_prepayment();
   void clear_has_prepayment();
+  void set_has_des_sharding_id();
+  void clear_has_des_sharding_id();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1619,6 +1628,7 @@ class ToAddressItemInfo : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::int32 pool_index_;
   ::google::protobuf::uint32 sharding_id_;
   ::google::protobuf::uint64 prepayment_;
+  ::google::protobuf::uint32 des_sharding_id_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -7645,6 +7655,30 @@ inline void ToAddressItemInfo::set_prepayment(::google::protobuf::uint64 value) 
   set_has_prepayment();
   prepayment_ = value;
   // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.prepayment)
+}
+
+// optional uint32 des_sharding_id = 11;
+inline bool ToAddressItemInfo::has_des_sharding_id() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void ToAddressItemInfo::set_has_des_sharding_id() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void ToAddressItemInfo::clear_has_des_sharding_id() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void ToAddressItemInfo::clear_des_sharding_id() {
+  des_sharding_id_ = 0u;
+  clear_has_des_sharding_id();
+}
+inline ::google::protobuf::uint32 ToAddressItemInfo::des_sharding_id() const {
+  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.des_sharding_id)
+  return des_sharding_id_;
+}
+inline void ToAddressItemInfo::set_des_sharding_id(::google::protobuf::uint32 value) {
+  set_has_des_sharding_id();
+  des_sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.des_sharding_id)
 }
 
 // -------------------------------------------------------------------
