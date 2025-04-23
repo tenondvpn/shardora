@@ -92,7 +92,6 @@ message Block {
     optional timeblock.protobuf.TimeBlock timer_block = 16;
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
     repeated ToAddressItemInfo cross_shard_to_array = 19; 
-    optional pools.protobuf.ShardToTxItem to_heights = 20;
     optional uint64 pool_statistic_height = 21;
     optional uint64 all_gas = 22;
     repeated bls.protobuf.JoinElectInfo joins = 23;
