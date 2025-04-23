@@ -39,7 +39,7 @@ public:
             zjcvm::ZjchainHost& zjc_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
-        if (view_block.block_info().has_to_heights()) {
+        if (view_block.block_info().has_normal_to()) {
             return consensus::kConsensusError;
         }
 
@@ -109,23 +109,14 @@ public:
         //     }
         // }
 
-        // prefix_db_->SaveLatestToBlock(view_block, zjc_host.db_batch_);
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
         ZJC_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
 
         ZJC_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-        if (block_tx.status() == kConsensusSuccess) {
-            auto to_heights = all_to_txs.mutable_to_tx_arr(0);
-            auto& heights = *to_heights->mutable_to_heights();
-            heights.set_block_height(view_block.block_info().height());
-            *view_block.mutable_block_info()->mutable_to_heights() = heights;
-        }
-
         return consensus::kConsensusSuccess;
     }
 
