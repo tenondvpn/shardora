@@ -118,6 +118,14 @@ private:
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     void CreatePoolsAddressInfo(uint16_t network_id);
     void PrintGenisisAccounts();
+    std::shared_ptr<address::protobuf::AddressInfo> CreateAddress(
+        const std::string& pk, 
+        uint64_t balance, 
+        uint32_t network_id, 
+        uint32_t pool_idx, 
+        const std::string& addr, 
+        uint64_t latest_height, 
+        uint64_t nonce);
 
     std::map<uint32_t, std::map<uint32_t, std::map<std::string, uint64_t>>> net_pool_index_map_; // net => (pool => addr)
     uint32_t net_pool_index_map_addr_count_ = 0;
@@ -134,6 +142,7 @@ private:
     nlohmann::json bls_pk_json_;
     std::shared_ptr<address::protobuf::AddressInfo> immutable_pool_address_info_;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize];
+    std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map_;
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };
