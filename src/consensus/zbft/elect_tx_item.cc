@@ -89,7 +89,7 @@ int ElectTxItem::HandleTx(
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
-    *view_block.mutable_block_info()->mutable_elect_statistic() = elect_statistic_;
+    // *view_block.mutable_block_info()->mutable_elect_statistic() = elect_statistic_;
     *view_block.mutable_block_info()->mutable_elect_block() = elect_block_;
     return consensus::kConsensusSuccess;
 }
