@@ -1362,9 +1362,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        pools_mgr_->UpdateLatestInfo(
-            view_block_ptr,
-            db_batch);
+        // pools_mgr_->UpdateLatestInfo(
+        //     view_block_ptr,
+        //     db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
     }
