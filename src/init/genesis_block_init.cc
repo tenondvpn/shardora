@@ -955,7 +955,8 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         }
 
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(pb_v_block->block_info());
-        AddBlockItemToCache(pb_v_block, db_batch);
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
+        AddBlockItemToCache(pb_v_block, address_info_map, db_batch);
     }
     fclose(root_gens_init_block_file);
     // flush 磁盘
@@ -1269,7 +1270,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         db_->Put(db_batch);
     }
 
@@ -1737,7 +1739,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        AddBlockItemToCache(view_block_ptr, db_batch);
+        std::map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_info_map;
+        AddBlockItemToCache(view_block_ptr, address_info_map, db_batch);
         db_->Put(db_batch);
     }
     return GenerateShardSingleBlock(net_id);
