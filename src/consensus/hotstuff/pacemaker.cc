@@ -26,17 +26,18 @@ Pacemaker::Pacemaker(
         std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d,
         GetHighQCFn get_high_qc_fn,
-        UpdateHighQCFn update_high_qc_fn) :
+        UpdateHighQCFn update_high_qc_fn,
+        const pools::protobuf::PoolLatestInfo& pool_latest_info) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d), get_high_qc_fn_(get_high_qc_fn), update_high_qc_fn_(update_high_qc_fn) {
     high_tc_ = std::make_shared<QC>();
     auto& qc_item = *high_tc_;
     qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
     qc_item.set_pool_index(pool_idx_);
-    qc_item.set_view(BeforeGenesisView);
+    qc_item.set_view(pool_latest_info.view());
     qc_item.set_view_block_hash("");
     qc_item.set_elect_height(1);
     qc_item.set_leader_idx(0);
-    cur_view_ = GenesisView;
+    cur_view_ = pool_latest_info.view() + 1;
     StartTimeoutTimer();
 }
 

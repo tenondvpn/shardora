@@ -87,18 +87,21 @@ int HotstuffManager::Init(
 #endif
         auto chain = std::make_shared<ViewBlockChain>();
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
+        pools::protobuf::PoolLatestInfo pool_latest_info;
+        InitLatestInfo(pool_latest_info, pool_idx);
         auto pacemaker = std::make_shared<Pacemaker>(
+            pool_idx,
+            pcrypto,
+            leader_rotation,
+            std::make_shared<ViewDuration>(
                 pool_idx,
-                pcrypto,
-                leader_rotation,
-                std::make_shared<ViewDuration>(
-                        pool_idx,
-                        ViewDurationSampleSize,
-                        ViewDurationStartTimeoutMs,
-                        ViewDurationMaxTimeoutMs,
-                        ViewDurationMultiplier),
-                std::bind(&ViewBlockChain::HighQC, chain),
-                std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1));
+                ViewDurationSampleSize,
+                ViewDurationStartTimeoutMs,
+                ViewDurationMaxTimeoutMs,
+                ViewDurationMultiplier),
+            std::bind(&ViewBlockChain::HighQC, chain),
+            std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1),
+            pool_latest_info);
         auto acceptor = std::make_shared<BlockAcceptor>();
         chain->Init(
             pool_idx, db_, block_mgr_, account_mgr_, 
@@ -601,6 +604,25 @@ void HotstuffManager::PopPoolsMessage() {
         ZJC_INFO("tps success add consensus_tx_count: %lu", consensus_tx_count);
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
         pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
+    }
+}
+
+void HotstuffManager::InitLatestInfo(pools::protobuf::PoolLatestInfo& pool_info, uint32_t pool_index) {
+    uint32_t network_id = common::GlobalInfo::Instance()->network_id();
+    if (network_id == common::kInvalidUint32) {
+        return;
+    }
+
+    if (network_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            network_id < network::kConsensusWaitingShardEndNetworkId) {
+        network_id -= network::kConsensusWaitingShardOffset;
+    }
+
+    if (!prefix_db_->GetLatestPoolInfo(
+            network_id,
+            pool_index,
+            &pool_info)) {
+        ZJC_ERROR("failed get pool latest info: %d", pool_index);
     }
 }
 

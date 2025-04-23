@@ -190,6 +190,8 @@ private:
     void RegisterCreateTxCallbacks();
     Status VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock);
     void PopPoolsMessage();
+    void InitLatestInfo(pools::protobuf::PoolLatestInfo& pool_info, uint32_t pool_index);
+
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
                 msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);

@@ -46,7 +46,8 @@ public:
             std::shared_ptr<LeaderRotation>& leader_rotation,
             const std::shared_ptr<ViewDuration>& duration,
             GetHighQCFn get_high_qc_fn,
-            UpdateHighQCFn update_high_qc_fn);
+            UpdateHighQCFn update_high_qc_fn,
+            const pools::protobuf::PoolLatestInfo& pool_latest_info);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
