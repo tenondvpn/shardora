@@ -100,7 +100,6 @@ private:
     common::SpinMutex prev_to_heights_mutex_;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    volatile bool destroy_ = false;
     
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };

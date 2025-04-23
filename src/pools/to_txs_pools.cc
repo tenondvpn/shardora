@@ -27,8 +27,6 @@ ToTxsPools::ToTxsPools(
 }
 
 ToTxsPools::~ToTxsPools() {
-    destroy_ = true;
-    handle_block_thread_->join();
 }
 
 void ToTxsPools::NewBlock(
@@ -83,9 +81,9 @@ void ToTxsPools::ThreadToStatistic(
     }
 
     if (block.has_normal_to()) {
-        heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>(block.normal_to().to_heights());
         common::AutoSpinLock lock(prev_to_heights_mutex_);
-        prev_to_heights_ = heights_ptr;
+        prev_to_heights_ = std::make_shared<pools::protobuf::ShardToTxItem>(
+            block.normal_to().to_heights());;
     }
 
     added_heights_[pool_idx].insert(std::make_pair<>(
@@ -439,7 +437,7 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_des(to); // 20 bytes，对于 prepayment tx 是 to + from（40 bytes）
         to_item->set_amount(iter->second.amount());
         to_item->set_pool_index(iter->second.pool_index());
-        to_item->set_step(iter->second.type());
+        // to_item->set_step(iter->second.type());
         // // create contract just in caller sharding
         // if (iter->second.type() == pools::protobuf::kContractCreate) {
         //     assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
