@@ -1726,16 +1726,14 @@ void GenesisBlockInit::InitShardGenesisAccount() {
 
     uint64_t aver_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
     uint64_t rest_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
-    
-    std::unordered_map<std::string, uint64_t> node_balance_map;
-    // 平均分配余额，剩下的都给最后一个
     uint32_t count = 0;
     for (auto it = valid_ids.begin(); it != valid_ids.end(); ++it, ++count) {
         uint64_t balance = aver_balance;
         if (count == valid_ids.size() - 1) {
             balance += rest_balance;
         }
-        node_balance_map.insert(std::pair<std::string, uint64_t>(*it, balance));
+        
+        genesis_acount_balance_map_.insert(std::pair<std::string, uint64_t>(*it, balance));
     }
 
     hasRunOnce = true;
