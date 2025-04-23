@@ -1504,7 +1504,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
             address_info_map[iter->first] = CreateAddress(
-                "", 0, net_id == network::kRootCongressNetworkId ? network::kRootCongressNetworkId : net_id, pool_index, 
+                "", 0, net_id == network::kRootCongressNetworkId ? network::kServiceShardBeginNetworkId : net_id, pool_index, 
                 iter->first, 0, tx_info->nonce());
         }
 
@@ -1524,7 +1524,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                 join_elect_tx_info->set_amount(0);
                 join_elect_tx_info->set_balance(genesis_account_balance);
                 address_info_map[cons_genesis_nodes[member_idx]->id] = CreateAddress(
-                    "", join_elect_tx_info->balance(), net_id == network::kRootCongressNetworkId ? network::kRootCongressNetworkId : net_id, pool_index, 
+                    "", join_elect_tx_info->balance(), net_id == network::kRootCongressNetworkId ? network::kServiceShardBeginNetworkId : net_id, pool_index, 
                     cons_genesis_nodes[member_idx]->id, 0, join_elect_tx_info->nonce());
             }
         }
