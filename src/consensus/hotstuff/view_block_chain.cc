@@ -742,7 +742,6 @@ Status GetLatestViewBlockFromDb(
         common::Encode::HexEncode(pb_view_block.parent_hash()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_y()).c_str());    
-    
     return Status::kSuccess;
 }
 
@@ -786,6 +785,7 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
         
         phash = it->second->view_block->parent_hash();
     }
+    
     return false;
 }
 

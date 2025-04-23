@@ -629,7 +629,7 @@ void GenesisBlockInit::SetPrevElectInfo(
 
     auto& block_item = view_block_item.block_info();
     if (block_item.tx_list_size() != 1) {
-        ELECT_ERROR("not has tx list size.");
+        ELECT_ERROR("not has tx list size: %d", block_item.tx_list_size());
         assert(false);
         return;
     }
