@@ -63,6 +63,7 @@ public:
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
 
+        prefix_db_->SaveLatestTimeBlock(timer_block, zjc_host.db_batch_);
         return consensus::kConsensusSuccess;
     }
 

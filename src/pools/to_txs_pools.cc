@@ -25,7 +25,6 @@ ToTxsPools::ToTxsPools(
         LoadLatestHeights();
     }
 
-    assert(prev_to_heights_ != nullptr);
     handle_block_thread_ = std::make_shared<std::thread>(
         std::bind(&ToTxsPools::ThreadCallback, this));
 }
@@ -639,6 +638,10 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
 #ifdef TEST_NO_CROSS
     return kPoolsError;
 #endif
+    if (prev_to_heights_ == nullptr) {
+        return kPoolsError;
+    }
+
     bool valid = false;
     auto timeout = common::TimeUtils::TimestampMs();
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {

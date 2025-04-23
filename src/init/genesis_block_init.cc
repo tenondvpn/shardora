@@ -202,30 +202,6 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
     }
 }
 
-void GenesisBlockInit::SaveGenisisPoolHeights(uint32_t shard_id) {
-    pools::protobuf::ShardToTxItem heights;
-    heights.set_sharding_id(shard_id);
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        heights.add_heights(pools_mgr_->latest_height(i));
-    }
-
-    prefix_db_->SaveLatestToTxsHeights(heights);
-    shardora::elect::protobuf::ElectBlock elect_block;
-    if (!prefix_db_->GetLatestElectBlock(shard_id, &elect_block)) {
-        ZJC_FATAL("failed!");
-    }
-
-    timeblock::protobuf::TimeBlock tmblock;
-    if (!prefix_db_->GetLatestTimeBlock(&tmblock)) {
-        ZJC_FATAL("failed!");
-    }
-
-    pools::protobuf::PoolStatisticTxInfo pool_st_info;
-    if (!prefix_db_->GetLatestPoolStatisticTag(shard_id, &pool_st_info)) {
-        ZJC_FATAL("failed!");
-    }
-}
-
 void ComputeG2ForNode(
         const std::string& prikey,
         uint32_t k,
@@ -753,7 +729,6 @@ int GenesisBlockInit::CreateElectBlock(
     auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
     auto& db_batch = *db_batch_ptr;
     auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-    prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     ZJC_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
     std::string ec_val = common::Encode::HexEncode(view_block_ptr->SerializeAsString()) +
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";    
@@ -904,9 +879,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
-        prefix_db_->SaveGenesisTimeblock(tm_block.height(), tm_block.timestamp(), db_batch);
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(view_block_ptr, db_batch);
@@ -971,19 +944,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
         // 选举块、时间块无论 shard 都是要全网同步的
         block_mgr_->GenesisNewBlock(pb_v_block, db_batch);
-        if (tenon_block_ptr->has_elect_block()) {
-            auto& ec_block = tenon_block_ptr->elect_block();
-            prefix_db_->SaveLatestElectBlock(tenon_block_ptr->elect_block(), db_batch);
-            ZJC_DEBUG("save elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
-                ec_block.shard_network_id(),
-                ec_block.elect_height(),
-                ec_block.has_prev_members(),
-                ec_block.prev_members().has_common_pubkey());
-        }
-
-        if (tenon_block_ptr->has_timer_block()) {
-            prefix_db_->SaveLatestTimeBlock(tenon_block_ptr->height(), db_batch);
-        }
     }
     fclose(root_gens_init_block_file);
     // flush 磁盘
@@ -1348,10 +1308,15 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             statistic_info->set_max_height(pool_with_heights[i]);
         }
 
+        pools::protobuf::ShardToTxItem& heights = *tenon_block->mutable_to_heights();
+        heights.set_sharding_id(net_id);
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            heights.add_heights(pool_with_heights[i]));
+        }
+
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        prefix_db_->SaveLatestPoolStatisticTag(net_id, pool_st_info, db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         db_->Put(db_batch);
@@ -1444,6 +1409,24 @@ void GenesisBlockInit::AddBlockItemToCache(
     ZJC_DEBUG("success add pool latest info: %u_%u_%lu, block height: %lu, tm: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), block->height(), block->timestamp());
+    if (block.has_pool_st_info()) {
+        prefix_db_->SaveLatestPoolStatisticTag(
+            view_block->qc().network_id(), 
+            block.pool_st_info(), 
+            db_batch);
+    }
+
+    if (block.has_to_heights()) {
+        prefix_db_->SaveLatestToTxsHeights(block.to_heights(), db_batch);
+    }
+
+    if (block.has_elect_block()) {
+        prefix_db_->SaveLatestElectBlock(block.elect_block(), db_batch);
+    }
+
+    if (block.has_timer_block()) {
+        prefix_db_->SaveLatestTimeBlock(block.timer_block(), db_batch);
+    }
 }
 
 // 在 net_id 中为 shard 节点创建块
@@ -1704,7 +1687,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             pool_with_heights,
             vb_latest_view,
             genesis_acount_balance_map);
-    // prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     // 统计信息初始化
     {
         uint32_t pool_index = common::kImmutablePoolSize;
@@ -1736,10 +1718,15 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             statistic_info->set_max_height(pool_with_heights[i]);
         }
 
+        pools::protobuf::ShardToTxItem& heights = *tenon_block->mutable_to_heights();
+        heights.set_sharding_id(net_id);
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            heights.add_heights(pool_with_heights[i]));
+        }
+
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
         auto& db_batch = *db_batch_ptr;
         auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-        prefix_db_->SaveLatestPoolStatisticTag(net_id, pool_st_info, db_batch);
         AddBlockItemToCache(view_block_ptr, db_batch);
         block_mgr_->GenesisNewBlock(view_block_ptr, db_batch);
         db_->Put(db_batch);

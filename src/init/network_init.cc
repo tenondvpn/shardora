@@ -1192,10 +1192,6 @@ void NetworkInit::HandleTimeBlock(
         block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         ZJC_DEBUG("new time block called height: %lu, tm: %lu", block.height(), vss_random);
     }
-
-    if (block.is_genesis_timer_block()) {
-        prefix_db_->SaveGenesisTimeblock(block.height(), block.timestamp(), db_batch);
-    }
 }
 
 void NetworkInit::HandleElectionBlock(

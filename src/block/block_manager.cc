@@ -728,7 +728,6 @@ void BlockManager::GenesisNewBlock(
             break;
         }
         case pools::protobuf::kConsensusRootTimeBlock:
-            prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
             break;
         case pools::protobuf::kStatistic:
             HandleStatisticTx(*view_block_item, tx_list[i]);

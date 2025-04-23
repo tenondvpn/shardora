@@ -376,7 +376,6 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
                 break;
             }
             case pools::protobuf::kConsensusRootTimeBlock:
-                // prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
                 break;
             case pools::protobuf::kStatistic:
                 zjc_host_ptr->statisitc_tx_ = &tx;
@@ -785,7 +784,7 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
         
         phash = it->second->view_block->parent_hash();
     }
-    
+
     return false;
 }
 

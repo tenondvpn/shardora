@@ -278,18 +278,10 @@ public:
         return true;
     }
 
-    void SaveLatestTimeBlock(uint64_t block_height, db::DbWriteBatch& db_batch) {
+    void SaveLatestTimeBlock(const timeblock::protobuf::TimeBlock& tmblock, db::DbWriteBatch& db_batch) {
         std::string key(kLatestTimeBlockPrefix);
-        timeblock::protobuf::TimeBlock tmblock;
-        if (GetLatestTimeBlock(&tmblock)) {
-            if (tmblock.height() >= block_height) {
-                return;
-            }
-        }
-
-        tmblock.set_height(block_height);
         db_batch.Put(key, tmblock.SerializeAsString());
-        ZJC_DEBUG("dddddd success latest time block: %lu", block_height);
+        ZJC_DEBUG("dddddd success latest time block: %lu", tmblock.height());
     }
 
     bool GetLatestTimeBlock(timeblock::protobuf::TimeBlock* tmblock) {
@@ -494,18 +486,6 @@ public:
         }
 
         return GetBlockString(block_hash, block_str);
-    }
-
-    void SaveLatestToTxsHeights(const pools::protobuf::ShardToTxItem& heights) {
-        std::string key;
-        key.reserve(48);
-        key.append(kLatestToTxsHeightsPrefix);
-        uint32_t sharding_id = heights.sharding_id();
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        auto st = db_->Put(key, heights.SerializeAsString());
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
     }
 
     void SaveLatestToTxsHeights(
@@ -880,39 +860,6 @@ public:
         uint32_t* tmp = (uint32_t*)val.c_str();
         *sharding_id = tmp[0];
         *des_sharding_id = tmp[1];
-        return true;
-    }
-
-    void SaveGenesisTimeblock(uint64_t block_height, uint64_t genesis_tm, db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kGenesisTimeblockPrefix);
-        char data[8];
-        uint32_t* tmp = (uint32_t*)data;
-        tmp[0] = block_height;
-        tmp[1] = genesis_tm;
-        std::string val(data, sizeof(data));
-        db_batch.Put(key, val);
-    }
-
-    bool GetGenesisTimeblock(uint64_t* block_height, uint64_t* genesis_tm) {
-        std::string key;
-        key.reserve(64);
-        key.append(kGenesisTimeblockPrefix);
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_ERROR("get db failed!");
-            return false;
-        }
-
-        if (val.size() != 16) {
-            return false;
-        }
-
-        uint32_t* tmp = (uint32_t*)val.c_str();
-        *block_height = tmp[0];
-        *genesis_tm = tmp[1];
         return true;
     }
 

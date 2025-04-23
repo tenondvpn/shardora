@@ -90,7 +90,6 @@ message Block {
     optional elect.protobuf.ElectBlock prev_elect_block = 13;
     optional ConsensusToTxs local_to = 14;
     optional timeblock.protobuf.TimeBlock timer_block = 16;
-    optional bool is_genesis_timer_block = 17;
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
     repeated ToAddressItemInfo cross_shard_to_array = 19; 
     optional pools.protobuf.ShardToTxItem to_heights = 20;
