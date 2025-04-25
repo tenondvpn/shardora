@@ -342,7 +342,7 @@ void BlockManager::RootHandleNormalToTx(
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        if (tos_item.sharding_id() >= network::kConsensusShardBeginNetworkId() &&
+        if (tos_item.sharding_id() >= network::kConsensusShardBeginNetworkId &&
                 tos_item.sharding_id() < network::kConsensusShardEndNetworkId) {
             char data[4];
             uint32_t* uint_data = (uint32_t*)data;
