@@ -992,6 +992,7 @@ pools::TxItemPtr BlockManager::GetToTx(
         }
     }
 
+    heights.set_sharding_id(network::GetLocalConsensusNetworkId());
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
         // heights_str_map_[height_hash] = tx_ptr;
@@ -1035,8 +1036,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
         return nullptr;
     }
     
-    *all_to_txs.mutable_to_heights()->mutable_heights() = heights;
-    all_to_txs.mutable_to_heights()->set_sharding_id(network::GetLocalConsensusNetworkId());
+    *all_to_txs.mutable_to_heights() = heights;
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
