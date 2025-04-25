@@ -343,8 +343,7 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (!msg_ptr->header.has_hotstuff() ||
-            !msg_ptr->header.hotstuff().has_pro_msg() ||
-            !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+            !msg_ptr->header.hotstuff().has_pro_msg()) {
         return Status::kInvalidArgument;
     }
 
