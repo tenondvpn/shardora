@@ -367,7 +367,16 @@ void BlockManager::RootHandleNormalToTx(
             tx->set_contract_code(tos_item.library_bytes());
         }
 
-        if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
+        pools_mgr_->HandleMessage(msg_ptr);
+        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
+            "nonce: %lu, unique hash: %s",
+            common::Encode::HexEncode(tos_item.des()).c_str(),
+            tos_item.amount(),
+            tos_item.prepayment(),
+            0,
+            common::Encode::HexEncode(unique_hash).c_str());
+
+        if (tos_item.prepayment() > 0 && !tos_item.library_bytes().empty()) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
             tmp_msg_ptr->address_info = msg_ptr->address_info;
             tmp_msg_ptr->header = msg_ptr->header;
@@ -380,7 +389,6 @@ void BlockManager::RootHandleNormalToTx(
             tmp_tx->set_key(unique_hash);
             tmp_tx->set_contract_prepayment(tos_item.prepayment());
             tmp_tx->set_nonce(0);
-            pools_mgr_->HandleMessage(msg_ptr);
             pools_mgr_->HandleMessage(tmp_msg_ptr);
             ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
                 "prepayment: %lu, nonce: %lu, tmp nonce: %lu",
@@ -389,15 +397,6 @@ void BlockManager::RootHandleNormalToTx(
                 tos_item.amount(),
                 tos_item.prepayment(),
                 0, 0);
-        } else {
-            pools_mgr_->HandleMessage(msg_ptr);
-            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
-                "nonce: %lu, unique hash: %s",
-                common::Encode::HexEncode(tos_item.des()).c_str(),
-                tos_item.amount(),
-                tos_item.prepayment(),
-                0,
-                common::Encode::HexEncode(unique_hash).c_str());
         }
     }
 }
