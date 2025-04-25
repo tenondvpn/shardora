@@ -342,42 +342,13 @@ void BlockManager::RootHandleNormalToTx(
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        // 如果 shard 已经制定了 Contract Account 的 shard，直接创建，不需要 root 再分配
-        // 如果没有，则需要 root 继续创建 kRootCreateAddress 交易
-        // TODO: check address valid
-        // if (tos_item.step() == pools::protobuf::kContractCreate) {
-        //     // that's contract address, just add address
-        //     auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-        //     account_info->set_pool_index(tos_item.pool_index());
-        //     account_info->set_addr(tos_item.des());
-        //     account_info->set_type(address::protobuf::kContract);
-        //     account_info->set_sharding_id(tos_item.sharding_id());
-        //     account_info->set_latest_height(block.height());
-        //     account_info->set_balance(tos_item.amount());
-        //     // prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
-        //     ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
-        //         common::Encode::HexEncode(tos_item.des()).c_str(),
-        //         tos_item.amount(),
-        //         tos_item.sharding_id(),
-        //         tos_item.pool_index());
-        //    continue;
-        // }
-
-        // if (tos_item.step() == pools::protobuf::kJoinElect) {
-        //     continue;
-        // }
-        
-        // // for ContractCreateByRootFrom tx
-        // if (tos_item.step() == pools::protobuf::kCreateLibrary || 
-        //         tos_item.step() == pools::protobuf::kContractCreate) {
-        //     // assert(!tos_item.library_bytes().empty());
-        //     tx->set_contract_code(tos_item.library_bytes());
-        //     char data[8];
-        //     uint32_t* uint_data = (uint32_t*)data;
-        //     uint_data[0] = tos_item.sharding_id();
-        //     uint_data[1] = tos_item.pool_index();
-        //     tx->set_value(std::string(data, sizeof(data)));
-        // }
+        if (tos_item.sharding_id() >= network::kConsensusShardBeginNetworkId() &&
+                tos_item.sharding_id() < network::kConsensusShardEndNetworkId) {
+            char data[4];
+            uint32_t* uint_data = (uint32_t*)data;
+            uint_data[0] = tos_item.sharding_id();
+            tx->set_value(std::string(data, sizeof(data)));
+        }
         
         auto pool_index = common::GetAddressPoolIndex(tos_item.des());
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
@@ -407,7 +378,7 @@ void BlockManager::RootHandleNormalToTx(
                 std::to_string(block.height()) + "_" +
                 std::to_string(i));
             tmp_tx->set_key(unique_hash);
-            tmp_tx->set_amount(tos_item.prepayment());
+            tmp_tx->set_contract_prepayment(tos_item.prepayment());
             tmp_tx->set_nonce(0);
             pools_mgr_->HandleMessage(msg_ptr);
             pools_mgr_->HandleMessage(tmp_msg_ptr);

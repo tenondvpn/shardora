@@ -64,9 +64,7 @@ int RootToTxItem::HandleTx(
     if (account_info != nullptr) {
         sharding_id = account_info->sharding_id();
     } else {
-        if (block_tx.step() == pools::protobuf::kCreateLibrary || 
-                block_tx.step() == pools::protobuf::kContractCreate) {
-            // 合约创建，用户指定 sharding
+        if (!tx_info->value().empty()) {
             uint32_t* data = (uint32_t*)tx_info->value().c_str();
             sharding_id = data[0];
         }
@@ -95,6 +93,7 @@ int RootToTxItem::HandleTx(
             to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
+            to_item_ptr->set_prepayment(block_tx.contract_prepayment());
             to_item_ptr->set_sharding_id(sharding_id);
             if (block_tx.has_contract_code() && !block_tx.contract_code().empty()) {
                 to_item_ptr->set_library_bytes(block_tx.contract_code());
@@ -105,16 +104,19 @@ int RootToTxItem::HandleTx(
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
+            if (block_tx.has_contract_code() && !block_tx.contract_code().empty()) {
+                to_item_ptr->set_library_bytes(block_tx.contract_code());
+            }
+
+            if (block_tx.contract_prepayment() > 0) {
+                to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
+            }
         }
     }
 
-    // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
-
-    ZJC_DEBUG("adress: %s, set sharding id: %u, pool index: %d",
-        common::Encode::HexEncode(block_tx.to()).c_str(), sharding_id, common::GetAddressPoolIndex(block_tx.to()));
     return kConsensusSuccess;
 }
 
