@@ -367,14 +367,16 @@ void BlockManager::RootHandleNormalToTx(
             tx->set_contract_code(tos_item.library_bytes());
         }
 
-        pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
-            "nonce: %lu, unique hash: %s",
-            common::Encode::HexEncode(tos_item.des()).c_str(),
-            tos_item.amount(),
-            tos_item.prepayment(),
-            0,
-            common::Encode::HexEncode(unique_hash).c_str());
+        if (tx->amount() > 0 || tx->has_contract_code()) {
+            pools_mgr_->HandleMessage(msg_ptr);
+            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
+                "nonce: %lu, unique hash: %s",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                tos_item.amount(),
+                tos_item.prepayment(),
+                0,
+                common::Encode::HexEncode(unique_hash).c_str());
+        }
 
         if (tos_item.prepayment() > 0 && !tos_item.library_bytes().empty()) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
