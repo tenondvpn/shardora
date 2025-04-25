@@ -294,36 +294,18 @@ void BlockManager::HandleNormalToTx(const view_block::protobuf::ViewBlockItem& v
     }
 
     auto& to_txs = view_block.block_info().normal_to();
-    ZJC_DEBUG("success handle tox tx heights net: %u, local net: %u, step: %d, nonce: %lu",
-        to_txs.to_heights().sharding_id(),
-        common::GlobalInfo::Instance()->network_id(),
-        tx.step(),
-        tx.nonce());
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
-        if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+    for (uint32_t i = 0; i < to_txs.to_tx_arr_size(); ++i) {
+        if (to_txs.to_tx_arr(i).des_shard() != common::GlobalInfo::Instance()->network_id()) {
             ZJC_WARN("sharding invalid: %u, %u",
                 to_txs.to_heights().sharding_id(),
                 common::GlobalInfo::Instance()->network_id());
-//             assert(false);
-            return;
+            continue;
         }
 
-        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-            ZJC_DEBUG("success add local transfer tx tos %u_%u_%lu, "
-                "view height: %lu, address: %s, amount: %lu",
-                view_block.qc().network_id(), 
-                view_block.qc().pool_index(), 
-                view_block.block_info().height(), 
-                view_block.qc().view(),
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-                to_txs.tos(i).amount());
-        }
-
-        HandleLocalNormalToTx(*view_block_ptr, to_txs, tx);
-    } else {
-        if (to_txs.to_heights().sharding_id() == network::kRootCongressNetworkId) {
-            ZJC_DEBUG("root handle normal to tx to_txs size: %u", to_txs.tos_size());
-            RootHandleNormalToTx(view_block, to_txs);
+        if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+            HandleLocalNormalToTx(view_block, to_txs.to_tx_arr(i));
+        } else {
+            RootHandleNormalToTx(view_block, to_txs.to_tx_arr(i));
         }
     }
 }
@@ -432,109 +414,50 @@ void BlockManager::RootHandleNormalToTx(
 // TODO refactor needed!
 void BlockManager::HandleLocalNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const pools::protobuf::ToTxMessage& to_txs,
-        const block::protobuf::BlockTx& tx) {
-    uint32_t step = tx.step();
+        const pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
     std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos;
     ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
         to_txs.tos_size(),
         common::Encode::HexEncode(tx.to()).c_str(),
         tx.nonce(),
-        step);
+        0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
-        uint32_t sharding_id = common::kInvalidUint32;
-        uint32_t pool_index = common::kInvalidPoolIndex;
         auto to_tx = to_txs.tos(i);
         auto addr = to_tx.des();
         if (to_tx.des().size() == security::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
             addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
         }
-        
-        protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(addr);
-        ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, nonce: %lu, "
-            "step: %d, addr: %s, account_info == nullptr: %d", 
-            to_txs.tos_size(),
-            tx.nonce(),
-            step,
-            common::Encode::HexEncode(addr).c_str(),
-            (account_info == nullptr));
-        if (account_info == nullptr) {
-            // 只接受 root 发回来的块
-            if (step != pools::protobuf::kRootCreateAddress) {
-                ZJC_WARN("failed add local transfer tx tos id: %s",
-                    common::Encode::HexEncode(addr).c_str());
-                continue;
-            }
 
-            if (!to_tx.has_sharding_id() || !to_tx.has_pool_index()) {
-                assert(false);
-                continue;
-            }
-
-            if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-                assert(false);
-                continue;
-            }
-
-            if (to_tx.pool_index() >= common::kImmutablePoolSize) {
-                assert(false);
-                continue;
-            }
-
-            sharding_id = to_tx.sharding_id();
-            pool_index = to_tx.pool_index();
-            // ZJC_DEBUG("root create address coming %s, shard: %u, pool: %u",
-            //     common::Encode::HexEncode(addr).c_str(), sharding_id, pool_index);
-        } else {
-            ZJC_DEBUG("1 handle local to to_txs.tos_size(): %u, nonce: %lu, step: %d, addr: %s, "
-                "to_tx.sharding_id(): %d, account_info->sharding_id(): %d", 
-                to_txs.tos_size(),
-                tx.nonce(),
-                step,
-                common::Encode::HexEncode(addr).c_str(),
-                to_tx.sharding_id(),
-                account_info->sharding_id());
-            if (to_tx.sharding_id() != account_info->sharding_id()) {
-                continue;
-            }
-
-            sharding_id = account_info->sharding_id();
-            pool_index = account_info->pool_index();
-        }
-
-        if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+        if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             assert(false);
             continue;
         }
 
+        uint32_t pool_index = common::GetAddressPoolIndex(addr);
         // 转账类型交易根据 to 地址聚合到一个 map 中
         ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
             to_tx.has_library_bytes(),
             common::Encode::HexEncode(to_tx.des()).c_str(),
             tx.nonce());
-        if (to_tx.amount() > 0) {
-            auto iter = addr_amount_map.find(to_tx.des());
-            if (iter == addr_amount_map.end()) {
-                addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
-                    to_tx.des(), to_tx.amount(), pool_index, "");
-            } else {
-                iter->second->amount += to_tx.amount();
-            }
+        auto iter = addr_amount_map.find(to_tx.des());
+        if (iter == addr_amount_map.end()) {
+            addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
+                to_tx.des(), to_tx.amount(), pool_index, "");
+        } else {
+            iter->second->amount += to_tx.amount();
         }
     }
 
-    createConsensusLocalToTxs(view_block, tx, addr_amount_map);
+    createConsensusLocalToTxs(view_block, addr_amount_map);
 }
 
 void BlockManager::createConsensusLocalToTxs(
         const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& to_tx,
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map) {
     // ZJC_DEBUG("addr_amount_map size: %lu", addr_amount_map.size());
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
-    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
         auto to_iter = to_tx_map.find(iter->second->pool_index);
         if (to_iter == to_tx_map.end()) {

@@ -471,6 +471,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     to_tx.set_elect_height(elect_height);
+    to_tx.set_des_shard(sharding_id);
     return kPoolsSuccess;
 }
 
