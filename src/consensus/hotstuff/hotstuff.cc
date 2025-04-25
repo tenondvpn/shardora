@@ -276,10 +276,10 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    if (latest_leader_propose_message_->header.hotstuff().pro_msg().has_view_item()) {
+    if (tmp_msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
         latest_leader_propose_message_ = tmp_msg_ptr;
     }
-    
+
     auto t6 = common::TimeUtils::TimestampMs();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     ZJC_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
