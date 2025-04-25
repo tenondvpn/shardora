@@ -313,9 +313,9 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, type: %d", 
+    ZJC_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
         msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "", msg_ptr->conn ? msg_ptr->conn->PeerPort() : 0, 
-        header.hash64(), header.hotstuff().type());
+        header.hash64(), header.has_hotstuff(), header.hotstuff().type());
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
         if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
@@ -328,30 +328,31 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
         switch (hotstuff_msg.type())
         {
-        case PROPOSE:
-        {
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
-            if (s != Status::kSuccess) {
-                return;
+            case PROPOSE: {
+                ADD_DEBUG_PROCESS_TIMESTAMP();
+                Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
+                if (s != Status::kSuccess) {
+                    ZJC_DEBUG("verify message failed: hash64: %lu", header.hash64());
+                    return;
+                }
+                
+                hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(msg_ptr);
+                ADD_DEBUG_PROCESS_TIMESTAMP();
+                break;
             }
-            hotstuff(hotstuff_msg.pool_index())->HandleProposeMsg(msg_ptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            break;
-        }
-        case VOTE:
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            break;
-        case PRE_RESET_TIMER:
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
-            ADD_DEBUG_PROCESS_TIMESTAMP();
-            break;
-        default:
-            ZJC_WARN("consensus message type is error.");
-            break;
+            case VOTE:
+                ADD_DEBUG_PROCESS_TIMESTAMP();
+                hotstuff(hotstuff_msg.pool_index())->HandleVoteMsg(msg_ptr);
+                ADD_DEBUG_PROCESS_TIMESTAMP();
+                break;
+            case PRE_RESET_TIMER:
+                ADD_DEBUG_PROCESS_TIMESTAMP();
+                hotstuff(hotstuff_msg.pool_index())->HandlePreResetTimerMsg(msg_ptr);
+                ADD_DEBUG_PROCESS_TIMESTAMP();
+                break;
+            default:
+                ZJC_WARN("consensus message type is error.");
+                break;
         }
         return;
     }
