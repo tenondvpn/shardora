@@ -326,7 +326,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
             pool_idx_, timeout_proto.view(), CurView(), timeout_proto.member_id(),
             msg_ptr->header.hash64());
-        new_view_fn_(msg_ptr->conn, high_tc_, nullptr);
         return;
     }
 
@@ -412,12 +411,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
         propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
     }
-
-    if (propose_st != Status::kSuccess && new_view_fn_) {
-        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
-        new_view_fn_(nullptr, new_tc, agg_qc);
-    }    
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
@@ -479,13 +472,6 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc.view(), CurView(), high_tc_->view());
-    if (propose_st != Status::kSuccess && new_view_fn_) {
-        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-
-            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
-        new_view_fn_(nullptr, new_tc, nullptr);
-    }
-
     ZJC_DEBUG("====4.5 over 2 pool: %d, view: %d, member: %d, hash64: %lu", 
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         msg_ptr->header.hash64());
