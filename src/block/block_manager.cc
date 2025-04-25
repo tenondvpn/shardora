@@ -1056,6 +1056,9 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_nonce(0);
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
+    ZJC_DEBUG("success get to tx unique hash: %s, heights: %s",
+        common::Encode::HexEncode(tx->key()).c_str(), 
+        ProtobufToJson(prev_heights).c_str());
     return tx_ptr;
 }
 
