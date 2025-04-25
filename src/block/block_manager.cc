@@ -1036,6 +1036,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
         return nullptr;
     }
     
+    all_to_txs.mutable_to_heights()->set_sharding_id(network::GetLocalConsensusNetworkId());
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
