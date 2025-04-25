@@ -84,7 +84,6 @@ public:
         db_(db) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
     }

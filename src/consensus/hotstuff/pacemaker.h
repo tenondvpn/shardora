@@ -27,10 +27,6 @@ using NewProposalFn = std::function<Status(
         const transport::MessagePtr msg_ptr)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
-using NewViewFn = std::function<void(
-    const std::shared_ptr<tnet::TcpInterface> conn, 
-    std::shared_ptr<TC> tc,
-    std::shared_ptr<AggregateQC> agg_qc)>;
 using GetHighQCFn = std::function<QC()>;
 using UpdateHighQCFn = std::function<void(const QC&)>;
 
@@ -56,10 +52,6 @@ public:
     void SetNewProposalFn(NewProposalFn fn) {
         new_proposal_fn_ = fn;
     }
-
-    void SetNewViewFn(NewViewFn fn) {
-        new_view_fn_ = fn;
-    }    
 
     void SetStopVotingFn(StopVotingFn fn) {
         stop_voting_fn_ = fn;
@@ -157,7 +149,6 @@ private:
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC
-    NewViewFn new_view_fn_ = nullptr;
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
     std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;

@@ -1249,9 +1249,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto s = Propose(qc_item_ptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (s != Status::kSuccess) {
-        // NewView(nullptr, qc_item_ptr, nullptr);
-    }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
