@@ -87,9 +87,10 @@ void ToTxsPools::ThreadToStatistic(
     }
 
     if (block.has_normal_to()) {
+        ZJC_DEBUG("success update to heights: %s", ProtobufToJson(block.normal_to()).c_str());
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = std::make_shared<pools::protobuf::ShardToTxItem>(
-            block.normal_to().to_heights());;
+            block.normal_to().to_heights());
     }
 
     added_heights_[pool_idx].insert(std::make_pair<>(
