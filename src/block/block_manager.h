@@ -104,9 +104,7 @@ private:
     void HandleAllConsensusBlocks();
     void AddNewBlock(
         const std::shared_ptr<hotstuff::ViewBlockInfo>& block_item);
-    void HandleNormalToTx(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr,
-        const block::protobuf::BlockTx& tx);
+    void HandleNormalToTx(const view_block::protobuf::ViewBlockItem& view_block);
     void HandleStatisticTx(const view_block::protobuf::ViewBlockItem& view_block);
     void HandleElectTx(const view_block::protobuf::ViewBlockItem& view_block);
     void ConsensusShardHandleRootCreateAddress(
