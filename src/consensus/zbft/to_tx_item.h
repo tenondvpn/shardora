@@ -73,6 +73,7 @@ public:
             return consensus::kConsensusError;
         }
         
+        assert(all_to_txs.to_tx_arr_size() > 0);
         prefix_db_->SaveLatestToTxsHeights(all_to_txs.to_heights(), zjc_host.db_batch_);
         // for (uint32_t i = 0; i < all_to_txs.to_tx_arr_size(); ++i) {
         //     auto to_heights = all_to_txs.mutable_to_tx_arr(i);

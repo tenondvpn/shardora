@@ -280,6 +280,16 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 
 void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto& view_block = *view_block_ptr;
+    if (view_block.block_info().normal_to().to_tx_arr_size() <= 0) {
+        ZJC_DEBUG("0 handle normale to message coming: %u_%u_%lu, des: %u, %s", 
+            view_block.qc().network_id(), 
+            view_block.qc().pool_index(), 
+            view_block.qc().view(), 
+            0, 
+            ProtobufToJson(view_block).c_str());
+        return;
+    }
+
     ZJC_DEBUG("handle normale to message coming: %u_%u_%lu, des: %u, %s", 
         view_block.qc().network_id(), 
         view_block.qc().pool_index(), 
