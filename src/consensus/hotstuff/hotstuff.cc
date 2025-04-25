@@ -669,7 +669,6 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         ProtobufToJson(pro_msg_wrap->msg_ptr->header).c_str(),
         pro_msg.tc().has_view_block_hash());
 #endif
-    std::shared_ptr<TC> tc = nullptr;
     if (pro_msg.has_tc() && !pro_msg.tc().has_view_block_hash()) {
         if (VerifyTC(pro_msg.tc()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg.view_item().qc().view());
@@ -679,7 +678,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         pacemaker()->NewTc(tc_ptr);
-        auto& qc = tc;
+        auto& qc = pro_msg.tc();
         pacemaker()->NewQcView(qc.view());
         view_block_chain()->UpdateHighViewBlock(qc);
         TryCommit(pro_msg_wrap->msg_ptr, qc, 99999999lu);
