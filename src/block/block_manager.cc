@@ -432,7 +432,6 @@ void BlockManager::HandleLocalNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
-    std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos;
     ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
         to_txs.tos_size(),
         "",
@@ -569,6 +568,46 @@ void BlockManager::AddNewBlock(
 
     if (block_item->has_normal_to()) {
         HandleNormalToTx(view_block_item);
+    }
+
+    if (block_item->has_cross_shard_to_array()) {
+        if (view_block_item->qc().network_id() == network::kRootCongressNetworkId && 
+                !network::IsSameShardOrSameWaitingPool(
+                common::GlobalInfo::Instance()->network_id(), 
+                network::kRootCongressNetworkId)) {
+            HandleRootCrossShardTx(*view_block_item);
+        }
+    }
+}
+
+void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockItem& view_block) {
+    auto& block = view_block.block_info();
+    std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
+    for (int32_t i = 0; i < block_item.cross_shard_to_array_size(); ++i) {
+        // dispatch to txs to tx pool
+        auto to_tx = block_item.cross_shard_to_array(i);
+        auto addr = to_tx.des();
+        if (to_tx.des().size() == security::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
+            addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
+        }
+
+        if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+            continue;
+        }
+
+        uint32_t pool_index = common::GetAddressPoolIndex(addr);
+        // 转账类型交易根据 to 地址聚合到一个 map 中
+        ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
+            to_tx.has_library_bytes(),
+            common::Encode::HexEncode(to_tx.des()).c_str(),
+            0);
+        auto iter = addr_amount_map.find(to_tx.des());
+        if (iter == addr_amount_map.end()) {
+            addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
+                to_tx.des(), to_tx.amount(), pool_index, "");
+        } else {
+            iter->second->amount += to_tx.amount();
+        }
     }
 }
 
