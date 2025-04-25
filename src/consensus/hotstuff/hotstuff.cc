@@ -405,6 +405,9 @@ void Hotstuff::NewView(
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    ZJC_DEBUG("handle propose called hash: %lu, propose_debug: %s", 
+        msg_ptr->header.hash64(), 
+        ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
     auto pro_msg_wrap = std::make_shared<ProposeMsgWrapper>(msg_ptr);
     if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {
         HandleTC(pro_msg_wrap);
