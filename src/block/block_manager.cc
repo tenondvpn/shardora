@@ -531,7 +531,7 @@ void BlockManager::AddNewBlock(
     // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
@@ -543,8 +543,7 @@ void BlockManager::AddNewBlock(
         common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
         view_block_item->qc().elect_height(),
         block_item->timeblock_height(),
-        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
-        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
+        ProtobufToJson(*view_block_item).c_str());
     assert(view_block_item->qc().elect_height() >= 1);
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {

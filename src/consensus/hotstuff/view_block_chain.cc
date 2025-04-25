@@ -355,51 +355,6 @@ void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_
 void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
     // not this sharding
     auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
-    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
-        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            auto& tx = view_block->block_info().tx_list(i);
-            ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-                "nonce: %lu, bls: %s, %s, step: %d",
-                view_block->qc().network_id(),
-                view_block->qc().pool_index(),
-                view_block->block_info().height(),
-                tx.nonce(),
-                common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
-                common::Encode::HexEncode(view_block->qc().sign_y()).c_str(),
-                tx.step());
-            switch (tx.step()) {
-            case pools::protobuf::kRootCreateAddress:
-                break;
-            case pools::protobuf::kNormalTo: {
-                break;
-            }
-            case pools::protobuf::kConsensusRootTimeBlock:
-                break;
-            case pools::protobuf::kStatistic:
-                break;
-            case pools::protobuf::kCross:
-                assert(false);
-                break;
-            case pools::protobuf::kConsensusRootElectShard: {
-                auto& elect_block = view_block->block_info().elect_block();
-                if (elect_block.prev_members().prev_elect_height() > 0) {
-                    prefix_db_->SaveElectHeightCommonPk(
-                        elect_block.shard_network_id(),
-                        elect_block.prev_members().prev_elect_height(),
-                        elect_block.prev_members(),
-                        zjc_host_ptr->db_batch_);
-                }
-                break;
-            }
-            case pools::protobuf::kJoinElect:
-                // HandleJoinElectTx(*view_block_item, tx_list[i], db_batch);
-                break;
-            default:
-                break;
-            }
-        }
-    }
-
     new_block_cache_callback_(view_block, zjc_host_ptr->db_batch_);
     auto block_info_ptr = GetViewBlockInfo(view_block, nullptr, zjc_host_ptr);
     AddNewBlock(view_block, zjc_host_ptr->db_batch_);
