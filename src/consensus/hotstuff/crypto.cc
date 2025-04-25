@@ -285,11 +285,17 @@ Status Crypto::VerifyQC(
         msg_hash, 
         bls_sign);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error sharding id: %u, elect height: %lu, msg hash: %s",
-            sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str());
+        ZJC_ERROR("verify qc failed, sharding id: %u, elect height: %lu, hash: %s, sign: %s, qc: %s",
+            sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str(),
+            qc.sign_x().c_str(),
+            ProtobufToJson(qc).c_str());
         return s;
     }
     
+    ZJC_DEBUG("verify qc success, sharding id: %u, elect height: %lu, hash: %s, sign: %s, qc: %s",
+        sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str(),
+        qc.sign_x().c_str(),
+        ProtobufToJson(qc).c_str());
     return Status::kSuccess;
 }
 
