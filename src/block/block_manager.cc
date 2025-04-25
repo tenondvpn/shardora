@@ -609,6 +609,8 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
             iter->second->amount += to_tx.amount();
         }
     }
+
+    createConsensusLocalToTxs(view_block, addr_amount_map);
 }
 
 void BlockManager::HandleElectTx(const view_block::protobuf::ViewBlockItem& view_block) {
