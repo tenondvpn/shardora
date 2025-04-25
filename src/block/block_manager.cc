@@ -278,16 +278,16 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
     // }
 }
 
-void BlockManager::HandleNormalToTx(const view_block::protobuf::ViewBlockItem& view_block) {
-    if (network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
+void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
+    auto& view_block = *view_block_ptr;
+    if (network::IsSameToLocalShard(view_block.qc().network_id())) {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
         ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
-            view_block_ptr->block_info().height(), view_block_ptr->block_info().timestamp());
+            view_block.block_info().height(), view_block.block_info().timestamp());
     }
 
-    ZJC_DEBUG("success handle nonce: %lu", tx.nonce());
     if (!view_block.block_info().has_normal_to()) {
         assert(false);
         return;
@@ -312,7 +312,7 @@ void BlockManager::HandleNormalToTx(const view_block::protobuf::ViewBlockItem& v
 
 void BlockManager::RootHandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
-        pools::protobuf::ToTxMessage& to_txs) {
+        const pools::protobuf::ToTxMessage& to_txs) {
     auto& block = view_block.block_info();
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
@@ -419,8 +419,8 @@ void BlockManager::HandleLocalNormalToTx(
     std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos;
     ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
         to_txs.tos_size(),
-        common::Encode::HexEncode(tx.to()).c_str(),
-        tx.nonce(),
+        "",
+        0,
         0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
@@ -440,7 +440,7 @@ void BlockManager::HandleLocalNormalToTx(
         ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
             to_tx.has_library_bytes(),
             common::Encode::HexEncode(to_tx.des()).c_str(),
-            tx.nonce());
+            0);
         auto iter = addr_amount_map.find(to_tx.des());
         if (iter == addr_amount_map.end()) {
             addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
@@ -458,6 +458,7 @@ void BlockManager::createConsensusLocalToTxs(
         std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map) {
     // ZJC_DEBUG("addr_amount_map size: %lu", addr_amount_map.size());
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
+    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
         auto to_iter = to_tx_map.find(iter->second->pool_index);
         if (to_iter == to_tx_map.end()) {
@@ -552,7 +553,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->has_normal_to()) {
-        HandleNormalToTx(*view_block_item);
+        HandleNormalToTx(view_block_item);
     }
 }
 
