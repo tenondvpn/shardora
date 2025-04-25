@@ -222,8 +222,8 @@ Status BlockAcceptor::Accept(
         auto* cross_to_item = view_block.mutable_block_info()->add_cross_shard_to_array();
         *cross_to_item = *iter->second;
         UpdateDesShardingId(cross_to_item, zjc_host);
-        assert(cross_to_item->sharding_id() >= network::kRootCongressNetworkId && 
-            cross_to_item->sharding_id() < network::kConsensusShardEndNetworkId);
+        assert(cross_to_item->des_sharding_id() >= network::kRootCongressNetworkId && 
+            cross_to_item->des_sharding_id() < network::kConsensusShardEndNetworkId);
     }
 
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
