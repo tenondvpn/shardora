@@ -403,7 +403,7 @@ int ToTxsPools::CreateToTxWithHeights(
         // uint32_t step = tmp_data[0];
         // std::string to(iter->first.c_str() + 4, iter->first.size() - 4);
         auto to_item = to_tx.add_tos();
-        *to_item = *iter->second;
+        *to_item = iter->second;
         // to_item->set_des(to); // 20 bytes，对于 prepayment tx 是 to + from（40 bytes）
         // to_item->set_amount(iter->second.amount());
         // to_item->set_pool_index(iter->second.pool_index());
@@ -470,7 +470,7 @@ int ToTxsPools::CreateToTxWithHeights(
         // }
 
         ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d",
-            common::Encode::HexEncode(to).c_str(),
+            common::Encode::HexEncode(to_item->des()).c_str(),
             iter->second.amount(), to_item->sharding_id(), sharding_id, to_item->pool_index());
     }
 
