@@ -570,7 +570,7 @@ void BlockManager::AddNewBlock(
         HandleNormalToTx(view_block_item);
     }
 
-    if (block_item->has_cross_shard_to_array()) {
+    if (block_item->cross_shard_to_array_size() > 0) {
         if (view_block_item->qc().network_id() == network::kRootCongressNetworkId && 
                 !network::IsSameShardOrSameWaitingPool(
                 common::GlobalInfo::Instance()->network_id(), 
@@ -581,7 +581,7 @@ void BlockManager::AddNewBlock(
 }
 
 void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockItem& view_block) {
-    auto& block = view_block.block_info();
+    auto& block_item = view_block.block_info();
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
     for (int32_t i = 0; i < block_item.cross_shard_to_array_size(); ++i) {
         // dispatch to txs to tx pool
