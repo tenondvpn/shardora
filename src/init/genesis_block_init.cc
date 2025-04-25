@@ -152,7 +152,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
     immutable_pool_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
     std::string immutable_pool_addr;
-    immutable_pool_addr.reserve(security::kUnicastAddressLength);
+    immutable_pool_addr.reserve(common::kUnicastAddressLength);
     immutable_pool_addr.append(common::kRootPoolsAddressPrefix);
     immutable_pool_addr.append(std::string((char*)&network_id, sizeof(network_id)));
     immutable_pool_address_info_->set_pubkey("");
@@ -170,8 +170,8 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
         auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(network_id));
         auto addr = hash.substr(
-            hash.size() - security::kUnicastAddressLength, 
-            security::kUnicastAddressLength);
+            hash.size() - common::kUnicastAddressLength, 
+            common::kUnicastAddressLength);
         auto pool_idx = common::GetAddressPoolIndex(addr);
         if (pool_idx_set.size() >= common::kImmutablePoolSize) {
             break;

@@ -392,7 +392,11 @@ void BlockManager::RootHandleNormalToTx(
             std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_key(unique_hash);
-        if (false) {  // tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
+        if (tos_item.has_library_bytes() && !tos_item.library_bytes().empty()) {
+            tx->set_contract_code(tos_item.library_bytes());
+        }
+
+        if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
             tmp_msg_ptr->address_info = msg_ptr->address_info;
             tmp_msg_ptr->header = msg_ptr->header;
@@ -441,8 +445,8 @@ void BlockManager::HandleNormalToTx(
         // dispatch to txs to tx pool
         auto to_tx = to_txs.tos(i);
         auto addr = to_tx.des();
-        if (to_tx.des().size() == security::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
-            addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
+        if (to_tx.des().size() == common::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
+            addr = to_tx.des().substr(0, common::kUnicastAddressLength); // addr = to
         }
 
         if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
@@ -587,8 +591,8 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
         // dispatch to txs to tx pool
         auto to_tx = block_item.cross_shard_to_array(i);
         auto addr = to_tx.des();
-        if (to_tx.des().size() == security::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
-            addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
+        if (to_tx.des().size() == common::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
+            addr = to_tx.des().substr(0, common::kUnicastAddressLength); // addr = to
         }
 
         if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {

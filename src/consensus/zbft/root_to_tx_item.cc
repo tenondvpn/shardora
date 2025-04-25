@@ -33,10 +33,10 @@ int RootToTxItem::HandleTx(
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     protos::AddressInfoPtr account_info = nullptr;
-    if (block_tx.to().size() == security::kUnicastAddressLength * 2) {
+    if (block_tx.to().size() == common::kUnicastAddressLength * 2) {
         // gas prepayment
         account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(
-            block_tx.to().substr(0, security::kUnicastAddressLength));
+            block_tx.to().substr(0, common::kUnicastAddressLength));
         // if (account_info == nullptr) {
         //     block_tx.set_status(kConsensusAccountNotExists);
         //     return kConsensusSuccess;
@@ -96,6 +96,10 @@ int RootToTxItem::HandleTx(
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
             to_item_ptr->set_sharding_id(sharding_id);
+            if (block_tx.has_contract_code() && !block_tx.contract_code().empty()) {
+                to_item_ptr->set_library_bytes(block_tx.contract_code());
+            }
+
             to_item_ptr->set_des_sharding_id(sharding_id);
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {

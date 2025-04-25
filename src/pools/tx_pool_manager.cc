@@ -490,8 +490,8 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             HandleSetContractPrepayment(msg_ptr);
             break;
         case pools::protobuf::kRootCreateAddress: {
-            if (tx_msg.to().size() != security::kUnicastAddressLength &&
-                    tx_msg.to().size() != security::kUnicastAddressLength * 2) {
+            if (tx_msg.to().size() != common::kUnicastAddressLength &&
+                    tx_msg.to().size() != common::kUnicastAddressLength * 2) {
                 return;
             }
 
@@ -507,7 +507,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
                 tx_msg.amount(),
                 tx_msg.nonce());
             pool_index = common::GetAddressPoolIndex(
-                tx_msg.to().substr(0, security::kUnicastAddressLength)) % common::kImmutablePoolSize;
+                tx_msg.to().substr(0, common::kUnicastAddressLength)) % common::kImmutablePoolSize;
             break;
         }
         case pools::protobuf::kContractExcute:

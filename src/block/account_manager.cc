@@ -46,7 +46,7 @@ int AccountManager::Init(
     thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
     
     std::string immutable_pool_addr;
-    immutable_pool_addr.reserve(security::kUnicastAddressLength);
+    immutable_pool_addr.reserve(common::kUnicastAddressLength);
     immutable_pool_addr.append(common::kRootPoolsAddressPrefix);
     uint16_t network_id = network::GetLocalConsensusNetworkId();
     immutable_pool_addr.append(std::string((char*)&network_id, sizeof(network_id)));
@@ -57,8 +57,8 @@ int AccountManager::Init(
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
         auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(network_id));
         auto addr = hash.substr(
-            hash.size() - security::kUnicastAddressLength, 
-            security::kUnicastAddressLength);
+            hash.size() - common::kUnicastAddressLength, 
+            common::kUnicastAddressLength);
         auto pool_idx = common::GetAddressPoolIndex(addr);
         if (pool_idx_set.size() >= common::kImmutablePoolSize) {
             break;
@@ -282,7 +282,7 @@ void AccountManager::HandleDefaultTx(
         account_info = std::make_shared<address::protobuf::AddressInfo>();
         account_info->set_pool_index(view_block.qc().pool_index());
         account_info->set_addr(tx.to());
-        if (tx.to().size() != security::kUnicastAddressLength * 2) {
+        if (tx.to().size() != common::kUnicastAddressLength * 2) {
             account_info->set_type(address::protobuf::kContractPrepayment);
         } else {
             account_info->set_type(address::protobuf::kNormal);
@@ -342,8 +342,8 @@ void AccountManager::HandleLocalToTx(
 
     auto& to_txs = view_block.block_info().local_to();
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2 &&
-                to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
+        if (to_txs.tos(i).to().size() != common::kUnicastAddressLength * 2 &&
+                to_txs.tos(i).to().size() != common::kUnicastAddressLength) {
             //assert(false);
             ZJC_DEBUG("invalid address coming to: %s, balance: %lu",
                 common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
@@ -360,7 +360,7 @@ void AccountManager::HandleLocalToTx(
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(view_block.qc().pool_index());
             account_info->set_addr(to_txs.tos(i).to());
-            if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
+            if (to_txs.tos(i).to().size() != common::kUnicastAddressLength * 2) {
                 account_info->set_type(address::protobuf::kContractPrepayment);
             } else {
                 account_info->set_type(address::protobuf::kNormal);

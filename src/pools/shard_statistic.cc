@@ -905,7 +905,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         std::string pubkey;
         std::shared_ptr<elect::protobuf::BlsPublicKey> agg_bls_pk;
         std::shared_ptr<elect::protobuf::BlsPopProof> agg_bls_pk_proof;
-        if (node_id.size() == security::kUnicastAddressLength) {
+        if (node_id.size() == common::kUnicastAddressLength) {
             auto iter = id_pk_map.find(node_id);
             if (iter == id_pk_map.end()) {
                 assert(false);

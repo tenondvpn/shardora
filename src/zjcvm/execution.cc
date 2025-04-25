@@ -149,8 +149,8 @@ int Execution::execute(
     auto btime = common::TimeUtils::TimestampMs();
     const size_t code_size = bytes_code.size();
     if (code_size <= kContractHead.size() ||
-            from_address.size() != security::kUnicastAddressLength ||
-            to_address.size() != security::kUnicastAddressLength ||
+            from_address.size() != common::kUnicastAddressLength ||
+            to_address.size() != common::kUnicastAddressLength ||
             depth >= kContractCallMaxDepth) {
         ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
             "to size: %u, depth: %u, gas_limit: %lu, from_address: %s, to_address: %s, origin_address: %s",

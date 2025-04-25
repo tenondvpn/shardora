@@ -258,7 +258,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
             for (int32_t to_tx_idx = 0; to_tx_idx < to_txs.tos_size(); ++to_tx_idx) {
                 ZJC_DEBUG("0 now handle local to idx: %d", to_tx_idx);
-                if (to_txs.tos(to_tx_idx).to().size() == security::kUnicastAddressLength * 2) {
+                if (to_txs.tos(to_tx_idx).to().size() == common::kUnicastAddressLength * 2) {
                     auto contract = to_txs.tos(to_tx_idx).to().substr(0, 20);
                     auto user = to_txs.tos(to_tx_idx).to().substr(20, 20);
                     prepay_contract->Append(common::Encode::HexEncode(contract));
@@ -272,7 +272,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                         to_txs.tos(to_tx_idx).balance());
                 }
 
-                if (to_txs.tos(to_tx_idx).to().size() != security::kUnicastAddressLength) {
+                if (to_txs.tos(to_tx_idx).to().size() != common::kUnicastAddressLength) {
                     //assert(false);
                     continue;
                 }

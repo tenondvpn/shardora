@@ -21,8 +21,6 @@ enum SecurityErrorCode {
     kSecurityError = 1,
 };
 
-static const uint32_t kUnicastAddressLength = 20u;
-
 inline static std::string GetContractAddress(
         const std::string& from,
         const std::string& gid,
