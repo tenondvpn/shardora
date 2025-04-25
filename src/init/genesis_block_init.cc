@@ -1219,7 +1219,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         auto* heights = tenon_block->mutable_normal_to()->mutable_to_heights();
         heights->set_sharding_id(net_id);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            heights->add_heights(pool_with_heights[i]);
+            heights->add_heights(pool_with_heights[i] - 1);
         }
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
@@ -1666,7 +1666,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto* heights = tenon_block->mutable_normal_to()->mutable_to_heights();
         heights->set_sharding_id(net_id);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            heights->add_heights(pool_with_heights[i]);
+            heights->add_heights(pool_with_heights[i] - 1);
         }
 
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
