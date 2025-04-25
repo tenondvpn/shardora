@@ -226,6 +226,14 @@ Status BlockAcceptor::Accept(
             cross_to_item->des_sharding_id() < network::kConsensusShardEndNetworkId);
     }
 
+    if (view_block.block_info().cross_shard_to_array_size() > 0) {
+        ZJC_DEBUG("success add cross to shard: %u_%u_%lu, %s",
+            view_block.qc().network_id(), 
+            view_block.qc().pool_index(), 
+            view_block.qc().view(),
+            ProtobufToJson(view_block).c_str());
+    }
+    
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
