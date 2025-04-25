@@ -95,6 +95,7 @@ int RootToTxItem::HandleTx(
             to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
+            to_item_ptr->set_sharding_id(sharding_id);
             to_item_ptr->set_des_sharding_id(sharding_id);
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {
