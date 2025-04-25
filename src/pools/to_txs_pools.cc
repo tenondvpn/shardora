@@ -345,21 +345,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
-                auto des_sharding_id = to_iter->second.sharding_id();
-                if (to_iter->second.sharding_id() == common::kInvalidUint32) {
-                    protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(to_iter->first);
-                    if (account_info == nullptr) {
-                        if (sharding_id != network::kRootCongressNetworkId) {
-                            continue;
-                        }
-                        // 找不到账户，则将聚合 Tos 交易发送给 root
-                        des_sharding_id = network::kRootCongressNetworkId;
-                    } else {
-                        to_iter->second.set_sharding_id(account_info->sharding_id());
-                        des_sharding_id = to_iter->second.sharding_id();
-                    }
-                }
-
+                auto des_sharding_id = to_iter->second.des_sharding_id();
                 if (des_sharding_id != sharding_id) {
                     ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed id: %s, amount: %lu",
                         pool_idx, height, des_sharding_id,
@@ -413,13 +399,14 @@ int ToTxsPools::CreateToTxWithHeights(
     ZJC_DEBUG("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
         ProtobufToJson(*prev_to_heights).c_str(), ProtobufToJson(leader_to_heights).c_str());
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
-        uint32_t* tmp_data = (uint32_t*)iter->first.c_str();
-        uint32_t step = tmp_data[0];
-        std::string to(iter->first.c_str() + 4, iter->first.size() - 4);
+        // uint32_t* tmp_data = (uint32_t*)iter->first.c_str();
+        // uint32_t step = tmp_data[0];
+        // std::string to(iter->first.c_str() + 4, iter->first.size() - 4);
         auto to_item = to_tx.add_tos();
-        to_item->set_des(to); // 20 bytes，对于 prepayment tx 是 to + from（40 bytes）
-        to_item->set_amount(iter->second.amount());
-        to_item->set_pool_index(iter->second.pool_index());
+        *to_item = *iter->second;
+        // to_item->set_des(to); // 20 bytes，对于 prepayment tx 是 to + from（40 bytes）
+        // to_item->set_amount(iter->second.amount());
+        // to_item->set_pool_index(iter->second.pool_index());
         // to_item->set_step(iter->second.type());
         // // create contract just in caller sharding
         // if (iter->second.type() == pools::protobuf::kContractCreate) {
@@ -484,7 +471,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
         ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d",
             common::Encode::HexEncode(to).c_str(),
-            iter->second.amount(), to_item->sharding_id(), sharding_id, iter->second.pool_index());
+            iter->second.amount(), to_item->sharding_id(), sharding_id, to_item->pool_index());
     }
 
     to_tx.set_elect_height(elect_height);
