@@ -338,8 +338,7 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        ZJC_INFO("to tx step: %d, new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
-            tos_item.step(),
+        ZJC_INFO("to tx new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
@@ -369,21 +368,21 @@ void BlockManager::RootHandleNormalToTx(
         //    continue;
         // }
 
-        if (tos_item.step() == pools::protobuf::kJoinElect) {
-            continue;
-        }
+        // if (tos_item.step() == pools::protobuf::kJoinElect) {
+        //     continue;
+        // }
         
-        // for ContractCreateByRootFrom tx
-        if (tos_item.step() == pools::protobuf::kCreateLibrary || 
-                tos_item.step() == pools::protobuf::kContractCreate) {
-            // assert(!tos_item.library_bytes().empty());
-            tx->set_contract_code(tos_item.library_bytes());
-            char data[8];
-            uint32_t* uint_data = (uint32_t*)data;
-            uint_data[0] = tos_item.sharding_id();
-            uint_data[1] = tos_item.pool_index();
-            tx->set_value(std::string(data, sizeof(data)));
-        }
+        // // for ContractCreateByRootFrom tx
+        // if (tos_item.step() == pools::protobuf::kCreateLibrary || 
+        //         tos_item.step() == pools::protobuf::kContractCreate) {
+        //     // assert(!tos_item.library_bytes().empty());
+        //     tx->set_contract_code(tos_item.library_bytes());
+        //     char data[8];
+        //     uint32_t* uint_data = (uint32_t*)data;
+        //     uint_data[0] = tos_item.sharding_id();
+        //     uint_data[1] = tos_item.pool_index();
+        //     tx->set_value(std::string(data, sizeof(data)));
+        // }
         
         auto pool_index = common::GetAddressPoolIndex(tos_item.des());
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
@@ -398,7 +397,7 @@ void BlockManager::RootHandleNormalToTx(
             std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_key(unique_hash);
-        if (tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
+        if (false) {  // tos_item.prepayment() > 0 && tos_item.step() == pools::protobuf::kContractCreate) {
             auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
             tmp_msg_ptr->address_info = msg_ptr->address_info;
             tmp_msg_ptr->header = msg_ptr->header;
