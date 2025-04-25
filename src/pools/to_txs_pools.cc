@@ -475,7 +475,6 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     to_tx.set_elect_height(elect_height);
-    *to_tx.mutable_to_heights() = leader_to_heights;
     return kPoolsSuccess;
 }
 
