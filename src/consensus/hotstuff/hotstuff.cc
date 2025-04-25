@@ -605,7 +605,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 #endif
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash()) {
         if (VerifyQC(pro_msg.tc()) != Status::kSuccess) {
-            ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg.view_item().tc().view());
+            ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg.tc().view());
             assert(false);
             return Status::kError;
         }
