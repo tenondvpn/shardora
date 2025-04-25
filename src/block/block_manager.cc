@@ -367,38 +367,43 @@ void BlockManager::RootHandleNormalToTx(
             tx->set_contract_code(tos_item.library_bytes());
         }
 
+        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
+            "nonce: %lu, unique hash: %s",
+            common::Encode::HexEncode(tos_item.des()).c_str(),
+            tos_item.amount(),
+            tos_item.prepayment(),
+            0,
+            common::Encode::HexEncode(unique_hash).c_str());
         if (tx->amount() > 0 || tx->has_contract_code()) {
             pools_mgr_->HandleMessage(msg_ptr);
-            ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
-                "nonce: %lu, unique hash: %s",
-                common::Encode::HexEncode(tos_item.des()).c_str(),
-                tos_item.amount(),
-                tos_item.prepayment(),
-                0,
-                common::Encode::HexEncode(unique_hash).c_str());
         }
-
-        if (tos_item.prepayment() > 0 && !tos_item.library_bytes().empty()) {
-            auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
-            tmp_msg_ptr->address_info = msg_ptr->address_info;
-            tmp_msg_ptr->header = msg_ptr->header;
-            auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
-            tmp_tx->set_to(tos_item.des() + tos_item.from());
-            auto unique_hash = common::Hash::keccak256(
-                tmp_tx->to() + "_" +
-                std::to_string(block.height()) + "_" +
-                std::to_string(i));
-            tmp_tx->set_key(unique_hash);
-            tmp_tx->set_contract_prepayment(tos_item.prepayment());
-            tmp_tx->set_nonce(0);
-            pools_mgr_->HandleMessage(tmp_msg_ptr);
-            ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
-                "prepayment: %lu, nonce: %lu, tmp nonce: %lu",
-                common::Encode::HexEncode(tos_item.des()).c_str(),
-                common::Encode::HexEncode(tos_item.from()).c_str(),
-                tos_item.amount(),
-                tos_item.prepayment(),
-                0, 0);
+        
+        if (tos_item.prepayment() > 0) {
+            if (tos_item.library_bytes().empty()) {
+                tx->set_contract_prepayment(tos_item.prepayment());
+                pools_mgr_->HandleMessage(msg_ptr);
+            } else {
+                auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+                tmp_msg_ptr->address_info = msg_ptr->address_info;
+                tmp_msg_ptr->header = msg_ptr->header;
+                auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
+                tmp_tx->set_to(tos_item.des() + tos_item.from());
+                auto unique_hash = common::Hash::keccak256(
+                    tmp_tx->to() + "_" +
+                    std::to_string(block.height()) + "_" +
+                    std::to_string(i));
+                tmp_tx->set_key(unique_hash);
+                tmp_tx->set_contract_prepayment(tos_item.prepayment());
+                tmp_tx->set_nonce(0);
+                pools_mgr_->HandleMessage(tmp_msg_ptr);
+                ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
+                    "prepayment: %lu, nonce: %lu, tmp nonce: %lu",
+                    common::Encode::HexEncode(tos_item.des()).c_str(),
+                    common::Encode::HexEncode(tos_item.from()).c_str(),
+                    tos_item.amount(),
+                    tos_item.prepayment(),
+                    0, 0);
+            }
         }
     }
 }
