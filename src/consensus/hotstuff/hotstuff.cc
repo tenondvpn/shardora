@@ -209,12 +209,12 @@ Status Hotstuff::Propose(
     header.set_hop_count(0);
     auto* hotstuff_msg = header.mutable_hotstuff();
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-    Status construct_propose_msg_status = ConstructProposeMsg(msg_ptr, pb_pro_msg);
-    if (construct_propose_msg_status != Status::kSuccess) {
+    Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
+    if (s != Status::kSuccess) {
         if (!tc) {
             ZJC_DEBUG("pool: %d construct propose msg failed, %d",
-                pool_idx_, construct_propose_msg_status);
-            return construct_propose_msg_status;
+                pool_idx_, s);
+            return s;
         }
 
 
