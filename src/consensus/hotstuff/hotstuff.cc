@@ -659,16 +659,17 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
 
 Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
     // 3 Verify TC
+    auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
 
-    ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s", 
+    ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s, pro_msg.tc().has_view_block_hash(): %d", 
         pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(cons_debug).c_str());
+        ProtobufToJson(pro_msg_wrap->msg_ptr->header).c_str(),
+        pro_msg.tc().has_view_block_hash());
 #endif
     std::shared_ptr<TC> tc = nullptr;
-    auto& pro_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     if (pro_msg.has_tc() && !pro_msg.tc().has_view_block_hash()) {
         if (VerifyTC(pro_msg.tc()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg.view_item().qc().view());
@@ -678,6 +679,11 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 
         auto tc_ptr = std::make_shared<view_block::protobuf::QcItem>(pro_msg.tc());
         pacemaker()->NewTc(tc_ptr);
+        auto& qc = tc;
+        pacemaker()->NewQcView(qc.view());
+        view_block_chain()->UpdateHighViewBlock(qc);
+        TryCommit(pro_msg_wrap->msg_ptr, qc, 99999999lu);
+
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(*tc_ptr));
