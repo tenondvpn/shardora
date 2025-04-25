@@ -320,14 +320,17 @@ Status Hotstuff::Propose(
         );
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
-        ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, view: %lu",
+        ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, "
+            "view: %lu, max_view(): %lu, last_leader_propose_view_: %lu",
             common::Encode::HexEncode(tc->view_block_hash()).c_str(), 
             tc->network_id(), 
             tc->pool_index(), 
             pb_pro_msg->view_item().block_info().height(), 
             "", 
             pb_pro_msg->tx_propose().txs_size(),
-            tc->view());
+            tc->view(),
+            max_view(), 
+            last_leader_propose_view_);
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
