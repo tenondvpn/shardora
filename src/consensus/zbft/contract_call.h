@@ -56,7 +56,7 @@ private:
         uint64_t* balance);
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::map<std::string, std::shared_ptr<block::protobuf::ToAddressItemInfo>> cross_to_map_;
+    std::map<std::string, std::shared_ptr<pools::protobuf::ToTxMessageItem>> cross_to_map_;
     DISALLOW_COPY_AND_ASSIGN(ContractCall);
 };
 

@@ -83,7 +83,7 @@ private:
     void ThreadCallback();
 
     // destination shard -> pool -> height -> items
-    typedef std::unordered_map<std::string, block::protobuf::ToAddressItemInfo> TxMap;
+    typedef std::unordered_map<std::string, pools::protobuf::ToTxMessageItem> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     HeightMap network_txs_pools_[common::kInvalidPoolIndex];
     common::SpinMutex network_txs_pools_mutex_;

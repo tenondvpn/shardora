@@ -62,19 +62,6 @@ message ConsensusToTxs {
     repeated ConsensusToTxsItem tos = 1;
 }
 
-message ToAddressItemInfo {
-    optional uint64 amount = 1;
-    optional int32 pool_index = 2;
-    optional uint32 sharding_id = 3;
-    optional bytes des = 4;
-    optional bytes elect_join_g2_value = 6;
-    optional bls.protobuf.JoinElectInfo join_info = 7;
-    optional bytes library_bytes = 8;
-    optional bytes from = 9;
-    optional uint64 prepayment = 10;
-    optional uint32 des_sharding_id = 11;
-};
-
 message Block {
     optional uint32 version = 1;
     optional uint64 height = 2;
@@ -92,7 +79,7 @@ message Block {
     optional ConsensusToTxs local_to = 14;
     optional timeblock.protobuf.TimeBlock timer_block = 16;
     optional pools.protobuf.AllToTxMessage normal_to = 18; 
-    repeated ToAddressItemInfo cross_shard_to_array = 19; 
+    repeated pools.protobuf.ToTxMessageItem cross_shard_to_array = 19; 
     optional uint64 pool_statistic_height = 21;
     optional uint64 all_gas = 22;
     repeated bls.protobuf.JoinElectInfo joins = 23;

@@ -212,9 +212,9 @@ int ContractUserCreateCall::HandleTx(
         block_tx.amount());
     if (block_tx.status() == kConsensusSuccess) {
         auto iter = zjc_host.cross_to_map_.find(block_tx.to());
-        std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+        std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
         if (iter == zjc_host.cross_to_map_.end()) {
-            to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
             to_item_ptr->set_from(block_tx.from());
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
@@ -231,7 +231,7 @@ int ContractUserCreateCall::HandleTx(
 
         for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
             auto iter = zjc_host.cross_to_map_.find(exists_iter->first);
-            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
             if (iter == zjc_host.cross_to_map_.end()) {
                 zjc_host.cross_to_map_[exists_iter->first] = exists_iter->second;
             } else {
@@ -280,9 +280,9 @@ int ContractUserCreateCall::SaveContractCreateInfo(
 
             if (to_iter->first != block_tx.to() && to_iter->first != block_tx.from()) {
                 auto iter = cross_to_map_.find(to_iter->first);
-                std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+                std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
                 if (iter == cross_to_map_.end()) {
-                    to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                    to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
                     to_item_ptr->set_from(transfer_iter->first);
                     to_item_ptr->set_des(to_iter->first);
                     to_item_ptr->set_amount(to_iter->second);

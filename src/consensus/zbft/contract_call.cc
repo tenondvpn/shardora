@@ -215,9 +215,9 @@ int ContractCall::HandleTx(
                     }
 
                     auto iter = cross_to_map_.find(destruct_to);
-                    std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+                    std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
                     if (iter == cross_to_map_.end()) {
-                        to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                        to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
                         to_item_ptr->set_from(destruct_from);
                         to_item_ptr->set_des(destruct_to);
                         to_item_ptr->set_amount(new_contract_balance);
@@ -254,9 +254,9 @@ int ContractCall::HandleTx(
         if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
             if (from_balance > 0) {
                 auto iter = cross_to_map_.find(block_tx.from());
-                std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+                std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
                 if (iter == cross_to_map_.end()) {
-                    to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                    to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
                     to_item_ptr->set_from(block_tx.to());
                     to_item_ptr->set_des(block_tx.from());
                     to_item_ptr->set_amount(from_balance);
@@ -306,7 +306,7 @@ int ContractCall::HandleTx(
     if (block_tx.status() == kConsensusSuccess) {
         for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
             auto iter = zjc_host.cross_to_map_.find(exists_iter->first);
-            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
             if (iter == zjc_host.cross_to_map_.end()) {
                 zjc_host.cross_to_map_[exists_iter->first] = exists_iter->second;
             } else {
@@ -346,9 +346,9 @@ int ContractCall::SaveContractCreateInfo(
 
             contract_balance_add -= to_iter->second;
             auto iter = cross_to_map_.find(to_iter->first);
-            std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+            std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
             if (iter == cross_to_map_.end()) {
-                to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+                to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
                 to_item_ptr->set_from(transfer_iter->first);
                 to_item_ptr->set_des(to_iter->first);
                 to_item_ptr->set_amount(to_iter->second);

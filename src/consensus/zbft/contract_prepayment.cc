@@ -96,9 +96,9 @@ int ContractPrepayment::HandleTx(
     if (block_tx.status() == kConsensusSuccess) {
         auto preypayment_id = block_tx.to() + block_tx.from();
         auto iter = zjc_host.cross_to_map_.find(preypayment_id);
-        std::shared_ptr<block::protobuf::ToAddressItemInfo> to_item_ptr;
+        std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
         if (iter == zjc_host.cross_to_map_.end()) {
-            to_item_ptr = std::make_shared<block::protobuf::ToAddressItemInfo>();
+            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
             to_item_ptr->set_des(preypayment_id);
             to_item_ptr->set_prepayment(block_tx.contract_prepayment());
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;

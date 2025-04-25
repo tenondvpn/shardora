@@ -121,7 +121,7 @@ public:
         BalanceAndNonceMap& balance_map,
         zjcvm::ZjchainHost& zjc_host);
     void UpdateDesShardingId(
-        block::protobuf::ToAddressItemInfo* to_addr_info, 
+        pools::protobuf::ToTxMessageItem* to_addr_info, 
         zjcvm::ZjchainHost& zjc_host);
 
     void CalculateTps(uint64_t tx_list_size) {

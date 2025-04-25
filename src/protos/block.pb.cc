@@ -351,10 +351,10 @@ static void InitDefaultsToAddressItemInfo() {
 
   {
     void* ptr = &::shardora::block::protobuf::_ToAddressItemInfo_default_instance_;
-    new (ptr) ::shardora::block::protobuf::ToAddressItemInfo();
+    new (ptr) ::shardora::pools::protobuf::ToTxMessageItem();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::shardora::block::protobuf::ToAddressItemInfo::InitAsDefaultInstance();
+  ::shardora::pools::protobuf::ToTxMessageItem::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_ToAddressItemInfo =
@@ -901,21 +901,21 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ConsensusToTxs, tos_),
   ~0u,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, amount_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, pool_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, sharding_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, des_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, elect_join_g2_value_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, join_info_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, library_bytes_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, from_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, prepayment_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::block::protobuf::ToAddressItemInfo, des_sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, amount_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, pool_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, des_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, elect_join_g2_value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, join_info_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, library_bytes_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, from_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, prepayment_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, des_sharding_id_),
   5,
   6,
   7,
@@ -1267,7 +1267,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 66, 75, sizeof(::shardora::block::protobuf::KeyValueInfo)},
   { 79, 88, sizeof(::shardora::block::protobuf::ConsensusToTxsItem)},
   { 92, 98, sizeof(::shardora::block::protobuf::ConsensusToTxs)},
-  { 99, 114, sizeof(::shardora::block::protobuf::ToAddressItemInfo)},
+  { 99, 114, sizeof(::shardora::pools::protobuf::ToTxMessageItem)},
   { 124, 150, sizeof(::shardora::block::protobuf::Block)},
   { 171, 181, sizeof(::shardora::block::protobuf::GetTxBlockRequest)},
   { 186, 192, sizeof(::shardora::block::protobuf::GetTxBlockResponse)},
@@ -14619,8 +14619,8 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::block::protobuf::Conse
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::block::protobuf::ConsensusToTxs* Arena::CreateMaybeMessage< ::shardora::block::protobuf::ConsensusToTxs >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::block::protobuf::ConsensusToTxs >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::block::protobuf::ToAddressItemInfo* Arena::CreateMaybeMessage< ::shardora::block::protobuf::ToAddressItemInfo >(Arena* arena) {
-  return Arena::CreateInternal< ::shardora::block::protobuf::ToAddressItemInfo >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessage< ::shardora::pools::protobuf::ToTxMessageItem >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::pools::protobuf::ToTxMessageItem >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::block::protobuf::Block* Arena::CreateMaybeMessage< ::shardora::block::protobuf::Block >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::block::protobuf::Block >(arena);

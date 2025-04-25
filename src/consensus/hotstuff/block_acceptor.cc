@@ -249,7 +249,7 @@ Status BlockAcceptor::Accept(
 }
 
 void BlockAcceptor::UpdateDesShardingId(
-        block::protobuf::ToAddressItemInfo* to_addr_info, 
+        pools::protobuf::ToTxMessageItem* to_addr_info, 
         zjcvm::ZjchainHost& zjc_host) {
     if (to_addr_info->has_des_sharding_id()) {
         return;

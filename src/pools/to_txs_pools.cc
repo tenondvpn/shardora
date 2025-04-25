@@ -282,7 +282,7 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    std::map<std::string, block::protobuf::ToAddressItemInfo> acc_amount_map;
+    std::map<std::string, pools::protobuf::ToTxMessageItem> acc_amount_map;
     {
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         *prev_to_heights = *prev_to_heights_;

@@ -187,7 +187,7 @@ template<> ::shardora::block::protobuf::ShardToTxMessage* Arena::CreateMaybeMess
 template<> ::shardora::block::protobuf::StatisticInfo* Arena::CreateMaybeMessage<::shardora::block::protobuf::StatisticInfo>(Arena*);
 template<> ::shardora::block::protobuf::StatisticTxMessage* Arena::CreateMaybeMessage<::shardora::block::protobuf::StatisticTxMessage>(Arena*);
 template<> ::shardora::block::protobuf::StorageItem* Arena::CreateMaybeMessage<::shardora::block::protobuf::StorageItem>(Arena*);
-template<> ::shardora::block::protobuf::ToAddressItemInfo* Arena::CreateMaybeMessage<::shardora::block::protobuf::ToAddressItemInfo>(Arena*);
+template<> ::shardora::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ToTxMessageItem>(Arena*);
 template<> ::shardora::block::protobuf::TransferItem* Arena::CreateMaybeMessage<::shardora::block::protobuf::TransferItem>(Arena*);
 template<> ::shardora::block::protobuf::TxLog* Arena::CreateMaybeMessage<::shardora::block::protobuf::TxLog>(Arena*);
 template<> ::shardora::block::protobuf::UpdateVpnActiveRequest* Arena::CreateMaybeMessage<::shardora::block::protobuf::UpdateVpnActiveRequest>(Arena*);
@@ -1801,12 +1801,12 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   int cross_shard_to_array_size() const;
   void clear_cross_shard_to_array();
   static const int kCrossShardToArrayFieldNumber = 19;
-  ::shardora::block::protobuf::ToAddressItemInfo* mutable_cross_shard_to_array(int index);
-  ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::ToAddressItemInfo >*
+  ::shardora::pools::protobuf::ToTxMessageItem* mutable_cross_shard_to_array(int index);
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessageItem >*
       mutable_cross_shard_to_array();
-  const ::shardora::block::protobuf::ToAddressItemInfo& cross_shard_to_array(int index) const;
-  ::shardora::block::protobuf::ToAddressItemInfo* add_cross_shard_to_array();
-  const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::ToAddressItemInfo >&
+  const ::shardora::pools::protobuf::ToTxMessageItem& cross_shard_to_array(int index) const;
+  ::shardora::pools::protobuf::ToTxMessageItem* add_cross_shard_to_array();
+  const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessageItem >&
       cross_shard_to_array() const;
 
   // repeated .shardora.bls.protobuf.JoinElectInfo joins = 23;
@@ -1993,7 +1993,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::KeyValueInfo > key_value_array_;
   ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::TransferItem > contract_txs_;
   ::google::protobuf::RepeatedPtrField< ::shardora::address::protobuf::AddressInfo > address_array_;
-  ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::ToAddressItemInfo > cross_shard_to_array_;
+  ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessageItem > cross_shard_to_array_;
   ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo > joins_;
   ::shardora::pools::protobuf::ElectStatistic* elect_statistic_;
   ::shardora::elect::protobuf::ElectBlock* elect_block_;
@@ -8326,24 +8326,24 @@ inline int Block::cross_shard_to_array_size() const {
 inline void Block::clear_cross_shard_to_array() {
   cross_shard_to_array_.Clear();
 }
-inline ::shardora::block::protobuf::ToAddressItemInfo* Block::mutable_cross_shard_to_array(int index) {
+inline ::shardora::pools::protobuf::ToTxMessageItem* Block::mutable_cross_shard_to_array(int index) {
   // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.cross_shard_to_array)
   return cross_shard_to_array_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::ToAddressItemInfo >*
+inline ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessageItem >*
 Block::mutable_cross_shard_to_array() {
   // @@protoc_insertion_point(field_mutable_list:shardora.block.protobuf.Block.cross_shard_to_array)
   return &cross_shard_to_array_;
 }
-inline const ::shardora::block::protobuf::ToAddressItemInfo& Block::cross_shard_to_array(int index) const {
+inline const ::shardora::pools::protobuf::ToTxMessageItem& Block::cross_shard_to_array(int index) const {
   // @@protoc_insertion_point(field_get:shardora.block.protobuf.Block.cross_shard_to_array)
   return cross_shard_to_array_.Get(index);
 }
-inline ::shardora::block::protobuf::ToAddressItemInfo* Block::add_cross_shard_to_array() {
+inline ::shardora::pools::protobuf::ToTxMessageItem* Block::add_cross_shard_to_array() {
   // @@protoc_insertion_point(field_add:shardora.block.protobuf.Block.cross_shard_to_array)
   return cross_shard_to_array_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::shardora::block::protobuf::ToAddressItemInfo >&
+inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessageItem >&
 Block::cross_shard_to_array() const {
   // @@protoc_insertion_point(field_list:shardora.block.protobuf.Block.cross_shard_to_array)
   return cross_shard_to_array_;
