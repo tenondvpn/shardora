@@ -139,9 +139,10 @@ int JoinElectTxItem::HandleTx(
             to_item_ptr = iter->second;
         }
 
-        *to_item_ptr->mutable_join_info() = join_info;
+        // *to_item_ptr->mutable_join_info() = join_info;
     }
 
+    assert(false);
     return kConsensusSuccess;
 }
 
