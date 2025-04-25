@@ -258,8 +258,8 @@ void BlockAcceptor::UpdateDesShardingId(
     auto addr_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr_info->des().substr(0, 20));
     if (addr_info) {
         to_addr_info->set_des_sharding_id(addr_info->sharding_id());
-        assert(cross_to_item->sharding_id() >= network::kRootCongressNetworkId && 
-            cross_to_item->sharding_id() < network::kConsensusShardEndNetworkId);
+        assert(to_addr_info->des_sharding_id() >= network::kRootCongressNetworkId && 
+        to_addr_info->des_sharding_id() < network::kConsensusShardEndNetworkId);
     } else {
         to_addr_info->set_des_sharding_id(network::kRootCongressNetworkId);
     }
@@ -468,7 +468,7 @@ Status BlockAcceptor::addTxsToPool(
             } else {
                 auto tx_item = tx_pools_->GetToTxs(
                     pool_idx(), 
-                    all_to_txs.to_tx_arr(0).to_heights().SerializeAsString());
+                    all_to_txs.to_heights().SerializeAsString());
                 if (tx_item != nullptr && !tx_item->txs.empty() && view_block_chain_) {
                     tx_ptr = *(tx_item->txs.begin());
                     std::string val;
