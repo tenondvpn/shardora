@@ -127,7 +127,8 @@ Status BlockAcceptor::Accept(
 
 #ifndef NDEBUG
     for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != 20 && iter->first.size() != 40) {
+        if (iter->first.size() != common::kUnicastAddressLength && 
+                iter->first.size() != common::kPreypamentAddressLength) {
             assert(false);
         }
     }
@@ -149,7 +150,8 @@ Status BlockAcceptor::Accept(
     
 #ifndef NDEBUG
     for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != 20 && iter->first.size() != 40) {
+        if (iter->first.size() != common::kUnicastAddressLength && 
+                iter->first.size() != common::kPreypamentAddressLength) {
             assert(false);
         }
     }
@@ -168,14 +170,16 @@ Status BlockAcceptor::Accept(
 
 #ifndef NDEBUG
     for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != 20 && iter->first.size() != 40) {
+        if (iter->first.size() != common::kUnicastAddressLength && 
+                iter->first.size() != common::kPreypamentAddressLength) {
             assert(false);
         }
     }
 #endif
 
     for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != 20 && iter->first.size() != 40) {
+        if (iter->first.size() != common::kUnicastAddressLength && 
+                iter->first.size() != common::kPreypamentAddressLength) {
             assert(false);
             continue;
         }
@@ -233,7 +237,7 @@ Status BlockAcceptor::Accept(
             view_block.qc().view(),
             ProtobufToJson(view_block).c_str());
     }
-    
+
     ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
@@ -263,7 +267,7 @@ void BlockAcceptor::UpdateDesShardingId(
         return;
     }
 
-    auto addr_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr_info->des().substr(0, 20));
+    auto addr_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr_info->des().substr(0, common::kUnicastAddressLength));
     if (addr_info) {
         to_addr_info->set_des_sharding_id(addr_info->sharding_id());
         assert(to_addr_info->des_sharding_id() >= network::kRootCongressNetworkId && 
@@ -390,12 +394,14 @@ Status BlockAcceptor::addTxsToPool(
         
         auto iter = prevs_balance_map.find(address_info->addr());
         if (iter != prevs_balance_map.end()) {
-            assert(iter->first.size() == 20 || iter->first.size() == 40);
+            assert(iter->first.size() == common::kUnicastAddressLength ||
+                iter->first.size() == common::kPreypamentAddressLength);
             now_balance_map[iter->first] = iter->second;
         } else {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
             *new_addr_info = *address_info;
-            assert(address_info->addr().size() == 20 || address_info->addr().size() == 40);
+            assert(address_info->addr().size() == common::kUnicastAddressLength || 
+                address_info->addr().size() == common::kPreypamentAddressLength);
             now_balance_map[address_info->addr()] = new_addr_info;
         }
 
@@ -610,14 +616,15 @@ Status BlockAcceptor::addTxsToPool(
         if (!contract_prepayment_id.empty()) {
             auto iter = prevs_balance_map.find(contract_prepayment_id);
             if (iter != prevs_balance_map.end()) {
-                assert(iter->first.size() == 20 || iter->first.size() == 40);
+                assert(iter->first.size() == common::kUnicastAddressLength || 
+                    iter->first.size() == common::kPreypamentAddressLength);
                 now_balance_map[iter->first] = iter->second;
             } else {
                 address_info = view_block_chain_->ChainGetAccountInfo(contract_prepayment_id);
                 if (address_info) {
                     auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>();
                     *new_addr_info = *address_info;
-                    assert(contract_prepayment_id.size() == 40);
+                    assert(contract_prepayment_id.size() == common::kPreypamentAddressLength);
                     now_balance_map[contract_prepayment_id] = new_addr_info;
                 }
             }

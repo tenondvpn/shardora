@@ -259,8 +259,8 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             for (int32_t to_tx_idx = 0; to_tx_idx < to_txs.tos_size(); ++to_tx_idx) {
                 ZJC_DEBUG("0 now handle local to idx: %d", to_tx_idx);
                 if (to_txs.tos(to_tx_idx).to().size() == common::kUnicastAddressLength * 2) {
-                    auto contract = to_txs.tos(to_tx_idx).to().substr(0, 20);
-                    auto user = to_txs.tos(to_tx_idx).to().substr(20, 20);
+                    auto contract = to_txs.tos(to_tx_idx).to().substr(0, common::kUnicastAddressLength);
+                    auto user = to_txs.tos(to_tx_idx).to().substr(common::kUnicastAddressLength, common::kUnicastAddressLength);
                     prepay_contract->Append(common::Encode::HexEncode(contract));
                     prepay_user->Append(common::Encode::HexEncode(user));
                     prepay_height->Append(block_item->height());

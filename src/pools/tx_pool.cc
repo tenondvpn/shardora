@@ -146,7 +146,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->tx_info->nonce(),
         tx_ptr->tx_info->step());
     if (tx_ptr->tx_info->step() == pools::protobuf::kContractExcute) {
-        assert(tx_ptr->address_info->addr().size() == 40);
+        assert(tx_ptr->address_info->addr().size() == common::kPreypamentAddressLength);
     }
     
     return kPoolsSuccess;

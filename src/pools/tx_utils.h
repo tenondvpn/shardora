@@ -45,7 +45,7 @@ enum PoolsErrorCode {
 };
 
 static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
-    assert(addr.size() == 20 || addr.size() == 40);
+    assert(addr.size() == common::kUnicastAddressLength || addr.size() == common::kPreypamentAddressLength);
     std::string data;
     data.resize(addr.size() + 8);
     memcpy(data.data(), addr.c_str(), addr.size());
