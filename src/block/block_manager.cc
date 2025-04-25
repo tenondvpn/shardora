@@ -402,7 +402,7 @@ void BlockManager::RootHandleNormalToTx(
             tmp_msg_ptr->address_info = msg_ptr->address_info;
             tmp_msg_ptr->header = msg_ptr->header;
             auto tmp_tx = tmp_msg_ptr->header.mutable_tx_proto();
-            tmp_tx->set_to(tos_item.des() + tos_item.contract_from());
+            tmp_tx->set_to(tos_item.des() + tos_item.from());
             auto unique_hash = common::Hash::keccak256(
                 tmp_tx->to() + "_" +
                 std::to_string(block.height()) + "_" +
@@ -415,7 +415,7 @@ void BlockManager::RootHandleNormalToTx(
             ZJC_INFO("create new contract address %s, user: %s, amount: %lu, "
                 "prepayment: %lu, nonce: %lu, tmp nonce: %lu",
                 common::Encode::HexEncode(tos_item.des()).c_str(),
-                common::Encode::HexEncode(tos_item.contract_from()).c_str(),
+                common::Encode::HexEncode(tos_item.from()).c_str(),
                 tos_item.amount(),
                 tos_item.prepayment(),
                 0, 0);
