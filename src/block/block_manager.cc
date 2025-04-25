@@ -280,6 +280,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 
 void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto& view_block = *view_block_ptr;
+    ZJC_DEBUG("handle normale to message coming: %s", ProtobufToJson(view_block).c_str());
     if (network::IsSameToLocalShard(view_block.qc().network_id())) {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
