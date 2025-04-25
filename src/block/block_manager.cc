@@ -274,7 +274,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
     //         view_block.qc().pool_index(),
     //         view_block.qc().view(),
     //         view_block.block_info().height());
-    //     HandleLocalNormalToTx(view_block, to_txs, tx);
+    //     HandleNormalToTx(view_block, to_txs, tx);
     // }
 }
 
@@ -319,7 +319,7 @@ void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::
         }
 
         if (!network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
-            HandleLocalNormalToTx(view_block, to_txs.to_tx_arr(i));
+            HandleNormalToTx(view_block, to_txs.to_tx_arr(i));
         } else {
             RootHandleNormalToTx(view_block, to_txs.to_tx_arr(i));
         }
@@ -428,7 +428,7 @@ void BlockManager::RootHandleNormalToTx(
 }
 
 // TODO refactor needed!
-void BlockManager::HandleLocalNormalToTx(
+void BlockManager::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
@@ -445,7 +445,7 @@ void BlockManager::HandleLocalNormalToTx(
             addr = to_tx.des().substr(0, security::kUnicastAddressLength); // addr = to
         }
 
-        if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             assert(false);
             continue;
         }

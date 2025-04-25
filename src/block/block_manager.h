@@ -111,7 +111,7 @@ private:
     void ConsensusShardHandleRootCreateAddress(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
-    void HandleLocalNormalToTx(
+    void HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs);
     void createConsensusLocalToTxs(
