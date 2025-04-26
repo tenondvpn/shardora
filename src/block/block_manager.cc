@@ -342,41 +342,30 @@ void BlockManager::RootHandleNormalToTx(
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        if (tos_item.sharding_id() >= network::kConsensusShardBeginNetworkId &&
-                tos_item.sharding_id() < network::kConsensusShardEndNetworkId) {
-            char data[4];
-            uint32_t* uint_data = (uint32_t*)data;
-            uint_data[0] = tos_item.sharding_id();
-            tx->set_value(std::string(data, sizeof(data)));
-        }
+        // if (tos_item.sharding_id() >= network::kConsensusShardBeginNetworkId &&
+        //         tos_item.sharding_id() < network::kConsensusShardEndNetworkId) {
+        //     char data[4];
+        //     uint32_t* uint_data = (uint32_t*)data;
+        //     uint_data[0] = tos_item.sharding_id();
+        // }
         
-        auto pool_index = common::GetAddressPoolIndex(tos_item.des());
+        auto pool_index = common::GetAddressPoolIndex(tos_item.des().substr(0, common::kUnicastAddressLength));
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         tx->set_pubkey("");
-        tx->set_from(msg_ptr->address_info->addr());
-        tx->set_to(tos_item.des());
+        tx->set_to(msg_ptr->address_info->addr());
         tx->set_gas_limit(0);
-        tx->set_amount(tos_item.amount());
+        tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_nonce(0);        
+        tx->set_value(tos_item.SerializeAsString());
         auto unique_hash = common::Hash::keccak256(
             tx->to() + "_" +
             std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_key(unique_hash);
-        if (tos_item.has_library_bytes() && !tos_item.library_bytes().empty()) {
-            tx->set_contract_code(tos_item.library_bytes());
-        }
-
-        if (tos_item.prepayment() > 0) {
-            tx->set_contract_prepayment(tos_item.prepayment());
-        }
-
-        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
+        ZJC_INFO("create new address %s, "
             "nonce: %lu, unique hash: %s, contract code: %s",
-            common::Encode::HexEncode(tos_item.des()).c_str(),
-            tos_item.amount(),
-            tos_item.prepayment(),
+            ProtobufToJson(tos_item).c_str(),
             0,
             common::Encode::HexEncode(unique_hash).c_str(),
             common::Encode::HexEncode(tx->contract_code()).c_str());

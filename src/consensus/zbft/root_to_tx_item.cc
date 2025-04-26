@@ -32,9 +32,6 @@ int RootToTxItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    protos::AddressInfoPtr to_account_info = nullptr;
-    auto to_addr = block_tx.to().substr(0, common::kUnicastAddressLength);
-    to_account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr);
     uint64_t from_balance = 0;
     uint64_t from_nonce = 0;
     GetTempAccountBalance(zjc_host, block_tx.from(), acc_balance_map, &from_balance, &from_nonce);
@@ -45,18 +42,27 @@ int RootToTxItem::HandleTx(
         return consensus::kConsensusError;
     }
     
+    pools::protobuf::ToTxMessageItem to_item;
+    if (!to_item.ParseFromString(tx_info->value())) {
+        assert(false);
+        return consensus::kConsensusError;
+    }
+
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     zjc_host.SaveKeyValue(block_tx.from(), unique_hash, tx_info->value());
     block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(from_nonce + 1);
-
+    protos::AddressInfoPtr to_account_info = nullptr;
+    auto to_addr = to_item.des().substr(0, common::kUnicastAddressLength);
+    to_account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr);
     uint32_t sharding_id = 0;
     if (to_account_info != nullptr) {
         sharding_id = to_account_info->sharding_id();
     } else {
-        if (!tx_info->value().empty()) {
-            uint32_t* data = (uint32_t*)tx_info->value().c_str();
-            sharding_id = data[0];
+        if (to_item.has_sharding_id() && 
+                to_item.sharding_id() >= network::kConsensusShardBeginNetworkId && 
+                to_item.sharding_id() < network::kConsensusShardEndNetworkId) {
+            sharding_id = to_item.sharding_id();
         }
 
         if (sharding_id == 0) {
@@ -80,16 +86,7 @@ int RootToTxItem::HandleTx(
         auto iter = zjc_host.cross_to_map_.find(block_tx.to());
         std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
         if (iter == zjc_host.cross_to_map_.end()) {
-            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
-            to_item_ptr->set_des(block_tx.to());
-            to_item_ptr->set_amount(block_tx.amount());
-            to_item_ptr->set_prepayment(block_tx.contract_prepayment());
-            to_item_ptr->set_sharding_id(sharding_id);
-            if (block_tx.has_contract_code() && !block_tx.contract_code().empty()) {
-                to_item_ptr->set_library_bytes(block_tx.contract_code());
-            }
-
-            to_item_ptr->set_des_sharding_id(sharding_id);
+            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>(to_item);
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
         } else {
             to_item_ptr = iter->second;
@@ -104,8 +101,8 @@ int RootToTxItem::HandleTx(
         }
 
         ZJC_DEBUG("success add addr to: %s, value: %s, to info: %s", 
-            common::Encode::HexEncode(block_tx.to()).c_str(), 
-            ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str(),
+            common::Encode::HexEncode(to_item.des()).c_str(), 
+            ProtobufToJson(*(acc_balance_map[to_addr])).c_str(),
             ProtobufToJson(*to_item_ptr).c_str());
     }
 
