@@ -1622,8 +1622,8 @@ void Hotstuff::HandleSyncedViewBlock(
         // }
 
         // TODO: fix balance map and storage map
-        view_block_chain()->UpdateHighViewBlock(vblock->qc());
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
+        view_block_chain()->UpdateHighViewBlock(vblock->qc());
         transport::MessagePtr msg_ptr;
         if (latest_qc_item_ptr_ == nullptr ||
                 vblock->qc().view() >= latest_qc_item_ptr_->view()) {

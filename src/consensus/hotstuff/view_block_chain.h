@@ -91,10 +91,6 @@ public:
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     bool view_commited(uint32_t network_id, View view) const {
-        if (view <= pools_mgr_->latest_height(pool_index_)) {
-            return true;
-        }
-
         if (commited_view_.find(view) != commited_view_.end()) {
             return true;
         }

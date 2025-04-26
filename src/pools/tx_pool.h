@@ -120,6 +120,7 @@ public:
 //         assert(!latest_hash_.empty());
         return latest_hash_;
     }
+    
     uint64_t latest_timestamp() {
         if (latest_timestamp_ == 0) {
             InitLatestInfo();
