@@ -600,7 +600,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
 
     ZJC_DEBUG("HandleTC called hash: %lu, propose_debug: %s, pro_msg.tc().has_view_block_hash(): %d", 
         pro_msg_wrap->msg_ptr->header.hash64(), 
-        ProtobufToJson(pro_msg_wrap->msg_ptr->header).c_str(),
+        ProtobufToJson(pro_msg).c_str(),
         pro_msg.tc().has_view_block_hash());
 #endif
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash()) {
