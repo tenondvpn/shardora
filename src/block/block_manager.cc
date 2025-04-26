@@ -357,7 +357,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(0);
+        tx->set_nonce(0);        
         auto unique_hash = common::Hash::keccak256(
             tx->to() + "_" +
             std::to_string(block.height()) + "_" +

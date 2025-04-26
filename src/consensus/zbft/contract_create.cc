@@ -215,8 +215,7 @@ int ContractUserCreateCall::HandleTx(
         std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
         if (iter == zjc_host.cross_to_map_.end()) {
             to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
-            to_item_ptr->set_from(block_tx.from());
-            to_item_ptr->set_des(block_tx.to());
+            to_item_ptr->set_des(block_tx.to() + block_tx.from());
             to_item_ptr->set_amount(block_tx.amount());
             to_item_ptr->set_sharding_id(view_block.qc().network_id());
             to_item_ptr->set_des_sharding_id(network::kRootCongressNetworkId);
