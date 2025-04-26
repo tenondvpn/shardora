@@ -32,12 +32,12 @@ int RootToTxItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    uint64_t from_balance = 0;
-    uint64_t from_nonce = 0;
-    GetTempAccountBalance(zjc_host, block_tx.from(), acc_balance_map, &from_balance, &from_nonce);
+    uint64_t to_balance = 0;
+    uint64_t to_nonce = 0;
+    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
     auto& unique_hash = tx_info->key();
     std::string val;
-    if (zjc_host.GetKeyValue(block_tx.from(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
         ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
@@ -49,9 +49,9 @@ int RootToTxItem::HandleTx(
     }
 
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    zjc_host.SaveKeyValue(block_tx.from(), unique_hash, tx_info->value());
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
     block_tx.set_unique_hash(unique_hash);
-    block_tx.set_nonce(from_nonce + 1);
+    block_tx.set_nonce(to_nonce + 1);
     protos::AddressInfoPtr to_account_info = nullptr;
     auto to_addr = to_item.des().substr(0, common::kUnicastAddressLength);
     to_account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr);
@@ -80,10 +80,10 @@ int RootToTxItem::HandleTx(
         acc_balance_map[to_addr] = addr_info;
     }
 
-    acc_balance_map[block_tx.from()]->set_balance(from_balance);
-    acc_balance_map[block_tx.from()]->set_nonce(from_nonce + 1);
+    acc_balance_map[block_tx.to()]->set_balance(to_balance);
+    acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
     if (block_tx.status() == kConsensusSuccess) {
-        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+        auto iter = zjc_host.cross_to_map_.find(to_item.des());
         std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
         if (iter == zjc_host.cross_to_map_.end()) {
             to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>(to_item);
@@ -100,15 +100,15 @@ int RootToTxItem::HandleTx(
             }
         }
 
-        ZJC_DEBUG("success add addr to: %s, value: %s, to info: %s", 
+        ZJC_DEBUG("success add addr cross to: %s, value: %s, to info: %s", 
             common::Encode::HexEncode(to_item.des()).c_str(), 
             ProtobufToJson(*(acc_balance_map[to_addr])).c_str(),
             ProtobufToJson(*to_item_ptr).c_str());
     }
 
-    ZJC_DEBUG("success add addr from: %s, value: %s", 
-        common::Encode::HexEncode(block_tx.from()).c_str(), 
-        ProtobufToJson(*(acc_balance_map[block_tx.from()])).c_str());
+    ZJC_DEBUG("success add addr to: %s, value: %s", 
+        common::Encode::HexEncode(block_tx.to()).c_str(), 
+        ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
     return kConsensusSuccess;
 }
 
