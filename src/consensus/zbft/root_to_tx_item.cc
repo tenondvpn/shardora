@@ -100,9 +100,8 @@ int RootToTxItem::HandleTx(
             }
         }
 
-        ZJC_DEBUG("success add addr cross to: %s, value: %s, to info: %s", 
+        ZJC_DEBUG("success add addr cross to: %s, to info: %s", 
             common::Encode::HexEncode(to_item.des()).c_str(), 
-            ProtobufToJson(*to_account_info).c_str(),
             ProtobufToJson(*to_item_ptr).c_str());
     }
 
