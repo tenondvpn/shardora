@@ -77,6 +77,12 @@ int RootToTxItem::HandleTx(
         addr_info->set_pool_index(common::GetAddressPoolIndex(to_addr));
         addr_info->set_type(address::protobuf::kNormal);
         addr_info->set_latest_height(view_block.block_info().height());
+        addr_info->set_balance(0);
+        addr_info->set_nonce(0);
+        if (to_item.has_library_bytes()) {
+            addr_info->set_bytes_code(to_item.library_bytes());
+        }
+
         acc_balance_map[to_addr] = addr_info;
     }
 
