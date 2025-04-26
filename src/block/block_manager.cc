@@ -368,12 +368,13 @@ void BlockManager::RootHandleNormalToTx(
         }
 
         ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, "
-            "nonce: %lu, unique hash: %s",
+            "nonce: %lu, unique hash: %s, contract code: %s",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
             0,
-            common::Encode::HexEncode(unique_hash).c_str());
+            common::Encode::HexEncode(unique_hash).c_str(),
+            common::Encode::HexEncode(tx->contract_code()).c_str());
         if (tx->amount() > 0 || tx->has_contract_code()) {
             pools_mgr_->HandleMessage(msg_ptr);
         }

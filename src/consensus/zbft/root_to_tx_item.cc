@@ -112,6 +112,11 @@ int RootToTxItem::HandleTx(
                 to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
             }
         }
+
+        ZJC_DEBUG("success add addr: %s, value: %s, to info: %s", 
+            common::Encode::HexEncode(block_tx.to()).c_str(), 
+            ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str(),
+            ProtobufToJson(*to_item_ptr).c_str());
     }
 
     ZJC_DEBUG("success add addr: %s, value: %s", 

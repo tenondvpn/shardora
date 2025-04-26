@@ -355,31 +355,29 @@ int ToTxsPools::CreateToTxWithHeights(
                     ZJC_DEBUG("len: %u, addr: %s",
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
-                    // if (!to_iter->second.elect_join_g2_value().empty()) {
-                    //     HandleElectJoinVerifyVec(
-                    //         to_iter->second.elect_join_g2_value(),
-                    //         acc_amount_map[to_iter->first].verify_reqs);
-                    // }
-
                     ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
-                        "transfer amount height: %lu, id: %s, amount: %lu",
-                        pool_idx, height,
-                        height, common::Encode::HexEncode(to_iter->first).c_str(),
-                        to_iter->second.amount());
-                } else {
-                    amount_iter->second.set_amount(amount_iter->second.amount() + to_iter->second.amount());
-                    // if (!to_iter->second.elect_join_g2_value.empty()) {
-                    //     HandleElectJoinVerifyVec(
-                    //         to_iter->second.elect_join_g2_value,
-                    //         amount_iter->second.verify_reqs);
-                    // }
-
-                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
-                        "transfer amount height: %lu, id: %s, amount: %lu, all: %lu",
+                        "transfer amount height: %lu, id: %s, amount: %lu, to info: %s",
                         pool_idx, height,
                         height, common::Encode::HexEncode(to_iter->first).c_str(),
                         to_iter->second.amount(),
-                        amount_iter->second.amount());
+                        ProtobufToJson(to_iter->second).c_str());
+                } else {
+                    amount_iter->second.set_amount(amount_iter->second.amount() + to_iter->second.amount());
+                    if (to_iter->second.has_library_bytes()) {
+                        amount_iter->second.set_library_bytes(to_iter->second.library_bytes());
+                    }
+
+                    if (to_iter->second.prepayment() > 0) {
+                        amount_iter->second.set_prepayment(amount_iter->second.prepayment() + to_iter->second.prepayment());
+                    }
+                    
+                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                        "transfer amount height: %lu, id: %s, amount: %lu, all: %lu, to info: %s",
+                        pool_idx, height,
+                        height, common::Encode::HexEncode(to_iter->first).c_str(),
+                        to_iter->second.amount(),
+                        amount_iter->second.amount(),
+                        ProtobufToJson(to_iter->second).c_str());
                 }
             }
         }
