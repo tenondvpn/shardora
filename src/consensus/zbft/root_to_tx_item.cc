@@ -32,37 +32,27 @@ int RootToTxItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    protos::AddressInfoPtr account_info = nullptr;
-    if (block_tx.to().size() == common::kUnicastAddressLength * 2) {
-        // gas prepayment
-        account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(
-            block_tx.to().substr(0, common::kUnicastAddressLength));
-        // if (account_info == nullptr) {
-        //     block_tx.set_status(kConsensusAccountNotExists);
-        //     return kConsensusSuccess;
-        // }
-    } else {
-        account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(block_tx.to());
-    }
-
-    uint64_t to_balance = 0;
-    uint64_t to_nonce = 0;
-    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+    protos::AddressInfoPtr to_account_info = nullptr;
+    auto to_addr = block_tx.to().substr(0, common::kUnicastAddressLength);
+    to_account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr);
+    uint64_t from_balance = 0;
+    uint64_t from_nonce = 0;
+    GetTempAccountBalance(zjc_host, block_tx.from(), acc_balance_map, &from_balance, &from_nonce);
     auto& unique_hash = tx_info->key();
-    auto str_key = block_tx.to() + unique_hash;
     std::string val;
-    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+    if (zjc_host.GetKeyValue(block_tx.from(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
         ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
     
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
+    zjc_host.SaveKeyValue(block_tx.from(), unique_hash, tx_info->value());
     block_tx.set_unique_hash(unique_hash);
-    block_tx.set_nonce(to_nonce + 1);
+    block_tx.set_nonce(from_nonce + 1);
+
     uint32_t sharding_id = 0;
-    if (account_info != nullptr) {
-        sharding_id = account_info->sharding_id();
+    if (to_account_info != nullptr) {
+        sharding_id = to_account_info->sharding_id();
     } else {
         if (!tx_info->value().empty()) {
             uint32_t* data = (uint32_t*)tx_info->value().c_str();
@@ -76,16 +66,16 @@ int RootToTxItem::HandleTx(
         }
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
-        addr_info->set_addr(block_tx.to());
+        addr_info->set_addr(to_addr);
         addr_info->set_sharding_id(sharding_id);
-        addr_info->set_pool_index(common::GetAddressPoolIndex(block_tx.to()));
+        addr_info->set_pool_index(common::GetAddressPoolIndex(to_addr));
         addr_info->set_type(address::protobuf::kNormal);
         addr_info->set_latest_height(view_block.block_info().height());
-        acc_balance_map[block_tx.to()] = addr_info;
+        acc_balance_map[to_addr] = addr_info;
     }
 
-    acc_balance_map[block_tx.to()]->set_balance(to_balance);
-    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+    acc_balance_map[block_tx.from()]->set_balance(from_balance);
+    acc_balance_map[block_tx.from()]->set_nonce(from_nonce + 1);
     if (block_tx.status() == kConsensusSuccess) {
         auto iter = zjc_host.cross_to_map_.find(block_tx.to());
         std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
@@ -113,15 +103,15 @@ int RootToTxItem::HandleTx(
             }
         }
 
-        ZJC_DEBUG("success add addr: %s, value: %s, to info: %s", 
+        ZJC_DEBUG("success add addr to: %s, value: %s, to info: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str(),
             ProtobufToJson(*to_item_ptr).c_str());
     }
 
-    ZJC_DEBUG("success add addr: %s, value: %s", 
-        common::Encode::HexEncode(block_tx.to()).c_str(), 
-        ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
+    ZJC_DEBUG("success add addr from: %s, value: %s", 
+        common::Encode::HexEncode(block_tx.from()).c_str(), 
+        ProtobufToJson(*(acc_balance_map[block_tx.from()])).c_str());
     return kConsensusSuccess;
 }
 

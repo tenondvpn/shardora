@@ -353,6 +353,7 @@ void BlockManager::RootHandleNormalToTx(
         auto pool_index = common::GetAddressPoolIndex(tos_item.des());
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         tx->set_pubkey("");
+        tx->set_from(msg_ptr->address_info->addr());
         tx->set_to(tos_item.des());
         tx->set_gas_limit(0);
         tx->set_amount(tos_item.amount());
