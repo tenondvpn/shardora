@@ -41,7 +41,7 @@ int ToTxLocalItem::HandleTx(
     block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(src_to_nonce + 1);
     auto& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
-    CreateLocalToTx(zjc_host, acc_balance_map, to_tx_item, block_to_txs);
+    CreateLocalToTx(view_block, zjc_host, acc_balance_map, to_tx_item, block_to_txs);
     ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
@@ -57,6 +57,7 @@ int ToTxLocalItem::HandleTx(
 }
 
 void ToTxLocalItem::CreateLocalToTx(
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx_item, 

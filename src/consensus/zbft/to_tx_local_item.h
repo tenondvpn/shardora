@@ -34,6 +34,7 @@ public:
 
 private:
     void CreateLocalToTx(
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx, 
