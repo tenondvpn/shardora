@@ -404,9 +404,10 @@ int ToTxsPools::CreateToTxWithHeights(
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         auto to_item = to_tx.add_tos();
         *to_item = iter->second;
-        ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d",
+        ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d, prepayment: %lu",
             common::Encode::HexEncode(to_item->des()).c_str(),
-            iter->second.amount(), to_item->sharding_id(), sharding_id, to_item->pool_index());
+            iter->second.amount(), to_item->sharding_id(), 
+            sharding_id, to_item->pool_index(), to_item->prepayment());
     }
 
     to_tx.set_elect_height(elect_height);
