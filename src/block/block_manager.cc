@@ -397,7 +397,7 @@ void BlockManager::HandleNormalToTx(
         // }
 
         auto to_tx = to_txs.tos(i);
-        if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
         }
 
