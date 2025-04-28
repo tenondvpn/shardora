@@ -114,9 +114,6 @@ private:
     void HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs);
-    void createConsensusLocalToTxs(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>>& addr_amount_map);
     void createContractCreateByRootToTxs(
         std::vector<std::shared_ptr<localToTxInfo>>& contract_create_tx_infos);
     void AddMiningToken(

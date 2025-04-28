@@ -61,47 +61,61 @@ void ToTxLocalItem::CreateLocalToTx(
         return;
     }
 
-    uint64_t to_balance = 0;
-    uint64_t nonce = 0;
-    int balance_status = GetTempAccountBalance(
-        zjc_host,
-        to_tx_item.des(), 
-        acc_balance_map, 
-        &to_balance, 
-        &nonce);
-    if (balance_status != kConsensusSuccess) {
-        ZJC_DEBUG("create new address: %s, balance: %lu",
-            common::Encode::HexEncode(to_tx_item.des()).c_str(),
-            to_tx_item.amount());
-        to_balance = 0;
-        auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
-        addr_info->set_addr(to_tx_item.des());
-        addr_info->set_sharding_id(view_block.qc().network_id());
-        addr_info->set_pool_index(view_block.qc().pool_index());
-        addr_info->set_type(address::protobuf::kNormal);
-        addr_info->set_latest_height(view_block.block_info().height());
-        acc_balance_map[to_tx_item.des()] = addr_info;
-    } else {
-        ZJC_DEBUG("success get to balance: %s, %lu",
-            common::Encode::HexEncode(to_tx_item.des()).c_str(), 
-            to_balance);
+    auto new_addr_func = [&](const std::string& addr, uint64_t amount) {
+        uint64_t to_balance = 0;
+        uint64_t nonce = 0;
+        int balance_status = GetTempAccountBalance(
+            zjc_host,
+            addr, 
+            acc_balance_map, 
+            &to_balance, 
+            &nonce);
+        if (balance_status != kConsensusSuccess) {
+            ZJC_DEBUG("create new address: %s, balance: %lu",
+                common::Encode::HexEncode(addr).c_str(),
+                amount);
+            to_balance = 0;
+            auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
+            addr_info->set_addr(addr);
+            addr_info->set_sharding_id(view_block.qc().network_id());
+            addr_info->set_pool_index(view_block.qc().pool_index());
+            addr_info->set_type(address::protobuf::kNormal);
+            addr_info->set_latest_height(view_block.block_info().height());
+            acc_balance_map[addr] = addr_info;
+        } else {
+            ZJC_DEBUG("success get to balance: %s, %lu",
+                common::Encode::HexEncode(addr).c_str(), 
+                to_balance);
+        }
+
+        acc_balance_map[addr]->set_balance(to_balance);
+        acc_balance_map[addr]->set_nonce(nonce);
+        if (acc_balance_map[addr]->type() == address::protobuf::kWaitingRootConfirm) {
+            acc_balance_map[addr]->set_type(address::protobuf::kNormal);
+        }
+
+        if (!to_tx_item.library_bytes().empty()) {
+            acc_balance_map[addr]->set_bytes_code(to_tx_item.library_bytes());
+        }
+
+        ZJC_DEBUG("success add addr: %s, value: %s, to item: %s", 
+            common::Encode::HexEncode(addr).c_str(), 
+            ProtobufToJson(*(acc_balance_map[addr])).c_str(),
+            ProtobufToJson(to_tx_item).c_str());
+        ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
+            common::Encode::HexEncode(addr).c_str(),
+            to_balance,
+            amount);
+    };
+
+    auto addr = to_tx_item.des();
+    if (to_tx_item.des().size() == common::kPreypamentAddressLength) {
+        addr = addr.substr(0, common::kUnicastAddressLength);
+        new_addr_func(to_tx_item.des(), to_tx_item.prepayment());
     }
 
-    auto to_tx = block_to_txs.add_tos();
-    to_balance += to_tx_item.amount();
-    to_tx->set_to(to_tx_item.des());
-    to_tx->set_balance(to_balance);
-    to_tx->set_nonce(nonce);
-    acc_balance_map[to_tx_item.des()]->set_balance(to_balance);
-    acc_balance_map[to_tx_item.des()]->set_nonce(nonce);
-    ZJC_DEBUG("success add addr: %s, value: %s", 
-        common::Encode::HexEncode(to_tx_item.des()).c_str(), 
-        ProtobufToJson(*(acc_balance_map[to_tx_item.des()])).c_str());
-
-    ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
-        common::Encode::HexEncode(to_tx_item.des()).c_str(),
-        to_balance,
-        to_tx_item.amount());
+    new_addr_func(addr, to_tx_item.amount());
+    
 }
 
 int ToTxLocalItem::TxToBlockTx(
