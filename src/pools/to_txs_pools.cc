@@ -318,6 +318,10 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
+        ZJC_DEBUG("pool %u, now statistic to height: %lu, consensus height: %lu",
+            pool_idx,
+            max_height,
+            pool_consensus_heihgts_[pool_idx]);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
             ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx,
