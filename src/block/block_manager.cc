@@ -497,7 +497,7 @@ void BlockManager::CreateLocalToTx(
         view_block.qc().view_block_hash() +
         view_block.qc().sign_x() + 
         view_block.qc().sign_y() +
-        msg_ptr->address_info->addr());
+        to_tx_item.des());
     tx->set_key(uinique_tx_str);
     tx->set_value(to_tx_item.SerializeAsString());
     tx->set_pubkey("");
