@@ -11,8 +11,8 @@ int ToTxLocalItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    pools::protobuf::ToTxMessage to_txs;
-    if (!to_txs.ParseFromString(tx_info->value())) {
+    pools::protobuf::ToTxMessageItem to_tx_item;
+    if (!to_tx_item.ParseFromString(tx_info->value())) {
         block_tx.set_status(kConsensusError);
         ZJC_WARN("local get to txs info failed: %s",
             common::Encode::HexEncode(tx_info->value()).c_str());
@@ -41,51 +41,49 @@ int ToTxLocalItem::HandleTx(
     block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(to_nonce + 1);
     block::protobuf::ConsensusToTxs& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
-    for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        // dispatch to txs to tx pool
-        uint64_t to_balance = 0;
-        uint64_t nonce = 0;
-        int balance_status = GetTempAccountBalance(
-            zjc_host,
-            to_txs.tos(i).des(), 
-            acc_balance_map, 
-            &to_balance, 
-            &nonce);
-        if (balance_status != kConsensusSuccess) {
-            ZJC_DEBUG("create new address: %s, balance: %lu",
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-                to_txs.tos(i).amount());
-            to_balance = 0;
-            auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
-            addr_info->set_addr(to_txs.tos(i).des());
-            addr_info->set_sharding_id(view_block.qc().network_id());
-            addr_info->set_pool_index(view_block.qc().pool_index());
-            addr_info->set_type(address::protobuf::kNormal);
-            addr_info->set_latest_height(view_block.block_info().height());
-            acc_balance_map[to_txs.tos(i).des()] = addr_info;
-        } else {
-            ZJC_DEBUG("success get to balance: %s, %lu",
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
-                to_balance);
-        }
-
-        auto to_tx = block_to_txs.add_tos();
-        to_balance += to_txs.tos(i).amount();
-        to_tx->set_to(to_txs.tos(i).des());
-        to_tx->set_balance(to_balance);
-        to_tx->set_nonce(nonce);
-        acc_balance_map[to_txs.tos(i).des()]->set_balance(to_balance);
-        acc_balance_map[to_txs.tos(i).des()]->set_nonce(nonce);
-        // prefix_db_->AddAddressInfo(to_txs.tos(i).des(), *(acc_balance_map[to_txs.tos(i).des()]), zjc_host.db_batch_);
-        ZJC_DEBUG("success add addr: %s, value: %s", 
-            common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
-            ProtobufToJson(*(acc_balance_map[to_txs.tos(i).des()])).c_str());
-    
-        ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
-            common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-            to_balance,
-            to_txs.tos(i).amount());
+    // dispatch to txs to tx pool
+    uint64_t to_balance = 0;
+    uint64_t nonce = 0;
+    int balance_status = GetTempAccountBalance(
+        zjc_host,
+        to_tx_item.des(), 
+        acc_balance_map, 
+        &to_balance, 
+        &nonce);
+    if (balance_status != kConsensusSuccess) {
+        ZJC_DEBUG("create new address: %s, balance: %lu",
+            common::Encode::HexEncode(to_tx_item.des()).c_str(),
+            to_tx_item.amount());
+        to_balance = 0;
+        auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
+        addr_info->set_addr(to_tx_item.des());
+        addr_info->set_sharding_id(view_block.qc().network_id());
+        addr_info->set_pool_index(view_block.qc().pool_index());
+        addr_info->set_type(address::protobuf::kNormal);
+        addr_info->set_latest_height(view_block.block_info().height());
+        acc_balance_map[to_tx_item.des()] = addr_info;
+    } else {
+        ZJC_DEBUG("success get to balance: %s, %lu",
+            common::Encode::HexEncode(to_tx_item.des()).c_str(), 
+            to_balance);
     }
+
+    auto to_tx = block_to_txs.add_tos();
+    to_balance += to_tx_item.amount();
+    to_tx->set_to(to_tx_item.des());
+    to_tx->set_balance(to_balance);
+    to_tx->set_nonce(nonce);
+    acc_balance_map[to_tx_item.des()]->set_balance(to_balance);
+    acc_balance_map[to_tx_item.des()]->set_nonce(nonce);
+    // prefix_db_->AddAddressInfo(to_tx_item.des(), *(acc_balance_map[to_tx_item.des()]), zjc_host.db_batch_);
+    ZJC_DEBUG("success add addr: %s, value: %s", 
+        common::Encode::HexEncode(to_tx_item.des()).c_str(), 
+        ProtobufToJson(*(acc_balance_map[to_tx_item.des()])).c_str());
+
+    ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
+        common::Encode::HexEncode(to_tx_item.des()).c_str(),
+        to_balance,
+        to_tx_item.amount());
 
     ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());

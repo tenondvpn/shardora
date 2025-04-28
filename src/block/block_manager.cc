@@ -552,21 +552,12 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
             continue;
         }
 
-        auto addr = to_tx.des().substr(0, common::kUnicastAddressLength);
-        uint32_t pool_index = common::kInvalidPoolIndex;
-        auto addr_info = prefix_db_->GetAddressInfo(addr);
-        if (addr_info) {
-            pool_index = addr_info->pool_index();
-        } else {
-            pool_index = common::GetAddressPoolIndex(addr)
-        }
-
         CreateLocalToTx(to_tx);
     }
 }
 
-void BlockManager::CreateLocalToTx(const pools::protobuf::ToTxMessage& to_tx) {
-    auto addr = to_tx.des().substr(0, common::kUnicastAddressLength);
+void BlockManager::CreateLocalToTx(const pools::protobuf::ToTxMessageItem& to_tx_item) {
+    auto addr = to_tx_item.des().substr(0, common::kUnicastAddressLength);
     uint32_t pool_index = common::kInvalidPoolIndex;
     auto addr_info = prefix_db_->GetAddressInfo(addr);
     if (addr_info) {
@@ -584,7 +575,7 @@ void BlockManager::CreateLocalToTx(const pools::protobuf::ToTxMessage& to_tx) {
         view_block.qc().sign_y() +
         msg_ptr->address_info->addr());
     tx->set_key(uinique_tx_str);
-    tx->set_value(to_tx.SerializeAsString());
+    tx->set_value(to_tx_item.SerializeAsString());
     tx->set_pubkey("");
     tx->set_to(msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kConsensusLocalTos);
@@ -597,7 +588,7 @@ void BlockManager::CreateLocalToTx(const pools::protobuf::ToTxMessage& to_tx) {
         common::Encode::HexEncode(uinique_tx_str).c_str(),
         msg_ptr->address_info->nonce(),
         0,
-        ProtobufToJson(to_tx).c_str());
+        ProtobufToJson(to_tx_item).c_str());
 }
 
 void BlockManager::HandleElectTx(const view_block::protobuf::ViewBlockItem& view_block) {
