@@ -533,6 +533,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->cross_shard_to_array_size() > 0) {
+        ZJC_DEBUG("now handle root cross block: %s", ProtobufToJson(*block_item).c_str());
         if (view_block_item->qc().network_id() == network::kRootCongressNetworkId && 
                 !network::IsSameShardOrSameWaitingPool(
                 common::GlobalInfo::Instance()->network_id(), 
