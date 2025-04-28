@@ -87,10 +87,17 @@ int FromTxItem::HandleTx(
             to_item_ptr->set_des(block_tx.to());
             to_item_ptr->set_amount(block_tx.amount());
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+            ZJC_DEBUG("success add cross to shard array: %s, %lu",
+                common::Encode::HexEncode(block_tx.to()).c_str(),
+                block_tx.amount());
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
         }
+    } else {
+        ZJC_DEBUG("failed add cross to shard array: %s, %lu",
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            block_tx.amount());
     }
 
     // 剪掉来源账户的金额
