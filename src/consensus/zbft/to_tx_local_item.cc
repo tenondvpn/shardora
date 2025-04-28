@@ -86,7 +86,7 @@ int ToTxLocalItem::HandleTx(
         to_tx_item.amount());
 
     ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-        view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
+        view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
