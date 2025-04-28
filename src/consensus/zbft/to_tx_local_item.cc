@@ -19,9 +19,9 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
-    uint64_t to_balance = 0;
-    uint64_t to_nonce = 0;
-    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+    uint64_t src_to_balance = 0;
+    uint64_t src_to_nonce = 0;
+    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
     // if (to_nonce + 1 != block_tx.nonce()) {
     //     block_tx.set_status(kConsensusNonceInvalid);
     //     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
@@ -39,7 +39,7 @@ int ToTxLocalItem::HandleTx(
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
     block_tx.set_unique_hash(unique_hash);
-    block_tx.set_nonce(to_nonce + 1);
+    block_tx.set_nonce(src_to_nonce + 1);
     block::protobuf::ConsensusToTxs& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
     // dispatch to txs to tx pool
     uint64_t to_balance = 0;
@@ -87,7 +87,7 @@ int ToTxLocalItem::HandleTx(
 
     ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-    acc_balance_map[block_tx.to()]->set_balance(to_balance);
+    acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
     // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
