@@ -384,24 +384,13 @@ void BlockManager::HandleNormalToTx(
         0,
         0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        // // dispatch to txs to tx pool
-        // auto to_tx = to_txs.tos(i);
-        // auto addr = to_tx.des();
-        // if (to_tx.des().size() == common::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
-        //     addr = to_tx.des().substr(0, common::kUnicastAddressLength); // addr = to
-        // }
-
-        // if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        //     assert(false);
-        //     continue;
-        // }
-
         auto to_tx = to_txs.tos(i);
         if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
         }
 
         CreateLocalToTx(view_block, to_tx);
+    }
 }
 
 void BlockManager::AddNewBlock(
