@@ -559,6 +559,13 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
 void BlockManager::CreateLocalToTx(
         const view_block::protobuf::ViewBlockItem& view_block, 
         const pools::protobuf::ToTxMessageItem& to_tx_item) {
+    if (to_tx_item.des().size() != common::kUnicastAddressLength && 
+            to_tx_item.des().size() != common::kPreypamentAddressLength) {
+        ZJC_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
+        assert(false);
+        return;
+    }
+    
     auto addr = to_tx_item.des().substr(0, common::kUnicastAddressLength);
     uint32_t pool_index = common::kInvalidPoolIndex;
     auto addr_info = prefix_db_->GetAddressInfo(addr);
