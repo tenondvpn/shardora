@@ -40,8 +40,34 @@ int ToTxLocalItem::HandleTx(
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
     block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(src_to_nonce + 1);
-    block::protobuf::ConsensusToTxs& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
+    auto& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
+    CreateLocalToTx(zjc_host, acc_balance_map, to_tx_item, block_to_txs);
+    ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
+    acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
+    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+    // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
+    ZJC_DEBUG("success add addr: %s, value: %s", 
+        common::Encode::HexEncode(block_tx.to()).c_str(), 
+        ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
+    ZJC_DEBUG("success consensus local transfer to unique hash: %s, %s",
+        common::Encode::HexEncode(unique_hash).c_str(), 
+        ProtobufToJson(block_to_txs).c_str());
+    return consensus::kConsensusSuccess;
+}
+
+void ToTxLocalItem::CreateLocalToTx(
+        zjcvm::ZjchainHost& zjc_host,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        const pools::protobuf::ToTxMessageItem& to_tx_item, 
+        block::protobuf::ConsensusToTxs& block_to_txs) {
     // dispatch to txs to tx pool
+    if (to_tx_item.des().size() != common::kUnicastAddressLength && 
+            to_tx_item.des().size() != common::kPreypamentAddressLength) {
+        assert(false);
+        return;
+    }
+
     uint64_t to_balance = 0;
     uint64_t nonce = 0;
     int balance_status = GetTempAccountBalance(
@@ -84,19 +110,6 @@ int ToTxLocalItem::HandleTx(
         common::Encode::HexEncode(to_tx_item.des()).c_str(),
         to_balance,
         to_tx_item.amount());
-
-    ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-        view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
-    acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
-    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-    // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
-    ZJC_DEBUG("success add addr: %s, value: %s", 
-        common::Encode::HexEncode(block_tx.to()).c_str(), 
-        ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
-    ZJC_DEBUG("success consensus local transfer to unique hash: %s, %s",
-        common::Encode::HexEncode(unique_hash).c_str(), 
-        ProtobufToJson(block_to_txs).c_str());
-    return consensus::kConsensusSuccess;
 }
 
 int ToTxLocalItem::TxToBlockTx(

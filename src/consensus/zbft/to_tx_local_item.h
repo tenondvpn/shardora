@@ -33,6 +33,12 @@ public:
         block::protobuf::BlockTx* block_tx);
 
 private:
+    void CreateLocalToTx(
+        zjcvm::ZjchainHost& zjc_host,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        const pools::protobuf::ToTxMessageItem& to_tx, 
+        block::protobuf::ConsensusToTxs& block_to_txs);
+
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::string unique_hash_;
