@@ -88,6 +88,7 @@ void ToTxLocalItem::CreateLocalToTx(
                 to_balance);
         }
 
+        to_balance += amount;
         acc_balance_map[addr]->set_balance(to_balance);
         acc_balance_map[addr]->set_nonce(nonce);
         if (acc_balance_map[addr]->type() == address::protobuf::kWaitingRootConfirm) {
