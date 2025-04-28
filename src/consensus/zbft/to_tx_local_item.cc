@@ -22,13 +22,6 @@ int ToTxLocalItem::HandleTx(
     uint64_t src_to_balance = 0;
     uint64_t src_to_nonce = 0;
     GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
-    // if (to_nonce + 1 != block_tx.nonce()) {
-    //     block_tx.set_status(kConsensusNonceInvalid);
-    //     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
-    //         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
-    //     return consensus::kConsensusSuccess;
-    // }
-
     auto& unique_hash = tx_info->key();
     std::string val;
     if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
@@ -46,7 +39,6 @@ int ToTxLocalItem::HandleTx(
         view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-    // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
@@ -62,9 +54,9 @@ void ToTxLocalItem::CreateLocalToTx(
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx_item, 
         block::protobuf::ConsensusToTxs& block_to_txs) {
-    // dispatch to txs to tx pool
     if (to_tx_item.des().size() != common::kUnicastAddressLength && 
             to_tx_item.des().size() != common::kPreypamentAddressLength) {
+        ZJC_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
         assert(false);
         return;
     }
@@ -102,7 +94,6 @@ void ToTxLocalItem::CreateLocalToTx(
     to_tx->set_nonce(nonce);
     acc_balance_map[to_tx_item.des()]->set_balance(to_balance);
     acc_balance_map[to_tx_item.des()]->set_nonce(nonce);
-    // prefix_db_->AddAddressInfo(to_tx_item.des(), *(acc_balance_map[to_tx_item.des()]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(to_tx_item.des()).c_str(), 
         ProtobufToJson(*(acc_balance_map[to_tx_item.des()])).c_str());
