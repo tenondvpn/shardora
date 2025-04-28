@@ -533,7 +533,12 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->cross_shard_to_array_size() > 0) {
-        ZJC_DEBUG("now handle root cross block: %s", ProtobufToJson(*block_item).c_str());
+        ZJC_DEBUG("now handle root cross %u_%u_%lu, local net: %d,  block: %s",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            view_block_item->qc().view(),
+            common::GlobalInfo::Instance()->network_id(),
+            ProtobufToJson(*block_item).c_str());
         if (view_block_item->qc().network_id() == network::kRootCongressNetworkId && 
                 !network::IsSameShardOrSameWaitingPool(
                 common::GlobalInfo::Instance()->network_id(), 
