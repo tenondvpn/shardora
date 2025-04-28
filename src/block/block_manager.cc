@@ -565,7 +565,7 @@ void BlockManager::CreateLocalToTx(
     if (addr_info) {
         pool_index = addr_info->pool_index();
     } else {
-        pool_index = common::GetAddressPoolIndex(addr)
+        pool_index = common::GetAddressPoolIndex(addr);
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
