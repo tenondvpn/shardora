@@ -565,7 +565,7 @@ void BlockManager::CreateLocalToTx(
         assert(false);
         return;
     }
-    
+
     auto addr = to_tx_item.des().substr(0, common::kUnicastAddressLength);
     uint32_t pool_index = common::kInvalidPoolIndex;
     auto addr_info = prefix_db_->GetAddressInfo(addr);
@@ -636,57 +636,58 @@ void BlockManager::AddMiningToken(
         }
 
         auto pool_index = common::GetAddressPoolIndex(id);
-        auto to_iter = to_tx_map.find(pool_index);
-        if (to_iter == to_tx_map.end()) {
-            pools::protobuf::ToTxMessage to_tx;
-            to_tx_map[pool_index] = to_tx;
-            to_iter = to_tx_map.find(pool_index);
-        }
+        // auto to_iter = to_tx_map.find(pool_index);
+        // if (to_iter == to_tx_map.end()) {
+        //     pools::protobuf::ToTxMessage to_tx;
+        //     to_tx_map[pool_index] = to_tx;
+        //     to_iter = to_tx_map.find(pool_index);
+        // }
 
-        auto to_item = to_iter->second.add_tos();
-        to_item->set_pool_index(pool_index);
-        to_item->set_des(id);
-        to_item->set_amount(elect_block.in(i).mining_amount());
+        pools::protobuf::ToTxMessageItem to_item;
+        to_item.set_pool_index(pool_index);
+        to_item.set_des(id);
+        to_item.set_amount(elect_block.in(i).mining_amount());
         ZJC_DEBUG("mining success add local transfer to %s, %lu",
             common::Encode::HexEncode(id).c_str(), elect_block.in(i).mining_amount());
+        CreateLocalToTx(view_block, to_item);
     }
 
-    for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
-        std::string str_for_hash;
-        str_for_hash.reserve(iter->second.tos_size() * 48);
-        for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
-            str_for_hash.append(iter->second.tos(i).des());
-            uint32_t pool_idx = iter->second.tos(i).pool_index();
-            str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
-            uint64_t amount = iter->second.tos(i).amount();
-            str_for_hash.append((char*)&amount, sizeof(amount));
-        }
+    // for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
+    //     std::string str_for_hash;
+    //     str_for_hash.reserve(iter->second.tos_size() * 48);
+    //     for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
+    //         str_for_hash.append(iter->second.tos(i).des());
+    //         uint32_t pool_idx = iter->second.tos(i).pool_index();
+    //         str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+    //         uint64_t amount = iter->second.tos(i).amount();
+    //         str_for_hash.append((char*)&amount, sizeof(amount));
+    //     }
 
-        auto val = iter->second.SerializeAsString();
-        auto tos_hash = common::Hash::keccak256(str_for_hash);
-        prefix_db_->SaveTemporaryKv(tos_hash, val);
-        auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
-        auto tx = msg_ptr->header.mutable_tx_proto();
-        std::string uinique_tx_str = common::Hash::keccak256(
-            view_block.qc().view_block_hash() +
-            view_block.qc().sign_x() + 
-            view_block.qc().sign_y() +
-            msg_ptr->address_info->addr());
-        tx->set_key(uinique_tx_str);
-        tx->set_value(val);
-        tx->set_pubkey("");
-        tx->set_to(msg_ptr->address_info->addr());
-        tx->set_step(pools::protobuf::kConsensusLocalTos);
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(0);
-        pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("mining success create kConsensusLocalTos %s nonce: %lu",
-            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
-            tx->nonce());
-    }
+    //     auto val = iter->second.SerializeAsString();
+    //     auto tos_hash = common::Hash::keccak256(str_for_hash);
+    //     prefix_db_->SaveTemporaryKv(tos_hash, val);
+    //     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    //     msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
+    //     auto tx = msg_ptr->header.mutable_tx_proto();
+    //     std::string uinique_tx_str = common::Hash::keccak256(
+    //         view_block.qc().view_block_hash() +
+    //         view_block.qc().sign_x() + 
+    //         view_block.qc().sign_y() +
+    //         msg_ptr->address_info->addr());
+    //     tx->set_key(uinique_tx_str);
+    //     tx->set_value(val);
+    //     tx->set_pubkey("");
+    //     tx->set_to(msg_ptr->address_info->addr());
+    //     tx->set_step(pools::protobuf::kConsensusLocalTos);
+    //     tx->set_gas_limit(0);
+    //     tx->set_amount(0);
+    //     tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    //     tx->set_nonce(0);
+    //     pools_mgr_->HandleMessage(msg_ptr);
+    //     ZJC_INFO("mining success create kConsensusLocalTos %s nonce: %lu",
+    //         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+    //         tx->nonce());
+    // }
 }
 
 void BlockManager::LoadLatestBlocks() {
