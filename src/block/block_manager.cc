@@ -384,34 +384,50 @@ void BlockManager::HandleNormalToTx(
         0,
         0);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        // dispatch to txs to tx pool
-        auto to_tx = to_txs.tos(i);
-        auto addr = to_tx.des();
-        if (to_tx.des().size() == common::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
-            addr = to_tx.des().substr(0, common::kUnicastAddressLength); // addr = to
-        }
+        // // dispatch to txs to tx pool
+        // auto to_tx = to_txs.tos(i);
+        // auto addr = to_tx.des();
+        // if (to_tx.des().size() == common::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
+        //     addr = to_tx.des().substr(0, common::kUnicastAddressLength); // addr = to
+        // }
 
-        if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            assert(false);
+        // if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        //     assert(false);
+        //     continue;
+        // }
+
+        auto to_tx = to_txs.tos(i);
+        if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
         }
 
-        uint32_t pool_index = common::GetAddressPoolIndex(addr);
-        // 转账类型交易根据 to 地址聚合到一个 map 中
-        ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
-            to_tx.has_library_bytes(),
-            common::Encode::HexEncode(to_tx.des()).c_str(),
-            0);
-        auto iter = addr_amount_map.find(to_tx.des());
-        if (iter == addr_amount_map.end()) {
-            addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
-                to_tx.des(), to_tx.amount(), pool_index, "");
-        } else {
-            iter->second->amount += to_tx.amount();
-        }
+        CreateLocalToTx(to_tx);
+
+        // auto addr = to_tx.des().substr(0, common::kUnicastAddressLength);
+        // uint32_t pool_index = common::kInvalidPoolIndex;
+        // auto addr_info = prefix_db_->GetAddressInfo(addr);
+        // if (addr_info) {
+        //     pool_index = addr_info->pool_index();
+        // } else {
+        //     pool_index = common::GetAddressPoolIndex(addr)
+        // }
+
+        // uint32_t pool_index = common::GetAddressPoolIndex(addr);
+        // // 转账类型交易根据 to 地址聚合到一个 map 中
+        // ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
+        //     to_tx.has_library_bytes(),
+        //     common::Encode::HexEncode(to_tx.des()).c_str(),
+        //     0);
+        // auto iter = addr_amount_map.find(to_tx.des());
+        // if (iter == addr_amount_map.end()) {
+        //     addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
+        //         to_tx.des(), to_tx.amount(), pool_index, "");
+        // } else {
+        //     iter->second->amount += to_tx.amount();
+        // }
     }
 
-    createConsensusLocalToTxs(view_block, addr_amount_map);
+    // createConsensusLocalToTxs(view_block, addr_amount_map);
 }
 
 void BlockManager::createConsensusLocalToTxs(
@@ -532,31 +548,56 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
     for (int32_t i = 0; i < block_item.cross_shard_to_array_size(); ++i) {
         // dispatch to txs to tx pool
         auto to_tx = block_item.cross_shard_to_array(i);
-        auto addr = to_tx.des();
-        if (to_tx.des().size() == common::kUnicastAddressLength * 2) { // gas_prepayment tx des = to + from
-            addr = to_tx.des().substr(0, common::kUnicastAddressLength); // addr = to
-        }
-
         if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
         }
 
-        uint32_t pool_index = common::GetAddressPoolIndex(addr);
-        // 转账类型交易根据 to 地址聚合到一个 map 中
-        ZJC_DEBUG("handle local to has_library_bytes: %d, des: %s, nonce: %lu", 
-            to_tx.has_library_bytes(),
-            common::Encode::HexEncode(to_tx.des()).c_str(),
-            0);
-        auto iter = addr_amount_map.find(to_tx.des());
-        if (iter == addr_amount_map.end()) {
-            addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
-                to_tx.des(), to_tx.amount(), pool_index, "");
+        auto addr = to_tx.des().substr(0, common::kUnicastAddressLength);
+        uint32_t pool_index = common::kInvalidPoolIndex;
+        auto addr_info = prefix_db_->GetAddressInfo(addr);
+        if (addr_info) {
+            pool_index = addr_info->pool_index();
         } else {
-            iter->second->amount += to_tx.amount();
+            pool_index = common::GetAddressPoolIndex(addr)
         }
+
+        CreateLocalToTx(to_tx);
+    }
+}
+
+void BlockManager::CreateLocalToTx(const pools::protobuf::ToTxMessage& to_tx) {
+    auto addr = to_tx.des().substr(0, common::kUnicastAddressLength);
+    uint32_t pool_index = common::kInvalidPoolIndex;
+    auto addr_info = prefix_db_->GetAddressInfo(addr);
+    if (addr_info) {
+        pool_index = addr_info->pool_index();
+    } else {
+        pool_index = common::GetAddressPoolIndex(addr)
     }
 
-    createConsensusLocalToTxs(view_block, addr_amount_map);
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
+    auto tx = msg_ptr->header.mutable_tx_proto();
+    std::string uinique_tx_str = common::Hash::keccak256(
+        view_block.qc().view_block_hash() +
+        view_block.qc().sign_x() + 
+        view_block.qc().sign_y() +
+        msg_ptr->address_info->addr());
+    tx->set_key(uinique_tx_str);
+    tx->set_value(to_tx.SerializeAsString());
+    tx->set_pubkey("");
+    tx->set_to(msg_ptr->address_info->addr());
+    tx->set_step(pools::protobuf::kConsensusLocalTos);
+    tx->set_gas_limit(0);
+    tx->set_amount(0); // 具体 amount 在 kv 中
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_nonce(0);
+    pools_mgr_->HandleMessage(msg_ptr);
+    ZJC_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
+        common::Encode::HexEncode(uinique_tx_str).c_str(),
+        msg_ptr->address_info->nonce(),
+        0,
+        ProtobufToJson(to_tx).c_str());
 }
 
 void BlockManager::HandleElectTx(const view_block::protobuf::ViewBlockItem& view_block) {
