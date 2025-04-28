@@ -130,7 +130,9 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic);
     void CreateStatisticTx();
     void PopTxTicker();
-    void CreateLocalToTx(const pools::protobuf::ToTxMessageItem& to_tx);
+    void CreateLocalToTx(
+        const view_block::protobuf::ViewBlockItem& view_block, 
+        const pools::protobuf::ToTxMessageItem& to_tx);
 
     inline bool IsTimeblockHeightStatisticDone(uint64_t timeblock_height) {
         return latest_statistic_timeblock_height_ >= timeblock_height;

@@ -401,7 +401,7 @@ void BlockManager::HandleNormalToTx(
             continue;
         }
 
-        CreateLocalToTx(to_tx);
+        CreateLocalToTx(view_block, to_tx);
 
         // auto addr = to_tx.des().substr(0, common::kUnicastAddressLength);
         // uint32_t pool_index = common::kInvalidPoolIndex;
@@ -552,11 +552,13 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
             continue;
         }
 
-        CreateLocalToTx(to_tx);
+        CreateLocalToTx(view_block, to_tx);
     }
 }
 
-void BlockManager::CreateLocalToTx(const pools::protobuf::ToTxMessageItem& to_tx_item) {
+void BlockManager::CreateLocalToTx(
+        const view_block::protobuf::ViewBlockItem& view_block, 
+        const pools::protobuf::ToTxMessageItem& to_tx_item) {
     auto addr = to_tx_item.des().substr(0, common::kUnicastAddressLength);
     uint32_t pool_index = common::kInvalidPoolIndex;
     auto addr_info = prefix_db_->GetAddressInfo(addr);
