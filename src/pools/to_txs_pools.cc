@@ -327,6 +327,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 pool_idx,
                 max_height,
                 pool_consensus_heihgts_[pool_idx]);
+            assert(false);
             return kPoolsError;
         }
 
