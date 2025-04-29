@@ -88,6 +88,16 @@ void ToTxLocalItem::CreateLocalToTx(
                 to_balance);
         }
 
+        if (amount <= 0 && 
+                to_tx_item.library_bytes().empty() && 
+                acc_balance_map[addr]->type() != address::protobuf::kWaitingRootConfirm) {
+            ZJC_DEBUG("failed just contract set prepayment add addr: %s, value: %s, to item: %s", 
+                common::Encode::HexEncode(addr).c_str(), 
+                ProtobufToJson(*(acc_balance_map[addr])).c_str(),
+                ProtobufToJson(to_tx_item).c_str());
+            return;
+        }
+
         to_balance += amount;
         acc_balance_map[addr]->set_balance(to_balance);
         acc_balance_map[addr]->set_nonce(nonce);
@@ -114,9 +124,8 @@ void ToTxLocalItem::CreateLocalToTx(
         addr = addr.substr(0, common::kUnicastAddressLength);
         new_addr_func(to_tx_item.des(), to_tx_item.prepayment());
     }
-
-    new_addr_func(addr, to_tx_item.amount());
     
+    new_addr_func(addr, to_tx_item.amount());
 }
 
 int ToTxLocalItem::TxToBlockTx(
