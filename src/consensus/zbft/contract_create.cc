@@ -185,17 +185,16 @@ int ContractUserCreateCall::HandleTx(
             contract_info->set_bytes_code(zjc_host.create_bytes_code_);
             contract_info->set_latest_height(view_block.block_info().height());
             contract_info->set_nonce(0);
-            // prefix_db_->AddAddressInfo(block_tx.to(), *contract_info, zjc_host.db_batch_);
             ZJC_DEBUG("success add contract address info: %s, %s", 
                 common::Encode::HexEncode(block_tx.to()).c_str(), 
                 ProtobufToJson(*contract_info).c_str());
+            acc_balance_map[block_tx.to()] = contract_info;
         } while (0);
     }
 
     from_balance = tmp_from_balance;
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
-    // prefix_db_->AddAddressInfo(from, *(acc_balance_map[from]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());
@@ -239,6 +238,7 @@ int ContractUserCreateCall::HandleTx(
             }
         }
     }
+    
     return kConsensusSuccess;
 }
 
