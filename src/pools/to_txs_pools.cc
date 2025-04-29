@@ -51,17 +51,14 @@ void ToTxsPools::ThreadToStatistic(
     }
 
     auto pool_idx = view_block_ptr->qc().pool_index();
-    if (block.height() < pool_max_heihgts_[pool_idx]) {
-        return;
-    }
-
-    pool_max_heihgts_[pool_idx] = block.height();
+   
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(view_block_ptr->debug());
-    ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, "
+    ZJC_DEBUG("to txs new block coming %u_%u_%lu, "
         "cons height: %lu, tx size: %d, propose_debug: %s, step: %d, tx status: %d, block: %s",
-        pool_idx, 
+        view_block_ptr->qc().network_id(),
+        view_block_ptr->qc().pool_index(),
         block.height(), 
         pool_consensus_heihgts_[pool_idx], 
         view_block_ptr->block_info().tx_list_size(),
@@ -118,6 +115,10 @@ void ToTxsPools::ThreadToStatistic(
         }
     }
     valided_heights_[pool_idx].insert(block.height());
+    if (block.height() > pool_max_heihgts_[pool_idx]) {
+        pool_max_heihgts_[pool_idx] = block.height();
+    }
+
 }
 
 void ToTxsPools::LoadLatestHeights() {
