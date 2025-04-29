@@ -460,22 +460,10 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
 
   // accessors -------------------------------------------------------
 
-  // repeated .shardora.bls.protobuf.JoinElectInfo join_infos = 7;
-  int join_infos_size() const;
-  void clear_join_infos();
-  static const int kJoinInfosFieldNumber = 7;
-  ::shardora::bls::protobuf::JoinElectInfo* mutable_join_infos(int index);
-  ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo >*
-      mutable_join_infos();
-  const ::shardora::bls::protobuf::JoinElectInfo& join_infos(int index) const;
-  ::shardora::bls::protobuf::JoinElectInfo* add_join_infos();
-  const ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo >&
-      join_infos() const;
-
-  // optional bytes des = 1;
+  // optional bytes des = 4;
   bool has_des() const;
   void clear_des();
-  static const int kDesFieldNumber = 1;
+  static const int kDesFieldNumber = 4;
   const ::std::string& des() const;
   void set_des(const ::std::string& value);
   #if LANG_CXX11
@@ -487,10 +475,25 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::std::string* release_des();
   void set_allocated_des(::std::string* des);
 
-  // optional bytes library_bytes = 6;
+  // optional bytes elect_join_g2_value = 6;
+  bool has_elect_join_g2_value() const;
+  void clear_elect_join_g2_value();
+  static const int kElectJoinG2ValueFieldNumber = 6;
+  const ::std::string& elect_join_g2_value() const;
+  void set_elect_join_g2_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_elect_join_g2_value(::std::string&& value);
+  #endif
+  void set_elect_join_g2_value(const char* value);
+  void set_elect_join_g2_value(const void* value, size_t size);
+  ::std::string* mutable_elect_join_g2_value();
+  ::std::string* release_elect_join_g2_value();
+  void set_allocated_elect_join_g2_value(::std::string* elect_join_g2_value);
+
+  // optional bytes library_bytes = 8;
   bool has_library_bytes() const;
   void clear_library_bytes();
-  static const int kLibraryBytesFieldNumber = 6;
+  static const int kLibraryBytesFieldNumber = 8;
   const ::std::string& library_bytes() const;
   void set_library_bytes(const ::std::string& value);
   #if LANG_CXX11
@@ -502,27 +505,34 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::std::string* release_library_bytes();
   void set_allocated_library_bytes(::std::string* library_bytes);
 
-  // optional bytes contract_from = 8;
-  bool has_contract_from() const;
-  void clear_contract_from();
-  static const int kContractFromFieldNumber = 8;
-  const ::std::string& contract_from() const;
-  void set_contract_from(const ::std::string& value);
+  // optional bytes from = 9;
+  bool has_from() const;
+  void clear_from();
+  static const int kFromFieldNumber = 9;
+  const ::std::string& from() const;
+  void set_from(const ::std::string& value);
   #if LANG_CXX11
-  void set_contract_from(::std::string&& value);
+  void set_from(::std::string&& value);
   #endif
-  void set_contract_from(const char* value);
-  void set_contract_from(const void* value, size_t size);
-  ::std::string* mutable_contract_from();
-  ::std::string* release_contract_from();
-  void set_allocated_contract_from(::std::string* contract_from);
+  void set_from(const char* value);
+  void set_from(const void* value, size_t size);
+  ::std::string* mutable_from();
+  ::std::string* release_from();
+  void set_allocated_from(::std::string* from);
 
-  // optional uint64 amount = 2;
+  // optional uint64 amount = 1;
   bool has_amount() const;
   void clear_amount();
-  static const int kAmountFieldNumber = 2;
+  static const int kAmountFieldNumber = 1;
   ::google::protobuf::uint64 amount() const;
   void set_amount(::google::protobuf::uint64 value);
+
+  // optional int32 pool_index = 2;
+  bool has_pool_index() const;
+  void clear_pool_index();
+  static const int kPoolIndexFieldNumber = 2;
+  ::google::protobuf::int32 pool_index() const;
+  void set_pool_index(::google::protobuf::int32 value);
 
   // optional uint32 sharding_id = 3;
   bool has_sharding_id() const;
@@ -531,58 +541,53 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint32 sharding_id() const;
   void set_sharding_id(::google::protobuf::uint32 value);
 
-  // optional uint32 pool_index = 4;
-  bool has_pool_index() const;
-  void clear_pool_index();
-  static const int kPoolIndexFieldNumber = 4;
-  ::google::protobuf::uint32 pool_index() const;
-  void set_pool_index(::google::protobuf::uint32 value);
-
-  // optional uint64 prepayment = 9;
+  // optional uint64 prepayment = 10;
   bool has_prepayment() const;
   void clear_prepayment();
-  static const int kPrepaymentFieldNumber = 9;
+  static const int kPrepaymentFieldNumber = 10;
   ::google::protobuf::uint64 prepayment() const;
   void set_prepayment(::google::protobuf::uint64 value);
 
-  // optional int32 step = 5;
-  bool has_step() const;
-  void clear_step();
-  static const int kStepFieldNumber = 5;
-  ::google::protobuf::int32 step() const;
-  void set_step(::google::protobuf::int32 value);
+  // optional uint32 des_sharding_id = 11;
+  bool has_des_sharding_id() const;
+  void clear_des_sharding_id();
+  static const int kDesShardingIdFieldNumber = 11;
+  ::google::protobuf::uint32 des_sharding_id() const;
+  void set_des_sharding_id(::google::protobuf::uint32 value);
 
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.ToTxMessageItem)
  private:
-  void set_has_des();
-  void clear_has_des();
   void set_has_amount();
   void clear_has_amount();
-  void set_has_sharding_id();
-  void clear_has_sharding_id();
   void set_has_pool_index();
   void clear_has_pool_index();
-  void set_has_step();
-  void clear_has_step();
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_des();
+  void clear_has_des();
+  void set_has_elect_join_g2_value();
+  void clear_has_elect_join_g2_value();
   void set_has_library_bytes();
   void clear_has_library_bytes();
-  void set_has_contract_from();
-  void clear_has_contract_from();
+  void set_has_from();
+  void clear_has_from();
   void set_has_prepayment();
   void clear_has_prepayment();
+  void set_has_des_sharding_id();
+  void clear_has_des_sharding_id();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo > join_infos_;
   ::google::protobuf::internal::ArenaStringPtr des_;
+  ::google::protobuf::internal::ArenaStringPtr elect_join_g2_value_;
   ::google::protobuf::internal::ArenaStringPtr library_bytes_;
-  ::google::protobuf::internal::ArenaStringPtr contract_from_;
+  ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::uint64 amount_;
+  ::google::protobuf::int32 pool_index_;
   ::google::protobuf::uint32 sharding_id_;
-  ::google::protobuf::uint32 pool_index_;
   ::google::protobuf::uint64 prepayment_;
-  ::google::protobuf::int32 step_;
+  ::google::protobuf::uint32 des_sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1701,18 +1706,6 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_heights_hash();
   void set_allocated_heights_hash(::std::string* heights_hash);
 
-  // optional .shardora.pools.protobuf.ShardToTxItem to_heights = 3;
-  bool has_to_heights() const;
-  void clear_to_heights();
-  static const int kToHeightsFieldNumber = 3;
-  private:
-  const ::shardora::pools::protobuf::ShardToTxItem& _internal_to_heights() const;
-  public:
-  const ::shardora::pools::protobuf::ShardToTxItem& to_heights() const;
-  ::shardora::pools::protobuf::ShardToTxItem* release_to_heights();
-  ::shardora::pools::protobuf::ShardToTxItem* mutable_to_heights();
-  void set_allocated_to_heights(::shardora::pools::protobuf::ShardToTxItem* to_heights);
-
   // optional uint64 elect_height = 4;
   bool has_elect_height() const;
   void clear_elect_height();
@@ -1720,14 +1713,21 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
+  // optional uint32 des_shard = 6;
+  bool has_des_shard() const;
+  void clear_des_shard();
+  static const int kDesShardFieldNumber = 6;
+  ::google::protobuf::uint32 des_shard() const;
+  void set_des_shard(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:shardora.pools.protobuf.ToTxMessage)
  private:
   void set_has_heights_hash();
   void clear_has_heights_hash();
-  void set_has_to_heights();
-  void clear_has_to_heights();
   void set_has_elect_height();
   void clear_has_elect_height();
+  void set_has_des_shard();
+  void clear_has_des_shard();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1735,8 +1735,8 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::ToTxMessageItem > tos_;
   ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::CrossShardStatisticItem > crosses_;
   ::google::protobuf::internal::ArenaStringPtr heights_hash_;
-  ::shardora::pools::protobuf::ShardToTxItem* to_heights_;
   ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 des_shard_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3622,7 +3622,79 @@ inline void ToTxHeights::set_tx_count(::google::protobuf::uint32 value) {
 
 // ToTxMessageItem
 
-// optional bytes des = 1;
+// optional uint64 amount = 1;
+inline bool ToTxMessageItem::has_amount() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ToTxMessageItem::set_has_amount() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ToTxMessageItem::clear_has_amount() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ToTxMessageItem::clear_amount() {
+  amount_ = GOOGLE_ULONGLONG(0);
+  clear_has_amount();
+}
+inline ::google::protobuf::uint64 ToTxMessageItem::amount() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.amount)
+  return amount_;
+}
+inline void ToTxMessageItem::set_amount(::google::protobuf::uint64 value) {
+  set_has_amount();
+  amount_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.amount)
+}
+
+// optional int32 pool_index = 2;
+inline bool ToTxMessageItem::has_pool_index() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ToTxMessageItem::set_has_pool_index() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ToTxMessageItem::clear_has_pool_index() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ToTxMessageItem::clear_pool_index() {
+  pool_index_ = 0;
+  clear_has_pool_index();
+}
+inline ::google::protobuf::int32 ToTxMessageItem::pool_index() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.pool_index)
+  return pool_index_;
+}
+inline void ToTxMessageItem::set_pool_index(::google::protobuf::int32 value) {
+  set_has_pool_index();
+  pool_index_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.pool_index)
+}
+
+// optional uint32 sharding_id = 3;
+inline bool ToTxMessageItem::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ToTxMessageItem::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ToTxMessageItem::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ToTxMessageItem::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 ToTxMessageItem::sharding_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.sharding_id)
+  return sharding_id_;
+}
+inline void ToTxMessageItem::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.sharding_id)
+}
+
+// optional bytes des = 4;
 inline bool ToTxMessageItem::has_des() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -3688,111 +3760,81 @@ inline void ToTxMessageItem::set_allocated_des(::std::string* des) {
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ToTxMessageItem.des)
 }
 
-// optional uint64 amount = 2;
-inline bool ToTxMessageItem::has_amount() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void ToTxMessageItem::set_has_amount() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void ToTxMessageItem::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void ToTxMessageItem::clear_amount() {
-  amount_ = GOOGLE_ULONGLONG(0);
-  clear_has_amount();
-}
-inline ::google::protobuf::uint64 ToTxMessageItem::amount() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.amount)
-  return amount_;
-}
-inline void ToTxMessageItem::set_amount(::google::protobuf::uint64 value) {
-  set_has_amount();
-  amount_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.amount)
-}
-
-// optional uint32 sharding_id = 3;
-inline bool ToTxMessageItem::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void ToTxMessageItem::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void ToTxMessageItem::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void ToTxMessageItem::clear_sharding_id() {
-  sharding_id_ = 0u;
-  clear_has_sharding_id();
-}
-inline ::google::protobuf::uint32 ToTxMessageItem::sharding_id() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.sharding_id)
-  return sharding_id_;
-}
-inline void ToTxMessageItem::set_sharding_id(::google::protobuf::uint32 value) {
-  set_has_sharding_id();
-  sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.sharding_id)
-}
-
-// optional uint32 pool_index = 4;
-inline bool ToTxMessageItem::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void ToTxMessageItem::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void ToTxMessageItem::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void ToTxMessageItem::clear_pool_index() {
-  pool_index_ = 0u;
-  clear_has_pool_index();
-}
-inline ::google::protobuf::uint32 ToTxMessageItem::pool_index() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.pool_index)
-  return pool_index_;
-}
-inline void ToTxMessageItem::set_pool_index(::google::protobuf::uint32 value) {
-  set_has_pool_index();
-  pool_index_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.pool_index)
-}
-
-// optional int32 step = 5;
-inline bool ToTxMessageItem::has_step() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void ToTxMessageItem::set_has_step() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void ToTxMessageItem::clear_has_step() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void ToTxMessageItem::clear_step() {
-  step_ = 0;
-  clear_has_step();
-}
-inline ::google::protobuf::int32 ToTxMessageItem::step() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.step)
-  return step_;
-}
-inline void ToTxMessageItem::set_step(::google::protobuf::int32 value) {
-  set_has_step();
-  step_ = value;
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.step)
-}
-
-// optional bytes library_bytes = 6;
-inline bool ToTxMessageItem::has_library_bytes() const {
+// optional bytes elect_join_g2_value = 6;
+inline bool ToTxMessageItem::has_elect_join_g2_value() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void ToTxMessageItem::set_has_library_bytes() {
+inline void ToTxMessageItem::set_has_elect_join_g2_value() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void ToTxMessageItem::clear_has_library_bytes() {
+inline void ToTxMessageItem::clear_has_elect_join_g2_value() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void ToTxMessageItem::clear_elect_join_g2_value() {
+  elect_join_g2_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_elect_join_g2_value();
+}
+inline const ::std::string& ToTxMessageItem::elect_join_g2_value() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+  return elect_join_g2_value_.GetNoArena();
+}
+inline void ToTxMessageItem::set_elect_join_g2_value(const ::std::string& value) {
+  set_has_elect_join_g2_value();
+  elect_join_g2_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+}
+#if LANG_CXX11
+inline void ToTxMessageItem::set_elect_join_g2_value(::std::string&& value) {
+  set_has_elect_join_g2_value();
+  elect_join_g2_value_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+}
+#endif
+inline void ToTxMessageItem::set_elect_join_g2_value(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_elect_join_g2_value();
+  elect_join_g2_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+}
+inline void ToTxMessageItem::set_elect_join_g2_value(const void* value, size_t size) {
+  set_has_elect_join_g2_value();
+  elect_join_g2_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+}
+inline ::std::string* ToTxMessageItem::mutable_elect_join_g2_value() {
+  set_has_elect_join_g2_value();
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+  return elect_join_g2_value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ToTxMessageItem::release_elect_join_g2_value() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+  if (!has_elect_join_g2_value()) {
+    return NULL;
+  }
+  clear_has_elect_join_g2_value();
+  return elect_join_g2_value_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ToTxMessageItem::set_allocated_elect_join_g2_value(::std::string* elect_join_g2_value) {
+  if (elect_join_g2_value != NULL) {
+    set_has_elect_join_g2_value();
+  } else {
+    clear_has_elect_join_g2_value();
+  }
+  elect_join_g2_value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), elect_join_g2_value);
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ToTxMessageItem.elect_join_g2_value)
+}
+
+// optional bytes library_bytes = 8;
+inline bool ToTxMessageItem::has_library_bytes() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ToTxMessageItem::set_has_library_bytes() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ToTxMessageItem::clear_has_library_bytes() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ToTxMessageItem::clear_library_bytes() {
   library_bytes_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -3850,108 +3892,81 @@ inline void ToTxMessageItem::set_allocated_library_bytes(::std::string* library_
   // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ToTxMessageItem.library_bytes)
 }
 
-// repeated .shardora.bls.protobuf.JoinElectInfo join_infos = 7;
-inline int ToTxMessageItem::join_infos_size() const {
-  return join_infos_.size();
+// optional bytes from = 9;
+inline bool ToTxMessageItem::has_from() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline ::shardora::bls::protobuf::JoinElectInfo* ToTxMessageItem::mutable_join_infos(int index) {
-  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ToTxMessageItem.join_infos)
-  return join_infos_.Mutable(index);
+inline void ToTxMessageItem::set_has_from() {
+  _has_bits_[0] |= 0x00000008u;
 }
-inline ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo >*
-ToTxMessageItem::mutable_join_infos() {
-  // @@protoc_insertion_point(field_mutable_list:shardora.pools.protobuf.ToTxMessageItem.join_infos)
-  return &join_infos_;
+inline void ToTxMessageItem::clear_has_from() {
+  _has_bits_[0] &= ~0x00000008u;
 }
-inline const ::shardora::bls::protobuf::JoinElectInfo& ToTxMessageItem::join_infos(int index) const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.join_infos)
-  return join_infos_.Get(index);
+inline void ToTxMessageItem::clear_from() {
+  from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_from();
 }
-inline ::shardora::bls::protobuf::JoinElectInfo* ToTxMessageItem::add_join_infos() {
-  // @@protoc_insertion_point(field_add:shardora.pools.protobuf.ToTxMessageItem.join_infos)
-  return join_infos_.Add();
+inline const ::std::string& ToTxMessageItem::from() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.from)
+  return from_.GetNoArena();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::JoinElectInfo >&
-ToTxMessageItem::join_infos() const {
-  // @@protoc_insertion_point(field_list:shardora.pools.protobuf.ToTxMessageItem.join_infos)
-  return join_infos_;
-}
-
-// optional bytes contract_from = 8;
-inline bool ToTxMessageItem::has_contract_from() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ToTxMessageItem::set_has_contract_from() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ToTxMessageItem::clear_has_contract_from() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ToTxMessageItem::clear_contract_from() {
-  contract_from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_contract_from();
-}
-inline const ::std::string& ToTxMessageItem::contract_from() const {
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.contract_from)
-  return contract_from_.GetNoArena();
-}
-inline void ToTxMessageItem::set_contract_from(const ::std::string& value) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.contract_from)
+inline void ToTxMessageItem::set_from(const ::std::string& value) {
+  set_has_from();
+  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.from)
 }
 #if LANG_CXX11
-inline void ToTxMessageItem::set_contract_from(::std::string&& value) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(
+inline void ToTxMessageItem::set_from(::std::string&& value) {
+  set_has_from();
+  from_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.pools.protobuf.ToTxMessageItem.contract_from)
+  // @@protoc_insertion_point(field_set_rvalue:shardora.pools.protobuf.ToTxMessageItem.from)
 }
 #endif
-inline void ToTxMessageItem::set_contract_from(const char* value) {
+inline void ToTxMessageItem::set_from(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.pools.protobuf.ToTxMessageItem.contract_from)
+  set_has_from();
+  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:shardora.pools.protobuf.ToTxMessageItem.from)
 }
-inline void ToTxMessageItem::set_contract_from(const void* value, size_t size) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void ToTxMessageItem::set_from(const void* value, size_t size) {
+  set_has_from();
+  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.pools.protobuf.ToTxMessageItem.contract_from)
+  // @@protoc_insertion_point(field_set_pointer:shardora.pools.protobuf.ToTxMessageItem.from)
 }
-inline ::std::string* ToTxMessageItem::mutable_contract_from() {
-  set_has_contract_from();
-  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ToTxMessageItem.contract_from)
-  return contract_from_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* ToTxMessageItem::mutable_from() {
+  set_has_from();
+  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ToTxMessageItem.from)
+  return from_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* ToTxMessageItem::release_contract_from() {
-  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.ToTxMessageItem.contract_from)
-  if (!has_contract_from()) {
+inline ::std::string* ToTxMessageItem::release_from() {
+  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.ToTxMessageItem.from)
+  if (!has_from()) {
     return NULL;
   }
-  clear_has_contract_from();
-  return contract_from_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_from();
+  return from_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void ToTxMessageItem::set_allocated_contract_from(::std::string* contract_from) {
-  if (contract_from != NULL) {
-    set_has_contract_from();
+inline void ToTxMessageItem::set_allocated_from(::std::string* from) {
+  if (from != NULL) {
+    set_has_from();
   } else {
-    clear_has_contract_from();
+    clear_has_from();
   }
-  contract_from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_from);
-  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ToTxMessageItem.contract_from)
+  from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from);
+  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ToTxMessageItem.from)
 }
 
-// optional uint64 prepayment = 9;
+// optional uint64 prepayment = 10;
 inline bool ToTxMessageItem::has_prepayment() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void ToTxMessageItem::set_has_prepayment() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void ToTxMessageItem::clear_has_prepayment() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ToTxMessageItem::clear_prepayment() {
   prepayment_ = GOOGLE_ULONGLONG(0);
@@ -3965,6 +3980,30 @@ inline void ToTxMessageItem::set_prepayment(::google::protobuf::uint64 value) {
   set_has_prepayment();
   prepayment_ = value;
   // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.prepayment)
+}
+
+// optional uint32 des_sharding_id = 11;
+inline bool ToTxMessageItem::has_des_sharding_id() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void ToTxMessageItem::set_has_des_sharding_id() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void ToTxMessageItem::clear_has_des_sharding_id() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void ToTxMessageItem::clear_des_sharding_id() {
+  des_sharding_id_ = 0u;
+  clear_has_des_sharding_id();
+}
+inline ::google::protobuf::uint32 ToTxMessageItem::des_sharding_id() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessageItem.des_sharding_id)
+  return des_sharding_id_;
+}
+inline void ToTxMessageItem::set_des_sharding_id(::google::protobuf::uint32 value) {
+  set_has_des_sharding_id();
+  des_sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessageItem.des_sharding_id)
 }
 
 // -------------------------------------------------------------------
@@ -4719,73 +4758,15 @@ ToTxMessage::tos() const {
   return tos_;
 }
 
-// optional .shardora.pools.protobuf.ShardToTxItem to_heights = 3;
-inline bool ToTxMessage::has_to_heights() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ToTxMessage::set_has_to_heights() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ToTxMessage::clear_has_to_heights() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ToTxMessage::clear_to_heights() {
-  if (to_heights_ != NULL) to_heights_->Clear();
-  clear_has_to_heights();
-}
-inline const ::shardora::pools::protobuf::ShardToTxItem& ToTxMessage::_internal_to_heights() const {
-  return *to_heights_;
-}
-inline const ::shardora::pools::protobuf::ShardToTxItem& ToTxMessage::to_heights() const {
-  const ::shardora::pools::protobuf::ShardToTxItem* p = to_heights_;
-  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessage.to_heights)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::pools::protobuf::ShardToTxItem*>(
-      &::shardora::pools::protobuf::_ShardToTxItem_default_instance_);
-}
-inline ::shardora::pools::protobuf::ShardToTxItem* ToTxMessage::release_to_heights() {
-  // @@protoc_insertion_point(field_release:shardora.pools.protobuf.ToTxMessage.to_heights)
-  clear_has_to_heights();
-  ::shardora::pools::protobuf::ShardToTxItem* temp = to_heights_;
-  to_heights_ = NULL;
-  return temp;
-}
-inline ::shardora::pools::protobuf::ShardToTxItem* ToTxMessage::mutable_to_heights() {
-  set_has_to_heights();
-  if (to_heights_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::pools::protobuf::ShardToTxItem>(GetArenaNoVirtual());
-    to_heights_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.pools.protobuf.ToTxMessage.to_heights)
-  return to_heights_;
-}
-inline void ToTxMessage::set_allocated_to_heights(::shardora::pools::protobuf::ShardToTxItem* to_heights) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete to_heights_;
-  }
-  if (to_heights) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      to_heights = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, to_heights, submessage_arena);
-    }
-    set_has_to_heights();
-  } else {
-    clear_has_to_heights();
-  }
-  to_heights_ = to_heights;
-  // @@protoc_insertion_point(field_set_allocated:shardora.pools.protobuf.ToTxMessage.to_heights)
-}
-
 // optional uint64 elect_height = 4;
 inline bool ToTxMessage::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ToTxMessage::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void ToTxMessage::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ToTxMessage::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -4829,6 +4810,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::shardora::pools::protobuf::
 ToTxMessage::crosses() const {
   // @@protoc_insertion_point(field_list:shardora.pools.protobuf.ToTxMessage.crosses)
   return crosses_;
+}
+
+// optional uint32 des_shard = 6;
+inline bool ToTxMessage::has_des_shard() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ToTxMessage::set_has_des_shard() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ToTxMessage::clear_has_des_shard() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ToTxMessage::clear_des_shard() {
+  des_shard_ = 0u;
+  clear_has_des_shard();
+}
+inline ::google::protobuf::uint32 ToTxMessage::des_shard() const {
+  // @@protoc_insertion_point(field_get:shardora.pools.protobuf.ToTxMessage.des_shard)
+  return des_shard_;
+}
+inline void ToTxMessage::set_des_shard(::google::protobuf::uint32 value) {
+  set_has_des_shard();
+  des_shard_ = value;
+  // @@protoc_insertion_point(field_set:shardora.pools.protobuf.ToTxMessage.des_shard)
 }
 
 // -------------------------------------------------------------------
