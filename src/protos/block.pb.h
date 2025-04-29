@@ -43,7 +43,7 @@ namespace protobuf_protos_2fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[34];
+  static const ::google::protobuf::internal::ParseTable schema[33];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -134,9 +134,6 @@ extern StatisticTxMessageDefaultTypeInternal _StatisticTxMessage_default_instanc
 class StorageItem;
 class StorageItemDefaultTypeInternal;
 extern StorageItemDefaultTypeInternal _StorageItem_default_instance_;
-class ToAddressItemInfo;
-class ToAddressItemInfoDefaultTypeInternal;
-extern ToAddressItemInfoDefaultTypeInternal _ToAddressItemInfo_default_instance_;
 class TransferItem;
 class TransferItemDefaultTypeInternal;
 extern TransferItemDefaultTypeInternal _TransferItem_default_instance_;
@@ -187,7 +184,6 @@ template<> ::shardora::block::protobuf::ShardToTxMessage* Arena::CreateMaybeMess
 template<> ::shardora::block::protobuf::StatisticInfo* Arena::CreateMaybeMessage<::shardora::block::protobuf::StatisticInfo>(Arena*);
 template<> ::shardora::block::protobuf::StatisticTxMessage* Arena::CreateMaybeMessage<::shardora::block::protobuf::StatisticTxMessage>(Arena*);
 template<> ::shardora::block::protobuf::StorageItem* Arena::CreateMaybeMessage<::shardora::block::protobuf::StorageItem>(Arena*);
-template<> ::shardora::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessage<::shardora::pools::protobuf::ToTxMessageItem>(Arena*);
 template<> ::shardora::block::protobuf::TransferItem* Arena::CreateMaybeMessage<::shardora::block::protobuf::TransferItem>(Arena*);
 template<> ::shardora::block::protobuf::TxLog* Arena::CreateMaybeMessage<::shardora::block::protobuf::TxLog>(Arena*);
 template<> ::shardora::block::protobuf::UpdateVpnActiveRequest* Arena::CreateMaybeMessage<::shardora::block::protobuf::UpdateVpnActiveRequest>(Arena*);
@@ -1392,247 +1388,6 @@ class ConsensusToTxs : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
-class ToAddressItemInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.block.protobuf.ToAddressItemInfo) */ {
- public:
-  ToAddressItemInfo();
-  virtual ~ToAddressItemInfo();
-
-  ToAddressItemInfo(const ToAddressItemInfo& from);
-
-  inline ToAddressItemInfo& operator=(const ToAddressItemInfo& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  ToAddressItemInfo(ToAddressItemInfo&& from) noexcept
-    : ToAddressItemInfo() {
-    *this = ::std::move(from);
-  }
-
-  inline ToAddressItemInfo& operator=(ToAddressItemInfo&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ToAddressItemInfo& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ToAddressItemInfo* internal_default_instance() {
-    return reinterpret_cast<const ToAddressItemInfo*>(
-               &_ToAddressItemInfo_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    7;
-
-  void Swap(ToAddressItemInfo* other);
-  friend void swap(ToAddressItemInfo& a, ToAddressItemInfo& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline ToAddressItemInfo* New() const final {
-    return CreateMaybeMessage<ToAddressItemInfo>(NULL);
-  }
-
-  ToAddressItemInfo* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<ToAddressItemInfo>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const ToAddressItemInfo& from);
-  void MergeFrom(const ToAddressItemInfo& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(ToAddressItemInfo* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional bytes des = 4;
-  bool has_des() const;
-  void clear_des();
-  static const int kDesFieldNumber = 4;
-  const ::std::string& des() const;
-  void set_des(const ::std::string& value);
-  #if LANG_CXX11
-  void set_des(::std::string&& value);
-  #endif
-  void set_des(const char* value);
-  void set_des(const void* value, size_t size);
-  ::std::string* mutable_des();
-  ::std::string* release_des();
-  void set_allocated_des(::std::string* des);
-
-  // optional bytes elect_join_g2_value = 6;
-  bool has_elect_join_g2_value() const;
-  void clear_elect_join_g2_value();
-  static const int kElectJoinG2ValueFieldNumber = 6;
-  const ::std::string& elect_join_g2_value() const;
-  void set_elect_join_g2_value(const ::std::string& value);
-  #if LANG_CXX11
-  void set_elect_join_g2_value(::std::string&& value);
-  #endif
-  void set_elect_join_g2_value(const char* value);
-  void set_elect_join_g2_value(const void* value, size_t size);
-  ::std::string* mutable_elect_join_g2_value();
-  ::std::string* release_elect_join_g2_value();
-  void set_allocated_elect_join_g2_value(::std::string* elect_join_g2_value);
-
-  // optional bytes library_bytes = 8;
-  bool has_library_bytes() const;
-  void clear_library_bytes();
-  static const int kLibraryBytesFieldNumber = 8;
-  const ::std::string& library_bytes() const;
-  void set_library_bytes(const ::std::string& value);
-  #if LANG_CXX11
-  void set_library_bytes(::std::string&& value);
-  #endif
-  void set_library_bytes(const char* value);
-  void set_library_bytes(const void* value, size_t size);
-  ::std::string* mutable_library_bytes();
-  ::std::string* release_library_bytes();
-  void set_allocated_library_bytes(::std::string* library_bytes);
-
-  // optional bytes from = 9;
-  bool has_from() const;
-  void clear_from();
-  static const int kFromFieldNumber = 9;
-  const ::std::string& from() const;
-  void set_from(const ::std::string& value);
-  #if LANG_CXX11
-  void set_from(::std::string&& value);
-  #endif
-  void set_from(const char* value);
-  void set_from(const void* value, size_t size);
-  ::std::string* mutable_from();
-  ::std::string* release_from();
-  void set_allocated_from(::std::string* from);
-
-  // optional .shardora.bls.protobuf.JoinElectInfo join_info = 7;
-  bool has_join_info() const;
-  void clear_join_info();
-  static const int kJoinInfoFieldNumber = 7;
-  private:
-  const ::shardora::bls::protobuf::JoinElectInfo& _internal_join_info() const;
-  public:
-  const ::shardora::bls::protobuf::JoinElectInfo& join_info() const;
-  ::shardora::bls::protobuf::JoinElectInfo* release_join_info();
-  ::shardora::bls::protobuf::JoinElectInfo* mutable_join_info();
-  void set_allocated_join_info(::shardora::bls::protobuf::JoinElectInfo* join_info);
-
-  // optional uint64 amount = 1;
-  bool has_amount() const;
-  void clear_amount();
-  static const int kAmountFieldNumber = 1;
-  ::google::protobuf::uint64 amount() const;
-  void set_amount(::google::protobuf::uint64 value);
-
-  // optional int32 pool_index = 2;
-  bool has_pool_index() const;
-  void clear_pool_index();
-  static const int kPoolIndexFieldNumber = 2;
-  ::google::protobuf::int32 pool_index() const;
-  void set_pool_index(::google::protobuf::int32 value);
-
-  // optional uint32 sharding_id = 3;
-  bool has_sharding_id() const;
-  void clear_sharding_id();
-  static const int kShardingIdFieldNumber = 3;
-  ::google::protobuf::uint32 sharding_id() const;
-  void set_sharding_id(::google::protobuf::uint32 value);
-
-  // optional uint64 prepayment = 10;
-  bool has_prepayment() const;
-  void clear_prepayment();
-  static const int kPrepaymentFieldNumber = 10;
-  ::google::protobuf::uint64 prepayment() const;
-  void set_prepayment(::google::protobuf::uint64 value);
-
-  // optional uint32 des_sharding_id = 11;
-  bool has_des_sharding_id() const;
-  void clear_des_sharding_id();
-  static const int kDesShardingIdFieldNumber = 11;
-  ::google::protobuf::uint32 des_sharding_id() const;
-  void set_des_sharding_id(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:shardora.block.protobuf.ToAddressItemInfo)
- private:
-  void set_has_amount();
-  void clear_has_amount();
-  void set_has_pool_index();
-  void clear_has_pool_index();
-  void set_has_sharding_id();
-  void clear_has_sharding_id();
-  void set_has_des();
-  void clear_has_des();
-  void set_has_elect_join_g2_value();
-  void clear_has_elect_join_g2_value();
-  void set_has_join_info();
-  void clear_has_join_info();
-  void set_has_library_bytes();
-  void clear_has_library_bytes();
-  void set_has_from();
-  void clear_has_from();
-  void set_has_prepayment();
-  void clear_has_prepayment();
-  void set_has_des_sharding_id();
-  void clear_has_des_sharding_id();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr des_;
-  ::google::protobuf::internal::ArenaStringPtr elect_join_g2_value_;
-  ::google::protobuf::internal::ArenaStringPtr library_bytes_;
-  ::google::protobuf::internal::ArenaStringPtr from_;
-  ::shardora::bls::protobuf::JoinElectInfo* join_info_;
-  ::google::protobuf::uint64 amount_;
-  ::google::protobuf::int32 pool_index_;
-  ::google::protobuf::uint32 sharding_id_;
-  ::google::protobuf::uint64 prepayment_;
-  ::google::protobuf::uint32 des_sharding_id_;
-  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.block.protobuf.Block) */ {
  public:
   Block();
@@ -1675,7 +1430,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_Block_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    7;
 
   void Swap(Block* other);
   friend void swap(Block& a, Block& b) {
@@ -1797,7 +1552,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   const ::google::protobuf::RepeatedPtrField< ::shardora::address::protobuf::AddressInfo >&
       address_array() const;
 
-  // repeated .shardora.block.protobuf.ToAddressItemInfo cross_shard_to_array = 19;
+  // repeated .shardora.pools.protobuf.ToTxMessageItem cross_shard_to_array = 19;
   int cross_shard_to_array_size() const;
   void clear_cross_shard_to_array();
   static const int kCrossShardToArrayFieldNumber = 19;
@@ -2055,7 +1810,7 @@ class GetTxBlockRequest : public ::google::protobuf::Message /* @@protoc_inserti
                &_GetTxBlockRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    8;
 
   void Swap(GetTxBlockRequest* other);
   friend void swap(GetTxBlockRequest& a, GetTxBlockRequest& b) {
@@ -2233,7 +1988,7 @@ class GetTxBlockResponse : public ::google::protobuf::Message /* @@protoc_insert
                &_GetTxBlockResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    9;
 
   void Swap(GetTxBlockResponse* other);
   friend void swap(GetTxBlockResponse& a, GetTxBlockResponse& b) {
@@ -2355,7 +2110,7 @@ class AccountHeightRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_AccountHeightRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    10;
 
   void Swap(AccountHeightRequest* other);
   friend void swap(AccountHeightRequest& a, AccountHeightRequest& b) {
@@ -2497,7 +2252,7 @@ class AccountHeightResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_AccountHeightResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    11;
 
   void Swap(AccountHeightResponse* other);
   friend void swap(AccountHeightResponse& a, AccountHeightResponse& b) {
@@ -2650,7 +2405,7 @@ class AccountAttrRequest : public ::google::protobuf::Message /* @@protoc_insert
                &_AccountAttrRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    12;
 
   void Swap(AccountAttrRequest* other);
   friend void swap(AccountAttrRequest& a, AccountAttrRequest& b) {
@@ -2800,7 +2555,7 @@ class AccountAttrResponse : public ::google::protobuf::Message /* @@protoc_inser
                &_AccountAttrResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    13;
 
   void Swap(AccountAttrResponse* other);
   friend void swap(AccountAttrResponse& a, AccountAttrResponse& b) {
@@ -2968,7 +2723,7 @@ class UpdateVpnCountRequest : public ::google::protobuf::Message /* @@protoc_ins
                &_UpdateVpnCountRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    14;
 
   void Swap(UpdateVpnCountRequest* other);
   friend void swap(UpdateVpnCountRequest& a, UpdateVpnCountRequest& b) {
@@ -3146,7 +2901,7 @@ class VpnCountItem : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_VpnCountItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    15;
 
   void Swap(VpnCountItem* other);
   friend void swap(VpnCountItem& a, VpnCountItem& b) {
@@ -3278,7 +3033,7 @@ class UpdateVpnCountResponse : public ::google::protobuf::Message /* @@protoc_in
                &_UpdateVpnCountResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    16;
 
   void Swap(UpdateVpnCountResponse* other);
   friend void swap(UpdateVpnCountResponse& a, UpdateVpnCountResponse& b) {
@@ -3395,7 +3150,7 @@ class GetAccountInitInfoRequest : public ::google::protobuf::Message /* @@protoc
                &_GetAccountInitInfoRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    17;
 
   void Swap(GetAccountInitInfoRequest* other);
   friend void swap(GetAccountInitInfoRequest& a, GetAccountInitInfoRequest& b) {
@@ -3557,7 +3312,7 @@ class GetAccountInitInfoResponse : public ::google::protobuf::Message /* @@proto
                &_GetAccountInitInfoResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    18;
 
   void Swap(GetAccountInitInfoResponse* other);
   friend void swap(GetAccountInitInfoResponse& a, GetAccountInitInfoResponse& b) {
@@ -3712,7 +3467,7 @@ class UpdateVpnActiveRequest : public ::google::protobuf::Message /* @@protoc_in
                &_UpdateVpnActiveRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    19;
 
   void Swap(UpdateVpnActiveRequest* other);
   friend void swap(UpdateVpnActiveRequest& a, UpdateVpnActiveRequest& b) {
@@ -3852,7 +3607,7 @@ class AdRewardRequest : public ::google::protobuf::Message /* @@protoc_insertion
                &_AdRewardRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    20;
 
   void Swap(AdRewardRequest* other);
   friend void swap(AdRewardRequest& a, AdRewardRequest& b) {
@@ -4010,7 +3765,7 @@ class ElectStatisticInfo : public ::google::protobuf::Message /* @@protoc_insert
                &_ElectStatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    21;
 
   void Swap(ElectStatisticInfo* other);
   friend void swap(ElectStatisticInfo& a, ElectStatisticInfo& b) {
@@ -4150,7 +3905,7 @@ class StatisticInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_StatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    22;
 
   void Swap(StatisticInfo* other);
   friend void swap(StatisticInfo& a, StatisticInfo& b) {
@@ -4287,7 +4042,7 @@ class RefreshPoolHeightRequest : public ::google::protobuf::Message /* @@protoc_
                &_RefreshPoolHeightRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    23;
 
   void Swap(RefreshPoolHeightRequest* other);
   friend void swap(RefreshPoolHeightRequest& a, RefreshPoolHeightRequest& b) {
@@ -4404,7 +4159,7 @@ class RefreshPoolHeightResponse : public ::google::protobuf::Message /* @@protoc
                &_RefreshPoolHeightResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    24;
 
   void Swap(RefreshPoolHeightResponse* other);
   friend void swap(RefreshPoolHeightResponse& a, RefreshPoolHeightResponse& b) {
@@ -4521,7 +4276,7 @@ class GetAccountShardRequest : public ::google::protobuf::Message /* @@protoc_in
                &_GetAccountShardRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    25;
 
   void Swap(GetAccountShardRequest* other);
   friend void swap(GetAccountShardRequest& a, GetAccountShardRequest& b) {
@@ -4643,7 +4398,7 @@ class GetAccountShardReponse : public ::google::protobuf::Message /* @@protoc_in
                &_GetAccountShardReponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    26;
 
   void Swap(GetAccountShardReponse* other);
   friend void swap(GetAccountShardReponse& a, GetAccountShardReponse& b) {
@@ -4775,7 +4530,7 @@ class CrossShardingTosMessage : public ::google::protobuf::Message /* @@protoc_i
                &_CrossShardingTosMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    27;
 
   void Swap(CrossShardingTosMessage* other);
   friend void swap(CrossShardingTosMessage& a, CrossShardingTosMessage& b) {
@@ -4894,7 +4649,7 @@ class CrossShardingStatisticMessage : public ::google::protobuf::Message /* @@pr
                &_CrossShardingStatisticMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    28;
 
   void Swap(CrossShardingStatisticMessage* other);
   friend void swap(CrossShardingStatisticMessage& a, CrossShardingStatisticMessage& b) {
@@ -5013,7 +4768,7 @@ class ElectBlockMessage : public ::google::protobuf::Message /* @@protoc_inserti
                &_ElectBlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    29;
 
   void Swap(ElectBlockMessage* other);
   friend void swap(ElectBlockMessage& a, ElectBlockMessage& b) {
@@ -5132,7 +4887,7 @@ class ShardToTxMessage : public ::google::protobuf::Message /* @@protoc_insertio
                &_ShardToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    31;
+    30;
 
   void Swap(ShardToTxMessage* other);
   friend void swap(ShardToTxMessage& a, ShardToTxMessage& b) {
@@ -5266,7 +5021,7 @@ class StatisticTxMessage : public ::google::protobuf::Message /* @@protoc_insert
                &_StatisticTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    32;
+    31;
 
   void Swap(StatisticTxMessage* other);
   friend void swap(StatisticTxMessage& a, StatisticTxMessage& b) {
@@ -5415,7 +5170,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    32;
 
   void Swap(BlockMessage* other);
   friend void swap(BlockMessage& a, BlockMessage& b) {
@@ -7241,448 +6996,6 @@ ConsensusToTxs::tos() const {
 
 // -------------------------------------------------------------------
 
-// ToAddressItemInfo
-
-// optional uint64 amount = 1;
-inline bool ToAddressItemInfo::has_amount() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void ToAddressItemInfo::set_has_amount() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void ToAddressItemInfo::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void ToAddressItemInfo::clear_amount() {
-  amount_ = GOOGLE_ULONGLONG(0);
-  clear_has_amount();
-}
-inline ::google::protobuf::uint64 ToAddressItemInfo::amount() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.amount)
-  return amount_;
-}
-inline void ToAddressItemInfo::set_amount(::google::protobuf::uint64 value) {
-  set_has_amount();
-  amount_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.amount)
-}
-
-// optional int32 pool_index = 2;
-inline bool ToAddressItemInfo::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void ToAddressItemInfo::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void ToAddressItemInfo::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void ToAddressItemInfo::clear_pool_index() {
-  pool_index_ = 0;
-  clear_has_pool_index();
-}
-inline ::google::protobuf::int32 ToAddressItemInfo::pool_index() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.pool_index)
-  return pool_index_;
-}
-inline void ToAddressItemInfo::set_pool_index(::google::protobuf::int32 value) {
-  set_has_pool_index();
-  pool_index_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.pool_index)
-}
-
-// optional uint32 sharding_id = 3;
-inline bool ToAddressItemInfo::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void ToAddressItemInfo::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void ToAddressItemInfo::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void ToAddressItemInfo::clear_sharding_id() {
-  sharding_id_ = 0u;
-  clear_has_sharding_id();
-}
-inline ::google::protobuf::uint32 ToAddressItemInfo::sharding_id() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.sharding_id)
-  return sharding_id_;
-}
-inline void ToAddressItemInfo::set_sharding_id(::google::protobuf::uint32 value) {
-  set_has_sharding_id();
-  sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.sharding_id)
-}
-
-// optional bytes des = 4;
-inline bool ToAddressItemInfo::has_des() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ToAddressItemInfo::set_has_des() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ToAddressItemInfo::clear_has_des() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ToAddressItemInfo::clear_des() {
-  des_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_des();
-}
-inline const ::std::string& ToAddressItemInfo::des() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.des)
-  return des_.GetNoArena();
-}
-inline void ToAddressItemInfo::set_des(const ::std::string& value) {
-  set_has_des();
-  des_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.des)
-}
-#if LANG_CXX11
-inline void ToAddressItemInfo::set_des(::std::string&& value) {
-  set_has_des();
-  des_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.ToAddressItemInfo.des)
-}
-#endif
-inline void ToAddressItemInfo::set_des(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_des();
-  des_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.ToAddressItemInfo.des)
-}
-inline void ToAddressItemInfo::set_des(const void* value, size_t size) {
-  set_has_des();
-  des_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.ToAddressItemInfo.des)
-}
-inline ::std::string* ToAddressItemInfo::mutable_des() {
-  set_has_des();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.ToAddressItemInfo.des)
-  return des_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ToAddressItemInfo::release_des() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.ToAddressItemInfo.des)
-  if (!has_des()) {
-    return NULL;
-  }
-  clear_has_des();
-  return des_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ToAddressItemInfo::set_allocated_des(::std::string* des) {
-  if (des != NULL) {
-    set_has_des();
-  } else {
-    clear_has_des();
-  }
-  des_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), des);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.ToAddressItemInfo.des)
-}
-
-// optional bytes elect_join_g2_value = 6;
-inline bool ToAddressItemInfo::has_elect_join_g2_value() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ToAddressItemInfo::set_has_elect_join_g2_value() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ToAddressItemInfo::clear_has_elect_join_g2_value() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ToAddressItemInfo::clear_elect_join_g2_value() {
-  elect_join_g2_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_elect_join_g2_value();
-}
-inline const ::std::string& ToAddressItemInfo::elect_join_g2_value() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-  return elect_join_g2_value_.GetNoArena();
-}
-inline void ToAddressItemInfo::set_elect_join_g2_value(const ::std::string& value) {
-  set_has_elect_join_g2_value();
-  elect_join_g2_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-}
-#if LANG_CXX11
-inline void ToAddressItemInfo::set_elect_join_g2_value(::std::string&& value) {
-  set_has_elect_join_g2_value();
-  elect_join_g2_value_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-}
-#endif
-inline void ToAddressItemInfo::set_elect_join_g2_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_elect_join_g2_value();
-  elect_join_g2_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-}
-inline void ToAddressItemInfo::set_elect_join_g2_value(const void* value, size_t size) {
-  set_has_elect_join_g2_value();
-  elect_join_g2_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-}
-inline ::std::string* ToAddressItemInfo::mutable_elect_join_g2_value() {
-  set_has_elect_join_g2_value();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-  return elect_join_g2_value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ToAddressItemInfo::release_elect_join_g2_value() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-  if (!has_elect_join_g2_value()) {
-    return NULL;
-  }
-  clear_has_elect_join_g2_value();
-  return elect_join_g2_value_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ToAddressItemInfo::set_allocated_elect_join_g2_value(::std::string* elect_join_g2_value) {
-  if (elect_join_g2_value != NULL) {
-    set_has_elect_join_g2_value();
-  } else {
-    clear_has_elect_join_g2_value();
-  }
-  elect_join_g2_value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), elect_join_g2_value);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.ToAddressItemInfo.elect_join_g2_value)
-}
-
-// optional .shardora.bls.protobuf.JoinElectInfo join_info = 7;
-inline bool ToAddressItemInfo::has_join_info() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void ToAddressItemInfo::set_has_join_info() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void ToAddressItemInfo::clear_has_join_info() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline const ::shardora::bls::protobuf::JoinElectInfo& ToAddressItemInfo::_internal_join_info() const {
-  return *join_info_;
-}
-inline const ::shardora::bls::protobuf::JoinElectInfo& ToAddressItemInfo::join_info() const {
-  const ::shardora::bls::protobuf::JoinElectInfo* p = join_info_;
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.join_info)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::bls::protobuf::JoinElectInfo*>(
-      &::shardora::bls::protobuf::_JoinElectInfo_default_instance_);
-}
-inline ::shardora::bls::protobuf::JoinElectInfo* ToAddressItemInfo::release_join_info() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.ToAddressItemInfo.join_info)
-  clear_has_join_info();
-  ::shardora::bls::protobuf::JoinElectInfo* temp = join_info_;
-  join_info_ = NULL;
-  return temp;
-}
-inline ::shardora::bls::protobuf::JoinElectInfo* ToAddressItemInfo::mutable_join_info() {
-  set_has_join_info();
-  if (join_info_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::bls::protobuf::JoinElectInfo>(GetArenaNoVirtual());
-    join_info_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.ToAddressItemInfo.join_info)
-  return join_info_;
-}
-inline void ToAddressItemInfo::set_allocated_join_info(::shardora::bls::protobuf::JoinElectInfo* join_info) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(join_info_);
-  }
-  if (join_info) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      join_info = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, join_info, submessage_arena);
-    }
-    set_has_join_info();
-  } else {
-    clear_has_join_info();
-  }
-  join_info_ = join_info;
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.ToAddressItemInfo.join_info)
-}
-
-// optional bytes library_bytes = 8;
-inline bool ToAddressItemInfo::has_library_bytes() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ToAddressItemInfo::set_has_library_bytes() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ToAddressItemInfo::clear_has_library_bytes() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ToAddressItemInfo::clear_library_bytes() {
-  library_bytes_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_library_bytes();
-}
-inline const ::std::string& ToAddressItemInfo::library_bytes() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-  return library_bytes_.GetNoArena();
-}
-inline void ToAddressItemInfo::set_library_bytes(const ::std::string& value) {
-  set_has_library_bytes();
-  library_bytes_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-}
-#if LANG_CXX11
-inline void ToAddressItemInfo::set_library_bytes(::std::string&& value) {
-  set_has_library_bytes();
-  library_bytes_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-}
-#endif
-inline void ToAddressItemInfo::set_library_bytes(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_library_bytes();
-  library_bytes_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-}
-inline void ToAddressItemInfo::set_library_bytes(const void* value, size_t size) {
-  set_has_library_bytes();
-  library_bytes_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-}
-inline ::std::string* ToAddressItemInfo::mutable_library_bytes() {
-  set_has_library_bytes();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-  return library_bytes_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ToAddressItemInfo::release_library_bytes() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-  if (!has_library_bytes()) {
-    return NULL;
-  }
-  clear_has_library_bytes();
-  return library_bytes_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ToAddressItemInfo::set_allocated_library_bytes(::std::string* library_bytes) {
-  if (library_bytes != NULL) {
-    set_has_library_bytes();
-  } else {
-    clear_has_library_bytes();
-  }
-  library_bytes_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), library_bytes);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.ToAddressItemInfo.library_bytes)
-}
-
-// optional bytes from = 9;
-inline bool ToAddressItemInfo::has_from() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void ToAddressItemInfo::set_has_from() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void ToAddressItemInfo::clear_has_from() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void ToAddressItemInfo::clear_from() {
-  from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_from();
-}
-inline const ::std::string& ToAddressItemInfo::from() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.from)
-  return from_.GetNoArena();
-}
-inline void ToAddressItemInfo::set_from(const ::std::string& value) {
-  set_has_from();
-  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.from)
-}
-#if LANG_CXX11
-inline void ToAddressItemInfo::set_from(::std::string&& value) {
-  set_has_from();
-  from_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:shardora.block.protobuf.ToAddressItemInfo.from)
-}
-#endif
-inline void ToAddressItemInfo::set_from(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_from();
-  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:shardora.block.protobuf.ToAddressItemInfo.from)
-}
-inline void ToAddressItemInfo::set_from(const void* value, size_t size) {
-  set_has_from();
-  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:shardora.block.protobuf.ToAddressItemInfo.from)
-}
-inline ::std::string* ToAddressItemInfo::mutable_from() {
-  set_has_from();
-  // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.ToAddressItemInfo.from)
-  return from_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ToAddressItemInfo::release_from() {
-  // @@protoc_insertion_point(field_release:shardora.block.protobuf.ToAddressItemInfo.from)
-  if (!has_from()) {
-    return NULL;
-  }
-  clear_has_from();
-  return from_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ToAddressItemInfo::set_allocated_from(::std::string* from) {
-  if (from != NULL) {
-    set_has_from();
-  } else {
-    clear_has_from();
-  }
-  from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from);
-  // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.ToAddressItemInfo.from)
-}
-
-// optional uint64 prepayment = 10;
-inline bool ToAddressItemInfo::has_prepayment() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
-}
-inline void ToAddressItemInfo::set_has_prepayment() {
-  _has_bits_[0] |= 0x00000100u;
-}
-inline void ToAddressItemInfo::clear_has_prepayment() {
-  _has_bits_[0] &= ~0x00000100u;
-}
-inline void ToAddressItemInfo::clear_prepayment() {
-  prepayment_ = GOOGLE_ULONGLONG(0);
-  clear_has_prepayment();
-}
-inline ::google::protobuf::uint64 ToAddressItemInfo::prepayment() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.prepayment)
-  return prepayment_;
-}
-inline void ToAddressItemInfo::set_prepayment(::google::protobuf::uint64 value) {
-  set_has_prepayment();
-  prepayment_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.prepayment)
-}
-
-// optional uint32 des_sharding_id = 11;
-inline bool ToAddressItemInfo::has_des_sharding_id() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
-}
-inline void ToAddressItemInfo::set_has_des_sharding_id() {
-  _has_bits_[0] |= 0x00000200u;
-}
-inline void ToAddressItemInfo::clear_has_des_sharding_id() {
-  _has_bits_[0] &= ~0x00000200u;
-}
-inline void ToAddressItemInfo::clear_des_sharding_id() {
-  des_sharding_id_ = 0u;
-  clear_has_des_sharding_id();
-}
-inline ::google::protobuf::uint32 ToAddressItemInfo::des_sharding_id() const {
-  // @@protoc_insertion_point(field_get:shardora.block.protobuf.ToAddressItemInfo.des_sharding_id)
-  return des_sharding_id_;
-}
-inline void ToAddressItemInfo::set_des_sharding_id(::google::protobuf::uint32 value) {
-  set_has_des_sharding_id();
-  des_sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:shardora.block.protobuf.ToAddressItemInfo.des_sharding_id)
-}
-
-// -------------------------------------------------------------------
-
 // Block
 
 // optional uint32 version = 1;
@@ -8319,12 +7632,9 @@ inline void Block::set_allocated_normal_to(::shardora::pools::protobuf::AllToTxM
   // @@protoc_insertion_point(field_set_allocated:shardora.block.protobuf.Block.normal_to)
 }
 
-// repeated .shardora.block.protobuf.ToAddressItemInfo cross_shard_to_array = 19;
+// repeated .shardora.pools.protobuf.ToTxMessageItem cross_shard_to_array = 19;
 inline int Block::cross_shard_to_array_size() const {
   return cross_shard_to_array_.size();
-}
-inline void Block::clear_cross_shard_to_array() {
-  cross_shard_to_array_.Clear();
 }
 inline ::shardora::pools::protobuf::ToTxMessageItem* Block::mutable_cross_shard_to_array(int index) {
   // @@protoc_insertion_point(field_mutable:shardora.block.protobuf.Block.cross_shard_to_array)
@@ -12343,8 +11653,6 @@ inline void BlockMessage::set_allocated_statistic_tx(::shardora::block::protobuf
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
