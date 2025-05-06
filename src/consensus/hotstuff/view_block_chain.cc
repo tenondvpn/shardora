@@ -803,7 +803,7 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
             for (auto iter = prev_acc_balance_map.begin(); iter != prev_acc_balance_map.end(); ++iter) {
                 auto fiter = acc_balance_map.find(iter->first);
                 if (fiter == acc_balance_map.end()) {
-                    acc_balance_map[iter->first] = iter->second;
+                    acc_balance_map[iter->first] = std::make_shared<address::protobuf::AddressInfo>(*iter->second);
                     ZJC_DEBUG("merge prev all balance merge prev account balance %s, "
                         "balance: %lu, nonce: %lu, %u_%u_%lu, block height: %lu",
                         common::Encode::HexEncode(iter->first).c_str(), 
