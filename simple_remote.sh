@@ -76,6 +76,8 @@ make_package() {
 }
 
 get_bootstrap() {
+    rm -rf /root/shardora/shards2
+    cp -rf /root/shardora/root_nodes /root/shardora/shards2
     node_ips_array=(${node_ips//,/ })
     for ((shard_id=2; shard_id<=$end_shard; shard_id++)); do
         i=1
