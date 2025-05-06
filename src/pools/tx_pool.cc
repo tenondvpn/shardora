@@ -206,6 +206,16 @@ void TxPool::GetTxSyncToLeader(
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
+         if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+            system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
+            ZJC_DEBUG("success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(), 
+                tx_ptr->tx_info->nonce(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+            continue;
+        }
+
         if (tx_ptr->address_info->nonce() >= tx_ptr->tx_info->nonce()) {
             ZJC_DEBUG("failed get tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
@@ -295,6 +305,11 @@ void TxPool::GetTxIdempotently(
     while (added_txs_.pop(&tx_ptr)) {
         if (!IsUserTransaction(tx_ptr->tx_info->step())) {
             system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
+            ZJC_DEBUG("success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(), 
+                tx_ptr->tx_info->nonce(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
             continue;
         }
 
@@ -320,7 +335,7 @@ void TxPool::GetTxIdempotently(
 
         tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
-        ZJC_DEBUG("success add tx nonce invalid addr: %s, addr nonce: %lu, tx nonce: %lu",
+        ZJC_DEBUG("success add tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu",
             common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
             tx_ptr->address_info->nonce(), 
             tx_ptr->tx_info->nonce());
@@ -353,17 +368,28 @@ void TxPool::GetTxIdempotently(
                         *tx_ptr->tx_info);
                     if (res != 0) {
                         if (res > 0) {
+                            ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
+                                pool_index_,
+                                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                                tx_ptr->tx_info->nonce(),
+                                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                             continue;
                         }
                         
-                        ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu",
+                        ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
                             pool_index_,
                             common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
-                            tx_ptr->tx_info->nonce());
+                            tx_ptr->tx_info->nonce(),
+                            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                         break;
                     }
                 } else {
                     if (tx_ptr->tx_info->nonce() != valid_nonce + 1) {
+                        ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
+                            pool_index_,
+                            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                            tx_ptr->tx_info->nonce(),
+                            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                         break;
                     }
                 }
