@@ -176,11 +176,17 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         break;
                     }
 
-                    nonce_iter = tx_iter->second.erase(nonce_iter);
                     ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
                         pool_index_,
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first);
+                    auto tx_ptr = nonce_iter->second;
+                    ZJC_DEBUG("over pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                        common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                        tx_ptr->address_info->nonce(), 
+                        tx_ptr->tx_info->nonce(),
+                        common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+                    nonce_iter = tx_iter->second.erase(nonce_iter);
                 }
 
                 if (tx_iter->second.empty()) {
@@ -206,6 +212,11 @@ void TxPool::GetTxSyncToLeader(
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
+        ZJC_DEBUG("pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(), 
+                tx_ptr->tx_info->nonce(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
          if (!IsUserTransaction(tx_ptr->tx_info->step())) {
             system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
             ZJC_DEBUG("success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
@@ -303,6 +314,11 @@ void TxPool::GetTxIdempotently(
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
+        ZJC_DEBUG("pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(), 
+                tx_ptr->tx_info->nonce(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         if (!IsUserTransaction(tx_ptr->tx_info->step())) {
             system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
             ZJC_DEBUG("success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
