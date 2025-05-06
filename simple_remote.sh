@@ -21,8 +21,6 @@ init() {
     sh build.sh a $TARGET
     sudo rm -rf /root/zjnodes
     sudo cp -rf ./zjnodes_local /root/zjnodes
-    sudo cp -rf ./deploy /root
-    sudo cp ./fetch.sh /root
     rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
     cp -rf ./zjnodes_local/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
