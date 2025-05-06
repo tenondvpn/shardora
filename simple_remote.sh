@@ -2,7 +2,7 @@ each_nodes_count=$1
 node_ips=$2
 bootstrap=""
 end_shard=$3
-PASSWORD="Xf4aGbTaf!"
+PASSWORD=$4
 
 init() {
     if [ "$node_ips" == "" ]; then
@@ -13,6 +13,10 @@ init() {
     if [ "$end_shard" == "" ]; then
         end_shard=3
     fi  
+
+    if [ "$PASSWORD" == "" ]; then
+        PASSWORD="Xf4aGbTaf!"
+    fi
 
     killall -9 zjchain
     killall -9 txcli
