@@ -214,7 +214,7 @@ void ComputeG2ForNode(
         uint32_t k,
         const std::shared_ptr<protos::PrefixDb>& prefix_db,
         const std::vector<std::string>& prikeys) {
-    std::cout << "Start ComputeG2ForNode k: " << k << " n: " << prikeys.size() << std::endl;
+    // std::cout << "Start ComputeG2ForNode k: " << k << " n: " << prikeys.size() << std::endl;
     std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
     secptr->SetPrivateKey(prikey);
     bls::protobuf::LocalPolynomial local_poly;
@@ -298,7 +298,7 @@ void ComputeG2ForNode(
             assert(all_verified_val == contribution[mem_idx] * libff::alt_bn128_G2::one());
         }
     }
-    std::cout << "End ComputeG2ForNode k: " << k << " n: " << prikeys.size() << std::endl;
+    // std::cout << "End ComputeG2ForNode k: " << k << " n: " << prikeys.size() << std::endl;
 }
 
 void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikeys) {
@@ -882,7 +882,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     long file_size = ftell(root_gens_init_block_file);
     fseek(root_gens_init_block_file, 0, SEEK_SET);
 
-    std::cout << "root_blocks size: " << file_size << std::endl;
+    // std::cout << "root_blocks size: " << file_size << std::endl;
 
     char* data = new char[file_size + 1];
     defer({
@@ -1767,8 +1767,8 @@ void GenesisBlockInit::PrintGenisisAccounts() {
             assert(false);
         }
 
-        std::cout << common::Encode::HexEncode(addr_info.addr()) << ", " 
-            << addr_info.balance() << ", " << addr_info.nonce() << std::endl;
+        // std::cout << common::Encode::HexEncode(addr_info.addr()) << ", " 
+        //     << addr_info.balance() << ", " << addr_info.nonce() << std::endl;
         iter->Next();
     }
 
