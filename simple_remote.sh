@@ -77,13 +77,7 @@ make_package() {
 
 get_bootstrap() {
     node_ips_array=(${node_ips//,/ })
-    for ((i=1; i<=3;i++)); do
-        tmppubkey=`sed -n "$i""p" /root/shardora/root_nodes | awk -F'\t' '{print $2}'`
-        node_info=$tmppubkey":127.0.0.1:1200"$i
-        bootstrap=$node_info","$bootstrap
-    done
-
-    for ((shard_id=3; shard_id<=$end_shard; shard_id++)); do
+    for ((shard_id=2; shard_id<=$end_shard; shard_id++)); do
         i=1
         for ip in "${node_ips_array[@]}"; do 
             tmppubkey=`sed -n "$i""p" /root/shardora/shards$shard_id| awk -F'\t' '{print $2}'`
