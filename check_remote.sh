@@ -41,11 +41,17 @@ run_command() {
     echo 'run_command over'
 }
 
+init
+
 if [ "$RUNC_COMMAND_STR" == "check_network" ]; then
     node_ips_array=(${node_ips//,/ })
     for ip in "${node_ips_array[@]}"; do 
         ip_node_count=`sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "ps -ef | grep zjchain" | grep s3 | wc -l`
-        echo $ip " node count: " $ip_node_count
+        if [ $ip_node_count -eq $each_nodes_count ]; then
+            echo $ip " valid node count: " $ip_node_count
+        else
+            echo $ip " ERROR node count: " $ip_node_count " valid node count: " $ip_node_count
+        fi
     done
 fi
 
