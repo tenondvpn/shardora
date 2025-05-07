@@ -76,12 +76,13 @@ if __name__ == "__main__":
                 check_accounts_str += id + "_"
 
         if check_accounts_str == "":
+            print("create all accounts success!")
             sys.exit(0)
 
         time.sleep(6)
 
     for id in ids:
         if not ids[id]:
-            print(f"invalid address: {id}")
+            print(f"create address failed: {id}")
 
     sys.exit(1)
