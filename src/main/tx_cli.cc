@@ -576,7 +576,7 @@ int base_tx_main(int argc, char** argv) {
         std::string pos_str = std::to_string(pos);
         memcpy(from_prikey.data() + (from_prikey.size() - pos_str.size()), pos_str.c_str(), pos_str.size());
         prikey_with_nonce[from_prikey] = 0;
-        std::shared_ptr<security::Security> secptr = std::make_shared<security::Security>();
+        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         prikey_with_secptr[from_prikey] = secptr;
     }
 
@@ -595,7 +595,6 @@ int base_tx_main(int argc, char** argv) {
             10000,
             1,
             shardnum);
-
          
         if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
