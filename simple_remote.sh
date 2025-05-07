@@ -3,6 +3,7 @@ node_ips=$2
 bootstrap=""
 end_shard=$3
 PASSWORD=$4
+TARGET=$5
 
 init() {
     if [ "$node_ips" == "" ]; then
@@ -18,10 +19,13 @@ init() {
         PASSWORD="Xf4aGbTaf!"
     fi
 
+    if [ "$TARGET" == "" ]; then
+        TARGET=Release
+    fi
+
     killall -9 zjchain
     killall -9 txcli
 
-    TARGET=Debug
     sh build.sh a $TARGET
     sudo rm -rf /root/zjnodes
     sudo cp -rf ./zjnodes_local /root/zjnodes
