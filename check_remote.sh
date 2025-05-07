@@ -1,17 +1,12 @@
 each_nodes_count=$1
 node_ips=$2
-end_shard=$3
-PASSWORD=$4
-RUNC_COMMAND_STR=$5
+PASSWORD=$3
+RUNC_COMMAND_STR=$4
 
 init() {
     if [ "$node_ips" == "" ]; then
         echo "just use local single node."
         node_ips='127.0.0.1'
-    fi  
-
-    if [ "$end_shard" == "" ]; then
-        end_shard=3
     fi  
 
     if [ "$PASSWORD" == "" ]; then
@@ -46,4 +41,11 @@ run_command() {
     echo 'run_command over'
 }
 
-run_command
+if [ "$RUNC_COMMAND_STR" == "check_network" ]; then
+    node_ips_array=(${node_ips//,/ })
+    for ip in "${node_ips_array[@]}"; do 
+        ip_node_count=`sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "ps -ef | grep zjchain" | grep s3 | wc -l`
+        echo $ip " node count: " $ip_node_count
+    done
+fi
+
