@@ -513,6 +513,112 @@ int tx_main(int argc, char** argv) {
     return 0;
 }
 
+
+int base_tx_main(int argc, char** argv) {
+    // ./txcli 7 $count $ip $port 
+    uint32_t pool_id = -1;
+    auto ip = kBroadcastIp;
+    auto port = kBroadcastPort;
+    auto delayus_a = delayus;
+    auto multi = multi_pool;
+    auto shardnum = 3;
+    auto to_addr_count = std::stoi(argv[2]);
+
+    if (argc >= 5) {
+        ip = argv[3];
+        port = std::stoi(argv[4]);
+    }
+
+    std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
+    auto base_private_key = "19997691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848000000000";
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init(db_path + "_base_tx_main_" + std::to_string(shardnum) + "_" + std::to_string(pool_id))) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    if (net_handler.Init(db_ptr, security) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    std::string to = common::Encode::HexDecode("b63034b54564a92eeb1df463ac5b85182c64b1cd");
+    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+    uint32_t count = 0;
+    uint64_t random_u64 = common::Random::RandomUint64();
+    std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+    std::unordered_map<std::string, std::shared_ptr<security::Security>> prikey_with_secptr;
+    for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
+        prikey_with_nonce[*iter] = 0;
+    }
+
+    for (int32_t pos = 0; pos < to_addr_count && !global_stop; ++pos) {
+        std::string from_prikey = base_private_key;
+        std::string pos_str = std::to_string(pos);
+        memcpy(from_prikey.data() + (from_prikey.size() - pos_str.size()), pos_str.c_str(), pos_str.size());
+        prikey_with_nonce[from_prikey] = 0;
+        std::shared_ptr<security::Security> secptr = std::make_shared<security::Security>();
+        prikey_with_secptr[from_prikey] = secptr;
+    }
+
+    for (int32_t pos = 0; pos < to_addr_count && !global_stop; ++pos) {
+        std::string from_prikey = base_private_key;
+        std::string pos_str = std::to_string(pos);
+        memcpy(from_prikey.data() + (from_prikey.size() - pos_str.size()), pos_str.c_str(), pos_str.size());
+        auto tx_msg_ptr = CreateTransactionWithAttr(
+            prikey_with_secptr[from_prikey],
+            ++prikey_with_nonce[from_prikey],
+            from_prikey,
+            to,
+            "",
+            "",
+            900,
+            10000,
+            1,
+            shardnum);
+
+         
+        if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
+
+        if (count % 1 == 0) {
+            usleep(1000000lu);
+        }
+
+        count++;
+        auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+        if (dur >= 3000000lu) {
+            auto tps = count * 1000000lu / dur;
+            std::cout << "tps: " << tps << std::endl;
+            now_tm_us = common::TimeUtils::TimestampUs();
+            count = 0;
+        }
+    }
+
+    return 0;
+}
+
 int one_tx_main(int argc, char** argv) {
     LoadAllAccounts();
     SignalRegister();
@@ -1085,6 +1191,8 @@ int main(int argc, char** argv) {
         std::cout << "amount: " << argv[3] << std::endl;
         common::StringUtil::ToUint64(argv[3], &amount);
         oqs_tx(common::Encode::HexDecode(argv[2]), amount);
+    } else if (argv[1][0] == '7') {
+        base_tx_main(argc, argv);
     } else {
         std::cout << "call one tx." << std::endl;
         one_tx_main(argc, argv);
