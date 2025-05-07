@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument('--private_key', '-p', type=str, help='私钥')
     parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
     parser.add_argument('--address_count', '-n', type=int, help='转账目标地址数')
+    parser.add_argument('--chain_ip', '-i', type=int, help='转账目标机器')
     args = parser.parse_args()
     from_private_key = args.private_key
     from_address = shardora_api.get_keypair(bytes.fromhex(from_private_key)).account_id
@@ -25,6 +26,9 @@ if __name__ == "__main__":
     if addr_info is None:
         print(f"invalid private key {from_private_key} and get addr info failed: {from_address} ")
         sys.exit(1)
+
+    if args.chain_ip:
+        shardora_api.http_ip = args.chain_ip
 
     nonce = int(addr_info["nonce"]) + 1
     check_accounts_str = ""
