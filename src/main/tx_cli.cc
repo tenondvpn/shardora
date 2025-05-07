@@ -577,6 +577,7 @@ int base_tx_main(int argc, char** argv) {
         memcpy(from_prikey.data() + (from_prikey.size() - pos_str.size()), pos_str.c_str(), pos_str.size());
         prikey_with_nonce[from_prikey] = 0;
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+        secptr->SetPrivateKey(from_prikey);
         prikey_with_secptr[from_prikey] = secptr;
     }
 
