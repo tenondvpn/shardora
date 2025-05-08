@@ -396,6 +396,7 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     printf("响应内容len: %d content: %s\n", len, response_data);
     account_info_json = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
     free(response_data);
+    std::unique_lock<std::mutex> l(cli_mutex);
     cli_con.notify_one();
     return EVHTP_RES_OK;
 }
@@ -532,6 +533,8 @@ int tx_main(int argc, char** argv) {
             auto addr_json = GetAddressInfo(ip, security->GetAddress());
             if (addr_json) {
                 ZJC_DEBUG("success get address info: %s", addr_json->dump().c_str());
+            } else {
+                ZJC_DEBUG("success get address info: %s", common::Encode::HexEncode(security->GetAddress()).c_str());
             }
             //usleep(10000);
             
