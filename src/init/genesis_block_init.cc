@@ -1705,9 +1705,9 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     auto load_addrs_func = [&](uint32_t net_id, const char* filename) {
         auto fd = fopen(filename, "r");
         assert(fd != nullptr);
-        char data[1024 * 1024];
+        char data[1024 * 1024] = {0};
         fread(data, 1, sizeof(data), fd);
-        auto lines = common::Split<1024>(data, '\n');
+        auto lines = common::Split<2048>(data, '\n');
         auto& pool_index_map = net_pool_index_map_[net_id];
         for (int32_t i = 0; i < lines.Count(); ++i) {
             auto items = common::Split<>(lines[i], '\t');
