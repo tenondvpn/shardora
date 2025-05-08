@@ -487,27 +487,36 @@ int tx_main(int argc, char** argv) {
     uint32_t step_num = 1000;
     uint64_t random_u64 = common::Random::RandomUint64();
     std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+    std::unordered_map<std::string, uint64_t> src_prikey_with_nonce;
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
-        prikey_with_nonce[*iter] = 0;
+        auto addr_json = GetAddressInfo(ip, security->GetAddress());
+        if (addr_json) {
+            printf("success get address info: %s\n", addr_json->dump().c_str());
+        } else {
+            printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
+            exit(1);
+        }
+
+        prikey_with_nonce[*iter] = (*addr_json)["nonce"];
+        src_prikey_with_nonce[*iter] = (*addr_json)["nonce"];
     }
 
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
-        if (g_pri_addrs_map[from_prikey] == to) {
-            ++prikey_pos;
+        if (count % 1 == 100 || src_prikey_with_nonce[from_prikey] + 1024 < prikey_with_nonce[from_prikey]) {
+            // ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
+            auto addr_json = GetAddressInfo(ip, security->GetAddress());
+            if (addr_json) {
+                printf("success get address info: %s\n", addr_json->dump().c_str());
+                src_prikey_with_nonce[from_prikey] = (*addr_json)["nonce"];
+            } else {
+                printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
+            }
+
+            usleep(1000000lu);
         }
 
-        if (security->GetAddress() == common::Encode::HexDecode("f1cd7abb586966d500d91329658ec48aa2094702")) {
-            ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-        }
-
-        // uint32_t* tmp_data = (uint32_t*)to.c_str();
-        // if (common::Random::RandomInt32() % 10 < 3) {
-        //     tmp_data[0] = common::Random::RandomInt16();
-        // }
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             ++prikey_with_nonce[from_prikey],
@@ -524,22 +533,6 @@ int tx_main(int argc, char** argv) {
         if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
-        }
-
-        if (count % 1 == 0) {
-            //++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-            auto addr_json = GetAddressInfo(ip, security->GetAddress());
-            if (addr_json) {
-                ZJC_DEBUG("success get address info: %s", addr_json->dump().c_str());
-            } else {
-                ZJC_DEBUG("success get address info: %s", common::Encode::HexEncode(security->GetAddress()).c_str());
-            }
-            //usleep(10000);
-            
-            usleep(1000000lu);
-
         }
 
         count++;
