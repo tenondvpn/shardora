@@ -374,7 +374,7 @@ static void GetOqsKeys() {
 static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
     if (req->status != 200) {
         fprintf(stderr, "请求失败，状态码: %d\n", req->status);
-        return;
+        return EVHTP_RES_ERROR;
     }
     
     struct evbuffer* input = req->buffer_in;
