@@ -501,16 +501,17 @@ int tx_main(int argc, char** argv) {
         src_prikey_with_nonce[*iter] = nonce;
     }
 
-    for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
+    while (true) {
         if (count % 100 == 0 || src_prikey_with_nonce[from_prikey] + 1000 < prikey_with_nonce[from_prikey]) {
             // ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             auto addr_json = GetAddressInfo(ip, security->GetAddress());
             if (addr_json) {
-                printf("success get address info: %s, now nonce: %lu\n",
+                printf("success get address info: %s, src_prikey_with_nonce: %lu, now nonce: %lu\n",
                     addr_json->dump().c_str(), 
-                    src_prikey_with_nonce[from_prikey]);
+                    src_prikey_with_nonce[from_prikey],
+                    prikey_with_nonce[from_prikey]);
                 uint64_t nonce = 0;
                 common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
                 src_prikey_with_nonce[from_prikey] = nonce;
@@ -547,11 +548,6 @@ int tx_main(int argc, char** argv) {
             now_tm_us = common::TimeUtils::TimestampUs();
             count = 0;
         }
-    }
-
-    if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
-        std::cout << "save pos failed!" << std::endl;
-        return 1;
     }
 
     return 0;
