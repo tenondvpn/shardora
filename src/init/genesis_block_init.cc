@@ -1720,7 +1720,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
             auto pool_idx = common::GetAddressPoolIndex(secptr->GetAddress());
             pool_index_map[pool_idx][secptr->GetAddress()] = 0;
             ++net_pool_index_map_addr_count_;
-            ZJC_DEBUG("success add address net: %d, pool: %d, addr: %s", 
+            ZJC_INFO("success add address net: %d, pool: %d, addr: %s", 
                 net_id, pool_idx, common::Encode::HexEncode(secptr->GetAddress()).c_str());
             valid_ids.insert(secptr->GetAddress());
         }
@@ -1748,6 +1748,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         }
 
         genesis_acount_balance_map_.insert(std::pair<std::string, uint64_t>(*it, balance));
+        ZJC_INFO("genesis add addr: %s, balance: %lu", common::Encode::HexEncode(*it).c_str(), balance);
     }
 
     hasRunOnce = true;
