@@ -497,8 +497,10 @@ int tx_main(int argc, char** argv) {
             exit(1);
         }
 
-        prikey_with_nonce[*iter] = (*addr_json)["nonce"];
-        src_prikey_with_nonce[*iter] = (*addr_json)["nonce"];
+        uint64_t nonce = 0;
+        common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
+        prikey_with_nonce[*iter] = nonce;
+        src_prikey_with_nonce[*iter] = nonce;
     }
 
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
@@ -509,7 +511,9 @@ int tx_main(int argc, char** argv) {
             auto addr_json = GetAddressInfo(ip, security->GetAddress());
             if (addr_json) {
                 printf("success get address info: %s\n", addr_json->dump().c_str());
-                src_prikey_with_nonce[from_prikey] = (*addr_json)["nonce"];
+                uint64_t nonce = 0;
+                common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
+                src_prikey_with_nonce[from_prikey] = nonce;
             } else {
                 printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
             }
