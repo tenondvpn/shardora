@@ -487,6 +487,7 @@ int tx_main(int argc, char** argv) {
     std::unordered_map<std::string, uint64_t> prikey_with_nonce;
     std::unordered_map<std::string, uint64_t> src_prikey_with_nonce;
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
+        security->SetPrivateKey(*iter);
         auto addr_json = GetAddressInfo(ip, security->GetAddress());
         if (addr_json) {
             printf("success get address info: %s\n", addr_json->dump().c_str());
