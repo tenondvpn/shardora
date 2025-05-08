@@ -504,7 +504,7 @@ int tx_main(int argc, char** argv) {
     }
 
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
-        if (count % 1 == 100 || src_prikey_with_nonce[from_prikey] + 1024 < prikey_with_nonce[from_prikey]) {
+        if (count % 100 == 0 || src_prikey_with_nonce[from_prikey] + 1024 < prikey_with_nonce[from_prikey]) {
             // ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
