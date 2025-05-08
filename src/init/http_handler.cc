@@ -573,6 +573,7 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
         std::string res = common::StringUtil::Format("param address is null");
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_DEBUG("%s", res.c_str());
         return;
     }
 
@@ -587,6 +588,7 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
         std::string res = "get address failed from cache: " + addr;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_DEBUG("%s", res.c_str());
         return;
     }
 
@@ -596,11 +598,13 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
         std::string res = "json parse failed: " + addr;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_DEBUG("%s", res.c_str());
         return;
     }
 
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_DEBUG("%s", json_str.c_str());
     return;
 }
 
