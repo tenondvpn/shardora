@@ -131,7 +131,7 @@ int NetworkInit::Init(int argc, char** argv) {
     // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>();
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
-    ZJC_DEBUG("init 0 4");
+    ZJC_INFO("init 0 4");
     InitLocalNetworkId();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         uint32_t config_net_id = 0;
@@ -146,10 +146,10 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
-    ZJC_DEBUG("id: %s, init sharding id: %u",
+    ZJC_INFO("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
         common::GlobalInfo::Instance()->network_id());
-    ZJC_DEBUG("init 0 5");
+    ZJC_INFO("init 0 5");
     if (net_handler_.Init(db_, security_) != transport::kTransportSuccess) {
         return kInitError;
     }
