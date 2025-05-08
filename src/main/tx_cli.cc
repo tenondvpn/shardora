@@ -45,7 +45,7 @@ std::shared_ptr<nlohmann::json> account_info_json = nullptr;
 std::string global_chain_node_ip = "127.0.0.1";
 std::unordered_map<std::string, uint64_t> prikey_with_nonce;
 std::unordered_map<std::string, uint64_t> src_prikey_with_nonce;
-uint64_t batch_nonce_check_count = 1024;
+uint64_t batch_nonce_check_count = 10240;
 void UpdateAddressNonce();
 void UpdateAddressNonceThread() {
     while (true) {
@@ -500,7 +500,7 @@ int tx_main(int argc, char** argv) {
     uint32_t step_num = 1000;
     uint64_t random_u64 = common::Random::RandomUint64();
     while (true) {
-        if (count % batch_nonce_check_count == 0) {
+        if (count % 100 == 0) {
             // ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
