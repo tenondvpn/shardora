@@ -558,7 +558,7 @@ static void AbiQueryContract(evhtp_request_t* req, void* data) {
 }
 
 static void QueryAccount(evhtp_request_t* req, void* data) {
-#ifdef NDEBUG 
+#ifndef NDEBUG 
     {
         struct evbuffer* input = req->buffer_in;
         size_t len = evbuffer_get_length(input);
