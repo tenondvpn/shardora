@@ -900,7 +900,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         // root_gens_init_block_file 中保存的是 root pool 账户 block，和时间快 block，同步过来
         // auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
-        common::Split<> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
+        common::Split<1024> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
         std::string block_str = tmp_data;
         std::string ec_block_str;
         if (tmp_split.Count() == 2) {
@@ -1707,10 +1707,10 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         assert(fd != nullptr);
         char data[1024 * 1024];
         fread(data, 1, sizeof(data), fd);
-        auto lines = common::Split<>(data, '\n');
+        auto lines = common::Split<1024>(data, '\n');
         auto& pool_index_map = net_pool_index_map_[net_id];
         for (int32_t i = 0; i < lines.Count(); ++i) {
-            auto items = common::Split<>(lines[i], '\t');
+            auto items = common::Split<1024>(lines[i], '\t');
             if (items.Count() != 2) {
                 break;
             }
