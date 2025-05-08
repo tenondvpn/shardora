@@ -459,24 +459,24 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         view_blocks_info_.erase(tmp_block->qc().view_block_hash());
         ADD_DEBUG_PROCESS_TIMESTAMP();
         block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
-#ifndef NDEBUG
-        for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
-            if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
-                address::protobuf::AddressInfo addr_info;
-                if (!addr_info.ParseFromString(iter->second)) {
-                    assert(false);
-                }
+// #ifndef NDEBUG
+//         for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
+//             if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
+//                 address::protobuf::AddressInfo addr_info;
+//                 if (!addr_info.ParseFromString(iter->second)) {
+//                     assert(false);
+//                 }
 
-                ZJC_DEBUG("new addr commit %u_%u_%lu, success update addr: %s, balance: %lu, nonce: %lu",
-                    tmp_block->qc().network_id(), 
-                    tmp_block->qc().pool_index(), 
-                    tmp_block->qc().view(),
-                    common::Encode::HexEncode(addr_info.addr()).c_str(),
-                    addr_info.balance(),
-                    addr_info.nonce());
-            }
-        }
-#endif
+//                 ZJC_DEBUG("new addr commit %u_%u_%lu, success update addr: %s, balance: %lu, nonce: %lu",
+//                     tmp_block->qc().network_id(), 
+//                     tmp_block->qc().pool_index(), 
+//                     tmp_block->qc().view(),
+//                     common::Encode::HexEncode(addr_info.addr()).c_str(),
+//                     addr_info.balance(),
+//                     addr_info.nonce());
+//             }
+//         }
+// #endif
         if (!db_->Put(db_batch).ok()) {
             ZJC_FATAL("write to db failed!");
         }
@@ -487,22 +487,21 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SetLatestCommittedBlock(v_block_info);
-    // 剪枝
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     auto v_block = v_block_info->view_block;
-#ifndef NDEBUG
-    transport::protobuf::ConsensusDebug cons_debug3;
-    cons_debug3.ParseFromString(v_block->debug());
-    ZJC_DEBUG("success commit view block %u_%u_%lu, "
-        "height: %lu, now chain: %s, propose_debug: %s",
-        v_block->qc().network_id(), 
-        v_block->qc().pool_index(), 
-        v_block->qc().view(), 
-        v_block->block_info().height(),
-        String().c_str(),
-        ProtobufToJson(cons_debug3).c_str());
-#endif
+// #ifndef NDEBUG
+//     transport::protobuf::ConsensusDebug cons_debug3;
+//     cons_debug3.ParseFromString(v_block->debug());
+//     ZJC_DEBUG("success commit view block %u_%u_%lu, "
+//         "height: %lu, now chain: %s, propose_debug: %s",
+//         v_block->qc().network_id(), 
+//         v_block->qc().pool_index(), 
+//         v_block->qc().view(), 
+//         v_block->block_info().height(),
+//         String().c_str(),
+//         ProtobufToJson(cons_debug3).c_str());
+// #endif
     auto s = PruneTo(forked_blockes);
     if (s != Status::kSuccess) {
         ZJC_ERROR("pool: %d, prune failed s: %d, vb view: &lu", pool_index_, s, v_block->qc().view());
@@ -612,6 +611,7 @@ bool ViewBlockChain::IsValid() {
 }
 
 std::string ViewBlockChain::String() const {
+    return "";
 #ifdef NDEBUG
     return "";
 #endif

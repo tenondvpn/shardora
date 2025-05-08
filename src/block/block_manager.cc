@@ -415,6 +415,7 @@ void BlockManager::AddNewBlock(
         block_item->timeblock_height(),
         ProtobufToJson(*view_block_item).c_str());
     assert(view_block_item->qc().elect_height() >= 1);
+    account_mgr_->AddNewBlock(*view_block_item);
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
         pools_mgr_->OnNewCrossBlock(view_block_item);
@@ -426,7 +427,6 @@ void BlockManager::AddNewBlock(
         }
 
         to_txs_pool_->NewBlock(view_block_item);
-        // zjcvm::Execution::Instance()->NewBlock(*view_block_item, db_batch);
     }
 
     if (block_item->has_elect_statistic()) {

@@ -168,15 +168,6 @@ Status BlockAcceptor::Accept(
         return s;
     }
 
-#ifndef NDEBUG
-    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != common::kUnicastAddressLength && 
-                iter->first.size() != common::kPreypamentAddressLength) {
-            assert(false);
-        }
-    }
-#endif
-
     for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
         if (iter->first.size() != common::kUnicastAddressLength && 
                 iter->first.size() != common::kPreypamentAddressLength) {

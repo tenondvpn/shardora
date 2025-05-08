@@ -95,7 +95,9 @@ public:
             return 0;
         };
 
-        txs_pools_->GetTxSyncToLeader(leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, txs, tx_valid_func);
+        txs_pools_->GetTxSyncToLeader(
+            leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, 
+            txs, tx_valid_func);
     }
 
 private:
