@@ -13,7 +13,13 @@ class HttpClient {
 public:
     HttpClient();
     ~HttpClient();
-    int32_t Request(const char* ip, uint16_t port, const std::string& msg, evhtp_hook_read_cb cb);
+    int32_t Get(const char* ip, uint16_t port, const std::string& msg, evhtp_hook_read_cb cb);
+    int32_t Post(
+        const char* ip, 
+        uint16_t port, 
+        const std::string& url, 
+        const std::string& post_data, 
+        evhtp_hook_read_cb cb);
 
 private:
     void Destroy();

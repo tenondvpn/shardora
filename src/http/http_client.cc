@@ -52,7 +52,7 @@ void HttpClient::Destroy() {
     }
 }
 
-int32_t HttpClient::Request(const char* ip, uint16_t port, const std::string& msg, evhtp_hook_read_cb cb) {
+int32_t HttpClient::Get(const char* ip, uint16_t port, const std::string& msg, evhtp_hook_read_cb cb) {
     evhtp_connection_t* conn = evhtp_connection_new(evbase_, ip, port);
     if (conn == nullptr) {
         std::cout << "get connection failed!" << std::endl;
@@ -71,6 +71,33 @@ int32_t HttpClient::Request(const char* ip, uint16_t port, const std::string& ms
         evhtp_header_new("Connection", "close", 0, 0));
     std::string req = std::string("/query_init?msg=") + msg;
     evhtp_make_request(conn, request, htp_method_GET, req.c_str());
+    return kHttpSuccess;
+}
+
+int32_t HttpClient::Post(
+        const char* ip, 
+        uint16_t port, 
+        const std::string& url, 
+        const std::string& post_data, 
+        evhtp_hook_read_cb cb) {
+    evhtp_connection_t* conn = evhtp_connection_new(evbase_, ip, port);
+    if (conn == nullptr) {
+        std::cout << "get connection failed!" << std::endl;
+        return 1;
+    }
+
+    evhtp_request_t* request = evhtp_request_new(request_cb, evbase_);
+    evhtp_request_set_hook(request, evhtp_hook_on_read, (evhtp_hook)cb, evbase_);
+    evhtp_request_set_hook(request, evhtp_hook_on_request_fini, (evhtp_hook)request_fini_cb, evbase_);
+    evhtp_request_set_hook(request, evhtp_hook_on_connection_fini, (evhtp_hook)connection_fini_cb, evbase_);
+    evhtp_headers_add_header(request->headers_out,
+        evhtp_header_new("Host", "ieatfood.net", 0, 0));
+    evhtp_headers_add_header(request->headers_out,
+        evhtp_header_new("User-Agent", "libevhtp", 0, 0));
+    evhtp_headers_add_header(request->headers_out,
+        evhtp_header_new("Connection", "close", 0, 0));
+    evbuffer_add(request->buffer_out, post_data.c_str(), post_data.size());
+    evhtp_make_request(conn, request, htp_method_POST, url.c_str());
     return kHttpSuccess;
 }
 

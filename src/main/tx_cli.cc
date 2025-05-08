@@ -8,7 +8,9 @@
 #include "common/string_utils.h"
 #include "db/db.h"
 #include "dht/dht_key.h"
+#include "http/http_client.h"
 #include "pools/tx_utils.h"
+#include "protos/address.pb.h"
 #include "security/ecdsa/ecdsa.h"
 #include "security/gmssl/gmssl.h"
 #include "security/oqs/oqs.h"
@@ -369,6 +371,30 @@ static void GetOqsKeys() {
     delete[]read_buf;
 }
 
+static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
+    if (req->status != 200) {
+        fprintf(stderr, "请求失败，状态码: %d\n", req->status);
+        return;
+    }
+    
+    struct evbuffer* input = req->buffer_in;
+    size_t len = evbuffer_get_length(input);
+    char* response_data = (char*)malloc(len + 1);
+    evbuffer_copyout(input, response_data, len);
+    response_data[len] = '\0';
+    
+    printf("响应内容: %s\n", response_data);
+    free(response_data);
+    return EVHTP_RES_OK;
+}
+
+int GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
+    http::HttpClient cli;
+    std::string data = common::StringUtil::Format("{\"address\": \"%s\"}", common::Encode::HexEncode(addr).c_str());
+    cli.Post(peer_ip.c_str(), 8080, "/query_account", data, GetAccountInfoCallback);
+    return 0;
+}
+
 int tx_main(int argc, char** argv) {
     // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool
     uint32_t pool_id = -1;
@@ -489,6 +515,7 @@ int tx_main(int argc, char** argv) {
             //++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
+            GetAddressInfo(ip, security->GetAddress());
             //usleep(10000);
             
             usleep(1000000lu);
