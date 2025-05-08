@@ -1716,6 +1716,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
             }
 
             ZJC_INFO("now handle line: %s", lines[i]);
+            assert(strlen(items[0]) == 32);
             std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(common::Encode::HexDecode(items[0]));
             auto pool_idx = common::GetAddressPoolIndex(secptr->GetAddress());
