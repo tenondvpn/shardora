@@ -392,8 +392,6 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     char* response_data = (char*)malloc(len + 1);
     evbuffer_copyout(input, response_data, len);
     response_data[len] = '\0';
-    
-    printf("响应内容len: %d content: %s\n", len, response_data);
     account_info_json = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
     free(response_data);
     std::unique_lock<std::mutex> l(cli_mutex);
@@ -504,13 +502,15 @@ int tx_main(int argc, char** argv) {
     }
 
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
-        if (count % 100 == 0 || src_prikey_with_nonce[from_prikey] + 1024 < prikey_with_nonce[from_prikey]) {
+        if (count % 100 == 0 || src_prikey_with_nonce[from_prikey] + 1000 < prikey_with_nonce[from_prikey]) {
             // ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
             auto addr_json = GetAddressInfo(ip, security->GetAddress());
             if (addr_json) {
-                printf("success get address info: %s\n", addr_json->dump().c_str());
+                printf("success get address info: %s, now nonce: %lu\n",
+                    addr_json->dump().c_str(), 
+                    src_prikey_with_nonce[from_prikey]);
                 uint64_t nonce = 0;
                 common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
                 src_prikey_with_nonce[from_prikey] = nonce;
