@@ -1710,11 +1710,12 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         auto lines = common::Split<1024>(data, '\n');
         auto& pool_index_map = net_pool_index_map_[net_id];
         for (int32_t i = 0; i < lines.Count(); ++i) {
-            auto items = common::Split<1024>(lines[i], '\t');
+            auto items = common::Split<>(lines[i], '\t');
             if (items.Count() != 2) {
                 break;
             }
 
+            ZJC_INFO("now handle line: %s", lines[i]);
             std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(common::Encode::HexDecode(items[0]));
             auto pool_idx = common::GetAddressPoolIndex(secptr->GetAddress());
