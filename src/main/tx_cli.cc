@@ -523,7 +523,6 @@ int base_tx_main(int argc, char** argv) {
     auto multi = multi_pool;
     auto shardnum = 3;
     auto to_addr_count = std::stoi(argv[2]);
-
     if (argc >= 5) {
         ip = argv[3];
         port = std::stoi(argv[4]);

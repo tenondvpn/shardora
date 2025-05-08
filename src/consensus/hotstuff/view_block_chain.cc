@@ -458,6 +458,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
         view_blocks_info_.erase(tmp_block->qc().view_block_hash());
         ADD_DEBUG_PROCESS_TIMESTAMP();
+        block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
 #ifndef NDEBUG
         for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
             if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
