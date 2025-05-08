@@ -391,8 +391,8 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
 }
 
 int GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
-    std::string data = common::StringUtil::Format("address=%s", common::Encode::HexEncode(addr).c_str());
-    cli.Post(peer_ip.c_str(), 23001, "/query_account", data, GetAccountInfoCallback);
+    std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
+    cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
     return 0;
 }
 
