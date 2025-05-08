@@ -636,6 +636,10 @@ int GenesisBlockInit::CreateElectBlock(
         }
 
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
+        ZJC_INFO("sharding: %d success add member: %s, %s", 
+            shard_netid,
+            common::Encode::HexEncode((*iter)->prikey).c_str(), 
+            common::Encode::HexEncode((*iter)->id).c_str());
     }
 
     tenon_block->set_height(height);
