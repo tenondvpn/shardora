@@ -97,7 +97,7 @@ int32_t HttpClient::Post(
     evhtp_headers_add_header(request->headers_out,
         evhtp_header_new("Connection", "close", 0, 0));
     evhtp_headers_add_header(request->headers_out, evhtp_header_new("Content-Type", "application/json", 0, 0));
-    evhtp_headers_add_header(request->headers_out, evhtp_header_new("Content-Length", std::to_string(post_data.size()).c_str(), 0, 0));
+    evhtp_headers_add_header(request->headers_out, evhtp_header_new("Content-Length", std::to_string(post_data.size()).c_str(), 0, 1));
     evbuffer_add(request->buffer_out, post_data.c_str(), post_data.size());
 
     evhtp_make_request(conn, request, htp_method_POST, url.c_str());
