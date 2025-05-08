@@ -524,7 +524,7 @@ void NetworkInit::InitLocalNetworkId() {
         got_sharding_id = local_node_account_info->sharding_id();
         des_sharding_id_ = got_sharding_id;
         prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
-        ZJC_DEBUG("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
+        ZJC_INFO("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
     }
 
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
@@ -537,12 +537,12 @@ void NetworkInit::InitLocalNetworkId() {
         auto& in = elect_block.in();
         for (int32_t member_idx = 0; member_idx < in.size(); ++member_idx) {
             auto id = security_->GetAddress(in[member_idx].pubkey());
-            ZJC_DEBUG("network: %d get member id: %s, local id: %s",
+            ZJC_INFO("network: %d get member id: %s, local id: %s",
                 sharding_id, common::Encode::HexEncode(id).c_str(),
                 common::Encode::HexEncode(security_->GetAddress()).c_str());
             // 如果本 node pubkey 与 elect block 当中记录的相同，则分配到对应的 sharding
             if (id == security_->GetAddress()) {
-                ZJC_DEBUG("should join network: %u", sharding_id);
+                ZJC_INFO("should join network: %u", sharding_id);
                 des_sharding_id_ = sharding_id;
                 common::GlobalInfo::Instance()->set_network_id(sharding_id);
                 break;
@@ -556,6 +556,7 @@ void NetworkInit::InitLocalNetworkId() {
 
     auto waiting_network_id = got_sharding_id + network::kConsensusWaitingShardOffset;
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
+    ZJC_INFO("should join waiting network: %u", waiting_network_id);
 }
 
 int NetworkInit::InitSecurity() {
