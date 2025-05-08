@@ -558,7 +558,20 @@ static void AbiQueryContract(evhtp_request_t* req, void* data) {
 }
 
 static void QueryAccount(evhtp_request_t* req, void* data) {
-    ZJC_DEBUG("query account.");
+#ifdef NDEBUG 
+    {
+        struct evbuffer* input = req->buffer_in;
+        size_t len = evbuffer_get_length(input);
+        char* response_data = (char*)malloc(len + 1);
+        evbuffer_copyout(input, response_data, len);
+        response_data[len] = '\0';
+
+        printf("响应内容len: %d content: %s\n", len, response_data);
+        std::string res = common::StringUtil::Format("param address is null req: %s", response_data);
+        ZJC_DEBUG("query account: %s", response_data);
+        free(response_data);
+    }
+#endif
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
     auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
     auto header3 = evhtp_header_new(
@@ -570,7 +583,7 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
 
     const char* tmp_addr = evhtp_kv_find(req->uri->query, "address");
     if (tmp_addr == nullptr) {
-         struct evbuffer* input = req->buffer_in;
+        struct evbuffer* input = req->buffer_in;
         size_t len = evbuffer_get_length(input);
         char* response_data = (char*)malloc(len + 1);
         evbuffer_copyout(input, response_data, len);
