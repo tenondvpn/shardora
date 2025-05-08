@@ -500,7 +500,7 @@ int tx_main(int argc, char** argv) {
     uint32_t step_num = 1000;
     uint64_t random_u64 = common::Random::RandomUint64();
     while (true) {
-        if (count % 100 == 0) {
+        if (count % batch_nonce_check_count == 0) {
             // ++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
@@ -1178,7 +1178,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
 
 void UpdateAddressNonce() {
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
-        if (src_prikey_with_nonce[*iter] + batch_nonce_check_count >= prikey_with_nonce[*iter]) {
+        if (src_prikey_with_nonce[*iter] + (batch_nonce_check_count / 2) >= prikey_with_nonce[*iter]) {
             continue;
         }
 
