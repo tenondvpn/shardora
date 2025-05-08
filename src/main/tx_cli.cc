@@ -404,7 +404,7 @@ std::shared_ptr<nlohmann::json> GetAddressInfo(const std::string& peer_ip, const
     std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
     cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
     std::unique_lock<std::mutex> l(cli_mutex);
-    cli_con.wait(l);
+    cli_con.wait_for(l, std::chrono::milliseconds(1000));
     return account_info_json;
 }
 
