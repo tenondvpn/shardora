@@ -20,9 +20,9 @@ public:
         const std::string& url, 
         const std::string& post_data, 
         evhtp_hook_read_cb cb);
+    void Destroy();
 
 private:
-    void Destroy();
     void Start();
 
     evbase_t* evbase_{ nullptr };

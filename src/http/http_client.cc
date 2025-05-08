@@ -27,7 +27,7 @@ static evhtp_res connection_fini_cb(evhtp_connection_t* connection, void* arg) {
 HttpClient::HttpClient() {
     evbase_ = event_base_new();
     http_thread_ = new std::thread(std::bind(&HttpClient::Start, this));
-    // http_thread_->detach();
+    http_thread_->detach();
 }
 
 HttpClient::~HttpClient() {
@@ -42,6 +42,10 @@ void HttpClient::Start() {
 }
 
 void HttpClient::Destroy() {
+    if (destroy_) {
+        return;
+    }
+
     destroy_ = true;
     event_base_loopbreak(evbase_);
     event_base_loopexit(evbase_, nullptr);

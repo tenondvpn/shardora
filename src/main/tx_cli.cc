@@ -1242,6 +1242,7 @@ int main(int argc, char** argv) {
     }
 
     usleep(1000000);
+    cli.Destroy();
     transport::TcpTransport::Instance()->Stop();
     return 0;
 }
