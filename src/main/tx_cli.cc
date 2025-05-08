@@ -34,6 +34,8 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
          {12, "c2e8fb3673f82cadd860d7523c12e71a7279faec0814803e547286bb0363d0e8"}}}
 };
 
+http::HttpClient cli;
+
 static void SignalCallback(int sig_int) { global_stop = true; }
 
 static const std::string get_from_prikey(uint32_t net_id, int32_t pool_id) {
@@ -389,7 +391,6 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
 }
 
 int GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
-    http::HttpClient cli;
     std::string data = common::StringUtil::Format("{\"address\": \"%s\"}", common::Encode::HexEncode(addr).c_str());
     cli.Post(peer_ip.c_str(), 8080, "/query_account", data, GetAccountInfoCallback);
     return 0;
