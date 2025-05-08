@@ -41,7 +41,7 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
 http::HttpClient cli;
 std::mutex cli_mutex;
 std::condition_variable cli_con;
-std::shared_ptr<nlohmann::json> account_info_json = nulptr;
+std::shared_ptr<nlohmann::json> account_info_json = nullptr;
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 
