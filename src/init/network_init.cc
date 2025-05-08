@@ -605,7 +605,7 @@ std::string http_ip = "0.0.0.0";
             peer_ip = "127.0.0.1";
         }
 
-        cli.Request(peer_ip.c_str(), http_port, "ok", http_init_callback);
+        cli.Get(peer_ip.c_str(), http_port, "ok", http_init_callback);
         ZJC_DEBUG("http init wait response coming.");
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(1000));
