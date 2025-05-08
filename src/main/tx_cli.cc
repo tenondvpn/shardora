@@ -2,6 +2,10 @@
 #include <iostream>
 #include <queue>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
+
+#include "json/json.hpp"
 
 #include "common/random.h"
 #include "common/split.h"
@@ -35,6 +39,9 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
 };
 
 http::HttpClient cli;
+std::mutex cli_mutex;
+std::condition_variable cli_con;
+std::shared_ptr<nlohmann::json> account_info_json = nulptr;
 
 static void SignalCallback(int sig_int) { global_stop = true; }
 
@@ -376,6 +383,7 @@ static void GetOqsKeys() {
 static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
     if (req->status != 200) {
         fprintf(stderr, "请求失败，状态码: %d\n", req->status);
+        cli_con.notify_one();
         return EVHTP_RES_ERROR;
     }
     
@@ -386,14 +394,19 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     response_data[len] = '\0';
     
     printf("响应内容len: %d content: %s\n", len, response_data);
+    account_info_json = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
     free(response_data);
+    cli_con.notify_one();
     return EVHTP_RES_OK;
 }
 
-int GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
+std::shared_ptr<nlohmann::json> GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
+    account_info_json = nullptr;
     std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
     cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
-    return 0;
+    std::unique_lock<std::mutex> l(cli_mutex);
+    cli_con.wait(l);
+    return account_info_json;
 }
 
 int tx_main(int argc, char** argv) {
@@ -516,7 +529,10 @@ int tx_main(int argc, char** argv) {
             //++prikey_pos;
             from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            GetAddressInfo(ip, security->GetAddress());
+            auto addr_json = GetAddressInfo(ip, security->GetAddress());
+            if (addr_json) {
+                ZJC_DEBUG("success get address info: %s", addr_json->dump().c_str());
+            }
             //usleep(10000);
             
             usleep(1000000lu);
