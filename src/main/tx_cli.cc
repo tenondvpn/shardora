@@ -1191,7 +1191,7 @@ void UpdateAddressNonce() {
             printf("success get address info: %s\n", addr_json->dump().c_str());
         } else {
             printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
-            exit(1);
+            continue;
         }
 
         uint64_t nonce = 0;
