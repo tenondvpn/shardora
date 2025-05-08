@@ -385,7 +385,7 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     evbuffer_copyout(input, response_data, len);
     response_data[len] = '\0';
     
-    printf("响应内容: %s\n", response_data);
+    printf("响应内容len: %s content: %s\n", len, response_data);
     free(response_data);
     return EVHTP_RES_OK;
 }
