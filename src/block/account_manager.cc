@@ -79,7 +79,7 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
         return addr_info;
     }
 
-    auto addr_info = GetAcountInfoFromDb(addr);
+    addr_info = GetAcountInfoFromDb(addr);
     if (!addr_info || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
         BLOCK_DEBUG(
             "get account failed[%s]", 
