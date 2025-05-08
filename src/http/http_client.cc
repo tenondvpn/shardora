@@ -90,7 +90,7 @@ int32_t HttpClient::Post(
     evhtp_request_set_hook(request, evhtp_hook_on_read, (evhtp_hook)cb, evbase_);
     // evhtp_request_set_hook(request, evhtp_hook_on_request_fini, (evhtp_hook)request_fini_cb, evbase_);
     // evhtp_request_set_hook(request, evhtp_hook_on_connection_fini, (evhtp_hook)connection_fini_cb, evbase_);
-    evhtp_headers_add_header(request->headers_out, evhtp_header_new("Content-Type", "application/json", 0, 0));
+    evhtp_headers_add_header(request->headers_out, evhtp_header_new("Content-Type", "application/plain-text", 0, 0));
 
     char len_str[20];
     snprintf(len_str, sizeof(len_str), "%zu", post_data.size());
