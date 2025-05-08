@@ -379,7 +379,7 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
         return EVHTP_RES_ERROR;
     }
     
-    struct evbuffer* input = req->buffer_in;
+    struct evbuffer* input = buf;//req->buffer_in;
     size_t len = evbuffer_get_length(input);
     char* response_data = (char*)malloc(len + 1);
     evbuffer_copyout(input, response_data, len);
