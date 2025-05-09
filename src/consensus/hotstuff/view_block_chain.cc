@@ -569,6 +569,9 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
     ZJC_DEBUG("pool: %u, now PruneTo: %lu, commited_max_view_: %lu, view_blocks_info_ size: %u", 
         pool_index_, stored_to_db_view_, commited_max_view_, view_blocks_info_.size());
     for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+        ZJC_INFO("check prune to %u, view: %lu", 
+            iter->second->view_block->qc().pool_index(),
+            iter->second->view_block->qc().view());
         if (iter->second->view_block &&
                 iter->second->view_block->qc().view() < stored_to_db_view_) {
             if (view_commited(
