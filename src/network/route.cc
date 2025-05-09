@@ -91,9 +91,11 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
     if (header.has_broadcast() && !header_ptr->header_str.empty()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
+        auto tmp_ptr = std::make_shared<transport::TransportMessage>();
+        tmp_ptr->header.ParseFromString(header_ptr->header_str);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
-        broadcast_queue_[thread_idx].push(header_ptr);
+        broadcast_queue_[thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
 
@@ -193,7 +195,7 @@ void Route::Broadcasting() {
                     break;
                 }
             
-                // msg_ptr->header.mutable_broadcast()->set_hop_to_layer(1);
+                msg_ptr->header.mutable_broadcast()->set_hop_to_layer(1);
                 Broadcast(msg_ptr);
                 if (!has_data) {
                     has_data = true;
@@ -250,11 +252,7 @@ Route::~Route() {
 }
 
 void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
-    transport::protobuf::Header header;
-    if (!header.ParseFromString(msg_ptr->header_str)) {
-        return;
-    }
-    
+    auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
         ZJC_WARN("broadcast error: %lu", header.hash64());
         return;
