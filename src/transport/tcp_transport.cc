@@ -174,13 +174,16 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
     }
 
     MessagePtr msg_ptr = std::make_shared<TransportMessage>();
-    msg_ptr->header_str = std::string(data, len);
     if (!msg_ptr->header.ParseFromArray(data, len)) {
         TRANSPORT_ERROR("Message ParseFromString from string failed!"
             "[%s:%d][len: %d]",
             from_ip.c_str(), from_port, len);
         ZJC_DEBUG("message coming failed 4");
         return false;
+    }
+
+    if (msg_ptr->header.has_broadcast()) {
+        msg_ptr->header_str = std::string(data, len);
     }
 
     if (msg_ptr->header.has_from_public_port()) {
