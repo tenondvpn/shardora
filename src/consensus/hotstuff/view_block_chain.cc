@@ -515,7 +515,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("PruneTo success, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
+    ZJC_INFO("PruneTo success, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
         v_block->qc().network_id(), 
         v_block->qc().pool_index(), 
         v_block->qc().view(), 
