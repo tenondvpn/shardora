@@ -89,11 +89,10 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
-    if (header.has_broadcast()) {
+    if (header.has_broadcast() && !header_ptr->header_str.empty()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
-        auto tmp_str = header_ptr->header.SerializeAsString();
         auto tmp_ptr = std::make_shared<transport::TransportMessage>();
-        tmp_ptr->header.ParseFromString(tmp_str);
+        tmp_ptr->header.ParseFromString(header_ptr->header_str);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         // ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
         broadcast_queue_[thread_idx].push(tmp_ptr);

@@ -107,6 +107,7 @@ public:
     }
 
     protobuf::Header header;
+    std::string header_str;
     std::shared_ptr<tnet::TcpInterface> conn = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
