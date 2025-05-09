@@ -574,7 +574,8 @@ Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_b
             if (view_commited(
                     iter->second->view_block->qc().network_id(),
                     iter->second->view_block->qc().view()) || 
-                    iter->second->view_block->qc().sign_x().empty()) {
+                    iter->second->view_block->qc().sign_x().empty() || 
+                    iter->second->view_block->qc().view() <= 0) {
                 iter = view_blocks_info_.erase(iter);
                 CHECK_MEMORY_SIZE(view_blocks_info_);
             } else {
