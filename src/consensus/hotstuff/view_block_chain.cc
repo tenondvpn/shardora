@@ -153,6 +153,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t netwo
     while (commited_block_queue_.pop(&view_block_info_ptr)) {
         commited_block_map_[view_block_info_ptr->view_block->block_info().height()] = view_block_info_ptr;
         commited_pri_queue_.push(view_block_info_ptr->view_block->block_info().height());
+        CHECK_MEMORY_SIZE(commited_block_map_);
     }
 
     std::shared_ptr<ViewBlock> view_block_ptr;
@@ -194,6 +195,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
     while (cached_block_queue_.pop(&view_block_info_ptr)) {
         cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;
         cached_pri_queue_.push(view_block_info_ptr);
+        CHECK_MEMORY_SIZE(cached_block_map_);
     }
 
     std::shared_ptr<ViewBlock> view_block_ptr;
@@ -343,6 +345,7 @@ bool ViewBlockChain::ViewBlockIsCheckedParentHash(const std::string& hash) {
 
 void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_t view) {
     valid_parent_block_hash_[hash] = view;
+    CHECK_MEMORY_SIZE(valid_parent_block_hash_);
     View tmp_view;
     while (stored_view_queue_.pop(&tmp_view)) {
         commited_view_.insert(tmp_view);

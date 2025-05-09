@@ -59,6 +59,7 @@ void KeyValueSync::AddSyncHeight(
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority) {
+    return;
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
@@ -72,6 +73,7 @@ void KeyValueSync::AddSyncViewHash(
         uint32_t pool_idx,
         const std::string& view_hash, 
         uint32_t priority) {
+    return;
     assert(!view_hash.empty());
     char key[2 + view_hash.size()] = {0};
     uint16_t* pools = (uint16_t*)(key);
@@ -156,6 +158,7 @@ void KeyValueSync::PopItems() {
             }
 
             added_key_set_.insert(item->key);
+            CHECK_MEMORY_SIZE(added_key_set_);
             // auto tmp_iter = synced_map_.find(item->key);
             // if (tmp_iter != synced_map_.end()) {
             //     ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
@@ -578,6 +581,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
         }
 
         synced_keys_.insert(key);
+        CHECK_MEMORY_SIZE(synced_keys_);
         timeout_queue_.push_back(key);
         if (timeout_queue_.size() >= 10240) {
             synced_keys_.erase(timeout_queue_.front());
