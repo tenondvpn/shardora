@@ -1559,7 +1559,7 @@ Status Hotstuff::VerifyViewBlock(
     }
 
     if (v_block.block_info().height() <= view_block_chain->LatestCommittedBlock()->block_info().height()) {
-        ZJC_DEBUG("new view block height error: %lu, last commited block height: %lu", 
+        ZJC_ERROR("new view block height error: %lu, last commited block height: %lu", 
             v_block.block_info().height(),
             view_block_chain->LatestCommittedBlock()->block_info().height());
         return Status::kError;
