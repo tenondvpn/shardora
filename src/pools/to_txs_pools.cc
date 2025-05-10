@@ -88,6 +88,16 @@ void ToTxsPools::ThreadToStatistic(
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = std::make_shared<pools::protobuf::ShardToTxItem>(
             block.normal_to().to_heights());
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            auto iter = added_heights_[i].begin();
+            while (iter != added_heights_[i].end()) {
+                if (iter->first >= block.normal_to().to_heights().heights(i)) {
+                    break;
+                }
+
+                iter = added_heights_[i].erase(iter);
+            }
+        }
     }
 
     added_heights_[pool_idx].insert(std::make_pair<>(
@@ -114,11 +124,11 @@ void ToTxsPools::ThreadToStatistic(
             }
         }
     }
+
     valided_heights_[pool_idx].insert(block.height());
     if (block.height() > pool_max_heihgts_[pool_idx]) {
         pool_max_heihgts_[pool_idx] = block.height();
     }
-
 }
 
 void ToTxsPools::LoadLatestHeights() {
