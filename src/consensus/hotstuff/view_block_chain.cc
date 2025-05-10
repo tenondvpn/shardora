@@ -485,7 +485,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         pools_mgr_->TxOver(pool_index_, *tmp_block);
-        // block_mgr_->ConsensusAddBlock(*iter);
+        block_mgr_->ConsensusAddBlock(*iter);
         stored_to_db_view_ = tmp_block->qc().view();
     }
     
