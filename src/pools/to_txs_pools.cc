@@ -95,6 +95,7 @@ void ToTxsPools::ThreadToStatistic(
                     break;
                 }
 
+                ZJC_DEBUG("sucess remove pool: %d, height: %lu", i, iter->first);
                 iter = added_heights_[i].erase(iter);
             }
         }
