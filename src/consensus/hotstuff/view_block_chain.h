@@ -56,7 +56,6 @@ public:
     // if in the same branch
     bool Extends(const ViewBlock& block, const ViewBlock& target);
     // prune from last prune height to target view block
-    Status PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes);
     Status GetAll(std::vector<std::shared_ptr<ViewBlock>>&);
     Status GetAllVerified(std::vector<std::shared_ptr<ViewBlock>>&);
     Status GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>&);
@@ -81,7 +80,7 @@ public:
     std::string String() const;
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
     bool ViewBlockIsCheckedParentHash(const std::string& hash);
-    void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
+    // void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
     protos::AddressInfoPtr ChainGetAccountInfo(const std::string& acc_id);
     protos::AddressInfoPtr ChainGetPoolAccountInfo(uint32_t pool_index);
     void Commit(const std::shared_ptr<ViewBlockInfo>& queue_item_ptr);
@@ -91,23 +90,11 @@ public:
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     bool view_commited(uint32_t network_id, View view) const {
-        if (commited_view_.find(view) != commited_view_.end()) {
-            return true;
-        }
-
         if (prefix_db_->ViewBlockIsValidView(network_id, pool_index_, view)) {
             return true;
         }
 
         return false;
-    }
-    
-    void UpdateStoredToDbView(View view) {
-        if (stored_to_db_view_ < view) {
-            stored_to_db_view_ = view;
-        }
-
-        stored_view_queue_.push(view);
     }
 
     uint64_t GetMaxHeight() {
@@ -243,6 +230,7 @@ private:
                     view_block_info->view_block->block_info().tx_list_size(),
                     String().c_str());
             }
+
             return;
         }
         
@@ -286,8 +274,6 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     volatile View stored_to_db_view_ = 0llu;
     volatile View commited_max_view_ = 0llu;
-    std::unordered_map<std::string, uint64_t> valid_parent_block_hash_;
-    std::set<uint64_t> commited_view_;
     common::ThreadSafeQueue<View> stored_view_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;

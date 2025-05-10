@@ -251,7 +251,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
         }
     }
 
-    return nullptr;    
+    return nullptr;
 }
 
 bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_block) {
@@ -335,24 +335,7 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
 
 
 bool ViewBlockChain::ViewBlockIsCheckedParentHash(const std::string& hash) {
-    auto iter = valid_parent_block_hash_.find(hash);
-    if (iter != valid_parent_block_hash_.end()) {
-        return true;
-    }
-
     return prefix_db_->ParentHashExists(hash);
-}
-
-void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_t view) {
-    valid_parent_block_hash_[hash] = view;
-    CHECK_MEMORY_SIZE(valid_parent_block_hash_);
-    View tmp_view;
-    while (stored_view_queue_.pop(&tmp_view)) {
-        commited_view_.insert(tmp_view);
-        while (commited_view_.size() > kCachedViewBlockCount * 10) {
-            commited_view_.erase(commited_view_.begin());
-        }
-    }
 }
 
 void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
@@ -439,9 +422,9 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
         new_block_cache_callback_(tmp_block, db_batch);
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        SaveBlockCheckedParentHash(
-            tmp_block->parent_hash(), 
-            tmp_block->qc().view());
+        // SaveBlockCheckedParentHash(
+        //     tmp_block->parent_hash(), 
+        //     tmp_block->qc().view());
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (tmp_block->qc().view() > commited_max_view_) {
             commited_max_view_ = tmp_block->qc().view();
@@ -460,6 +443,10 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         view_blocks_info_.erase(tmp_block->qc().view_block_hash());
+        if (tmp_block->qc().view() <= 1) {
+            view_blocks_info_.erase(tmp_block->parent_hash());
+        }
+        
         ADD_DEBUG_PROCESS_TIMESTAMP();
         block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
 // #ifndef NDEBUG
@@ -506,28 +493,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 //         String().c_str(),
 //         ProtobufToJson(cons_debug3).c_str());
 // #endif
-    auto s = PruneTo(forked_blockes);
-    if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d, prune failed s: %d, vb view: &lu", pool_index_, s, v_block->qc().view());
-        ZJC_WARN("PruneTo failed, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
-            v_block->qc().network_id(), 
-            v_block->qc().pool_index(), 
-            v_block->qc().view(), 
-            v_block->block_info().height(),
-            String().c_str());
-        return;
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_INFO("PruneTo success, success commit view block %u_%u_%lu, height: %lu, now chain: %s",
-        v_block->qc().network_id(), 
-        v_block->qc().pool_index(), 
-        v_block->qc().view(), 
-        v_block->block_info().height(),
-        String().c_str());
-
-    
-    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void ViewBlockChain::AddNewBlock(
@@ -565,32 +530,6 @@ void ViewBlockChain::AddNewBlock(
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         db_batch);
-}
-
-// 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
-Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
-    View tmp_view = 0;
-    ZJC_DEBUG("pool: %u, now PruneTo: %lu, commited_max_view_: %lu, view_blocks_info_ size: %u", 
-        pool_index_, stored_to_db_view_, commited_max_view_, view_blocks_info_.size());
-    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-        if (iter->second->view_block &&
-                iter->second->view_block->qc().view() < stored_to_db_view_) {
-            if (view_commited(
-                    iter->second->view_block->qc().network_id(),
-                    iter->second->view_block->qc().view()) || 
-                    iter->second->view_block->qc().sign_x().empty() || 
-                    iter->second->view_block->qc().view() <= 0) {
-                iter = view_blocks_info_.erase(iter);
-                CHECK_MEMORY_SIZE(view_blocks_info_);
-            } else {
-                ++iter;
-            }
-        } else {
-            ++iter;
-        }
-    }
-
-    return Status::kSuccess;
 }
 
 bool ViewBlockChain::IsValid() {

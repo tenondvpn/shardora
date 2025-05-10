@@ -95,11 +95,6 @@ public:
     
     HotstuffManager();
     virtual ~HotstuffManager();
-    
-    void UpdateStoredToDbView(uint32_t pool_index, View view) {
-        pool_hotstuff_[pool_index]->UpdateStoredToDbView(view);
-    }
-
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 

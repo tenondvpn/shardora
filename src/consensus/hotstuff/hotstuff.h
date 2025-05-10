@@ -100,15 +100,6 @@ public:
     }    
     
     Status Start();
-
-    void UpdateStoredToDbView(View view) {
-        if (view > db_stored_view_) {
-            db_stored_view_ = view;
-        }
-
-        view_block_chain_->UpdateStoredToDbView(view);
-    }
-    
     void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
