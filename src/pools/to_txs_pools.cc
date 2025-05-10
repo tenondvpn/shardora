@@ -84,7 +84,7 @@ void ToTxsPools::ThreadToStatistic(
     }
 
     if (block.has_normal_to()) {
-        ZJC_DEBUG("success update to heights: %s", ProtobufToJson(block.normal_to()).c_str());
+        ZJC_INFO("success update to heights: %s", ProtobufToJson(block.normal_to()).c_str());
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = std::make_shared<pools::protobuf::ShardToTxItem>(
             block.normal_to().to_heights());
@@ -410,7 +410,7 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    ZJC_DEBUG("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+    ZJC_INFO("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
         ProtobufToJson(*prev_to_heights).c_str(), 
         ProtobufToJson(leader_to_heights).c_str());
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
