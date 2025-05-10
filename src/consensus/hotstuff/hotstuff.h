@@ -280,7 +280,6 @@ private:
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;
-    // std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;

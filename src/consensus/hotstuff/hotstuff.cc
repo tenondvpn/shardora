@@ -1489,7 +1489,7 @@ void Hotstuff::HandleSyncedViewBlock(
         return;
     }
     
-    ZJC_DEBUG("now handle synced view block %u_%u_%lu, height: %lu",
+    ZJC_INFO("now handle synced view block %u_%u_%lu, height: %lu",
         vblock->qc().network_id(),
         vblock->qc().pool_index(),
         vblock->qc().view(),

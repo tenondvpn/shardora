@@ -186,10 +186,6 @@ public:
             view_block->qc().view());
         latest_committed_block_ = view_block;
         // commited_block_queue_.push(view_block_info);
-        auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
-        if (it != view_blocks_info_.end()) {
-            it->second->status = ViewBlockStatus::Committed;
-        }
     }
 
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {

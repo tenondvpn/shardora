@@ -914,7 +914,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     if (!IsQcTcValid(view_block_ptr->qc())) {
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
-        cached_block_queue_.push(view_block_ptr_info);
+        // cached_block_queue_.push(view_block_ptr_info);
     }
 
     if (high_view_block_ == nullptr ||
