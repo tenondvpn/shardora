@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument('--private_key', '-p', type=str, help='私钥')
     parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
     parser.add_argument('--address_count', '-n', type=int, help='转账目标地址数')
+    parser.add_argument('--to', '-t', type=int, help='转账目标地址')
     parser.add_argument('--chain_ip', '-i', type=str, help='转账目标机器')
     args = parser.parse_args()
     from_private_key = args.private_key
@@ -34,7 +35,33 @@ if __name__ == "__main__":
 
     nonce = int(addr_info["nonce"]) + 1
     check_accounts_str = ""
-    for i in range(0, args.address_count):
+
+    base_account_count = 0
+    if args.address_count:
+        base_account_count = args.address_count
+
+    if args.to:
+        to = args.to
+        check_accounts_str += to + "_"
+        res = shardora_api.transfer(
+            from_private_key,
+            to,
+            amount,
+            nonce,
+            0,
+            "",
+            "",
+            "",
+            "",
+            0,
+            check_tx_valid=False)
+        
+        nonce += 1
+        ids[to] = False
+        if not res:
+            sys.exit(1)
+
+    for i in range(0, base_account_count):
         tmp_key = str(i)
         private_key = prikey_base[0:(len(prikey_base) - len(tmp_key))] + tmp_key
         to = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
