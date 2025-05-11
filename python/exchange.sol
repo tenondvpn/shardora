@@ -76,6 +76,8 @@ contract Exchange {
         bytes memory key = bytesConcat(all_bytes, 2);
         require(!purchase_map[key]);
         emit DebugEvent(6);
+        emit DebugEvent(item_map[hash].price);
+        emit DebugEvent(msg.value);
         ItemInfo storage item = item_map[hash];
         require(item_map[hash].price <= msg.value);
         emit DebugEvent(7);
