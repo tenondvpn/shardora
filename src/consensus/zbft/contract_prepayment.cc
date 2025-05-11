@@ -81,6 +81,11 @@ int ContractPrepayment::HandleTx(
 
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
+    assert(acc_balance_map[from]->has_sharding_id());
+    assert(acc_balance_map[from]->has_pool_index());
+    assert(acc_balance_map[from]->has_addr());
+    assert(acc_balance_map[from]->has_type());
+    assert(acc_balance_map[from]->has_latest_height());
     // prefix_db_->AddAddressInfo(from, *(acc_balance_map[from]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
