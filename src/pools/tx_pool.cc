@@ -163,7 +163,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         }
 
         if (addr.empty()) {
-            ZJC_DEBUG("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
+            ZJC_INFO("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
             assert(false);
             continue;
         }
@@ -198,7 +198,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+        ZJC_INFO("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
             pool_index_,
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
