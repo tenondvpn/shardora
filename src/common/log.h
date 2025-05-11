@@ -142,7 +142,7 @@
 #endif
 
 static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
-    // return "";
+    return "";
 #ifdef NDEBUG
     return "";
 #endif
