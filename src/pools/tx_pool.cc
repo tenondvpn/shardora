@@ -162,6 +162,10 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             addr = view_block.block_info().tx_list(i).unique_hash();
         }
 
+        if (view_block.block_info().tx_list(i).step() == pools::protobuf::kContractExcute) {
+            addr = view_block.block_info().tx_list(i).to() + view_block.block_info().tx_list(i).from();
+        }
+
         if (addr.empty()) {
             ZJC_INFO("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
             assert(false);
@@ -198,8 +202,9 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_INFO("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+        ZJC_INFO("trace tx pool: %d, step: %d, over tx addr: %s, nonce: %lu", 
             pool_index_,
+            view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
     }
