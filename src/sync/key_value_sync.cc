@@ -579,11 +579,11 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
         }
 
         synced_keys_.insert(key);
-        CHECK_MEMORY_SIZE(synced_keys_);
         timeout_queue_.push_back(key);
         if (timeout_queue_.size() >= 10240) {
             synced_keys_.erase(timeout_queue_.front());
             timeout_queue_.pop_front();
+            CHECK_MEMORY_SIZE(synced_keys_);
         }
 
         ZJC_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
