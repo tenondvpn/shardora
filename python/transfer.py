@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument('--private_key', '-p', type=str, help='私钥')
     parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
     parser.add_argument('--address_count', '-n', type=int, help='转账目标地址数')
-    parser.add_argument('--to', '-t', type=int, help='转账目标地址')
+    parser.add_argument('--to', '-t', type=str, help='转账目标地址')
     parser.add_argument('--chain_ip', '-i', type=str, help='转账目标机器')
     args = parser.parse_args()
     from_private_key = args.private_key
