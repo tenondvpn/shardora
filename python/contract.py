@@ -374,7 +374,7 @@ if __name__ == "__main__":
             res = shardora_api.transfer(
                 private_key,
                 to,
-                0,
+                amount,
                 -1,
                 7,
                 "",
@@ -399,7 +399,7 @@ if __name__ == "__main__":
     if function == "":
         contract_address = shardora_api.deploy_contract(
             private_key,
-            0,
+            amount,
             sol_file,
             function_types,
             tmp_function_args,
@@ -418,7 +418,7 @@ if __name__ == "__main__":
         res = shardora_api.transfer(
             private_key,
             to,
-            0,
+            amount,
             -1,
             8,
             "",
