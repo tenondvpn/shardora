@@ -110,6 +110,7 @@ contract Exchange {
                 payable(item.buyers[i].buyer).transfer(item.buyers[i].price);
             }
         }
+        emit DebugEvent(8);
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
