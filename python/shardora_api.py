@@ -284,7 +284,7 @@ def deploy_contract(
             elif check_address_valid(contract_address):
                 return contract_address
             
-            time.sleep(1)
+            time.sleep(3)
 
     return None
 
