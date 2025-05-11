@@ -27,6 +27,8 @@ if __name__ == "__main__":
         print(f"invalid private key {from_private_key} and get addr info failed: {from_address} ")
         sys.exit(1)
 
+    nonce = int(addr_info["nonce"]) + 1
+    print(f"get from address: {from_address}, new nonce: {nonce}")
     if args.chain_ip:
         shardora_api.http_ip = args.chain_ip
 
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     time.sleep(20)
     for i in range(0, 30):
         res = shardora_api.check_accounts_valid({"addrs": check_accounts_str, "balance": amount})
-        print(f"res status: {res.status_code}, text: {res.text}")
+        # print(f"res status: {res.status_code}, text: {res.text}")
         if res.status_code != 200:
             print(f"post check gids failed status: {res.status_code}, error: {res.text}")
         else:
