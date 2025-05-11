@@ -156,7 +156,8 @@ void KeyValueSync::PopItems() {
             }
 
             added_key_set_.insert(item->key);
-            CHECK_MEMORY_SIZE(added_key_set_);
+            assert(added_key_set_.size() < kCacheSyncKeyValueCount);
+
             // auto tmp_iter = synced_map_.find(item->key);
             // if (tmp_iter != synced_map_.end()) {
             //     ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
@@ -580,12 +581,12 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
         synced_keys_.insert(key);
         timeout_queue_.push_back(key);
-        if (timeout_queue_.size() >= 10240) {
+        if (timeout_queue_.size() >= kCacheSyncKeyValueCount) {
             synced_keys_.erase(timeout_queue_.front());
             timeout_queue_.pop_front();
-            CHECK_MEMORY_SIZE(synced_keys_);
         }
 
+        assert(synced_keys_.size() < kCacheSyncKeyValueCount);
         ZJC_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
             key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
     }
