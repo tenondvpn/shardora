@@ -734,7 +734,7 @@ static void GetBlockWithGid(evhtp_request_t* req, void* data) {
     res_json["msg"] = "success";
     view_block::protobuf::ViewBlockItem view_block;
     
-    bool res = false;  // prefix_db->GetBlockWithUserNonce(common::Encode::HexDecode(addr), tmp_nonce, &view_block);
+    bool res = prefix_db->GetBlockWithHeight(3, 15, 3, &view_block);
     if (res) {
         res_json["block"]["height"] = view_block.block_info().height();
         res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());
@@ -744,6 +744,7 @@ static void GetBlockWithGid(evhtp_request_t* req, void* data) {
     }
        
     auto json_str = res_json.dump();
+    ZJC_DEBUG("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
     evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
 }
