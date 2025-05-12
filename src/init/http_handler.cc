@@ -369,7 +369,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    uint64_t prepayment = addr_info->balance();
+    uint64_t prepayment = 9999999999lu;//addr_info->balance();
     auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);

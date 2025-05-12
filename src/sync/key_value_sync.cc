@@ -157,14 +157,6 @@ void KeyValueSync::PopItems() {
 
             added_key_set_.insert(item->key);
             assert(added_key_set_.size() < kCacheSyncKeyValueCount);
-
-            // auto tmp_iter = synced_map_.find(item->key);
-            // if (tmp_iter != synced_map_.end()) {
-            //     ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
-            //         item->key.c_str(), item->priority);
-            //     continue;
-            // }
-
             prio_sync_queue_[item->priority].push(item);
             CHECK_MEMORY_SIZE(prio_sync_queue_[item->priority]);
             ZJC_DEBUG("add new sync item key: %s, priority: %u",
@@ -614,12 +606,12 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
-        // ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
-        //     "responsed_timeout_us: %lu, now_tm_us: %lu",
-        //     iter->second->key.c_str(), 
-        //     iter->second->sync_times, 
-        //     iter->second->responsed_timeout_us, 
-        //     now_tm_us);
+        ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
+            "responsed_timeout_us: %lu, now_tm_us: %lu",
+            iter->second->key.c_str(), 
+            iter->second->sync_times, 
+            iter->second->responsed_timeout_us, 
+            now_tm_us);
         added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
         CHECK_MEMORY_SIZE(prio_sync_queue_[iter->second->priority]);
