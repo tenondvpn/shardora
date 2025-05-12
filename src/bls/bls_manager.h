@@ -130,9 +130,6 @@ private:
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
     void TimerMessage();
-    void ResetLeaders(
-        const common::MembersPtr& members,
-        elect::protobuf::PrevMembers* prev_members);
     void PopFinishMessage();
     int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 
