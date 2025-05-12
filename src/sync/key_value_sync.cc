@@ -601,7 +601,7 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
-        if (iter->second->sync_tm_us + 1000000 >= now_tm_us) {
+        if (iter->second->sync_tm_us + 3000000 >= now_tm_us) {
             ++iter;
             continue;
         }
