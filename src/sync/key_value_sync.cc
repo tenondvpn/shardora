@@ -156,7 +156,7 @@ void KeyValueSync::PopItems() {
             }
 
             added_key_set_.insert(item->key);
-            assert(added_key_set_.size() < kCacheSyncKeyValueCount);
+            CHECK_MEMORY_SIZE(added_key_set_);
             prio_sync_queue_[item->priority].push(item);
             CHECK_MEMORY_SIZE(prio_sync_queue_[item->priority]);
             ZJC_DEBUG("add new sync item key: %s, priority: %u",
