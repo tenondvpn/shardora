@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.0;
-pragma solidity = 0.8.19;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.7.0 <0.9.0;
 
 contract DataComplianceManager {
     // 管理员地址，用于管理预言机节点列表
