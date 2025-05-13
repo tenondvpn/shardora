@@ -9,168 +9,55 @@ namespace shardora {
 
 namespace common {
 
-template<class KeyType, class ValueType, uint32_t BucketSize, uint8_t EachBucketSize>
+template<class KeyType, class ValueType, uint32_t kMaxSize>
 class UniqueMap {
-    struct Item {
-        Item(const KeyType& key, const ValueType& val) : k(key), v(val) {}
-        KeyType k;
-        ValueType v;
-    };
-
 public:
     explicit UniqueMap() {
-        ZJC_FATAL("Code is obsolete and unavailable");
-        buckets_ = new common::FixedQueue<Item*, EachBucketSize>[BucketSize];
     }
 
     ~UniqueMap() {
-        if (buckets_ == nullptr) {
-            return;
-        }
-
-        for (uint32_t idx = 0; idx < BucketSize; ++idx) {
-            while (!buckets_[idx].IsEmpty()) {
-                auto* item = buckets_[idx].Front();
-                buckets_[idx].Dequeue();
-                delete item;
-            }
-        }
-
-        delete[] buckets_;
-    }
-    
-    bool get(const KeyType& key, ValueType* value) {
-        uint32_t idx = Hash32(key) % BucketSize;
-        if (!buckets_[idx].IsEmpty()) {
-            if (buckets_[idx].rear_ == buckets_[idx].front_) {
-                for (uint8_t i = 0; i < EachBucketSize; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        *value = buckets_[idx].data_[i]->v;
-                        return true;
-                    }
-                }
-            } else if (buckets_[idx].rear_ > buckets_[idx].front_) {
-                for (uint8_t i = buckets_[idx].front_; i < buckets_[idx].rear_; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        *value = buckets_[idx].data_[i]->v;
-                        return true;
-                    }
-                }
-            } else {
-                for (uint8_t i = buckets_[idx].front_; i < EachBucketSize; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        *value = buckets_[idx].data_[i]->v;
-                        return true;
-                    }
-                }
-
-                for (uint8_t i = 0; i < buckets_[idx].rear_; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        *value = buckets_[idx].data_[i]->v;
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 
     bool add(const KeyType& key, const ValueType& value) {
-        uint32_t idx = Hash32(key) % BucketSize;
-        if (Exists(idx, key)) {
-            return false;
+        auto iter = item_map_.find(key);
+        if (iter != item_map_.end()) {
+            item_list_.erase(iter->second);
         }
 
-        if (buckets_[idx].IsFull()) {
-            auto* item = buckets_[idx].Front();
-            buckets_[idx].Dequeue();
-            delete item;
+        item_list_.push_back(key);
+        auto end_iter = item_list_.end();
+        item_map_[key] = --end_iter;
+        kv_map_[key] = value;
+        if (item_list_.size() > kMaxSize) {
+            iter = item_map_.find(item_list_.front());
+            item_map_.erase(iter);
+            auto kv_iter = kv_map_.find(item_list_.front());
+            kv_map_.erase(kv_iter);
+            item_list_.pop_front();
         }
-
-        auto item = new Item(key, value);
-        buckets_[idx].Enqueue(item);
+        
         return true;
     }
 
-    void update(const KeyType& key, const ValueType& value) {
-        if (!exists(key)) {
-            add(key, value);
-            return;
-        }
-
-        uint32_t idx = Hash32(key) % BucketSize;
-        if (buckets_[idx].rear_ == buckets_[idx].front_) {
-            for (uint8_t i = 0; i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    buckets_[idx].data_[i]->v = value;
-                    return;
-                }
-            }
-        } else if (buckets_[idx].rear_ > buckets_[idx].front_) {
-            for (uint8_t i = buckets_[idx].front_; i < buckets_[idx].rear_; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    buckets_[idx].data_[i]->v = value;
-                    return;
-                }
-            }
-        } else {
-            for (uint8_t i = buckets_[idx].front_; i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    buckets_[idx].data_[i]->v = value;
-                    return;
-                }
-            }
-
-            for (uint8_t i = 0; i < buckets_[idx].rear_; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    buckets_[idx].data_[i]->v = value;
-                    return;
-                }
-            }
-        }
+    bool exists(const T& key) {
+        auto iter = item_map_.find(key);
+        return iter != item_map_.end();
     }
 
-    bool exists(const KeyType& key) {
-        uint32_t idx = Hash32(key) % BucketSize;
-        return Exists(idx, key);
-    }
-
-private:
-    bool Exists(uint32_t idx, const KeyType& key) {
-        if (!buckets_[idx].IsEmpty()) {
-            if (buckets_[idx].rear_ == buckets_[idx].front_) {
-                for (uint8_t i = 0; i < EachBucketSize; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        return true;
-                    }
-                }
-            } else if (buckets_[idx].rear_ > buckets_[idx].front_) {
-                for (uint8_t i = buckets_[idx].front_; i < buckets_[idx].rear_; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        return true;
-                    }
-                }
-            } else {
-                for (uint8_t i = buckets_[idx].front_; i < EachBucketSize; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        return true;
-                    }
-                }
-
-                for (uint8_t i = 0; i < buckets_[idx].rear_; ++i) {
-                    if (buckets_[idx].data_[i]->k == key) {
-                        return true;
-                    }
-                }
-            }
+    bool get(const KeyType& key, ValueType* value) {
+        auto iter = kv_map_.find(key);
+        if (iter != kv_map_.end()) {
+            *value = iter->second;
+            return true;
         }
 
         return false;
     }
 
-    common::FixedQueue<Item*, EachBucketSize>* buckets_ = nullptr;
-
+private:
+    std::list<KeyType> item_list_;
+    std::unordered_map<KeyType, typename std::list<KeyType>::iterator> item_map_;
+    std::unordered_map<KeyType, ValueType> kv_map_;
 };
 
 }  // namespace common

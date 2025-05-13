@@ -151,7 +151,7 @@ private:
     static const uint32_t kCacheSyncKeyValueCount = 10240u;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
-    std::unordered_map<std::string, SyncItemPtr> synced_map_;
+    common::UniqueMap<std::string, SyncItemPtr, 10240> synced_map_;
     std::queue<SyncItemPtr> prio_sync_queue_[kSyncHighest + 1];
     std::unordered_set<std::string> added_key_set_;
     std::shared_ptr<db::Db> db_ = nullptr;
