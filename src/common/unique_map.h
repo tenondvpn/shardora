@@ -1,6 +1,7 @@
 #pragma once
 
-#include <queue>
+#include <list>
+#include <unordered_map>
 
 #include "common/fixed_queue.h"
 #include "common/hash.h"
