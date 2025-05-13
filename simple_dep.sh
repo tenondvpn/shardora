@@ -1,6 +1,7 @@
 killall -9 zjchain
 killall -9 txcli
 
+FOR_CK=0
 TARGET=Debug
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
@@ -94,7 +95,7 @@ for ((i=1; i<=$shard3_node_count;i++)); do
         sed -i 's/LOCAL_PORT/1300'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf 
     fi
     
-    if ((i==1)); then
+    if (($FOR_CK==1 && i==1)); then
         sed -i 's/FOR_CK_CLIENT/true/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     else
         sed -i 's/FOR_CK_CLIENT/false/g' /root/zjnodes/s3_$i/conf/zjchain.conf
