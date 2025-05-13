@@ -19,6 +19,10 @@ public:
     ~UniqueSet() {
     }
 
+    size_t size() const {
+        return item_list_.size();
+    }
+    
     bool add(const T& key) {
         auto iter = item_map_.find(key);
         if (iter != item_map_.end()) {

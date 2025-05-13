@@ -111,11 +111,6 @@ void KeyValueSync::ConsensusTimerMessage() {
     PopItems();
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
     CheckSyncItem();
-    if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
-        prev_sync_tmout_us_ = now_tm_us;
-        CheckSyncTimeout();
-    }
-
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         hotstuff_mgr_->chain(i)->GetViewBlockWithHash("");
         hotstuff_mgr_->chain(i)->GetViewBlockWithHeight(0, 0);
@@ -148,14 +143,13 @@ void KeyValueSync::PopItems() {
                 break;
             }
             
-            auto iter = added_key_set_.find(item->key);
-            if (iter != added_key_set_.end()) {
+            if (added_key_set_.exists(item->key)) {
                 ZJC_DEBUG("key exists add new sync item key: %s, priority: %u",
                     item->key.c_str(), item->priority);
                 continue;
             }
 
-            added_key_set_.insert(item->key);
+            added_key_set_.add(item->key);
             assert(added_key_set_.size() < kCacheSyncKeyValueCount);
             prio_sync_queue_[item->priority].push(item);
             CHECK_MEMORY_SIZE(prio_sync_queue_[item->priority]);
@@ -176,11 +170,11 @@ void KeyValueSync::CheckSyncItem() {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
             CHECK_MEMORY_SIZE(prio_sync_queue_[i]);
-            if (synced_map_.find(item->key) != synced_map_.end()) {
+            if (synced_map_.exists(item->key)) {
                 continue;
             }
 
-            if (synced_keys_.find(item->key) != synced_keys_.end()) {
+            if (synced_keys_.exists(item->key)) {
                 continue;
             }
 
@@ -224,13 +218,14 @@ void KeyValueSync::CheckSyncItem() {
             }
 
             ++(item->sync_times);
-            synced_map_.insert(std::make_pair(item->key, item));
+            synced_map_.add(item->key, item);
             CHECK_MEMORY_SIZE(synced_map_);
             item->sync_tm_us = now_tm;
             if (synced_map_.size() > kSyncMaxKeyCount) {
                 stop = true;
                 break;
             }
+
             if (sended_neigbors.size() > kSyncNeighborCount) {
                 stop = true;
                 break;
@@ -566,57 +561,10 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             // }  
         } while (0);
 
-        auto tmp_iter = synced_map_.find(key);
-        if (tmp_iter != synced_map_.end()) {
-            tmp_iter->second->responsed_timeout_us = now_tm_us + kSyncTimeoutPeriodUs;
-        }
-
-        synced_keys_.insert(key);
-        timeout_queue_.push_back(key);
-        if (timeout_queue_.size() >= kCacheSyncKeyValueCount) {
-            synced_keys_.erase(timeout_queue_.front());
-            timeout_queue_.pop_front();
-        }
-
+        synced_keys_.add(key);
         assert(synced_keys_.size() < kCacheSyncKeyValueCount);
         ZJC_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
             key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
-    }
-}
-
-void KeyValueSync::CheckSyncTimeout() {
-    auto now_tm_us = common::TimeUtils::TimestampUs();
-    for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
-        if (iter->second->sync_times >= kSyncMaxRetryTimes ||
-                iter->second->responsed_timeout_us <= now_tm_us) {
-            ZJC_DEBUG("remove sync key: %s, sync times: %d, "
-                "responsed_timeout_us: %lu, now_tm_us: %lu",
-                iter->second->key.c_str(), 
-                iter->second->sync_times, 
-                iter->second->responsed_timeout_us, 
-                now_tm_us);
-            added_key_set_.erase(iter->second->key);
-            iter = synced_map_.erase(iter);
-            CHECK_MEMORY_SIZE(synced_map_);
-            continue;
-        }
-
-        if (iter->second->sync_tm_us + 1000000 >= now_tm_us) {
-            ++iter;
-            continue;
-        }
-
-        // ZJC_DEBUG("remove sync key and retry: %s, sync times: %d, "
-        //     "responsed_timeout_us: %lu, now_tm_us: %lu",
-        //     iter->second->key.c_str(), 
-        //     iter->second->sync_times, 
-        //     iter->second->responsed_timeout_us, 
-        //     now_tm_us);
-        added_key_set_.erase(iter->second->key);
-        prio_sync_queue_[iter->second->priority].push(iter->second);
-        CHECK_MEMORY_SIZE(prio_sync_queue_[iter->second->priority]);
-        iter = synced_map_.erase(iter);
-        CHECK_MEMORY_SIZE(synced_map_);
     }
 }
 

@@ -11,6 +11,7 @@
 #include "common/utils.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
+#include "common/unique_map.h"
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "protos/sync.pb.h"
@@ -151,20 +152,18 @@ private:
     static const uint32_t kCacheSyncKeyValueCount = 10240u;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
-    common::UniqueMap<std::string, SyncItemPtr, 10240> synced_map_;
+    common::UniqueMap<std::string, SyncItemPtr, kCacheSyncKeyValueCount> synced_map_;
     std::queue<SyncItemPtr> prio_sync_queue_[kSyncHighest + 1];
-    std::unordered_set<std::string> added_key_set_;
+    common::UniqueSet<std::string, kCacheSyncKeyValueCount> added_key_set_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_sync_tm_us_ = 0;
-    uint64_t prev_sync_tmout_us_ = 0;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     common::Tick kv_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
     std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId];
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId] = { 0 };
-    std::unordered_set<std::string> synced_keys_;
-    std::deque<std::string> timeout_queue_;
+    common::UniqueSet<std::string, kCacheSyncKeyValueCount> synced_keys_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];

@@ -19,6 +19,10 @@ public:
     ~UniqueMap() {
     }
 
+    size_t size() {
+        return item_list_.size();
+    }
+
     bool add(const KeyType& key, const ValueType& value) {
         auto iter = item_map_.find(key);
         if (iter != item_map_.end()) {
@@ -53,6 +57,14 @@ public:
         }
 
         return false;
+    }
+
+    std::unordered_map<KeyType, ValueType>::iterater begin() {
+        return kv_map_.begin();
+    }
+
+    std::unordered_map<KeyType, ValueType>::iterater end() {
+        return kv_map_.end();
     }
 
 private:
