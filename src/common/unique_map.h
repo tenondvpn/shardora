@@ -59,14 +59,6 @@ public:
         return false;
     }
 
-    std::unordered_map<KeyType, ValueType>::iterater begin() {
-        return kv_map_.begin();
-    }
-
-    std::unordered_map<KeyType, ValueType>::iterater end() {
-        return kv_map_.end();
-    }
-
 private:
     std::list<KeyType> item_list_;
     std::unordered_map<KeyType, typename std::list<KeyType>::iterator> item_map_;
