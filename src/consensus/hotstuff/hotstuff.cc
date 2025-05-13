@@ -1833,27 +1833,41 @@ Status Hotstuff::ConstructViewBlock(
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
     auto* v_block1 = &v_block;
     if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
+        ZJC_DEBUG("!v_block1 || v_block1->block_info().tx_list_size() > 0");
         return true;
     }
 
     auto v_block2_info = view_block_chain()->Get(v_block.parent_hash());
     if (!v_block2_info) {
+        ZJC_DEBUG("!v_block2_info: %s, %u_%u_%lu", 
+            common::Encode::HexEncode(v_block.parent_hash()),
+            v_block.qc().network_id(), v_block.qc().pool_index(), v_block.qc().view());
         return true;
     }
 
     auto v_block2 = v_block2_info->view_block;
     if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
+        ZJC_DEBUG("v_block2 || v_block2->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
+            common::Encode::HexEncode(v_block.parent_hash()),
+            v_block.qc().network_id(), v_block.qc().pool_index(), v_block.qc().view());
+
         return true;
     }
 
     // fast hotstuff
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
     if (!v_block3_info) {
+        ZJC_DEBUG("v_block2 || v_block2->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
+            common::Encode::HexEncode(v_block2->parent_hash()),
+            v_block2->qc().network_id(), v_block2->qc().pool_index(), v_block2->qc().view());
         return true;
     }
 
     auto v_block3 = v_block3_info->view_block;
     if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+        ZJC_DEBUG("!v_block3 || v_block3->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
+            common::Encode::HexEncode(v_block2->parent_hash()),
+            v_block2->qc().network_id(), v_block2->qc().pool_index(), v_block2->qc().view());
         return true;
     }
 
