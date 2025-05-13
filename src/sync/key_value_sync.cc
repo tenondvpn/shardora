@@ -162,7 +162,6 @@ void KeyValueSync::PopItems() {
 void KeyValueSync::CheckSyncItem() {
     std::set<uint64_t> sended_neigbors;
     std::map<uint32_t, sync::protobuf::SyncMessage> sync_dht_map;
-    std::set<std::string> added_key;
     bool stop = false;
     auto now_tm = common::TimeUtils::TimestampUs();
     for (int32_t i = kSyncHighest; i >= kSyncPriLowest; --i) {
@@ -183,11 +182,6 @@ void KeyValueSync::CheckSyncItem() {
                 sync_dht_map[item->network_id] = sync::protobuf::SyncMessage();
             }
 
-            if (added_key.find(item->key) != added_key.end()) {
-                continue;
-            }
-
-            added_key.insert(item->key);
             auto sync_req = sync_dht_map[item->network_id].mutable_sync_value_req();
             sync_req->set_network_id(item->network_id);
             if (item->height != common::kInvalidUint64) {
@@ -195,8 +189,8 @@ void KeyValueSync::CheckSyncItem() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                // ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
-                //     item->network_id, item->pool_idx, item->height, item->tag);
+                ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
+                    item->network_id, item->pool_idx, item->height, item->tag);
             } else {
                 sync_req->add_keys(item->key);
                 ZJC_DEBUG("success add to sync key: %s", 
@@ -316,10 +310,11 @@ uint64_t KeyValueSync::SendSyncRequest(
     *msg.mutable_sync_proto() = sync_msg;
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d, hash64: %lu, key size: %u, height size: %u",
+    ZJC_DEBUG("sync new from %s:%d, hash64: %lu, key size: %u, height size: %u, sync_msg: %s",
         node->public_ip.c_str(), node->public_port, msg.hash64(),
         sync_msg.sync_value_req().keys_size(),
-        sync_msg.sync_value_req().heights_size());
+        sync_msg.sync_value_req().heights_size(),
+        ProtobufToJson(sync_msg).c_str());
     return node->id_hash;
 }
 
