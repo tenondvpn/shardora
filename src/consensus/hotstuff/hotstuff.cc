@@ -1854,22 +1854,22 @@ bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
         return true;
     }
 
-    // fast hotstuff
-    auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
-    if (!v_block3_info) {
-        ZJC_DEBUG("v_block2 || v_block2->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
-            common::Encode::HexEncode(v_block2->parent_hash()),
-            v_block2->qc().network_id(), v_block2->qc().pool_index(), v_block2->qc().view());
-        return true;
-    }
+    // // fast hotstuff
+    // auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
+    // if (!v_block3_info) {
+    //     ZJC_DEBUG("v_block2 || v_block2->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
+    //         common::Encode::HexEncode(v_block2->parent_hash()),
+    //         v_block2->qc().network_id(), v_block2->qc().pool_index(), v_block2->qc().view());
+    //     return true;
+    // }
 
-    auto v_block3 = v_block3_info->view_block;
-    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-        ZJC_DEBUG("!v_block3 || v_block3->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
-            common::Encode::HexEncode(v_block2->parent_hash()),
-            v_block2->qc().network_id(), v_block2->qc().pool_index(), v_block2->qc().view());
-        return true;
-    }
+    // auto v_block3 = v_block3_info->view_block;
+    // if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
+    //     ZJC_DEBUG("!v_block3 || v_block3->block_info().tx_list_size() > 0 %s, %u_%u_%lu", 
+    //         common::Encode::HexEncode(v_block2->parent_hash()),
+    //         v_block2->qc().network_id(), v_block2->qc().pool_index(), v_block2->qc().view());
+    //     return true;
+    // }
 
     // ZJC_DEBUG("failed check is empty block allowd block1: %u_%u_%lu, %s, block2: %u_%u_%lu, %s, block3: %u_%u_%lu, %s",
     //     v_block1->qc().network_id(),
