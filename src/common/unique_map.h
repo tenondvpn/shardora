@@ -40,7 +40,7 @@ public:
         return true;
     }
 
-    bool exists(const T& key) {
+    bool exists(const KeyType& key) {
         auto iter = item_map_.find(key);
         return iter != item_map_.end();
     }
