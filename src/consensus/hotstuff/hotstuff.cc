@@ -1316,7 +1316,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
+    Propose(nullptr, nullptr, msg_ptr);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ZJC_DEBUG("reset timer success!");
 }
@@ -2027,7 +2027,7 @@ void Hotstuff::TryRecoverFromStuck(
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader && leader->index == local_idx) {
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        Propose(latest_qc_item_ptr_, nullptr, msg_ptr);
+        Propose(nullptr, nullptr, msg_ptr);
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (latest_qc_item_ptr_) {
             ZJC_DEBUG("leader do propose message: %d, pool index: %u, %u_%u_%lu", 
