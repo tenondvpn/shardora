@@ -12,6 +12,7 @@
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "common/unique_map.h"
+#include "common/unique_set.h"
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "protos/sync.pb.h"
