@@ -34,28 +34,27 @@ ClickHouseClient::~ClickHouseClient() {
 }
 
 bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
-    return true;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     block_queues_[thread_idx].push(view_block_item);
-// #ifndef NDEBUG
-//     auto* block_item = &view_block_item->block_info();
-//     const auto& tx_list = block_item->tx_list();
-//     for (int32_t i = 0; i < tx_list.size(); ++i) {
-//         ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
-//             "tx size: %u, hash: %s, elect height: %lu, "
-//             "tm height: %lu, nonce: %s, status: %d, step: %d",
-//             view_block_item->qc().network_id(),
-//             view_block_item->qc().pool_index(),
-//             block_item->height(),
-//             block_item->tx_list_size(),
-//             common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-//             view_block_item->qc().elect_height(),
-//             block_item->timeblock_height(),
-//             tx_list[i].nonce(),
-//             tx_list[i].status(),
-//             tx_list[i].step());
-//     }
-// #endif
+#ifndef NDEBUG
+    auto* block_item = &view_block_item->block_info();
+    const auto& tx_list = block_item->tx_list();
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, nonce: %s, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            tx_list[i].nonce(),
+            tx_list[i].status(),
+            tx_list[i].step());
+    }
+#endif
         
     std::unique_lock<std::mutex> lock(wait_mutex_);
     wait_con_.notify_one();
@@ -63,7 +62,6 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 }
 
 void ClickHouseClient::FlushToCk() {
-    return;
     common::GlobalInfo::Instance()->get_thread_index();
     while (!stop_) {
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
