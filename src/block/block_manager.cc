@@ -455,6 +455,10 @@ void BlockManager::AddNewBlock(
             HandleRootCrossShardTx(*view_block_item);
         }
     }
+
+    if (ck_client_) {
+        ck_client_->AddNewBlock(view_block_item);
+    }
 }
 
 void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockItem& view_block) {
