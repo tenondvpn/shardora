@@ -22,8 +22,8 @@ public:
     size_t size() const {
         return item_list_.size();
     }
-    
-    bool add(const T& key) {
+
+    void add(const T& key) {
         auto iter = item_map_.find(key);
         if (iter != item_map_.end()) {
             item_list_.erase(iter->second);
@@ -33,12 +33,10 @@ public:
         auto end_iter = item_list_.end();
         item_map_[key] = --end_iter;
         if (item_list_.size() > kMaxSize) {
-            iter = item_map_.find(item_list_.begin());
+            iter = item_map_.find(item_list_.front());
             item_map_.erase(iter);
             item_list_.pop_front();
         }
-        
-        return true;
     }
 
     bool exists(const T& key) {
