@@ -14,12 +14,9 @@ template<class T, uint32_t kMaxSize>
 class UniqueSet {
 public:
     explicit UniqueSet() {
-        ZJC_FATAL("Code is obsolete and unavailable");
-        buckets_ = new common::FixedQueue<T, EachBucketSize>[BucketSize];
     }
 
     ~UniqueSet() {
-        delete[] buckets_;
     }
 
     bool add(const T& key) {
