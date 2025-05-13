@@ -93,7 +93,12 @@ for ((i=1; i<=$shard3_node_count;i++)); do
         sed -i 's/HTTP_PORT/2300'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
         sed -i 's/LOCAL_PORT/1300'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf 
     fi
-
+    
+    if ((i==1)); then
+        sed -i 's/FOR_CK_CLIENT/true/g' /root/zjnodes/s3_$i/conf/zjchain.conf
+    else
+        sed -i 's/FOR_CK_CLIENT/false/g' /root/zjnodes/s3_$i/conf/zjchain.conf
+    fi
     ln /root/zjnodes/zjchain/zjchain /root/zjnodes/s3_$i/zjchain
     ln /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/s3_$i/conf/GeoLite2-City.mmdb
     ln /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/s3_$i/conf/log4cpp.properties
