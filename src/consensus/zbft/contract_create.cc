@@ -201,14 +201,15 @@ int ContractUserCreateCall::HandleTx(
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("create contract called %s, user: %s, new balance: %lu, "
-        "gas used: %lu, gas_price: %lu, prepayment: %lu, amount: %lu",
+        "gas used: %lu, gas_price: %lu, prepayment: %lu, amount: %lu, status: %d",
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         from_balance,
         gas_used,
         block_tx.gas_price(),
         block_tx.contract_prepayment(),
-        block_tx.amount());
+        block_tx.amount(),
+        block_tx.status());
     if (block_tx.status() == kConsensusSuccess) {
         auto iter = zjc_host.cross_to_map_.find(block_tx.to());
         std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
@@ -222,6 +223,10 @@ int ContractUserCreateCall::HandleTx(
             if (block_tx.contract_prepayment() > 0) {
                 to_item_ptr->set_prepayment(block_tx.contract_prepayment());
             }
+
+            ZJC_DEBUG("success add to tx item addr prepayment id: %s, prepayment: %lu",
+                common::Encode::HexEncode(to_item_ptr->des()).c_str(),
+                block_tx.amount());
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
@@ -236,6 +241,10 @@ int ContractUserCreateCall::HandleTx(
                 to_item_ptr = iter->second;
                 to_item_ptr->set_amount(exists_iter->second->amount() + to_item_ptr->amount());
             }
+
+            ZJC_DEBUG("success add to tx item addr: %s, balance: %lu",
+                common::Encode::HexEncode(exists_iter->second->des()).c_str(),
+                exists_iter->second->amount());
         }
     }
     

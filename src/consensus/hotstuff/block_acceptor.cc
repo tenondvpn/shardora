@@ -226,6 +226,9 @@ Status BlockAcceptor::Accept(
         UpdateDesShardingId(cross_to_item, zjc_host);
         assert(cross_to_item->des_sharding_id() >= network::kRootCongressNetworkId && 
             cross_to_item->des_sharding_id() < network::kConsensusShardEndNetworkId);
+        ZJC_DEBUG("success add cross to item: %s, amount: %lu", 
+            common::Encode::HexEncode(cross_to_item->des()).c_str(),
+            cross_to_item->amount());
     }
 
     if (view_block.block_info().cross_shard_to_array_size() > 0) {

@@ -73,6 +73,8 @@ void ToTxsPools::ThreadToStatistic(
         for (uint32_t i = 0; i < block.cross_shard_to_array_size(); ++i) {
             auto& to = block.cross_shard_to_array(i);
             tx_map[to.des()] = to;
+            ZJC_DEBUG("success add to item: %s, %lu",
+                common::Encode::HexEncode(to.des()).c_str(), to.amount());
         }
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
