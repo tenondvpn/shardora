@@ -401,7 +401,7 @@ void BlockManager::AddNewBlock(
     // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s",
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s, ck_client_: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
@@ -413,7 +413,8 @@ void BlockManager::AddNewBlock(
         common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
         view_block_item->qc().elect_height(),
         block_item->timeblock_height(),
-        ProtobufToJson(*view_block_item).c_str());
+        ProtobufToJson(*view_block_item).c_str(),
+        (ck_client_ != nullptr));
     assert(view_block_item->qc().elect_height() >= 1);
     account_mgr_->AddNewBlock(*view_block_item);
     // 当前节点和 block 分配的 shard 不同，要跨分片交易

@@ -52,7 +52,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
             "tx size: %u, hash: %s, elect height: %lu, "
-            "tm height: %lu, nonce: %s, status: %d, step: %d",
+            "tm height: %lu, nonce: %lu, status: %d, step: %d",
             view_block_item->qc().network_id(),
             view_block_item->qc().pool_index(),
             block_item->height(),
