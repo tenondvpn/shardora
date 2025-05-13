@@ -1798,6 +1798,7 @@ Status Hotstuff::ConstructViewBlock(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
         ZJC_DEBUG("pool: %d wrap failed, %d", pool_idx_, static_cast<int>(s));
+        view_block->release_qc();
         return s;
     }
 
@@ -1813,6 +1814,7 @@ Status Hotstuff::ConstructViewBlock(
     // 因此 CurView 此时还没有增加，还是上一次投票的 View，正常来说此时 last_vote_view_ == pacemaker()->CurView()
     if (last_vote_view_ > pacemaker()->CurView()) {
         assert(last_vote_view_ <= pacemaker()->CurView());
+        view_block->release_qc();
         return Status::kError;
     }
 
@@ -1820,6 +1822,7 @@ Status Hotstuff::ConstructViewBlock(
         common::GlobalInfo::Instance()->network_id(),
         view_block->qc().elect_height());
     if (!elect_item || !elect_item->IsValid()) {
+        view_block->release_qc();
         return Status::kError;
     }
     
