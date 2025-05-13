@@ -23,10 +23,10 @@ public:
         return item_list_.size();
     }
 
-    void add(const T& key) {
+    bool add(const T& key) {
         auto iter = item_map_.find(key);
         if (iter != item_map_.end()) {
-            item_list_.erase(iter->second);
+            return false;
         }
 
         item_list_.push_back(key);
@@ -37,6 +37,8 @@ public:
             item_map_.erase(iter);
             item_list_.pop_front();
         }
+
+        return true;
     }
 
     bool exists(const T& key) {

@@ -23,10 +23,22 @@ public:
         return item_list_.size();
     }
 
-    bool add(const KeyType& key, const ValueType& value) {
+    void erase(const KeyType& key) {
         auto iter = item_map_.find(key);
         if (iter != item_map_.end()) {
             item_list_.erase(iter->second);
+        }
+
+        auto kv_iter = kv_map_.find(key);
+        if (kv_iter != kv_map_.end()) {
+            kv_map_.erase(kv_iter);
+        }
+    }
+
+    bool add(const KeyType& key, const ValueType& value) {
+        auto iter = item_map_.find(key);
+        if (iter != item_map_.end()) {
+            return false;
         }
 
         item_list_.push_back(key);

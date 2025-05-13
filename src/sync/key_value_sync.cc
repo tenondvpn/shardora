@@ -24,10 +24,6 @@ namespace sync {
 KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {
-    destroy_ = true;
-    if (check_timer_thread_) {
-        check_timer_thread_->join();
-    }
 }
 
 void KeyValueSync::Init(
@@ -35,16 +31,11 @@ void KeyValueSync::Init(
         const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
         const std::shared_ptr<db::Db>& db,
         ViewBlockSyncedCallback view_block_synced_callback) {
-    block_mgr_ = block_mgr;
     hotstuff_mgr_ = hotstuff_mgr;
-    db_ = db;
     view_block_synced_callback_ = view_block_synced_callback;
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    // check_timer_thread_ = std::make_shared<std::thread>(
-    //     std::bind(&KeyValueSync::ConsensusTimerMessageThread, this));
     kv_tick_.CutOff(
         10000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
@@ -88,21 +79,6 @@ void KeyValueSync::AddSyncViewHash(
         item_queues_[thread_idx].size());
 }
 
-void KeyValueSync::ConsensusTimerMessageThread() {
-    // while (!destroy_) {
-    //     if (!common::GlobalInfo::Instance()->main_inited_success()) {
-    //         usleep(10000lu);
-    //         continue;
-    //     }
-
-    //     auto count = ConsensusTimerMessage();
-    //     if (count < kEachTimerHandleCount) {
-    //         std::unique_lock<std::mutex> lock(wait_mutex_);
-    //         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
-    //     }
-    // }
-}
-
 void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
@@ -110,7 +86,6 @@ void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_ms1 = common::TimeUtils::TimestampMs();
     PopItems();
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
-    CheckSyncItem();
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         hotstuff_mgr_->chain(i)->GetViewBlockWithHash("");
         hotstuff_mgr_->chain(i)->GetViewBlockWithHeight(0, 0);
@@ -135,6 +110,11 @@ void KeyValueSync::ConsensusTimerMessage() {
 }
 
 void KeyValueSync::PopItems() {
+    std::set<uint64_t> sended_neigbors;
+    std::map<uint32_t, sync::protobuf::SyncMessage> sync_dht_map;
+    bool stop = false;
+    auto now_tm = common::TimeUtils::TimestampUs();
+    uint32_t synced_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
         while (true) {
             SyncItemPtr item = nullptr;
@@ -143,37 +123,21 @@ void KeyValueSync::PopItems() {
                 break;
             }
             
-            if (added_key_set_.exists(item->key)) {
-                ZJC_DEBUG("key exists add new sync item key: %s, priority: %u",
-                    item->key.c_str(), item->priority);
-                continue;
+            if (synced_map_.get(item->key, &item)) {
+                if (item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm) {
+                    continue;
+                }
+
+                if (item->sync_times >= kSyncCount) {
+                    continue;
+                }
             }
 
-            added_key_set_.add(item->key);
-            assert(added_key_set_.size() <= kCacheSyncKeyValueCount);
-            prio_sync_queue_[item->priority].push(item);
-            CHECK_MEMORY_SIZE(prio_sync_queue_[item->priority]);
-            ZJC_DEBUG("add new sync item key: %s, priority: %u",
-                item->key.c_str(), item->priority);
-        }
-    }
-}
-
-void KeyValueSync::CheckSyncItem() {
-    std::set<uint64_t> sended_neigbors;
-    std::map<uint32_t, sync::protobuf::SyncMessage> sync_dht_map;
-    bool stop = false;
-    auto now_tm = common::TimeUtils::TimestampUs();
-    for (int32_t i = kSyncHighest; i >= kSyncPriLowest; --i) {
-        while (!prio_sync_queue_[i].empty()) {
-            SyncItemPtr item = prio_sync_queue_[i].front();
-            prio_sync_queue_[i].pop();
-            CHECK_MEMORY_SIZE(prio_sync_queue_[i]);
             if (synced_map_.exists(item->key)) {
                 continue;
             }
 
-            if (synced_keys_.exists(item->key)) {
+            if (responsed_keys_.exists(item->key)) {
                 continue;
             }
 
@@ -215,7 +179,7 @@ void KeyValueSync::CheckSyncItem() {
             synced_map_.add(item->key, item);
             CHECK_MEMORY_SIZE(synced_map_);
             item->sync_tm_us = now_tm;
-            if (synced_map_.size() > kSyncMaxKeyCount) {
+            if (++synced_count > kSyncMaxKeyCount) {
                 stop = true;
                 break;
             }
@@ -223,7 +187,7 @@ void KeyValueSync::CheckSyncItem() {
             if (sended_neigbors.size() > kSyncNeighborCount) {
                 stop = true;
                 break;
-            }            
+            }     
         }
 
         if (stop) {
@@ -556,8 +520,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             // }  
         } while (0);
 
-        synced_keys_.add(key);
-        assert(synced_keys_.size() < kCacheSyncKeyValueCount);
+        responsed_keys_.add(key);
+        synced_map_.erase(key);
         ZJC_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
             key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
     }
