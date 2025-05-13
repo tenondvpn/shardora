@@ -47,7 +47,7 @@ public:
 
 private:
     std::list<T> item_list_;
-    std::unordered_map<T, std::list<T>::iterator> item_map_;
+    std::unordered_map<T, typename std::list<T>::iterator> item_map_;
 };
 
 }  // namespace common
