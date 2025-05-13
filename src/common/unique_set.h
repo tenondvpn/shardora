@@ -29,7 +29,7 @@ public:
         auto end_iter = item_list_.end();
         item_map_[key] = --end_iter;
         if (item_list_.size() > kMaxSize) {
-            iter = item_map_.find(item_list_.begin())
+            iter = item_map_.find(item_list_.begin());
             item_map_.erase(iter);
             item_list_.pop_front();
         }
