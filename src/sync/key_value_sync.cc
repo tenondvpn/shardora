@@ -133,10 +133,6 @@ void KeyValueSync::PopItems() {
                 }
             }
 
-            if (synced_map_.exists(item->key)) {
-                continue;
-            }
-
             if (responsed_keys_.exists(item->key)) {
                 continue;
             }
