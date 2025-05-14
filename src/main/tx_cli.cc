@@ -517,17 +517,20 @@ int tx_main(int argc, char** argv) {
                 thread_security->SetPrivateKey(from_prikey);
                 auto addr_json = GetAddressInfo(global_chain_node_ip, thread_security->GetAddress());
                 if (!addr_json) {
-                    printf("failed get address info: %s\n", common::Encode::HexEncode(thread_security->GetAddress()).c_str());
                     continue;
                 }
 
                 uint64_t nonce = 0;
                 common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
                 if (nonce + batch_count * 10 >= prikey_with_nonce[from_prikey]) {
+                    printf("update address nonce: %s, now: %lu, chain: %lu\n", 
+                        common::Encode::HexEncode(thread_security->GetAddress()).c_str(),
+                        prikey_with_nonce[from_prikey],
+                        nonce);
                     prikey_with_nonce[from_prikey] = nonce;
                 }
 
-                usleep(100000lu);
+                usleep(1000000lu);
             }
 
             auto tx_msg_ptr = CreateTransactionWithAttr(
