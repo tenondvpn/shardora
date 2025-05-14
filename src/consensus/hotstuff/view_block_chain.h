@@ -172,7 +172,7 @@ public:
             view_block->block_info().height(),
             view_block->qc().view());
         latest_committed_block_ = view_block;
-        // commited_block_queue_.push(view_block_info);
+        commited_block_queue_.push(view_block_info);
     }
 
     inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
