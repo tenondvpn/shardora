@@ -491,10 +491,10 @@ int tx_main(int argc, char** argv) {
     std::thread update_nonce_thread(UpdateAddressNonceThread);
     update_nonce_thread.detach();
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
-        std::string prikey = g_prikeys[begin_idx];
+        std::cout << "begin: " << begin_idx << ", end: " << end_idx << std::endl;
         std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
         uint32_t prikey_pos = begin_idx;
-        auto from_prikey = prikey;
+        auto from_prikey = g_prikeys[begin_idx];;
         security->SetPrivateKey(from_prikey);
         uint64_t now_tm_us = common::TimeUtils::TimestampUs();
         uint32_t count = 0;
