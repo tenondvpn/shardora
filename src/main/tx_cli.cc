@@ -493,7 +493,8 @@ int tx_main(int argc, char** argv) {
         std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
         uint32_t prikey_pos = begin_idx;
         auto from_prikey = g_prikeys[begin_idx];;
-        security->SetPrivateKey(from_prikey);
+        std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+        thread_security->SetPrivateKey(from_prikey);
         uint64_t now_tm_us = common::TimeUtils::TimestampUs();
         uint32_t count = 0;
         uint32_t batch_count = 10;
@@ -505,8 +506,8 @@ int tx_main(int argc, char** argv) {
                 }
 
                 from_prikey = g_prikeys[prikey_pos];
-                security->SetPrivateKey(from_prikey);
-                auto addr_json = GetAddressInfo(global_chain_node_ip, security->GetAddress());
+                thread_security->SetPrivateKey(from_prikey);
+                auto addr_json = GetAddressInfo(global_chain_node_ip, thread_security->GetAddress());
                 if (addr_json) {
                     printf("success get address info: %s\n", addr_json->dump().c_str());
                 } else {
@@ -524,7 +525,7 @@ int tx_main(int argc, char** argv) {
             }
 
             auto tx_msg_ptr = CreateTransactionWithAttr(
-                security,
+                thread_security,
                 ++prikey_with_nonce[from_prikey],
                 from_prikey,
                 to,
