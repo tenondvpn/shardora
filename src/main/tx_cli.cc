@@ -490,50 +490,78 @@ int tx_main(int argc, char** argv) {
     prikey_with_nonce  = src_prikey_with_nonce;
     std::thread update_nonce_thread(UpdateAddressNonceThread);
     update_nonce_thread.detach();
-    std::string prikey = g_prikeys[0];
-    std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
-    uint32_t prikey_pos = 0;
-    auto from_prikey = prikey;
-    security->SetPrivateKey(from_prikey);
-    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
-    uint32_t count = 0;
-    uint32_t step_num = 1000;
-    uint64_t random_u64 = common::Random::RandomUint64();
-    while (true) {
-        if (count % 100 == 0) {
-            // ++prikey_pos;
-            from_prikey = g_prikeys[prikey_pos % g_prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-            usleep(1000000lu);
-        }
+    auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
+        std::string prikey = g_prikeys[begin_idx];
+        std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
+        uint32_t prikey_pos = begin_idx;
+        auto from_prikey = prikey;
+        security->SetPrivateKey(from_prikey);
+        uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+        uint32_t count = 0;
+        uint32_t batch_count = 10;
+        while (!global_stop) {
+            if (count % batch_count == 0) {
+                ++prikey_pos;
+                if (prikey_pos >= end_idx) {
+                    prikey_pos = begin_idx;
+                }
 
-        auto tx_msg_ptr = CreateTransactionWithAttr(
-            security,
-            ++prikey_with_nonce[from_prikey],
-            from_prikey,
-            to,
-            "",
-            "",
-            1980,
-            10000,
-            1,
-            shardnum);
+                from_prikey = g_prikeys[prikey_pos];
+                security->SetPrivateKey(from_prikey);
+                auto addr_json = GetAddressInfo(global_chain_node_ip, security->GetAddress());
+                if (addr_json) {
+                    printf("success get address info: %s\n", addr_json->dump().c_str());
+                } else {
+                    printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
+                    continue;
+                }
 
-         
-        if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
+                uint64_t nonce = 0;
+                common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
+                if (nonce + batch_count * 10 >= prikey_with_nonce[from_prikey]) {
+                    prikey_with_nonce[from_prikey] = nonce;
+                }
 
-        count++;
-        auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
-        if (dur >= 3000000lu) {
-            auto tps = count * 1000000lu / dur;
-            std::cout << "tps: " << tps << std::endl;
-            now_tm_us = common::TimeUtils::TimestampUs();
-            count = 0;
+                usleep(100000lu);
+            }
+
+            auto tx_msg_ptr = CreateTransactionWithAttr(
+                security,
+                ++prikey_with_nonce[from_prikey],
+                from_prikey,
+                to,
+                "",
+                "",
+                1980,
+                10000,
+                1,
+                shardnum);
+            if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
+                std::cout << "send tcp client failed!" << std::endl;
+                return 1;
+            }
+
+            count++;
         }
+    };
+    
+    std::vector<std::thread> thread_vec;
+    static const uint32_t kThreadCount = 16u;
+    uint32_t each_thread_size = g_prikeys.size() / kThreadCount;
+    for (uint32_t i = 0; i < kThreadCount; ++i) {
+        thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
     }
+
+    for (uint32_t i = 0; i < kThreadCount; ++i) {
+        thread_vec[i].join();
+    }
+    // auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+    // if (dur >= 3000000lu) {
+    //     auto tps = count * 1000000lu / dur;
+    //     std::cout << "tps: " << tps << std::endl;
+    //     now_tm_us = common::TimeUtils::TimestampUs();
+    //     count = 0;
+    // }
 
     return 0;
 }
