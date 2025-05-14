@@ -20,6 +20,6 @@ contract HashLoggerAppendKexin {
         // 1. 计算原始参数的keccak256哈希
 		bytes32 finalOutcome = ripemd160(_parameter);
         // 5. 触发事件打印日志
-        emit CombinedDataHashedWithRipemd160(finalOutcome);
+        emit OriginalHashAndAppendedKexin(finalOutcome);
     }
 }
