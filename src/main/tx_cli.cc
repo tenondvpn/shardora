@@ -558,8 +558,8 @@ int tx_main(int argc, char** argv) {
     }
 
     auto tps_thread = [&]() {
+        uint64_t now_tm_us = common::TimeUtils::TimestampUs();
         while (!global_stop) {
-            uint64_t now_tm_us = common::TimeUtils::TimestampUs();
             auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
             if (dur >= 3000000lu) {
                 auto tps = all_count * 1000000lu / dur;
