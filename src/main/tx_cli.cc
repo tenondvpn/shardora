@@ -522,7 +522,7 @@ int tx_main(int argc, char** argv) {
 
                 uint64_t nonce = 0;
                 common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
-                if (nonce + batch_count * 10 >= prikey_with_nonce[from_prikey]) {
+                if (nonce + batch_count * 10 <= prikey_with_nonce[from_prikey]) {
                     printf("update address nonce: %s, now: %lu, chain: %lu\n", 
                         common::Encode::HexEncode(thread_security->GetAddress()).c_str(),
                         prikey_with_nonce[from_prikey],
