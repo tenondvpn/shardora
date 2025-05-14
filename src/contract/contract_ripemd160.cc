@@ -19,6 +19,8 @@ Ripemd160::Ripemd160(const std::string& create_address)
 
 Ripemd160::~Ripemd160() {}
 
+const size_t EXPECTED_COMBINED_DATA_LENGTH = 37; // 32 字节哈希 + 5 字节 "kexin"
+
 #define DEFAULT_CALL_RESULT() { \
     res->output_data = new uint8_t[32]; \
     memset((void*)res->output_data, 0, 32); \
@@ -47,6 +49,16 @@ Ripemd160::~Ripemd160() {}
       \
     std::string val = param.data.substr(val_start, param.data.size() - val_start);
 
+bool isValidKexinString(const std::string& dataToCheck) {
+    // 检查输入数据（dataToCheck）的长度是否等于期望的长度
+    if (dataToCheck.size() == EXPECTED_COMBINED_DATA_LENGTH) {
+        // 如果长度正确，则校验通过
+        return true;
+    } else {
+        // 如果长度不正确，则校验失败
+        return false;
+    }
+}
 
 int Ripemd160::call(
         const CallParameters& param,
@@ -270,6 +282,16 @@ int Ripemd160::call(
         GET_KEY_VALUE_FROM_PARAM();
         RabpreReDec(param, key, val);
         DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tkexin") {
+        // 校验字符串
+        GET_KEY_VALUE_FROM_PARAM();
+        if (!isValidKexinString(val)) {
+            return kContractError;  // 如果校验失败，返回错误
+        }
+
+        return kContractSuccess;  // 校验通过，返回成功
     }
 
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
