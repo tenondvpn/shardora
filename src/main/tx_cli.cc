@@ -487,6 +487,7 @@ int tx_main(int argc, char** argv) {
     }
     
     UpdateAddressNonce();
+    std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
         std::cout << "begin: " << begin_idx << ", end: " << end_idx << ", all: " << g_prikeys.size() << std::endl;
@@ -495,7 +496,6 @@ int tx_main(int argc, char** argv) {
         auto from_prikey = g_prikeys[begin_idx];;
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
-        uint64_t now_tm_us = common::TimeUtils::TimestampUs();
         uint32_t count = 0;
         uint32_t batch_count = 10;
         while (!global_stop) {
@@ -541,6 +541,7 @@ int tx_main(int argc, char** argv) {
             }
 
             count++;
+            ++all_count;
         }
     };
     
@@ -551,16 +552,23 @@ int tx_main(int argc, char** argv) {
         thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
     }
 
+    auto tps_thread = [&]() {
+        while (!global_stop) {
+            uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+            auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+            if (dur >= 3000000lu) {
+                auto tps = all_count * 1000000lu / dur;
+                std::cout << "tps: " << tps << std::endl;
+                now_tm_us = common::TimeUtils::TimestampUs();
+                all_count.exchange(0);
+            }
+        }
+    };
+
+    thread_vec.push_back(std::thread(tps_thread));
     for (uint32_t i = 0; i < kThreadCount; ++i) {
         thread_vec[i].join();
     }
-    // auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
-    // if (dur >= 3000000lu) {
-    //     auto tps = count * 1000000lu / dur;
-    //     std::cout << "tps: " << tps << std::endl;
-    //     now_tm_us = common::TimeUtils::TimestampUs();
-    //     count = 0;
-    // }
 
     return 0;
 }
