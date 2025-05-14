@@ -406,7 +406,10 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     evbuffer_copyout(input, response_data, len);
     response_data[len] = '\0';
     auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
-    auto addr = common::Encode::HexEncode(common::Encode::Base64Decode((*json_ptr)["addr"]));
+    auto addr = common::Encode::Base64Decode((*json_ptr)["addr"]);
+    printf("success get address %s info: %s\n", 
+        common::Encode::HexEncode(addr).c_str(), 
+        response_data);
     account_info_jsons[addr] = json_ptr;
     free(response_data);
     std::unique_lock<std::mutex> l(cli_mutex);
