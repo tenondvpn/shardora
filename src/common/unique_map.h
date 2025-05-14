@@ -27,6 +27,7 @@ public:
         auto iter = item_map_.find(key);
         if (iter != item_map_.end()) {
             item_list_.erase(iter->second);
+            item_map_.erase(iter);
         }
 
         auto kv_iter = kv_map_.find(key);
