@@ -41,11 +41,14 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
 http::HttpClient cli;
 std::mutex cli_mutex;
 std::condition_variable cli_con;
-std::shared_ptr<nlohmann::json> account_info_json = nullptr;
 std::string global_chain_node_ip = "127.0.0.1";
 std::unordered_map<std::string, uint64_t> prikey_with_nonce;
 std::unordered_map<std::string, uint64_t> src_prikey_with_nonce;
 uint64_t batch_nonce_check_count = 10240;
+static const uint32_t kThreadCount = 16u;
+std::map<std::string, std::shared_ptr<nlohmann::json>> account_info_jsons;
+
+
 void UpdateAddressNonce();
 void UpdateAddressNonceThread() {
     while (true) {
@@ -402,7 +405,9 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     char* response_data = (char*)malloc(len + 1);
     evbuffer_copyout(input, response_data, len);
     response_data[len] = '\0';
-    account_info_json = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
+    auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
+    auto addr = common::Encode::HexEncode(common::Encode::Base64Decode((*json_ptr)["addr"]));
+    account_info_jsons[addr] = json_ptr;
     free(response_data);
     std::unique_lock<std::mutex> l(cli_mutex);
     cli_con.notify_one();
@@ -410,12 +415,12 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
 }
 
 std::shared_ptr<nlohmann::json> GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
-    account_info_json = nullptr;
+    account_info_jsons[addr] = nullptr;
     std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
     cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
     std::unique_lock<std::mutex> l(cli_mutex);
     cli_con.wait_for(l, std::chrono::milliseconds(1000));
-    return account_info_json;
+    return account_info_jsons[addr];
 }
 
 int tx_main(int argc, char** argv) {
@@ -509,7 +514,7 @@ int tx_main(int argc, char** argv) {
                 thread_security->SetPrivateKey(from_prikey);
                 auto addr_json = GetAddressInfo(global_chain_node_ip, thread_security->GetAddress());
                 if (!addr_json) {
-                    printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
+                    printf("failed get address info: %s\n", common::Encode::HexEncode(thread_security->GetAddress()).c_str());
                     continue;
                 }
 
@@ -544,7 +549,6 @@ int tx_main(int argc, char** argv) {
     };
     
     std::vector<std::thread> thread_vec;
-    static const uint32_t kThreadCount = 16u;
     uint32_t each_thread_size = g_prikeys.size() / kThreadCount;
     for (uint32_t i = 0; i < kThreadCount; ++i) {
         thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
