@@ -407,9 +407,9 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     response_data[len] = '\0';
     auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
     auto addr = common::Encode::Base64Decode((*json_ptr)["addr"]);
-    printf("success get address %s info: %s\n", 
-        common::Encode::HexEncode(addr).c_str(), 
-        response_data);
+    // printf("success get address %s info: %s\n", 
+    //     common::Encode::HexEncode(addr).c_str(), 
+    //     response_data);
     account_info_jsons[addr] = json_ptr;
     free(response_data);
     std::unique_lock<std::mutex> l(cli_mutex);
@@ -505,7 +505,7 @@ int tx_main(int argc, char** argv) {
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
-        uint32_t batch_count = 10;
+        uint32_t batch_count = 100;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 ++prikey_pos;
