@@ -288,10 +288,22 @@ int Ripemd160::call(
         // 校验字符串
         GET_KEY_VALUE_FROM_PARAM();
         if (!isValidKexinString(val)) {
-            return kContractError;  // 如果校验失败，返回错误
+            res->output_data = new uint8_t[32];
+            memset((void*)res->output_data, 0, 32);
+            res->output_size = 32;
+            res->gas_left -= 1000;
+            ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", 
+                common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+            return kContractSuccess;
         }
 
-        return kContractSuccess;  // 校验通过，返回成功
+        res->output_data = new uint8_t[32];
+        memset((void*)res->output_data, 1, 32);
+        res->output_size = 32;
+        res->gas_left -= 1000;
+        ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", 
+            common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+        return kContractSuccess;
     }
 
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
