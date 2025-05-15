@@ -1220,11 +1220,11 @@ int oqs_tx(const std::string& to, uint64_t amount) {
 
 void UpdateAddressNonce() {
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
-        if (!prikey_with_nonce.empty()) {
-            if (src_prikey_with_nonce[*iter] + (batch_nonce_check_count / 2) >= prikey_with_nonce[*iter]) {
-                continue;
-            }
-        }
+        // if (!prikey_with_nonce.empty()) {
+        //     if (src_prikey_with_nonce[*iter] + (batch_nonce_check_count / 2) >= prikey_with_nonce[*iter]) {
+        //         continue;
+        //     }
+        // }
 
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(*iter);
