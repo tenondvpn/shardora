@@ -116,7 +116,7 @@ Status Hotstuff::Propose(
         return Status::kError;
     }
 
-    ZJC_WARN("net: %d, pool %u has dht ptr size: %d.", 
+    ZJC_DEBUG("net: %d, pool %u has dht ptr size: %d.", 
         common::GlobalInfo::Instance()->network_id(), 
         pool_idx_, 
         readobly_dht->size());
@@ -165,7 +165,7 @@ Status Hotstuff::Propose(
 #ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
-        ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+        ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, "
             "msg view: %lu, cur view: %lu, propose msg: %s",
             pool_idx_,
@@ -185,7 +185,7 @@ Status Hotstuff::Propose(
     }
 
     if (max_view() != 0 && max_view() <= last_leader_propose_view_) {
-        ZJC_WARN("pool: %d construct propose msg failed, %d, "
+        ZJC_DEBUG("pool: %d construct propose msg failed, %d, "
             "max_view(): %lu last_leader_propose_view_: %lu",
             pool_idx_, Status::kError,
             max_view(), last_leader_propose_view_);
