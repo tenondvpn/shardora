@@ -1230,7 +1230,7 @@ void UpdateAddressNonce() {
         security->SetPrivateKey(*iter);
         auto addr_json = GetAddressInfo(cli, global_chain_node_ip, security->GetAddress());
         if (addr_json) {
-            printf("success get address info: %s\n", addr_json->dump().c_str());
+            // printf("success get address info: %s\n", addr_json->dump().c_str());
         } else {
             printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
             continue;
