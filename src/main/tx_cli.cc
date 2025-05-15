@@ -417,10 +417,10 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     return EVHTP_RES_OK;
 }
 
-std::shared_ptr<nlohmann::json> GetAddressInfo(const std::string& peer_ip, const std::string& addr) {
+std::shared_ptr<nlohmann::json> GetAddressInfo(http::HttpClient& http_cli, const std::string& peer_ip, const std::string& addr) {
     account_info_jsons[addr] = nullptr;
     std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
-    cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
+    http_cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
     std::unique_lock<std::mutex> l(cli_mutex);
     cli_con.wait_for(l, std::chrono::milliseconds(1000));
     return account_info_jsons[addr];
@@ -506,6 +506,7 @@ int tx_main(int argc, char** argv) {
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
         uint32_t batch_count = 1000;
+        http::HttpClient http_cli;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 ++prikey_pos;
@@ -515,7 +516,7 @@ int tx_main(int argc, char** argv) {
 
                 from_prikey = g_prikeys[prikey_pos];
                 thread_security->SetPrivateKey(from_prikey);
-                auto addr_json = GetAddressInfo(global_chain_node_ip, thread_security->GetAddress());
+                auto addr_json = GetAddressInfo(http_cli, global_chain_node_ip, thread_security->GetAddress());
                 if (!addr_json) {
                     printf("failed get address %s\n", 
                         common::Encode::HexEncode(thread_security->GetAddress()).c_str());
@@ -1231,7 +1232,7 @@ void UpdateAddressNonce() {
 
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(*iter);
-        auto addr_json = GetAddressInfo(global_chain_node_ip, security->GetAddress());
+        auto addr_json = GetAddressInfo(cli, global_chain_node_ip, security->GetAddress());
         if (addr_json) {
             printf("success get address info: %s\n", addr_json->dump().c_str());
         } else {
