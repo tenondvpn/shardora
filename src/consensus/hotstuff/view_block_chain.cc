@@ -443,10 +443,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         view_blocks_info_.erase(tmp_block->parent_hash());
-        // if (tmp_block->qc().view() <= 1) {
-        //     view_blocks_info_.erase(tmp_block->parent_hash());
-        // }
-
         ADD_DEBUG_PROCESS_TIMESTAMP();
         block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
 // #ifndef NDEBUG
