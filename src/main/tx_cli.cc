@@ -517,6 +517,8 @@ int tx_main(int argc, char** argv) {
                 thread_security->SetPrivateKey(from_prikey);
                 auto addr_json = GetAddressInfo(global_chain_node_ip, thread_security->GetAddress());
                 if (!addr_json) {
+                    printf("failed get address %s\n", 
+                        common::Encode::HexEncode(thread_security->GetAddress()).c_str());
                     continue;
                 }
 
