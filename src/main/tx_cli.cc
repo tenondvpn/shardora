@@ -51,7 +51,7 @@ std::map<std::string, std::shared_ptr<nlohmann::json>> account_info_jsons;
 
 void UpdateAddressNonce();
 void UpdateAddressNonceThread() {
-    while (true) {
+    while (!global_stop) {
         UpdateAddressNonce();
         usleep(3000000);
     }
@@ -498,7 +498,7 @@ int tx_main(int argc, char** argv) {
     std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
     auto update_nonce_thread = [&]() {
-        UpdateAddressNonce();
+        UpdateAddressNonceThread();
     };
 
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
