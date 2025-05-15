@@ -497,6 +497,10 @@ int tx_main(int argc, char** argv) {
     UpdateAddressNonce();
     std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
+    auto update_nonce_thread = [&]() {
+        UpdateAddressNonce();
+    };
+
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
         std::cout << "begin: " << begin_idx << ", end: " << end_idx << ", all: " << g_prikeys.size() << std::endl;
         std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
@@ -506,7 +510,6 @@ int tx_main(int argc, char** argv) {
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
         uint32_t batch_count = 1000;
-        http::HttpClient http_cli;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 ++prikey_pos;
@@ -516,15 +519,7 @@ int tx_main(int argc, char** argv) {
 
                 from_prikey = g_prikeys[prikey_pos];
                 thread_security->SetPrivateKey(from_prikey);
-                auto addr_json = GetAddressInfo(http_cli, global_chain_node_ip, thread_security->GetAddress());
-                if (!addr_json) {
-                    printf("failed get address %s\n", 
-                        common::Encode::HexEncode(thread_security->GetAddress()).c_str());
-                    continue;
-                }
-
-                uint64_t nonce = 0;
-                common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
+                uint64_t nonce = src_prikey_with_nonce[from_prikey];
                 if (nonce + 10000 <= prikey_with_nonce[from_prikey]) {
                     printf("update address nonce: %s, now: %lu, chain: %lu\n", 
                         common::Encode::HexEncode(thread_security->GetAddress()).c_str(),
@@ -577,6 +572,7 @@ int tx_main(int argc, char** argv) {
     };
 
     thread_vec.push_back(std::thread(tps_thread));
+    thread_vec.push_back(std::thread(update_nonce_thread));
     for (uint32_t i = 0; i < kThreadCount; ++i) {
         thread_vec[i].join();
     }
