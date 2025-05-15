@@ -505,7 +505,7 @@ int tx_main(int argc, char** argv) {
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
-        uint32_t batch_count = 100;
+        uint32_t batch_count = 1000;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 ++prikey_pos;
@@ -530,7 +530,7 @@ int tx_main(int argc, char** argv) {
                     prikey_with_nonce[from_prikey] = nonce;
                 }
 
-                usleep(1000000lu);
+                usleep(10000000lu);
             }
 
             auto tx_msg_ptr = CreateTransactionWithAttr(

@@ -209,7 +209,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_INFO("trace tx pool: %d, step: %d, over tx addr: %s, nonce: %lu", 
+        ZJC_DEBUG("trace tx pool: %d, step: %d, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(addr).c_str(), 
