@@ -129,10 +129,10 @@ void KeyValueSync::PopItems() {
                     continue;
                 }
 
-                if (item->sync_times >= kSyncCount) {
-                    ZJC_DEBUG("item->sync_times >= kSyncCount: %s", item->key.c_str());
-                    continue;
-                }
+                // if (item->sync_times >= kSyncCount) {
+                //     ZJC_DEBUG("item->sync_times >= kSyncCount: %s", item->key.c_str());
+                //     continue;
+                // }
             }
 
             if (responsed_keys_.exists(item->key)) {
