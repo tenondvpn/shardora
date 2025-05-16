@@ -50,6 +50,7 @@ public:
             : network_id(net_id), key(in_key), 
             priority(pri), sync_times(0), responsed_timeout_us(common::kInvalidUint64) {
         tag = kViewHash;
+        sync_tm_us = 0;
         common::GlobalInfo::Instance()->AddSharedObj(9);
     }
 
@@ -60,6 +61,7 @@ public:
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
         tag = kBlockHeight;
+        sync_tm_us = 0;
         common::GlobalInfo::Instance()->AddSharedObj(9);
     }
 
