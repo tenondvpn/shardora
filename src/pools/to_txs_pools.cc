@@ -293,7 +293,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     std::map<std::string, pools::protobuf::ToTxMessageItem> acc_amount_map;
-    {
+    if (prev_to_heights->heights_size() <= 0) {
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         *prev_to_heights = *prev_to_heights_;
     }
