@@ -125,15 +125,18 @@ void KeyValueSync::PopItems() {
             
             if (synced_map_.get(item->key, &item)) {
                 if (item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm) {
+                    ZJC_DEBUG("item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm: %s", item->key.c_str());
                     continue;
                 }
 
                 if (item->sync_times >= kSyncCount) {
+                    ZJC_DEBUG("item->sync_times >= kSyncCount: %s", item->key.c_str());
                     continue;
                 }
             }
 
             if (responsed_keys_.exists(item->key)) {
+                ZJC_DEBUG("responsed_keys_.exists(item->key): %s", item->key.c_str());
                 continue;
             }
 
