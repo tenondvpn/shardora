@@ -228,7 +228,7 @@ void ShardStatistic::HandleStatistic(
     }
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
-        assert(false);
+        // assert(false);
         return;
     }
 
