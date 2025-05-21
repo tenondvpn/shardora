@@ -395,6 +395,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         tmp_block_info = parent_block_info;
     }
 
+    std::shared_ptr<ViewBlockInfo> latest_commited_block = nullptr; 
     for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
         auto tmp_block = (*iter)->view_block;
         if (tmp_block->block_info().tx_list_size() > 0 && tmp_block->block_info().tx_list(0).step() == 18) {
@@ -470,13 +471,16 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         pools_mgr_->TxOver(pool_index_, *tmp_block);
         block_mgr_->ConsensusAddBlock(*iter);
         stored_to_db_view_ = tmp_block->qc().view();
+        latest_commited_block = *iter;
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    SetLatestCommittedBlock(v_block_info);
+    if (latest_commited_block) {
+        SetLatestCommittedBlock(latest_commited_block);
+    }
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
-    auto v_block = v_block_info->view_block;
+    // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
+    // auto v_block = v_block_info->view_block;
 // #ifndef NDEBUG
 //     transport::protobuf::ConsensusDebug cons_debug3;
 //     cons_debug3.ParseFromString(v_block->debug());
