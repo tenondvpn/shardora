@@ -153,6 +153,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 }
 
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     for (uint32_t i = 0; i < view_block.block_info().tx_list_size(); ++i) {
         auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
@@ -185,6 +186,11 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         break;
                     }
 
+                    if (IsUserTransaction(view_block.block_info().tx_list(i).step())) {
+                        ++all_delay_tx_count_;
+                        all_delay_tm_us_ += now_tm_us - nonce_iter->second->receive_tm_us;
+                    }
+                    
                     ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
                         pool_index_,
                         common::Encode::HexEncode(addr).c_str(), 
@@ -215,6 +221,14 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
     }
+        
+    if (prev_delay_tm_timeout_ + 3000lu <= (now_tm_us / 1000lu) && all_delay_tx_count_ > 0) {
+        ZJC_INFO("pool: %d, average delay us: %lu", pool_index_, (all_delay_tm_us_ / all_delay_tx_count_));
+        all_delay_tm_us_ = 0;
+        all_delay_tx_count_ = 0;
+        prev_delay_tm_timeout_ = now_tm_us / 1000lu;
+    }
+
 }
 
 void TxPool::GetTxSyncToLeader(

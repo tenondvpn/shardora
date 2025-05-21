@@ -179,6 +179,9 @@ private:
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
     db::DbWriteBatch added_gids_batch_;
+    uint64_t all_delay_tm_us_;
+    uint64_t all_delay_tx_count_;
+    uint64_t prev_delay_tm_timeout_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

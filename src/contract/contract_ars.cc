@@ -192,6 +192,7 @@ void ContractArs::AggreSign(
         for (auto &y : ring) {
             if (VerifyProof(*pi_i[i], y_primes[i], delta_primes[i], messages[i], ring, y)) {
                 proof_valid = true;
+                ZJC_DEBUG("agg sign verify: %s", element_to_string(agg_signature).c_str());
                 break;
             }
         }
@@ -212,6 +213,8 @@ void ContractArs::AggreSign(
 
     std::cout << "Aggregate signature generated: ";
     element_printf("%B\n", agg_signature);
+    ZJC_DEBUG("agg sign message: %s", element_to_string(agg_signature).c_str());
+
 }
 
 // 聚合签名验证

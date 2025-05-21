@@ -373,6 +373,7 @@ public:
         }
 
         uint64_t now_tm = common::TimeUtils::TimestampUs();
+        receive_tm_us = now_tm;
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
         time_valid = 0;
@@ -390,6 +391,7 @@ public:
         const pools::protobuf::TxMessage& tx_info,
         block::protobuf::BlockTx* block_tx) = 0;
 
+    uint64_t receive_tm_us;
     uint64_t prev_consensus_tm_us;
     uint64_t remove_timeout;
     uint64_t time_valid{ 0 };
