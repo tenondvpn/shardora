@@ -166,11 +166,13 @@ public:
         }
 
         // 允许设置旧的 view block
-        ZJC_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu",
+        ZJC_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->block_info().height(),
-            view_block->qc().view());
+            view_block->qc().view(),
+            common::Encode::HexEncode(view_block->qc().sign_x()).c_str());
+        assert(!view_block->qc().sign_x().empty());
         latest_committed_block_ = view_block;
         commited_block_queue_.push(view_block_info);
     }
