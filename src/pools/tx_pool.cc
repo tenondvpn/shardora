@@ -176,9 +176,9 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         auto remove_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
             auto tx_iter = tx_map.find(addr);
             if (tx_iter != tx_map.end()) {
-                ZJC_DEBUG("find tx addr success: %s", common::Encode::HexEncode(addr).c_str());
+                ZJC_INFO("find tx addr success: %s", common::Encode::HexEncode(addr).c_str());
                 for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
-                    ZJC_DEBUG("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
+                    ZJC_INFO("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first,
                         view_block.block_info().tx_list(i).nonce());
@@ -190,13 +190,13 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         ++all_delay_tx_count_;
                         all_delay_tm_us_ += now_tm_us - nonce_iter->second->receive_tm_us;
                     }
-                    
-                    ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+
+                    ZJC_INFO("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
                         pool_index_,
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first);
                     auto tx_ptr = nonce_iter->second;
-                    ZJC_DEBUG("over pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                    ZJC_INFO("over pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                         tx_ptr->address_info->nonce(), 
                         tx_ptr->tx_info->nonce(),
@@ -208,14 +208,14 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                     tx_map.erase(tx_iter);
                 }
             } else {
-                ZJC_DEBUG("find tx addr failed: %s", common::Encode::HexEncode(addr).c_str());
+                ZJC_INFO("find tx addr failed: %s", common::Encode::HexEncode(addr).c_str());
             }
         };
         
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_DEBUG("trace tx pool: %d, step: %d, over tx addr: %s, nonce: %lu", 
+        ZJC_INFO("trace tx pool: %d, step: %d, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(addr).c_str(), 
