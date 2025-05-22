@@ -45,30 +45,32 @@ public:
             block::protobuf::BlockTx& block_tx) {
         uint64_t to_balance = 0;
         uint64_t to_nonce = 0;
+        auto& unique_hash = tx_info->key();
         if (GetTempAccountBalance(
                 zjc_host, 
                 block_tx.to(), 
                 acc_balance_map, 
                 &to_balance, 
                 &to_nonce) != consensus::kConsensusSuccess) {
+            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
-        auto& unique_hash = tx_info->key();
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
         pools::protobuf::ElectStatistic elect_statistic;
         if (!elect_statistic.ParseFromString(tx_info->value())) {
             assert(false);
+            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
     
         if (elect_statistic.sharding_id() != view_block.qc().network_id()) {
-            ZJC_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
+            ZJC_INFO("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
             return consensus::kConsensusError;
         }
 

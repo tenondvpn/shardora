@@ -46,12 +46,13 @@ public:
                 acc_balance_map, 
                 &to_balance, 
                 &to_nonce) != consensus::kConsensusSuccess) {
+            ZJC_INFO("GetTempAccountBalance unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
             return consensus::kConsensusError;
         }
 
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
+            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
             return consensus::kConsensusError;
         }
 

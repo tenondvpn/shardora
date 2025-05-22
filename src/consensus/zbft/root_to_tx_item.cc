@@ -38,12 +38,13 @@ int RootToTxItem::HandleTx(
     auto& unique_hash = tx_info->key();
     std::string val;
     if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
     
     pools::protobuf::ToTxMessageItem to_item;
     if (!to_item.ParseFromString(tx_info->value())) {
+        ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         assert(false);
         return consensus::kConsensusError;
     }
