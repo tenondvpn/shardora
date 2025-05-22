@@ -85,7 +85,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
         ZJC_DEBUG("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             vote_view_, view, index, pool_idx_);
-        assert(false);
+        // assert(false);
         return Status::kError;
     }
 
