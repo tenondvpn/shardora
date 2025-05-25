@@ -495,7 +495,7 @@ int ZjchainHost::SaveKeyValue(
         const std::string& key,
         const std::string& val) {
     ZJC_DEBUG("called 13");
-    CONTRACT_DEBUG("view: %lu, zjcvm set storage called, id: %s, key: %s, value: %s",
+    ZJC_INFO("view: %lu, zjcvm set storage called, id: %s, key: %s, value: %s",
         view_,
         common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
         common::Encode::HexEncode(key).c_str(),
@@ -527,7 +527,7 @@ int ZjchainHost::GetCachedKeyValue(
         const std::string& key_str, 
         std::string* val) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    CONTRACT_DEBUG("view: %lu, zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
+    ZJC_INFO("view: %lu, zjcvm get storage called, id: %s, key: %s, value: %s, thread_idx: %d",
         view_,
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
@@ -569,12 +569,22 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
         auto siter = it->second.str_storage.find(key_str);
         if (siter != it->second.str_storage.end()) {
             *val = siter->second.str_val;
+            ZJC_INFO("view: %lu, success zjcvm get storage called, id: %s, key: %s, value: %s",
+                view_,
+                common::Encode::HexEncode(id).c_str(),
+                common::Encode::HexEncode(key_str).c_str(),
+                common::Encode::HexEncode(*val).c_str());
             return kZjcvmSuccess;
         }
     }
 
     auto str_key = id + key_str;
     if (view_block_chain_->GetPrevStorageKeyValue(parent_hash_, id, key_str, val)) {
+        ZJC_INFO("view: %lu, success zjcvm get storage called, id: %s, key: %s, value: %s",
+            view_,
+            common::Encode::HexEncode(id).c_str(),
+            common::Encode::HexEncode(key_str).c_str(),
+            common::Encode::HexEncode(*val).c_str());
         return kZjcvmSuccess;
     }
     // auto prev_iter = prev_storages_map_.find(str_key);
@@ -585,9 +595,20 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
 
     ZJC_DEBUG("called 14");
     if (!Execution::Instance()->GetStorage(addr, key_str, val)) {
+        ZJC_INFO("view: %lu, failed zjcvm get storage called, id: %s, key: %s, value: %s",
+            view_,
+            common::Encode::HexEncode(id).c_str(),
+            common::Encode::HexEncode(key_str).c_str(),
+            common::Encode::HexEncode(*val).c_str());
+
         return kZjcvmError;
     }
 
+    ZJC_INFO("view: %lu, success zjcvm get storage called, id: %s, key: %s, value: %s",
+        view_,
+        common::Encode::HexEncode(id).c_str(),
+        common::Encode::HexEncode(key_str).c_str(),
+        common::Encode::HexEncode(*val).c_str());
     return kZjcvmSuccess;
 }
 

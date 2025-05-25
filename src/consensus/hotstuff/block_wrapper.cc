@@ -79,9 +79,10 @@ Status BlockWrapper::Wrap(
             return 1;
         }
 
-        ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+        ZJC_INFO("not user tx unique hash success to: %s, unique hash: %s, parent_hash: %s",
             common::Encode::HexEncode(tx_info.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str());
+            common::Encode::HexEncode(tx_info.key()).c_str(),
+            common::Encode::HexEncode(zjc_host.parent_hash_).c_str());
         return 0;
     };
 

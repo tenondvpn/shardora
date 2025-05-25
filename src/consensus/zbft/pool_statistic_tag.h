@@ -63,12 +63,13 @@ public:
         uint64_t statistic_height = udata[0];
         block_tx.set_nonce(to_nonce + 1);
         ZJC_WARN("success call pool statistic height: %lu, pool: %d, view: %lu, "
-            "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
+            "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s, parent hash: %s", 
             statistic_height,
             view_block.qc().pool_index(), view_block.qc().view(),
             to_nonce, block_tx.nonce(),
             common::Encode::HexEncode(block_tx.to()).c_str(),
-            common::Encode::HexEncode(tx_info->key()).c_str());
+            common::Encode::HexEncode(tx_info->key()).c_str(),
+            common::Encode::HexEncode(view_block.parent_hash()).c_str();
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
         // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
