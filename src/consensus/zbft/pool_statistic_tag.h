@@ -69,7 +69,7 @@ public:
             to_nonce, block_tx.nonce(),
             common::Encode::HexEncode(block_tx.to()).c_str(),
             common::Encode::HexEncode(tx_info->key()).c_str(),
-            common::Encode::HexEncode(view_block.parent_hash()).c_str();
+            common::Encode::HexEncode(view_block.parent_hash()).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
         // prefix_db_->AddAddressInfo(block_tx.to(), *(acc_balance_map[block_tx.to()]), zjc_host.db_batch_);
