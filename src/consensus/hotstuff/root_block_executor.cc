@@ -50,7 +50,7 @@ void RootBlockExecutor::RootDefaultTx(
 
     if (do_tx_res != consensus::kConsensusSuccess) {
         tx_list->RemoveLast();
-        assert(false);
+        // assert(false);
     }
 }
 
@@ -66,17 +66,6 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
         auto& tx = *tx_list->Add();
         auto& src_tx = (*iter)->tx_info;
         (*iter)->TxToBlockTx(*src_tx, &tx);
-        // create address must to and have transfer amount
-        // if (tx.step() == pools::protobuf::kRootCreateAddress) {
-        //     if (!tx.has_contract_code() && tx.amount() <= 0 && tx.contract_prepayment() <= 0) {
-        //         ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu, invalid tx: %s",
-        //             tx.step(), tx.amount(), src_tx->step(), src_tx->amount(), ProtobufToJson(tx).c_str());
-        //         tx_list->RemoveLast();
-        //         assert(false);
-        //         continue;    
-        //     }
-        // }
-
         int do_tx_res = (*iter)->HandleTx(
             *view_block,
             zjc_host,
@@ -85,7 +74,7 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
 
         if (do_tx_res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
-            assert(false);
+            // assert(false);
             continue;
         }
     }
