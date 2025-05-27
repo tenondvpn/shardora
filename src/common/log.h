@@ -71,15 +71,15 @@
 //     LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 // } while (0)
 #endif
-// #define ZJC_INFO(fmt, ...)
-// #define ZJC_WARN(fmt, ...)
-#define ZJC_INFO(fmt, ...)  do {\
-    LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-} while (0)
+#define ZJC_INFO(fmt, ...)
+#define ZJC_WARN(fmt, ...)
+// #define ZJC_INFO(fmt, ...)  do {\
+//     LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+// } while (0)
 
-#define ZJC_WARN(fmt, ...)  do {\
-    LOG_INS.warn("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-} while (0)
+// #define ZJC_WARN(fmt, ...)  do {\
+//     LOG_INS.warn("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+// } while (0)
 
 #define ZJC_ERROR(fmt, ...)  do {\
     LOG_INS.error("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
