@@ -303,7 +303,7 @@ void ShardStatistic::HandleStatistic(
         handle_joins_func(block.joins(i));
     }
 
-    if (block.has_pool_statistic_height()) {
+    if (block.has_pool_statistic_height() && network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
         auto exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
         if (exist_iter == statistic_pool_info_.end()) {
             StatisticInfoItem statistic_item;
