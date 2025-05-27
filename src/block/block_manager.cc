@@ -705,19 +705,19 @@ void BlockManager::CreateStatisticTx() {
     assert(now_thread_id_tmp == tmp_thread_id_tmp);
 #endif
     if (create_statistic_tx_cb_ == nullptr) {
-        ZJC_DEBUG("create_statistic_tx_cb_ == nullptr");
+        ZJC_INFO("create_statistic_tx_cb_ == nullptr");
         return;
     }
 
     pools::protobuf::ElectStatistic elect_statistic;
     uint64_t timeblock_height = prev_timeblock_height_;
-    ZJC_DEBUG("StatisticWithHeights called!");
+    ZJC_INFO("StatisticWithHeights called!");
 
     // Some nodes will receive statistic block ahead of timeblock.
     // This happens accasionally, making statistic tx failed to be found
     // So we should make sure that one timeblock can only gathered statistic info for once
     if (IsTimeblockHeightStatisticDone(timeblock_height)) {
-        ZJC_DEBUG("repeat StatisticWithHeights, %lu, latest: %lu",
+        ZJC_INFO("repeat StatisticWithHeights, %lu, latest: %lu",
             timeblock_height, latest_statistic_timeblock_height_);
         return;
     }
@@ -725,7 +725,7 @@ void BlockManager::CreateStatisticTx() {
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
             timeblock_height) != pools::kPoolsSuccess) {
-        ZJC_DEBUG("failed StatisticWithHeights!");
+        ZJC_INFO("failed StatisticWithHeights!");
         return;
     }
 
@@ -737,7 +737,7 @@ void BlockManager::CreateStatisticTx() {
         std::string("create_statistic_tx_") + 
         std::to_string(elect_statistic.sharding_id()) + "_" +
         std::to_string(elect_statistic.statistic_height()));
-    ZJC_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
+    ZJC_INFO("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
         common::Encode::HexEncode(unique_hash).c_str(), 
         timeblock_height, ProtobufToJson(elect_statistic).c_str());
     if (!unique_hash.empty()) {
@@ -797,7 +797,7 @@ void BlockManager::HandleStatisticBlock(
     }
 #ifdef NDEBUG
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
-        ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
+        ZJC_INFO("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
             elect_statistic.sharding_id(), 
             common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
             elect_statistic.join_elect_nodes(i).stoke(),
@@ -806,7 +806,7 @@ void BlockManager::HandleStatisticBlock(
     }
 
     assert(view_block.qc().network_id() == elect_statistic.sharding_id());
-    ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, "
+    ZJC_INFO("success handle statistic block net: %u, sharding: %u, "
         "pool: %u, height: %lu, elect height: %lu",
         view_block.qc().network_id(), elect_statistic.sharding_id(), view_block.qc().pool_index(), 
         block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());

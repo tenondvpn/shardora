@@ -55,7 +55,7 @@ int ShardStatistic::Init() {
             pool_map[i] = statistic_item;
         }
     } else {
-        ZJC_DEBUG("failed load latest pool statistic tag: %d", common::GlobalInfo::Instance()->network_id());
+        ZJC_INFO("failed load latest pool statistic tag: %d", common::GlobalInfo::Instance()->network_id());
         assert(false);
         return kPoolsError;
     }
@@ -107,7 +107,7 @@ void ShardStatistic::ThreadCallback() {
 void ShardStatistic::ThreadToStatistic(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto* block_ptr = &view_block_ptr->block_info();
-    ZJC_DEBUG("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
+    ZJC_INFO("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
         block_ptr->height(),
@@ -133,7 +133,7 @@ void ShardStatistic::ThreadToStatistic(
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
-        ZJC_DEBUG("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
+        ZJC_INFO("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
             view_block_ptr->qc().network_id(),
             view_block_ptr->qc().pool_index(),
             block_ptr->height(),
@@ -165,7 +165,7 @@ void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     auto& elect_statistic = block.elect_statistic();
-    ZJC_DEBUG("success handle statistic block: %s, latest_statisticed_height_: %lu",
+    ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu",
         ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
     auto& heights = elect_statistic.height_info();
     auto st_iter = statistic_pool_info_.begin();
@@ -174,7 +174,7 @@ void ShardStatistic::HandleStatisticBlock(
             break;
         }
             
-        ZJC_DEBUG("erase statistic height: %lu", st_iter->first);
+        ZJC_INFO("erase statistic height: %lu", st_iter->first);
         st_iter = statistic_pool_info_.erase(st_iter);
         CHECK_MEMORY_SIZE(statistic_pool_info_);
     }
@@ -192,7 +192,7 @@ void ShardStatistic::HandleStatistic(
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
     if (block.timeblock_height() < latest_timeblock_height_) {
-        ZJC_DEBUG("timeblock not less than latest timeblock: %lu, %lu", 
+        ZJC_INFO("timeblock not less than latest timeblock: %lu, %lu", 
             block.timeblock_height(), latest_timeblock_height_);
     }
 
@@ -211,11 +211,11 @@ void ShardStatistic::HandleStatistic(
     auto pool_statistic_riter = statistic_pool_info_.rbegin();
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
         auto pool_iter = pool_statistic_riter->second.find(pool_idx);
-        ZJC_DEBUG("check elect height: %lu, pool: %u, block height: %lu, find: %d",
+        ZJC_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
             pool_iter->first, pool_idx, block.height(), 
             (pool_iter != pool_statistic_riter->second.end()));
         if (pool_iter != pool_statistic_riter->second.end()) {
-            ZJC_DEBUG("pool: %u, get block height and statistic height: %lu, max_height: %lu",
+            ZJC_INFO("pool: %u, get block height and statistic height: %lu, max_height: %lu",
                 pool_idx,
                 block.height(),
                 pool_iter->second.statistic_max_height);
@@ -249,7 +249,7 @@ void ShardStatistic::HandleStatistic(
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
     auto handle_joins_func = [&](const bls::protobuf::JoinElectInfo& join_info) {
-        ZJC_DEBUG("join elect tx comming.");
+        ZJC_INFO("join elect tx comming.");
         auto join_addr = secptr_->GetAddress(join_info.public_key());
         id_pk_map[join_addr] =join_info.public_key();
         {
@@ -261,7 +261,7 @@ void ShardStatistic::HandleStatistic(
 
             auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
             elect_stoke_map[join_addr] = join_info.stoke();
-            ZJC_DEBUG("success add elect node stoke %s, %lu, "
+            ZJC_INFO("success add elect node stoke %s, %lu, "
                 "elect height: %lu, tm height: %lu",
                 common::Encode::HexEncode(join_addr).c_str(), 
                 join_info.stoke(),
@@ -288,7 +288,7 @@ void ShardStatistic::HandleStatistic(
 
             auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
             elect_shard_map[join_addr] = join_info.shard_id();
-            ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, "
+            ZJC_INFO("kJoinElect add new elect node: %s, shard: %u, pool: %u, "
                 "height: %lu, elect height: %lu, tm height: %lu",
                 common::Encode::HexEncode(join_addr).c_str(),
                 join_info.shard_id(),
@@ -312,7 +312,7 @@ void ShardStatistic::HandleStatistic(
             pool_map[pool_idx] = statistic_item;
             statistic_pool_info_[block.pool_statistic_height()] = pool_map;
             CHECK_MEMORY_SIZE(statistic_pool_info_);
-            ZJC_DEBUG(
+            ZJC_INFO(
                 "new success handle kPoolStatisticTag tx statistic_height: %lu, "
                 "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
                 block.pool_statistic_height(), 
@@ -324,7 +324,7 @@ void ShardStatistic::HandleStatistic(
             StatisticInfoItem statistic_item;
             statistic_item.statistic_min_height = block.height() + 1;
             exist_iter->second[pool_idx] = statistic_item;
-            ZJC_DEBUG(
+            ZJC_INFO(
                 "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
                 "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
                 block.pool_statistic_height(), 
@@ -355,7 +355,7 @@ void ShardStatistic::HandleStatistic(
             auto& accoutPoceInfoIterm = acc_iter->second;
             accoutPoceInfoIterm->consensus_gap += 1;
             accoutPoceInfoIterm->credit += node.fts_value();;
-            ZJC_DEBUG("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
+            ZJC_INFO("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
                 common::Encode::HexEncode(addr).c_str(), 
                 accoutPoceInfoIterm->consensus_gap, 
                 accoutPoceInfoIterm->credit);
@@ -366,7 +366,7 @@ void ShardStatistic::HandleStatistic(
         auto& elect_statistic = block.elect_statistic();
         for (int32_t node_idx = 0;
                 node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
-            ZJC_DEBUG("success get shard election: %lu, %lu, "
+            ZJC_INFO("success get shard election: %lu, %lu, "
                 "join nodes size: %u, shard: %u",
                 elect_statistic.sharding_id(),
                 elect_statistic.statistic_height(),
@@ -391,7 +391,7 @@ void ShardStatistic::HandleStatistic(
                 auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
                 elect_shard_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] = 
                     network::kRootCongressNetworkId;
-                ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, "
+                ZJC_INFO("root sharding kJoinElect add new elect node: %s, "
                     "stoke: %lu, elect height: %lu",
                     common::Encode::HexEncode(
                         elect_statistic.join_elect_nodes(node_idx).pubkey()).c_str(),
@@ -438,7 +438,7 @@ void ShardStatistic::HandleStatistic(
         }
     }
 
-    ZJC_DEBUG("statistic height: %lu, success handle block pool: %u, height: %lu, "
+    ZJC_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
         "debug_str: %s, statistic_pool_debug_str: %s",
         pool_statistic_riter->first,
@@ -460,7 +460,7 @@ std::string ShardStatistic::getLeaderIdFromBlock(
         nullptr,
         nullptr);
     if (members == nullptr) {
-        ZJC_DEBUG("block leader not exit block.hash %s block.electHeight:%d, network_id:%d ",
+        ZJC_INFO("block leader not exit block.hash %s block.electHeight:%d, network_id:%d ",
                   common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                   view_block.qc().elect_height(),
                   view_block.qc().network_id());
@@ -494,7 +494,7 @@ void ShardStatistic::OnTimeBlock(
         return;
     }
 
-    ZJC_DEBUG("new timeblcok coming and should statistic new tx %lu, %lu.", 
+    ZJC_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
         latest_timeblock_height_, latest_time_block_height);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
@@ -510,7 +510,7 @@ int ShardStatistic::StatisticWithHeights(
     auto iter = statistic_pool_info_.rbegin();
     auto piter = statistic_pool_info_.rend();
     while (iter != statistic_pool_info_.rend() && iter->first > latest_statisticed_height_) {
-        ZJC_DEBUG("iter->first: %lu, size: %u, piter->first: %lu, size: %u, latest_statisticed_height_: %lu", 
+        ZJC_INFO("iter->first: %lu, size: %u, piter->first: %lu, size: %u, latest_statisticed_height_: %lu", 
             iter->first, 
             iter->second.size(), 
             piter !=  statistic_pool_info_.rend() ? piter->first : 0lu, 
@@ -533,7 +533,7 @@ int ShardStatistic::StatisticWithHeights(
             iter_debug_str += std::to_string(test_iter->first) + ", ";
         }
 
-        ZJC_DEBUG("failed iter == statistic_pool_info_.end() piter: %d, iter: %d, "
+        ZJC_INFO("failed iter == statistic_pool_info_.end() piter: %d, iter: %d, "
             "piter_debug_str: %s, iter_debug_str: %s, iter->first: %lu, latest_statisticed_height_: %lu",
             (piter == statistic_pool_info_.rend()), 
             (iter == statistic_pool_info_.rend()),
@@ -552,7 +552,7 @@ int ShardStatistic::StatisticWithHeights(
                 std::to_string(titer->second.statistic_min_height) + ":" + 
                 std::to_string(titer->second.statistic_max_height) + ",";
         }
-        ZJC_DEBUG("pool not full statistic height: %lu, now: %u, all: %u, "
+        ZJC_INFO("pool not full statistic height: %lu, now: %u, all: %u, "
             "now_size: %u, %s, latest_statisticed_height_: %lu", 
             piter->first,
             piter->second.size(), 
@@ -566,7 +566,7 @@ int ShardStatistic::StatisticWithHeights(
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
         if (iter->second[tmp_pool_idx].statistic_min_height >
                 iter->second[tmp_pool_idx].statistic_max_height) {
-            ZJC_DEBUG("pool min height: %lu, max height: %lu",
+            ZJC_INFO("pool min height: %lu, max height: %lu",
                 iter->second[tmp_pool_idx].statistic_min_height,
                 iter->second[tmp_pool_idx].statistic_max_height);
             return kPoolsError;
@@ -576,7 +576,7 @@ int ShardStatistic::StatisticWithHeights(
     auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
-        ZJC_DEBUG("success get exists statistic message "
+        ZJC_INFO("success get exists statistic message "
             "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
             "now tm height: %lu, statistic: %s",
             prev_timeblock_height_,
@@ -606,7 +606,7 @@ int ShardStatistic::StatisticWithHeights(
         nullptr,
         nullptr);
     if (now_elect_members == nullptr) {
-        ZJC_DEBUG("now_elect_members == nullptr.");
+        ZJC_INFO("now_elect_members == nullptr.");
         return kPoolsError;
     }
 
@@ -617,7 +617,7 @@ int ShardStatistic::StatisticWithHeights(
             added_id_set.insert((*now_elect_members)[i]->pubkey);
         }
     } else {
-        ZJC_DEBUG("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
+        ZJC_INFO("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
     }
 
     uint64_t all_gas_amount = 0;
@@ -773,7 +773,7 @@ int ShardStatistic::StatisticWithHeights(
         height_item->set_max_height(iter->second[tmp_pool_idx].statistic_max_height);
     }
 
-    ZJC_DEBUG("success create statistic message prev_timeblock_height_: %lu, "
+    ZJC_INFO("success create statistic message prev_timeblock_height_: %lu, "
         "statisticed_timeblock_height: %lu, "
         "now tm height: %lu, statistic: %s, new statistic height: %lu, "
         "now satistic height: %lu, statistic with height now: %s, tx_count_debug_str: %s",
@@ -809,7 +809,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
         for (uint32_t i = 0; i < prepare_members->size(); ++i) {
             auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
             if (inc_iter != added_id_set.end()) {
-                // ZJC_DEBUG("id is in elect: %s", common::Encode::HexEncode(
+                // ZJC_INFO("id is in elect: %s", common::Encode::HexEncode(
                 //     secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                 continue;
             }
@@ -833,7 +833,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_elect_pos(0);
             join_elect_node->set_stoke(stoke);
             join_elect_node->set_shard(shard);
-            ZJC_DEBUG("add node to election prepare member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
+            ZJC_INFO("add node to election prepare member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
                       common::Encode::HexEncode((*prepare_members)[i]->pubkey).c_str(),
                       common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str(),
                       stoke, shard,
@@ -842,7 +842,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
     }
 
     if (prepare_members != nullptr) {
-        ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
+        ZJC_INFO("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
             "new nodes size: %u, now members size: %u, prepare members size: %u",
             now_elect_height_,
             prepare_elect_height_,
@@ -863,7 +863,7 @@ void ShardStatistic::addNewNode2JoinStatics(
 #ifndef NDEBUG
     for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
         for (auto id_iter = iter->second.begin(); id_iter != iter->second.end(); ++id_iter) {
-            ZJC_DEBUG("stoke map eh: %lu, id: %s, stoke: %lu",
+            ZJC_INFO("stoke map eh: %lu, id: %s, stoke: %lu",
                 iter->first,
                 common::Encode::HexEncode(id_iter->first).c_str(),
                 id_iter->second);
@@ -872,7 +872,7 @@ void ShardStatistic::addNewNode2JoinStatics(
 
     for (auto iter = join_elect_shard_map.begin(); iter != join_elect_shard_map.end(); ++iter) {
         for (auto id_iter = iter->second.begin(); id_iter != iter->second.end(); ++id_iter) {
-            ZJC_DEBUG("shard map eh: %lu, id: %s, shard: %u",
+            ZJC_INFO("shard map eh: %lu, id: %s, shard: %u",
                 iter->first,
                 common::Encode::HexEncode(id_iter->first).c_str(),
                 id_iter->second);
@@ -889,18 +889,18 @@ void ShardStatistic::addNewNode2JoinStatics(
         const auto &shard_map = r_siter->second;
         for (auto &[node_id, stoke] : stoke_map) {
             if (shard_map.count(node_id) == 0) {
-                ZJC_DEBUG("failed get shard: %s", common::Encode::HexEncode(node_id).c_str());
+                ZJC_INFO("failed get shard: %s", common::Encode::HexEncode(node_id).c_str());
                 continue;
             }
 
             if (added_id_set.count(node_id) > 0) {
                 // 说明节点是之前的委员会成员 。
-                ZJC_DEBUG("not added id: %s", common::Encode::HexEncode(node_id).c_str());
+                ZJC_INFO("not added id: %s", common::Encode::HexEncode(node_id).c_str());
                 continue;
             }
 
             elect_nodes.push_back(node_id);
-            ZJC_DEBUG("elect nodes add: %s, %lu",
+            ZJC_INFO("elect nodes add: %s, %lu",
                       common::Encode::HexEncode(node_id).c_str(), stoke);
             added_id_set.insert(node_id);
         }
@@ -954,12 +954,12 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(0);
-        ZJC_DEBUG("add node to election new member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
+        ZJC_INFO("add node to election new member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
                   common::Encode::HexEncode(pubkey).c_str(),
                   common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
                   iter->second, shard_iter->second,
                   0);
-        ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u",
+        ZJC_INFO("add new elect node: %s, stoke: %lu, shard: %u",
             common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
 }
