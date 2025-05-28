@@ -487,7 +487,9 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_check_timeout_blocks_ms_ + 30000u < now_tm_ms) {
         for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-            if (view_commited(common::GlobalInfo::Instance()->network_id(), iter->second->qc().view())) {
+            if (view_commited(
+                    common::GlobalInfo::Instance()->network_id(), 
+                    iter->second->view_block->qc().view())) {
                 iter = view_blocks_info_.erase(iter);
             } else {
                 ++iter;
@@ -496,7 +498,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
         prev_check_timeout_blocks_ms_ = now_tm_ms;
     }
-    
+
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     // auto v_block = v_block_info->view_block;
