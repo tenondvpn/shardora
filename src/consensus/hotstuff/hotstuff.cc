@@ -25,7 +25,6 @@ void Hotstuff::Init() {
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
         view_block_chain_->Store(latest_view_block, false, nullptr, nullptr, true);
-        view_block_chain_->SetLatestLockedBlock(latest_view_block);
         auto temp_ptr = view_block_chain_->Get(latest_view_block->qc().view_block_hash());
         view_block_chain_->SetLatestCommittedBlock(temp_ptr);
         InitAddNewViewBlock(latest_view_block);
@@ -1411,10 +1410,6 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         v_block2->qc().network_id(), v_block2->qc().pool_index(), 
         v_block2->qc().view(), ProtobufToJson(cons_debug2).c_str());
 #endif
-    if (!view_block_chain()->LatestLockedBlock() ||
-            v_block2->qc().view() > view_block_chain()->LatestLockedBlock()->qc().view()) {
-        view_block_chain()->SetLatestLockedBlock(v_block2);
-    }
 
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
     if (!v_block3_info) {

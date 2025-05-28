@@ -446,6 +446,11 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         view_blocks_info_.erase(tmp_block->parent_hash());
         ADD_DEBUG_PROCESS_TIMESTAMP();
         block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
+        commited_view_.insert(tmp_block->qc().view());
+        if (commited_view_.size() >= 102400u) {
+            commited_view_.erase(commited_view_.begin());
+        }
+
 // #ifndef NDEBUG
 //         for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
 //             if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
@@ -478,6 +483,20 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     if (latest_commited_block) {
         SetLatestCommittedBlock(latest_commited_block);
     }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_check_timeout_blocks_ms_ + 30000u < now_tm_ms) {
+        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+            if (view_commited(common::GlobalInfo::Instance()->network_id(), iter->second->qc().view())) {
+                iter = view_blocks_info_.erase(iter);
+            } else {
+                ++iter;
+            }
+        }
+
+        prev_check_timeout_blocks_ms_ = now_tm_ms;
+    }
+    
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     // auto v_block = v_block_info->view_block;

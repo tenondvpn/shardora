@@ -90,6 +90,12 @@ public:
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     bool view_commited(uint32_t network_id, View view) const {
+        if (network_id == common::GlobalInfo::Instance()->network_id()) {
+            if (commited_view_.find(view) != commited_view_.end()) {
+                return true;
+            }
+        }
+
         if (prefix_db_->ViewBlockIsValidView(network_id, pool_index_, view)) {
             return true;
         }
@@ -107,8 +113,6 @@ public:
 
     inline void Clear() {
         view_blocks_info_.clear();
-        // latest_committed_block_ = nullptr;
-        // latest_locked_block_ = nullptr;
         start_block_ = nullptr;        
     }
 
@@ -151,10 +155,6 @@ public:
         return latest_committed_block_;
     }
 
-    inline std::shared_ptr<ViewBlock> LatestLockedBlock() const {
-        return latest_locked_block_;
-    }
-
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         auto view_block = view_block_info->view_block;
         if (latest_committed_block_ &&
@@ -177,17 +177,6 @@ public:
         commited_block_queue_.push(view_block_info);
     }
 
-    inline void SetLatestLockedBlock(const std::shared_ptr<ViewBlock>& view_block) {
-        auto view_block_status = GetViewBlockStatus(view_block);
-        if (view_block_status != ViewBlockStatus::Committed) {
-            latest_locked_block_ = view_block;
-            auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
-            if (it != view_blocks_info_.end()) {
-                view_blocks_info_[view_block->qc().view_block_hash()]->status = ViewBlockStatus::Locked;
-            }
-        }        
-    }
-
     inline ViewBlockStatus GetViewBlockStatus(const std::shared_ptr<ViewBlock>& view_block) const {
         auto it = view_blocks_info_.find(view_block->qc().view_block_hash());
         if (it == view_blocks_info_.end()) {
@@ -195,9 +184,6 @@ public:
         }
         return it->second->status;        
     } 
-
-    bool IsViewCommited(View view) {
-    }
 
     uint32_t pool_index() const {
         return pool_index_;
@@ -250,15 +236,6 @@ private:
         return view_block_info_ptr;
     }
 
-    void SetStatusToMap(const HashStr& hash, const ViewBlockStatus& status) {
-        auto it = view_blocks_info_.find(hash);
-        if (it == view_blocks_info_.end()) {
-            return;
-        }
-
-        view_blocks_info_[hash]->status = status;        
-    }
-
     void AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
         db::DbWriteBatch& db_batch);
@@ -269,7 +246,6 @@ private:
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
-    std::shared_ptr<ViewBlock> latest_locked_block_; // locked_block_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
@@ -294,6 +270,8 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_;
     uint64_t latest_timeblock_height_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::set<uint64_t> commited_view_;
+    uint64_t prev_check_timeout_blocks_ms_ = 0;
 };
 
 // from db
