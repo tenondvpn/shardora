@@ -1602,8 +1602,8 @@ Status Hotstuff::VerifyViewBlock(
     ZJC_ERROR("pool: %d, block view message is error. %lu, %lu, %s, %s, "
         "v_block.qc().view(): %lu, pacemaker()->CurView(): %lu, "
         "v_block.qc().view(): %lu, qc_view_block->qc().view(): %lu",
-        pool_idx_, v_block.qc().view(), view_block_chain->LatestLockedBlock()->qc().view(),
-        common::Encode::HexEncode(view_block_chain->LatestLockedBlock()->qc().view_block_hash()).c_str(),
+        pool_idx_, v_block.qc().view(), view_block_chain->LatestCommittedBlock()->qc().view(),
+        common::Encode::HexEncode(view_block_chain->LatestCommittedBlock()->qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(v_block.parent_hash()).c_str(),
         v_block.qc().view(), pacemaker()->CurView(), 
         v_block.qc().view(), qc_view_block->qc().view());
