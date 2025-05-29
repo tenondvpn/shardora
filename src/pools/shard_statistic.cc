@@ -164,8 +164,12 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
 void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block) {
     auto& elect_statistic = block.elect_statistic();
-    ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu",
-        ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
+    ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu,"
+        "has elect_statistic: %d, has pool st info: %d, block height: %lu",
+        ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_,
+        block.has_elect_statistic(),
+        block.has_pool_st_info(),
+        block.height());
     auto& heights = elect_statistic.height_info();
     auto st_iter = statistic_pool_info_.begin();
     while (st_iter != statistic_pool_info_.end()) {
