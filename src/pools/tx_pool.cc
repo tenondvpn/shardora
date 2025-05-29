@@ -138,8 +138,22 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         tx_ptr->tx_key = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 
+    if (!IsUserTransaction(tx_ptr->tx_info->step()) && !tx_ptr->tx_info->key().empty()) {
+        if (over_unique_hash_set_.exists(tx_ptr->tx_info->key())) {
+            ZJC_INFO("trace tx pool: %d, failed add tx %s, key: %s, "
+                "nonce: %lu, step: %d, unique hash exists: %s", 
+                pool_index_,
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
+                tx_ptr->tx_info->nonce(),
+                tx_ptr->tx_info->step(),
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+            return kPoolsError;
+        }
+    }
+
     added_txs_.push(tx_ptr);
-    ZJC_DEBUG("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu, step: %d", 
+    ZJC_INFO("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu, step: %d", 
         pool_index_,
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
         common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
@@ -161,6 +175,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         if (!IsUserTransaction(view_block.block_info().tx_list(i).step()) && 
                 !view_block.block_info().tx_list(i).unique_hash().empty()) {
             addr = view_block.block_info().tx_list(i).unique_hash();
+            over_unique_hash_set_.insert(addr);
         }
 
         if (view_block.block_info().tx_list(i).step() == pools::protobuf::kContractExcute) {

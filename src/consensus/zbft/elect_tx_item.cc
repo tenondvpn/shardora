@@ -79,7 +79,6 @@ int ElectTxItem::HandleTx(
     }
 
     zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
-    block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(to_nonce + 1);
     ZJC_WARN("success call elect block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());

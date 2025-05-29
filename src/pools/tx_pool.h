@@ -21,6 +21,7 @@
 #include "network/network_utils.h"
 #include "pools/account_qps_lru_map.h"
 #include "pools/tx_utils.h"
+#include "pools/unique_hash_lru_set.h"
 #include "protos/pools.pb.h"
 #include "pools/height_tree_level.h"
 #include "sync/key_value_sync.h"
@@ -172,9 +173,7 @@ private:
     std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;
-
-    // TODO: check it
-    common::SpinMutex tx_pool_mutex_;
+    UniqueHashLruSet<10240> over_unique_hash_set_;
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
