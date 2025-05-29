@@ -117,7 +117,15 @@ void ShardStatistic::ThreadToStatistic(
         return;
     }
     
+#ifndef NDEBUG
     const auto& tx_list = block.tx_list();
+    for (uint32_t i = 0; i < tx_list.size(); ++i) {
+        if (tx_list[i].step() == pools::protobuf::kStatistic) {
+            ZJC_INFO("statistic tx coming has elect info: %d, has st info: %d",
+                block.has_elect_statistic(), block.has_pool_st_info());
+        }
+    }
+#endif
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
@@ -182,7 +190,7 @@ void ShardStatistic::HandleStatistic(
             block.timeblock_height(), latest_timeblock_height_);
     }
 
-    if (block.has_pool_st_info()) {
+    if (block.has_elect_statistic()) {
         HandleStatisticBlock(block);
     }
 
