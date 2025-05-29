@@ -186,18 +186,21 @@ void ShardStatistic::HandleStatistic(
             block.timeblock_height(), latest_timeblock_height_);
     }
 
-    const auto& tx_list = block.tx_list();
-    // one block must be one consensus pool
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            continue;
-        }
+    // const auto& tx_list = block.tx_list();
+    // // one block must be one consensus pool
+    // for (int32_t i = 0; i < tx_list.size(); ++i) {
+    //     if (tx_list[i].status() != consensus::kConsensusSuccess) {
+    //         continue;
+    //     }
 
-        if (tx_list[i].step() == pools::protobuf::kStatistic) {
-            HandleStatisticBlock(block);
-        }
+    //     if (tx_list[i].step() == pools::protobuf::kStatistic) {
+    //     }
+    // }
+
+    if (block.has_elect_statistic() || block.has_pool_st_info()) {
+        HandleStatisticBlock(block);
     }
-    
+
     auto pool_idx = view_block_ptr->qc().pool_index();
     std::string statistic_pool_debug_str;
     for (auto riter = statistic_pool_info_.rbegin();
