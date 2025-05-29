@@ -86,9 +86,7 @@ public:
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root);
     void CreateStatisticTransaction(uint64_t timeblock_height);
-    void HandleStatisticBlock(
-        const block::protobuf::Block &block,
-        const block::protobuf::BlockTx &tx);
+    void HandleStatisticBlock(const block::protobuf::Block &block);
     void HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
     std::string getLeaderIdFromBlock(const view_block::protobuf::ViewBlockItem &block);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
