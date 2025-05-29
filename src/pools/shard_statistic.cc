@@ -117,15 +117,19 @@ void ShardStatistic::ThreadToStatistic(
         return;
     }
     
-#ifndef NDEBUG
     const auto& tx_list = block.tx_list();
-    for (uint32_t i = 0; i < tx_list.size(); ++i) {
+    // one block must be one consensus pool
+    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        if (tx_list[i].status() != consensus::kConsensusSuccess) {
+            continue;
+        }
+
         if (tx_list[i].step() == pools::protobuf::kStatistic) {
-            ZJC_INFO("statistic tx coming has elect info: %d, has st info: %d",
-                block.has_elect_statistic(), block.has_pool_st_info());
+            HandleStatisticBlock(block);
         }
     }
-#endif
+
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
@@ -157,7 +161,8 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
     }
 }
 
-void ShardStatistic::HandleStatisticBlock(const block::protobuf::Block& block) {
+void ShardStatistic::HandleStatisticBlock(
+        const block::protobuf::Block& block) {
     auto& elect_statistic = block.elect_statistic();
     ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu",
         ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_);
@@ -188,10 +193,6 @@ void ShardStatistic::HandleStatistic(
     if (block.timeblock_height() < latest_timeblock_height_) {
         ZJC_INFO("timeblock not less than latest timeblock: %lu, %lu", 
             block.timeblock_height(), latest_timeblock_height_);
-    }
-
-    if (block.has_elect_statistic()) {
-        HandleStatisticBlock(block);
     }
 
     auto pool_idx = view_block_ptr->qc().pool_index();
