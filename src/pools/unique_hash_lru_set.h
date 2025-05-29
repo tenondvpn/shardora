@@ -51,7 +51,7 @@ public:
 private:
     std::list<std::string> item_list_;
     std::unordered_map<std::string, typename std::list<std::string>::iterator> item_map_;
-    std::string index_data_map_[kBucketSize] = { nullptr };
+    std::string index_data_map_[kBucketSize];
 
 };
 
