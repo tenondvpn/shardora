@@ -117,18 +117,7 @@ void ShardStatistic::ThreadToStatistic(
         return;
     }
     
-    const auto& tx_list = block.tx_list();
-    // one block must be one consensus pool
-    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            continue;
-        }
-
-        if (tx_list[i].step() == pools::protobuf::kStatistic) {
-            HandleStatisticBlock(block);
-        }
-    }
+   
 
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
@@ -197,6 +186,18 @@ void ShardStatistic::HandleStatistic(
             block.timeblock_height(), latest_timeblock_height_);
     }
 
+    const auto& tx_list = block.tx_list();
+    // one block must be one consensus pool
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        if (tx_list[i].status() != consensus::kConsensusSuccess) {
+            continue;
+        }
+
+        if (tx_list[i].step() == pools::protobuf::kStatistic) {
+            HandleStatisticBlock(block);
+        }
+    }
+    
     auto pool_idx = view_block_ptr->qc().pool_index();
     std::string statistic_pool_debug_str;
     for (auto riter = statistic_pool_info_.rbegin();
