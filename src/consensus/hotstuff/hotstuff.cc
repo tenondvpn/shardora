@@ -1510,7 +1510,6 @@ void Hotstuff::HandleSyncedViewBlock(
         transport::MessagePtr msg_ptr;
         if (latest_qc_item_ptr_ == nullptr ||
                 vblock->qc().view() >= latest_qc_item_ptr_->view()) {
-
             if (IsQcTcValid(vblock->qc())) {
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
