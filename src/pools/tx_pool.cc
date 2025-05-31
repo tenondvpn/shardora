@@ -414,11 +414,21 @@ void TxPool::GetTxIdempotently(
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
+    std::set<uint32_t> system_added_step;
     auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
         for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
             uint64_t valid_nonce = common::kInvalidUint64;
             for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
                 auto tx_ptr = nonce_iter->second;
+                if (!IsUserTransaction(tx_ptr->tx_info->step())) {
+                    auto iter = system_added_step.find(tx_ptr->tx_info->step());
+                    if (iter != system_added_step.end()) {
+                        continue;
+                    }
+
+                    system_added_step.insert(tx_ptr->tx_info->step());
+                }
+                
                 if (valid_nonce == common::kInvalidUint64) {
                     int res = tx_valid_func(
                         *tx_ptr->address_info, 

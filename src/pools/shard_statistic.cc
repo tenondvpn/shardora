@@ -117,8 +117,6 @@ void ShardStatistic::ThreadToStatistic(
         return;
     }
     
-   
-
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
@@ -358,6 +356,20 @@ void ShardStatistic::HandleStatistic(
 
     if (block.has_elect_statistic()) {
         auto& elect_statistic = block.elect_statistic();
+         auto& heights = elect_statistic.height_info();
+    auto st_iter = statistic_pool_info_.begin();
+    while (st_iter != statistic_pool_info_.end()) {
+        if (st_iter->first >= latest_statisticed_height_) {
+            break;
+        }
+            
+        ZJC_INFO("erase statistic height: %lu", st_iter->first);
+        st_iter = statistic_pool_info_.erase(st_iter);
+        CHECK_MEMORY_SIZE(statistic_pool_info_);
+    }
+
+    latest_statisticed_height_ = elect_statistic.statistic_height();
+    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
         for (int32_t node_idx = 0;
                 node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
             ZJC_INFO("success get shard election: %lu, %lu, "

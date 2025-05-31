@@ -977,7 +977,7 @@ void ViewBlockChain::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
-    ZJC_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
+    ZJC_INFO("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
         latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
