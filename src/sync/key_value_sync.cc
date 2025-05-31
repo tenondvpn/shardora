@@ -54,7 +54,7 @@ void KeyValueSync::AddSyncHeight(
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+    ZJC_INFO("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
 }
 
@@ -73,7 +73,7 @@ void KeyValueSync::AddSyncViewHash(
         network_id, std::string(key, sizeof(key)), priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u, item size: %u",
+    ZJC_INFO("block height add new sync item key: %s, priority: %u, item size: %u",
         common::Encode::HexEncode(item->key).c_str(), 
         item->priority, 
         item_queues_[thread_idx].size());
@@ -94,7 +94,7 @@ void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_ms3 = common::TimeUtils::TimestampMs();
     auto etime = common::TimeUtils::TimestampMs();
     if (etime - now_tm_ms >= 1000000lu) {
-        ZJC_DEBUG("KeyValueSync handle message use time: %lu, "
+        ZJC_INFO("KeyValueSync handle message use time: %lu, "
             "PopKvMessage: %lu, PopItems: %lu, CheckSyncItem: %lu", 
             (etime - now_tm_ms), 
             (now_tm_ms1 - now_tm_ms),
@@ -125,18 +125,18 @@ void KeyValueSync::PopItems() {
             
             if (synced_map_.get(item->key, &item)) {
                 if (item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm) {
-                    ZJC_DEBUG("item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm: %s", item->key.c_str());
+                    ZJC_INFO("item->sync_tm_us + kSyncTimeoutPeriodUs >= now_tm: %s", item->key.c_str());
                     continue;
                 }
 
                 // if (item->sync_times >= kSyncCount) {
-                //     ZJC_DEBUG("item->sync_times >= kSyncCount: %s", item->key.c_str());
+                //     ZJC_INFO("item->sync_times >= kSyncCount: %s", item->key.c_str());
                 //     continue;
                 // }
             }
 
             if (responsed_keys_.exists(item->key)) {
-                ZJC_DEBUG("responsed_keys_.exists(item->key): %s", item->key.c_str());
+                ZJC_INFO("responsed_keys_.exists(item->key): %s", item->key.c_str());
                 continue;
             }
 
@@ -152,11 +152,11 @@ void KeyValueSync::PopItems() {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                ZJC_DEBUG("try to sync normal block: %u_%u_%lu, tag: %d",
+                ZJC_INFO("try to sync normal block: %u_%u_%lu, tag: %d",
                     item->network_id, item->pool_idx, item->height, item->tag);
             } else {
                 sync_req->add_keys(item->key);
-                ZJC_DEBUG("success add to sync key: %s", 
+                ZJC_INFO("success add to sync key: %s", 
                     common::Encode::HexEncode(item->key).c_str());
             }
 
@@ -273,7 +273,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     *msg.mutable_sync_proto() = sync_msg;
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d, hash64: %lu, key size: %u, height size: %u, sync_msg: %s",
+    ZJC_INFO("sync new from %s:%d, hash64: %lu, key size: %u, height size: %u, sync_msg: %s",
         node->public_ip.c_str(), node->public_port, msg.hash64(),
         sync_msg.sync_value_req().keys_size(),
         sync_msg.sync_value_req().heights_size(),
@@ -285,11 +285,11 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-//     ZJC_DEBUG("key value sync message coming req: %d, res: %d",
+//     ZJC_INFO("key value sync message coming req: %d, res: %d",
 //         header.sync_proto().has_sync_value_req(),
 //         header.sync_proto().has_sync_value_res());
     kv_msg_queue_.push(msg_ptr);
-    ZJC_DEBUG("queue size kv_msg_queue_: %d, hash: %lu",
+    ZJC_INFO("queue size kv_msg_queue_: %d, hash: %lu",
         kv_msg_queue_.size(), msg_ptr->header.hash64());
     wait_con_.notify_one();
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -327,19 +327,19 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     protobuf::SyncMessage& res_sync_msg = *msg.mutable_sync_proto();
     auto sync_res = res_sync_msg.mutable_sync_value_res();
     uint32_t add_size = 0;
-    ZJC_DEBUG("handle sync value request hash: %lu, key size: %u, height size: %u", 
+    ZJC_INFO("handle sync value request hash: %lu, key size: %u, height size: %u", 
         msg_ptr->header.hash64(), 
         sync_msg.sync_value_req().keys_size(),
         sync_msg.sync_value_req().heights_size());
     defer({
-        ZJC_DEBUG("over handle sync value request hash: %lu, key size: %u, height size: %u", 
+        ZJC_INFO("over handle sync value request hash: %lu, key size: %u, height size: %u", 
             msg_ptr->header.hash64(), 
             sync_msg.sync_value_req().keys_size(),
             sync_msg.sync_value_req().heights_size());
     });
     for (int32_t i = 0; i < sync_msg.sync_value_req().keys_size(); ++i) {
         const std::string& key = sync_msg.sync_value_req().keys(i);
-        ZJC_DEBUG("now handle sync view bock hash key: %s", 
+        ZJC_INFO("now handle sync view bock hash key: %s", 
             common::Encode::HexEncode(key).c_str());
         if (key.size() != 34) {
             continue;
@@ -349,7 +349,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         auto view_block_ptr = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlockWithHash(
             std::string(key.c_str() + 2, 32));
         if (view_block_ptr != nullptr && !view_block_ptr->qc().sign_x().empty()) {
-            ZJC_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
+            ZJC_INFO("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
                 common::GlobalInfo::Instance()->network_id(),
                 pool_index_arr[0],
                 common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
@@ -362,7 +362,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_key(key);
             res->set_tag(kViewHash);
             add_size += 16 + res->value().size();
-            ZJC_DEBUG("handle sync value view add add_size: %u request hash: %lu, "
+            ZJC_INFO("handle sync value view add add_size: %u request hash: %lu, "
                 "net: %u, pool: %u, height: %lu",
                 add_size,
                 msg_ptr->header.hash64(),
@@ -370,7 +370,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 res->pool_idx(),
                 res->height());
             if (add_size >= kSyncPacketMaxSize) {
-                ZJC_DEBUG("handle sync value view add_size failed request hash: %lu, "
+                ZJC_INFO("handle sync value view add_size failed request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
                     res->network_id(),
                     res->pool_idx(),
@@ -379,7 +379,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 break;
             }
         } else {
-            ZJC_DEBUG("failed get view block request coming: %u_%u view block hash: %s, hash: %lu",
+            ZJC_INFO("failed get view block request coming: %u_%u view block hash: %s, hash: %lu",
                 common::GlobalInfo::Instance()->network_id(),
                 pool_index_arr[0],
                 common::Encode::HexEncode(std::string(key.c_str() + 2, 32)).c_str(),
@@ -394,7 +394,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             auto view_block_ptr = hotstuff_mgr_->chain(req_height.pool_idx())->GetViewBlockWithHeight(
                 network_id, req_height.height());
             if (!view_block_ptr) {
-                ZJC_DEBUG("sync key value %u_%u_%lu, handle sync value failed request "
+                ZJC_INFO("sync key value %u_%u_%lu, handle sync value failed request "
                     "net: %u, pool: %u, height: %lu, hash: %lu",
                     network_id, 
                     req_height.pool_idx(),
@@ -407,7 +407,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             }
 
             if (view_block_ptr->qc().sign_x().empty()) {
-                ZJC_DEBUG("empty sign sync key value %u_%u_%lu, handle sync value failed request "
+                ZJC_INFO("empty sign sync key value %u_%u_%lu, handle sync value failed request "
                     "net: %u, pool: %u, height: %lu, hash: %lu",
                     network_id, 
                     req_height.pool_idx(),
@@ -428,7 +428,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_tag(kBlockHeight);
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
-                ZJC_DEBUG("handle sync value add_size failed request hash: %lu, "
+                ZJC_INFO("handle sync value add_size failed request hash: %lu, "
                     "net: %u, pool: %u, height: %lu",
                     network_id,
                     req_height.pool_idx(),
@@ -452,7 +452,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-    ZJC_DEBUG("sync response ok des: %u, src hash64: %lu, des hash64: %lu",
+    ZJC_INFO("sync response ok des: %u, src hash64: %lu, des hash64: %lu",
         msg_ptr->header.src_sharding_id(), msg_ptr->header.hash64(), msg.hash64());
 }
 
@@ -461,7 +461,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
     auto now_tm_us = common::TimeUtils::TimestampUs();
-    ZJC_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
+    ZJC_INFO("now handle kv response hash64: %lu", msg_ptr->header.hash64());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
         if (iter->tag() == kBlockHeight) {
@@ -471,7 +471,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
         }
 
         do {
-            ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d",
+            ZJC_INFO("now handle kv response hash64: %lu, key: %s, tag: %d",
                 msg_ptr->header.hash64(), 
                 (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
                 iter->tag());
@@ -495,7 +495,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             // }
     
             // int res = view_block_synced_callback_(*pb_vblock);
-            // ZJC_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s, res: %d",
+            // ZJC_INFO("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s, res: %d",
             //     msg_ptr->header.hash64(), 
             //     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
             //     iter->tag(),
@@ -508,7 +508,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             // }
                 
             // if (res == 0) {
-                ZJC_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
+                ZJC_INFO("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
                     pb_vblock->qc().network_id(),
                     pb_vblock->qc().pool_index(),
                     pb_vblock->qc().view(),
@@ -521,7 +521,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
         responsed_keys_.add(key);
         synced_map_.erase(key);
-        ZJC_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
+        ZJC_INFO("block response coming: %s, sync map size: %u, hash64: %lu",
             key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
     }
 }
