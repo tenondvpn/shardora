@@ -148,29 +148,29 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
     }
 }
 
-void ShardStatistic::HandleStatisticBlock(
-        const block::protobuf::Block& block) {
-    auto& elect_statistic = block.elect_statistic();
-    ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu, %d, %d",
-        ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_,
-        block.has_elect_statistic(),
-        block.has_pool_st_info());
-    auto& heights = elect_statistic.height_info();
-    auto st_iter = statistic_pool_info_.begin();
-    while (st_iter != statistic_pool_info_.end()) {
-        if (st_iter->first >= latest_statisticed_height_) {
-            break;
-        }
+// void ShardStatistic::HandleStatisticBlock(
+//         const block::protobuf::Block& block) {
+//     auto& elect_statistic = block.elect_statistic();
+//     ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu, %d, %d",
+//         ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_,
+//         block.has_elect_statistic(),
+//         block.has_pool_st_info());
+//     auto& heights = elect_statistic.height_info();
+    // auto st_iter = statistic_pool_info_.begin();
+    // while (st_iter != statistic_pool_info_.end()) {
+    //     if (st_iter->first >= latest_statisticed_height_) {
+    //         break;
+    //     }
             
-        ZJC_INFO("erase statistic height: %lu", st_iter->first);
-        st_iter = statistic_pool_info_.erase(st_iter);
-        CHECK_MEMORY_SIZE(statistic_pool_info_);
-    }
+    //     ZJC_INFO("erase statistic height: %lu", st_iter->first);
+    //     st_iter = statistic_pool_info_.erase(st_iter);
+    //     CHECK_MEMORY_SIZE(statistic_pool_info_);
+    // }
 
-    latest_statisticed_height_ = elect_statistic.statistic_height();
-    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
+//     latest_statisticed_height_ = elect_statistic.statistic_height();
+//     latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
 
-}
+// }
 
 void ShardStatistic::HandleStatistic(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
@@ -216,7 +216,7 @@ void ShardStatistic::HandleStatistic(
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
         ZJC_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
-        // assert(false);
+        assert(false);
         return;
     }
 
@@ -353,16 +353,16 @@ void ShardStatistic::HandleStatistic(
     if (block.has_elect_statistic()) {
         auto& elect_statistic = block.elect_statistic();
         auto& heights = elect_statistic.height_info();
-        auto st_iter = statistic_pool_info_.begin();
-        while (st_iter != statistic_pool_info_.end()) {
-            if (st_iter->first >= latest_statisticed_height_) {
-                break;
-            }
+        // auto st_iter = statistic_pool_info_.begin();
+        // while (st_iter != statistic_pool_info_.end()) {
+        //     if (st_iter->first >= latest_statisticed_height_) {
+        //         break;
+        //     }
                 
-            ZJC_INFO("erase statistic height: %lu", st_iter->first);
-            st_iter = statistic_pool_info_.erase(st_iter);
-            CHECK_MEMORY_SIZE(statistic_pool_info_);
-        }
+        //     ZJC_INFO("erase statistic height: %lu", st_iter->first);
+        //     st_iter = statistic_pool_info_.erase(st_iter);
+        //     CHECK_MEMORY_SIZE(statistic_pool_info_);
+        // }
 
         latest_statisticed_height_ = elect_statistic.statistic_height();
         latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
@@ -790,8 +790,19 @@ int ShardStatistic::StatisticWithHeights(
     assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
     CHECK_MEMORY_SIZE(statistic_height_map_);
-    auto eiter = statistic_pool_info_.find(iter->first);
+    auto handled_height = iter->first;
+    auto eiter = statistic_pool_info_.find(handled_height);
     statistic_pool_info_.erase(eiter);
+    auto st_iter = statistic_pool_info_.begin();
+    while (st_iter != statistic_pool_info_.end()) {
+        if (st_iter->first >= handled_height) {
+            break;
+        }
+            
+        ZJC_INFO("erase statistic height: %lu", st_iter->first);
+        st_iter = statistic_pool_info_.erase(st_iter);
+        CHECK_MEMORY_SIZE(statistic_pool_info_);
+    }
     return kPoolsSuccess;
 }
 
