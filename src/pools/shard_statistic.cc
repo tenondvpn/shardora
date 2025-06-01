@@ -184,6 +184,11 @@ void ShardStatistic::HandleStatistic(
             block.timeblock_height(), latest_timeblock_height_);
     }
 
+    ZJC_INFO("real handle new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
+        view_block_ptr->qc().network_id(),
+        view_block_ptr->qc().pool_index(),
+        block.height(),
+        block.timeblock_height());
     // if (block.has_elect_statistic() || block.has_pool_st_info()) {
     //     HandleStatisticBlock(block);
     // }
