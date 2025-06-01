@@ -790,19 +790,19 @@ int ShardStatistic::StatisticWithHeights(
     assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
     CHECK_MEMORY_SIZE(statistic_height_map_);
-    auto handled_height = iter->first;
-    auto eiter = statistic_pool_info_.find(handled_height);
-    statistic_pool_info_.erase(eiter);
-    auto st_iter = statistic_pool_info_.begin();
-    while (st_iter != statistic_pool_info_.end()) {
-        if (st_iter->first >= handled_height) {
-            break;
-        }
+    // auto handled_height = iter->first;
+    // auto eiter = statistic_pool_info_.find(handled_height);
+    // statistic_pool_info_.erase(eiter);
+    // auto st_iter = statistic_pool_info_.begin();
+    // while (st_iter != statistic_pool_info_.end()) {
+    //     if (st_iter->first >= handled_height) {
+    //         break;
+    //     }
             
-        ZJC_INFO("erase statistic height: %lu", st_iter->first);
-        st_iter = statistic_pool_info_.erase(st_iter);
-        CHECK_MEMORY_SIZE(statistic_pool_info_);
-    }
+    //     ZJC_INFO("erase statistic height: %lu", st_iter->first);
+    //     st_iter = statistic_pool_info_.erase(st_iter);
+    //     CHECK_MEMORY_SIZE(statistic_pool_info_);
+    // }
     return kPoolsSuccess;
 }
 
