@@ -184,22 +184,12 @@ void ShardStatistic::HandleStatistic(
             block.timeblock_height(), latest_timeblock_height_);
     }
 
-    if (block.has_elect_statistic() || block.has_pool_st_info()) {
-        HandleStatisticBlock(block);
-    }
+    // if (block.has_elect_statistic() || block.has_pool_st_info()) {
+    //     HandleStatisticBlock(block);
+    // }
 
     auto pool_idx = view_block_ptr->qc().pool_index();
     std::string statistic_pool_debug_str;
-    for (auto riter = statistic_pool_info_.rbegin();
-            riter != statistic_pool_info_.rend(); ++riter) {
-        statistic_pool_debug_str += "statistic height: " + std::to_string(riter->first);
-        for (auto pool_iter = riter->second.begin(); pool_iter != riter->second.end(); ++pool_iter) {
-            statistic_pool_debug_str += ", " + 
-                std::to_string(pool_iter->first) + ":" + 
-                std::to_string(pool_iter->second.statistic_max_height) + ",";
-        }
-    }
-
     auto pool_statistic_riter = statistic_pool_info_.rbegin();
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
         auto pool_iter = pool_statistic_riter->second.find(pool_idx);
@@ -357,20 +347,20 @@ void ShardStatistic::HandleStatistic(
 
     if (block.has_elect_statistic()) {
         auto& elect_statistic = block.elect_statistic();
-         auto& heights = elect_statistic.height_info();
-    auto st_iter = statistic_pool_info_.begin();
-    while (st_iter != statistic_pool_info_.end()) {
-        if (st_iter->first >= latest_statisticed_height_) {
-            break;
+        auto& heights = elect_statistic.height_info();
+        auto st_iter = statistic_pool_info_.begin();
+        while (st_iter != statistic_pool_info_.end()) {
+            if (st_iter->first >= latest_statisticed_height_) {
+                break;
+            }
+                
+            ZJC_INFO("erase statistic height: %lu", st_iter->first);
+            st_iter = statistic_pool_info_.erase(st_iter);
+            CHECK_MEMORY_SIZE(statistic_pool_info_);
         }
-            
-        ZJC_INFO("erase statistic height: %lu", st_iter->first);
-        st_iter = statistic_pool_info_.erase(st_iter);
-        CHECK_MEMORY_SIZE(statistic_pool_info_);
-    }
 
-    latest_statisticed_height_ = elect_statistic.statistic_height();
-    latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
+        latest_statisticed_height_ = elect_statistic.statistic_height();
+        latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
         for (int32_t node_idx = 0;
                 node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
             ZJC_INFO("success get shard election: %lu, %lu, "
