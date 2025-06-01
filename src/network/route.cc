@@ -101,28 +101,33 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
     if (message_processor_[header.type()] == nullptr) {
         RouteByUniversal(header_ptr);
+        ZJC_INFO("header.type() invalid: %d, hash: %lu", header.type(), header.hash64());
         return;
     }
 
     auto uni_dht = network::UniversalManager::Instance()->GetUniversal(
             kUniversalNetworkId);
     if (!uni_dht) {
+        ZJC_INFO("uni_dht invalid: %d, hash: %lu", header.type(), header.hash64());
         return;
     }
 
     auto dht_ptr = GetDht(header.des_dht_key());
     if (!dht_ptr) {
         RouteByUniversal(header_ptr);
+        ZJC_INFO("dht_ptr invalid: %d, hash: %lu", header.type(), header.hash64());
         return;
     }
 
     if (header.type() == common::kPoolsMessage) {
         if (!CheckPoolsMessage(header_ptr, dht_ptr)) {
+            ZJC_INFO("CheckPoolsMessage invalid: %d, hash: %lu", header.type(), header.hash64());
             return;
         }
     }
 
     message_processor_[header.type()](header_ptr);
+    ZJC_INFO("handle message success: %d, hash: %lu", header.type(), header.hash64());
 }
 
 bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr) {
