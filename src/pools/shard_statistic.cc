@@ -220,7 +220,8 @@ void ShardStatistic::HandleStatistic(
     }
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
-        assert(false);
+        ZJC_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
+        // assert(false);
         return;
     }
 
