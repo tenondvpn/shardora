@@ -187,7 +187,7 @@ void ShardStatistic::HandleStatistic(
     auto pool_idx = view_block_ptr->qc().pool_index();
     if (block.has_pool_statistic_height() &&
             network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
-        pool_statistic_height_with_block_height_map_[block.pool_statistic_height()] = block.height();
+        pool_statistic_height_with_block_height_map_[block.pool_statistic_height()][pool_idx] = block.height();
         auto exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
         if (exist_iter == statistic_pool_info_.end()) {
             StatisticInfoItem statistic_item;
@@ -268,15 +268,18 @@ void ShardStatistic::HandleStatistic(
         for (auto iter = pool_statistic_height_with_block_height_map_.begin(); 
                 iter != pool_statistic_height_with_block_height_map_.end(); ++iter) {
             if (iter->first > pool_statistic_riter->first) {
-                statistic_info_ptr->statistic_max_height = iter->second;
-                ZJC_INFO("pool statistic set min and max height: %u, %lu, %lu, "
-                    "exists statistic height: %lu, prev statistic height: %lu",
-                    pool_iter->first, 
-                    statistic_info_ptr->statistic_min_height, 
-                    statistic_info_ptr->statistic_max_height,
-                    iter->first,
-                    pool_statistic_riter->first);
-                break;
+                auto tmp_pool_iter = iter->second.find(pool_idx);
+                if (tmp_pool_iter != iter->second.end()) {
+                    statistic_info_ptr->statistic_max_height = tmp_pool_iter->second;
+                    ZJC_INFO("pool statistic set min and max height: %u, %lu, %lu, "
+                        "exists statistic height: %lu, prev statistic height: %lu",
+                        pool_iter->first, 
+                        statistic_info_ptr->statistic_min_height, 
+                        statistic_info_ptr->statistic_max_height,
+                        iter->first,
+                        pool_statistic_riter->first);
+                    break;
+                }
             }
         }
     }
@@ -585,9 +588,20 @@ int ShardStatistic::StatisticWithHeights(
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
         if (iter->second[tmp_pool_idx].statistic_min_height >
                 iter->second[tmp_pool_idx].statistic_max_height) {
-            ZJC_INFO("pool min height: %lu, max height: %lu",
+            ZJC_INFO("pool: %d, statistic height: %lu, min height: %lu, max height: %lu",
+                tmp_pool_idx,
+                iter->first,
                 iter->second[tmp_pool_idx].statistic_min_height,
                 iter->second[tmp_pool_idx].statistic_max_height);
+            for (auto tmp_iter = pool_statistic_height_with_block_height_map_.begin(); 
+                    tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
+                auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
+                if (tmp_pool_iter != tmp_iter->second.end()) {
+                    ZJC_INFO("pool: %u, statistic height: %lu, block height: %lu",
+                        tmp_pool_idx, tmp_iter->first, tmp_pool_iter->second);
+                }
+            }
+
             return kPoolsError;
         }
     }

@@ -125,7 +125,7 @@ public:
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
     volatile bool destroy_ = false;
-    std::map<uint64_t, uint64_t> pool_statistic_height_with_block_height_map_;
+    std::map<uint64_t, std::map<uint32_t, uint64_t>> pool_statistic_height_with_block_height_map_;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
