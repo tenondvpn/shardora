@@ -278,8 +278,9 @@ void ShardStatistic::HandleStatistic(
                         statistic_info_ptr->statistic_max_height,
                         iter->first,
                         pool_statistic_riter->first);
-                    break;
                 }
+                    
+                break;
             }
         }
     }
@@ -586,6 +587,20 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
+        if (iter->second[tmp_pool_idx].statistic_max_height == 0llu) {
+            for (auto tmp_iter = pool_statistic_height_with_block_height_map_.begin(); 
+                    tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
+                if (tmp_iter->first > iter->first) {
+                    auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
+                    if (tmp_pool_iter != tmp_iter->second.end()) {
+                        iter->second[tmp_pool_idx].statistic_max_height = tmp_pool_iter->second;
+                    }
+                     
+                    break;
+                }
+            }
+        }
+        
         if (iter->second[tmp_pool_idx].statistic_min_height >
                 iter->second[tmp_pool_idx].statistic_max_height) {
             ZJC_INFO("pool: %d, statistic height: %lu, min height: %lu, max height: %lu",
