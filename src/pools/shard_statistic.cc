@@ -269,10 +269,13 @@ void ShardStatistic::HandleStatistic(
                 iter != pool_statistic_height_with_block_height_map_.end(); ++iter) {
             if (iter->first > pool_statistic_riter->first) {
                 statistic_info_ptr->statistic_max_height = iter->second;
-                ZJC_INFO("pool statistic set min and max height: %u, %lu, %lu",
+                ZJC_INFO("pool statistic set min and max height: %u, %lu, %lu, "
+                    "exists statistic height: %lu, prev statistic height: %lu",
                     pool_iter->first, 
                     statistic_info_ptr->statistic_min_height, 
-                    statistic_info_ptr->statistic_max_height);
+                    statistic_info_ptr->statistic_max_height,
+                    iter->first,
+                    pool_statistic_riter->first);
                 break;
             }
         }
