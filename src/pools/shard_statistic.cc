@@ -250,7 +250,7 @@ void ShardStatistic::HandleStatistic(
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
         ZJC_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
-        assert(false);
+        // assert(false);
         return;
     }
 
@@ -269,6 +269,10 @@ void ShardStatistic::HandleStatistic(
                 iter != pool_statistic_height_with_block_height_map_.end(); ++iter) {
             if (iter->first > pool_statistic_riter->first) {
                 statistic_info_ptr->statistic_max_height = iter->second;
+                ZJC_INFO("pool statistic set min and max height: %u, %lu, %lu",
+                    pool_iter->first, 
+                    statistic_info_ptr->statistic_min_height, 
+                    statistic_info_ptr->statistic_max_height);
                 break;
             }
         }
