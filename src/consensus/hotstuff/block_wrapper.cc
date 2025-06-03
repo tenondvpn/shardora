@@ -137,9 +137,10 @@ Status BlockWrapper::Wrap(
     view_block->mutable_qc()->set_leader_idx(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     ZJC_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
-        "elect height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
+        "elect height: %lu, timeblock height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
         view_block->qc().network_id(), view_block->qc().pool_index(),
         block->height(), prev_block->height(), elect_item->ElectHeight(),
+        block->timeblock_height(),
         common::Encode::HexEncode(GetQCMsgHash(view_block->qc())).c_str(),
         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
         view_block->qc().network_id(),
