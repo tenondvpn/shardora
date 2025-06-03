@@ -895,6 +895,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
 
     auto elect_iter = elect_members_.find(ec_block.shard_network_id());
     if (elect_iter == elect_members_.end()) {
+        BLS_ERROR("failed find ec_block.shard_network_id() failed![%u]", ec_block.shard_network_id());
         return kBlsError;
     }
 
@@ -999,13 +1000,13 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
     pre_ec_members->set_prev_elect_height(elect_iter->second->height);
-//     ZJC_WARN("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
-//         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
-//         ec_block.shard_network_id(),
-//         elect_iter->second->height,
-//         item_iter->second->bitmap.valid_count(), members->size(),
-//         common_pk->x_c0().c_str(), common_pk->x_c1().c_str(),
-//         common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
+    ZJC_WARN("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
+        "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
+        ec_block.shard_network_id(),
+        elect_iter->second->height,
+        item_iter->second->bitmap.valid_count(), members->size(),
+        common_pk->x_c0().c_str(), common_pk->x_c1().c_str(),
+        common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
     return kBlsSuccess;
 }
 
