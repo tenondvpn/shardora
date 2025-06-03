@@ -139,7 +139,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (!IsUserTransaction(tx_ptr->tx_info->step()) && !tx_ptr->tx_info->key().empty()) {
-        if (over_unique_hash_set_.exists(tx_ptr->tx_info->key())) {
+        if (over_unique_hash_set_.find(tx_ptr->tx_info->key()) != over_unique_hash_set_.end()) {
             ZJC_INFO("trace tx pool: %d, failed add tx %s, key: %s, "
                 "nonce: %lu, step: %d, unique hash exists: %s", 
                 pool_index_,
@@ -176,6 +176,14 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                 !view_block.block_info().tx_list(i).unique_hash().empty()) {
             addr = view_block.block_info().tx_list(i).unique_hash();
             over_unique_hash_set_.insert(addr);
+            ZJC_INFO("trace tx pool: %d, success add unique tx %s, key: %s, "
+                "nonce: %lu, step: %d, unique hash exists: %s", 
+                pool_index_,
+                common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
+                common::Encode::HexEncode(addr).c_str(), 
+                view_block.block_info().tx_list(i).nonce(),
+                view_block.block_info().tx_list(i).step(),
+                common::Encode::HexEncode(addr).c_str());
         }
 
         if (view_block.block_info().tx_list(i).step() == pools::protobuf::kContractExcute) {
@@ -230,9 +238,10 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_INFO("trace tx pool: %d, step: %d, over tx addr: %s, nonce: %lu", 
+        ZJC_INFO("trace tx pool: %d, step: %d, to: %s, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
+            common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
     }

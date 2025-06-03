@@ -202,6 +202,9 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
+            ZJC_INFO("success add key value addr: %s, key: %s", 
+                common::Encode::HexEncode(kv_info.addr()).c_str(), 
+                common::Encode::HexEncode(kv_info.key()).c_str());
         }
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
@@ -217,6 +220,9 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
+            ZJC_INFO("success add key value addr: %s, key: %s", 
+                common::Encode::HexEncode(kv_info.addr()).c_str(), 
+                common::Encode::HexEncode(kv_info.key()).c_str());
         }
     }
 
@@ -255,6 +261,7 @@ Status BlockAcceptor::Accept(
         view_block.qc().view());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (prefix_db_->BlockExists(view_block.qc().view_block_hash())) {
+        assert(false);
         return Status::kAcceptorBlockInvalid;
     }
 

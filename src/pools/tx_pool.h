@@ -173,7 +173,7 @@ private:
     std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;
-    UniqueHashLruSet<10240> over_unique_hash_set_;
+    std::unordered_set<std::string> over_unique_hash_set_;
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
