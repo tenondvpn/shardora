@@ -190,6 +190,14 @@ void ShardStatistic::HandleStatistic(
         pool_statistic_height_with_block_height_map_[block.pool_statistic_height()][pool_idx] = block.height();
         auto exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
         if (exist_iter == statistic_pool_info_.end()) {
+            ZJC_INFO(
+                "not exists success handle kPoolStatisticTag tx statistic_height: %lu, "
+                "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
+                block.pool_statistic_height(), 
+                pool_idx, 
+                block.height(), 
+                block.height() + 1,
+                0);
             assert(false);
         } else {
             StatisticInfoItem statistic_item;
