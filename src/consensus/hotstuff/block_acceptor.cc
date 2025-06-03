@@ -202,7 +202,10 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
-            ZJC_INFO("success add key value addr: %s, key: %s", 
+            ZJC_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
+                view_block.qc().network_id(),
+                view_block.qc().pool_index(),
+                view_block.qc().view(),
                 common::Encode::HexEncode(kv_info.addr()).c_str(), 
                 common::Encode::HexEncode(kv_info.key()).c_str());
         }
@@ -220,7 +223,10 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
-            ZJC_INFO("success add key value addr: %s, key: %s", 
+            ZJC_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
+                view_block.qc().network_id(),
+                view_block.qc().pool_index(),
+                view_block.qc().view(),
                 common::Encode::HexEncode(kv_info.addr()).c_str(), 
                 common::Encode::HexEncode(kv_info.key()).c_str());
         }
