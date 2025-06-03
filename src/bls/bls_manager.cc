@@ -78,6 +78,7 @@ void BlsManager::OnNewElectBlock(
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
+        ZJC_INFO("remove finish_networks_map_ sharding_id: %d", sharding_id);
         finish_networks_map_.erase(iter);
         CHECK_MEMORY_SIZE(finish_networks_map_);
     }
@@ -537,6 +538,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     if (iter == finish_networks_map_.end()) {
         finish_item = std::make_shared<BlsFinishItem>();
         finish_networks_map_[bls_msg.finish_req().network_id()] = finish_item;
+        ZJC_INFO("success add finish_networks_map_ network id: %d", bls_msg.finish_req().network_id());
         CHECK_MEMORY_SIZE(finish_networks_map_);
     } else {
         finish_item = iter->second;

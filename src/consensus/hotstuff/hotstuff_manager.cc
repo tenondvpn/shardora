@@ -115,7 +115,7 @@ int HotstuffManager::Init(
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
                 *this,
                 kv_sync, pool_idx, leader_rotation, chain,
-                acceptor, wrapper, pacemaker, crypto, elect_info_, db_);
+                acceptor, wrapper, pacemaker, crypto, elect_info_, db_, tm_block_mgr);
         pool_hotstuff_[pool_idx]->Init();
     }
 

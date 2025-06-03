@@ -659,7 +659,7 @@ int ElectTxItem::CreateNewElect(
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
                  elect_statistic_.sharding_id());
     } else {
-        ZJC_DEBUG("success add bls consensus info: %u, %lu",
+        ZJC_WARN("success add bls consensus info: %u, %lu",
                   elect_statistic_.sharding_id(),
                   elect_block.prev_members().prev_elect_height());
         SetPrevElectInfo(elect_block, block);

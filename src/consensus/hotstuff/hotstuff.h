@@ -70,7 +70,8 @@ public:
             const std::shared_ptr<Crypto>& crypto,
 #endif
             const std::shared_ptr<ElectInfo>& elect_info,
-            std::shared_ptr<db::Db>& db) :
+            std::shared_ptr<db::Db>& db,
+            std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr) :
         hotstuff_mgr_(hotstuff_mgr),
         kv_sync_(kv_sync),
         pool_idx_(pool_idx),
@@ -81,7 +82,8 @@ public:
         view_block_chain_(chain),
         leader_rotation_(lr),
         elect_info_(elect_info),
-        db_(db) {
+        db_(db),
+        tm_block_mgr_(tm_block_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
@@ -276,6 +278,7 @@ private:
     consensus::HotstuffManager& hotstuff_mgr_;
     volatile View db_stored_view_ = 0llu;
     uint64_t prev_sync_latest_view_tm_ms_ = 0;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     
 };
 

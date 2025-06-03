@@ -142,6 +142,7 @@ Status Hotstuff::Propose(
         tmp_msg_ptr->header.CopyFrom(latest_leader_propose_message_->header);
         tmp_msg_ptr->is_leader = true;
         tmp_msg_ptr->header.release_broadcast();
+        tmp_msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_view_item()->mutable_block_info()->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
         auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
         if (tc != nullptr) {
