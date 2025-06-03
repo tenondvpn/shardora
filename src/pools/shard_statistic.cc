@@ -190,20 +190,7 @@ void ShardStatistic::HandleStatistic(
         pool_statistic_height_with_block_height_map_[block.pool_statistic_height()][pool_idx] = block.height();
         auto exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
         if (exist_iter == statistic_pool_info_.end()) {
-            StatisticInfoItem statistic_item;
-            statistic_item.statistic_min_height = block.height() + 1;
-            std::map<uint32_t, StatisticInfoItem> pool_map;
-            pool_map[pool_idx] = statistic_item;
-            statistic_pool_info_[block.pool_statistic_height()] = pool_map;
-            CHECK_MEMORY_SIZE(statistic_pool_info_);
-            ZJC_INFO(
-                "new success handle kPoolStatisticTag tx statistic_height: %lu, "
-                "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
-                block.pool_statistic_height(), 
-                pool_idx, 
-                block.height(), 
-                statistic_item.statistic_min_height,
-                0);
+            assert(false);
         } else {
             StatisticInfoItem statistic_item;
             statistic_item.statistic_min_height = block.height() + 1;
@@ -519,6 +506,14 @@ void ShardStatistic::OnTimeBlock(
 
     ZJC_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
         latest_timeblock_height_, latest_time_block_height);
+    StatisticInfoItem statistic_item;
+    std::map<uint32_t, StatisticInfoItem> pool_map;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        pool_map[i] = statistic_item;
+    }
+
+    statistic_pool_info_[latest_timeblock_height_] = pool_map;
+    CHECK_MEMORY_SIZE(statistic_pool_info_);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
 }
