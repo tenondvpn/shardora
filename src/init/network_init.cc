@@ -1173,7 +1173,7 @@ void NetworkInit::HandleTimeBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("time block coming %u_%u_%lu, %u_%u_%lu, tm: %lu, vss: %lu",
+    ZJC_INFO("time block coming %u_%u_%lu, %u_%u_%lu, tm: %lu, vss: %lu",
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
         view_block->qc().view(), 
@@ -1187,11 +1187,11 @@ void NetworkInit::HandleTimeBlock(
         auto vss_random = block.timer_block().vss_random();
         hotstuff_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         vss_mgr_->OnTimeBlock(view_block);
-        tm_block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         bls_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         shard_statistic_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
-        ZJC_DEBUG("new time block called height: %lu, tm: %lu", block.height(), vss_random);
+        tm_block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
+        ZJC_INFO("new time block called height: %lu, tm: %lu", block.height(), vss_random);
     }
 }
 

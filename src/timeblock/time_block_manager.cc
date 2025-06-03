@@ -149,7 +149,7 @@ void TimeBlockManager::OnTimeBlock(
         return;
     }
 
-    ZJC_DEBUG("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
+    ZJC_INFO("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
         latest_time_block_height,
         latest_time_block_height_,
         latest_time_block_tm,
