@@ -251,13 +251,17 @@ Status BlockAcceptor::Accept(
             ProtobufToJson(view_block).c_str());
     }
 
-    ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu", 
+    ZJC_INFO("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu, "
+        "timeblock height: %lu, local latest timeblock height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
         view_block.qc().network_id(), 
         view_block.qc().pool_index(), 
         view_block.qc().view(), 
-        view_block.block_info().height());
+        view_block.block_info().height(),
+        view_block.block_info().timeblock_height(),
+        tm_block_mgr_->LatestTimestampHeight());
+    assert(view_block.block_info().timeblock_height() == tm_block_mgr_->LatestTimestampHeight());
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
     ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
