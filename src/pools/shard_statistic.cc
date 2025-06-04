@@ -198,20 +198,27 @@ void ShardStatistic::HandleStatistic(
                 block.height(), 
                 block.height() + 1,
                 0);
-            assert(false);
-        } else {
+            ZJC_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
+                latest_timeblock_height_, block.pool_statistic_height());
             StatisticInfoItem statistic_item;
-            statistic_item.statistic_min_height = block.height() + 1;
-            exist_iter->second[pool_idx] = statistic_item;
-            ZJC_INFO(
-                "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
-                "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
-                block.pool_statistic_height(), 
-                pool_idx, 
-                block.height(), 
-                statistic_item.statistic_min_height,
-                0);
-        }
+            std::map<uint32_t, StatisticInfoItem> pool_map;
+            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+                pool_map[i] = statistic_item;
+            }
+
+            statistic_pool_info_[block.pool_statistic_height()] = pool_map;
+            exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
+        } 
+        
+        exist_iter->second[pool_idx].statistic_min_height = block.height() + 1;
+        ZJC_INFO(
+            "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
+            "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
+            block.pool_statistic_height(), 
+            pool_idx, 
+            block.height(), 
+            exist_iter->second[pool_idx].statistic_min_height,
+            0);
     }
 
     ZJC_INFO("real handle new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
