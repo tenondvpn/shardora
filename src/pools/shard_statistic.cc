@@ -839,9 +839,9 @@ int ShardStatistic::StatisticWithHeights(
     assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
     CHECK_MEMORY_SIZE(statistic_height_map_);
-    auto handled_height = iter->first;
-    auto eiter = statistic_pool_info_.find(handled_height);
-    statistic_pool_info_.erase(eiter);
+    // auto handled_height = iter->first;
+    // auto eiter = statistic_pool_info_.find(handled_height);
+    // statistic_pool_info_.erase(eiter);
     return kPoolsSuccess;
 }
 
