@@ -1193,32 +1193,32 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         if (shard_elect_tx_[i] == nullptr) {
-            // ZJC_DEBUG("0 failed get elect tx pool index: %u, tx hash: %s",
-            //     pool_index, common::Encode::HexEncode(tx_hash).c_str());
+            ZJC_INFO("0 failed get elect tx pool index: %u, tx hash: %s",
+                pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
 
         auto shard_elect_tx = shard_elect_tx_[i];
         if (!tx_hash.empty()) {
             if (shard_elect_tx->tx_ptr->tx_info->key() == tx_hash) {
-                // ZJC_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
-                //     pool_index, common::Encode::HexEncode(tx_hash).c_str());
+                ZJC_INFO("0 success get elect tx pool index: %u, tx hash: %s",
+                    pool_index, common::Encode::HexEncode(tx_hash).c_str());
                 return shard_elect_tx->tx_ptr;
             }
 
-            // ZJC_DEBUG("1 failed get elect tx pool index: %u, tx hash: %s",
-            //     pool_index, common::Encode::HexEncode(tx_hash).c_str());
+            ZJC_INFO("1 failed get elect tx pool index: %u, tx hash: %s",
+                pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
 
         auto now_tm = common::TimeUtils::TimestampUs();
         if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
-            // ZJC_DEBUG("2 failed get elect tx pool index: %u, tx hash: %s",
-            //     pool_index, common::Encode::HexEncode(tx_hash).c_str());
+            ZJC_INFO("2 failed get elect tx pool index: %u, tx hash: %s",
+                pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
 
-        ZJC_DEBUG("1 success get elect tx pool index: %u, unique hash: %s",
+        ZJC_INFO("1 success get elect tx pool index: %u, unique hash: %s",
             pool_index, 
             common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_info->key()).c_str());
         return shard_elect_tx->tx_ptr;
