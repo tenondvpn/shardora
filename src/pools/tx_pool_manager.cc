@@ -562,7 +562,7 @@ void TxPoolManager::SyncPoolsMaxHeight() {
         auto* sync_heights = msg_ptr->header.mutable_sync_heights();
         sync_heights->set_req(true);
         transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-        ZJC_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
+        ZJC_INFO("sync net data from network: %u, hash64: %lu, src sharding id: %u",
             i, msg_ptr->header.hash64(), msg_ptr->header.src_sharding_id());
         network::Route::Instance()->Send(msg_ptr);
     }
