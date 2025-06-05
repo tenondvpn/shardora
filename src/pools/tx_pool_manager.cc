@@ -570,12 +570,12 @@ void TxPoolManager::SyncPoolsMaxHeight() {
 
 void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr) {
     if (tx_pool_ == nullptr) {
-        ZJC_DEBUG("tx_pool_ == nullptr");
+        ZJC_INFO("tx_pool_ == nullptr");
         return;
     }
 
     if (!msg_ptr->header.has_sync_heights()) {
-        ZJC_DEBUG("!msg_ptr->header.has_sync_heights()");
+        ZJC_INFO("!msg_ptr->header.has_sync_heights()");
         return;
     }
 
@@ -617,7 +617,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, "
+        ZJC_INFO("response pool heights: %s, cross pool heights: %s, "
             "now_max_sharding_id_: %u, src sharding id: %u, src hash64: %lu, des hash64: %lu",
             sync_debug.c_str(), cross_debug.c_str(),
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
@@ -653,7 +653,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                         break;
                     }
                 
-                    ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
+                    ZJC_INFO("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
                         "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
                         sharding_id, update_height, update_height,
                         cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
@@ -688,7 +688,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 }
 
-                ZJC_DEBUG("get root response pool heights: %s", sync_debug.c_str());
+                ZJC_INFO("get root response pool heights: %s", sync_debug.c_str());
             }
             return;
         }
@@ -720,7 +720,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+        ZJC_INFO("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 

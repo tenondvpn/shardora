@@ -268,7 +268,7 @@ void TxPool::GetTxSyncToLeader(
                 tx_ptr->tx_info->nonce(),
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
          if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
+            system_tx_map_[tx_ptr->tx_info->key()][tx_ptr->tx_info->nonce()] = tx_ptr;
             ZJC_DEBUG("success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                 tx_ptr->address_info->nonce(), 

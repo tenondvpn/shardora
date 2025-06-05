@@ -961,7 +961,7 @@ void ViewBlockChain::AddPoolStatisticTag(uint64_t height) {
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(0);
+    tx->set_nonce(height);
     pools_mgr_->HandleMessage(msg_ptr);
     ZJC_INFO("success create kPoolStatisticTag nonce: %lu, pool idx: %u, "
         "pool addr: %s, addr get pool: %u, height: %lu, unique_hash: %s",
