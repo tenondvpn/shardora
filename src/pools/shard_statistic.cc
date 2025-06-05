@@ -634,9 +634,10 @@ int ShardStatistic::StatisticWithHeights(
     auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
-        ZJC_INFO("success get exists statistic message "
+        ZJC_INFO("success get exists statistic message iter->first: %lu, "
             "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
             "now tm height: %lu, statistic: %s",
+            iter->first,
             prev_timeblock_height_,
             statisticed_timeblock_height,
             latest_timeblock_height_,
