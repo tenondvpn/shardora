@@ -600,6 +600,9 @@ int ShardStatistic::StatisticWithHeights(
         if (iter->second[tmp_pool_idx].statistic_max_height == 0llu) {
             for (auto tmp_iter = pool_statistic_height_with_block_height_map_.begin(); 
                     tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
+                ZJC_INFO("pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                    "tmp_iter->first: %lu iter->first: %lu",
+                    tmp_pool_idx, tmp_iter->first, iter->first);
                 if (tmp_iter->first > iter->first) {
                     auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
                     if (tmp_pool_iter != tmp_iter->second.end()) {
