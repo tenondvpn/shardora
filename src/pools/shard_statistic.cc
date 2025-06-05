@@ -606,6 +606,13 @@ int ShardStatistic::StatisticWithHeights(
                 auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
                 if (tmp_pool_iter != tmp_iter->second.end()) {
                     iter->second[tmp_pool_idx].statistic_max_height = tmp_pool_iter->second;
+                    ZJC_INFO("success get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                        "tmp_iter->first: %lu iter->first: %lu, tmp_pool_iter->second: %lu",
+                        tmp_pool_idx, tmp_iter->first, iter->first, tmp_pool_iter->second);
+                } else {
+                    ZJC_INFO("failed get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                        "tmp_iter->first: %lu iter->first: %lu",
+                        tmp_pool_idx, tmp_iter->first, iter->first);
                 }
                     
                 break;
