@@ -127,7 +127,8 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
-    if (added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+    if (IsUserTransaction(tx_ptr->tx_info->step()) && 
+            added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
             added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), all_tx_size());
         return kPoolsError;
@@ -203,16 +204,29 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         auto remove_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
             auto tx_iter = tx_map.find(addr);
             if (tx_iter != tx_map.end()) {
-                ZJC_INFO("find tx addr success: %s", common::Encode::HexEncode(addr).c_str());
                 for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
+                    ZJC_INFO("find tx addr success: %s, unique hash: %s, "
+                        "step: %lu, nonce: %lu, consensus nonce: %lu, key: %s", 
+                        common::Encode::HexEncode(addr).c_str(),
+                        common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(),
+                        view_block.block_info().tx_list(i).step(),
+                        view_block.block_info().tx_list(i).nonce(),
+                        nonce_iter->second->tx_info->nonce(),
+                        common::Encode::HexEncode(nonce_iter->second->tx_info->key()).c_str());
                     ZJC_INFO("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first,
                         view_block.block_info().tx_list(i).nonce());
-                    if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
-                        break;
+                    if (!IsUserTransaction(view_block.block_info().tx_list(i).step())) {
+                        if (nonce_iter->second->tx_info->key() != view_block.block_info().tx_list(i).unique_hash()) {
+                            continue;
+                        }
+                    } else {
+                        if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
+                            break;
+                        }
                     }
-
+                    
                     if (IsUserTransaction(view_block.block_info().tx_list(i).step())) {
                         ++all_delay_tx_count_;
                         all_delay_tm_us_ += now_tm_us - nonce_iter->second->receive_tm_us;
