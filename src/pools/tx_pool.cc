@@ -139,6 +139,10 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (!IsUserTransaction(tx_ptr->tx_info->step()) && !tx_ptr->tx_info->key().empty()) {
+        ZJC_INFO("success add system tx step: %d, nonce: %lu, unique hash: %s", 
+            tx_ptr->tx_info->step(), 
+            tx_ptr->tx_info->nonce(), 
+            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         if (over_unique_hash_set_.find(tx_ptr->tx_info->key()) != over_unique_hash_set_.end()) {
             ZJC_INFO("trace tx pool: %d, failed add tx %s, key: %s, "
                 "nonce: %lu, step: %d, unique hash exists: %s", 
@@ -174,8 +178,8 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             view_block.block_info().tx_list(i).to();
         if (!IsUserTransaction(view_block.block_info().tx_list(i).step()) && 
                 !view_block.block_info().tx_list(i).unique_hash().empty()) {
-            addr = view_block.block_info().tx_list(i).unique_hash();
-            over_unique_hash_set_.insert(addr);
+            addr = std::to_string(view_block.block_info().tx_list(i).step());
+            over_unique_hash_set_.insert(view_block.block_info().tx_list(i).unique_hash());
             ZJC_INFO("trace tx pool: %d, success add unique tx %s, key: %s, "
                 "nonce: %lu, step: %d, unique hash exists: %s", 
                 pool_index_,
@@ -268,7 +272,7 @@ void TxPool::GetTxSyncToLeader(
                 tx_ptr->tx_info->nonce(),
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
          if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            system_tx_map_[tx_ptr->tx_info->key()][tx_ptr->tx_info->nonce()] = tx_ptr;
+            system_tx_map_[std::to_string(tx_ptr->tx_info->step())][tx_ptr->tx_info->nonce()] = tx_ptr;
             ZJC_DEBUG("success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                 tx_ptr->address_info->nonce(), 
@@ -371,7 +375,7 @@ void TxPool::GetTxIdempotently(
                 tx_ptr->tx_info->nonce(),
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         if (!IsUserTransaction(tx_ptr->tx_info->step())) {
-            system_tx_map_[tx_ptr->tx_info->key()][0] = tx_ptr;
+            system_tx_map_[std::to_string(tx_ptr->tx_info->step())][tx_ptr->tx_info->nonce()] = tx_ptr;
             ZJC_DEBUG("success add system tx nonce addr: %s, "
                 "addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),

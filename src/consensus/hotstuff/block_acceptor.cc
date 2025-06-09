@@ -264,7 +264,7 @@ Status BlockAcceptor::Accept(
     if (view_block.block_info().timeblock_height() != tm_block_mgr_->LatestTimestampHeight()) {
         return Status::kAcceptorBlockInvalid;
     }
-    
+
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
     ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
@@ -316,6 +316,7 @@ Status BlockAcceptor::addTxsToPool(
         BalanceAndNonceMap& now_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     if (txs.size() == 0) {
+        ZJC_INFO("accepte empty called!");
         return Status::kAcceptorTxsEmpty;
     }
     
