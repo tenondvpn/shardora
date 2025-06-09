@@ -219,6 +219,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         view_block.block_info().tx_list(i).nonce());
                     if (!IsUserTransaction(view_block.block_info().tx_list(i).step())) {
                         if (nonce_iter->second->tx_info->key() != view_block.block_info().tx_list(i).unique_hash()) {
+                            ++nonce_iter;
                             continue;
                         }
                     } else {
