@@ -347,6 +347,14 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         HandleTC(pro_msg_wrap);
     }
 
+    if (msg_ptr->header.hotstuff().pro_msg().view_item().block_info().timeblock_height() != 
+            tm_block_mgr_->LatestTimestampHeight()) {
+        ZJC_INFO("invalid time block height: %lu, %lu", 
+            msg_ptr->header.hotstuff().pro_msg().view_item().block_info().timeblock_height(),
+            tm_block_mgr_->LatestTimestampHeight());
+        return;
+    }
+
     if (!msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
         ZJC_INFO("handle propose called hash: %lu, %u_%u_%lu, "
             "view block hash: %s, sign x: %s, propose_debug: %s", 

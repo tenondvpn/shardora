@@ -261,9 +261,6 @@ Status BlockAcceptor::Accept(
         view_block.block_info().height(),
         view_block.block_info().timeblock_height(),
         tm_block_mgr_->LatestTimestampHeight());
-    if (view_block.block_info().timeblock_height() != tm_block_mgr_->LatestTimestampHeight()) {
-        return Status::kAcceptorBlockInvalid;
-    }
 
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
     ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
