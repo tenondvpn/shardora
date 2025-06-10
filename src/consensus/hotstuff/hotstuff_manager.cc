@@ -297,13 +297,16 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             security_ptr_->GetAddress());
         if (msg_ptr->header.des_dht_key() != dht_key.StrKey()) {
             network::Route::Instance()->Send(msg_ptr);
-            ZJC_DEBUG("hotstuff message resend to leader by latest node net: %u, "
-                "id: %s, des dht: %s, local: %s, hash64: %lu",
+            ZJC_INFO("hotstuff message resend to leader by latest node net: %u, "
+                "id: %s, des dht: %s, local: %s, hash64: %lu, "
+                "header.has_hotstuff_timeout_proto(): %d, type: %d",
                 msg_ptr->header.src_sharding_id(), 
                 common::Encode::HexEncode(security_ptr_->GetAddress()).c_str(),
                 common::Encode::HexEncode(msg_ptr->header.des_dht_key()).c_str(),
                 common::Encode::HexEncode(dht_key.StrKey()).c_str(),
-                header.hash64());
+                header.hash64(),
+                header.has_hotstuff_timeout_proto(),
+                header.has_hotstuff() && header.hotstuff().type());
             return;
         }
     }
@@ -313,7 +316,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
+    ZJC_INFO("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
         msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "", msg_ptr->conn ? msg_ptr->conn->PeerPort() : 0, 
         header.hash64(), header.has_hotstuff(), header.hotstuff().type());
     if (header.has_hotstuff()) {
