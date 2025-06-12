@@ -52,6 +52,11 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
 
         std::string pubkey = common::Encode::HexDecode(
             std::string(field_split[0], field_split.SubLen(0)));
+        if (pubkey.size() != security::kPublicCompressKeySize) {
+            ZJC_INFO("invalid public key: %s", split[i]);
+            continue;
+        }
+
         uint16_t port = 0;
         if (!shardora::common::StringUtil::ToUint16(field_split[2], &port)) {
             return kNetworkError;
