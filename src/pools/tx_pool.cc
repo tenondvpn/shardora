@@ -85,7 +85,8 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 //     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
-    ZJC_DEBUG("%u get invalid heights size: %u, latest_height_: %lu", pool_index_, invalid_heights.size(), latest_height_);
+    ZJC_DEBUG("%u get invalid heights size: %u, latest_height_: %lu", 
+        pool_index_, invalid_heights.size(), latest_height_);
     if (invalid_heights.size() > 0) {
         auto net_id = common::GlobalInfo::Instance()->network_id();
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
@@ -185,7 +186,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                 "nonce: %lu, step: %d, unique hash exists: %s", 
                 pool_index_,
                 common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
-                common::Encode::HexEncode(addr).c_str(), 
+                common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
                 view_block.block_info().tx_list(i).nonce(),
                 view_block.block_info().tx_list(i).step(),
                 common::Encode::HexEncode(addr).c_str());
@@ -257,10 +258,11 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_INFO("trace tx pool: %d, step: %d, to: %s, over tx addr: %s, nonce: %lu", 
+        ZJC_INFO("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
+            common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
     }
