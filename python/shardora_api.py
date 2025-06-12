@@ -65,6 +65,8 @@ def transfer(
         nonce, to, amount, gas_limit, 1, 
         keypair, 3, contract_bytes, input, 
         prepayment, step, key, val)
+    json_str = json.dumps(param)
+    print(f"tx size: {len(json_str)}")
     res = _call_tx(param)
     if res.status_code != 200:
         print(f"invalid status {res.status_code}, message: {res.text}")

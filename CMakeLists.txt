@@ -98,14 +98,14 @@ add_definitions(
     -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r
 #    -DTEST_TRANSPORT_PERFOMANCE
 #    -DZJC_TRACE_MESSAGE
-#    -DLEVELDB
+    -DLEVELDB
 #   -DCLIENT_USE_UV
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A
     #-DLATENCY
     #-DHOTSTUFF_TEST
-    #-DMOCK_VERIFY
-    #-DMOCK_SIGN
+    -DMOCK_VERIFY
+    -DMOCK_SIGN
     -DENABLE_HOTSTUFF
     -DDISABLE_GENESIS_BLS_VERIFY
     #-DTEST_NO_CROSS
@@ -195,7 +195,7 @@ target_link_libraries(wsc websocket common tcmalloc pthread gmp)
 target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
-target_link_libraries(txcli security transport common tcmalloc pthread gmp)
+target_link_libraries(txcli http security transport common tcmalloc pthread gmp)
 target_link_libraries(hotstuff security transport common tcmalloc pthread gmp)
 
 include_directories(SYSTEM ${SRC_DIR})

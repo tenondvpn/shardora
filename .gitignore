@@ -1,3 +1,10 @@
+ars/
+exchange/
+mm/
+python/exchange/
+rabpre/
+shards2
+
 test*
 python/__pycache__/
 python/python3.10/
