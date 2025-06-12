@@ -303,9 +303,10 @@ void ComputeG2ForNode(
 
 void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikeys) {
     std::vector<std::thread> threads;
+    unsigned int thread_num = std::thread::hardware_concurrency(); 
     for (uint32_t k = 0; k < prikeys.size(); ++k) {
         threads.push_back(std::thread(ComputeG2ForNode, prikeys[k], k, prefix_db_, prikeys));
-        if (threads.size() >= 8 || k == prikeys.size() - 1) {
+        if (threads.size() >= thread_num || k == prikeys.size() - 1) {
             for (uint32_t i = 0; i < threads.size(); ++i) {
                 threads[i].join();
             }
@@ -495,9 +496,10 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     };
 
     std::vector<std::thread> thread_vec;
+    unsigned int thread_num = std::thread::hardware_concurrency(); 
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
         thread_vec.emplace_back(callback, idx);
-        if (thread_vec.size() >= 8 || idx == genesis_nodes.size() - 1) {
+        if (thread_vec.size() >= thread_num || idx == genesis_nodes.size() - 1) {
             for (uint32_t i = 0; i < thread_vec.size(); ++i) {
                 thread_vec[i].join();
             }
@@ -1272,16 +1274,17 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
     };
 
     std::vector<std::thread> threads;
+    unsigned int thread_num = std::thread::hardware_concurrency(); 
     for (uint32_t i = 0; i < t; ++i) {
-        sign_task(i);
-        // threads.emplace_back(sign_task, i);
-        // if (threads.size() >= 1 || i == t - 1) {
-        //     for (uint32_t i = 0; i < threads.size(); ++i) {
-        //         threads[i].join();
-        //     }
+        // sign_task(i);
+        threads.emplace_back(sign_task, i);
+        if (threads.size() >= thread_num || i == t - 1) {
+            for (uint32_t i = 0; i < threads.size(); ++i) {
+                threads[i].join();
+            }
 
-        //     threads.clear();
-        // }        
+            threads.clear();
+        }        
     }
 
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
