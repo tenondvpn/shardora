@@ -37,9 +37,6 @@ init() {
 
 
     sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
     if [[ "$each_nodes_count" -eq "" ]]; then
         each_nodes_count=4 
     fi
