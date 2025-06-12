@@ -21,7 +21,7 @@ cp -rf ./*.sh ./shardora/
 mkdir -p ./shardora/cbuild_$TARGET
 cp -rf cbuild_$TARGET/zjchain ./shardora/cbuild_$TARGET
 cp -rf zjnodes_* ./shardora/
-cp -rf ./init_accounts* ./shardora/
+cp -rf ./shards* ./shardora/
 cp -rf ./root_nodes ./shardora/
 tar -zcvf shardora.tar.gz ./shardora
         
