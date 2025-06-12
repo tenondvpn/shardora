@@ -23,7 +23,7 @@
 
 using namespace shardora;
 static bool global_stop = false;
-static const std::string kBroadcastIp = "127.0.0.1";
+static const std::string kBroadcastIp = "192.168.0.21";
 static const uint16_t kBroadcastPort = 13001;
 static int shardnum = 3;
 static const int delayus = 0;
@@ -509,7 +509,7 @@ int tx_main(int argc, char** argv) {
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
-        uint32_t batch_count = 1000;
+        uint32_t batch_count = 1;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 ++prikey_pos;

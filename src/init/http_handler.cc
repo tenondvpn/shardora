@@ -566,7 +566,6 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
         evbuffer_copyout(input, response_data, len);
         response_data[len] = '\0';
 
-        printf("响应内容len: %d content: %s\n", len, response_data);
         std::string res = common::StringUtil::Format("param address is null req: %s", response_data);
         ZJC_DEBUG("query account: %s", response_data);
         free(response_data);
@@ -589,7 +588,6 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
         evbuffer_copyout(input, response_data, len);
         response_data[len] = '\0';
         
-        printf("响应内容len: %d content: %s\n", len, response_data);
         std::string res = common::StringUtil::Format("param address is null req: %s", response_data);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
