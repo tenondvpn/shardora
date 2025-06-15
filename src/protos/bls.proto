@@ -47,11 +47,12 @@ message LocalPolynomial {
 
 message LocalBlsItem {
     repeated bytes polynomial = 1;
-    repeated VerifyVecItem verify_vec = 2;
-    repeated bytes local_secrity_keys = 3;
-    repeated BlsPublicKey common_pubkey = 4;
-    optional uint32 valid_t = 5;
-    optional uint32 valid_n = 6;
+    repeated bytes local_private_key = 2;
+    repeated VerifyVecItem verify_vec = 3;
+    repeated bytes local_secrity_keys = 4;
+    repeated BlsPublicKey common_pubkey = 5;
+    optional uint32 valid_t = 6;
+    optional uint32 valid_n = 7;
 }
 
 message BlsVerifyValue {

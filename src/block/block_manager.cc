@@ -1095,12 +1095,12 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_];
     if (statistic_map_ptr == nullptr) {
-        ZJC_DEBUG("statistic_map_ptr == nullptr");
+        ZJC_INFO("statistic_map_ptr == nullptr");
         return nullptr;
     }
 
     if (statistic_map_ptr->empty()) {
-        ZJC_DEBUG("statistic_map_ptr->empty()");
+        ZJC_INFO("statistic_map_ptr->empty()");
         return nullptr;
     }
 
@@ -1119,7 +1119,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr, unqiue_hash: %s, is leader: %d",
+        ZJC_INFO("shard_statistic_tx == nullptr, unqiue_hash: %s, is leader: %d",
             common::Encode::HexEncode(unqiue_hash).c_str(),
             leader);
         if (pool_index == common::kImmutablePoolSize) {
@@ -1137,13 +1137,13 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     if (shard_statistic_tx != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
+            ZJC_INFO("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
             return nullptr;
         }
 
         if (iter->first >= latest_timeblock_height_) {
             if (leader) {
-                ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
+                ZJC_INFO("iter->first >= latest_timeblock_height_: %lu, %lu",
                     iter->first, latest_timeblock_height_);
             }
 
@@ -1153,7 +1153,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
-                ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
+                ZJC_INFO("failed get statistic tx: %lu, %lu, %lu", 
                     prev_timeblock_tm_sec_, 
                     (common::kRotationPeriod / 1000000lu), 
                     (now_tm / 1000000lu));
@@ -1164,7 +1164,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         }
 
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("time_valid invalid!");
+            ZJC_INFO("time_valid invalid!");
             return nullptr;
         }
 
@@ -1172,7 +1172,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             account_mgr_->pools_address_info(pool_index);
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx->set_to(shard_statistic_tx->tx_ptr->address_info->addr());
-        ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
+        ZJC_INFO("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
             prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,

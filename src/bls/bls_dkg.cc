@@ -825,6 +825,7 @@ void BlsDkg::DumpLocalPrivateKey() {
     }
 
     bls::protobuf::LocalBlsItem local_bls_item;
+    local_bls_item.
     prefix_db_->SaveBlsPrikey(
         elect_hegiht_,
         common::GlobalInfo::Instance()->network_id(),
