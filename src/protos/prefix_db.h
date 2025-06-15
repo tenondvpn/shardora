@@ -694,7 +694,7 @@ public:
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_DEBUG("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
+        ZJC_INFO("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(node_addr).c_str(),
             common::Encode::HexEncode(bls_prikey).c_str());
@@ -728,7 +728,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("save bls success: %lu, %u, %s, bls item: %s", elect_height,
+        ZJC_INFO("get bls success: %lu, %u, %s, bls item: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
             ommon::Encode::HexEncode(*bls_prikey).c_str());
