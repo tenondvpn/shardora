@@ -644,6 +644,10 @@ void BlsDkg::BroadcastVerfify() try {
     }
 
     CreateContribution(member_count_, min_aggree_member_count_);
+    if (!change_local_contribution_) {
+        return;
+    }
+
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
@@ -1025,6 +1029,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
+    ZJC_INFO("success create local local_src_secret_key_contribution_: %d", local_member_index_);
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
