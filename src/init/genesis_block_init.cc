@@ -520,10 +520,27 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
 
     libBLS::Dkg tmpdkg(valid_t, valid_n);
     auto common_public_key = libff::alt_bn128_G2::zero();
+    bls::protobuf::LocalBlsItem tmp_local_bls_item;
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+        auto pk_item = tmp_local_bls_item.add_common_pubkey();
+        pk_item->set_x_c0(libBLS::ThresholdUtils::fieldElementToString(
+            genesis_nodes[idx]->verification[0].X.c0));
+        pk_item->set_x_c1(libBLS::ThresholdUtils::fieldElementToString(
+            genesis_nodes[idx]->verification[0].X.c1));
+        pk_item->set_y_c0(libBLS::ThresholdUtils::fieldElementToString(
+            genesis_nodes[idx]->verification[0].Y.c0));
+        pk_item->set_y_c1(libBLS::ThresholdUtils::fieldElementToString(
+            genesis_nodes[idx]->verification[0].Y.c1));
+    }
+    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+        bls::protobuf::LocalBlsItem local_bls_item = tmp_local_bls_item;
+        local_bls_item.set_local_private_key(libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->bls_prikey));
         std::vector<libff::alt_bn128_Fr> tmp_secret_key_contribution;
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
             tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
+            std::string tmp_sec_key = libBLS::ThresholdUtils::fieldElementToString(
+                secret_key_contribution[idx][i]);
+            local_bls_item.add_local_secrity_keys(tmp_sec_key);
         }
 
         genesis_nodes[idx]->bls_prikey = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
@@ -531,8 +548,9 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         common_public_key = common_public_key + genesis_nodes[idx]->verification[0];
         std::string enc_data;
         security::Ecdsa ecdsa;
+        auto local_bls_str = local_bls_item.SerializeAsString();
         if (ecdsa.Encrypt(
-                libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->bls_prikey),
+                local_bls_str,
                 genesis_nodes[idx]->prikey,
                 &enc_data) != security::kSecuritySuccess) {
             ZJC_FATAL("encrypt data failed!");
