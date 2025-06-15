@@ -806,7 +806,7 @@ void BlsDkg::FinishBroadcast() try {
     libBLS::Dkg dkg(min_aggree_member_count_, member_count_);
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
-    DumpLocalPrivateKey();
+    DumpLocalPrivateKey(valid_seck_keys);
     BroadcastFinish(bitmap);
     finished_ = true;
 } catch (std::exception& e) {
@@ -814,18 +814,32 @@ void BlsDkg::FinishBroadcast() try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::DumpLocalPrivateKey() {
+void BlsDkg::DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_seck_keys) {
     std::string enc_data;
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key_);
+    bls::protobuf::LocalBlsItem local_bls_item;
+    local_bls_item.set_local_private_key(sec_key);
+    for (auto iter = valid_seck_keys.begin(); iter != valid_seck_keys.end(); ++iter) {
+        std::string tmp_sec_key = libBLS::ThresholdUtils::fieldElementToString(*iter);
+        local_bls_item.add_local_secrity_keys(tmp_sec_key);
+    }
+
+    for (auto iter = for_common_pk_g2s_.begin(); iter != for_common_pk_g2s_.end(); ++iter) {
+        auto pk_item = local_bls_item.add_common_pubkey();
+        pk_item->set_x_c0(libBLS::ThresholdUtils::fieldElementToString((*iter).X.c0));
+        pk_item->set_x_c1(libBLS::ThresholdUtils::fieldElementToString((*iter).X.c1));
+        pk_item->set_y_c0(libBLS::ThresholdUtils::fieldElementToString((*iter).Y.c0));
+        pk_item->set_y_c1(libBLS::ThresholdUtils::fieldElementToString((*iter).Y.c1));
+    }
+
+    auto local_bls_str = local_bls_item.SerializeAsString();
     if (security_->Encrypt(
-            sec_key,
+            local_bls_str,
             security_->GetPrikey(),
             &enc_data) != security::kSecuritySuccess) {
         return;
     }
 
-    bls::protobuf::LocalBlsItem local_bls_item;
-    local_bls_item.
     prefix_db_->SaveBlsPrikey(
         elect_hegiht_,
         common::GlobalInfo::Instance()->network_id(),

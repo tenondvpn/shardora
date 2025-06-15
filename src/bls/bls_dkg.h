@@ -103,7 +103,7 @@ private:
     void CheckSwapKeyAllValid();
     void SendGetSwapKey(int32_t index);
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
-    void DumpLocalPrivateKey();
+    void DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_seck_keys);
     bool VerifySekkeyValid(uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
     bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
     void PopBlsMessage();
