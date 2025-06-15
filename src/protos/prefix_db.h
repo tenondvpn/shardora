@@ -721,13 +721,21 @@ public:
             return false;
         }
 
+        std::string tmp_data;
         if (security_ptr->Decrypt(
-                val,
+                val.substr(4, val.size() - 4),
                 security_ptr->GetPrikey(),
-                bls_prikey) != security::kSecuritySuccess) {
+                &tmp_data) != security::kSecuritySuccess) {
             return false;
         }
 
+        uint32_t* int_data = (uint32_t*)val.c_str();
+        if (tmp_data.size() < int_data[0]) {
+            assert(false);
+            return false;
+        }
+
+        *bls_prikey = tmp_data.substr(0, int_data[0]);
         ZJC_INFO("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),

@@ -840,11 +840,15 @@ void BlsDkg::DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_s
         return;
     }
 
+    char all_data[4 + enc_data.size()];
+    uint32_t* int_all_data = (uint32_t*)all_data;
+    int_all_data[0] = local_bls_str.size();
+    memcpy(all_data + 4, enc_data.c_str(), enc_data.size());
     prefix_db_->SaveBlsPrikey(
         elect_hegiht_,
         common::GlobalInfo::Instance()->network_id(),
         security_->GetAddress(),
-        enc_data);
+        std::string(all_data, sizeof(all_data)));
 }
 
 void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {

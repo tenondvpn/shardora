@@ -557,11 +557,15 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             return false;
         }
 
+        char all_data[4 + enc_data.size()];
+        uint32_t* int_all_data = (uint32_t*)all_data;
+        int_all_data[0] = local_bls_str.size();
+        memcpy(all_data + 4, enc_data.c_str(), enc_data.size());
         prefix_db_->SaveBlsPrikey(
             elect_height,
             sharding_id,
             genesis_nodes[idx]->id,
-            enc_data);
+            std::string(all_data, sizeof(all_data)));
         ZJC_INFO("save bls success: %lu, %u, %s, index: %d, prikey: %s, local bls item: %s, src: %s, enc: %s",
             elect_height,
             sharding_id,
