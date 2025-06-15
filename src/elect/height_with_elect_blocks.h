@@ -70,7 +70,13 @@ public:
                 new_item->common_bls_publick_key = common_pk;
                 std::string bls_prikey;
                 if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
-                    new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
+                    bls::protobuf::LocalBlsItem bls_item;
+                    if (!bls_item.ParseFromString(bls_prikey)) {
+                        new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+                        assert(false);
+                    } else {
+                        new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                    }
                 } else {
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
                 }
