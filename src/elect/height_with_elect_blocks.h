@@ -105,7 +105,13 @@ public:
 
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
-            new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
+            bls::protobuf::LocalBlsItem bls_item;
+            if (!bls_item.ParseFromString(bls_prikey)) {
+                new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+                assert(false);
+            } else {
+                new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+            }
         } else {
             new_item->local_sec_key = libff::alt_bn128_Fr::zero();
         }
@@ -170,7 +176,13 @@ public:
             if (iter->second->local_sec_key == libff::alt_bn128_Fr::zero()) {
                 std::string bls_prikey;
                 if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
-                    iter->second->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
+                    bls::protobuf::LocalBlsItem bls_item;
+                    if (!bls_item.ParseFromString(bls_prikey)) {
+                        iter->second->local_sec_key = libff::alt_bn128_Fr::zero();
+                        assert(false);
+                    } else {
+                        iter->second->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                    }
                 }
             }
 
@@ -213,7 +225,13 @@ public:
         CHECK_MEMORY_SIZE(height_with_members_[network_id]);
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
-            new_item->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
+            bls::protobuf::LocalBlsItem bls_item;
+            if (!bls_item.ParseFromString(bls_prikey)) {
+                new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+                assert(false);
+            } else {
+                new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+            }
         }
 
         if (common_pk != nullptr) {
