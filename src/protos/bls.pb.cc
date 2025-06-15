@@ -493,12 +493,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, valid_t_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, valid_n_),
   ~0u,
-  ~0u,
-  ~0u,
-  ~0u,
-  ~0u,
   0,
+  ~0u,
+  ~0u,
+  ~0u,
   1,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::BlsVerifyValue, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::BlsVerifyValue, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -683,7 +683,7 @@ void AddDescriptorsImpl() {
       "ct.protobuf.BlsPopProof\"<\n\017LocalPolynomi"
       "al\022\022\n\npolynomial\030\001 \003(\014\022\025\n\nchange_idx\030\002 \001"
       "(\r:\0010\"\361\001\n\014LocalBlsItem\022\022\n\npolynomial\030\001 \003"
-      "(\014\022\031\n\021local_private_key\030\002 \003(\014\0228\n\nverify_"
+      "(\014\022\031\n\021local_private_key\030\002 \001(\014\0228\n\nverify_"
       "vec\030\003 \003(\0132$.shardora.bls.protobuf.Verify"
       "VecItem\022\032\n\022local_secrity_keys\030\004 \003(\014\022:\n\rc"
       "ommon_pubkey\030\005 \003(\0132#.shardora.bls.protob"
@@ -3021,11 +3021,14 @@ LocalBlsItem::LocalBlsItem(const LocalBlsItem& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
       polynomial_(from.polynomial_),
-      local_private_key_(from.local_private_key_),
       verify_vec_(from.verify_vec_),
       local_secrity_keys_(from.local_secrity_keys_),
       common_pubkey_(from.common_pubkey_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  local_private_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_local_private_key()) {
+    local_private_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.local_private_key_);
+  }
   ::memcpy(&valid_t_, &from.valid_t_,
     static_cast<size_t>(reinterpret_cast<char*>(&valid_n_) -
     reinterpret_cast<char*>(&valid_t_)) + sizeof(valid_n_));
@@ -3033,6 +3036,7 @@ LocalBlsItem::LocalBlsItem(const LocalBlsItem& from)
 }
 
 void LocalBlsItem::SharedCtor() {
+  local_private_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&valid_t_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&valid_n_) -
       reinterpret_cast<char*>(&valid_t_)) + sizeof(valid_n_));
@@ -3044,6 +3048,7 @@ LocalBlsItem::~LocalBlsItem() {
 }
 
 void LocalBlsItem::SharedDtor() {
+  local_private_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void LocalBlsItem::SetCachedSize(int size) const {
@@ -3067,12 +3072,14 @@ void LocalBlsItem::Clear() {
   (void) cached_has_bits;
 
   polynomial_.Clear();
-  local_private_key_.Clear();
   verify_vec_.Clear();
   local_secrity_keys_.Clear();
   common_pubkey_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 0x00000001u) {
+    local_private_key_.ClearNonDefaultToEmptyNoArena();
+  }
+  if (cached_has_bits & 6u) {
     ::memset(&valid_t_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&valid_n_) -
         reinterpret_cast<char*>(&valid_t_)) + sizeof(valid_n_));
@@ -3103,12 +3110,12 @@ bool LocalBlsItem::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated bytes local_private_key = 2;
+      // optional bytes local_private_key = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->add_local_private_key()));
+                input, this->mutable_local_private_key()));
         } else {
           goto handle_unusual;
         }
@@ -3211,10 +3218,11 @@ void LocalBlsItem::SerializeWithCachedSizes(
       1, this->polynomial(i), output);
   }
 
-  // repeated bytes local_private_key = 2;
-  for (int i = 0, n = this->local_private_key_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      2, this->local_private_key(i), output);
+  cached_has_bits = _has_bits_[0];
+  // optional bytes local_private_key = 2;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->local_private_key(), output);
   }
 
   // repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 3;
@@ -3241,14 +3249,13 @@ void LocalBlsItem::SerializeWithCachedSizes(
       output);
   }
 
-  cached_has_bits = _has_bits_[0];
   // optional uint32 valid_t = 6;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->valid_t(), output);
   }
 
   // optional uint32 valid_n = 7;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(7, this->valid_n(), output);
   }
 
@@ -3272,10 +3279,12 @@ void LocalBlsItem::SerializeWithCachedSizes(
       WriteBytesToArray(1, this->polynomial(i), target);
   }
 
-  // repeated bytes local_private_key = 2;
-  for (int i = 0, n = this->local_private_key_size(); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteBytesToArray(2, this->local_private_key(i), target);
+  cached_has_bits = _has_bits_[0];
+  // optional bytes local_private_key = 2;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->local_private_key(), target);
   }
 
   // repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 3;
@@ -3300,14 +3309,13 @@ void LocalBlsItem::SerializeWithCachedSizes(
         5, this->common_pubkey(static_cast<int>(i)), deterministic, target);
   }
 
-  cached_has_bits = _has_bits_[0];
   // optional uint32 valid_t = 6;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->valid_t(), target);
   }
 
   // optional uint32 valid_n = 7;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(7, this->valid_n(), target);
   }
 
@@ -3334,14 +3342,6 @@ size_t LocalBlsItem::ByteSizeLong() const {
   for (int i = 0, n = this->polynomial_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
       this->polynomial(i));
-  }
-
-  // repeated bytes local_private_key = 2;
-  total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->local_private_key_size());
-  for (int i = 0, n = this->local_private_key_size(); i < n; i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
-      this->local_private_key(i));
   }
 
   // repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 3;
@@ -3374,7 +3374,14 @@ size_t LocalBlsItem::ByteSizeLong() const {
     }
   }
 
-  if (_has_bits_[0 / 32] & 3u) {
+  if (_has_bits_[0 / 32] & 7u) {
+    // optional bytes local_private_key = 2;
+    if (has_local_private_key()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->local_private_key());
+    }
+
     // optional uint32 valid_t = 6;
     if (has_valid_t()) {
       total_size += 1 +
@@ -3418,16 +3425,19 @@ void LocalBlsItem::MergeFrom(const LocalBlsItem& from) {
   (void) cached_has_bits;
 
   polynomial_.MergeFrom(from.polynomial_);
-  local_private_key_.MergeFrom(from.local_private_key_);
   verify_vec_.MergeFrom(from.verify_vec_);
   local_secrity_keys_.MergeFrom(from.local_secrity_keys_);
   common_pubkey_.MergeFrom(from.common_pubkey_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
-      valid_t_ = from.valid_t_;
+      set_has_local_private_key();
+      local_private_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.local_private_key_);
     }
     if (cached_has_bits & 0x00000002u) {
+      valid_t_ = from.valid_t_;
+    }
+    if (cached_has_bits & 0x00000004u) {
       valid_n_ = from.valid_n_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -3459,10 +3469,11 @@ void LocalBlsItem::Swap(LocalBlsItem* other) {
 void LocalBlsItem::InternalSwap(LocalBlsItem* other) {
   using std::swap;
   polynomial_.InternalSwap(CastToBase(&other->polynomial_));
-  local_private_key_.InternalSwap(CastToBase(&other->local_private_key_));
   CastToBase(&verify_vec_)->InternalSwap(CastToBase(&other->verify_vec_));
   local_secrity_keys_.InternalSwap(CastToBase(&other->local_secrity_keys_));
   CastToBase(&common_pubkey_)->InternalSwap(CastToBase(&other->common_pubkey_));
+  local_private_key_.Swap(&other->local_private_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(valid_t_, other->valid_t_);
   swap(valid_n_, other->valid_n_);
   swap(_has_bits_[0], other->_has_bits_[0]);
