@@ -1242,10 +1242,32 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   const ::google::protobuf::RepeatedPtrField< ::std::string>& polynomial() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_polynomial();
 
-  // repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 2;
+  // repeated bytes local_private_key = 2;
+  int local_private_key_size() const;
+  void clear_local_private_key();
+  static const int kLocalPrivateKeyFieldNumber = 2;
+  const ::std::string& local_private_key(int index) const;
+  ::std::string* mutable_local_private_key(int index);
+  void set_local_private_key(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_local_private_key(int index, ::std::string&& value);
+  #endif
+  void set_local_private_key(int index, const char* value);
+  void set_local_private_key(int index, const void* value, size_t size);
+  ::std::string* add_local_private_key();
+  void add_local_private_key(const ::std::string& value);
+  #if LANG_CXX11
+  void add_local_private_key(::std::string&& value);
+  #endif
+  void add_local_private_key(const char* value);
+  void add_local_private_key(const void* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& local_private_key() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_local_private_key();
+
+  // repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 3;
   int verify_vec_size() const;
   void clear_verify_vec();
-  static const int kVerifyVecFieldNumber = 2;
+  static const int kVerifyVecFieldNumber = 3;
   ::shardora::bls::protobuf::VerifyVecItem* mutable_verify_vec(int index);
   ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::VerifyVecItem >*
       mutable_verify_vec();
@@ -1254,10 +1276,10 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   const ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::VerifyVecItem >&
       verify_vec() const;
 
-  // repeated bytes local_secrity_keys = 3;
+  // repeated bytes local_secrity_keys = 4;
   int local_secrity_keys_size() const;
   void clear_local_secrity_keys();
-  static const int kLocalSecrityKeysFieldNumber = 3;
+  static const int kLocalSecrityKeysFieldNumber = 4;
   const ::std::string& local_secrity_keys(int index) const;
   ::std::string* mutable_local_secrity_keys(int index);
   void set_local_secrity_keys(int index, const ::std::string& value);
@@ -1276,10 +1298,10 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   const ::google::protobuf::RepeatedPtrField< ::std::string>& local_secrity_keys() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_local_secrity_keys();
 
-  // repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 4;
+  // repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 5;
   int common_pubkey_size() const;
   void clear_common_pubkey();
-  static const int kCommonPubkeyFieldNumber = 4;
+  static const int kCommonPubkeyFieldNumber = 5;
   ::shardora::bls::protobuf::BlsPublicKey* mutable_common_pubkey(int index);
   ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::BlsPublicKey >*
       mutable_common_pubkey();
@@ -1288,17 +1310,17 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   const ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::BlsPublicKey >&
       common_pubkey() const;
 
-  // optional uint32 valid_t = 5;
+  // optional uint32 valid_t = 6;
   bool has_valid_t() const;
   void clear_valid_t();
-  static const int kValidTFieldNumber = 5;
+  static const int kValidTFieldNumber = 6;
   ::google::protobuf::uint32 valid_t() const;
   void set_valid_t(::google::protobuf::uint32 value);
 
-  // optional uint32 valid_n = 6;
+  // optional uint32 valid_n = 7;
   bool has_valid_n() const;
   void clear_valid_n();
-  static const int kValidNFieldNumber = 6;
+  static const int kValidNFieldNumber = 7;
   ::google::protobuf::uint32 valid_n() const;
   void set_valid_n(::google::protobuf::uint32 value);
 
@@ -1313,6 +1335,7 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> polynomial_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> local_private_key_;
   ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::VerifyVecItem > verify_vec_;
   ::google::protobuf::RepeatedPtrField< ::std::string> local_secrity_keys_;
   ::google::protobuf::RepeatedPtrField< ::shardora::bls::protobuf::BlsPublicKey > common_pubkey_;
@@ -4072,7 +4095,76 @@ LocalBlsItem::mutable_polynomial() {
   return &polynomial_;
 }
 
-// repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 2;
+// repeated bytes local_private_key = 2;
+inline int LocalBlsItem::local_private_key_size() const {
+  return local_private_key_.size();
+}
+inline void LocalBlsItem::clear_local_private_key() {
+  local_private_key_.Clear();
+}
+inline const ::std::string& LocalBlsItem::local_private_key(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  return local_private_key_.Get(index);
+}
+inline ::std::string* LocalBlsItem::mutable_local_private_key(int index) {
+  // @@protoc_insertion_point(field_mutable:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  return local_private_key_.Mutable(index);
+}
+inline void LocalBlsItem::set_local_private_key(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  local_private_key_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void LocalBlsItem::set_local_private_key(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  local_private_key_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void LocalBlsItem::set_local_private_key(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  local_private_key_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+}
+inline void LocalBlsItem::set_local_private_key(int index, const void* value, size_t size) {
+  local_private_key_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+}
+inline ::std::string* LocalBlsItem::add_local_private_key() {
+  // @@protoc_insertion_point(field_add_mutable:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  return local_private_key_.Add();
+}
+inline void LocalBlsItem::add_local_private_key(const ::std::string& value) {
+  local_private_key_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+}
+#if LANG_CXX11
+inline void LocalBlsItem::add_local_private_key(::std::string&& value) {
+  local_private_key_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+}
+#endif
+inline void LocalBlsItem::add_local_private_key(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  local_private_key_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+}
+inline void LocalBlsItem::add_local_private_key(const void* value, size_t size) {
+  local_private_key_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+LocalBlsItem::local_private_key() const {
+  // @@protoc_insertion_point(field_list:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  return local_private_key_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+LocalBlsItem::mutable_local_private_key() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.bls.protobuf.LocalBlsItem.local_private_key)
+  return &local_private_key_;
+}
+
+// repeated .shardora.bls.protobuf.VerifyVecItem verify_vec = 3;
 inline int LocalBlsItem::verify_vec_size() const {
   return verify_vec_.size();
 }
@@ -4102,7 +4194,7 @@ LocalBlsItem::verify_vec() const {
   return verify_vec_;
 }
 
-// repeated bytes local_secrity_keys = 3;
+// repeated bytes local_secrity_keys = 4;
 inline int LocalBlsItem::local_secrity_keys_size() const {
   return local_secrity_keys_.size();
 }
@@ -4171,7 +4263,7 @@ LocalBlsItem::mutable_local_secrity_keys() {
   return &local_secrity_keys_;
 }
 
-// repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 4;
+// repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 5;
 inline int LocalBlsItem::common_pubkey_size() const {
   return common_pubkey_.size();
 }
@@ -4201,7 +4293,7 @@ LocalBlsItem::common_pubkey() const {
   return common_pubkey_;
 }
 
-// optional uint32 valid_t = 5;
+// optional uint32 valid_t = 6;
 inline bool LocalBlsItem::has_valid_t() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -4225,7 +4317,7 @@ inline void LocalBlsItem::set_valid_t(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:shardora.bls.protobuf.LocalBlsItem.valid_t)
 }
 
-// optional uint32 valid_n = 6;
+// optional uint32 valid_n = 7;
 inline bool LocalBlsItem::has_valid_n() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
