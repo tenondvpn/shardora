@@ -731,7 +731,7 @@ public:
         ZJC_INFO("get bls success: %lu, %u, %s, bls item: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
-            ommon::Encode::HexEncode(*bls_prikey).c_str());
+            common::Encode::HexEncode(*bls_prikey).c_str());
         return true;
     }
 
