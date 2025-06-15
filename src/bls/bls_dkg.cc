@@ -366,6 +366,13 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    if (bls_msg.swap_req().keys(local_member_index_).sec_key().empty()) {
+        valid_swapkey_set_.insert(bls_msg.index());
+        ++valid_sec_key_count_;
+        has_swaped_keys_[bls_msg.index()] = true;
+        return;
+    }
+
     std::string dec_msg;
     std::string encrypt_key;
     if (security_->GetEcdhKey(
