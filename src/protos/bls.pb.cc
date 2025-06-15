@@ -225,9 +225,10 @@ static void InitDefaultsLocalBlsItem() {
   ::shardora::bls::protobuf::LocalBlsItem::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_LocalBlsItem =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsLocalBlsItem}, {
-      &protobuf_protos_2fbls_2eproto::scc_info_VerifyVecItem.base,}};
+::google::protobuf::internal::SCCInfo<2> scc_info_LocalBlsItem =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsLocalBlsItem}, {
+      &protobuf_protos_2fbls_2eproto::scc_info_VerifyVecItem.base,
+      &protobuf_protos_2fbls_2eproto::scc_info_BlsPublicKey.base,}};
 
 static void InitDefaultsBlsVerifyValue() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -486,8 +487,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, polynomial_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, verify_vec_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, local_secrity_keys_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, common_pubkey_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, valid_t_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::bls::protobuf::LocalBlsItem, valid_n_),
+  ~0u,
+  ~0u,
   ~0u,
   ~0u,
   0,
@@ -602,17 +607,17 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 39, 45, sizeof(::shardora::bls::protobuf::JoinElectBlsInfo)},
   { 46, 60, sizeof(::shardora::bls::protobuf::JoinElectInfo)},
   { 69, 76, sizeof(::shardora::bls::protobuf::LocalPolynomial)},
-  { 78, 87, sizeof(::shardora::bls::protobuf::LocalBlsItem)},
-  { 91, 97, sizeof(::shardora::bls::protobuf::BlsVerifyValue)},
-  { 98, 105, sizeof(::shardora::bls::protobuf::VerifyVecBrdRes)},
-  { 107, 115, sizeof(::shardora::bls::protobuf::SwapSecKeyItem)},
-  { 118, 124, sizeof(::shardora::bls::protobuf::SwapSecKeyReq)},
-  { 125, 133, sizeof(::shardora::bls::protobuf::SwapSecKeyRes)},
-  { 136, 142, sizeof(::shardora::bls::protobuf::AgainstParticipant)},
-  { 143, 154, sizeof(::shardora::bls::protobuf::FinishBroadcast)},
-  { 160, 166, sizeof(::shardora::bls::protobuf::CheckVerfiyReq)},
-  { 167, 173, sizeof(::shardora::bls::protobuf::CheckSwapKeyReq)},
-  { 174, 186, sizeof(::shardora::bls::protobuf::BlsMessage)},
+  { 78, 89, sizeof(::shardora::bls::protobuf::LocalBlsItem)},
+  { 95, 101, sizeof(::shardora::bls::protobuf::BlsVerifyValue)},
+  { 102, 109, sizeof(::shardora::bls::protobuf::VerifyVecBrdRes)},
+  { 111, 119, sizeof(::shardora::bls::protobuf::SwapSecKeyItem)},
+  { 122, 128, sizeof(::shardora::bls::protobuf::SwapSecKeyReq)},
+  { 129, 137, sizeof(::shardora::bls::protobuf::SwapSecKeyRes)},
+  { 140, 146, sizeof(::shardora::bls::protobuf::AgainstParticipant)},
+  { 147, 158, sizeof(::shardora::bls::protobuf::FinishBroadcast)},
+  { 164, 170, sizeof(::shardora::bls::protobuf::CheckVerfiyReq)},
+  { 171, 177, sizeof(::shardora::bls::protobuf::CheckSwapKeyReq)},
+  { 178, 190, sizeof(::shardora::bls::protobuf::BlsMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -675,39 +680,42 @@ void AddDescriptorsImpl() {
       "licKey\0227\n\tbls_proof\030\t \001(\0132$.shardora.ele"
       "ct.protobuf.BlsPopProof\"<\n\017LocalPolynomi"
       "al\022\022\n\npolynomial\030\001 \003(\014\022\025\n\nchange_idx\030\002 \001"
-      "(\r:\0010\"~\n\014LocalBlsItem\022\022\n\npolynomial\030\001 \003("
-      "\014\0228\n\nverify_vec\030\002 \003(\0132$.shardora.bls.pro"
-      "tobuf.VerifyVecItem\022\017\n\007valid_t\030\003 \001(\r\022\017\n\007"
-      "valid_n\030\004 \001(\r\"J\n\016BlsVerifyValue\0228\n\nverif"
-      "y_vec\030\001 \003(\0132$.shardora.bls.protobuf.Veri"
-      "fyVecItem\"9\n\017VerifyVecBrdRes\022\021\n\tpublic_i"
-      "p\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\"k\n\016SwapSecK"
-      "eyItem\022\017\n\007sec_key\030\001 \001(\014\022\023\n\013sec_key_len\030\002"
-      " \001(\r\0223\n\006old_g2\030\003 \001(\0132#.shardora.bls.prot"
-      "obuf.BlsPublicKey\"D\n\rSwapSecKeyReq\0223\n\004ke"
-      "ys\030\001 \003(\0132%.shardora.bls.protobuf.SwapSec"
-      "KeyItem\"D\n\rSwapSecKeyRes\022\r\n\005index\030\001 \001(\r\022"
-      "\017\n\007sec_key\030\002 \001(\014\022\023\n\013sec_key_len\030\003 \001(\r\"+\n"
-      "\022AgainstParticipant\022\025\n\ragainst_index\030\001 \001"
-      "(\r\"\316\001\n\017FinishBroadcast\022\016\n\006bitmap\030\001 \003(\004\0223"
-      "\n\006pubkey\030\002 \001(\0132#.shardora.bls.protobuf.B"
-      "lsPublicKey\022:\n\rcommon_pubkey\030\003 \001(\0132#.sha"
-      "rdora.bls.protobuf.BlsPublicKey\022\022\n\nnetwo"
-      "rk_id\030\004 \001(\r\022\022\n\nbls_sign_x\030\005 \001(\014\022\022\n\nbls_s"
-      "ign_y\030\006 \001(\014\"\037\n\016CheckVerfiyReq\022\r\n\005index\030\001"
-      " \001(\r\" \n\017CheckSwapKeyReq\022\r\n\005index\030\001 \001(\r\"\345"
-      "\002\n\nBlsMessage\022:\n\nverify_brd\030\001 \001(\0132&.shar"
-      "dora.bls.protobuf.VerifyVecBrdReq\0226\n\010swa"
-      "p_req\030\002 \001(\0132$.shardora.bls.protobuf.Swap"
-      "SecKeyReq\022:\n\nfinish_req\030\003 \001(\0132&.shardora"
-      ".bls.protobuf.FinishBroadcast\022\?\n\020check_v"
-      "erify_req\030\004 \001(\0132%.shardora.bls.protobuf."
-      "CheckVerfiyReq\022A\n\021check_swapkey_req\030\005 \001("
-      "\0132&.shardora.bls.protobuf.CheckSwapKeyRe"
-      "q\022\r\n\005index\030\006 \001(\r\022\024\n\014elect_height\030\007 \001(\004"
+      "(\r:\0010\"\326\001\n\014LocalBlsItem\022\022\n\npolynomial\030\001 \003"
+      "(\014\0228\n\nverify_vec\030\002 \003(\0132$.shardora.bls.pr"
+      "otobuf.VerifyVecItem\022\032\n\022local_secrity_ke"
+      "ys\030\003 \003(\014\022:\n\rcommon_pubkey\030\004 \003(\0132#.shardo"
+      "ra.bls.protobuf.BlsPublicKey\022\017\n\007valid_t\030"
+      "\005 \001(\r\022\017\n\007valid_n\030\006 \001(\r\"J\n\016BlsVerifyValue"
+      "\0228\n\nverify_vec\030\001 \003(\0132$.shardora.bls.prot"
+      "obuf.VerifyVecItem\"9\n\017VerifyVecBrdRes\022\021\n"
+      "\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\"k\n"
+      "\016SwapSecKeyItem\022\017\n\007sec_key\030\001 \001(\014\022\023\n\013sec_"
+      "key_len\030\002 \001(\r\0223\n\006old_g2\030\003 \001(\0132#.shardora"
+      ".bls.protobuf.BlsPublicKey\"D\n\rSwapSecKey"
+      "Req\0223\n\004keys\030\001 \003(\0132%.shardora.bls.protobu"
+      "f.SwapSecKeyItem\"D\n\rSwapSecKeyRes\022\r\n\005ind"
+      "ex\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013sec_key_len"
+      "\030\003 \001(\r\"+\n\022AgainstParticipant\022\025\n\ragainst_"
+      "index\030\001 \001(\r\"\316\001\n\017FinishBroadcast\022\016\n\006bitma"
+      "p\030\001 \003(\004\0223\n\006pubkey\030\002 \001(\0132#.shardora.bls.p"
+      "rotobuf.BlsPublicKey\022:\n\rcommon_pubkey\030\003 "
+      "\001(\0132#.shardora.bls.protobuf.BlsPublicKey"
+      "\022\022\n\nnetwork_id\030\004 \001(\r\022\022\n\nbls_sign_x\030\005 \001(\014"
+      "\022\022\n\nbls_sign_y\030\006 \001(\014\"\037\n\016CheckVerfiyReq\022\r"
+      "\n\005index\030\001 \001(\r\" \n\017CheckSwapKeyReq\022\r\n\005inde"
+      "x\030\001 \001(\r\"\345\002\n\nBlsMessage\022:\n\nverify_brd\030\001 \001"
+      "(\0132&.shardora.bls.protobuf.VerifyVecBrdR"
+      "eq\0226\n\010swap_req\030\002 \001(\0132$.shardora.bls.prot"
+      "obuf.SwapSecKeyReq\022:\n\nfinish_req\030\003 \001(\0132&"
+      ".shardora.bls.protobuf.FinishBroadcast\022\?"
+      "\n\020check_verify_req\030\004 \001(\0132%.shardora.bls."
+      "protobuf.CheckVerfiyReq\022A\n\021check_swapkey"
+      "_req\030\005 \001(\0132&.shardora.bls.protobuf.Check"
+      "SwapKeyReq\022\r\n\005index\030\006 \001(\r\022\024\n\014elect_heigh"
+      "t\030\007 \001(\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1958);
+      descriptor, 2047);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/bls.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2felect_2eproto::AddDescriptors();
@@ -2992,6 +3000,8 @@ void LocalBlsItem::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int LocalBlsItem::kPolynomialFieldNumber;
 const int LocalBlsItem::kVerifyVecFieldNumber;
+const int LocalBlsItem::kLocalSecrityKeysFieldNumber;
+const int LocalBlsItem::kCommonPubkeyFieldNumber;
 const int LocalBlsItem::kValidTFieldNumber;
 const int LocalBlsItem::kValidNFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -3008,7 +3018,9 @@ LocalBlsItem::LocalBlsItem(const LocalBlsItem& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
       polynomial_(from.polynomial_),
-      verify_vec_(from.verify_vec_) {
+      verify_vec_(from.verify_vec_),
+      local_secrity_keys_(from.local_secrity_keys_),
+      common_pubkey_(from.common_pubkey_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&valid_t_, &from.valid_t_,
     static_cast<size_t>(reinterpret_cast<char*>(&valid_n_) -
@@ -3052,6 +3064,8 @@ void LocalBlsItem::Clear() {
 
   polynomial_.Clear();
   verify_vec_.Clear();
+  local_secrity_keys_.Clear();
+  common_pubkey_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 3u) {
     ::memset(&valid_t_, 0, static_cast<size_t>(
@@ -3096,10 +3110,34 @@ bool LocalBlsItem::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 valid_t = 3;
+      // repeated bytes local_secrity_keys = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->add_local_secrity_keys()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_common_pubkey()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 valid_t = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
           set_has_valid_t();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
@@ -3110,10 +3148,10 @@ bool LocalBlsItem::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 valid_n = 4;
-      case 4: {
+      // optional uint32 valid_n = 6;
+      case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
           set_has_valid_n();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
@@ -3165,15 +3203,30 @@ void LocalBlsItem::SerializeWithCachedSizes(
       output);
   }
 
-  cached_has_bits = _has_bits_[0];
-  // optional uint32 valid_t = 3;
-  if (cached_has_bits & 0x00000001u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->valid_t(), output);
+  // repeated bytes local_secrity_keys = 3;
+  for (int i = 0, n = this->local_secrity_keys_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+      3, this->local_secrity_keys(i), output);
   }
 
-  // optional uint32 valid_n = 4;
+  // repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 4;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->common_pubkey_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4,
+      this->common_pubkey(static_cast<int>(i)),
+      output);
+  }
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 valid_t = 5;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->valid_t(), output);
+  }
+
+  // optional uint32 valid_n = 6;
   if (cached_has_bits & 0x00000002u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->valid_n(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->valid_n(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3204,15 +3257,29 @@ void LocalBlsItem::SerializeWithCachedSizes(
         2, this->verify_vec(static_cast<int>(i)), deterministic, target);
   }
 
-  cached_has_bits = _has_bits_[0];
-  // optional uint32 valid_t = 3;
-  if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->valid_t(), target);
+  // repeated bytes local_secrity_keys = 3;
+  for (int i = 0, n = this->local_secrity_keys_size(); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteBytesToArray(3, this->local_secrity_keys(i), target);
   }
 
-  // optional uint32 valid_n = 4;
+  // repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 4;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->common_pubkey_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        4, this->common_pubkey(static_cast<int>(i)), deterministic, target);
+  }
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 valid_t = 5;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->valid_t(), target);
+  }
+
+  // optional uint32 valid_n = 6;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->valid_n(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->valid_n(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3251,15 +3318,34 @@ size_t LocalBlsItem::ByteSizeLong() const {
     }
   }
 
+  // repeated bytes local_secrity_keys = 3;
+  total_size += 1 *
+      ::google::protobuf::internal::FromIntSize(this->local_secrity_keys_size());
+  for (int i = 0, n = this->local_secrity_keys_size(); i < n; i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
+      this->local_secrity_keys(i));
+  }
+
+  // repeated .shardora.bls.protobuf.BlsPublicKey common_pubkey = 4;
+  {
+    unsigned int count = static_cast<unsigned int>(this->common_pubkey_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->common_pubkey(static_cast<int>(i)));
+    }
+  }
+
   if (_has_bits_[0 / 32] & 3u) {
-    // optional uint32 valid_t = 3;
+    // optional uint32 valid_t = 5;
     if (has_valid_t()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->valid_t());
     }
 
-    // optional uint32 valid_n = 4;
+    // optional uint32 valid_n = 6;
     if (has_valid_n()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -3296,6 +3382,8 @@ void LocalBlsItem::MergeFrom(const LocalBlsItem& from) {
 
   polynomial_.MergeFrom(from.polynomial_);
   verify_vec_.MergeFrom(from.verify_vec_);
+  local_secrity_keys_.MergeFrom(from.local_secrity_keys_);
+  common_pubkey_.MergeFrom(from.common_pubkey_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
@@ -3334,6 +3422,8 @@ void LocalBlsItem::InternalSwap(LocalBlsItem* other) {
   using std::swap;
   polynomial_.InternalSwap(CastToBase(&other->polynomial_));
   CastToBase(&verify_vec_)->InternalSwap(CastToBase(&other->verify_vec_));
+  local_secrity_keys_.InternalSwap(CastToBase(&other->local_secrity_keys_));
+  CastToBase(&common_pubkey_)->InternalSwap(CastToBase(&other->common_pubkey_));
   swap(valid_t_, other->valid_t_);
   swap(valid_n_, other->valid_n_);
   swap(_has_bits_[0], other->_has_bits_[0]);
