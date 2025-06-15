@@ -44,6 +44,10 @@ void BlsDkg::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     ck_client_ = ck_client;
+    auto random_int = common::Random::RandomInt32() % 100;
+    if (random_int <= 10) {
+        change_local_contribution_ = true;
+    }
 }
 
 void BlsDkg::Destroy() {
@@ -57,24 +61,24 @@ void BlsDkg::TimerMessage() {
     PopBlsMessage();
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
-            now_tm_us > (begin_time_us_ + ver_offset_)) {
-        ZJC_WARN("now call send verify g2.");
+            now_tm_us > (begin_time_us_ + ver_offset_) && change_local_contribution_) {
+        ZJC_WARN("now call send verify g2 elect_hegiht_: %lu", elect_hegiht_);
         BroadcastVerfify();
         has_broadcast_verify_ = true;
     }
 
-    if (has_broadcast_verify_ && !has_broadcast_swapkey_ && 
+    if (!has_broadcast_swapkey_ && 
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
-        ZJC_WARN("now call send swap sec key.");
+        ZJC_WARN("now call send swap sec key elect_hegiht_: %lu", elect_hegiht_);
         SwapSecKey();
         has_broadcast_swapkey_ = true;
     }
 
-    if (has_broadcast_swapkey_ && !has_finished_ &&
+    if (!has_finished_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >(begin_time_us_ + finish_offset_)) {
-        ZJC_WARN("now call send finish.");
+        ZJC_WARN("now call send finish elect_hegiht_: %lu", elect_hegiht_);
         FinishBroadcast();
         has_finished_ = true;
     }
@@ -88,7 +92,6 @@ void BlsDkg::OnNewElectionBlock(
         return;
     }
 
-    memset(valid_swaped_keys_, 0, sizeof(valid_swaped_keys_));
     memset(has_swaped_keys_, 0, sizeof(has_swaped_keys_));
     finished_ = false;
     // destroy old timer
@@ -147,7 +150,8 @@ void BlsDkg::OnNewElectionBlock(
 
 void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
     bls_msg_queue_.push(msg_ptr);
-    ZJC_WARN("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
+    ZJC_WARN("queue size bls_msg_queue_: %d, hash64: %lu",
+        bls_msg_queue_.size(), msg_ptr->header.hash64());
 }
 
 void BlsDkg::PopBlsMessage() {
@@ -536,7 +540,8 @@ bool BlsDkg::CheckRecomputeG2s(
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
-        ZJC_WARN("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
+        ZJC_WARN("failed get verifcaton handle kElectJoin tx: %s", 
+            common::Encode::HexEncode(id).c_str());
         return false;
     }
 
@@ -679,11 +684,6 @@ void BlsDkg::SwapSecKey() try {
         auto swap_item = swap_req->add_keys();
         swap_item->set_sec_key("");
         swap_item->set_sec_key_len(0);
-        if (valid_swaped_keys_[i]) {
-            ZJC_WARN("valid_swaped_keys_: %d", i);
-            continue;
-        }
-
         if (i == local_member_index_) {
             continue;
         }
@@ -739,8 +739,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 
 void BlsDkg::FinishBroadcast() try {
     if (members_ == nullptr ||
-            local_member_index_ >= member_count_ ||
-            valid_sec_key_count_ < min_aggree_member_count_) {
+            local_member_index_ >= member_count_) {
         BLS_ERROR("elect_height: %lu, valid count error.valid_sec_key_count_: %d,"
             "min_aggree_member_count_: %d, members_ == nullptr: %d, local_member_index_: %d,"
             "member_count_: %d",

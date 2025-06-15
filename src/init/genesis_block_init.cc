@@ -512,6 +512,9 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     for (size_t i = 0; i < genesis_nodes.size(); ++i) {
         for (size_t j = i; j < genesis_nodes.size(); ++j) {
             std::swap(secret_key_contribution[j][i], secret_key_contribution[i][j]);
+            // auto val = libBLS::ThresholdUtils::fieldElementToString(
+            //     secret_key_contribution[j][i]);
+            // prefix_db_->SaveSwapKey(i, elect_height, i, j, val);
         }
     }
 

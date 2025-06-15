@@ -155,6 +155,7 @@ private:
 
     int64_t kDkgPeriodUs = kTimeBlsPeriodSeconds / 10 * 1000u * 1000u;
     common::MembersPtr members_{ nullptr };
+    uint64_t prev_elect_hegiht_{ 0 };
     uint64_t elect_hegiht_{ 0 };
     std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution_;
     uint32_t local_member_index_{ common::kInvalidUint32 };
@@ -170,7 +171,6 @@ private:
     std::string max_finish_hash_;
     uint32_t max_finish_count_{ 0 };
     std::unordered_set<uint32_t> valid_swapkey_set_;
-    bool valid_swaped_keys_[common::kEachShardMaxNodeCount];
     bool has_swaped_keys_[common::kEachShardMaxNodeCount];
     uint64_t begin_time_us_{ 0 };
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -185,6 +185,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     std::string valid_seck_keys_str_;
+    bool change_local_contribution_ = false;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
