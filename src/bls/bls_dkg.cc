@@ -717,7 +717,9 @@ void BlsDkg::SwapSecKey() try {
 }
 
 void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len) {
-    if (members_ == nullptr || local_member_index_ >= member_count_) {
+    if (members_ == nullptr || 
+            local_member_index_ >= member_count_ ||
+            member_idx >= local_src_secret_key_contribution_.size()) {
         return;
     }
 
