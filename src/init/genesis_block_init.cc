@@ -562,10 +562,14 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             sharding_id,
             genesis_nodes[idx]->id,
             enc_data);
-        ZJC_DEBUG("save network %u, index: %d, prikey: %s, local bls item: %s, enc: %s",
-            sharding_id, idx, 
+        ZJC_INFO("save bls success: %lu, %u, %s, index: %d, prikey: %s, local bls item: %s, src: %s, enc: %s",
+            elect_height,
+            sharding_id,
+            common::Encode::HexEncode(genesis_nodes[idx]->id).c_str(),
+            idx, 
             common::Encode::HexEncode(genesis_nodes[idx]->prikey).c_str(),
             ProtobufToJson(local_bls_item).c_str(),
+            common::Encode::HexEncode(local_bls_str).c_str(),
             common::Encode::HexEncode(enc_data).c_str());
     }
 

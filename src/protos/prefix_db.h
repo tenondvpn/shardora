@@ -728,9 +728,10 @@ public:
             return false;
         }
 
-        ZJC_INFO("get bls success: %lu, %u, %s, bls item: %s", elect_height,
+        ZJC_INFO("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
+            common::Encode::HexEncode(val).c_str(),
             common::Encode::HexEncode(*bls_prikey).c_str());
         return true;
     }
