@@ -110,7 +110,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     if (tx_msg.pubkey().size() == 64u) {
-        msg_ptr->msg_hash = common::Hash::sm3(tx_msg.SerializeAsString());
+        // msg_ptr->msg_hash = common::Hash::sm3(tx_msg.SerializeAsString());
         security::GmSsl gmssl;
         if (gmssl.Verify(
                 msg_ptr->msg_hash,
