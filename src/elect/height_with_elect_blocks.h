@@ -76,7 +76,7 @@ public:
                         assert(false);
                     } else {
                         new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-                        assert(false);
+                        assert(new_item->local_sec_key != libff::alt_bn128_Fr::zero());
                     }
                 } else {
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
