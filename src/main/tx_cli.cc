@@ -1123,9 +1123,19 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
     std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
         << ", verify res: " << verify_res << std::endl;
 
+    auto addr_json = GetAddressInfo(cli, global_chain_node_ip, gmssl.GetAddress());
+    if (addr_json) {
+        // printf("success get address info: %s\n", addr_json->dump().c_str());
+    } else {
+        printf("failed get address info: %s\n", common::Encode::HexEncode(gmssl.GetAddress()).c_str());
+        return 1;
+    }
+
+    uint64_t nonce = 0;
+    common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
     auto tx_msg_ptr = GmsslCreateTransactionWithAttr(
         gmssl,
-        0,
+        nonce + 1,
         to,
         "",
         "",
@@ -1198,9 +1208,19 @@ int oqs_tx(const std::string& to, uint64_t amount) {
     std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
         << ", verify res: " << verify_res << std::endl;
 
+    auto addr_json = GetAddressInfo(cli, global_chain_node_ip, oqs.GetAddress());
+    if (addr_json) {
+        // printf("success get address info: %s\n", addr_json->dump().c_str());
+    } else {
+        printf("failed get address info: %s\n", common::Encode::HexEncode(oqs.GetAddress()).c_str());
+        return 1;
+    }
+
+    uint64_t nonce = 0;
+    common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
     auto tx_msg_ptr = OqsCreateTransactionWithAttr(
         oqs,
-        0,
+        nonce + 1,
         to,
         "",
         "",
@@ -1291,6 +1311,7 @@ int main(int argc, char** argv) {
     usleep(1000000);
     cli.Destroy();
     transport::TcpTransport::Instance()->Stop();
+    exit(0);
     return 0;
 }
  
