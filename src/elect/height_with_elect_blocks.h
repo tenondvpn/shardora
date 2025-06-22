@@ -155,7 +155,7 @@ public:
 
                 if (local_sec_key != nullptr) {
                     *local_sec_key = item_ptr->local_sec_key;
-                    ZJC_DEBUG("1 get bls pk and secret key success.height: %lu, network_id: %u",
+                    ZJC_DEBUG("1 uccess get local sec key get bls pk and secret key success.height: %lu, network_id: %u",
                         height, network_id);
                 }
 
@@ -182,6 +182,7 @@ public:
                         assert(false);
                     } else {
                         iter->second->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                        ZJC_DEBUG("1 success get local sec key.");
                     }
                 }
             }
@@ -197,6 +198,7 @@ public:
 
             if (local_sec_key != nullptr) {
                 *local_sec_key = iter->second->local_sec_key;
+                ZJC_DEBUG("1 0 success get local sec key.");
             }
 
             return iter->second->members_ptr;
@@ -231,6 +233,7 @@ public:
                 assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                ZJC_DEBUG("success get local sec key.");
             }
         }
 
@@ -240,6 +243,7 @@ public:
 
         if (local_sec_key != nullptr) {
             *local_sec_key = new_item->local_sec_key;
+            ZJC_DEBUG("1 success get local sec key.");
         }
 
         if (height_with_members_[network_id].size() >= kMaxCacheElectBlockCount) {
