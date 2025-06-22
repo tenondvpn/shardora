@@ -159,12 +159,13 @@ public:
                         height, network_id);
                 }
 
-            ZJC_DEBUG("success get bls pk and secret key success.height: %lu, "
-                "network_id: %u, end net id: %u, offset: %u",
-                height, 
-                network_id, 
-                network::kConsensusShardEndNetworkId, 
-                network::kConsensusWaitingShardOffset);
+                ZJC_DEBUG("success get bls pk and secret key success.height: %lu, "
+                    "network_id: %u, end net id: %u, offset: %u, local sec key: %d",
+                    height, 
+                    network_id, 
+                    network::kConsensusShardEndNetworkId, 
+                    network::kConsensusWaitingShardOffset,
+                    libBLS::ThresholdUtils::fieldElementToString(*local_sec_key).c_str());
                 return item_ptr->members_ptr;
             }
         }
