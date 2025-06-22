@@ -111,14 +111,19 @@ public:
                 assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                ZJC_DEBUG("2 success get local sec key.");
             }
         } else {
             new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+            assert(false);
         }
 
         members_ptrs_[network_id][min_index] = new_item;
-        ZJC_DEBUG("1 save bls pk and secret key success.height: %lu, network_id: %u",
-            height, network_id);
+        ZJC_DEBUG("1 save bls pk and secret key success.height: %lu, "
+            "network_id: %u, local_sec_key: %s, is zero: %d",
+            height, network_id,
+            libBLS::ThresholdUtils::fieldElementToString(new_item->local_sec_key).c_str(),
+            (new_item->local_sec_key == libff::alt_bn128_Fr::zero()));
     }
 
     // TODO: multi thread problem.
