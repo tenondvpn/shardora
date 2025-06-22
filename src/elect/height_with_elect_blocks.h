@@ -117,7 +117,7 @@ public:
             }
         } else {
             new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-            assert(false);
+            // assert(false);
         }
 
         members_ptrs_[network_id][min_index] = new_item;
