@@ -63,6 +63,7 @@ public:
         local_sk_ = bls::AggBls::Instance()->agg_sk();
 #else
         local_sk_ = sk;
+        assert(local_sk_ != libff::alt_bn128_Fr::zero());
 #endif
         SetMemberCount(members->size());
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
