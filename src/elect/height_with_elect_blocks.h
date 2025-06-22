@@ -76,9 +76,11 @@ public:
                         assert(false);
                     } else {
                         new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                        assert(false);
                     }
                 } else {
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+                    assert(false);
                 }
                 ZJC_DEBUG("0 save bls pk and secret key success.height: %lu, network_id: %u, %d, %d",
                     height, network_id,
