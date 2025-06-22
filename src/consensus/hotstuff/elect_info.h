@@ -59,6 +59,7 @@ public:
         
         elect_height_ = elect_height;
         common_pk_ = common_pk;
+        assert(common_pk_ != libff::alt_bn128_G2::zero());
 #ifdef USE_AGG_BLS
         local_sk_ = bls::AggBls::Instance()->agg_sk();
 #else
