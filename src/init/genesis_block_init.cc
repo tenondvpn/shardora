@@ -534,7 +534,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     }
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
         bls::protobuf::LocalBlsItem local_bls_item = tmp_local_bls_item;
-        local_bls_item.set_local_private_key(libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->bls_prikey));
         std::vector<libff::alt_bn128_Fr> tmp_secret_key_contribution;
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
             tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
@@ -546,6 +545,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         genesis_nodes[idx]->bls_prikey = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
         genesis_nodes[idx]->bls_pubkey = tmpdkg.GetPublicKeyFromSecretKey(genesis_nodes[idx]->bls_prikey);
         common_public_key = common_public_key + genesis_nodes[idx]->verification[0];
+        local_bls_item.set_local_private_key(libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->bls_prikey));
         std::string enc_data;
         security::Ecdsa ecdsa;
         auto local_bls_str = local_bls_item.SerializeAsString();
