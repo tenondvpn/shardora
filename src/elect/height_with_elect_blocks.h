@@ -172,7 +172,7 @@ public:
                     network_id, 
                     network::kConsensusShardEndNetworkId, 
                     network::kConsensusWaitingShardOffset,
-                    (local_sec_key != nullptr ? "0" : libBLS::ThresholdUtils::fieldElementToString(*local_sec_key).c_str()));
+                    (local_sec_key == nullptr ? "0" : libBLS::ThresholdUtils::fieldElementToString(*local_sec_key).c_str()));
                 return item_ptr->members_ptr;
             }
         }
