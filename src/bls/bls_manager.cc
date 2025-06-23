@@ -991,6 +991,11 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
     }
 
+    if (pre_ec_members->bls_pubkey(0).x_c0().empty()) {
+        BLS_ERROR("first node public key invalid. finish_item->common_pk_map failed!");
+        return kBlsError;
+    }
+
     common_pk_iter->second.to_affine_coordinates();
     auto common_pk = pre_ec_members->mutable_common_pubkey();
     common_pk->set_x_c0(
