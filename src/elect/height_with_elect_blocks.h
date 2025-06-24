@@ -122,10 +122,12 @@ public:
 
         members_ptrs_[network_id][min_index] = new_item;
         ZJC_DEBUG("1 save bls pk and secret key success.height: %lu, "
-            "network_id: %u, local_sec_key: %s, is zero: %d",
+            "network_id: %u, local_sec_key: %s, is zero: %d, common pk is zero: %d",
             height, network_id,
             libBLS::ThresholdUtils::fieldElementToString(new_item->local_sec_key).c_str(),
-            (new_item->local_sec_key == libff::alt_bn128_Fr::zero()));
+            (new_item->local_sec_key == libff::alt_bn128_Fr::zero()),
+            (common_pk == libff::alt_bn128_G2::zero()));
+        assert(common_pk != libff::alt_bn128_G2::zero());
     }
 
     // TODO: multi thread problem.
@@ -226,7 +228,8 @@ public:
         auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
         new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-            ZJC_DEBUG("ew_item->common_bls_publick_key == libff::alt_bn128_G2::zero().");
+            ZJC_DEBUG("new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()"
+                " network_id: %d, height: %lu", network_id, height);
             // assert(false);
             return shard_members;
         }
