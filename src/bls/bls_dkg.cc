@@ -718,6 +718,8 @@ void BlsDkg::SwapSecKey() try {
 
         swap_item->set_sec_key(seckey);
         swap_item->set_sec_key_len(seckey_len);
+        ZJC_DEBUG("des index: %d, sec key size: %d, seckey_len: %d",
+            i, seckey.size(), seckey_len);
     }
 
     CreateDkgMessage(msg_ptr);
@@ -737,6 +739,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
     if (members_ == nullptr || 
             local_member_index_ >= member_count_ ||
             member_idx >= local_src_secret_key_contribution_.size()) {
+        ZJC_DEBUG("null swap key failed get ecdh key member_idx: %d.", member_idx);
         return;
     }
 
@@ -746,6 +749,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
     if (security_->GetEcdhKey(
             (*members_)[member_idx]->pubkey,
             &encrypt_key) != security::kSecuritySuccess) {
+        ZJC_DEBUG("swap key failed get ecdh key member_idx: %d.", member_idx);
         return;
     }
 
@@ -754,10 +758,12 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
         encrypt_key,
         seckey);
     if (res != security::kSecuritySuccess) {
+        ZJC_DEBUG("swap key failed encrypt member_idx: %d.", member_idx);
         return;
     }
 
     *seckey_len = msg.size();
+    ZJC_DEBUG("swap key success encrypt member_idx: %d, seckey_len: %d", member_idx, *seckey_len);
 }
 
 void BlsDkg::FinishBroadcast() try {
