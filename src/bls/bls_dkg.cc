@@ -155,14 +155,21 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlsDkg::PopBlsMessage() {
+    ZJC_DEBUG("now pop bls message.");
     while (true) {
         transport::MessagePtr msg_ptr = nullptr;
         if (!bls_msg_queue_.pop(&msg_ptr) || msg_ptr == nullptr) {
             break;
         }
 
+        ZJC_WARN("queue size bls_msg_queue_: %d, hash64: %lu",
+            bls_msg_queue_.size(), msg_ptr->header.hash64());
         HandleBlsMessage(msg_ptr);
+        ZJC_WARN("over queue size bls_msg_queue_: %d, hash64: %lu",
+            bls_msg_queue_.size(), msg_ptr->header.hash64());
     }
+    
+    ZJC_DEBUG("now pop bls message over.");
 }
 
 bool BlsDkg::CheckBlsMessageValid(transport::MessagePtr& msg_ptr) {
