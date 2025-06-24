@@ -168,7 +168,7 @@ void BlsDkg::PopBlsMessage() {
         ZJC_WARN("over queue size bls_msg_queue_: %d, hash64: %lu",
             bls_msg_queue_.size(), msg_ptr->header.hash64());
     }
-    
+
     ZJC_DEBUG("now pop bls message over.");
 }
 
@@ -265,6 +265,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
 
     if (!IsVerifyBrdPeriod()) {
 //         assert(false);
+        ZJC_INFO("invalid msg hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -358,6 +359,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
         //assert(false);
+        ZJC_INFO("invalid msg hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -377,6 +379,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         valid_swapkey_set_.insert(bls_msg.index());
         ++valid_sec_key_count_;
         has_swaped_keys_[bls_msg.index()] = true;
+        ZJC_INFO("invalid msg hash64: %lu, sec key empty.", msg_ptr->header.hash64());
         return;
     }
 
