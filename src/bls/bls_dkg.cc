@@ -742,8 +742,7 @@ void BlsDkg::SwapSecKey() try {
 
 void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len) {
     if (members_ == nullptr || 
-            local_member_index_ >= member_count_ ||
-            member_idx >= local_src_secret_key_contribution_.size()) {
+            local_member_index_ >= member_count_) {
         ZJC_DEBUG("null swap key failed get ecdh key member_idx: %d, "
             "local_member_index_: %d, member_count_: %d, "
             "local_src_secret_key_contribution_.size(): %d", 
