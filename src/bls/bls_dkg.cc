@@ -701,6 +701,8 @@ void BlsDkg::SwapSecKey() try {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto swap_req = bls_msg.mutable_swap_req();
+    ZJC_DEBUG("start swap sec key local member idx: %d, member_count_: %d",
+        local_member_index_, member_count_);
     for (uint32_t i = 0; i < member_count_; ++i) {
         auto swap_item = swap_req->add_keys();
         swap_item->set_sec_key("");
@@ -713,6 +715,9 @@ void BlsDkg::SwapSecKey() try {
         int32_t seckey_len = 0;
         CreateSwapKey(i, &seckey, &seckey_len);
         if (seckey_len == 0) {
+            ZJC_DEBUG("start swap sec key local member idx: %d, "
+                "member_count_: %d, seckey_len: %d",
+                local_member_index_, member_count_, seckey_len);
             continue;
         }
 
