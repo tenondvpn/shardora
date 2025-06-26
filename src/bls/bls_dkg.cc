@@ -893,7 +893,7 @@ void BlsDkg::FinishBroadcast() try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-libff::alt_bn128_Fr BlsDkg::GetSwapKeyFromJoinInfo(uint32_t peer_index) {
+std::string BlsDkg::GetSwapKeyFromJoinInfo(uint32_t peer_index) {
     std::string local_sec_str;
     if (!prefix_db_->GetBlsPrikey(
             security_, 
