@@ -900,16 +900,16 @@ std::string BlsDkg::GetSwapKeyFromJoinInfo(uint32_t peer_index) {
             1, 
             common::GlobalInfo::Instance()->network_id(),
             &local_sec_str)) {
-        return libff::alt_bn128_Fr::zero();
+        return "";
     }
 
     bls::protobuf::LocalBlsItem local_bls_item;
     if (!local_bls_item.ParseFromString(local_sec_str)) {
-        return libff::alt_bn128_Fr::zero();
+        return "";
     }
 
     if (peer_index >= local_bls_item.local_secrity_keys_size()) {
-        return libff::alt_bn128_Fr::zero();
+        return "";
     }
 
     return local_bls_item.local_secrity_keys(peer_index);
