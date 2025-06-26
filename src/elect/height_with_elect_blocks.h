@@ -308,7 +308,6 @@ private:
         uint32_t member_index = 0;
         auto shard_members_ptr = std::make_shared<common::Members>();
         auto& in = elect_block.in();
-        uint32_t member_index = 0;
         for (int32_t i = 0; i < in.size(); ++i) {
             auto id = security->GetAddress(in[i].pubkey());
             auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
