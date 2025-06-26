@@ -384,10 +384,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.swap_req().keys(local_member_index_).sec_key().empty()) {
-        valid_swapkey_set_.insert(bls_msg.index());
-        ++valid_sec_key_count_;
-        has_swaped_keys_[bls_msg.index()] = true;
         ZJC_INFO("invalid msg hash64: %lu, sec key empty.", msg_ptr->header.hash64());
+        assert(false);
         return;
     }
 
@@ -438,6 +436,15 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
         min_aggree_member_count_);
     // swap
+    bls::protobuf::VerifyVecBrdReq req;
+    auto res = prefix_db_->TempGetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
+    if (!res) {
+        ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
+            local_member_index_, elect_hegiht_, bls_msg.index());
+        return;
+    }
+
+    prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, req);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
     valid_swapkey_set_.insert(bls_msg.index());
