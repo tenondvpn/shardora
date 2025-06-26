@@ -156,7 +156,7 @@ private:
 
     int64_t kDkgPeriodUs = kTimeBlsPeriodSeconds / 10 * 1000u * 1000u;
     common::MembersPtr members_{ nullptr };
-    uint64_t prev_elect_hegiht_{ 0 };
+    uint64_t prev_elect_hegiht_{ 1llu };
     uint64_t elect_hegiht_{ 0 };
     std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution_;
     uint32_t local_member_index_{ common::kInvalidUint32 };

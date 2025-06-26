@@ -138,7 +138,7 @@ void BlsDkg::OnNewElectionBlock(
     finish_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     ZJC_WARN("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
         "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u, "
-        "prev_elect_hegiht_: %lu",
+        "prev_elect_hegiht_: %lu, change_local_contribution_: %d",
         common::TimeUtils::TimestampSeconds(),
         latest_timeblock_info->lastest_time_block_tm,
         begin_time_us_ / 1000000,
@@ -146,7 +146,8 @@ void BlsDkg::OnNewElectionBlock(
         ver_offset_ / 1000000,
         swap_offset_ / 1000000,
         finish_offset_ / 1000000,
-        prev_elect_hegiht_);
+        prev_elect_hegiht_,
+        change_local_contribution_);
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;
