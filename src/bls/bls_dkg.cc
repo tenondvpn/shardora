@@ -288,7 +288,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    prefix_db_->TempAddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
+    prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
     ZJC_WARN("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
         local_member_index_, elect_hegiht_, bls_msg.index(), 0,
         common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
@@ -433,7 +433,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         min_aggree_member_count_);
     // swap
     bls::protobuf::VerifyVecBrdReq req;
-    auto g2_res = prefix_db_->TempGetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
+    auto g2_res = prefix_db_->GetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
     if (!g2_res) {
         ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
             local_member_index_, elect_hegiht_, bls_msg.index());
@@ -448,6 +448,27 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     has_swaped_keys_[bls_msg.index()] = true;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
+}
+
+libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromJoinInfo(uint32_t peer_index) {
+    bls::protobuf::JoinElectInfo join_info;
+    if (!prefix_db_->GetNodeVerificationVector((*members_)[peer_index]->id, &join_info)) {
+        assert(false);
+        return libff::alt_bn128_G2::zero();
+    }
+
+    libff::alt_bn128_G2 old_val;
+    auto& item = join_info.g2_req().verify_vec(0);
+    auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+    auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+    auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+    auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+    auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+    auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+    return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 }
 
 bool BlsDkg::VerifySekkeyValid(
@@ -643,7 +664,7 @@ bool BlsDkg::CheckRecomputeG2s(
 
 libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t* changed_idx) {
     bls::protobuf::VerifyVecBrdReq req;
-    auto res = prefix_db_->TempGetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
     if (!res) {
         ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
             local_member_index_, elect_hegiht_, peer_mem_index);
@@ -676,7 +697,7 @@ void BlsDkg::BroadcastVerfify() try {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto* verfiy_brd = bls_msg.mutable_verify_brd();
-    auto res = prefix_db_->TempGetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
         assert(false);
         return;
@@ -804,45 +825,18 @@ void BlsDkg::FinishBroadcast() try {
     for (size_t i = 0; i < member_count_; ++i) {
         auto iter = valid_swapkey_set_.find(i);
         if (iter == valid_swapkey_set_.end()) {
-            bls::protobuf::VerifyVecBrdReq req;
-            auto res = prefix_db_->GetBlsVerifyG2((*members_)[i]->id, &req);
-            if (!res) {
-                ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
-                    local_member_index_, elect_hegiht_, i);
-                valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-                common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-                ZJC_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
-                continue;
-            } 
-
-            std::string seckey;
-            if (!prefix_db_->GetSwapKey(
-                    local_member_index_,
-                    prev_elect_hegiht_,
-                    local_member_index_,
-                    i,
-                    &seckey)) {
+            std::string seckey = GetSwapKeyFromJoinInfo(i);
+            if (seckey.empty()) {
                 valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
                 common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
                 ZJC_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
                     elect_hegiht_, i);
+                assert(false);
                 continue;
             }
-
-            if (req.change_idx() == 0) {
-                auto& item = req.verify_vec(0);
-                auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-                auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-                auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-                auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-                auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-                auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-                auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-                auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-                auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-                for_common_pk_g2s_[i] = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            }
-
+            
+            for_common_pk_g2s_[i] = GetVerifyG2FromJoinInfo(i);
+            assert(for_common_pk_g2s_[i] != libff::alt_bn128_G2::zero());
             valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
             valid_seck_keys_str_ += seckey + ",";
         } else {
@@ -897,6 +891,28 @@ void BlsDkg::FinishBroadcast() try {
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
     BLS_ERROR("catch error: %s", e.what());
+}
+
+libff::alt_bn128_Fr BlsDkg::GetSwapKeyFromJoinInfo(uint32_t peer_index) {
+    std::string local_sec_str;
+    if (!prefix_db_->GetBlsPrikey(
+            security_, 
+            1, 
+            common::GlobalInfo::Instance()->network_id(),
+            &local_sec_str)) {
+        return libff::alt_bn128_Fr::zero();
+    }
+
+    bls::protobuf::LocalBlsItem local_bls_item;
+    if (!local_bls_item.ParseFromString(local_sec_str)) {
+        return libff::alt_bn128_Fr::zero();
+    }
+
+    if (peer_index >= local_bls_item.local_secrity_keys_size()) {
+        return libff::alt_bn128_Fr::zero();
+    }
+
+    return local_bls_item.local_secrity_keys(peer_index);
 }
 
 void BlsDkg::DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_seck_keys) {
@@ -1101,8 +1117,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c0)));
     verify_item.set_z_c1(common::Encode::HexDecode(
         libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c1)));
-    prefix_db_->TempAddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
-    
+    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
     ZJC_INFO("success create local local_src_secret_key_contribution_: %d", local_member_index_);
 }
 

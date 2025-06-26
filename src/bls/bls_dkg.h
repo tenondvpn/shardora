@@ -109,6 +109,8 @@ private:
     bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
     void PopBlsMessage();
     void HandleBlsMessage(const transport::MessagePtr& msg_ptr);
+    libff::alt_bn128_G2 GetVerifyG2FromJoinInfo(uint32_t peer_index);
+    std::string GetSwapKeyFromJoinInfo(uint32_t peer_index);
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
