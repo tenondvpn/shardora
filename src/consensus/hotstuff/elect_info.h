@@ -34,9 +34,10 @@ public:
         for (uint32_t i = 0; i < members->size(); i++) {
             if ((*members)[i]->id == security_ptr_->GetAddress()) {
                 local_member_ = (*members)[i];
+                assert(local_member_->bls_publick_key != libff::alt_bn128_G2::zero());
                 if (local_member_->bls_publick_key != libff::alt_bn128_G2::zero()) {
                     bls_valid_ = true;
-                }
+                } 
                 break;
             }
         }
@@ -201,6 +202,12 @@ public:
         prev_elect_items_[sharding_id] = elect_items_[sharding_id];
         elect_items_[sharding_id] = elect_item;
         RefreshMemberAddrs(sharding_id);
+#ifndef NDEBUG
+        if (sharding_id == common::GlobalInfo::Instance()->network_id())
+            for (auto iter = members->begin(); iter != members->end(); ++iter) {
+                assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
+            }
+#endif
         ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu",
             sharding_id, elect_item->ElectHeight());
     }
@@ -235,6 +242,14 @@ public:
             return nullptr;
         }
         
+        ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %d",
+            sharding_id, elect_height, (common_pk != libff::alt_bn128_G2::zero()));
+#ifndef NDEBUG
+        if (sharding_id == common::GlobalInfo::Instance()->network_id())
+            for (auto iter = members->begin(); iter != members->end(); ++iter) {
+                assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
+            }
+#endif
         return std::make_shared<ElectItem>(
             security_ptr_,
             sharding_id,

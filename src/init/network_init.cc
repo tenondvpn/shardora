@@ -1243,54 +1243,6 @@ void NetworkInit::HandleElectionBlock(
         return;
     }
 
-    if (sharding_id == common::GlobalInfo::Instance()->network_id()) {
-        if (latest_elect_height_ < elect_height) {
-            latest_elect_height_ = elect_height;
-            memset(invalid_pools_, 0, sizeof(invalid_pools_));
-            auto rotation_leaders = std::make_shared<LeaderRotationInfo>();
-            rotation_leaders->elect_height = elect_height;
-            uint32_t leader_count = 0;
-            std::map<uint32_t, uint32_t> leader_idx_map;
-            std::vector<uint32_t> rotaton_members;
-            for (uint32_t i = 0; i < members->size(); ++i) {
-                if ((*members)[i]->pool_index_mod_num >= 0) {
-                    ++leader_count;
-                    leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
-                    rotation_leaders->rotation_used[i] = true;
-                } else {
-                    if ((*members)[i]->bls_publick_key == libff::alt_bn128_G2::zero()) {
-                        rotation_leaders->rotation_used[i] = true;
-                    } else {
-                        rotaton_members.push_back(i);
-                    }
-                }
-
-                if ((*members)[i]->id == security_->GetAddress()) {
-                    rotation_leaders->local_member_index = i;
-                }
-            }
-
-            rotation_leaders->rotations.resize(leader_count);
-            rotation_leaders->members = members;
-            rotation_leaders->tm_block_tm = tm_block_mgr_->LatestTimestamp();
-            uint32_t random_seed = 19245u;
-            for (auto iter = leader_idx_map.begin(); iter != leader_idx_map.end(); ++iter) {
-                rotation_leaders->rotations[iter->first].now_leader_idx = iter->second;
-                rotation_leaders->rotations[iter->first].rotation_leaders = rotaton_members;
-                auto& vec = rotation_leaders->rotations[iter->first].rotation_leaders;
-                std::shuffle(vec.begin(), vec.end(), std::default_random_engine(random_seed++));
-                std::string debug_str;
-                for (uint32_t i = 0; i < vec.size(); ++i) {
-                    debug_str += std::to_string(vec[i]) + " ";
-                }
-
-                ZJC_DEBUG("random_seed: %u, set rotations: %s", random_seed - 1, debug_str.c_str());
-            }
-
-            rotation_leaders_ = rotation_leaders;
-        }
-    }
-
     network::Route::Instance()->OnNewElectBlock(
         sharding_id,
         elect_height,

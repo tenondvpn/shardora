@@ -294,7 +294,7 @@ bool ElectManager::ProcessPrevElectMembers(
             prev_elect_block.shard_network_id(),
             common::Encode::HexEncode((*iter)->id).c_str(),
             (*iter)->pool_index_mod_num,
-            ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()));
+            ((*iter)->bls_publick_key != libff::alt_bn128_G2::zero()));
     }
 
     if (*elected) {
