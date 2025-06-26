@@ -251,6 +251,15 @@ Status BlockAcceptor::Accept(
             ProtobufToJson(view_block).c_str());
     }
 
+    if (view_block.block_info().has_elect_block()) {
+        auto& elect_block = view_block.block_info().elect_block();
+        prefix_db_->SaveElectHeightCommonPk(
+            elect_block.shard_network_id(),
+            elect_block.prev_members().prev_elect_height(),
+            elect_block.prev_members(),
+            zjc_host.db_batch_);
+    }
+    
     ZJC_INFO("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu, "
         "timeblock height: %lu, local latest timeblock height: %lu", 
         txs_ptr->txs.size(), 

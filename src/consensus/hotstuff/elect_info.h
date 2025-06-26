@@ -226,7 +226,7 @@ public:
             sharding_id,
             &common_pk,
             &sec_key);
-        if (members == nullptr) {
+        if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
             ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
                 sharding_id,
                 elect_height,

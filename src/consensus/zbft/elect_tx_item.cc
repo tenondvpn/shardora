@@ -663,11 +663,6 @@ int ElectTxItem::CreateNewElect(
                   elect_statistic_.sharding_id(),
                   elect_block.prev_members().prev_elect_height());
         SetPrevElectInfo(elect_block, block);
-        prefix_db_->SaveElectHeightCommonPk(
-            elect_block.shard_network_id(),
-            elect_block.prev_members().prev_elect_height(),
-            elect_block.prev_members(),
-            zjc_host.db_batch_);
     }
     
     return kConsensusSuccess;
