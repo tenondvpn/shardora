@@ -303,6 +303,9 @@ private:
     
             BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
             *temp_common_pk = *pkey.getPublicKey();
+            assert(*temp_common_pk != libff::alt_bn128_G2::zero());
+        } else {
+            assert(false);
         }
 
         uint32_t member_index = 0;
