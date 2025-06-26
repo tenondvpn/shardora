@@ -437,8 +437,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         min_aggree_member_count_);
     // swap
     bls::protobuf::VerifyVecBrdReq req;
-    auto res = prefix_db_->TempGetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
-    if (!res) {
+    auto g2_res = prefix_db_->TempGetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
+    if (!g2_res) {
         ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
             local_member_index_, elect_hegiht_, bls_msg.index());
         return;
