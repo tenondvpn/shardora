@@ -50,6 +50,7 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<ck::ClickHouseClient> ck_client);
     void OnNewElectionBlock(
+        uint64_t prev_elect_height,
         uint64_t elect_height,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);

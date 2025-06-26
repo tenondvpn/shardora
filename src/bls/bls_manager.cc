@@ -134,7 +134,6 @@ void BlsManager::OnNewElectBlock(
         return;
     }
 
-    latest_elect_height_ = elect_height;
     if (waiting_bls_ != nullptr) {
         waiting_bls_ = nullptr;
     }
@@ -152,9 +151,11 @@ void BlsManager::OnNewElectBlock(
         ck_client_);
 //     ZJC_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls->OnNewElectionBlock(
+        latest_elect_height_,
         elect_height,
         members,
         latest_timeblock_info_);
+    latest_elect_height_ = elect_height;
     waiting_bls_ = waiting_bls;
     ZJC_WARN("success add new bls dkg, elect_height: %lu", elect_height);
 }

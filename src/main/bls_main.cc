@@ -502,7 +502,7 @@ public:
             auto str = join_info.SerializeAsString();
             prefix_db->SaveNodeVerificationVector(dkg[idx].security_->GetAddress(), join_info, db_batch);
             prefix_db->SaveTemporaryKv(check_hash, str, db_batch);
-            prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req, db_batch);
+            prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req);
             prefix_db->SaveLocalPolynomial(
                 dkg[idx].security_, 
                 dkg[idx].security_->GetAddress(), 

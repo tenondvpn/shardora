@@ -651,15 +651,6 @@ public:
         }
     }
 
-    void AddBlsVerifyG2(
-            const std::string& id,
-            const bls::protobuf::VerifyVecBrdReq& verfy_req,
-            db::DbWriteBatch& db_batch) {
-        std::string key = kBlsVerifyPrefex + id;
-        std::string val = verfy_req.SerializeAsString();
-        db_batch.Put(key, val);
-    }
-
     bool GetBlsVerifyG2(
             const std::string& id,
             bls::protobuf::VerifyVecBrdReq* verfy_req) {
@@ -677,6 +668,36 @@ public:
 
         return true;
     }
+
+    void TempAddBlsVerifyG2(
+            const std::string& id,
+            const bls::protobuf::VerifyVecBrdReq& verfy_req) {
+        std::string key = kBlsVerifyPrefex + "temp_" + id;
+        std::string val = verfy_req.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+        }
+    }
+
+    bool TempGetBlsVerifyG2(
+            const std::string& id,
+            bls::protobuf::VerifyVecBrdReq* verfy_req) {
+        std::string key = kBlsVerifyPrefex + "temp_" + id;
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!verfy_req->ParseFromString(val)) {
+            assert(false);
+            return false;
+        }
+
+        return true;
+    }
+
 
     void SaveBlsPrikey(
             uint64_t elect_height,
