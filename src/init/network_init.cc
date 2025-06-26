@@ -1296,13 +1296,13 @@ void NetworkInit::HandleElectionBlock(
         elect_height,
         members,
         elect_block);
-    hotstuff_mgr_->OnNewElectBlock(block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+    hotstuff_mgr_->OnNewElectBlock(
+        block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
     block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
-
     network::UniversalManager::Instance()->OnNewElectBlock(
         sharding_id,
         elect_height,
@@ -1311,12 +1311,11 @@ void NetworkInit::HandleElectionBlock(
     ZJC_DEBUG("1 success called election block. height: %lu, "
         "elect height: %lu, used elect height: %lu, net: %u, "
         "local net id: %u, prev elect height: %lu",
-        block->height(), elect_height, 
-        view_block->qc().elect_height(), 
-        elect_block->shard_network_id(), 
+        block->height(), elect_height,
+        view_block->qc().elect_height(),
+        elect_block->shard_network_id(),
         common::GlobalInfo::Instance()->network_id(),
         elect_block->prev_members().prev_elect_height());
-
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
@@ -1324,7 +1323,8 @@ void NetworkInit::HandleElectionBlock(
             std::bind(&NetworkInit::SendJoinElectTransaction, this));
         ZJC_DEBUG("now send join elect request transaction. first message.");
         another_join_elect_msg_needed_ = true;
-    } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
+    } else if (another_join_elect_msg_needed_ &&
+            sharding_id == common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
             3000000lu,
             std::bind(&NetworkInit::SendJoinElectTransaction, this));

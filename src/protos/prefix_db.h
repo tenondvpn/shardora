@@ -1143,49 +1143,49 @@ public:
         return true;
     }
 
-    void SaveElectHeightCommonPk(
-            uint32_t des_shard,
-            uint64_t height,
-            const elect::protobuf::PrevMembers& prv_info,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(128);
-        key.append(kElectHeightWithBlsCommonPkPrefix);
-        key.append((char*)&des_shard, sizeof(des_shard));
-        key.append((char*)&height, sizeof(height));
-        std::string val = prv_info.SerializeAsString();
-        db_batch.Put(key, val);
-        ZJC_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
-        assert(prv_info.has_common_pubkey());
-        assert(!prv_info.common_pubkey().x_c0().empty());
-    }
+    // void SaveElectHeightCommonPk(
+    //         uint32_t des_shard,
+    //         uint64_t height,
+    //         const elect::protobuf::PrevMembers& prv_info,
+    //         db::DbWriteBatch& db_batch) {
+    //     std::string key;
+    //     key.reserve(128);
+    //     key.append(kElectHeightWithBlsCommonPkPrefix);
+    //     key.append((char*)&des_shard, sizeof(des_shard));
+    //     key.append((char*)&height, sizeof(height));
+    //     std::string val = prv_info.SerializeAsString();
+    //     db_batch.Put(key, val);
+    //     ZJC_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
+    //     assert(prv_info.has_common_pubkey());
+    //     assert(!prv_info.common_pubkey().x_c0().empty());
+    // }
 
-    bool GetElectHeightCommonPk(
-            uint32_t des_shard,
-            uint64_t height,
-            elect::protobuf::PrevMembers* prv_info) {
-        std::string key;
-        key.reserve(128);
-        key.append(kElectHeightWithBlsCommonPkPrefix);
-        key.append((char*)&des_shard, sizeof(des_shard));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
-            return false;
-        }
+    // bool GetElectHeightCommonPk(
+    //         uint32_t des_shard,
+    //         uint64_t height,
+    //         elect::protobuf::PrevMembers* prv_info) {
+    //     std::string key;
+    //     key.reserve(128);
+    //     key.append(kElectHeightWithBlsCommonPkPrefix);
+    //     key.append((char*)&des_shard, sizeof(des_shard));
+    //     key.append((char*)&height, sizeof(height));
+    //     std::string val;
+    //     auto st = db_->Get(key, &val);
+    //     if (!st.ok()) {
+    //         ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+    //         return false;
+    //     }
 
-        if (!prv_info->ParseFromString(val)) {
-            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
-            return false;
-        }
+    //     if (!prv_info->ParseFromString(val)) {
+    //         ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+    //         return false;
+    //     }
 
-        ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
-        assert(prv_info->has_common_pubkey());
-        assert(!prv_info->common_pubkey().x_c0().empty());
-        return true;
-    }
+    //     ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
+    //     assert(prv_info->has_common_pubkey());
+    //     assert(!prv_info->common_pubkey().x_c0().empty());
+    //     return true;
+    // }
 
     bool SaveIdBandwidth(
             const std::string& id,

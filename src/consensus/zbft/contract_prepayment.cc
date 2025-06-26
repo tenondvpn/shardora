@@ -86,7 +86,6 @@ int ContractPrepayment::HandleTx(
     assert(acc_balance_map[from]->has_addr());
     assert(acc_balance_map[from]->has_type());
     assert(acc_balance_map[from]->has_latest_height());
-    // prefix_db_->AddAddressInfo(from, *(acc_balance_map[from]), zjc_host.db_batch_);
     ZJC_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());
