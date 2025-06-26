@@ -150,8 +150,6 @@ void BlsDkg::OnNewElectionBlock(
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;
-    valid_swapkey_set_.insert(local_member_index_);
-    ++valid_sec_key_count_;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -1082,7 +1080,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-
+    valid_swapkey_set_.insert(local_member_index_);
+    ++valid_sec_key_count_;
+    
 #ifdef ZJC_UNITEST
     g2_vec_.clear();
     g2_vec_.push_back(polynomial[0] * libff::alt_bn128_G2::one());
