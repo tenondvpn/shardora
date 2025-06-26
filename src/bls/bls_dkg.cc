@@ -802,45 +802,28 @@ void BlsDkg::FinishBroadcast() try {
         auto iter = valid_swapkey_set_.find(i);
         if (iter == valid_swapkey_set_.end()) {
             bls::protobuf::VerifyVecBrdReq req;
-            auto res = prefix_db_->TempGetBlsVerifyG2((*members_)[i]->id, &req);
+            auto res = prefix_db_->GetBlsVerifyG2((*members_)[i]->id, &req);
             if (!res) {
-                res = prefix_db_->GetBlsVerifyG2((*members_)[i]->id, &req);
-                if (!res) {
-                    ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
-                        local_member_index_, elect_hegiht_, i);
-                    valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-                    common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-                    ZJC_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
-                    continue;
-                } else {
-                    std::string seckey;
-                    if (!prefix_db_->GetSwapKey(
-                            local_member_index_,
-                            prev_elect_hegiht_,
-                            local_member_index_,
-                            i,
-                            &seckey)) {
-                        valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-                        common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-                        ZJC_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
-                            elect_hegiht_, i);
-                        continue;
-                    }
-                }
-            } else {
-                std::string seckey;
-                if (!prefix_db_->GetSwapKey(
-                        local_member_index_,
-                        elect_hegiht_,
-                        local_member_index_,
-                        i,
-                        &seckey)) {
-                    valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-                    common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-                    ZJC_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
-                        elect_hegiht_, i);
-                    continue;
-                }
+                ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
+                    local_member_index_, elect_hegiht_, i);
+                valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
+                common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
+                ZJC_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
+                continue;
+            } 
+
+            std::string seckey;
+            if (!prefix_db_->GetSwapKey(
+                    local_member_index_,
+                    prev_elect_hegiht_,
+                    local_member_index_,
+                    i,
+                    &seckey)) {
+                valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
+                common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
+                ZJC_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
+                    elect_hegiht_, i);
+                continue;
             }
 
             if (req.change_idx() == 0) {
@@ -857,10 +840,26 @@ void BlsDkg::FinishBroadcast() try {
                 for_common_pk_g2s_[i] = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
             }
 
-            valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-            common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            ZJC_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
-            continue;
+            valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
+            valid_seck_keys_str_ += seckey + ",";
+        } else {
+            std::string seckey;
+            if (!prefix_db_->GetSwapKey(
+                    local_member_index_,
+                    elect_hegiht_,
+                    local_member_index_,
+                    i,
+                    &seckey)) {
+                valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
+                common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
+                ZJC_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
+                    elect_hegiht_, i);
+                assert(false);
+                continue;
+            }
+
+            valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
+            valid_seck_keys_str_ += seckey + ",";
         }
 
         if (for_common_pk_g2s_[i] == libff::alt_bn128_G2::zero()) {
@@ -868,13 +867,10 @@ void BlsDkg::FinishBroadcast() try {
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             ZJC_WARN("elect_height: %d, invalid all_verification_vector index: %d",
                 elect_hegiht_, i);
+            assert(false);
             continue;
         }
 
-        
-
-        valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
-        valid_seck_keys_str_ += seckey + ",";
         common_public_key_ = common_public_key_ + for_common_pk_g2s_[i];
         bitmap.Set(i);
     }
