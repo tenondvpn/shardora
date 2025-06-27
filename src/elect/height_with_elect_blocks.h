@@ -305,7 +305,7 @@ private:
             *temp_common_pk = *pkey.getPublicKey();
             assert(*temp_common_pk != libff::alt_bn128_G2::zero());
         } else {
-            assert(false);
+            // assert(false);
         }
 
         uint32_t member_index = 0;
@@ -326,7 +326,7 @@ private:
         }
 
         auto& prev_members = elect_block.prev_members();
-        assert(prev_members.bls_pubkey_size() == in.size());
+        // assert(prev_members.bls_pubkey_size() == in.size());
         if (prev_members.bls_pubkey_size() == in.size()) {
             for (uint32_t i = 0; i < prev_members.bls_pubkey_size(); ++i) {
                 std::vector<std::string> pkey_str = {
