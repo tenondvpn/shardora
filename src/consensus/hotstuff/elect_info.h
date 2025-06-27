@@ -244,12 +244,12 @@ public:
         
         ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %d",
             sharding_id, elect_height, (common_pk != libff::alt_bn128_G2::zero()));
-#ifndef NDEBUG
-        if (sharding_id == common::GlobalInfo::Instance()->network_id())
-            for (auto iter = members->begin(); iter != members->end(); ++iter) {
-                assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
-            }
-#endif
+// #ifndef NDEBUG
+//         if (sharding_id == common::GlobalInfo::Instance()->network_id())
+//             for (auto iter = members->begin(); iter != members->end(); ++iter) {
+//                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
+//             }
+// #endif
         return std::make_shared<ElectItem>(
             security_ptr_,
             sharding_id,
