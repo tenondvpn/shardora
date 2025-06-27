@@ -325,6 +325,23 @@ private:
                 *agg_bls_pk_proof));
         }
 
+        auto& prev_members = elect_block.prev_members();
+        assert(prev_members.bls_pubkey_size() == in.size());
+        if (prev_members.bls_pubkey_size() == in.size()) {
+            for (uint32_t i = 0; i < prev_members.bls_pubkey_size(); ++i) {
+                std::vector<std::string> pkey_str = {
+                    prev_members.bls_pubkey(i).x_c0(),
+                    prev_members.bls_pubkey(i).x_c1(),
+                    prev_members.bls_pubkey(i).y_c0(),
+                    prev_members.bls_pubkey(i).y_c1()
+                };
+        
+                BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+                shard_members_ptr->at(i)->bls_publick_key = *pkey.getPublicKey();
+                assert(shard_members_ptr->at(i)->bls_publick_key != libff::alt_bn128_G2::zero());
+            }
+        }
+
         return shard_members_ptr;
     }
 

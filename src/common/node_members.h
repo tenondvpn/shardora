@@ -16,6 +16,7 @@ struct BftMember {
             const std::string& pkey,
             uint32_t idx,
             int32_t pool_mode_num,
+            libff::alt_bn128_G2 bls_publick_key,
             libff::alt_bn128_G2 agg_bls_pk,
             libff::alt_bn128_G1 agg_bls_pk_proof)
         : net_id(nid),
