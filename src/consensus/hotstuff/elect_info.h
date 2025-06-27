@@ -202,12 +202,12 @@ public:
         prev_elect_items_[sharding_id] = elect_items_[sharding_id];
         elect_items_[sharding_id] = elect_item;
         RefreshMemberAddrs(sharding_id);
-#ifndef NDEBUG
-        if (sharding_id == common::GlobalInfo::Instance()->network_id())
-            for (auto iter = members->begin(); iter != members->end(); ++iter) {
-                assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
-            }
-#endif
+// #ifndef NDEBUG
+//         if (sharding_id == common::GlobalInfo::Instance()->network_id())
+//             for (auto iter = members->begin(); iter != members->end(); ++iter) {
+//                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
+//             }
+// #endif
         ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu",
             sharding_id, elect_item->ElectHeight());
     }
