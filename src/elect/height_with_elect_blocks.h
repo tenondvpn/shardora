@@ -335,10 +335,14 @@ private:
                     prev_members.bls_pubkey(i).y_c0(),
                     prev_members.bls_pubkey(i).y_c1()
                 };
-        
-                BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
-                shard_members_ptr->at(i)->bls_publick_key = *pkey.getPublicKey();
-                assert(shard_members_ptr->at(i)->bls_publick_key != libff::alt_bn128_G2::zero());
+                try {
+                    BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+                    shard_members_ptr->at(i)->bls_publick_key = *pkey.getPublicKey();
+                    assert(shard_members_ptr->at(i)->bls_publick_key != libff::alt_bn128_G2::zero());
+                } catch(...) {
+                    ZJC_DEBUG("failed get bls public key: %d", i);
+                }
+                
             }
         }
 
