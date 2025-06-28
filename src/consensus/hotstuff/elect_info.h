@@ -34,7 +34,7 @@ public:
         for (uint32_t i = 0; i < members->size(); i++) {
             if ((*members)[i]->id == security_ptr_->GetAddress()) {
                 local_member_ = (*members)[i];
-                assert(local_member_->bls_publick_key != libff::alt_bn128_G2::zero());
+                // assert(local_member_->bls_publick_key != libff::alt_bn128_G2::zero());
                 if (local_member_->bls_publick_key != libff::alt_bn128_G2::zero()) {
                     bls_valid_ = true;
                 } 
