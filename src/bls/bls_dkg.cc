@@ -380,7 +380,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.swap_req().keys(local_member_index_).sec_key().empty()) {
-        ZJC_INFO("invalid msg hash64: %lu, sec key empty.", msg_ptr->header.hash64());
+        ZJC_INFO("invalid msg hash64: %lu, sec key empty, peer index: %d", 
+            msg_ptr->header.hash64(), bls_msg.index());
         assert(false);
         return;
     }
@@ -777,6 +778,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
             "local_src_secret_key_contribution_.size(): %d", 
             member_idx, local_member_index_, member_count_,
             local_src_secret_key_contribution_.size());
+        assert(false);
         return;
     }
 
@@ -787,6 +789,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
             (*members_)[member_idx]->pubkey,
             &encrypt_key) != security::kSecuritySuccess) {
         ZJC_DEBUG("swap key failed get ecdh key member_idx: %d.", member_idx);
+        assert(false);
         return;
     }
 
@@ -796,6 +799,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
         seckey);
     if (res != security::kSecuritySuccess) {
         ZJC_DEBUG("swap key failed encrypt member_idx: %d.", member_idx);
+        assert(false);
         return;
     }
 
