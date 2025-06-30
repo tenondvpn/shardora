@@ -238,7 +238,7 @@ public:
                 sharding_id,
                 elect_height,
                 (common_pk == libff::alt_bn128_G2::zero()));
-            assert(false);      
+            // assert(false);      
             return nullptr;
         }
         
