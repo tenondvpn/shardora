@@ -23,12 +23,14 @@ Status Crypto::PartialSign(
     }
     
     if (elect_item->local_sk() == libff::alt_bn128_Fr::zero()) {
-        assert(false);
+        // assert(false);
+        ZJC_DEBUG("local sk is invalid.");
         return Status::kError;
     }
 
     if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
         // assert(false);
+        ZJC_DEBUG("local public key is invalid.");
         return Status::kError;
     }
 
