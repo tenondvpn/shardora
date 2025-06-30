@@ -361,6 +361,10 @@ void BlsDkg::SendGetSwapKey(int32_t index) {
 void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
+    if (local_member_index_ == bls_msg.index()) {
+        return;
+    }
+    
     if (!IsSwapKeyPeriod()) {
         //assert(false);
         ZJC_INFO("invalid msg hash64: %lu", msg_ptr->header.hash64());
