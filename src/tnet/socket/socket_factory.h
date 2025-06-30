@@ -30,11 +30,14 @@ public:
 
         ListenSocket* socket = new ListenSocket(addr, port);
         socket->SetFd(fd);
-
         if (!socket->Bind()) {
             ZJC_ERROR("bind failed, spec [%s]", spec.c_str());
             socket->Free();
-            return NULL;
+            socket = new ListenSocket(addr, 0);
+            socket->SetFd(fd);
+            if (!socket->Bind()) {
+                return NULL;
+            }
         }
 
         return socket;
