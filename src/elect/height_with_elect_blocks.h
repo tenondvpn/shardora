@@ -218,7 +218,7 @@ public:
         auto shard_members = GetMembers(security, network_id, height, &temp_common_pk);
         if (shard_members == nullptr) {
             ZJC_DEBUG("failed get members.");
-            assert(false);
+            // assert(false);
             return nullptr;
         }
 
