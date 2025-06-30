@@ -28,7 +28,7 @@ Status Crypto::PartialSign(
     }
 
     if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        assert(false);
+        // assert(false);
         return Status::kError;
     }
 
