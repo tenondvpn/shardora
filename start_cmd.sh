@@ -91,7 +91,7 @@ start_nodes() {
                 break
             fi
 
-            cd /root/zjnodes/s$shard_id'_'$i/ && nohup ./zjchain -f 0 -g 0 s$shard_id'_'$i &
+            cd /root/zjnodes/s$shard_id'_'$i/ && ulimit -c unlimited && nohup ./zjchain -f 0 -g 0 s$shard_id'_'$i &
             if ((shard_id==2 && i==start_pos)); then
                 sleep 3
             fi
