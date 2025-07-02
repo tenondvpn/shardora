@@ -115,10 +115,10 @@ Status Hotstuff::Propose(
         return Status::kError;
     }
 
-    ZJC_DEBUG("net: %d, pool %u has dht ptr size: %d.", 
-        common::GlobalInfo::Instance()->network_id(), 
-        pool_idx_, 
-        readobly_dht->size());
+    // ZJC_DEBUG("net: %d, pool %u has dht ptr size: %d.", 
+    //     common::GlobalInfo::Instance()->network_id(), 
+    //     pool_idx_, 
+    //     readobly_dht->size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     latest_propose_msg_tm_ms_ = common::TimeUtils::TimestampMs();
     if (tc != nullptr) {
@@ -193,7 +193,7 @@ Status Hotstuff::Propose(
     }
 
     auto t2 = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
+    // ZJC_DEBUG("1 now ontime called propose: %d", pool_idx_);
     auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
     tmp_msg_ptr->is_leader = true;
     ADD_DEBUG_PROCESS_TIMESTAMP();
