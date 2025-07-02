@@ -108,7 +108,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     auto uni_dht = network::UniversalManager::Instance()->GetUniversal(
             kUniversalNetworkId);
     if (!uni_dht) {
-        ZJC_DEBUG("uni_dht invalid: %d, hash: %lu", header.type(), header.hash64());ßßß
+        ZJC_DEBUG("uni_dht invalid: %d, hash: %lu", header.type(), header.hash64());
         return;
     }
 
