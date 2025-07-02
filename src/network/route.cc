@@ -65,7 +65,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
             auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
             assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-            ZJC_INFO("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
+            ZJC_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
             broadcast_queue_[thread_idx].push(msg_ptr);
             broadcast_con_.notify_one();
         } else {
@@ -94,40 +94,40 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         auto tmp_ptr = std::make_shared<transport::TransportMessage>();
         tmp_ptr->header.ParseFromString(header_ptr->header_str);
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        ZJC_INFO("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
+        ZJC_DEBUG("====5 broadcast t: %lu, hash: %lu, now size: %u", thread_idx, header_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
         broadcast_queue_[thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
 
     if (message_processor_[header.type()] == nullptr) {
         RouteByUniversal(header_ptr);
-        ZJC_INFO("header.type() invalid: %d, hash: %lu", header.type(), header.hash64());
+        ZJC_DEBUG("header.type() invalid: %d, hash: %lu", header.type(), header.hash64());
         return;
     }
 
     auto uni_dht = network::UniversalManager::Instance()->GetUniversal(
             kUniversalNetworkId);
     if (!uni_dht) {
-        ZJC_INFO("uni_dht invalid: %d, hash: %lu", header.type(), header.hash64());
+        ZJC_DEBUG("uni_dht invalid: %d, hash: %lu", header.type(), header.hash64());ßßß
         return;
     }
 
     auto dht_ptr = GetDht(header.des_dht_key());
     if (!dht_ptr) {
         RouteByUniversal(header_ptr);
-        ZJC_INFO("dht_ptr invalid: %d, hash: %lu", header.type(), header.hash64());
+        ZJC_DEBUG("dht_ptr invalid: %d, hash: %lu", header.type(), header.hash64());
         return;
     }
 
     if (header.type() == common::kPoolsMessage) {
         if (!CheckPoolsMessage(header_ptr, dht_ptr)) {
-            ZJC_INFO("CheckPoolsMessage invalid: %d, hash: %lu", header.type(), header.hash64());
+            ZJC_DEBUG("CheckPoolsMessage invalid: %d, hash: %lu", header.type(), header.hash64());
             return;
         }
     }
 
     message_processor_[header.type()](header_ptr);
-    ZJC_INFO("handle message success: %d, hash: %lu", header.type(), header.hash64());
+    ZJC_DEBUG("handle message success: %d, hash: %lu", header.type(), header.hash64());
 }
 
 bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::BaseDhtPtr dht_ptr) {
@@ -287,7 +287,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-    ZJC_INFO("broadcast success: %lu", header.hash64());
+    ZJC_DEBUG("broadcast success: %lu", header.hash64());
     broadcast_->Broadcasting(des_dht, msg_ptr);
 }
 
