@@ -285,7 +285,7 @@ int TcpTransport::Send(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();
-    ZJC_INFO("success add sent out message des: %s, %d, hash64: %lu", des_ip.c_str(),des_port, message.hash64());
+    ZJC_DEBUG("success add sent out message des: %s, %d, hash64: %lu", des_ip.c_str(),des_port, message.hash64());
     return kTransportSuccess;
 }
 
