@@ -196,6 +196,7 @@ private:
     std::condition_variable wait_con_;
     uint64_t latest_statistic_timeblock_height_ = 0; // memorize the latest timeblock height that has gathered statistic
 
+    uint64_t step_with_nonce_[128] = { 0llu };
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
 

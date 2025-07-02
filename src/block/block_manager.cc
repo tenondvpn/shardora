@@ -356,7 +356,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(0);        
+        tx->set_nonce(++step_with_nonce_[tx->step()]);
         tx->set_value(tos_item.SerializeAsString());
         auto unique_hash = common::Hash::keccak256(
             tx->to() + "_" +
@@ -511,7 +511,7 @@ void BlockManager::CreateLocalToTx(
     tx->set_gas_limit(0);
     tx->set_amount(0); // 具体 amount 在 kv 中
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(0);
+    tx->set_nonce(++step_with_nonce_[tx->step()]);
     pools_mgr_->HandleMessage(msg_ptr);
     ZJC_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
         common::Encode::HexEncode(uinique_tx_str).c_str(),
@@ -827,7 +827,7 @@ void BlockManager::HandleStatisticBlock(
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(0);
+    tx->set_nonce(++step_with_nonce_[tx->step()]);
     auto shard_elect_tx = std::make_shared<BlockTxsItem>();
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
@@ -942,7 +942,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(0);
+    tx->set_nonce(++step_with_nonce_[tx->step()]);
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
     ZJC_DEBUG("success get to tx unique hash: %s, heights: %s",
