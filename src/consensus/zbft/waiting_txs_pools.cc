@@ -22,7 +22,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
         pools::CheckAddrNonceValidFunction addr_nonce_valid_func) {
     auto thread_id = common::GlobalInfo::Instance()->get_thread_index();
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    // ZJC_INFO("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
+    // ZJC_DEBUG("leader get txs coming thread: %d, pool index: %d", thread_id, pool_index);
     #ifdef TEST_NO_CROSS
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     #else
@@ -41,7 +41,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
         txs_item->pool_index = pool_index;
         if (!txs_item->txs.empty()) {
             auto first_tx = *(txs_item->txs.begin());
-            ZJC_INFO("success leader get single txs coming thread: %d, "
+            ZJC_DEBUG("success leader get single txs coming thread: %d, "
                 "pool index: %d, tx count: %d, nonce: %lu, step: %d, unique hash: %s", 
                 thread_id, pool_index, txs_item->txs.size(), 
                 first_tx->tx_info->nonce(), 
@@ -49,7 +49,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
                 common::Encode::HexEncode(first_tx->tx_info->key()).c_str());
         }
     } else {
-        ZJC_INFO("failed leader get txs coming thread: %d, pool index: %d, tx count: %d", 
+        ZJC_DEBUG("failed leader get txs coming thread: %d, pool index: %d, tx count: %d", 
             thread_id, pool_index, 0);
     }
 
@@ -61,13 +61,13 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index,
         pools::CheckAddrNonceValidFunction addr_nonce_valid_func) {
-    ZJC_INFO("get single tx pool: %u", pool_index);
+    ZJC_DEBUG("get single tx pool: %u", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (pool_index == common::kImmutablePoolSize) {
-        ZJC_INFO("leader get time tx tmblock_tx_ptr: %u", pool_index);
+        ZJC_DEBUG("leader get time tx tmblock_tx_ptr: %u", pool_index);
         txs_item = GetTimeblockTx(pool_index, true, addr_nonce_valid_func);
-        ZJC_INFO("GetTimeblockTx: %d", (txs_item != nullptr));
+        ZJC_DEBUG("GetTimeblockTx: %d", (txs_item != nullptr));
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -80,7 +80,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
                     *(*iter)->tx_info) != 0) {
                 txs_item = nullptr;
             } else {
-                ZJC_INFO("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
+                ZJC_DEBUG("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
             }
         }
     }
@@ -89,12 +89,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
     if (txs_item == nullptr) {
         // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         //     if (pool_index == common::kImmutablePoolSize) {
-        //         ZJC_INFO("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
+        //         ZJC_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
         //     }
         // }
         
         txs_item = GetStatisticTx(pool_index, "");
-        ZJC_INFO("GetStatisticTx: %d", (txs_item != nullptr));
+        ZJC_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
         if (txs_item) {
             auto iter = txs_item->txs.begin();
             if (iter == txs_item->txs.end() || addr_nonce_valid_func(
@@ -163,7 +163,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
         txs_item->pool_index = pool_index;
         txs_item->txs.push_back(tx_ptr);
         txs_item->tx_type = pools::protobuf::kConsensusRootElectShard;
-        ZJC_INFO("single tx success to get elect tx: tx key: %s, nonce: %lu, unique hash: %s",
+        ZJC_DEBUG("single tx success to get elect tx: tx key: %s, nonce: %lu, unique hash: %s",
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
             tx_ptr->tx_info->nonce(),
             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
@@ -193,7 +193,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
         
         txs_item->txs.push_back(tx_ptr);
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
-        ZJC_INFO("single tx success to get timeblock tx: tx key: %s, nonce: %lu, unique hash: %s",
+        ZJC_DEBUG("single tx success to get timeblock tx: tx key: %s, nonce: %lu, unique hash: %s",
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(), 
             tx_ptr->tx_info->nonce(),
             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
@@ -222,7 +222,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
-                ZJC_INFO("leader failed get statistic tx.");
+                ZJC_DEBUG("leader failed get statistic tx.");
                 return nullptr;
             }
 
@@ -238,7 +238,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
         txs_item->pool_index = pool_index;
         txs_item->txs.push_back(tx_ptr);
         txs_item->tx_type = pools::protobuf::kStatistic;
-        ZJC_INFO("single tx success get statistic tx %u, %d, tx key: %s, nonce: %lu", 
+        ZJC_DEBUG("single tx success get statistic tx %u, %d, tx key: %s, nonce: %lu", 
             pool_index, leader, 
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
             tx_ptr->tx_info->nonce());
@@ -263,14 +263,14 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         txs_item->pool_index = pool_index;
         txs_item->txs.push_back(tx_ptr);
         txs_item->tx_type = pools::protobuf::kNormalTo;
-        ZJC_INFO("single tx success get to tx %u, is leader: %d, tx key: %s, nonce: %lu", 
+        ZJC_DEBUG("single tx success get to tx %u, is leader: %d, tx key: %s, nonce: %lu", 
             pool_index, leader, 
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
             tx_ptr->tx_info->nonce());
         return txs_item;
     } else {
         if (leader) {
-            ZJC_INFO("leader get to tx coming failed 0");
+            ZJC_DEBUG("leader get to tx coming failed 0");
         }
     }
 

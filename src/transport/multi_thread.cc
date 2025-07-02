@@ -40,7 +40,7 @@ void ThreadHandler::HandleMessage() {
     static const uint32_t kMaxHandleMessageCount = 1024u;
     uint8_t thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
-    ZJC_INFO("thread handler thread index coming thread_idx: %d, "
+    ZJC_DEBUG("thread handler thread index coming thread_idx: %d, "
         "maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, 
         common::GlobalInfo::Instance()->message_handler_thread_count());
@@ -83,16 +83,16 @@ void ThreadHandler::HandleMessage() {
             //     // for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
             //     //     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
             //     //     // if (diff_time > 1000000lu) {
-            //     //         ZJC_INFO("over handle message debug %lu timestamp: %lu, debug: %s, "
+            //     //         ZJC_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
             //     //             "thread_idx: %d, maping_thread_idx: %d, all time: %lu",
             //     //             msg_ptr->header.hash64(), msg_ptr->times[i], 
             //     //             msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx, (etime - btime));
             //     //     // }
             //     // }
-            //     ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
+            //     ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
             //         msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime));
                 if (thread_idx == 6)
-                    ZJC_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
+                    ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
                         msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime),
                         "ProtobufToJson(msg_ptr->header).c_str()");
             }
@@ -202,7 +202,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
-    ZJC_INFO("message coming hash64: %lu", msg_ptr->header.hash64());
+    ZJC_DEBUG("message coming hash64: %lu", msg_ptr->header.hash64());
     if (common::kConsensusMessage == msg_ptr->header.type()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
             return;
@@ -294,7 +294,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
             debug_str += std::to_string(i) + ":" + std::to_string(msg_type_count_[i]) + ", ";
         }
 
-        ZJC_INFO("get msg count: %s", debug_str.c_str());
+        ZJC_DEBUG("get msg count: %s", debug_str.c_str());
         memset(msg_type_count_, 0, sizeof(msg_type_count_));
         prev_log_msg_type_tm_ = now_tm_ms + 3000lu;
     }

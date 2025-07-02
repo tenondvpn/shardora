@@ -141,12 +141,12 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (!IsUserTransaction(tx_ptr->tx_info->step()) && !tx_ptr->tx_info->key().empty()) {
-        ZJC_INFO("success add system tx step: %d, nonce: %lu, unique hash: %s", 
+        ZJC_DEBUG("success add system tx step: %d, nonce: %lu, unique hash: %s", 
             tx_ptr->tx_info->step(), 
             tx_ptr->tx_info->nonce(), 
             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         if (over_unique_hash_set_.find(tx_ptr->tx_info->key()) != over_unique_hash_set_.end()) {
-            ZJC_INFO("trace tx pool: %d, failed add tx %s, key: %s, "
+            ZJC_DEBUG("trace tx pool: %d, failed add tx %s, key: %s, "
                 "nonce: %lu, step: %d, unique hash exists: %s", 
                 pool_index_,
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
@@ -159,7 +159,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     added_txs_.push(tx_ptr);
-    ZJC_INFO("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu, step: %d", 
+    ZJC_DEBUG("trace tx pool: %d, success add tx %s, key: %s, nonce: %lu, step: %d", 
         pool_index_,
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
         common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
@@ -182,7 +182,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                 !view_block.block_info().tx_list(i).unique_hash().empty()) {
             addr = std::to_string(view_block.block_info().tx_list(i).step());
             over_unique_hash_set_.insert(view_block.block_info().tx_list(i).unique_hash());
-            ZJC_INFO("trace tx pool: %d, success add unique tx %s, key: %s, "
+            ZJC_DEBUG("trace tx pool: %d, success add unique tx %s, key: %s, "
                 "nonce: %lu, step: %d, unique hash exists: %s", 
                 pool_index_,
                 common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
@@ -197,7 +197,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         }
 
         if (addr.empty()) {
-            ZJC_INFO("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
+            ZJC_DEBUG("addr is empty: %s", ProtobufToJson(view_block.block_info().tx_list(i)).c_str());
             assert(false);
             continue;
         }
@@ -206,7 +206,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             auto tx_iter = tx_map.find(addr);
             if (tx_iter != tx_map.end()) {
                 for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
-                    ZJC_INFO("find tx addr success: %s, unique hash: %s, "
+                    ZJC_DEBUG("find tx addr success: %s, unique hash: %s, "
                         "step: %lu, nonce: %lu, consensus nonce: %lu, key: %s", 
                         common::Encode::HexEncode(addr).c_str(),
                         common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(),
@@ -214,7 +214,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         view_block.block_info().tx_list(i).nonce(),
                         nonce_iter->second->tx_info->nonce(),
                         common::Encode::HexEncode(nonce_iter->second->tx_info->key()).c_str());
-                    ZJC_INFO("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
+                    ZJC_DEBUG("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first,
                         view_block.block_info().tx_list(i).nonce());
@@ -234,12 +234,12 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         all_delay_tm_us_ += now_tm_us - nonce_iter->second->receive_tm_us;
                     }
 
-                    ZJC_INFO("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+                    ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
                         pool_index_,
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first);
                     auto tx_ptr = nonce_iter->second;
-                    ZJC_INFO("over pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                    ZJC_DEBUG("over pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                         tx_ptr->address_info->nonce(), 
                         tx_ptr->tx_info->nonce(),
@@ -251,14 +251,14 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                     tx_map.erase(tx_iter);
                 }
             } else {
-                ZJC_INFO("find tx addr failed: %s", common::Encode::HexEncode(addr).c_str());
+                ZJC_DEBUG("find tx addr failed: %s", common::Encode::HexEncode(addr).c_str());
             }
         };
         
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_INFO("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
+        ZJC_DEBUG("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
@@ -268,7 +268,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     }
         
     if (prev_delay_tm_timeout_ + 3000lu <= (now_tm_us / 1000lu) && all_delay_tx_count_ > 0) {
-        ZJC_INFO("pool: %d, average delay us: %lu", pool_index_, (all_delay_tm_us_ / all_delay_tx_count_));
+        ZJC_DEBUG("pool: %d, average delay us: %lu", pool_index_, (all_delay_tm_us_ / all_delay_tx_count_));
         all_delay_tm_us_ = 0;
         all_delay_tx_count_ = 0;
         prev_delay_tm_timeout_ = now_tm_us / 1000lu;

@@ -297,7 +297,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             security_ptr_->GetAddress());
         if (msg_ptr->header.des_dht_key() != dht_key.StrKey()) {
             network::Route::Instance()->Send(msg_ptr);
-            ZJC_INFO("hotstuff message resend to leader by latest node net: %u, "
+            ZJC_DEBUG("hotstuff message resend to leader by latest node net: %u, "
                 "id: %s, des dht: %s, local: %s, hash64: %lu, "
                 "header.has_hotstuff_timeout_proto(): %d, type: %d",
                 msg_ptr->header.src_sharding_id(), 
@@ -316,7 +316,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ZJC_INFO("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
+    ZJC_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
         msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "", msg_ptr->conn ? msg_ptr->conn->PeerPort() : 0, 
         header.hash64(), header.has_hotstuff(), header.hotstuff().type());
     if (header.has_hotstuff()) {
@@ -604,7 +604,7 @@ void HotstuffManager::PopPoolsMessage() {
             }
         }
         if (consensus_tx_count > 0)
-        ZJC_INFO("tps success add consensus_tx_count: %lu", consensus_tx_count);
+        ZJC_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
         pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
     }

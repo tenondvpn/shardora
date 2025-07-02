@@ -39,7 +39,7 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(this, security_, i, db, kv_sync);
     }
 
-    ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
+    ZJC_DEBUG("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
     // 每 10ms 会共识一次时间块
     tools_tick_.CutOff(
@@ -416,7 +416,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ++prev_tps_count_;
             uint64_t dur = 1000lu;
             if (now_tm > prev_show_tm_ms_ + dur) {
-                ZJC_INFO("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
+                ZJC_DEBUG("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
                         -1, pools_msg_queue_.size(),
                         address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
@@ -563,7 +563,7 @@ void TxPoolManager::SyncPoolsMaxHeight() {
         auto* sync_heights = msg_ptr->header.mutable_sync_heights();
         sync_heights->set_req(true);
         transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-        ZJC_INFO("sync net data from network: %u, hash64: %lu, src sharding id: %u",
+        ZJC_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
             i, msg_ptr->header.hash64(), msg_ptr->header.src_sharding_id());
         network::Route::Instance()->Send(msg_ptr);
     }
@@ -571,12 +571,12 @@ void TxPoolManager::SyncPoolsMaxHeight() {
 
 void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr) {
     if (tx_pool_ == nullptr) {
-        ZJC_INFO("tx_pool_ == nullptr");
+        ZJC_DEBUG("tx_pool_ == nullptr");
         return;
     }
 
     if (!msg_ptr->header.has_sync_heights()) {
-        ZJC_INFO("!msg_ptr->header.has_sync_heights()");
+        ZJC_DEBUG("!msg_ptr->header.has_sync_heights()");
         return;
     }
 
@@ -618,7 +618,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-        ZJC_INFO("response pool heights: %s, cross pool heights: %s, "
+        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, "
             "now_max_sharding_id_: %u, src sharding id: %u, src hash64: %lu, des hash64: %lu",
             sync_debug.c_str(), cross_debug.c_str(),
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
@@ -654,7 +654,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                         break;
                     }
                 
-                    ZJC_INFO("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
+                    ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
                         "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
                         sharding_id, update_height, update_height,
                         cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
@@ -689,7 +689,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 }
 
-                ZJC_INFO("get root response pool heights: %s", sync_debug.c_str());
+                ZJC_DEBUG("get root response pool heights: %s", sync_debug.c_str());
             }
             return;
         }
@@ -721,7 +721,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-        ZJC_INFO("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 
@@ -982,7 +982,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    ZJC_DEBUG("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     auto tmp_acc_ptr = acc_mgr_.lock();
     protos::AddressInfoPtr contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info != nullptr) {
