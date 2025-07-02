@@ -6,7 +6,6 @@ PASSWORD=$4
 TARGET=$5
 
 init() {
-    yum install -y sshpass
     if [ "$node_ips" == "" ]; then
         echo "just use local single node."
         node_ips='127.0.0.1'
