@@ -269,7 +269,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
 
     if (!IsVerifyBrdPeriod()) {
 //         assert(false);
-        ZJC_INFO("invalid msg hash64: %lu", msg_ptr->header.hash64());
+        ZJC_DEBUG("invalid msg hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -367,7 +367,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     
     if (!IsSwapKeyPeriod()) {
         //assert(false);
-        ZJC_INFO("invalid msg hash64: %lu", msg_ptr->header.hash64());
+        ZJC_DEBUG("invalid msg hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -384,7 +384,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.swap_req().keys(local_member_index_).sec_key().empty()) {
-        ZJC_INFO("invalid msg hash64: %lu, sec key empty, peer index: %d", 
+        ZJC_DEBUG("invalid msg hash64: %lu, sec key empty, peer index: %d", 
             msg_ptr->header.hash64(), bls_msg.index());
         assert(false);
         return;
@@ -1126,7 +1126,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     verify_item.set_z_c1(common::Encode::HexDecode(
         libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c1)));
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
-    ZJC_INFO("success create local local_src_secret_key_contribution_: %d", local_member_index_);
+    ZJC_DEBUG("success create local local_src_secret_key_contribution_: %d", local_member_index_);
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
