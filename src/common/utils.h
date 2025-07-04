@@ -85,8 +85,6 @@ struct Construct {
 #define TMP_ADD_DEBUG_PROCESS_TIMESTAMP()
 #endif
 
-
-
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
     if (data_map.size() >= 1024) { \

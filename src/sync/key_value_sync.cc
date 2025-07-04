@@ -50,6 +50,7 @@ void KeyValueSync::AddSyncHeight(
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority) {
+    return;
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
@@ -63,6 +64,7 @@ void KeyValueSync::AddSyncViewHash(
         uint32_t pool_idx,
         const std::string& view_hash, 
         uint32_t priority) {
+    return;
     assert(!view_hash.empty());
     char key[2 + view_hash.size()] = {0};
     uint16_t* pools = (uint16_t*)(key);
