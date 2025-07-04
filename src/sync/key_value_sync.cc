@@ -50,7 +50,7 @@ void KeyValueSync::AddSyncHeight(
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority) {
-    return;
+    // return;
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
