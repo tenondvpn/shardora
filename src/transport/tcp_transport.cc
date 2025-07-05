@@ -473,10 +473,10 @@ void TcpTransport::CheckConnectionValid() {
         }
 
         if (out_message_type_count_[i] > 0) {
-            ZJC_INFO("out message type: %d, count: %u", i, out_message_type_count_[i]);
+            ZJC_INFO("out message type: %d, count: %u", i, out_message_type_count_[i].fetch_add(0));
         }
     }
-    
+
     check_conn_tick_.CutOff(
         10000000, 
         std::bind(&TcpTransport::CheckConnectionValid, this));
