@@ -253,6 +253,7 @@ std::shared_ptr<TcpConnection> TcpAcceptor::CreateTcpServerConnection(
         ServerSocket& socket) {
     auto conn = std::make_shared<TcpConnection>(event_loop);
     conn->SetSocket(socket);
+    common::GlobalInfo::Instance()->AddSharedObj(17);
     return conn;
 }
 

@@ -265,6 +265,7 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateTcpConnection(
         ClientSocket& socket) {
     auto conn = std::make_shared<TcpConnection>(event_loop);
     conn->SetSocket(socket);
+    common::GlobalInfo::Instance()->AddSharedObj(16);
     return conn;
 }
 

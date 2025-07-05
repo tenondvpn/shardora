@@ -416,10 +416,11 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     }
     
     tcp_conn->set_client();
-    ZJC_DEBUG("success connect send message %s:%d, conn map size: %d", ip.c_str(), port, conn_map_.size());
     conn_map_[peer_spec] = tcp_conn;
     CHECK_MEMORY_SIZE(conn_map_);
     in_check_queue_.push(tcp_conn);
+    ZJC_DEBUG("success connect send message %s:%d, conn map size: %d, in_check_queue_ size: %d", 
+        ip.c_str(), port, conn_map_.size(), in_check_queue_.size());
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!out_check_queue_.pop(&out_conn)) {
