@@ -141,26 +141,26 @@ Status Hotstuff::Propose(
         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
         tmp_msg_ptr->header.CopyFrom(latest_leader_propose_message_->header);
         tmp_msg_ptr->is_leader = true;
-        // tmp_msg_ptr->header.release_broadcast();
-        // tmp_msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_view_item()->mutable_block_info()->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-        // auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
+        tmp_msg_ptr->header.release_broadcast();
+        tmp_msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_view_item()->mutable_block_info()->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+        auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
         auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
-        // if (tc != nullptr) {
-        //     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
-        //     *pb_pro_msg->mutable_tc() = *tc;
-        // }
+        if (tc != nullptr) {
+            auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
+            *pb_pro_msg->mutable_tc() = *tc;
+        }
 
-        // transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
-        // auto s = crypto()->SignMessage(tmp_msg_ptr);
+        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        auto s = crypto()->SignMessage(tmp_msg_ptr);
         auto& header = tmp_msg_ptr->header;
-        // if (s != Status::kSuccess) {
-        //     ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
-        //         pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
-        //     return s;
-        // }
+        if (s != Status::kSuccess) {
+            ZJC_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
+                pool_idx_, hotstuff_msg->pro_msg().view_item().qc().view());
+            return s;
+        }
 
-        // transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
-        // ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
+        transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
+        ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
         transport::protobuf::ConsensusDebug cons_debug;
