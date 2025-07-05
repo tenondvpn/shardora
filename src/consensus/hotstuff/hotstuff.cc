@@ -276,9 +276,9 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    if (tmp_msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
-        latest_leader_propose_message_ = tmp_msg_ptr;
-    }
+    // if (tmp_msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+    //     latest_leader_propose_message_ = tmp_msg_ptr;
+    // }
 
     auto t6 = common::TimeUtils::TimestampMs();
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
