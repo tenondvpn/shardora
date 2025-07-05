@@ -144,7 +144,7 @@ Status Hotstuff::Propose(
         // tmp_msg_ptr->header.release_broadcast();
         // tmp_msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_view_item()->mutable_block_info()->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
         // auto broadcast = tmp_msg_ptr->header.mutable_broadcast();
-        // auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
+        auto* hotstuff_msg = tmp_msg_ptr->header.mutable_hotstuff();
         // if (tc != nullptr) {
         //     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
         //     *pb_pro_msg->mutable_tc() = *tc;
