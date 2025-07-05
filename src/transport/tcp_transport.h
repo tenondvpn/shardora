@@ -99,6 +99,8 @@ private:
     common::ThreadSafeQueue<transport::MessagePtr> local_messages_[common::kMaxThreadCount];
     std::deque<std::shared_ptr<tnet::TcpConnection>> waiting_check_queue_;
     common::Tick check_conn_tick_;
+    uint32_t in_message_type_count_[common::kMaxMessageTypeCount] = { 0 };
+    std::atomic<uint32_t> out_message_type_count_[common::kMaxMessageTypeCount] = { 0 };
 };
 
 }  // namespace transport

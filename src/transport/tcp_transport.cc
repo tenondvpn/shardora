@@ -182,6 +182,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         return false;
     }
 
+    ++in_message_type_count_[msg_ptr->header.type()];
     if (msg_ptr->header.has_broadcast()) {
         msg_ptr->header_str = std::string(data, len);
     }
@@ -242,6 +243,7 @@ int TcpTransport::Send(
         SetMessageHash(message);
     }
 
+    ++out_message_type_count_[message.type()];
     ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     int res = tcp_conn->Send(msg);
@@ -280,6 +282,7 @@ int TcpTransport::Send(
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
 
+    ++out_message_type_count_[message.type()];
     message.SerializeToString(&output_item->msg);
     // assert(output_item->msg.size() < 1000000u);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
