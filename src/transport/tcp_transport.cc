@@ -467,6 +467,16 @@ void TcpTransport::CheckConnectionValid() {
         }
     }
 
+    for (uint32_t i = 0; i < common::kMaxMessageTypeCount; ++i) {
+        if (in_message_type_count_[i] > 0) {
+            ZJC_INFO("in message type: %d, count: %u", i, in_message_type_count_[i]);
+        }
+
+        if (out_message_type_count_[i] > 0) {
+            ZJC_INFO("out message type: %d, count: %u", i, out_message_type_count_[i]);
+        }
+    }
+    
     check_conn_tick_.CutOff(
         10000000, 
         std::bind(&TcpTransport::CheckConnectionValid, this));

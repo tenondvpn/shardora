@@ -93,7 +93,6 @@ private:
     std::condition_variable output_con_;
     std::mutex output_mutex_;
     std::mutex send_output_mutex_;
-    uint64_t prev_erase_timestamp_ms_ = 0;
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> in_check_queue_;
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> out_check_queue_;
     common::ThreadSafeQueue<transport::MessagePtr> local_messages_[common::kMaxThreadCount];
