@@ -280,6 +280,9 @@ private:
     uint64_t prev_sync_latest_view_tm_ms_ = 0;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     
+#ifndef NDEBUG
+    static std::atomic<uint32_t> sendout_bft_message_count_ = 0;
+#endif
 };
 
 } // namespace consensus

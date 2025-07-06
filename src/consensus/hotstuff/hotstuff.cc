@@ -163,11 +163,12 @@ Status Hotstuff::Propose(
         ZJC_DEBUG("0 success add local message: %lu", tmp_msg_ptr->header.hash64());
         network::Route::Instance()->Send(tmp_msg_ptr);
 #ifndef NDEBUG
+        ++sendout_bft_message_count_;
         transport::protobuf::ConsensusDebug cons_debug;
         cons_debug.ParseFromString(header.debug());
         ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
             "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s, "
-            "msg view: %lu, cur view: %lu, propose msg: %s",
+            "msg view: %lu, cur view: %lu, propose msg: %s, sendout_bft_message_count_: %d",
             pool_idx_,
             header.hotstuff().pool_index(),
             hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -178,7 +179,8 @@ Status Hotstuff::Propose(
             ProtobufToJson(cons_debug).c_str(),
             tmp_msg_ptr->header.hotstuff().pro_msg().view_item().qc().view(),
             pacemaker_->CurView(),
-            ProtobufToJson(header.hotstuff().pro_msg()).c_str());
+            ProtobufToJson(header.hotstuff().pro_msg()).c_str(),
+            sendout_bft_message_count_.fetch_add(0));
 #endif
         // HandleProposeMsg(latest_leader_propose_message_);
         return Status::kSuccess;
@@ -294,10 +296,12 @@ Status Hotstuff::Propose(
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
     auto t8 = common::TimeUtils::TimestampMs();
+    ++sendout_bft_message_count_;
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
-        "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, t3: %u, t4: %lu, t5: %lu, t6: %lu, t7: %lu, t8: %lu",
+        "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, "
+        "t3: %u, t4: %lu, t5: %lu, t6: %lu, t7: %lu, t8: %lu, sendout_bft_message_count_: %u",
         pool_idx_,
         header.hotstuff().pool_index(),
         hotstuff_msg->pro_msg().tx_propose().txs_size(),
@@ -317,7 +321,7 @@ Status Hotstuff::Propose(
         (t6 - btime),
         (t7 - btime),
         (t8 - btime)
-        );
+        sendout_bft_message_count_.fetch_add(0));
 
     if (tc != nullptr && IsQcTcValid(*tc)) {
         ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, "
