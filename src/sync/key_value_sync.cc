@@ -64,7 +64,7 @@ void KeyValueSync::AddSyncViewHash(
         uint32_t pool_idx,
         const std::string& view_hash, 
         uint32_t priority) {
-    return;
+    // return;
     assert(!view_hash.empty());
     char key[2 + view_hash.size()] = {0};
     uint16_t* pools = (uint16_t*)(key);
