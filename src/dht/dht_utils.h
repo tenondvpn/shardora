@@ -70,7 +70,7 @@ enum NodeJoinWay : int32_t {
 static const uint32_t kDhtNearestNodesCount = 16u;
 static const uint32_t kDhtMinReserveNodes = 4u;
 static const uint32_t kDhtKeySize = 32u;
-static const uint32_t kDhtMaxNeighbors = 2048u;//kDhtKeySize * 8 + kDhtNearestNodesCount;
+static const uint32_t kDhtMaxNeighbors = 32u;//kDhtKeySize * 8 + kDhtNearestNodesCount;
 static const uint32_t kRefreshNeighborsCount = 32u;
 static const uint32_t kRefreshNeighborsDefaultCount = 32u;
 static const uint32_t kRefreshNeighborsBloomfilterBitCount = 4096u;
