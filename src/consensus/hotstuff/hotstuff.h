@@ -281,7 +281,7 @@ private:
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     
 #ifndef NDEBUG
-    static std::atomic<uint32_t> sendout_bft_message_count_ = 0;
+    static std::atomic<uint32_t> sendout_bft_message_count_;
 #endif
 };
 

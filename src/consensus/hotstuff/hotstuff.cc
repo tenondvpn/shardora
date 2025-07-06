@@ -17,6 +17,8 @@ namespace shardora {
 
 namespace hotstuff {
 
+std::atomic<uint32_t> Hotstuff::sendout_bft_message_count_ = 0;
+
 void Hotstuff::Init() {
     // set pacemaker timeout callback function
     last_vote_view_ = 0lu;
