@@ -17,7 +17,9 @@ namespace shardora {
 
 namespace hotstuff {
 
+#ifndef NDEBUG
 std::atomic<uint32_t> Hotstuff::sendout_bft_message_count_ = 0;
+#endif
 
 void Hotstuff::Init() {
     // set pacemaker timeout callback function
@@ -297,6 +299,7 @@ Status Hotstuff::Propose(
     ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
+#ifndef NDEBUG
     auto t8 = common::TimeUtils::TimestampMs();
     ++sendout_bft_message_count_;
     ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
@@ -324,7 +327,6 @@ Status Hotstuff::Propose(
         (t7 - btime),
         (t8 - btime),
         sendout_bft_message_count_.fetch_add(0));
-
     if (tc != nullptr && IsQcTcValid(*tc)) {
         ZJC_DEBUG("new prev qc coming: %s, %u_%u_%lu, parent hash: %s, tx size: %u, "
             "view: %lu, max_view(): %lu, last_leader_propose_view_: %lu",
@@ -339,6 +341,7 @@ Status Hotstuff::Propose(
             last_leader_propose_view_);
     }
 
+#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
