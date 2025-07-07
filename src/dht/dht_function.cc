@@ -32,11 +32,13 @@ int DhtFunction::GetDhtBucket(const std::string& src_dht_key, NodePtr& node) {
 }
 
 uint32_t DhtFunction::PartialSort(const std::string& target, uint32_t count, Dht& dht) {
-    uint32_t min_count = (std::min)(count, static_cast<uint32_t>(dht.size()));
+    uint32_t min_count = (std::min)(count, static_cast<uint32_t>(dht.size() - 1));
     if (min_count <= 0) {
         return 0;
     }
 
+    assert(min_count < dht.size());
+    ZJC_DEBUG("count: %u, dht size: %u, min_count: %u", count, (dht.size() - 1), min_count);
     std::partial_sort(
             dht.begin(),
             dht.begin() + min_count,
