@@ -143,7 +143,11 @@ protected:
     uint32_t valid_count_ = 0;
     common::Tick dht_tick_;
     std::unordered_map<std::string, std::vector<NodePtr>> waiting_refresh_nodes_map_;
+    
+#ifndef NDEBUG
     std::thread::id local_thread_id_;
+    std::atomic<uint64_t> local_thread_id_count_ = 0;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(BaseDht);
 };
