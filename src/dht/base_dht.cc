@@ -67,6 +67,7 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 }
 
 int BaseDht::Join(NodePtr& node) {
+    CheckThreadIdValid();
     DHT_DEBUG("sharding: %u, now try join new node: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
@@ -137,6 +138,7 @@ int BaseDht::Join(NodePtr& node) {
 }
 
 int BaseDht::Drop(const std::string& id) {
+    CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -166,6 +168,7 @@ int BaseDht::Drop(const std::string& id) {
 }
 
 int BaseDht::Drop(const std::vector<std::string>& ids) {
+    CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -188,6 +191,7 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
 }
 
 int BaseDht::Drop(NodePtr& node) {
+    CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -226,6 +230,7 @@ int BaseDht::Drop(NodePtr& node) {
 }
 
 int BaseDht::Drop(const std::string& ip, uint16_t port) {
+    CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -539,6 +544,7 @@ void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
 }
 
 void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_ptr) {
+    CheckThreadIdValid();
     if (!is_universal_) {
         return;
     }
@@ -826,6 +832,7 @@ bool BaseDht::NodeJoined(NodePtr& node) {
 }
 
 int BaseDht::CheckJoin(NodePtr& node) {
+    CheckThreadIdValid();
     if (!is_universal_) {
         if (node->sharding_id != local_node_->sharding_id) {
             return kDhtInvalidNat;
@@ -892,6 +899,7 @@ int BaseDht::CheckJoin(NodePtr& node) {
 }
 
 bool BaseDht::CheckDestination(const std::string& des_dht_key, bool check_closest) {
+    CheckThreadIdValid();
     if (des_dht_key == local_node_->dht_key) {
         return true;
     }
