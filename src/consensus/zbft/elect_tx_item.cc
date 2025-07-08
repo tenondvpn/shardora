@@ -102,7 +102,7 @@ int ElectTxItem::processElect(
     int retVal = getMaxElectHeightInfo(statistic, members);
     if ( retVal != kConsensusSuccess) {
         ZJC_DEBUG("getMaxElectHeightInfo failed ret val: %d", retVal);
-        assert(false);
+        // assert(false);
         return retVal;
     }
 
