@@ -1,15 +1,7 @@
-IP=(\
-192.168.0.187 \
-192.168.0.10 \
-192.168.0.117 \
-192.168.0.76 \
-)
-
-
-for ip in ${IP[@]};
-do
+node_ips=$1
+node_ips_array=(${node_ips//,/ })
+for ip in "${node_ips_array[@]}"; do
     echo $ip
-    sshpass -p Xf4aGbTaf! ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip $1  
+    sshpass -p Xf4aGbTaf! ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip $2  
     #sleep 3
 done
-
