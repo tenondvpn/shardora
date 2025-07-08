@@ -429,7 +429,7 @@ void ShardStatistic::HandleStatistic(
     statistic_info_ptr->all_gas_amount += block.all_gas();
     std::string leader_id = getLeaderIdFromBlock(*view_block_ptr);
     if (leader_id.empty()) {
-        // assert(false);
+        assert(false);
         return;
     }
 

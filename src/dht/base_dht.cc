@@ -96,7 +96,7 @@ int BaseDht::Join(NodePtr& node) {
     uint32_t replace_pos = member_dht.size() + 1;
     if (!DhtFunction::Displacement(local_node_->dht_key, member_dht, node, replace_pos)) {
         DHT_WARN("displacement for new node failed!");
-        assert(false);
+        // assert(false);
         return kDhtError;
     }
 
