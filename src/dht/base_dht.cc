@@ -67,6 +67,8 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 }
 
 int BaseDht::Join(NodePtr& node) {
+    common::AutoSpinLock l(join_mutex_);
+    auto& member_dht = dht_;
     CheckThreadIdValid();
     DHT_DEBUG("sharding: %u, now try join new node: %s:%d",
         local_node_->sharding_id,
@@ -88,24 +90,24 @@ int BaseDht::Join(NodePtr& node) {
         return res;
     }
 
-    uint32_t b_dht_size = dht_.size();
+    uint32_t b_dht_size = member_dht.size();
     uint32_t b_map_size = node_map_.size();
-    DhtFunction::PartialSort(local_node_->dht_key, dht_.size(), dht_);
-    uint32_t replace_pos = dht_.size() + 1;
-    if (!DhtFunction::Displacement(local_node_->dht_key, dht_, node, replace_pos)) {
+    DhtFunction::PartialSort(local_node_->dht_key, member_dht.size(), member_dht);
+    uint32_t replace_pos = member_dht.size() + 1;
+    if (!DhtFunction::Displacement(local_node_->dht_key, member_dht, node, replace_pos)) {
         DHT_WARN("displacement for new node failed!");
         assert(false);
         return kDhtError;
     }
 
-    if (replace_pos < dht_.size()) {
-        auto rm_iter = dht_.begin() + replace_pos;
+    if (replace_pos < member_dht.size()) {
+        auto rm_iter = member_dht.begin() + replace_pos;
         auto hash_iter = node_map_.find((*rm_iter)->dht_key_hash);
         if (hash_iter != node_map_.end()) {
             node_map_.erase(hash_iter);
             CHECK_MEMORY_SIZE(node_map_);
         }
-        dht_.erase(rm_iter);
+        member_dht.erase(rm_iter);
     }
 
     auto iter = node_map_.insert(std::make_pair(node->dht_key_hash, node));
@@ -117,15 +119,15 @@ int BaseDht::Join(NodePtr& node) {
         return kDhtNodeJoined;
     }
 
-    dht_.push_back(node);
+    member_dht.push_back(node);
     std::sort(
-            dht_.begin(),
-            dht_.end(),
+            member_dht.begin(),
+            member_dht.end(),
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
         
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(member_dht);
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
@@ -133,11 +135,13 @@ int BaseDht::Join(NodePtr& node) {
         local_node_->sharding_id,
         node->public_ip.c_str(),
         node->public_port);
-    valid_count_ = dht_.size() + 1;
+    valid_count_ = member_dht.size() + 1;
     return kDhtSuccess;
 }
 
 int BaseDht::Drop(const std::string& id) {
+    common::AutoSpinLock l(join_mutex_);
+    auto& member_dht = dht_;
     CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
@@ -145,25 +149,25 @@ int BaseDht::Drop(const std::string& id) {
 
     uint64_t dht_key_hash = 0;
     auto iter = std::find_if(
-            dht_.begin(),
-            dht_.end(),
+            member_dht.begin(),
+            member_dht.end(),
             [id](const NodePtr& rhs) -> bool {
         return id == rhs->id;
     });
-    if (iter == dht_.end()) {
+    if (iter == member_dht.end()) {
         return kDhtSuccess;
     }
 
     dht_key_hash = (*iter)->dht_key_hash;
     DHT_DEBUG("success drop node: %s:%d", (*iter)->public_ip.c_str(), (*iter)->public_port);
-    dht_.erase(iter);
+    member_dht.erase(iter);
     auto miter = node_map_.find(dht_key_hash);
     if (miter != node_map_.end()) {
         node_map_.erase(miter);
         CHECK_MEMORY_SIZE(node_map_);
     }
 
-    valid_count_ = dht_.size() + 1;
+    valid_count_ = member_dht.size() + 1;
     return kDhtSuccess;
 }
 
@@ -177,13 +181,15 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
         Drop(*iter);
     }
 
+    common::AutoSpinLock l(join_mutex_);
+    auto& member_dht = dht_;
     std::sort(
-            dht_.begin(),
-            dht_.end(),
+            member_dht.begin(),
+            member_dht.end(),
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(member_dht);
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
@@ -191,6 +197,8 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
 }
 
 int BaseDht::Drop(NodePtr& node) {
+    common::AutoSpinLock l(join_mutex_);
+    auto& member_dht = dht_;
     CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
@@ -198,23 +206,23 @@ int BaseDht::Drop(NodePtr& node) {
 
     auto& dht_key_hash = node->dht_key_hash;
     auto iter = std::find_if(
-            dht_.begin(),
-            dht_.end(),
+        member_dht.begin(),
+        member_dht.end(),
             [dht_key_hash](const NodePtr& rhs) -> bool {
         return dht_key_hash == rhs->dht_key_hash;
     });
-    if (iter != dht_.end()) {
+    if (iter != member_dht.end()) {
         assert((*iter)->id == node->id);
-        dht_.erase(iter);
+        member_dht.erase(iter);
     }
 
     std::sort(
-            dht_.begin(),
-            dht_.end(),
+        member_dht.begin(),
+            member_dht.end(),
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(member_dht);
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
@@ -230,6 +238,8 @@ int BaseDht::Drop(NodePtr& node) {
 }
 
 int BaseDht::Drop(const std::string& ip, uint16_t port) {
+    common::AutoSpinLock l(join_mutex_);
+    auto& member_dht = dht_;
     CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
@@ -237,17 +247,17 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
 
     uint64_t dht_key_hash = 0;
     auto iter = std::find_if(
-        dht_.begin(),
-        dht_.end(),
+        member_dht.begin(),
+        member_dht.end(),
         [ip, port](const NodePtr& rhs) -> bool {
             return ip == rhs->public_ip && port == rhs->public_port;
         });
-    if (iter == dht_.end()) {
+    if (iter == member_dht.end()) {
         return kDhtSuccess;
     }
 
     dht_key_hash = (*iter)->dht_key_hash;
-    dht_.erase(iter);
+    member_dht.erase(iter);
     auto miter = node_map_.find(dht_key_hash);
     if (miter != node_map_.end()) {
         node_map_.erase(miter);
@@ -255,12 +265,12 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
     }
 
     std::sort(
-        dht_.begin(),
-        dht_.end(),
+        member_dht.begin(),
+        member_dht.end(),
         [](const NodePtr& lhs, const NodePtr& rhs)->bool {
             return lhs->id_hash < rhs->id_hash;
         });
-    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(member_dht);
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
@@ -589,6 +599,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
 
     Dht tmp_dht;
     if (bloomfilter) {
+        common::AutoSpinLock l(join_mutex_);
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
             // ZJC_DEBUG("port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
@@ -886,19 +897,20 @@ int BaseDht::CheckJoin(NodePtr& node) {
         return kDhtGetBucketError;
     }
 
-    if (dht_.size() >= kDhtMaxNeighbors) {
-        DhtFunction::PartialSort(local_node_->dht_key, dht_.size(), dht_);
-        uint32_t replace_pos = dht_.size() + 1;
-        if (!DhtFunction::Displacement(local_node_->dht_key, dht_, node, replace_pos)) {
-//             DHT_ERROR("Displacement failed[%s]",
-//                     common::Encode::HexEncode(node->id).c_str());
-            return kDhtMaxNeiborsError;
-        }
-    }
+//     if (dht_.size() >= kDhtMaxNeighbors) {
+//         DhtFunction::PartialSort(local_node_->dht_key, dht_.size(), dht_);
+//         uint32_t replace_pos = dht_.size() + 1;
+//         if (!DhtFunction::Displacement(local_node_->dht_key, dht_, node, replace_pos)) {
+// //             DHT_ERROR("Displacement failed[%s]",
+// //                     common::Encode::HexEncode(node->id).c_str());
+//             return kDhtMaxNeiborsError;
+//         }
+//     }
     return kDhtSuccess;
 }
 
 bool BaseDht::CheckDestination(const std::string& des_dht_key, bool check_closest) {
+    common::AutoSpinLock l(join_mutex_);
     CheckThreadIdValid();
     if (des_dht_key == local_node_->dht_key) {
         return true;
