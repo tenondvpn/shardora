@@ -114,7 +114,7 @@ check_cmd_finished() {
         sleep 1
     done
 
-    ps -ef | grep sshpass | grep ConnectTimeout
+    ps -ef | grep sshpass
     echo "waiting ok"
 }
 
@@ -171,7 +171,7 @@ run_command() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 100)); then
+        if (($run_cmd_count >= 10)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -195,7 +195,7 @@ start_all_nodes() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 100)); then
+        if (($run_cmd_count >= 10)); then
             check_cmd_finished
             run_cmd_count=0
         fi
