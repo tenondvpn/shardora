@@ -171,7 +171,7 @@ run_command() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 100)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -195,7 +195,7 @@ start_all_nodes() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 100)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -207,11 +207,11 @@ start_all_nodes() {
 }
 
 killall -9 sshpass
-init  >/dev/null 2>&1
-make_package  >/dev/null 2>&1
-clear_command  >/dev/null 2>&1
-scp_package  >/dev/null 2>&1
-get_bootstrap  >/dev/null 2>&1
+init 
+make_package
+clear_command
+scp_package
+get_bootstrap
 echo $bootstrap
-run_command  >/dev/null 2>&1
+run_command
 start_all_nodes
