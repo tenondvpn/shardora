@@ -207,11 +207,11 @@ start_all_nodes() {
 }
 
 killall -9 sshpass
-init
-make_package
-clear_command
-scp_package
-get_bootstrap
+init  >/dev/null 2>&1
+make_package  >/dev/null 2>&1
+clear_command  >/dev/null 2>&1
+scp_package  >/dev/null 2>&1
+get_bootstrap  >/dev/null 2>&1
 echo $bootstrap
-run_command
+run_command  >/dev/null 2>&1
 start_all_nodes
