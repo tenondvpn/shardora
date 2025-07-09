@@ -1947,14 +1947,14 @@ Status Hotstuff::SendMsgToLeader(
 
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader->index != local_idx) {
-        // if (leader->public_ip == 0 || leader->public_port == 0) {
+        if (leader->public_ip == 0 || leader->public_port == 0) {
             network::Route::Instance()->Send(trans_msg);
-        // } else {
-        //     transport::TcpTransport::Instance()->Send(
-        //         common::Uint32ToIp(leader->public_ip), 
-        //         leader->public_port, 
-        //         header_msg);
-        // }
+        } else {
+            transport::TcpTransport::Instance()->Send(
+                common::Uint32ToIp(leader->public_ip), 
+                leader->public_port, 
+                header_msg);
+        }
     } else {
         transport::TcpTransport::Instance()->AddLocalMessage(trans_msg);
         ZJC_DEBUG("2 success add local message: %lu", trans_msg->header.hash64());
