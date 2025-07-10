@@ -1081,6 +1081,20 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     std::string followers_gids;
+    if (!view_block_chain_->Get(vote_msg.view_block_hash())) {
+        ZJC_INFO("follower view block hash not equal to leader pool: %d, onVote, hash: %s, view: %lu, "
+            "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
+            pool_idx_,
+            common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
+            vote_msg.view(),
+            view_block_chain()->HighViewBlock()->qc().view(),
+            vote_msg.replica_idx(),
+            msg_ptr->header.hash64(),
+            "",
+            followers_gids.c_str());
+        return;
+    }
+
 // #ifndef NDEBUG
 //     for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
 //         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
@@ -1200,6 +1214,14 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     if (ret == Status::kInvalidOpposedCount) {
         ZJC_WARN("invalid opposed count: %u_%u_%lu", qc_item.network_id(), qc_item.pool_index(), qc_item.view());
     }
+
+    ZJC_DEBUG("ReconstructAndVerifyThresSign success set view block hash: %s, qc_hash: %s, %u_%u_%lu, ret: %d",
+        common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
+        common::Encode::HexEncode(qc_hash).c_str(),
+        qc_item.network_id(),
+        qc_item.pool_index(),
+        qc_item.view(),
+        ret);
     // assert(ret != Status::kInvalidOpposedCount); 有可能由于状态不一致临时出现
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
