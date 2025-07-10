@@ -146,13 +146,13 @@ public:
         
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
-            ZJC_DEBUG("should remove connect timeout.");
+            ZJC_EMPTY_DEBUG("should remove connect timeout.");
             ShouldStop();
             return true;
         }
 
         if (GetTcpState() == tnet::TcpConnection::kTcpClosed) {
-            ZJC_DEBUG("should remove connect lost.");
+            ZJC_EMPTY_DEBUG("should remove connect lost.");
             ShouldStop();
             return true;
         }
@@ -186,7 +186,7 @@ private:
     void NotifyCmdPacketAndClose(int type);
     void ReleaseByIOThread();
 
-    static const uint64_t kConnectTimeoutMs = 20000lu;
+    static const uint64_t kConnectTimeoutMs = 120000lu;
     static const int OUT_BUFFER_LIST_SIZE = 10240;
 
     common::SpinMutex spin_mutex_;

@@ -221,9 +221,9 @@ void TcpAcceptor::CheckConnectionValid() {
         auto conn = waiting_check_queue_.front();
         waiting_check_queue_.pop_front();
         conn->ShouldReconnect();
-        ZJC_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", waiting_check_queue_.size());
+        ZJC_EMPTY_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", waiting_check_queue_.size());
         if (conn->CheckStoped()) {
-            ZJC_DEBUG("checked stopted conn.");
+            ZJC_EMPTY_DEBUG("checked stopted conn.");
             out_check_queue_.push(conn);
         } else {
             waiting_check_queue_.push_back(conn);
