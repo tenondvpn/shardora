@@ -125,10 +125,10 @@ void TcpTransport::Stop() {
 }
 
 bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {    
-    // ZJC_DEBUG("message coming");
+    // ZJC_EMPTY_DEBUG("message coming");
     if (conn->GetSocket() == nullptr) {
         packet.Free();
-        ZJC_DEBUG("message coming failed 0");
+        ZJC_EMPTY_DEBUG("message coming failed 0");
         return false;
     }
 
@@ -139,7 +139,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         if (packet.PacketType() == tnet::CmdPacket::CT_TCP_NEW_CONNECTION) {
             // add connection
             packet.Free();
-            ZJC_DEBUG("message coming failed 1");
+            ZJC_EMPTY_DEBUG("message coming failed 1");
             return true;
         }
 
@@ -152,7 +152,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
 //         }
 
         packet.Free();
-        ZJC_DEBUG("message coming failed 2 type: %d", packet.PacketType());
+        ZJC_EMPTY_DEBUG("message coming failed 2 type: %d", packet.PacketType());
         return false;
     }
 
@@ -169,7 +169,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
     uint32_t len = 0;
     msg_packet->GetMessageEx(&data, &len);
     if (len >= kTcpBuffLength) {
-        ZJC_DEBUG("message coming failed 3");
+        ZJC_EMPTY_DEBUG("message coming failed 3");
         return false;
     }
 
@@ -178,7 +178,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         TRANSPORT_ERROR("Message ParseFromString from string failed!"
             "[%s:%d][len: %d]",
             from_ip.c_str(), from_port, len);
-        ZJC_DEBUG("message coming failed 4");
+        ZJC_EMPTY_DEBUG("message coming failed 4");
         return false;
     }
 
@@ -193,7 +193,7 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
-    // ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
+    // ZJC_EMPTY_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
     if (!conn->is_client() && added_conns_.Push(conn)) {
@@ -244,7 +244,7 @@ int TcpTransport::Send(
     }
 
     ++out_message_type_count_[message.type()];
-    ZJC_DEBUG("send message hash64: %lu", message.hash64());
+    ZJC_EMPTY_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     int res = tcp_conn->Send(msg);
     if (res != 0) {
@@ -288,7 +288,7 @@ int TcpTransport::Send(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();
-    ZJC_DEBUG("success add sent out message des: %s, %d, hash64: %lu", des_ip.c_str(),des_port, message.hash64());
+    ZJC_EMPTY_DEBUG("success add sent out message des: %s, %d, hash64: %lu", des_ip.c_str(),des_port, message.hash64());
     return kTransportSuccess;
 }
 
@@ -359,7 +359,7 @@ void TcpTransport::Output() {
                 }
 
                 // if (item_ptr->msg.size() > 100000) {
-                //     ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+                //     ZJC_EMPTY_DEBUG("send message %s:%u, hash64: %lu, size: %u",
                 //         item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
                 // }
             }
@@ -385,7 +385,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     auto from_iter = from_conn_map_.find(peer_spec);
     if (from_iter != from_conn_map_.end()) {
         if (!from_iter->second->ShouldReconnect()) {
-            ZJC_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
+            ZJC_EMPTY_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
             return from_iter->second;
         }
 
@@ -398,7 +398,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     auto iter = conn_map_.find(peer_spec);
     if (iter != conn_map_.end()) {
         if (!iter->second->ShouldReconnect()) {
-            ZJC_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
+            ZJC_EMPTY_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
             return iter->second;
         }
 
@@ -422,7 +422,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     conn_map_[peer_spec] = tcp_conn;
     CHECK_MEMORY_SIZE(conn_map_);
     in_check_queue_.push(tcp_conn);
-    ZJC_DEBUG("success connect send message %s:%d, conn map size: %d, in_check_queue_ size: %d", 
+    ZJC_EMPTY_DEBUG("success connect send message %s:%d, conn map size: %d, in_check_queue_ size: %d", 
         ip.c_str(), port, conn_map_.size(), in_check_queue_.size());
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
@@ -435,7 +435,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         if (iter != conn_map_.end()) {
             conn_map_.erase(iter);
             CHECK_MEMORY_SIZE(conn_map_);
-            ZJC_DEBUG("remove accept connection: %s", key.c_str());
+            ZJC_EMPTY_DEBUG("remove accept connection: %s", key.c_str());
         }
     }
 
@@ -511,7 +511,7 @@ void TcpTransport::SetMessageHash(
     auto msg_count = ++thread_msg_count_[thread_idx];
     hash_str.append((char*)&msg_count, sizeof(msg_count));
     tmpHeader->set_hash64(common::Hash::Hash64(hash_str));
-    ZJC_DEBUG("3 send message hash64: %lu", message.hash64());
+    ZJC_EMPTY_DEBUG("3 send message hash64: %lu", message.hash64());
 }
 
 int TcpTransport::Send(
@@ -523,7 +523,7 @@ int TcpTransport::Send(
     auto tmpHeader = const_cast<transport::protobuf::OldHeader*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     assert(message.has_hash64() && message.hash64() != 0);
-    ZJC_DEBUG("1 send message hash64: %lu", message.hash64());
+    ZJC_EMPTY_DEBUG("1 send message hash64: %lu", message.hash64());
     auto output_item = std::make_shared<ClientItem>();
     output_item->des_ip = des_ip;
     output_item->port = des_port;

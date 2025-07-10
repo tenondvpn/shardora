@@ -22,6 +22,7 @@
 #define LOG_INS log4cpp::Category::getInstance(std::string("sub1"))
 #ifdef _WIN32
 
+#define ZJC_EMPTY_DEBUG(fmt, ...)
 #ifdef NDEBUG
 #define DEBUG(fmt, ...)
 #define ZJC_DEBUG(fmt, ...)
