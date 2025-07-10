@@ -224,7 +224,6 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                             view_block.block_info().tx_list(i).nonce(),
                             view_block.block_info().tx_list(i).step(),
                             common::Encode::HexEncode(addr).c_str());
-            
                     } else {
                         if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
                             break;
