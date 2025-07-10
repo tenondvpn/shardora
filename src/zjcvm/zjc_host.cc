@@ -608,7 +608,7 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
         view_,
         common::Encode::HexEncode(id).c_str(),
         common::Encode::HexEncode(key_str).c_str(),
-        common::Encode::HexEncode(*val).c_str());
+        "common::Encode::HexEncode(*val).c_str()");
     return kZjcvmSuccess;
 }
 

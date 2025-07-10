@@ -129,7 +129,7 @@ bool Execution::GetStorage(
     *val = kv_info.value();
     ZJC_DEBUG("get storage: %s, %s", 
         common::Encode::HexEncode(str_key).c_str(), 
-        common::Encode::HexEncode(*val).c_str());
+        "common::Encode::HexEncode(*val).c_str()");
     return res;
 }
         
