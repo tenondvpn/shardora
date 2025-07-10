@@ -181,15 +181,6 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         if (!IsUserTransaction(view_block.block_info().tx_list(i).step()) && 
                 !view_block.block_info().tx_list(i).unique_hash().empty()) {
             addr = std::to_string(view_block.block_info().tx_list(i).step());
-            over_unique_hash_set_.insert(view_block.block_info().tx_list(i).unique_hash());
-            ZJC_DEBUG("trace tx pool: %d, success add unique tx %s, key: %s, "
-                "nonce: %lu, step: %d, unique hash exists: %s", 
-                pool_index_,
-                common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
-                common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
-                view_block.block_info().tx_list(i).nonce(),
-                view_block.block_info().tx_list(i).step(),
-                common::Encode::HexEncode(addr).c_str());
         }
 
         if (view_block.block_info().tx_list(i).step() == pools::protobuf::kContractExcute) {
@@ -223,6 +214,17 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                             ++nonce_iter;
                             continue;
                         }
+
+                        over_unique_hash_set_.insert(view_block.block_info().tx_list(i).unique_hash());
+                        ZJC_DEBUG("trace tx pool: %d, success add unique tx %s, key: %s, "
+                            "nonce: %lu, step: %d, unique hash exists: %s", 
+                            pool_index_,
+                            common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
+                            common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
+                            view_block.block_info().tx_list(i).nonce(),
+                            view_block.block_info().tx_list(i).step(),
+                            common::Encode::HexEncode(addr).c_str());
+            
                     } else {
                         if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
                             break;
