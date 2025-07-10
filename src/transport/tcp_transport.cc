@@ -353,7 +353,7 @@ void TcpTransport::Output() {
                         continue;
                     }
 
-                    TRANSPORT_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
+                    ZJC_EMPTY_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
                         item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, res, tcp_conn.get());
                     break;
                 }

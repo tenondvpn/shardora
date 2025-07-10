@@ -70,14 +70,14 @@ int BaseDht::Join(NodePtr& node) {
     common::AutoSpinLock l(join_mutex_);
     auto& member_dht = dht_;
     CheckThreadIdValid();
-    DHT_DEBUG("sharding: %u, now try join new node: %s:%d",
+    ZJC_EMPTY_DEBUG("sharding: %u, now try join new node: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
         node->public_port);
 
     if (node_join_cb_ != nullptr) {
         if (node_join_cb_(node) != kDhtSuccess) {
-            DHT_DEBUG("check callback join node failed! %s, %d, sharding id: %d",
+            ZJC_EMPTY_DEBUG("check callback join node failed! %s, %d, sharding id: %d",
                 common::Encode::HexEncode(node->id).c_str(), node->join_way, local_node_->sharding_id);
             return kDhtError;
         }
@@ -85,7 +85,7 @@ int BaseDht::Join(NodePtr& node) {
 
     int res = CheckJoin(node);
     if (res != kDhtSuccess) {
-        DHT_DEBUG("CheckJoin join node failed! %s, res: %d",
+        ZJC_EMPTY_DEBUG("CheckJoin join node failed! %s, res: %d",
             common::Encode::HexEncode(node->id).c_str(), res);
         return res;
     }
@@ -112,7 +112,7 @@ int BaseDht::Join(NodePtr& node) {
 
     auto iter = node_map_.insert(std::make_pair(node->dht_key_hash, node));
     CHECK_MEMORY_SIZE(node_map_);
-    DHT_DEBUG("MMMMMMMM node_map_ size: %u", node_map_.size());
+    ZJC_EMPTY_DEBUG("MMMMMMMM node_map_ size: %u", node_map_.size());
     if (!iter.second) {
         DHT_ERROR("kDhtNodeJoined join node failed! %s",
             common::Encode::HexEncode(node->id).c_str());
@@ -131,7 +131,7 @@ int BaseDht::Join(NodePtr& node) {
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
-    DHT_DEBUG("sharding: %u, join new node: %s:%d",
+    ZJC_EMPTY_DEBUG("sharding: %u, join new node: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
         node->public_port);
@@ -159,7 +159,7 @@ int BaseDht::Drop(const std::string& id) {
     }
 
     dht_key_hash = (*iter)->dht_key_hash;
-    DHT_DEBUG("success drop node: %s:%d", (*iter)->public_ip.c_str(), (*iter)->public_port);
+    ZJC_EMPTY_DEBUG("success drop node: %s:%d", (*iter)->public_ip.c_str(), (*iter)->public_port);
     member_dht.erase(iter);
     auto miter = node_map_.find(dht_key_hash);
     if (miter != node_map_.end()) {
@@ -233,7 +233,7 @@ int BaseDht::Drop(NodePtr& node) {
         CHECK_MEMORY_SIZE(node_map_);
     }
 
-    DHT_DEBUG("success drop node: %s:%d", node->public_ip.c_str(), node->public_port);
+    ZJC_EMPTY_DEBUG("success drop node: %s:%d", node->public_ip.c_str(), node->public_port);
     return kDhtSuccess;
 }
 
@@ -274,7 +274,7 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
-    DHT_DEBUG("success drop node: %s:%d", ip.c_str(), port);
+    ZJC_EMPTY_DEBUG("success drop node: %s:%d", ip.c_str(), port);
     return kDhtSuccess;
 }
 
@@ -315,7 +315,7 @@ int BaseDht::Bootstrap(
                 boot_nodes[i]->public_ip.c_str(),
                 boot_nodes[i]->public_port);
         } else {
-            DHT_DEBUG("bootstrap from %s:%d success\n",
+            ZJC_EMPTY_DEBUG("bootstrap from %s:%d success\n",
                 boot_nodes[i]->public_ip.c_str(),
                 boot_nodes[i]->public_port);
         }
@@ -484,7 +484,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     msg.set_sign(sign);
-    DHT_DEBUG("bootstrap response to: %s:%d, node: %s:%d",
+    ZJC_EMPTY_DEBUG("bootstrap response to: %s:%d, node: %s:%d",
         msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort(),
         dht_msg.bootstrap_req().public_ip().c_str(),
         dht_msg.bootstrap_req().public_port());
@@ -546,7 +546,7 @@ void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
     }
 
     joined_ = true;
-    DHT_DEBUG("join success!");
+    ZJC_EMPTY_DEBUG("join success!");
     if (bootstrap_response_cb_ != nullptr) {
         // set global country
         bootstrap_response_cb_(this, dht_msg);
@@ -744,7 +744,7 @@ void BaseDht::Connect(
             des_ip,
             des_port,
             msg);
-        DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu, hash: %lu", des_ip.c_str(),
+        ZJC_EMPTY_DEBUG("connect to: %s:%d, %lu, %lu, %lu, hash: %lu", des_ip.c_str(),
             des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms, msg.hash64());
     }
 }
@@ -810,7 +810,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         dht_msg.connect_req().pubkey(),
         header.src_sharding_id(),
         true);
-    DHT_DEBUG("process connect success: %lu", msg_ptr->header.hash64());
+    ZJC_EMPTY_DEBUG("process connect success: %lu", msg_ptr->header.hash64());
 }
 
 bool BaseDht::NodeValid(NodePtr& node) {
