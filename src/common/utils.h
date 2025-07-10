@@ -87,13 +87,13 @@ struct Construct {
 
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
-    if (data_map.size() >= 1024) { \
+    if (data_map.size() >= 102400) { \
         ZJC_INFO("data size: %u", data_map.size()); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
-    if (data_map.size() >= 1024) { \
+    if (data_map.size() >= 102400) { \
         ZJC_INFO("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
     } \
 }
@@ -104,12 +104,12 @@ struct Construct {
 #endif
 
 #ifndef NDEBUG
-// #define ADD_TX_DEBUG_INFO(tx_proto)
-#define ADD_TX_DEBUG_INFO(tx_proto) { \
-    auto* tx_debug = tx_proto->add_tx_debug(); \
-    tx_debug->set_tx_debug_tm_ms(common::TimeUtils::TimestampMs()); \
-    tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
-}
+#define ADD_TX_DEBUG_INFO(tx_proto)
+// #define ADD_TX_DEBUG_INFO(tx_proto) { \
+//     auto* tx_debug = tx_proto->add_tx_debug(); \
+//     tx_debug->set_tx_debug_tm_ms(common::TimeUtils::TimestampMs()); \
+//     tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
+// }
 #else
 #define ADD_TX_DEBUG_INFO(tx_proto)
 #endif
