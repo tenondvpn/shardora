@@ -177,6 +177,10 @@ run_command() {
             sleep 3
         fi
 
+        if (($run_cmd_count >= 10)); then
+            check_cmd_finished
+            run_cmd_count=0
+        fi
         start_pos=$(($start_pos+$start_nodes_count))
     done
 
