@@ -189,7 +189,7 @@ start_all_nodes() {
     start_pos=1
     for ip in "${node_ips_array[@]}"; do
         echo "start node: " $ip $each_nodes_count
-        start_nodes_count=(($each_nodes_count + 0))
+        start_nodes_count=$(($each_nodes_count + 0))
         if ((start_pos==1)); then
             start_nodes_count=3
         fi
