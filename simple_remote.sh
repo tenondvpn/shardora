@@ -166,17 +166,18 @@ run_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh temp_cmd.sh $ip $start_pos $each_nodes_count $bootstrap 2 $end_shard" &
-        run_cmd_count=$((run_cmd_count + 1))
+        echo "start node: " $ip $each_nodes_count
+        start_nodes_count=$(($each_nodes_count + 0))
+        if ((start_pos==1)); then
+            start_nodes_count=3
+        fi
+
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard" &
         if ((start_pos==1)); then
             sleep 3
         fi
 
-        if (($run_cmd_count >= 100)); then
-            check_cmd_finished
-            run_cmd_count=0
-        fi
-        start_pos=$(($start_pos+$each_nodes_count))
+        start_pos=$(($start_pos+$start_nodes_count))
     done
 
     check_cmd_finished
