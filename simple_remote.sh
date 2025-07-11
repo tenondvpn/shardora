@@ -50,6 +50,7 @@ init() {
         nodes_count=$(($nodes_count + $each_nodes_count))
     done
 
+    nodes_count=$(($nodes_count - $each_nodes_count - 3))
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
@@ -193,7 +194,7 @@ start_all_nodes() {
         if ((start_pos==1)); then
             nodes_count=3
         fi
-        
+
         sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh start_cmd.sh $ip $start_pos $nodes_count $bootstrap 2 $end_shard &"  &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
