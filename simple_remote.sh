@@ -126,13 +126,13 @@ clear_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg*" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg* && rm -rf zjnodes && killall -9 zjchain" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
         fi
 
-        if (($run_cmd_count >= 1)); then
+        if (($run_cmd_count >= 10)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -149,8 +149,8 @@ scp_package() {
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
         sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
-        run_cmd_count=$((run_cmd_count + i))
-        if [ $run_cmd_count -ge 10 ]; then
+        run_cmd_count=$((run_cmd_count + 1))
+        if (($run_cmd_count >= 5)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -177,6 +177,7 @@ run_command() {
             sleep 3
         fi
 
+        run_cmd_count=$(($run_cmd_count + 1))
         if (($run_cmd_count >= 10)); then
             check_cmd_finished
             run_cmd_count=0
