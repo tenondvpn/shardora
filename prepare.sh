@@ -23,6 +23,7 @@ cp -rf cbuild_$TARGET/zjchain ./shardora/cbuild_$TARGET
 cp -rf zjnodes_* ./shardora/
 cp -rf ./shards* ./shardora/
 cp -rf ./root_nodes ./shardora/
+cp -rf ./gdb ./shardora/
 tar -zcvf shardora.tar.gz ./shardora
         
 sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no ./shardora.tar.gz root@$FIRST_IP:/root 
