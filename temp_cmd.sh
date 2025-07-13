@@ -38,6 +38,7 @@ init_config() {
     echo "session required pam_limits.so" >> /etc/pam.d/common-session
 
     echo "ulimit -SHn 1024000" >> /etc/profile
+    cd /root/pkg && rpm -ivh gdb-7.6.1-120.el7.x86_64.rpm
 }
 
 init_firewall() {

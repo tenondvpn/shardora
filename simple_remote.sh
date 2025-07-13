@@ -82,6 +82,7 @@ make_package() {
     cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
+    cp -rf /root/shardora/gdb/* /root/zjnodes/zjchain/pkg
     cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1
 }
 
