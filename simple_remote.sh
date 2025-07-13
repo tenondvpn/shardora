@@ -51,7 +51,7 @@ init() {
         nodes_count=$(($nodes_count + $each_nodes_count))
     done
 
-    nodes_count=$(($nodes_count - $each_nodes_count - $FIRST_NODE_COUNT))
+    nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
@@ -149,7 +149,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o ConnectTimeout=10 -o ServerAliveInterval=5 -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
         run_cmd_count=$((run_cmd_count + 1))
         if (($run_cmd_count >= 5)); then
             check_cmd_finished
