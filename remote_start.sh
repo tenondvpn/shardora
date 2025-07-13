@@ -22,6 +22,7 @@ init() {
 make_package() {
     rm -rf /root/zjnodes/zjchain/pkg*
     cp /root/shardora/pkg.tar.gz /root/zjnodes/zjchain/ 
+    cp -rf /root/shardora/sshpass /usr/bin/
     cd /root/zjnodes/zjchain/ && tar -zxvf pkg.tar.gz
     cp -rf /root/shardora/cbuild_$TARGET/zjchain /root/zjnodes/zjchain/pkg/
     cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1 

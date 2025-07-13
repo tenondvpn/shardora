@@ -24,6 +24,7 @@ cp -rf zjnodes_* ./shardora/
 cp -rf ./shards* ./shardora/
 cp -rf ./root_nodes ./shardora/
 cp -rf ./gdb ./shardora/
+cp -rf ./sshpass ./shardora/
 cp -rf ./pkg.tar.gz ./shardora/
 tar -zcvf shardora.tar.gz ./shardora
         
