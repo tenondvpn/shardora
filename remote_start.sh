@@ -52,6 +52,10 @@ init() {
     done
 
     nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
+    if ((nodes_count>1024)); then
+        nodes_count=1024
+    fi
+
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
@@ -174,6 +178,10 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
+        if ((start_pos + start_nodes_count > 1024)); then
+            start_nodes_count=$((1024 - $start_pos))
+        fi
+
         sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard" &
         if ((start_pos==1)); then
             sleep 3
@@ -202,6 +210,10 @@ start_all_nodes() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
+        if ((start_pos + start_nodes_count > 1024)); then
+            start_nodes_count=$((1024 - $start_pos))
+        fi
+        
         sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard &"  &
         if ((start_pos==1)); then
             sleep 3
