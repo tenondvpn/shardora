@@ -4,6 +4,7 @@ bootstrap=""
 end_shard=$3
 PASSWORD=$4
 TARGET=$5
+FIRST_NODE_COUNT=10
 
 init() {
     if [ "$node_ips" == "" ]; then
@@ -50,7 +51,7 @@ init() {
         nodes_count=$(($nodes_count + $each_nodes_count))
     done
 
-    nodes_count=$(($nodes_count - $each_nodes_count - 3))
+    nodes_count=$(($nodes_count - $each_nodes_count - $FIRST_NODE_COUNT))
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
@@ -169,7 +170,7 @@ run_command() {
         echo "start node: " $ip $each_nodes_count
         start_nodes_count=$(($each_nodes_count + 0))
         if ((start_pos==1)); then
-            start_nodes_count=3
+            start_nodes_count=$FIRST_NODE_COUNT
         fi
 
         sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard" &
@@ -197,7 +198,7 @@ start_all_nodes() {
         echo "start node: " $ip $each_nodes_count
         start_nodes_count=$(($each_nodes_count + 0))
         if ((start_pos==1)); then
-            start_nodes_count=3
+            start_nodes_count=$FIRST_NODE_COUNT
         fi
 
         sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard &"  &
@@ -205,6 +206,7 @@ start_all_nodes() {
             sleep 3
         fi
 
+        sleep 1
         start_pos=$(($start_pos+$start_nodes_count))
     done
 
