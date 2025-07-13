@@ -130,7 +130,7 @@ public:
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
         if (!addr_info->ParseFromString(val)) {
-            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
+            ZJC_EMPTY_DEBUG("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 
@@ -685,7 +685,7 @@ public:
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_INFO("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
+        ZJC_EMPTY_DEBUG("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(node_addr).c_str(),
             common::Encode::HexEncode(bls_prikey).c_str());
@@ -727,7 +727,7 @@ public:
         }
 
         *bls_prikey = tmp_data.substr(0, int_data[0]);
-        ZJC_INFO("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
+        ZJC_EMPTY_DEBUG("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
             common::Encode::HexEncode(val).c_str(),
@@ -1096,7 +1096,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_INFO("get db failed!");
+            ZJC_EMPTY_DEBUG("get db failed!");
             return false;
         }
 
@@ -1134,7 +1134,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_INFO("get db failed!");
+            ZJC_EMPTY_DEBUG("get db failed!");
             return false;
         }
 
@@ -1363,7 +1363,7 @@ public:
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_EMPTY_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1376,7 +1376,7 @@ public:
         key.append(kLatestPoolStatisticTagPrefix);
         key.append((char*)&network_id, sizeof(network_id));
         db_batch.Put(key, statistic_info.SerializeAsString());
-        ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_EMPTY_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1397,7 +1397,7 @@ public:
             return false;
         }
 
-        ZJC_INFO("success GetLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_EMPTY_DEBUG("success GetLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(*statistic_info).c_str());
         return true;
     }
