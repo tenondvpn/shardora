@@ -489,7 +489,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
             if (view_commited(
                     common::GlobalInfo::Instance()->network_id(), 
-                    iter->second->view_block->qc().view())) {
+                    iter->second->view_block->qc().view() + 1)) {
                 iter = view_blocks_info_.erase(iter);
             } else {
                 ++iter;
