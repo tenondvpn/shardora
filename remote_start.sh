@@ -75,7 +75,7 @@ clear_command() {
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 30)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -125,7 +125,7 @@ run_command() {
         fi
 
         run_cmd_count=$(($run_cmd_count + 1))
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 30)); then
             check_cmd_finished
             run_cmd_count=0
         fi
