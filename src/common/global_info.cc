@@ -62,11 +62,7 @@ int GlobalInfo::Init(const common::Config& config) {
         return kCommonError;
     }
 
-    if (!config.Get("zjchain", "local_port", config_local_port_)) {
-        ZJC_ERROR("get zjchain local_port from config failed.");
-        return kCommonError;
-    }
-
+    config.Get("zjchain", "local_port", config_local_port_);
     if (!config.Get("zjchain", "http_port", http_port_)) {
         http_port_ = 0;
     }

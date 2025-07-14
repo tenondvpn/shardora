@@ -255,14 +255,14 @@ private:
     static const uint32_t kTickThreadPoolCount = 1U;
 
     std::string config_local_ip_;
-    uint16_t config_local_port_{ 0 };
+    uint32_t config_local_port_{ 0 };
     bool config_first_node_{ false };
     std::string version_info_;
     std::atomic<uint64_t> gid_idx_{ 0 };
-    uint16_t http_port_{ 0 };
+    uint32_t http_port_{ 0 };
     bool genesis_start_{ false };
     std::vector<uint32_t> networks_;
-    uint16_t config_public_port_{ 0 };
+    uint32_t config_public_port_{ 0 };
     std::string node_tag_;
     volatile uint32_t network_id_{ common::kInvalidUint32 };
     volatile uint64_t now_gas_price_{ 100llu };
