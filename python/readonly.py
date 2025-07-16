@@ -74,8 +74,10 @@ def get_block_with_height(
     # 再获取block内容
     return get_block(db, block_hash, block_proto)
 
-if __name__ == "main":
+if __name__ == "__main__":
     db = Rdict(path, options=opt, access_type=AccessType.read_only(False))
+    print(f"hello world: 0")
     block_proto = BlockMessage()
+    print(f"hello world: 1")
     get_block_with_height(db, 3, 0, 2, block_proto)
     print(f"hello world: {block_proto}")
