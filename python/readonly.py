@@ -20,8 +20,6 @@ opt.set_wal_size_limit_mb(100)
 opt.set_wal_ttl_seconds(180)
 opt.set_max_total_wal_size(67108864)
 
-# 假设kViewBlockValidView是前缀常量
-K_VIEW_BLOCK_VALID_VIEW = b"bb\x01"
 K_BLOCK_PREFIX = b"k\x01"
 K_BLOCK_HEIGHT_PREFIX = b"j\x01"
 

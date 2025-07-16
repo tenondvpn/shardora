@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: REPLACE_IMAGE_NAME-name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: REPLACE_IMAGE_NAME-app
+  template:
+    metadata:
+      labels:
+        app: REPLACE_IMAGE_NAME-app
+    spec:
+      containers:
+      - name: REPLACE_IMAGE_NAME-container
+        image: REPLACE_IMAGE_NAME:latest
+        command: ["/bin/sh"]
+        args: ["-c", "sh docker_simple_dep.sh 4 Debug && sleep infinity"]
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 23001
+

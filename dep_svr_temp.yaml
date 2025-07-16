@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: REPLACE_IMAGE_NAME-service
+spec:
+  type: NodePort
+  ports:
+  - port: 23001
+    targetPort: 23001
+    nodePort: REPLACE_SERVICE_PORT
+  selector:
+    app: REPLACE_IMAGE_NAME-app
