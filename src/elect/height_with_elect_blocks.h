@@ -153,7 +153,7 @@ public:
         }
 
         for (int32_t i = 0; i < 3; ++i) {
-            auto item_ptr = members_ptrs_[network_id][i];
+            HeightMembersItemPtr item_ptr = members_ptrs_[network_id][i];
             if (item_ptr != nullptr && item_ptr->height == height) {
                 if (common_pk != nullptr) {
                     *common_pk = item_ptr->common_bls_publick_key;
