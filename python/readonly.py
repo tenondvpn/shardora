@@ -3,7 +3,7 @@ import struct
 import logging
 import sys
 sys.path.append('/root/shardora/src/')
-from protos.block_pb2 import BlockMessage
+from protos.block_pb2 import Block
 
 path = str("/root/zjnodes/s3_1/db/")
 
@@ -50,11 +50,12 @@ def get_block(db: Rdict, block_hash: bytes, block_proto) -> bool:
     try:
         # 从数据库获取数据
         block_str = db[key]
-        print(f"success get block: {block_hash}, str: {block_str}")
+        print(f"success get block: {block_hash}, str: {block_str}\n")
     except KeyError:
         print(f"failed get block: {block_str}")
         return False
     
+    block_proto.ParseFromString(block_str)
     # 解析protobuf消息
     try:
         block_proto.ParseFromString(block_str)
@@ -63,6 +64,7 @@ def get_block(db: Rdict, block_hash: bytes, block_proto) -> bool:
     except Exception:
         print("failed parse!")
         return False
+        
     
 def get_block_with_height(
         db: Rdict,
@@ -81,7 +83,7 @@ def get_block_with_height(
 if __name__ == "__main__":
     db = Rdict(path, options=opt, access_type=AccessType.read_only(False))
     print(f"hello world: 0")
-    block_proto = BlockMessage()
+    block_proto = Block()
     print(f"hello world: 1")
     get_block_with_height(db, 3, 0, 2, block_proto)
     print(f"hello world: {block_proto}")
