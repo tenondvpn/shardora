@@ -2,6 +2,7 @@ from rocksdict import Rdict, Options, AccessType
 import struct
 import logging
 import sys
+from google.protobuf import json_format
 sys.path.append('/root/shardora/src/')
 from protos.block_pb2 import Block
 
@@ -86,4 +87,5 @@ if __name__ == "__main__":
     block_proto = Block()
     print(f"hello world: 1")
     get_block_with_height(db, 3, 0, 2, block_proto)
-    print(f"hello world: {block_proto}")
+    json_str = json_format.MessageToJson(block_proto)
+    print(f"hello world: {block_proto}, json: {json_str}")
