@@ -2,8 +2,8 @@ from rocksdict import Rdict, Options, AccessType
 import struct
 import logging
 import sys
-sys.path.append('/root/shardora/src/protos')
-from block_pb2 import BlockMessage
+sys.path.append('/root/shardora/src/')
+from protos.block_pb2 import BlockMessage
 
 path = str("/root/zjnodes/s3_1/db/")
 
