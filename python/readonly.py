@@ -4,7 +4,7 @@ import logging
 import sys
 from google.protobuf import json_format
 sys.path.append('/root/shardora/src/')
-from protos.block_pb2 import Block
+from protos.view_block_pb2 import ViewBlockItem
 
 path = str("/root/zjnodes/s3_1/db/")
 
@@ -84,6 +84,6 @@ def get_block_with_height(
 if __name__ == "__main__":
     db = Rdict(path, options=opt, access_type=AccessType.read_only(False))
     print(f"hello world: 0")
-    block_proto = Block()
+    block_proto = ViewBlockItem()
     print(f"hello world: 1")
     get_block_with_height(db, 3, 0, 2, block_proto)
