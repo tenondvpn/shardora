@@ -35,11 +35,11 @@ def get_block_hash_with_height(
     try:
         # 从数据库获取哈希值
         block_hash = db[key]
-        logging.debug(f"get sync key value {sharding_id}_{pool_index}_{height}, "
-                     f"success get block with height: {sharding_id}, {pool_index}, {height}")
+        print(f"get sync key value {sharding_id}_{pool_index}_{height}, "
+                     f"success get block with height: {sharding_id}, {pool_index}, {height} hash: {block_hash}")
         return block_hash
     except KeyError:
-        logging.debug(f"failed get sync key value {sharding_id}_{pool_index}_{height}, "
+        print(f"failed get sync key value {sharding_id}_{pool_index}_{height}, "
                      f"success get block with height: {sharding_id}, {pool_index}, {height}")
         return None
     
@@ -50,14 +50,18 @@ def get_block(db: Rdict, block_hash: bytes, block_proto) -> bool:
     try:
         # 从数据库获取数据
         block_str = db[key]
+        print(f"success get block: {block_hash}, str: {block_str}")
     except KeyError:
+        print(f"failed get block: {block_str}")
         return False
     
     # 解析protobuf消息
     try:
         block_proto.ParseFromString(block_str)
+        print("success parse")
         return True
     except Exception:
+        print("failed parse!")
         return False
     
 def get_block_with_height(
