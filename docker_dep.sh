@@ -7,8 +7,8 @@ kubectl scale deployment $IMAGE_NAME-dep --replicas=0
 kubectl delete pods -l app=$IMAGE_NAME-app 
 
 rm -rf /var/dep_pod_temp_$IMAGE_NAME.yaml /var/dep_svr_temp_$IMAGE_NAME.yaml 
-cp -rf dep_pod_temp_$IMAGE_NAME.yaml  /var/
-cp -rf dep_svr_temp_$IMAGE_NAME.yaml  /var/
+cp -rf dep_pod_temp.yaml  /var/dep_pod_temp_$IMAGE_NAME.yaml
+cp -rf dep_svr_temp.yaml  /var/dep_svr_temp_$IMAGE_NAME.yaml
 sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_pod_temp_$IMAGE_NAME.yaml 
 kubectl apply -f /var/dep_pod_temp_$IMAGE_NAME.yaml 
  
