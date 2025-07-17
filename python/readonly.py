@@ -35,8 +35,6 @@ def get_block_hash_with_height(
     try:
         # 从数据库获取哈希值
         block_hash = db[key]
-        print(f"get sync key value {sharding_id}_{pool_index}_{height}, "
-                     f"success get block with height: {sharding_id}, {pool_index}, {height} hash: {block_hash}")
         return block_hash
     except KeyError:
         print(f"failed get sync key value {sharding_id}_{pool_index}_{height}, "
@@ -50,7 +48,6 @@ def get_block(db: Rdict, block_hash: bytes, block_proto) -> bool:
     try:
         # 从数据库获取数据
         block_str = db[key]
-        print(f"success get block: {block_hash}, str: {block_str}\n")
     except KeyError:
         print(f"failed get block: {block_str}")
         return False
@@ -91,6 +88,7 @@ if __name__ == "__main__":
         block_proto = ViewBlockItem()
         if not get_block_with_height(db, 3, 27, height, block_proto):
             break
+        
         json_str = json_format.MessageToJson(block_proto)
         print(f"success parse view block json: {json_str}")
         height = height + 1
