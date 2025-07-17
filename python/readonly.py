@@ -86,9 +86,9 @@ if __name__ == "__main__":
     height = 0
     while True:
         block_proto = ViewBlockItem()
-        if not get_block_with_height(db, 3, 27, height, block_proto):
+        if not get_block_with_height(db, 3, 15, height, block_proto):
             break
-        
+
         json_str = json_format.MessageToJson(block_proto)
         print(f"success parse view block json: {json_str}")
         height = height + 1
