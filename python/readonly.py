@@ -5,6 +5,7 @@ import sys
 from google.protobuf import json_format
 sys.path.append('/root/shardora/src/')
 from protos.view_block_pb2 import ViewBlockItem
+import shardora_api
 
 path = str("/root/zjnodes/s3_1/db/")
 
@@ -80,6 +81,8 @@ def get_block_with_height(
     return get_block(db, block_hash, block_proto)
 
 if __name__ == "__main__":
+    # 发送一笔交易
+    shardora_api.transfer("")
     db = Rdict(path, options=opt, access_type=AccessType.read_only(False))
     print(f"hello world: 0")
     block_proto = ViewBlockItem()

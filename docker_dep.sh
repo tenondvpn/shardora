@@ -6,15 +6,16 @@ source ~/.bash_profile && cd /root/shardora && sh build.sh a Debug && sh build.s
 kubectl scale deployment $IMAGE_NAME-dep --replicas=0 
 kubectl delete pods -l app=$IMAGE_NAME-app 
 
-cp -rf dep_pod_temp.yaml  /var/
-cp -rf dep_svr_temp.yaml  /var/
-sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_pod_temp.yaml 
-kubectl apply -f /var/dep_pod_temp.yaml 
+rm -rf /var/dep_pod_temp_$IMAGE_NAME.yaml /var/dep_svr_temp_$IMAGE_NAME.yaml 
+cp -rf dep_pod_temp_$IMAGE_NAME.yaml  /var/
+cp -rf dep_svr_temp_$IMAGE_NAME.yaml  /var/
+sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_pod_temp_$IMAGE_NAME.yaml 
+kubectl apply -f /var/dep_pod_temp_$IMAGE_NAME.yaml 
  
 kubectl delete service $IMAGE_NAME-service 
-sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_svr_temp.yaml 
-sed -i 's/REPLACE_SERVICE_PORT/'$2'/g' /var/dep_svr_temp.yaml 
-kubectl apply -f /var/dep_svr_temp.yaml 
+sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_svr_temp_$IMAGE_NAME.yaml 
+sed -i 's/REPLACE_SERVICE_PORT/'$2'/g' /var/dep_svr_temp_$IMAGE_NAME.yaml 
+kubectl apply -f /var/dep_svr_temp_$IMAGE_NAME.yaml 
  
 kubectl get services 
 kubectl get pods | grep $IMAGE_NAME
