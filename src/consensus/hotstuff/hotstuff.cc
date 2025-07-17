@@ -226,13 +226,13 @@ Status Hotstuff::Propose(
 
 
         // pb_pro_msg->release_view_item();
-        return;
+        return s;
     }
     
     auto t3 = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
-    f (latest_qc_item_ptr_) {
+    if (latest_qc_item_ptr_) {
         *pb_pro_msg->mutable_tc() = *latest_qc_item_ptr_;
     }
 
