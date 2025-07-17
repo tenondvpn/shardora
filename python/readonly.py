@@ -82,7 +82,11 @@ def get_block_with_height(
 
 if __name__ == "__main__":
     # 发送一笔交易
-    shardora_api.transfer("")
+    shardora_api.transfer(
+        "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848",
+        "eee91139bd36e63a8e057b6f0b6bd5184e25943c",
+        1024,
+        check_tx_valid=True)
     db = Rdict(path, options=opt, access_type=AccessType.read_only(False))
     print(f"hello world: 0")
     block_proto = ViewBlockItem()
