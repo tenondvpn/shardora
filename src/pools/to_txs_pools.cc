@@ -177,6 +177,7 @@ void ToTxsPools::LoadLatestHeights() {
             continue;
         }
 
+        valided_heights_[i].insert(pool_latest_height);
         bool consensus_stop = false;
         for (uint64_t height = pool_consensus_heihgts_[i];
                 height <= pool_latest_height; ++height) {
