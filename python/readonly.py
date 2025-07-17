@@ -58,8 +58,6 @@ def get_block(db: Rdict, block_hash: bytes, block_proto) -> bool:
     # 解析protobuf消息
     try:
         block_proto.ParseFromString(block_str)
-        json_str = json_format.MessageToJson(block_proto)
-        print(f"success parse: {block_proto}, json: {json_str}")
         return True
     except Exception:
         print("failed parse!")
@@ -88,7 +86,12 @@ if __name__ == "__main__":
         1024,
         check_tx_valid=True)
     db = Rdict(path, options=opt, access_type=AccessType.read_only(False))
-    print(f"hello world: 0")
-    block_proto = ViewBlockItem()
-    print(f"hello world: 1")
-    get_block_with_height(db, 3, 0, 2, block_proto)
+    height = 0
+    while True:
+        block_proto = ViewBlockItem()
+        if not get_block_with_height(db, 3, 27, height, block_proto):
+            break
+        json_str = json_format.MessageToJson(block_proto)
+        print(f"success parse view block json: {json_str}")
+        height = height + 1
+
