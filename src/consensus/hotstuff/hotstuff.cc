@@ -1873,6 +1873,10 @@ Status Hotstuff::ConstructViewBlock(
 }
 
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
+    if (v_block.qc().view() <= 0llu) {
+        return false;
+    }
+
     auto* v_block1 = &v_block;
     if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
         ZJC_DEBUG("!v_block1 || v_block1->block_info().tx_list_size() > 0");
