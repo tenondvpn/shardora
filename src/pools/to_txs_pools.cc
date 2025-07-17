@@ -172,6 +172,7 @@ void ToTxsPools::LoadLatestHeights() {
 
     for (uint32_t i = 0; i <= max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
+        ZJC_DEBUG("pool latest height: %u, %lu", i, pool_latest_height);
         if (pool_latest_height == common::kInvalidUint64) {
             continue;
         }
