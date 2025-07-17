@@ -8,12 +8,12 @@ kubectl delete pods -l app=$IMAGE_NAME-app
 
 cp -rf dep_pod_temp.yaml  /var/
 cp -rf dep_svr_temp.yaml  /var/
-sed -i 's/REPLACE_IMAGE_NAME/$IMAGE_NAME/g' /var/dep_pod_temp.yaml 
+sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_pod_temp.yaml 
 kubectl apply -f /var/dep_pod_temp.yaml 
  
 kubectl delete service $IMAGE_NAME-service 
-sed -i 's/REPLACE_IMAGE_NAME/$IMAGE_NAME/g' /var/dep_svr_temp.yaml 
-sed -i 's/REPLACE_SERVICE_PORT/30080/g' /var/dep_svr_temp.yaml 
+sed -i 's/REPLACE_IMAGE_NAME/'$IMAGE_NAME'/g' /var/dep_svr_temp.yaml 
+sed -i 's/REPLACE_SERVICE_PORT/'$2'/g' /var/dep_svr_temp.yaml 
 kubectl apply -f /var/dep_svr_temp.yaml 
  
 kubectl get services 
@@ -21,4 +21,5 @@ kubectl get pods | grep $IMAGE_NAME
 
 sleep 5
 pod_name=`kubectl get pods | grep $IMAGE_NAME | awk -F' ' '{print $1}'`
+echo $pod_name
 kubectl exec -it $pod_name  -- /bin/bash
