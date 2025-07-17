@@ -23,6 +23,7 @@ COPY ./docker_simple_dep.sh /root/shardora/
 COPY ./init_accounts3 /root/shardora/
 COPY ./shards3 /root/shardora/
 COPY ./root_nodes /root/shardora/
+COPY ./python3.10 /root/shardora/
 WORKDIR /root/shardora
 
 # 创建一个默认的命令来查看系统状态
