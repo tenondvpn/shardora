@@ -218,15 +218,14 @@ Status Hotstuff::Propose(
     auto* pb_pro_msg = hotstuff_msg->mutable_pro_msg();
     Status s = ConstructProposeMsg(msg_ptr, pb_pro_msg);
     if (s != Status::kSuccess) {
-        // if (!tc) {
-        //     ZJC_DEBUG("pool: %d construct propose msg failed, %d",
-        //         pool_idx_, s);
-        //     return s;
-        // }
+        if (!tc) {
+            ZJC_DEBUG("pool: %d construct propose msg failed, %d",
+                pool_idx_, s);
+            return s;
+        }
 
 
-        // pb_pro_msg->release_view_item();
-        return s;
+        pb_pro_msg->release_view_item();
     }
     
     auto t3 = common::TimeUtils::TimestampMs();
