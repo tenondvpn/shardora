@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument('--to', '-t', type=str, help='转账目标地址')
     parser.add_argument('--chain_ip', '-i', type=str, help='转账目标机器')
     parser.add_argument('--prikey_base', '-b', type=str, help='转账目标基础地址')
-    parser.add_argument('--address_start', '-n', type=int, help='转账目标地址起始索引')
+    parser.add_argument('--address_start', '-s', type=int, help='转账目标地址起始索引')
     args = parser.parse_args()
     from_private_key = args.private_key
     from_address = shardora_api.get_keypair(bytes.fromhex(from_private_key)).account_id
