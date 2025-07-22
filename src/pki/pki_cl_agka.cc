@@ -717,7 +717,7 @@ int PkiClAgka::Dec(
   c2.from_bytes(common::Encode::HexDecode(splits[1]));
   ByteStream c3 = common::Encode::HexDecode(splits[2]);
 
-  std::string tmp_key = std::string("cl_decode_key_") + pki_id + std::to_string(index);
+  tmp_key = std::string("cl_decode_key_") + pki_id + std::to_string(index);
   std::string di_str;
   if (param.zjc_host->GetKeyValue(param.from, tmp_key, &di_str) != 0) {
       return 1;
