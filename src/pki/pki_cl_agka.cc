@@ -697,11 +697,13 @@ int PkiClAgka::Dec(
   std::string tmp_key = std::string("cl_encode_key_") + pki_id;
   std::string val;
   if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+      ZJC_DEBUG("invalid key: %s", tmp_key.c_str());
       return 1;
   }
 
   auto splits = common::Split<>(val.c_str(), ';');
-  if (splits.Count() != 2) {
+  if (splits.Count() != 3) {
+      ZJC_DEBUG("invalid val: %s", val.c_str());
       return 1;
   }
 
@@ -720,6 +722,7 @@ int PkiClAgka::Dec(
   tmp_key = std::string("cl_decode_key_") + pki_id + std::to_string(index);
   std::string di_str;
   if (param.zjc_host->GetKeyValue(param.from, tmp_key, &di_str) != 0) {
+      ZJC_DEBUG("invalid di key: %s", tmp_key.c_str());
       return 1;
   }
   
