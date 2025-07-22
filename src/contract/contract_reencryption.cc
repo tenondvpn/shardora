@@ -1178,11 +1178,9 @@ int ContractReEncryption::Decryption(
         }
 
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
-        // ZJC_WARN("get m data user %d success, data: %s, res2 data: %s, eq: %d", 
-        //     i, 
-        //     common::Encode::HexEncode(m.toString()).c_str(), 
-        //     common::Encode::HexEncode(result2.toString()).c_str(),
-        //     (m == result2));
+        ZJC_WARN("get m data user %d success, res2 data: %s", 
+            i, 
+            common::Encode::HexEncode(result2.toString()).c_str());
         // if (m == result2) {
             if (res != nullptr) {
                 *res = result2.toString();

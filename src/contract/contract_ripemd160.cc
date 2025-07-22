@@ -550,6 +550,7 @@ int Ripemd160::RabpreEnc(
         return kContractError;
     }
 
+    ZJC_DEBUG("rabpre enc 0");
     auto id = common::Encode::HexDecode(line_splits[0]);
     std::tuple<long long, long long, long long, long long, long long, long long> mpk;
     std::tuple<long long, long long, long long, long long, long long> hsk0;
@@ -557,11 +558,15 @@ int Ripemd160::RabpreEnc(
     auto tmp_key = std::string("rabpre_agg_") + id;
     std::string val;
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    ZJC_DEBUG("rabpre enc 1");
     LoadAgg(val, &mpk, &hsk0, &hsk1);
+    ZJC_DEBUG("rabpre enc 2");
     auto ct = Rabpre::ENCRYPT(mpk, plaintext, 1);
     std::string enc_val;
+    ZJC_DEBUG("rabpre enc 3");
     SaveEncVal(ct, &enc_val);
     tmp_key = std::string("rabpre_enc_") + id;
+    ZJC_DEBUG("rabpre enc 4");
     param.zjc_host->SaveKeyValue(param.from, tmp_key, enc_val);
     ZJC_DEBUG("Rabpre enc success id: %s, plaintext: %ld",
         common::Encode::HexEncode(id).c_str(), plaintext);
