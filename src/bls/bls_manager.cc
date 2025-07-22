@@ -959,27 +959,47 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
             mem_bls_pk->set_x_c1("");
             mem_bls_pk->set_y_c0("");
             mem_bls_pk->set_y_c1("");
+            if (i == 0) {
+                assert(false);
+            }
             BLS_WARN("0 invalid bitmap: %d", i);
             continue;
         }
 
-        if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_public_keys: %d", i);
-            continue;
+        if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero() ||  
+                finish_item->all_common_public_keys[i] != common_pk_iter->second) {
+            bls::protobuf::JoinElectInfo join_info;
+            if (!prefix_db_->GetNodeVerificationVector((*members)[i]->id, &join_info)) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid all_public_keys: %d", i);
+                continue;
+            }
+
+            libff::alt_bn128_G2 old_val;
+            auto& item = join_info.g2_req().verify_vec(0);
+            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+            finish_item->all_public_keys[i] = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         }
 
-        if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_common_public_keys: %d", i);
-            continue;
-        }
+        // if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
+        //     mem_bls_pk->set_x_c0("");
+        //     mem_bls_pk->set_x_c1("");
+        //     mem_bls_pk->set_y_c0("");
+        //     mem_bls_pk->set_y_c1("");
+        //     BLS_WARN("0 invalid all_common_public_keys: %d", i);
+        //     continue;
+        // }
 
         finish_item->all_public_keys[i].to_affine_coordinates();
         mem_bls_pk->set_x_c0(

@@ -116,6 +116,13 @@ void BlsDkg::OnNewElectionBlock(
         }
     }
 
+
+#ifndef NDEBUG
+    if (local_member_index_ == 0) {
+        change_local_contribution_ = false;
+    }
+#endif
+
     auto tmblock_tm = (latest_timeblock_info->lastest_time_block_tm +
         common::kTimeBlockCreatePeriodSeconds - kTimeBlsPeriodSeconds) * 1000l * 1000l;
     uint64_t end_tm_point = (latest_timeblock_info->lastest_time_block_tm +
@@ -437,15 +444,15 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
         min_aggree_member_count_);
     // swap
-    bls::protobuf::VerifyVecBrdReq req;
-    auto g2_res = prefix_db_->GetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
-    if (!g2_res) {
-        ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
-            local_member_index_, elect_hegiht_, bls_msg.index());
-        return;
-    }
+    // bls::protobuf::VerifyVecBrdReq req;
+    // auto g2_res = prefix_db_->GetBlsVerifyG2((*members_)[bls_msg.index()]->id, &req);
+    // if (!g2_res) {
+    //     ZJC_WARN("get verify g2 failed local: %d, %lu, %u",
+    //         local_member_index_, elect_hegiht_, bls_msg.index());
+    //     return;
+    // }
 
-    prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, req);
+    // prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, req);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
     valid_swapkey_set_.insert(bls_msg.index());
@@ -868,7 +875,6 @@ void BlsDkg::FinishBroadcast() try {
         }
 
         if (for_common_pk_g2s_[i] == libff::alt_bn128_G2::zero()) {
-            valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             ZJC_WARN("elect_height: %d, invalid all_verification_vector index: %d",
                 elect_hegiht_, i);
@@ -878,6 +884,7 @@ void BlsDkg::FinishBroadcast() try {
 
         common_public_key_ = common_public_key_ + for_common_pk_g2s_[i];
         bitmap.Set(i);
+        ZJC_DEBUG("finish member index i valid: %d", i);
     }
 
     uint32_t valid_count = static_cast<uint32_t>(
