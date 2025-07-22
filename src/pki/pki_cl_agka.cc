@@ -694,7 +694,7 @@ int PkiClAgka::Dec(
   }
 
   std::string pki_id = lines[0];
-  std::string tmp_key = std::string("cl_encode_key_") + pki_id;
+  std::string tmp_key = std::string("cl_enc_data_") + pki_id;
   std::string val;
   if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
       ZJC_DEBUG("invalid key: %s", tmp_key.c_str());
