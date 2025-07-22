@@ -688,28 +688,46 @@ int PkiClAgka::Dec(
     const std::string& value) {
   ZJC_DEBUG("success called dec: %s", value.c_str());
   auto lines = common::Split<>(value.c_str(), ';');
-  if (lines.Count() != 6) {
+  if (lines.Count() != 2) {
       ZJC_DEBUG("failed called dec: lines.Count() != 6: %d", lines.Count());
       return 1;
   }
 
   std::string pki_id = lines[0];
-  G1 c1(pp.e);
-  c1.from_bytes(common::Encode::HexDecode(lines[1]));
-  G1 c2(pp.e);
-  c2.from_bytes(common::Encode::HexDecode(lines[2]));
-  ByteStream c3 = common::Encode::HexDecode(lines[3]);
-  G1 di(pp.e);
-  di.from_bytes(common::Encode::HexDecode(lines[4]));
+  std::string tmp_key = std::string("cl_encode_key_") + pki_id;
+  std::string val;
+  if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+      return 1;
+  }
+
+  auto splits = common::Split<>(val.c_str(), ';');
+  if (splits.Count() != 2) {
+      return 1;
+  }
+
   int32_t index = 0;
-  if (!common::StringUtil::ToInt32(lines[5], &index)) {
+  if (!common::StringUtil::ToInt32(lines[1], &index)) {
       ZJC_DEBUG("success called dec: ToInt32(lines[5] %s", lines[5]);
       return 1;
   }
 
+  G1 c1(pp.e);
+  c1.from_bytes(common::Encode::HexDecode(splits[0]));
+  G1 c2(pp.e);
+  c2.from_bytes(common::Encode::HexDecode(splits[1]));
+  ByteStream c3 = common::Encode::HexDecode(splits[2]);
+
+  std::string tmp_key = std::string("cl_decode_key_") + pki_id + std::to_string(index);
+  std::string di_str;
+  if (param.zjc_host->GetKeyValue(param.from, tmp_key, &di_str) != 0) {
+      return 1;
+  }
+  
+  G1 di(pp.e);
+  di.from_bytes(common::Encode::HexDecode(di_str));
+
   auto start = std::chrono::steady_clock::now();
   G2 pair1 = pp.e(di, c1);
-
   G1 f_j = pp.H3(index);
   G2 pair2 = pp.e(f_j.invert(), c2);
   G2 pair = pair1 * pair2;
