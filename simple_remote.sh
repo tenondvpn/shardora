@@ -174,7 +174,7 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz > /dev/null 2>&1 && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard" &
         if ((start_pos==1)); then
             sleep 3
         fi
@@ -202,7 +202,7 @@ start_all_nodes() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard "  &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root/pkg && sh start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard "  &
         if ((start_pos==1)); then
             sleep 3
         fi
