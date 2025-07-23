@@ -24,9 +24,9 @@ init() {
                     new_ips+="192.168.0.$i,"
                 fi
             done
+            node_ips=$new_ips
+            echo $node_ips
         fi
-
-        node_ips=$new_ips
     fi
 
     if [ "$node_ips" == "" ]; then
@@ -132,7 +132,6 @@ check_cmd_finished() {
     ps -ef | grep sshpass 
     while true
     do
-        ps -ef | grep sshpass 
         sshpass_count=`ps -ef | grep sshpass | grep ConnectTimeout | wc -l`
         if [ "$sshpass_count" == "0" ]; then
             break
