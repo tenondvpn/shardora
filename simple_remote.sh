@@ -7,6 +7,28 @@ TARGET=$5
 FIRST_NODE_COUNT=10
 
 init() {
+    ips_array=(${node_ips//,/ })
+    ips_len=(${#ips_array[*]})
+    if (($ips_len == 2)); then
+        first_ip=(${ips_array[0]})
+        second_ip=(${ips_array[1]})
+        first_ip_len=(${#first_ip})
+        new_ips=""
+        if (($first_ip_len<=6)); then
+            start=$(($first_ip + 0))
+            end=$(($second_ip + 0))
+            for ((i=start; i<=end; i++)); do
+                if ((i==end - 1));then
+                    new_ips+="192.168.0.$i"
+                else
+                    new_ips+="192.168.0.$i,"
+                fi
+            done
+        fi
+
+        node_ips=$new_ips
+    fi
+
     if [ "$node_ips" == "" ]; then
         echo "just use local single node."
         node_ips='127.0.0.1'
@@ -110,6 +132,7 @@ check_cmd_finished() {
     ps -ef | grep sshpass 
     while true
     do
+        ps -ef | grep sshpass 
         sshpass_count=`ps -ef | grep sshpass | grep ConnectTimeout | wc -l`
         if [ "$sshpass_count" == "0" ]; then
             break
