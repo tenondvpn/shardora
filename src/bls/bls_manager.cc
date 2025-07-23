@@ -916,12 +916,12 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
 
     auto t = common::GetSignerCount(members->size());
     BlsFinishItemPtr finish_item = iter->second;
-    if (finish_item->max_finish_count < exchange_member_count) {
-        BLS_ERROR("network: %u, finish_item->max_finish_count < t[%u][%u]",
-            ec_block.shard_network_id(),
-            finish_item->max_finish_count, exchange_member_count);
-        return kBlsError;
-    }
+    // if (finish_item->max_finish_count < exchange_member_count) {
+    //     BLS_ERROR("network: %u, finish_item->max_finish_count < t[%u][%u]",
+    //         ec_block.shard_network_id(),
+    //         finish_item->max_finish_count, exchange_member_count);
+    //     return kBlsError;
+    // }
 
     auto item_iter = finish_item->max_bls_members.find(finish_item->max_finish_hash);
     if (item_iter == finish_item->max_bls_members.end()) {
