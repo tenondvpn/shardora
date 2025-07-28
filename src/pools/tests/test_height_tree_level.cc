@@ -77,7 +77,7 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
         }
 
 //         height_tree_level.PrintTree();
-        height_tree_level.FlushToDb();
+        //height_tree_level.FlushToDb();
         height_tree_level.GetTreeData(&old_data);
     }
 
