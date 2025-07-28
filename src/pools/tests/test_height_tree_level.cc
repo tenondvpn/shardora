@@ -49,6 +49,7 @@ public:
         }
 
 //         height_tree_level.PrintTree();
+        std::cout << "max height: " << max_height << std::endl;
         std::vector<uint64_t> invalid_heights;
         height_tree_level.GetMissingHeights(&invalid_heights, max_height - 1);
         for (auto iter = invalid_heights.begin(); iter != invalid_heights.end(); ++iter) {
