@@ -51,6 +51,16 @@ public:
 //         height_tree_level.PrintTree();
         std::vector<uint64_t> invalid_heights;
         height_tree_level.GetMissingHeights(&invalid_heights, max_height - 1);
+        for (auto iter = invalid_heights.begin(); iter != invalid_heights.end(); ++iter) {
+            std::cout << *iter << " ";
+        }
+
+        std::cout << std::endl;
+        for (auto iter = test_invalid_heidhts.begin(); iter != test_invalid_heidhts.end(); ++iter) {
+            std::cout << *iter << " ";
+        }
+
+        std::cout << std::endl;
         ASSERT_TRUE(invalid_heights.size() == test_invalid_heidhts.size());
         for (auto iter = invalid_heights.begin(); iter != invalid_heights.end(); ++iter) {
             ASSERT_TRUE(test_invalid_heidhts.find(*iter) != test_invalid_heidhts.end());
