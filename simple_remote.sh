@@ -4,7 +4,7 @@ bootstrap=""
 end_shard=$3
 PASSWORD=$4
 TARGET=$5
-FIRST_NODE_COUNT=10
+FIRST_NODE_COUNT=$1
 
 init() {
     ips_array=(${node_ips//,/ })
