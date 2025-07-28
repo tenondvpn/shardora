@@ -77,7 +77,9 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
         }
 
 //         height_tree_level.PrintTree();
-        height_tree_level.FlushToDb();
+        db::DbWriteBatch db_batch;
+        height_tree_level.FlushToDb(db_batch);
+        db_ptr->Put(db_batch);
         height_tree_level.GetTreeData(&old_data);
     }
 
@@ -97,6 +99,7 @@ TEST_F(TestHeightTreeLevel, GetInvalidHeights) {
         for (uint64_t i = 0; i < 10; ++i) {
             srand(time(NULL));
             test_invalid_heidhts.push_back(rand() % test_max_height);
+            test_invalid_heidhts.push_back((uint64_t)pow(2, i));
         }
 
         for (uint64_t i = 0; i < test_invalid_heidhts.size(); ++i) {
@@ -110,6 +113,7 @@ TEST_F(TestHeightTreeLevel, GetInvalidHeights) {
         for (uint64_t i = 0; i < 10; ++i) {
             srand(time(NULL));
             test_invalid_heidhts.push_back(rand() % test_max_height);
+            test_invalid_heidhts.push_back((uint64_t)pow(2, i));
         }
 
         for (uint64_t i = 0; i < test_invalid_heidhts.size(); ++i) {
@@ -123,6 +127,7 @@ TEST_F(TestHeightTreeLevel, GetInvalidHeights) {
         for (uint64_t i = 0; i < 10; ++i) {
             srand(time(NULL));
             test_invalid_heidhts.push_back(rand() % test_max_height);
+            test_invalid_heidhts.push_back((uint64_t)pow(2, i));
         }
 
         for (uint64_t i = 0; i < test_invalid_heidhts.size(); ++i) {
