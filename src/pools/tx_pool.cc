@@ -100,8 +100,12 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
         uint64_t min_height = invalid_heights[0];
         uint32_t synced_count = 0;
-        for (uint32_t i = min_height; i < latest_height_; ++i) {
+        for (uint64_t i = min_height; i < latest_height_; ++i) {
             if (prefix_db_->BlockExists(net_id, pool_index_, i)) {
+                ZJC_DEBUG("block exists now add sync height 1, %u_%u_%lu", 
+                    net_id,
+                    pool_index_,
+                    i);
                 height_tree_ptr_->Set(i);
                 continue;
             }
