@@ -29,7 +29,7 @@ then
     exit 0
 fi
 
-make -j5 zjchain
+make -j2 zjchain
 echo $1
 if [[ $1 == "test" ]];
 then

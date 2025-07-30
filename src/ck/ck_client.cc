@@ -34,7 +34,6 @@ ClickHouseClient::~ClickHouseClient() {
 }
 
 bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& view_block_item) {
-    return true;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     block_queues_[thread_idx].push(view_block_item);
 // #ifndef NDEBUG
@@ -63,7 +62,6 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
 }
 
 void ClickHouseClient::FlushToCk() {
-    return;
     common::GlobalInfo::Instance()->get_thread_index();
     while (!stop_) {
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {

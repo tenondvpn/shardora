@@ -1,18 +1,13 @@
 killall -9 zjchain
 killall -9 txcli
 
-TARGET=Release
+FOR_CK=1
+TARGET=Debug
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
 sh build.sh a $TARGET
-sudo rm -rf /root/zjnodes
-sudo cp -rf ./zjnodes_local /root/zjnodes
-sudo cp -rf ./deploy /root
-sudo cp ./fetch.sh /root
-rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
-
-cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
-cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
+rm -rf /root/zjnodes
+cp -rf ./zjnodes_local /root/zjnodes/
 mkdir -p /root/zjnodes/zjchain/log
 
 
@@ -99,7 +94,12 @@ for ((i=1; i<=$shard3_node_count;i++)); do
         sed -i 's/HTTP_PORT/2300'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
         sed -i 's/LOCAL_PORT/1300'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf 
     fi
-
+    
+    if (($FOR_CK==1 && i==1)); then
+        sed -i 's/FOR_CK_CLIENT/true/g' /root/zjnodes/s3_$i/conf/zjchain.conf
+    else
+        sed -i 's/FOR_CK_CLIENT/false/g' /root/zjnodes/s3_$i/conf/zjchain.conf
+    fi
     ln /root/zjnodes/zjchain/zjchain /root/zjnodes/s3_$i/zjchain
     ln /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/s3_$i/conf/GeoLite2-City.mmdb
     ln /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/s3_$i/conf/log4cpp.properties
