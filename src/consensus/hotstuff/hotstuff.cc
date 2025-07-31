@@ -2017,7 +2017,7 @@ Status Hotstuff::ConstructViewBlock(
     // TODO 有问题，由于 qc.view 的含义变更为本次 view 而非上一个视图的 view
     // 因此 CurView 此时还没有增加，还是上一次投票的 View，正常来说此时 last_vote_view_ == pacemaker()->CurView()
     if (last_vote_view_ > pacemaker()->CurView()) {
-        assert(last_vote_view_ <= pacemaker()->CurView());
+        //assert(last_vote_view_ <= pacemaker()->CurView());
         return Status::kError;
     }
 

@@ -241,7 +241,6 @@ Status Crypto::VerifyThresSign(
             elect_height,
             val.c_str(),
             agg_sign_str.c_str());
-        assert(false);
         return Status::kBlsVerifyFailed;
     }
 
