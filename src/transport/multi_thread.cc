@@ -102,6 +102,13 @@ void ThreadHandler::HandleMessage() {
 
         auto btime = common::TimeUtils::TimestampUs();
         if (maping_thread_idx <= (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
+#ifndef NDEBUG
+            auto now_thread_id_tmp = std::this_thread::get_id();
+            uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
+            ZJC_DEBUG("timer thread success add thread: %u, maping_thread_idx: %u, thread_idx: %u, conse thread count: %lu", 
+                now_thread_id, maping_thread_idx, thread_idx,
+                (common::GlobalInfo::Instance()->message_handler_thread_count() - 2));
+#endif
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);

@@ -21,9 +21,17 @@ namespace shardora {
 
 namespace sync {
 
-KeyValueSync::KeyValueSync() {}
+KeyValueSync::KeyValueSync() {
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        vblock_queues_[i] = new common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>();
+        ZJC_DEBUG("get vblock_queues_ i: %d, addr: %p", i, vblock_queues_[i]);
+    }
+}
 
 KeyValueSync::~KeyValueSync() {
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        delete vblock_queues_[i];
+    }
 }
 
 void KeyValueSync::Init(
@@ -516,8 +524,15 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
                     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
-                auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
-                vblock_queues_[thread_idx].push(pb_vblock);
+#ifndef NDEBUG
+            auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
+            auto now_thread_id_tmp = std::this_thread::get_id();
+            uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
+            ZJC_DEBUG("kv timer thread success add thread: %u, thread_idx: %u, conse thread count: %lu", 
+                now_thread_id, thread_idx,
+                (common::GlobalInfo::Instance()->message_handler_thread_count() - 2));
+#endif
+                vblock_queues_[thread_idx]->push(pb_vblock);
             // }  
         } while (0);
 
