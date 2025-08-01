@@ -142,6 +142,7 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     bool running_ = false;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
 };
 
 } // namespace consensus
