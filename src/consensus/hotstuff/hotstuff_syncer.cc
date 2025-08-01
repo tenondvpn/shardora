@@ -182,7 +182,10 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
 }
 
 void HotstuffSyncer::HandleSyncedBlocks() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_idx = (uint32_t)common::GlobalInfo::Instance()->get_thread_index();
+    if (thread_idx != 1) {
+        return;
+    }
     auto now_thread_id_tmp = std::this_thread::get_id();
     uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
 
@@ -197,6 +200,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
                     pb_vblock);
         }
     }    
+    ZJC_DEBUG("over now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
 }
 
 Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
