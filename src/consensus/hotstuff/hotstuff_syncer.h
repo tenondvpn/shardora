@@ -48,8 +48,7 @@ public:
             const std::shared_ptr<consensus::HotstuffManager>&,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<sync::KeyValueSync>& kv_sync,
-            std::shared_ptr<block::AccountManager> account_mgr,
-            common::ThreadSafeQueue<std::shared_ptr<ViewBlock>>* vblock_queues);
+            std::shared_ptr<block::AccountManager> account_mgr);
     HotstuffSyncer(const HotstuffSyncer&) = delete;
     HotstuffSyncer& operator=(const HotstuffSyncer&) = delete;
 

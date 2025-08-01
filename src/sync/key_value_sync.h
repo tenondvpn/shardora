@@ -84,7 +84,7 @@ typedef std::shared_ptr<SyncItem> SyncItemPtr;
 
 class KeyValueSync {
 public:
-    KeyValueSync(common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queues);
+    KeyValueSync();
     ~KeyValueSync();
     void AddSyncHeight(
         uint32_t network_id,
@@ -112,6 +112,11 @@ public:
         if (sharding_id > max_sharding_id_) {
             max_sharding_id_ = sharding_id;
         }
+    }
+
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        return vblock_queues_[thread_idx];
     }
 
 private:
@@ -147,8 +152,8 @@ private:
     common::UniqueSet<std::string, kCacheSyncKeyValueCount> responsed_keys_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queues_ = nullptr;
     std::mutex wait_mutex_;
     std::condition_variable wait_con_;
 

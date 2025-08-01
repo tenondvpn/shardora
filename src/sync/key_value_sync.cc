@@ -21,11 +21,7 @@ namespace shardora {
 
 namespace sync {
 
-KeyValueSync::KeyValueSync(
-        common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queues) {
-    vblock_queues_ = vblock_queues;
-    
-}
+KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {
 }
@@ -520,7 +516,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
                     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
-                // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
                 auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
                 vblock_queues_[thread_idx].push(pb_vblock);
             // }  

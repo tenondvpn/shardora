@@ -38,10 +38,8 @@ HotstuffSyncer::HotstuffSyncer(
         const std::shared_ptr<consensus::HotstuffManager>& h_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
-        std::shared_ptr<block::AccountManager> account_mgr,
-        common::ThreadSafeQueue<std::shared_ptr<ViewBlock>>* vblock_queues) :
+        std::shared_ptr<block::AccountManager> account_mgr) :
     hotstuff_mgr_(h_mgr), db_(db), kv_sync_(kv_sync), account_mgr_(account_mgr) {
-    // vblock_queues_ = vblock_queues;
     // start consumeloop thread
     SetOnRecvViewBlockFn(
             std::bind(&HotstuffSyncer::onRecViewBlock,
