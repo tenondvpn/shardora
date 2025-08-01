@@ -44,7 +44,7 @@ public:
 
 private:
     static const int32_t kQueueCount = 1024;
-    moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
+    moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };
