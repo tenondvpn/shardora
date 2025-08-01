@@ -114,7 +114,7 @@ public:
         }
     }
 
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queue() {
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         return vblock_queues_[thread_idx];
     }
@@ -152,7 +152,7 @@ private:
     common::UniqueSet<std::string, kCacheSyncKeyValueCount> responsed_keys_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     std::mutex wait_mutex_;
     std::condition_variable wait_con_;

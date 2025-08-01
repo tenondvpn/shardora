@@ -182,9 +182,9 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
 }
 
 void HotstuffSyncer::HandleSyncedBlocks() {
-    auto* block_queue = kv_sync_->vblock_queue();
+    auto& block_queue = kv_sync_->vblock_queue();
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
-    while (block_queue->pop(&pb_vblock)) {
+    while (block_queue.pop(&pb_vblock)) {
         if (pb_vblock) {
             hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
                     pb_vblock);

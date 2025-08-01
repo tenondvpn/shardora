@@ -1551,6 +1551,10 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             common::Encode::HexEncode(account_ptr->addr()).c_str(), 
             account_ptr->balance(),
             account_ptr->nonce());
+        printf("new address %s, genesis balance: %lu, nonce: %lu\n",
+            common::Encode::HexEncode(account_ptr->addr()).c_str(), 
+            account_ptr->balance(),
+            account_ptr->nonce());
     }
 
     if (all_balance != expect_all_balance) {
