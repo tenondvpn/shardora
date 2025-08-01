@@ -186,9 +186,10 @@ void HotstuffSyncer::HandleSyncedBlocks() {
     auto now_thread_id_tmp = std::this_thread::get_id();
     uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
 
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> vblock_queues[common::kMaxThreadCount];
     ZJC_DEBUG("now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
-    // auto& block_queue = vblock_queues_[thread_idx];// kv_sync_->vblock_queue();
-    common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> block_queue;
+    auto& block_queue = vblock_queues[thread_idx];// kv_sync_->vblock_queue();
+    // common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> block_queue;
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
     while (block_queue.pop(&pb_vblock)) {
         if (pb_vblock) {
