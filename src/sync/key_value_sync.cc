@@ -524,14 +524,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
                     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
-#ifndef NDEBUG
-            auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pb_vblock->qc().pool_index()];
-            auto now_thread_id_tmp = std::this_thread::get_id();
-            uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
-            ZJC_DEBUG("kv timer thread success add thread: %u, thread_idx: %u, conse thread count: %lu", 
-                now_thread_id, thread_idx,
-                (common::GlobalInfo::Instance()->message_handler_thread_count() - 2));
-#endif
                 vblock_queues_[thread_idx]->push(pb_vblock);
             // }  
         } while (0);

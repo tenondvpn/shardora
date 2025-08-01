@@ -137,7 +137,6 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
         }
             
         thread_idx = iter->second;
-        ZJC_DEBUG("get success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();

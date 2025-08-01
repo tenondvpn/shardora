@@ -116,13 +116,6 @@ public:
 
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queue() {
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-#ifndef NDEBUG
-            auto now_thread_id_tmp = std::this_thread::get_id();
-            uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
-            ZJC_DEBUG("timer thread success add thread: %u, thread_idx: %u, conse thread count: %lu", 
-                now_thread_id, thread_idx,
-                (common::GlobalInfo::Instance()->message_handler_thread_count() - 2));
-#endif
         return vblock_queues_[thread_idx];
     }
 
