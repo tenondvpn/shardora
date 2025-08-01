@@ -140,7 +140,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     uint64_t last_timers_us_[common::kInvalidPoolIndex];
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-    bool running_ = false;
+    volatile bool running_ = false;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> vblock_queues_[common::kMaxThreadCount];
 };
