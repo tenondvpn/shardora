@@ -130,7 +130,8 @@ int NetworkInit::Init(int argc, char** argv) {
 
     // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>();
-    kv_sync_ = std::make_shared<sync::KeyValueSync>(vblock_queues_);
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> tmp_vblock_queues_[common::kMaxThreadCount];
+    kv_sync_ = std::make_shared<sync::KeyValueSync>(tmp_vblock_queues_);
     ZJC_INFO("init 0 4");
     InitLocalNetworkId();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
