@@ -130,7 +130,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
     // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>();
-    kv_sync_ = std::make_shared<sync::KeyValueSync>();
+    kv_sync_ = std::make_shared<sync::KeyValueSync>(vblock_queues_);
     ZJC_INFO("init 0 4");
     InitLocalNetworkId();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
@@ -267,7 +267,7 @@ int NetworkInit::Init(int argc, char** argv) {
     RegisterFirewallCheck();
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(
-        hotstuff_mgr_, db_, kv_sync_, account_mgr_);
+        hotstuff_mgr_, db_, kv_sync_, account_mgr_, vblock_queues_);
     hotstuff_syncer_->Start();
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块

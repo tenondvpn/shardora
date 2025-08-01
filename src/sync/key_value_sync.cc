@@ -21,7 +21,9 @@ namespace shardora {
 
 namespace sync {
 
-KeyValueSync::KeyValueSync() {
+KeyValueSync::KeyValueSync(
+        common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* vblock_queues) {
+    vblock_queues_ = vblock_queues;
     
 }
 

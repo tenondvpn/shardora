@@ -48,7 +48,8 @@ public:
             const std::shared_ptr<consensus::HotstuffManager>&,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<sync::KeyValueSync>& kv_sync,
-            std::shared_ptr<block::AccountManager> account_mgr);
+            std::shared_ptr<block::AccountManager> account_mgr,
+            common::ThreadSafeQueue<std::shared_ptr<ViewBlock>>* vblock_queues);
     HotstuffSyncer(const HotstuffSyncer&) = delete;
     HotstuffSyncer& operator=(const HotstuffSyncer&) = delete;
 
@@ -142,7 +143,7 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     bool running_ = false;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlock>>* vblock_queues_ = nullptr;
 };
 
 } // namespace consensus

@@ -125,6 +125,7 @@ private:
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
     WsServer ws_server_;
+    common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> vblock_queues_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };
