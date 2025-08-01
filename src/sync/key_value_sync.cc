@@ -524,6 +524,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     pb_vblock->qc().view(),
                     pb_vblock->block_info().height(),
                     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
+                auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
                 vblock_queues_[thread_idx]->push(pb_vblock);
             // }  
         } while (0);
