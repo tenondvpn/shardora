@@ -83,16 +83,16 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
 }
 
 void HotstuffSyncer::HandleSyncedBlocks(const transport::MessagePtr& msg_ptr) {
-    auto thread_idx = (uint32_t)common::GlobalInfo::Instance()->get_thread_index();
-    if (thread_idx != 1) {
-        return;
-    }
-    auto now_thread_id_tmp = std::this_thread::get_id();
-    uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
+    // auto thread_idx = (uint32_t)common::GlobalInfo::Instance()->get_thread_index();
+    // if (thread_idx != 1) {
+    //     return;
+    // }
+    // auto now_thread_id_tmp = std::this_thread::get_id();
+    // uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
 
     // common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> vblock_queues[common::kMaxThreadCount];
-    ZJC_DEBUG("now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
-    auto& block_queue = *msg_ptr->block_queue;
+    // ZJC_DEBUG("now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
+    auto& block_queue = kv_sync_->vblock_queue();
     // common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> block_queue;
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
     while (block_queue.pop(&pb_vblock)) {
@@ -101,7 +101,7 @@ void HotstuffSyncer::HandleSyncedBlocks(const transport::MessagePtr& msg_ptr) {
                     pb_vblock);
         }
     }    
-    ZJC_DEBUG("over now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
+    // ZJC_DEBUG("over now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
 }
 
 Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {
