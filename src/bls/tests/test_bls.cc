@@ -902,7 +902,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -1054,7 +1056,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -1200,7 +1204,9 @@ TEST_F(TestBls, ThreeRatioFailFine) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -1347,7 +1353,9 @@ TEST_F(TestBls, ThreeRatioFail) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
