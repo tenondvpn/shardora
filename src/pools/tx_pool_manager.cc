@@ -110,7 +110,6 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     if (tx_msg.pubkey().size() == 64u) {
-        // msg_ptr->msg_hash = common::Hash::sm3(tx_msg.SerializeAsString());
         security::GmSsl gmssl;
         if (gmssl.Verify(
                 msg_ptr->msg_hash,
@@ -158,11 +157,10 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         if (msg_ptr->address_info == nullptr) {
             ZJC_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
-            return transport::kFirewallCheckError; // xufeisofly111 bug: 共识压测时这里会导致共识卡住一段时候，之后恢复
+            return transport::kFirewallCheckError;
         }
     }
 
-    // ZJC_DEBUG("pools message fierwall coming success.");
     return transport::kFirewallCheckSuccess;
 }
 
