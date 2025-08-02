@@ -1381,12 +1381,12 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         const view_block::protobuf::QcItem& commit_qc,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
-    // TODO: just test
-    TestAggSign();
-    TestBlsAggSignViewBlock(genesis_nodes, commit_qc, agg_sign);
-    std::cout << "test over." << std::endl;
-    exit(0);
-    //
+    // // TODO: just test
+    // TestAggSign();
+    // TestBlsAggSignViewBlock(genesis_nodes, commit_qc, agg_sign);
+    // std::cout << "test over." << std::endl;
+    // exit(0);
+    // //
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
