@@ -133,11 +133,10 @@ enum MessageType {
     kPoolTimerMessage = 11,
     kInitMessage = 12,
     kC2cMessage = 13,
-    kHotstuffSyncMessage = 14,
-    kHotstuffTimeoutMessage = 15,
-    kHotstuffMessage = 16,
-    kHotstuffSyncTimerMessage = 17,
-    kPacemakerTimerMessage = 18,
+    kHotstuffTimeoutMessage = 14,
+    kHotstuffMessage = 15,
+    kHotstuffSyncTimerMessage = 16,
+    kPacemakerTimerMessage = 17,
     // max (message) type
     kMaxMessageTypeCount,
 };

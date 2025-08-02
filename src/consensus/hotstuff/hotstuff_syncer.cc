@@ -57,8 +57,6 @@ HotstuffSyncer::HotstuffSyncer(
         last_timers_us_[i] = common::TimeUtils::TimestampUs();
     }
     
-    network::Route::Instance()->RegisterMessage(common::kHotstuffSyncMessage,
-        std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
     transport::Processor::Instance()->RegisterProcessor(
         common::kHotstuffSyncTimerMessage,
         std::bind(&HotstuffSyncer::ConsensusTimerMessage, this, std::placeholders::_1));    
@@ -82,7 +80,6 @@ void HotstuffSyncer::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO: test
     return;
     auto header = msg_ptr->header;
-    assert(header.type() == common::kHotstuffSyncMessage);
     
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();    
     consume_queues_[thread_idx].push(msg_ptr);
@@ -208,7 +205,6 @@ Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessag
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    header.set_type(common::kHotstuffSyncMessage);
     header.set_hop_count(0);
     header.mutable_view_block_proto()->CopyFrom(view_block_msg);
     if (!header.has_broadcast()) {
@@ -222,6 +218,7 @@ Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessag
 }
 
 Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::ViewBlockSyncMessage& view_block_msg, int32_t node_num) {
+    assert(false);
     // 只有共识池节点才能同步 ViewBlock
     if (network_id >= network::kConsensusWaitingShardBeginNetworkId) {
         return Status::kError;
@@ -254,7 +251,6 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::Vi
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kHotstuffSyncMessage);
     view_block_msg.set_src_ip(common::GlobalInfo::Instance()->config_local_ip());
     view_block_msg.set_src_port(common::GlobalInfo::Instance()->config_local_port());
     
@@ -490,11 +486,11 @@ Status HotstuffSyncer::ReplyMsg(
         uint32_t network_id,
         const view_block::protobuf::ViewBlockSyncMessage& view_block_msg,
         const transport::MessagePtr& msg_ptr) {
+    asset(false);
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(network_id);
     dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kHotstuffSyncMessage);
     msg.mutable_view_block_proto()->CopyFrom(view_block_msg);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto ip = msg_ptr->header.view_block_proto().src_ip();

@@ -102,7 +102,6 @@ protected:
         msg.set_src_sharding_id(NET_ID);
         dht::DhtKeyManager dht_key(NET_ID);
         msg.set_des_dht_key(dht_key.StrKey());
-        msg.set_type(common::kHotstuffSyncMessage);
 
         auto vb_msg = view_block::protobuf::ViewBlockSyncMessage();
         auto req = vb_msg.mutable_view_block_req();

@@ -384,9 +384,6 @@ void NetworkInit::RegisterFirewallCheck() {
         common::kHotstuffMessage,
         std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
-        common::kHotstuffSyncMessage,
-        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
