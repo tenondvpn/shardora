@@ -21,6 +21,7 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #define private public
+#define ZJC_UNITTEST
 #include "bls/bls_sign.h"
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
@@ -50,7 +51,7 @@ public:
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
-        bls_manager = new BlsManager(security_ptr, db_ptr);
+        bls_manager = new BlsManager(security_ptr, db_ptr, nullptr);
         InitBlsVerificationValue();
     }
 
@@ -256,7 +257,8 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             libff::alt_bn128_Fr::zero(),
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
-            db_ptr);
+            db_ptr,
+            nullptr);
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution(n, valid_t);
     }

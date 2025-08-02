@@ -18,7 +18,7 @@ init() {
             start=$(($first_ip + 0))
             end=$(($second_ip + 0))
             for ((i=start; i<=end; i++)); do
-                if ((i==end - 1));then
+                if ((i==end));then
                     new_ips+="192.168.0.$i"
                 else
                     new_ips+="192.168.0.$i,"
