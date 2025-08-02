@@ -63,18 +63,14 @@ void KeyValueSync::AddSyncHeight(
 }
 
 void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        // std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
-        // auto res = vblock_queues_[i].pop(&pb_vblock);
-        // ZJC_DEBUG("pop view block res: %d", res);
-        std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
-        while (vblock_queues_[i].pop(&pb_vblock)) {
-            if (pb_vblock) {
-                hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
-                        pb_vblock);
-            }
-        }    
-    }
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
+    while (vblock_queues_[thread_idx].pop(&pb_vblock)) {
+        if (pb_vblock) {
+            hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
+                    pb_vblock);
+        }
+    }    
 }
 
 void KeyValueSync::AddSyncViewHash(
