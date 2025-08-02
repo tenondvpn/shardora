@@ -1278,7 +1278,7 @@ void TestAggSign() {
     std::vector<bls::AggBls::KeyPair> kps;
     std::vector<libff::alt_bn128_G2> pks;
     uint32_t n = 1024;
-
+    std::cout << "agg sign n: " << n << std::endl;
     for (uint32_t i = 0; i < n; i++) {
         auto kp = bls::AggBls::GenerateKeyPair();
         kps.push_back(*kp);
@@ -1289,7 +1289,7 @@ void TestAggSign() {
     uint32_t all_each_sign_tm_ms = 0;
     uint32_t all_agg_sign_tm_ms = 0;
     uint32_t all_agg_verify_tm_ms = 0;
-    for (uint32_t i = 0; i < 128; ++i) {
+    for (uint32_t i = 0; i < 10; ++i) {
         auto t1 = common::TimeUtils::TimestampMs();
         std::vector<libff::alt_bn128_G1> g1_sigs;
         for (const auto& kp : kps) {
@@ -1309,9 +1309,9 @@ void TestAggSign() {
         all_agg_verify_tm_ms += (t4 - t3);
     }
 
-    std::cout << "agg sign averge each 1024: " << (all_each_sign_tm_ms / 128) <<
-        " average agg sign: " << (all_agg_sign_tm_ms / 128) <<
-        " average verify: " << (all_agg_verify_tm_ms / 128) <<
+    std::cout << "agg sign averge each 1024: " << (all_each_sign_tm_ms / 10) <<
+        " average agg sign: " << (all_agg_sign_tm_ms / 10) <<
+        " average verify: " << (all_agg_verify_tm_ms / 10) <<
         std::endl;
 }
 
@@ -1322,6 +1322,7 @@ bool GenesisBlockInit::TestBlsAggSignViewBlock(
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
+    std::cout << "threash sign n: " << n << std::endl;
     std::vector<size_t> idx_vec;
     auto qc_hash = hotstuff::GetQCMsgHash(commit_qc);
     auto g1_hash = libBLS::Bls::Hashing(qc_hash);
@@ -1347,7 +1348,7 @@ bool GenesisBlockInit::TestBlsAggSignViewBlock(
     uint32_t all_each_sign_tm_ms = 0;
     uint32_t all_agg_sign_tm_ms = 0;
     uint32_t all_agg_verify_tm_ms = 0;
-    for (uint32_t i = 0; i < 128; ++i) {
+    for (uint32_t i = 0; i < 10; ++i) {
         auto t1 = common::TimeUtils::TimestampMs();
         for (uint32_t i = 0; i < t; ++i) {
             sign_task(i);
@@ -1369,9 +1370,9 @@ bool GenesisBlockInit::TestBlsAggSignViewBlock(
         all_agg_verify_tm_ms += (t4 - t3);
     }
 
-    std::cout << "threash agg sign averge each 1024: " << (all_each_sign_tm_ms / 128) <<
-        " average agg sign: " << (all_agg_sign_tm_ms / 128) <<
-        " average verify: " << (all_agg_verify_tm_ms / 128) <<
+    std::cout << "threash agg sign averge each 1024: " << (all_each_sign_tm_ms / 10) <<
+        " average agg sign: " << (all_agg_sign_tm_ms / 10) <<
+        " average verify: " << (all_agg_verify_tm_ms / 10) <<
         std::endl;
     return true;
 }
