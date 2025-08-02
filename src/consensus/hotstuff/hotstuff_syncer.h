@@ -138,7 +138,6 @@ private:
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     OnRecvViewBlockFn on_recv_vb_fn_;
     std::shared_ptr<db::Db> db_ = nullptr;
-    uint64_t last_timers_us_[common::kInvalidPoolIndex];
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     volatile bool running_ = false;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
