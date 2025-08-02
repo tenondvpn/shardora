@@ -613,7 +613,9 @@ TEST_F(TestBls, AllSuccess) {
         std::string pubkey_str = tmp_security_ptr->GetPublicKey();
         std::string id = tmp_security_ptr->GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
