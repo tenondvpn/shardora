@@ -33,6 +33,10 @@ void KeyValueSync::Init(
         ViewBlockSyncedCallback view_block_synced_callback) {
     hotstuff_mgr_ = hotstuff_mgr;
     view_block_synced_callback_ = view_block_synced_callback;
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        vblock_queues_[i].pop();
+    }
+    
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
