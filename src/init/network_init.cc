@@ -264,10 +264,10 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     block_mgr_->LoadLatestBlocks();
-    RegisterFirewallCheck();
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(
         hotstuff_mgr_, db_, kv_sync_, account_mgr_);
+    RegisterFirewallCheck();
     hotstuff_syncer_->Start();
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
