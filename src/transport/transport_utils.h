@@ -17,7 +17,7 @@
 #include "common/thread_safe_queue.h"
 #include "common/time_utils.h"
 #include "protos/address.pb.h"
-#include "protos/view_block.pb.h
+#include "protos/view_block.pb.h"
 #include "protos/transport.pb.h"
 #include "tnet/tcp_interface.h"
 #include "tnet/tcp_connection.h"
