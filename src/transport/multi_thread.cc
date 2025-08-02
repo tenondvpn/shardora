@@ -65,6 +65,7 @@ void ThreadHandler::HandleMessage() {
             //     msg_ptr->header.hash64(), thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
+            msg_ptr->block_queue = &block_queue_;
             if (msg_ptr->thread_index != -1) {
                 assert(msg_ptr->thread_index == thread_idx);
             } else {
@@ -104,6 +105,7 @@ void ThreadHandler::HandleMessage() {
         if (maping_thread_idx <= (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->block_queue = &block_queue_;
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);

@@ -123,6 +123,7 @@ public:
     bool handled;
     bool is_leader;
     int32_t thread_index;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>* block_queue;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;

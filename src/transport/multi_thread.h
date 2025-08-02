@@ -50,6 +50,7 @@ private:
     MultiThreadHandler* msg_handler_ = nullptr;
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> block_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadHandler);
 };

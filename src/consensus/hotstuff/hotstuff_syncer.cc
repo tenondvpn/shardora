@@ -97,7 +97,7 @@ void HotstuffSyncer::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr)
     // TODO 仅共识池节点参与 view_block_chain 的同步
     // SyncAllPools();
     // ConsumeMessages();
-    HandleSyncedBlocks();
+    HandleSyncedBlocks(msg_ptr);
 }
 
 void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num) {
@@ -181,7 +181,7 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
     return;
 }
 
-void HotstuffSyncer::HandleSyncedBlocks() {
+void HotstuffSyncer::HandleSyncedBlocks(const transport::MessagePtr& msg_ptr) {
     auto thread_idx = (uint32_t)common::GlobalInfo::Instance()->get_thread_index();
     if (thread_idx != 1) {
         return;
@@ -191,7 +191,7 @@ void HotstuffSyncer::HandleSyncedBlocks() {
 
     // common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> vblock_queues[common::kMaxThreadCount];
     ZJC_DEBUG("now_thread_id: %u, thread_idx: %u", now_thread_id, thread_idx);
-    auto& block_queue = vblock_queues_[thread_idx];// kv_sync_->vblock_queue();
+    auto& block_queue = *msg_ptr->block_queue;
     // common::ThreadSafeQueue<std::shared_ptr<ViewBlock>> block_queue;
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
     while (block_queue.pop(&pb_vblock)) {
