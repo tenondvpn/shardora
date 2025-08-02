@@ -1286,17 +1286,33 @@ void TestAggSign() {
     }
 
     std::string str_hash = common::Hash::keccak256("origin message");
-    
-    std::vector<libff::alt_bn128_G1> g1_sigs;
-    for (const auto& kp : kps) {
-        libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::zero();
-        bls::AggBls::Sign(kp.sk_, str_hash, &g1_sig);
-        g1_sigs.push_back(g1_sig);
+    uint32_t all_each_sign_tm_ms = 0;
+    uint32_t all_agg_sign_tm_ms = 0;
+    uint32_t all_agg_verify_tm_ms = 0;
+    for (uint32_t i = 0; i < 128; ++i) {
+        auto t1 = common::TimeUtils::TimestampMs();
+        std::vector<libff::alt_bn128_G1> g1_sigs;
+        for (const auto& kp : kps) {
+            libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::zero();
+            bls::AggBls::Sign(kp.sk_, str_hash, &g1_sig);
+            g1_sigs.push_back(g1_sig);
+        }
+
+        auto t2 = common::TimeUtils::TimestampMs();
+        all_each_sign_tm_ms += (t2 - t1);
+        libff::alt_bn128_G1 g1_sig_agg = libff::alt_bn128_G1::zero();
+        bls::AggBls::Aggregate(g1_sigs, &g1_sig_agg);
+        auto t3 = common::TimeUtils::TimestampMs();
+        all_agg_sign_tm_ms += (t3 - t2);
+        bool ok = bls::AggBls::FastAggregateVerify(pks, str_hash, g1_sig_agg);
+        auto t4 = common::TimeUtils::TimestampMs();
+        all_agg_verify_tm_ms += (t4 - t3);
     }
 
-    libff::alt_bn128_G1 g1_sig_agg = libff::alt_bn128_G1::zero();
-    bls::AggBls::Aggregate(g1_sigs, &g1_sig_agg);
-    bool ok = bls::AggBls::FastAggregateVerify(pks, str_hash, g1_sig_agg);
+    std::cout << "agg sign averge each 1024: " << (all_each_sign_tm_ms / 128) <<
+        " average agg sign: " << (all_agg_sign_tm_ms / 128) <<
+        " average verify: " << (all_agg_verify_tm_ms / 128) <<
+        std::endl;
 }
 
 bool GenesisBlockInit::TestBlsAggSignViewBlock(
@@ -1328,34 +1344,35 @@ bool GenesisBlockInit::TestBlsAggSignViewBlock(
         ZJC_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
     };
 
-    std::vector<std::thread> threads;
-    unsigned int thread_num = std::thread::hardware_concurrency(); 
-    for (uint32_t i = 0; i < t; ++i) {
-        threads.emplace_back(sign_task, i);
-        if (threads.size() >= thread_num || i == t - 1) {
-            for (uint32_t i = 0; i < threads.size(); ++i) {
-                threads[i].join();
-            }
+    uint32_t all_each_sign_tm_ms = 0;
+    uint32_t all_agg_sign_tm_ms = 0;
+    uint32_t all_agg_verify_tm_ms = 0;
+    for (uint32_t i = 0; i < 128; ++i) {
+        auto t1 = common::TimeUtils::TimestampMs();
+        for (uint32_t i = 0; i < t; ++i) {
+            sign_task(i);
+        }
 
-            threads.clear();
-        }        
+        auto t2 = common::TimeUtils::TimestampMs();
+        all_each_sign_tm_ms += (t2 - t1);
+        libBLS::Bls bls_instance = libBLS::Bls(t, n);
+        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+        agg_sign = std::make_shared<libff::alt_bn128_G1>(
+            bls_instance.SignatureRecover(
+                all_signs,
+                lagrange_coeffs));
+        auto t3 = common::TimeUtils::TimestampMs();
+        all_agg_sign_tm_ms += (t3 - t2);
+        libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()]);
+        auto t4 = common::TimeUtils::TimestampMs();
+        all_agg_verify_tm_ms += (t4 - t3);
     }
 
-    libBLS::Bls bls_instance = libBLS::Bls(t, n);
-    std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
-    libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
-    agg_sign = std::make_shared<libff::alt_bn128_G1>(
-        bls_instance.SignatureRecover(
-            all_signs,
-            lagrange_coeffs));
-    if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
-        ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
-            commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
-        return false;
-    }
-
-    agg_sign->to_affine_coordinates();
+    std::cout << "threash agg sign averge each 1024: " << (all_each_sign_tm_ms / 128) <<
+        " average agg sign: " << (all_agg_sign_tm_ms / 128) <<
+        " average verify: " << (all_agg_verify_tm_ms / 128) <<
+        std::endl;
     return true;
 }
 
@@ -1366,7 +1383,8 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
     // TODO: just test
     TestAggSign();
     TestBlsAggSignViewBlock(genesis_nodes, commit_qc, agg_sign);
-
+    std::cout << "test over." << std::endl;
+    exit(0);
     //
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
