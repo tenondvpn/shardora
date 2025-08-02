@@ -98,6 +98,10 @@ private:
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         const view_block::protobuf::QcItem& commit_qc,
         std::shared_ptr<libff::alt_bn128_G1>& agg_sign);
+    bool TestBlsAggSignViewBlock(
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+        const view_block::protobuf::QcItem& commit_qc,
+        std::shared_ptr<libff::alt_bn128_G1>& agg_sign);
     std::shared_ptr<hotstuff::QC> CreateCommitQC(
             const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
             const std::shared_ptr<hotstuff::ViewBlock>& vblock);

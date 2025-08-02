@@ -10,6 +10,7 @@
 
 #define private public
 #define protected public
+#include "bls/agg_bls.h"
 #include "common/defer.h"
 #include "common/encode.h"
 #include "common/global_info.h"
@@ -1273,10 +1274,35 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     return res;
 }
 
-bool GenesisBlockInit::BlsAggSignViewBlock(
+void TestAggSign() {
+    std::vector<bls::AggBls::KeyPair> kps;
+    std::vector<libff::alt_bn128_G2> pks;
+    uint32_t n = 1024;
+
+    for (uint32_t i = 0; i < n; i++) {
+        auto kp = bls::AggBls::GenerateKeyPair();
+        kps.push_back(*kp);
+        pks.push_back(kp->pk());
+    }
+
+    std::string str_hash = common::Hash::keccak256("origin message");
+    
+    std::vector<libff::alt_bn128_G1> g1_sigs;
+    for (const auto& kp : kps) {
+        libff::alt_bn128_G1 g1_sig = libff::alt_bn128_G1::zero();
+        bls::AggBls::Sign(kp.sk_, str_hash, &g1_sig);
+        g1_sigs.push_back(g1_sig);
+    }
+
+    libff::alt_bn128_G1 g1_sig_agg = libff::alt_bn128_G1::zero();
+    bls::AggBls::Aggregate(g1_sigs, &g1_sig_agg);
+    bool ok = bls::AggBls::FastAggregateVerify(pks, str_hash, g1_sig_agg);
+}
+
+bool GenesisBlockInit::TestBlsAggSignViewBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         const view_block::protobuf::QcItem& commit_qc,
-        std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
+        std::shared_ptr<libff::alt_bn128_G1>& agg_sign) {
     std::vector<libff::alt_bn128_G1> all_signs;
     uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
@@ -1305,7 +1331,71 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
     std::vector<std::thread> threads;
     unsigned int thread_num = std::thread::hardware_concurrency(); 
     for (uint32_t i = 0; i < t; ++i) {
-        // sign_task(i);
+        threads.emplace_back(sign_task, i);
+        if (threads.size() >= thread_num || i == t - 1) {
+            for (uint32_t i = 0; i < threads.size(); ++i) {
+                threads[i].join();
+            }
+
+            threads.clear();
+        }        
+    }
+
+    libBLS::Bls bls_instance = libBLS::Bls(t, n);
+    std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+    libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+    agg_sign = std::make_shared<libff::alt_bn128_G1>(
+        bls_instance.SignatureRecover(
+            all_signs,
+            lagrange_coeffs));
+    if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
+        ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
+            commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
+        return false;
+    }
+
+    agg_sign->to_affine_coordinates();
+    return true;
+}
+
+bool GenesisBlockInit::BlsAggSignViewBlock(
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+        const view_block::protobuf::QcItem& commit_qc,
+        std::shared_ptr<libff::alt_bn128_G1>& agg_sign) try {
+    // TODO: just test
+    TestAggSign();
+    TestBlsAggSignViewBlock(genesis_nodes, commit_qc, agg_sign);
+
+    //
+    std::vector<libff::alt_bn128_G1> all_signs;
+    uint32_t n = genesis_nodes.size();
+    uint32_t t = common::GetSignerCount(n);
+    std::vector<size_t> idx_vec;
+    auto qc_hash = hotstuff::GetQCMsgHash(commit_qc);
+    auto g1_hash = libBLS::Bls::Hashing(qc_hash);
+    std::mutex mutex;
+    auto sign_task = [&](uint32_t i) {
+        libff::alt_bn128_G1 sign;
+        bls::BlsSign::Sign(
+            t,
+            n,
+            genesis_nodes[i]->bls_prikey,
+            g1_hash,
+            &sign);
+
+        ZJC_DEBUG("use network %u, index: %d, prikey: %s",
+            commit_qc.network_id(), i, 
+            libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[i]->bls_prikey).c_str());
+        std::lock_guard<std::mutex> lock(mutex);
+        all_signs.push_back(sign);
+        idx_vec.push_back(i + 1);
+        ZJC_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
+    };
+
+    std::vector<std::thread> threads;
+    unsigned int thread_num = std::thread::hardware_concurrency(); 
+    for (uint32_t i = 0; i < t; ++i) {
         threads.emplace_back(sign_task, i);
         if (threads.size() >= thread_num || i == t - 1) {
             for (uint32_t i = 0; i < threads.size(); ++i) {

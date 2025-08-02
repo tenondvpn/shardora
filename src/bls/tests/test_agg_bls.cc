@@ -46,7 +46,7 @@ TEST_F(TestAggBls, PopProveAndPopVerify) {
 TEST_F(TestAggBls, FastAggregateVerify) {
     std::vector<bls::AggBls::KeyPair> kps;
     std::vector<libff::alt_bn128_G2> pks;
-    uint32_t n = 5;
+    uint32_t n = 1024;
 
     for (uint32_t i = 0; i < n; i++) {
         auto kp = bls::AggBls::GenerateKeyPair();
