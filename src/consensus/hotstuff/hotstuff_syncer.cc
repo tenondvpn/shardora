@@ -23,13 +23,6 @@
 #include "protos/view_block.pb.h"
 #include "consensus/hotstuff/view_block_chain.h"
 
-/*
-TODO: 同步模块目前会将本地内存中整条区块链发送给落后节点，（大约4～8）个块
-因此当块本身较大时（如打包了 8192 比交易），会接触到 tcp
-缓冲上限，从而无法完成同步，因此需要改造。
-目前临时调整块打包交易上限为 4096，以便测试
-*/
-
 namespace shardora {
 
 namespace hotstuff {
@@ -52,11 +45,6 @@ HotstuffSyncer::HotstuffSyncer(
     hotstuff_mgr_->SetSyncPoolFn(
             std::bind(&HotstuffSyncer::SyncPool,
                     this, std::placeholders::_1, std::placeholders::_2));
-
-    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        last_timers_us_[i] = common::TimeUtils::TimestampUs();
-    }
-    
     network::Route::Instance()->RegisterMessage(common::kHotstuffSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
     transport::Processor::Instance()->RegisterProcessor(
@@ -189,7 +177,6 @@ void HotstuffSyncer::HandleSyncedBlocks() {
             hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
                     pb_vblock);
         }
-        
     }    
 }
 
