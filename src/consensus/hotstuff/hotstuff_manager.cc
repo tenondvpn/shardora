@@ -122,6 +122,8 @@ int HotstuffManager::Init(
     RegisterCreateTxCallbacks();
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
+    network::Route::Instance()->RegisterMessage(common::kHotstuffTimeoutMessage,
+        std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
     transport::Processor::Instance()->RegisterProcessor(
         common::kPacemakerTimerMessage,
         std::bind(&HotstuffManager::HandleTimerMessage, this, std::placeholders::_1));    

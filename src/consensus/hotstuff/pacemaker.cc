@@ -100,7 +100,158 @@ void Pacemaker::NewQcView(uint64_t qc_view) {
 }
 
 void Pacemaker::OnLocalTimeout() {
+    // TODO: check it
+    return;
+    // TODO(HT): test
+    ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
+    // start a new timer for the timeout case
+    StopTimeoutTimer();
+    duration_->ViewTimeout();
+    ZJC_DEBUG("local time set start duration is OnLocalTimeout called start timeout: %lu", pool_idx_);
+    defer(StartTimeoutTimer());
+    if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
+        return;
+    }
+
+    // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
+    // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
+    if (sync_pool_fn_) {
+        sync_pool_fn_(pool_idx_, 1);
+    }
+
+    auto elect_item = crypto_->GetLatestElectItem(common::GlobalInfo::Instance()->network_id());
+    if (!elect_item) {
+        assert(false);
+        return;
+    }
+
+    // auto leader_idx = leader_rotation_->GetLeader()->index;
+    TC tc;
+    CreateTc(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        CurView(),
+        elect_item->ElectHeight(),
+        0,
+        &tc);
+    auto tc_msg_hash = GetTCMsgHash(tc);
+    // if view is last one, deal directly.
+    // 更换 epoch 后重新打包
+    if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
+            last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
+            last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_msg_hash) {
+        last_timeout_->times_idx = 0;
+        auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
+        tmp_msg_ptr->header.CopyFrom(last_timeout_->header);
+        ZJC_DEBUG("use exist local timeout message pool: %u, "
+            "last_timeout_->header.hotstuff_timeout_proto().view(): %lu, cur view: %lu",
+            pool_idx_, 
+            tmp_msg_ptr->header.hotstuff_timeout_proto().view(), 
+            CurView());
+        SendTimeout(tmp_msg_ptr);
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header;
+
+#ifdef USE_AGG_BLS
+    AggregateSignature partial_sig;
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            tc_msg_hash,
+            &partial_sig) != Status::kSuccess) {
+        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(tc_msg_hash).c_str());
+        return;        
+    }    
+#else
+    std::string bls_sign_x;
+    std::string bls_sign_y;
+
+    // 使用最新的 elect_height 签名
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            tc_msg_hash,
+            &bls_sign_x,
+            &bls_sign_y) != Status::kSuccess) {
+        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(tc_msg_hash).c_str());
+        return;
+    }
+
+#endif
     
+    view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
+    timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
+#ifdef USE_AGG_BLS
+    timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());
+    // 对本节点的 high qc 签名
+    AggregateSignature high_qc_sig;
+#ifdef ENABLE_FAST_HOTSTUFF    
+    auto high_qc_msg_hash = GetQCMsgHash(HighQC()); 
+    if (crypto_->PartialSign(
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            high_qc_msg_hash,
+            &high_qc_sig) != Status::kSuccess) {
+        ZJC_ERROR("sign high qc failed: %u, elect height: %lu, hash: %s",
+            common::GlobalInfo::Instance()->network_id(),
+            elect_item->ElectHeight(),
+            common::Encode::HexEncode(high_qc_msg_hash).c_str());
+        return;
+    }
+#endif    
+    
+    timeout_msg.mutable_high_qc()->CopyFrom(HighQC());
+    timeout_msg.mutable_high_qc_sig()->CopyFrom(high_qc_sig.DumpToProto());
+#else
+    timeout_msg.set_sign_x(bls_sign_x);
+    timeout_msg.set_sign_y(bls_sign_y);
+    timeout_msg.set_view_hash(tc_msg_hash);
+    timeout_msg.set_view(CurView());
+    timeout_msg.set_elect_height(elect_item->ElectHeight());
+    timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
+    timeout_msg.set_leader_idx(0);
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kHotstuffTimeoutMessage);
+    last_timeout_ = msg_ptr;
+    // 停止对当前 view 的投票
+    // if (stop_voting_fn_) {
+    //     stop_voting_fn_(CurView());
+    // }
+
+    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
+        "elect height: %lu, member index: %u, member size: %u, "
+        "bls_sign_x: %s, bls_sign_y: %s, hash64: %lu",
+        common::Encode::HexEncode(tc_msg_hash).c_str(),
+        CurView(), pool_idx_, elect_item->ElectHeight(),
+        timeout_msg.member_id(),
+        leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id()),
+        bls_sign_x.c_str(),
+        bls_sign_y.c_str());    
+#endif
+    timeout_msg.set_view_hash(tc_msg_hash);
+    timeout_msg.set_view(CurView());
+    timeout_msg.set_elect_height(elect_item->ElectHeight());
+    timeout_msg.set_pool_idx(pool_idx_); // 用于分配线程
+    timeout_msg.set_leader_idx(0);
+    
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kHotstuffTimeoutMessage);
+    last_timeout_ = msg_ptr;
+    // 停止对当前 view 的投票
+    // if (stop_voting_fn_) {
+    //     stop_voting_fn_(CurView());
+    // }
+
+    SendTimeout(msg_ptr);
 }
 
 void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& msg_ptr) {
@@ -148,7 +299,183 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
 
 // OnRemoteTimeout 由 Consensus 调用
 void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
+    auto msg = msg_ptr->header;
+    auto& timeout_proto = msg.hotstuff_timeout_proto();
+    ZJC_DEBUG("====4.0 start pool: %d, view: %d, member: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+        msg_ptr->header.hash64());
+    // TODO ecdh decrypt
+    assert(msg.type() == common::kHotstuffTimeoutMessage);
+    if (!msg.has_hotstuff_timeout_proto()) {
+        assert(false);
+        return;
+    }
     
+    if (msg.hotstuff_timeout_proto().pool_idx() != pool_idx_) {
+        assert(false);
+        return;
+    }
+
+    // 统计 bls 签名
+    if (timeout_proto.member_id() >= leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
+        assert(false);
+        return;
+    }
+
+    if (timeout_proto.view() < CurView()) {
+        ZJC_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
+            pool_idx_, timeout_proto.view(), CurView(), timeout_proto.member_id(),
+            msg_ptr->header.hash64());
+        return;
+    }
+
+#ifdef USE_AGG_BLS
+    // 统计 high_qc，用于生成 AggQC
+    if (timeout_proto.view() < high_qcs_view_) {
+        return;
+    }
+
+    if (timeout_proto.view() > high_qcs_view_) {
+        high_qcs_.clear();
+        high_qc_sigs_.clear();
+        high_qcs_view_ = timeout_proto.view();
+    }
+    
+    auto high_qc_of_node = std::make_shared<QC>(timeout_proto.high_qc());
+    auto high_qc_sig_of_node = std::make_shared<AggregateSignature>();
+    if (!high_qc_sig_of_node->LoadFromProto(timeout_proto.high_qc_sig())) {
+        return;
+    }
+    
+    high_qcs_.insert(std::make_pair(timeout_proto.member_id(), high_qc_of_node));
+    CHECK_MEMORY_SIZE(high_qcs_);
+    high_qc_sigs_.push_back(high_qc_sig_of_node);
+    
+    // 生成 TC
+    AggregateSignature partial_sig;
+    if (!partial_sig.LoadFromProto(timeout_proto.view_sig())) {
+        return;
+    }
+    
+    AggregateSignature agg_sig;
+    Status s = crypto_->VerifyAndAggregateSig(
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            timeout_proto.view_hash(),
+            partial_sig,
+            agg_sig);
+    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());    
+    if (s != Status::kSuccess || !agg_sig.IsValid()) {
+        return;
+    }
+
+    auto new_tc = std::make_shared<TC>();
+    auto& tc = *new_tc;
+    CreateTc(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        timeout_proto.view(),
+        timeout_proto.elect_height(),
+        timeout_proto.leader_idx(),
+        &tc);
+    tc.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());    
+
+    std::shared_ptr<AggregateQC> agg_qc = nullptr;
+#ifdef ENABLE_FAST_HOTSTUFF    
+    agg_qc = crypto_->CreateAggregateQC(
+            common::GlobalInfo::Instance()->network_id(),
+            timeout_proto.elect_height(),
+            timeout_proto.view(),
+            high_qcs_,
+            high_qc_sigs_);
+    if (!agg_qc || !agg_qc->IsValid()) {
+        return;
+    }
+#endif
+    // view change
+    NewTc(new_tc);
+    NewAggQc(agg_qc);
+    // AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
+
+    // NewView msg broadcast
+    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
+    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
+    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
+    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
+    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    auto propose_st = Status::kError;
+    // New Propose
+    if (new_proposal_fn_) {
+        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
+    }
+#else
+    std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
+    Status s = crypto_->ReconstructAndVerifyThresSign(
+        msg_ptr,
+        timeout_proto.elect_height(),
+        timeout_proto.view(),
+        timeout_proto.view_hash(),
+        timeout_proto.member_id(),
+        timeout_proto.sign_x(),
+        timeout_proto.sign_y(),
+        reconstructed_sign);
+    ZJC_DEBUG("====4.0.1 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        msg_ptr->header.hash64());
+    if (s != Status::kSuccess) {
+        ZJC_DEBUG("====4.5 over 1 pool: %d, view: %d, member: %d, hash64: %lu, status: %d", 
+            pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+            msg_ptr->header.hash64(),
+            s);
+        return;
+    }
+    
+
+    auto new_tc = std::make_shared<view_block::protobuf::QcItem>();
+    auto& tc = *new_tc;
+    CreateTc(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        timeout_proto.view(),
+        timeout_proto.elect_height(),
+        timeout_proto.leader_idx(),
+        &tc);
+    tc.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
+    tc.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->Y));
+    // 视图切换
+    ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
+        "tc view: %lu, cur view: %lu, high_tc_: %lu",
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+        tc.view(), CurView(), high_tc_->view());
+    // NewTc(new_tc);
+    ZJC_DEBUG("====4.1.0 pool: %d, create tc, view: %lu, member: %d, "
+        "tc view: %lu, cur view: %lu, high_tc_: %lu",
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+        tc.view(), CurView(), high_tc_->view());
+    // NewView msg broadcast
+    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
+    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
+    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
+    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
+    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    auto propose_st = Status::kError;
+    // New Propose
+    if (new_proposal_fn_) {
+        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        propose_st = new_proposal_fn_(new_tc, nullptr, msg_ptr);
+    }
+
+    ZJC_DEBUG("====4.1.1 pool: %d, create tc, view: %lu, member: %d, "
+        "tc view: %lu, cur view: %lu, high_tc_: %lu",
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+        tc.view(), CurView(), high_tc_->view());
+    ZJC_DEBUG("====4.5 over 2 pool: %d, view: %d, member: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
+        msg_ptr->header.hash64());
+#endif
 }
 
 int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {

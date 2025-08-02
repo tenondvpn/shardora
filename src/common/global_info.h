@@ -213,6 +213,7 @@ public:
                     }
                 }
 
+                ZJC_INFO("thread index %d set cosensus index: %d", thread_idx, i);
                 return i;
             }
         }

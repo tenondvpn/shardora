@@ -34,7 +34,6 @@ public:
     }
 
     T* front() {
-        assert(false);
         return rw_queue_.peek();
     }
 
@@ -44,7 +43,7 @@ public:
 
 private:
     static const int32_t kQueueCount = 1024;
-    moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_;
+    moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };

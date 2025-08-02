@@ -271,7 +271,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     }
         
     if (prev_delay_tm_timeout_ + 3000lu <= (now_tm_us / 1000lu) && all_delay_tx_count_ > 0) {
-        ZJC_WARN("pool: %d, average delay us: %lu", pool_index_, (all_delay_tm_us_ / all_delay_tx_count_));
+        ZJC_DEBUG("pool: %d, average delay us: %lu", pool_index_, (all_delay_tm_us_ / all_delay_tx_count_));
         all_delay_tm_us_ = 0;
         all_delay_tx_count_ = 0;
         prev_delay_tm_timeout_ = now_tm_us / 1000lu;
