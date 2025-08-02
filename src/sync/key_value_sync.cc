@@ -22,7 +22,7 @@ namespace shardora {
 namespace sync {
 
 KeyValueSync::KeyValueSync() {
-    vblock_queues_ = new common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>[common::kMaxThreadCount];
+    vblock_queues_ = new common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>[32];
 
 }
 
