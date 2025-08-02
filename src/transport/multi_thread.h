@@ -103,7 +103,6 @@ private:
     bool IsMessageUnique(uint64_t msg_hash);
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
-    void HandleSyncBftTimeout(MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
     bool IsFromMessageUnique(const std::string& from_ip, uint64_t msg_hash);
     int CheckMessageValid(MessagePtr& msg_ptr);

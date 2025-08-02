@@ -184,9 +184,6 @@ void MultiThreadHandler::Destroy() {
 int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
     auto& msg = msg_ptr->header;
     switch (msg.type()) {
-    case common::kConsensusMessage:
-        assert(false);
-        return kTransportPriorityLow;
     case common::kHotstuffMessage:
         return kTransportPrioritySystem;
     case common::kPoolsMessage:
@@ -205,20 +202,6 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     ZJC_EMPTY_DEBUG("message coming hash64: %lu", msg_ptr->header.hash64());
-    if (common::kConsensusMessage == msg_ptr->header.type()) {
-        if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-            return;
-        }
-
-        if ((uint32_t)msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
-                (uint32_t)msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
-                common::GlobalInfo::Instance()->network_id() &&
-                (uint32_t)msg_ptr->header.src_sharding_id() !=
-                common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
-            return;
-        }
-    }
-
     uint32_t priority = GetPriority(msg_ptr);
     if (thread_vec_.empty()) {
         return;
@@ -267,13 +250,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     //     HandleSyncBlockResponse(msg_ptr);
     // }
 
-    if (msg_ptr->header.type() == common::kConsensusMessage && 
-            msg_ptr->header.zbft().bft_timeout() && 
-            msg_ptr->header.zbft().leader_idx() != -1) {
-        HandleSyncBftTimeout(msg_ptr);
-        return;
-    }
-
     threads_message_queues_[thread_index][priority].push(msg_ptr);
     wait_con_[thread_index % all_thread_count_].notify_one();
     ZJC_EMPTY_DEBUG("queue size message push success: %lu, queue_idx: %d, "
@@ -313,58 +289,15 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     case common::kPoolsMessage:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_ + 1);
-    case common::kConsensusMessage:
-        if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
-        }
-
-        ZJC_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
-        return common::kMaxThreadCount;
     case common::kHotstuffMessage:
     case common::kHotstuffSyncTimerMessage:
+    case common::kPacemakerTimerMessage:
         if (msg_ptr->header.hotstuff().pool_index() < common::kInvalidPoolIndex) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff().pool_index()];
         }
         return common::kMaxThreadCount;
-    case common::kHotstuffTimeoutMessage:
-        if (msg_ptr->header.hotstuff_timeout_proto().pool_idx() < common::kInvalidPoolIndex) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff_timeout_proto().pool_idx()];
-        }
-        return common::kMaxThreadCount;
     default:
         return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
-    }
-}
-
-void MultiThreadHandler::HandleSyncBftTimeout(MessagePtr& msg_ptr) {
-    ZJC_EMPTY_DEBUG("success get pool bft timeout hash64: %lu", msg_ptr->header.hash64());
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto& msg = new_msg_ptr->header;
-        msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-        common::DhtKey dht_key;
-        dht_key.construct.net_id = common::GlobalInfo::Instance()->network_id();
-        std::string str_key = std::string(dht_key.dht_key, sizeof(dht_key.dht_key));
-        msg.set_des_dht_key(str_key);
-        msg.set_type(common::kConsensusMessage);
-        auto& bft_msg = *msg.mutable_zbft();
-        bft_msg.set_sync_block(true);
-        bft_msg.set_member_index(-1);
-        bft_msg.set_leader_idx(msg_ptr->header.zbft().leader_idx());
-        bft_msg.set_pool_index(i);
-        bft_msg.set_bft_timeout(true);
-        auto queue_idx = GetThreadIndex(new_msg_ptr);
-        if (queue_idx >= common::kMaxThreadCount) {
-            assert(false);
-            return;
-        }
-
-        ZJC_EMPTY_DEBUG("success handle pool: %u, bft timeout hash64: %lu", i, msg_ptr->header.hash64());
-        transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header);
-        uint32_t priority = GetPriority(new_msg_ptr);
-        threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
-        assert(new_msg_ptr->times_idx < 128);
-        wait_con_[queue_idx % all_thread_count_].notify_one();
     }
 }
 
