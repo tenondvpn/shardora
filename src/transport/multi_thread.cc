@@ -336,6 +336,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         if (msg_ptr->header.hotstuff().pool_index() < common::kInvalidPoolIndex) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff().pool_index()];
         }
+        assert(false);
         return common::kMaxThreadCount;
     case common::kHotstuffTimeoutMessage:
         if (msg_ptr->header.hotstuff_timeout_proto().pool_idx() < common::kInvalidPoolIndex) {
