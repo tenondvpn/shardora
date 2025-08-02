@@ -114,10 +114,10 @@ public:
         }
     }
 
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
-        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        return vblock_queues_[thread_idx];
-    }
+    // common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
+    //     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    //     return vblock_queues_[thread_idx];
+    // }
 
 private:
     void CheckSyncTimeout();
@@ -129,6 +129,7 @@ private:
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
     void ConsensusTimerMessage();
+    void HotstuffConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     uint32_t PopKvMessage();
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(

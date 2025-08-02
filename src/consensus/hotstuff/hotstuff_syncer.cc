@@ -47,9 +47,6 @@ HotstuffSyncer::HotstuffSyncer(
                     this, std::placeholders::_1, std::placeholders::_2));
     network::Route::Instance()->RegisterMessage(common::kHotstuffSyncMessage,
         std::bind(&HotstuffSyncer::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kHotstuffSyncTimerMessage,
-        std::bind(&HotstuffSyncer::ConsensusTimerMessage, this, std::placeholders::_1));    
 }
 
 HotstuffSyncer::~HotstuffSyncer() {}
@@ -170,14 +167,14 @@ void HotstuffSyncer::SyncViewBlock(const uint32_t& pool_idx, const HashStr& hash
 }
 
 void HotstuffSyncer::HandleSyncedBlocks() {
-    auto& block_queue = kv_sync_->vblock_queue();
-    std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
-    while (block_queue.pop(&pb_vblock)) {
-        if (pb_vblock) {
-            hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
-                    pb_vblock);
-        }
-    }    
+    // auto& block_queue = kv_sync_->vblock_queue();
+    // std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
+    // while (block_queue.pop(&pb_vblock)) {
+    //     if (pb_vblock) {
+    //         hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
+    //                 pb_vblock);
+    //     }
+    // }    
 }
 
 Status HotstuffSyncer::Broadcast(const view_block::protobuf::ViewBlockSyncMessage& view_block_msg) {

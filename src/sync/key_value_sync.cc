@@ -33,17 +33,15 @@ void KeyValueSync::Init(
         ViewBlockSyncedCallback view_block_synced_callback) {
     hotstuff_mgr_ = hotstuff_mgr;
     view_block_synced_callback_ = view_block_synced_callback;
-    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
-        vblock_queues_[i].pop(&pb_vblock);
-    }
-
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
     kv_tick_.CutOff(
         10000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kHotstuffSyncTimerMessage,
+        std::bind(&KeyValueSync::HotstuffConsensusTimerMessage, this, std::placeholders::_1));    
 }
 
 int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
@@ -62,6 +60,21 @@ void KeyValueSync::AddSyncHeight(
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
+}
+
+void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        // std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
+        // auto res = vblock_queues_[i].pop(&pb_vblock);
+        // ZJC_DEBUG("pop view block res: %d", res);
+        std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
+        while (vblock_queues_[i].pop(&pb_vblock)) {
+            if (pb_vblock) {
+                hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
+                        pb_vblock);
+            }
+        }    
+    }
 }
 
 void KeyValueSync::AddSyncViewHash(
