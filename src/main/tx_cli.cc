@@ -519,6 +519,12 @@ int tx_main(int argc, char** argv) {
 
                 from_prikey = g_prikeys[prikey_pos];
                 thread_security->SetPrivateKey(from_prikey);
+                if (pool_id != -1) {
+                    if (common::GetAddressPoolIndex(thread_security->GetAddress()) != pool_id) {
+                        continue;
+                    }
+                }
+                
                 uint64_t nonce = src_prikey_with_nonce[from_prikey];
                 if (nonce + 10000 <= prikey_with_nonce[from_prikey]) {
                     printf("update address nonce: %s, now: %lu, chain: %lu\n", 
