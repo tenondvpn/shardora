@@ -501,6 +501,8 @@ int tx_main(int argc, char** argv) {
         UpdateAddressNonceThread();
     };
 
+    const std::string key = "test_for_batch_content";
+    const std::string value = "1234567890123456789012341234567812345678901234567890123411234567890123456789012341234567812345678901234567890123412345678123456789012345678901234123456781234567890123456789012341234567823456781234567890123456789012341234567812345678901234567890123412345678";
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
         std::cout << "begin: " << begin_idx << ", end: " << end_idx << ", all: " << g_prikeys.size() << std::endl;
         std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
@@ -520,8 +522,6 @@ int tx_main(int argc, char** argv) {
 
                     from_prikey = g_prikeys[prikey_pos];
                     thread_security->SetPrivateKey(from_prikey);
-                        
-
                     uint64_t nonce = src_prikey_with_nonce[from_prikey];
                     if (nonce + 10000 <= prikey_with_nonce[from_prikey]) {
                         printf("update address nonce: %s, now: %lu, chain: %lu\n", 
@@ -539,8 +539,8 @@ int tx_main(int argc, char** argv) {
                 ++prikey_with_nonce[from_prikey],
                 from_prikey,
                 to,
-                "",
-                "",
+                key,
+                value,
                 1980,
                 10000,
                 1,
