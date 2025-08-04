@@ -45,7 +45,7 @@ std::string global_chain_node_ip = "127.0.0.1";
 std::unordered_map<std::string, uint64_t> prikey_with_nonce;
 std::unordered_map<std::string, uint64_t> src_prikey_with_nonce;
 uint64_t batch_nonce_check_count = 10240;
-static const uint32_t kThreadCount = 16u;
+static uint32_t kThreadCount = 16u;
 std::map<std::string, std::shared_ptr<nlohmann::json>> account_info_jsons;
 
 
@@ -428,7 +428,7 @@ std::shared_ptr<nlohmann::json> GetAddressInfo(http::HttpClient& http_cli, const
 
 int tx_main(int argc, char** argv) {
     // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool
-    uint32_t pool_id = -1;
+    int32_t pool_id = -1;
     auto ip = kBroadcastIp;
     auto port = kBroadcastPort;
     auto delayus_a = delayus;
@@ -524,7 +524,7 @@ int tx_main(int argc, char** argv) {
                         continue;
                     }
                 }
-                
+
                 uint64_t nonce = src_prikey_with_nonce[from_prikey];
                 if (nonce + 10000 <= prikey_with_nonce[from_prikey]) {
                     printf("update address nonce: %s, now: %lu, chain: %lu\n", 
@@ -559,9 +559,14 @@ int tx_main(int argc, char** argv) {
     };
     
     std::vector<std::thread> thread_vec;
-    uint32_t each_thread_size = g_prikeys.size() / kThreadCount;
-    for (uint32_t i = 0; i < kThreadCount; ++i) {
-        thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
+    if (pool_id == -1) {
+        uint32_t each_thread_size = g_prikeys.size() / kThreadCount;
+        for (uint32_t i = 0; i < kThreadCount; ++i) {
+            thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
+        }
+    } else {
+        kThreadCount = 2;
+        tx_thread(pool_id, pool_id + 1);
     }
 
     auto tps_thread = [&]() {
