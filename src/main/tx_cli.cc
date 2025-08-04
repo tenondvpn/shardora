@@ -562,8 +562,8 @@ int tx_main(int argc, char** argv) {
             thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
         }
     } else {
-        kThreadCount = 2;
-        tx_thread(pool_id, pool_id + 1);
+        kThreadCount = 1;
+        thread_vec.push_back(std::thread(tx_thread, pool_id, pool_id + 1));
     }
 
     auto tps_thread = [&]() {
