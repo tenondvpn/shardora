@@ -378,7 +378,15 @@ public:
             block.height(),
             view_block.qc().view_block_hash(),
             batch);
-        batch.Put(key, view_block.SerializeAsString());
+        std::string block_str;
+        view_block.SerializeToString(&block_str);
+        if (view_block.block_info().tx_list_size() >= 500) {
+            ZJC_WARN("block tx size: %u, block size: %u",
+                view_block.block_info().tx_list_size(), 
+                block_str.size());
+        }
+
+        batch.Put(key, block_str);
         std::string view_key;
         view_key.reserve(48);
         view_key.append(kViewBlockVaildView);
