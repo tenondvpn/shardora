@@ -452,7 +452,7 @@ int tx_main(int argc, char** argv) {
         multi = std::stoi(argv[7]);
     }    
 
-    std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
+    std::cout << "send tcp client ip_port" << ip << ": " << port << ", pool_id: " << pool_id << std::endl;
     
     LoadAllAccounts(shardnum);
     SignalRegister();
