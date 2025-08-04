@@ -321,7 +321,7 @@ void TcpConnection::OnWrite() {
                                  strerror(errno));
                     ioError = true;
                 } else {
-                    ZJC_ERROR("writeAble false, [%d] [%s], n: %d", socket_->GetFd(), strerror(errno), n);
+                    ZJC_DEBUG("writeAble false, [%d] [%s], n: %d", socket_->GetFd(), strerror(errno), n);
                     writeAble = false;
                 }
 
