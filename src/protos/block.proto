@@ -42,6 +42,8 @@ message BlockTx {
     repeated TxLog events = 16;
     repeated pools.protobuf.TxDelayTestInfo tx_debug = 17;
     optional bytes unique_hash = 18;
+    optional bytes key = 19;
+    optional bytes value = 20;
 }
 
 message KeyValueInfo {
