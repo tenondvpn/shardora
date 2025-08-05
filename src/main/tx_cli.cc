@@ -563,7 +563,15 @@ int tx_main(int argc, char** argv) {
         }
     } else {
         kThreadCount = 1;
-        thread_vec.push_back(std::thread(tx_thread, pool_id, pool_id + 1));
+        for (uint32_t i = 0; i < g_prikeys.size(); ++i) {
+            auto from_prikey = g_prikeys[i];
+            std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+            thread_security->SetPrivateKey(from_prikey);
+            if (common::GetAddressPoolIndex(thread_security->GetAddress()) == pool_id) {
+                thread_vec.push_back(std::thread(tx_thread, pool_id, pool_id + 1));
+                break;
+            }
+        }
     }
 
     auto tps_thread = [&]() {

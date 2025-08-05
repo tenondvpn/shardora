@@ -242,7 +242,8 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first);
                     auto tx_ptr = nonce_iter->second;
-                    ZJC_DEBUG("over pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
+                    ZJC_DEBUG("over pop success add system tx nonce addr: %s, "
+                        "addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                         tx_ptr->address_info->nonce(), 
                         tx_ptr->tx_info->nonce(),

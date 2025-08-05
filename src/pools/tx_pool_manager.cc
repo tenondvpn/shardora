@@ -1040,7 +1040,8 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("trace tx success add local transfer to tx pool: %u, step: %d, addr: %s, nonce: %lu, from pk: %s, to: %s",
+    ZJC_DEBUG("trace tx success add local transfer to tx pool: %u, "
+        "step: %d, addr: %s, nonce: %lu, from pk: %s, to: %s",
         pool_index,
         msg_ptr->header.tx_proto().step(),
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
