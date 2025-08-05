@@ -155,7 +155,7 @@ static const uint32_t kKcpSendWindowSize = 128u;
 static const uint32_t kMsgPacketMagicNum = 345234223;
 static const int32_t kTransportTxBignumVersionNum = 1;
 static const int32_t kTransportVersionNum = 2;
-static const int32_t kTcpBuffLength = 2 * 1024 * 1024;
+static const int32_t kTcpBuffLength = 10 * 1024 * 1024;
 
 inline void CloseSocket(int sock) {
 #ifdef _WIN32
