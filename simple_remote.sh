@@ -101,6 +101,7 @@ make_package() {
     cp /root/shardora/root_nodes /root/zjnodes/zjchain/pkg/shards2
     cp /root/shardora/temp_cmd.sh /root/zjnodes/zjchain/pkg
     cp /root/shardora/start_cmd.sh /root/zjnodes/zjchain/pkg
+    cp /root/shardora/wondershaper /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
     cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
     cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
