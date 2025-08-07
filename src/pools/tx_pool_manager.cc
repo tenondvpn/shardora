@@ -39,7 +39,7 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(this, security_, i, db, kv_sync);
     }
 
-    ZJC_DEBUG("TxPoolManager init success: %d", common::kInvalidPoolIndex);
+    ZJC_EMPTY_DEBUG("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
     // 每 10ms 会共识一次时间块
     tools_tick_.CutOff(
@@ -85,25 +85,25 @@ void TxPoolManager::InitCrossPools() {
 }
 
 int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    // ZJC_DEBUG("pools message fierwall coming.");
+    // ZJC_EMPTY_DEBUG("pools message fierwall coming.");
     // return transport::kFirewallCheckSuccess;
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
     if (msg_ptr->header.has_sync_heights() && !msg_ptr->header.has_tx_proto()) {
         // TODO: check all message with valid signature
-        ZJC_DEBUG("pools message fierwall coming is sync heights.");
+        ZJC_EMPTY_DEBUG("pools message fierwall coming is sync heights.");
         return transport::kFirewallCheckSuccess;
     }
 
     if (!tx_msg.has_sign() || !tx_msg.has_pubkey() ||
             tx_msg.sign().empty() || tx_msg.pubkey().empty()) {
-        ZJC_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
+        ZJC_EMPTY_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
             tx_msg.sign().size(), tx_msg.pubkey().size(), header.hash64());
         return transport::kFirewallCheckError;
     }
 
     if (!account_tx_qps_check_.check(tx_msg.pubkey())) {
-        ZJC_DEBUG("pools check firewall message failed, invalid qps limit pk: %d, hash64: %lu", 
+        ZJC_EMPTY_DEBUG("pools check firewall message failed, invalid qps limit pk: %d, hash64: %lu", 
             tx_msg.pubkey().size(), header.hash64());
         return transport::kFirewallCheckError;
     }
@@ -122,7 +122,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         auto tmp_acc_ptr = acc_mgr_.lock();
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(gmssl.GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("failed get account info: %s", 
+            ZJC_EMPTY_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(gmssl.GetAddress(tx_msg.pubkey())).c_str());
             return transport::kFirewallCheckError;
         }
@@ -139,7 +139,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         auto tmp_acc_ptr = acc_mgr_.lock();
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(oqs.GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("failed get account info: %s", 
+            ZJC_EMPTY_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(oqs.GetAddress(tx_msg.pubkey())).c_str());
             return transport::kFirewallCheckError;
         }
@@ -155,7 +155,7 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         auto tmp_acc_ptr = acc_mgr_.lock();
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("failed get account info: %s", 
+            ZJC_EMPTY_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
             return transport::kFirewallCheckError;
         }
@@ -181,7 +181,7 @@ void TxPoolManager::SyncCrossPool() {
         if (ex_height != common::kInvalidUint64) {
             uint32_t count = 0;
             for (uint64_t i = ex_height; i < cross_synced_max_heights_[i] && count < 64; ++i, ++count) {
-                ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+                ZJC_EMPTY_DEBUG("now add sync height 1, %u_%u_%lu", 
                     network::kRootCongressNetworkId,
                     common::kImmutablePoolSize,
                     i);
@@ -207,7 +207,7 @@ void TxPoolManager::FlushHeightTree() {
         }
     }
 
-//     ZJC_DEBUG("success call FlushHeightTree");
+//     ZJC_EMPTY_DEBUG("success call FlushHeightTree");
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
@@ -239,7 +239,7 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     auto etime = common::TimeUtils::TimestampMs();
     if (etime - now_tm_ms >= 10) {
-        ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
+        ZJC_EMPTY_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
     }
 
     tools_tick_.CutOff(
@@ -265,7 +265,7 @@ void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
                 root_synced_max_heights_[root_prev_synced_pool_index_]) {
             SyncRootBlockWithMaxHeights(
                 root_prev_synced_pool_index_, root_synced_max_heights_[root_prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            ZJC_EMPTY_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 root_prev_synced_pool_index_,
                 res, 
                 root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
@@ -281,7 +281,7 @@ void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
                 root_synced_max_heights_[root_prev_synced_pool_index_]) {
             SyncRootBlockWithMaxHeights(
                 root_prev_synced_pool_index_, root_synced_max_heights_[root_prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            ZJC_EMPTY_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 root_prev_synced_pool_index_,
                 res, root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
                 root_synced_max_heights_[root_prev_synced_pool_index_]);
@@ -303,7 +303,7 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            ZJC_EMPTY_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 prev_synced_pool_index_,
                 res, 
                 tx_pool_[prev_synced_pool_index_].latest_height(),
@@ -319,7 +319,7 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            ZJC_EMPTY_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 prev_synced_pool_index_,
                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
                 synced_max_heights_[prev_synced_pool_index_]);
@@ -332,7 +332,7 @@ void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t heig
         return;
     }
 
-    ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+    ZJC_EMPTY_DEBUG("now add sync height 1, %u_%u_%lu", 
         network::kRootCongressNetworkId,
         pool_idx,
         height);
@@ -358,7 +358,7 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
         return;
     }
 
-    ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+    ZJC_EMPTY_DEBUG("now add sync height 1, %u_%u_%lu", 
         net_id,
         pool_idx,
         height);
@@ -401,7 +401,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             if (tx_pool_[address_info->pool_index()].all_tx_size() >= 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-                ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
+                ZJC_EMPTY_DEBUG("add failed extend %u, %u, all valid: %u", 
                     tx_pool_[address_info->pool_index()].all_tx_size(), 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
                     tx_pool_[address_info->pool_index()].all_tx_size());
@@ -414,7 +414,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ++prev_tps_count_;
             uint64_t dur = 1000lu;
             if (now_tm > prev_show_tm_ms_ + dur) {
-                ZJC_DEBUG("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
+                ZJC_EMPTY_DEBUG("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
                         -1, pools_msg_queue_.size(),
                         address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
@@ -430,7 +430,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
-        ZJC_DEBUG("header.has_sync_heights()");
+        ZJC_EMPTY_DEBUG("header.has_sync_heights()");
         HandleSyncPoolsMaxHeight(msg_ptr);
         return;
     }
@@ -450,7 +450,7 @@ int TxPoolManager::BackupConsensusAddTxs(
         const pools::TxItemPtr& valid_tx) {
     if (tx_pool_[pool_index].all_tx_size() >= 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
+        ZJC_EMPTY_DEBUG("add failed extend %u, %u, all valid: %u", 
             tx_pool_[pool_index].all_tx_size(), 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
             tx_pool_[pool_index].all_tx_size());
@@ -468,7 +468,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
-        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, nonce: %lu",
+        ZJC_EMPTY_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, nonce: %lu",
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
             common::Encode::HexEncode(tx_msg.to()).c_str(),
@@ -500,7 +500,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             }
             
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu nonce: %lu", 
+            ZJC_EMPTY_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu nonce: %lu", 
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
                 common::Encode::HexEncode(tx_msg.to()).c_str(),
                 tx_msg.amount(),
@@ -516,7 +516,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local to tx message hash: %s, nonce: %lu",
+            ZJC_EMPTY_DEBUG("get local to tx message hash: %s, nonce: %lu",
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
                 msg_ptr->header.tx_proto().nonce());
             break;
@@ -530,14 +530,14 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
         default:
-            ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
+            ZJC_EMPTY_DEBUG("invalid tx step: %d", tx_msg.step());
             assert(false);
             break;
         }
 
         if (pool_index == common::kInvalidPoolIndex) {
             if (!msg_ptr->address_info) {
-                ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
+                ZJC_EMPTY_DEBUG("invalid tx step: %d", tx_msg.step());
                 return;
             }
 
@@ -561,7 +561,7 @@ void TxPoolManager::SyncPoolsMaxHeight() {
         auto* sync_heights = msg_ptr->header.mutable_sync_heights();
         sync_heights->set_req(true);
         transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-        ZJC_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
+        ZJC_EMPTY_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
             i, msg_ptr->header.hash64(), msg_ptr->header.src_sharding_id());
         network::Route::Instance()->Send(msg_ptr);
     }
@@ -569,12 +569,12 @@ void TxPoolManager::SyncPoolsMaxHeight() {
 
 void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr) {
     if (tx_pool_ == nullptr) {
-        ZJC_DEBUG("tx_pool_ == nullptr");
+        ZJC_EMPTY_DEBUG("tx_pool_ == nullptr");
         return;
     }
 
     if (!msg_ptr->header.has_sync_heights()) {
-        ZJC_DEBUG("!msg_ptr->header.has_sync_heights()");
+        ZJC_EMPTY_DEBUG("!msg_ptr->header.has_sync_heights()");
         return;
     }
 
@@ -616,7 +616,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, "
+        ZJC_EMPTY_DEBUG("response pool heights: %s, cross pool heights: %s, "
             "now_max_sharding_id_: %u, src sharding id: %u, src hash64: %lu, des hash64: %lu",
             sync_debug.c_str(), cross_debug.c_str(),
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
@@ -652,7 +652,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                         break;
                     }
                 
-                    ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
+                    ZJC_EMPTY_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
                         "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
                         sharding_id, update_height, update_height,
                         cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
@@ -687,7 +687,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 }
 
-                ZJC_DEBUG("get root response pool heights: %s", sync_debug.c_str());
+                ZJC_EMPTY_DEBUG("get root response pool heights: %s", sync_debug.c_str());
             }
             return;
         }
@@ -719,7 +719,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+        ZJC_EMPTY_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 
@@ -760,7 +760,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     }
 
     if (!tx_msg.has_key() || tx_msg.key() != protos::kJoinElectVerifyG2) {
-        ZJC_DEBUG("key size error now: %d, max: %d.",
+        ZJC_EMPTY_DEBUG("key size error now: %d, max: %d.",
             tx_msg.key().size(), kTxStorageKeyMaxSize);
         return;
     }
@@ -783,13 +783,13 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     uint32_t tmp_shard = join_info.shard_id();
     if (tmp_shard != network::kRootCongressNetworkId) {
         if (tmp_shard != msg_ptr->address_info->sharding_id()) {
-            ZJC_DEBUG("join des shard error: %d,  %d.",
+            ZJC_EMPTY_DEBUG("join des shard error: %d,  %d.",
                 tmp_shard, msg_ptr->address_info->sharding_id());
             return;
         }
     }
     
-    ZJC_DEBUG("elect tx msg hash is %s", 
+    ZJC_EMPTY_DEBUG("elect tx msg hash is %s", 
         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
     msg_ptr->msg_hash = msg_hash;
 }
@@ -803,7 +803,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     // }
 
     if (tx_msg.gas_price() <= 0 || tx_msg.gas_limit() <= consensus::kCallContractDefaultUseGas) {
-        ZJC_DEBUG("gas price and gas limit error %lu, %lu",
+        ZJC_EMPTY_DEBUG("gas price and gas limit error %lu, %lu",
             tx_msg.gas_price(), tx_msg.gas_limit());
         ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
@@ -839,7 +839,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    ZJC_DEBUG("success add tx contract execute prepyament id: %s, prepayment: %lu, nonce: %lu",
+    ZJC_EMPTY_DEBUG("success add tx contract execute prepyament id: %s, prepayment: %lu, nonce: %lu",
         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(), 
         msg_ptr->address_info->balance(), 
         msg_ptr->address_info->nonce());
@@ -850,7 +850,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     // user can't direct call contract, pay contract prepayment and call contract direct
     if (!tx_msg.contract_input().empty() ||
             tx_msg.contract_prepayment() < consensus::kCallContractDefaultUseGas) {
-        ZJC_DEBUG("call contract not has valid contract input"
+        ZJC_EMPTY_DEBUG("call contract not has valid contract input"
             "and contract prepayment invalid.");
         return;
     }
@@ -862,7 +862,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kCallContractDefaultUseGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address %s balance invalid: %lu, transfer amount: %lu, "
+        ZJC_EMPTY_DEBUG("address %s balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, from: %s, to: %s",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->balance(),
@@ -915,7 +915,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
-        ZJC_DEBUG("key size error now: %d, max: %d.",
+        ZJC_EMPTY_DEBUG("key size error now: %d, max: %d.",
             tx_msg.key().size(), kTxStorageKeyMaxSize);
         return false;
     }
@@ -936,7 +936,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address: %s balance invalid: %lu, transfer amount: %lu, "
+        ZJC_EMPTY_DEBUG("address: %s balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->balance(),
@@ -953,7 +953,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
     if (!tx_msg.has_contract_code()) {
-        ZJC_DEBUG("create contract not has valid contract code: %s",
+        ZJC_EMPTY_DEBUG("create contract not has valid contract code: %s",
             common::Encode::HexEncode(tx_msg.contract_code()).c_str());
         return;
     }
@@ -980,7 +980,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    ZJC_DEBUG("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    ZJC_EMPTY_DEBUG("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     auto tmp_acc_ptr = acc_mgr_.lock();
     protos::AddressInfoPtr contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info != nullptr) {
@@ -991,7 +991,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             default_gas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+        ZJC_EMPTY_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, gas price: %lu",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
@@ -1024,7 +1024,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     }
 
     if (item_functions_[msg_ptr->header.tx_proto().step()] == nullptr) {
-        ZJC_DEBUG("not registered step : %d", msg_ptr->header.tx_proto().step());
+        ZJC_EMPTY_DEBUG("not registered step : %d", msg_ptr->header.tx_proto().step());
         assert(false);
         return;
     }
@@ -1040,7 +1040,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("trace tx success add local transfer to tx pool: %u, "
+    ZJC_EMPTY_DEBUG("trace tx success add local transfer to tx pool: %u, "
         "step: %d, addr: %s, nonce: %lu, from pk: %s, to: %s",
         pool_index,
         msg_ptr->header.tx_proto().step(),
