@@ -54,6 +54,9 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage() {
+#ifdef TEST_NO_CROSS
+    return;
+#endif
 #ifdef USE_AGG_BLS
     return;
 #endif

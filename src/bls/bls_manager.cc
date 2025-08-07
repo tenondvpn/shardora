@@ -53,6 +53,9 @@ BlsManager::BlsManager(
 BlsManager::~BlsManager() {}
 
 void BlsManager::TimerMessage() {
+#ifdef TEST_NO_CROSS
+    return;
+#endif
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
@@ -422,6 +425,9 @@ int BlsManager::GetVerifyHash(
 }
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+#ifdef TEST_NO_CROSS
+    return;
+#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
