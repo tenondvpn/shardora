@@ -353,8 +353,10 @@ void TcpTransport::Output() {
                         continue;
                     }
 
-                    ZJC_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] res: %d, tcp_conn: %lu",
-                        item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, res, tcp_conn.get());
+                    ZJC_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] "
+                        "res: %d, tcp_conn: %lu, size: %u",
+                        item_ptr->des_ip.c_str(), item_ptr->port, 
+                        item_ptr->hash64, res, tcp_conn.get(), item_ptr->msg.size());
                     break;
                 }
 
