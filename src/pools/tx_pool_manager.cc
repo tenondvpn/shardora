@@ -1100,6 +1100,7 @@ static std::unordered_map<std::string, std::string> g_pri_pub_map;
 static std::vector<std::string> g_oqs_prikeys;
 static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
 static std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+static std::unordered_map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_map;
 
 static void LoadAllAccounts(int32_t shardnum=3) {
     FILE* fd = fopen((std::string("/root/shardora/init_accounts") + std::to_string(shardnum)).c_str(), "r");
@@ -1143,21 +1144,21 @@ static void LoadAllAccounts(int32_t shardnum=3) {
 
 void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32_t tps) {
     LoadAllAccounts(3);
+    std::shared_ptr<address::protobuf::AddressInfo> address_[pool_end + 1];
     std::shared_ptr<security::Security> pool_sec[pool_end + 1];
     for (auto i = pool_begin; i <= pool_end; ++i) {
         auto from_prikey = g_prikeys[i];
+        std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         for (uint32_t tmp_idx = 0; tmp_idx < g_prikeys.size(); ++tmp_idx) {
             from_prikey = g_prikeys[i];
-            std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
             thread_security->SetPrivateKey(from_prikey);
             if (common::GetAddressPoolIndex(thread_security->GetAddress()) == i) {
                 break;
             }
         }
 
-        std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
-        thread_security->SetPrivateKey(from_prikey);
         pool_sec[i] = thread_security;
+        address_map[from_prikey] = prefix_db_->GetAddressInfo(thread_security->GetAddress());
         auto iter = prikey_with_nonce.find(from_prikey);
         if (iter == prikey_with_nonce.end()) {
             prikey_with_nonce[from_prikey] = 1;
@@ -1170,9 +1171,9 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
             usleep(1000000lu);
             continue;
         }
-        
+
         for (auto i = pool_begin; i <= pool_end; ++i) {
-            auto from_prikey = g_prikeys[i];
+            auto from_prikey = pool_sec[i]->GetPrikey();
             auto tx_msg_ptr = CreateTransactionWithAttr(
                 pool_sec[i],
                 ++prikey_with_nonce[from_prikey],
@@ -1184,6 +1185,7 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
                 10000,
                 1,
                 3);
+            tx_msg_ptr->address_info = address_map[from_prikey];
             pools::TxItemPtr tx_ptr = item_functions_[0](tx_msg_ptr);
             if (tx_ptr == nullptr) {
                 assert(false);
