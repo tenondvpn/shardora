@@ -1166,6 +1166,11 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
 
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     while (!common::GlobalInfo::Instance()->global_stoped()) {
+        if (item_functions_[0] == nullptr) {
+            usleep(1000000lu);
+            continue;
+        }
+        
         for (auto i = pool_begin; i <= pool_end; ++i) {
             auto from_prikey = g_prikeys[i];
             auto tx_msg_ptr = CreateTransactionWithAttr(
