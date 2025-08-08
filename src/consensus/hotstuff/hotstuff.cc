@@ -1977,7 +1977,6 @@ Status Hotstuff::SendMsgToLeader(
     }
 
     trans_msg->header.set_ecdh_encrypt(crypt_msg);
-
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (leader->index != local_idx) {
         // if (leader->public_ip == 0 || leader->public_port == 0) {

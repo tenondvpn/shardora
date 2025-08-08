@@ -13,6 +13,7 @@
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "security/ecdsa/secp256k1.h"
+#include "security/ecdsa/ecdsa.h"
 #include "security/gmssl/gmssl.h"
 #include "security/oqs/oqs.h"
 #include "transport/processor.h"
@@ -49,6 +50,9 @@ TxPoolManager::TxPoolManager(
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
+#ifdef USE_SERVER_TEST_TRANSACTION
+    test_tx_thread_ = std::make_shared<std::thread>(&TxPoolManager::CreateTestTxs, this, 0, 0, 1000);
+#endif
 }
 
 TxPoolManager::~TxPoolManager() {
@@ -1016,7 +1020,169 @@ void TxPoolManager::BftCheckInvalidGids(
     }
 }
 
+static transport::MessagePtr CreateTransactionWithAttr(
+        std::shared_ptr<security::Security>& security,
+        uint64_t nonce,
+        const std::string& from_prikey,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_nonce(nonce);
+    new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
+
+static std::unordered_map<std::string, std::string> g_pri_addrs_map;
+static std::vector<std::string> g_prikeys;
+static std::vector<std::string> g_addrs;
+static std::unordered_map<std::string, std::string> g_pri_pub_map;
+static std::vector<std::string> g_oqs_prikeys;
+static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
+static std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+
+static void LoadAllAccounts(int32_t shardnum=3) {
+    FILE* fd = fopen((std::string("../init_accounts") + std::to_string(shardnum)).c_str(), "r");
+    if (fd == nullptr) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    bool res = true;
+    std::string filed;
+    const uint32_t kMaxLen = 1024;
+    char* read_buf = new char[kMaxLen];
+    while (true) {
+        char* read_res = fgets(read_buf, kMaxLen, fd);
+        if (read_res == NULL) {
+            break;
+        }
+
+        std::string prikey = common::Encode::HexDecode(std::string(read_res, 64));
+        g_prikeys.push_back(prikey);
+        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+        security->SetPrivateKey(prikey);
+        g_pri_pub_map[prikey] = security->GetPublicKey();
+        std::string addr = security->GetAddress();
+        g_pri_addrs_map[prikey] = addr;
+        g_addrs.push_back(addr);
+        if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
+            break;
+        }
+        std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
+    }
+
+    assert(!g_prikeys.empty());
+    while (g_prikeys.size() < common::kImmutablePoolSize) {
+        g_prikeys.push_back(g_prikeys[0]);
+    }
+
+    fclose(fd);
+    delete[]read_buf;
+}
+
+void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32_t tps) {
+    LoadAllAccounts(3);
+    std::shared_ptr<security::Security> pool_sec[pool_end + 1];
+    for (auto i = pool_begin; i <= pool_end; ++i) {
+        auto from_prikey = g_prikeys[i];
+        for (uint32_t tmp_idx = 0; tmp_idx < g_prikeys.size(); ++tmp_idx) {
+            from_prikey = g_prikeys[i];
+            std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+            thread_security->SetPrivateKey(from_prikey);
+            if (common::GetAddressPoolIndex(thread_security->GetAddress()) == i) {
+                break;
+            }
+        }
+
+        std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+        thread_security->SetPrivateKey(from_prikey);
+        pool_sec[i] = thread_security;
+        auto iter = prikey_with_nonce.find(from_prikey);
+        if (iter == prikey_with_nonce.end()) {
+            prikey_with_nonce[from_prikey] = 1;
+        }
+    }
+
+    std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
+    while (!common::GlobalInfo::Instance()->global_stoped()) {
+        for (auto i = pool_begin; i <= pool_end; ++i) {
+            auto from_prikey = g_prikeys[i];
+            auto tx_msg_ptr = CreateTransactionWithAttr(
+                pool_sec[i],
+                ++prikey_with_nonce[from_prikey],
+                from_prikey,
+                to,
+                "",
+                "",
+                1980,
+                10000,
+                1,
+                3);
+            pools::TxItemPtr tx_ptr = item_functions_[0](tx_msg_ptr);
+            if (tx_ptr == nullptr) {
+                assert(false);
+                return;
+            }
+        
+            tx_pool_[i].AddTx(tx_ptr);
+        }
+            
+        usleep(1000000lu);
+    }
+}
+
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
+#ifdef USE_SERVER_TEST_TRANSACTION
+    return;
+#endif
+
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
