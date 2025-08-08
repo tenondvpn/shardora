@@ -6,7 +6,6 @@ aux_source_directory(./ bls_test_src)
 add_executable(bls_test ${bls_test_src})
 
 add_dependencies(bls_test bls)
-find_package(OpenSSL REQUIRED)
 target_link_libraries(bls_test PRIVATE bls network gtest gtest_main gmock gmock_main network
     init
     consensus
