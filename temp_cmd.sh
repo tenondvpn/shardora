@@ -47,8 +47,9 @@ init_config() {
 
 init_firewall() {
     iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-    tc qdisc add dev eth0 root netem delay 50ms
-    /root/pkg/wondershaper eth0 500000 500000
+    tc qdisc del dev eth0 root
+    tc qdisc add dev eth0 root netem delay 25ms
+    # /root/pkg/wondershaper eth0 500000 500000
 }
 
 deploy_nodes() {
