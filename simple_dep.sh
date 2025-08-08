@@ -87,12 +87,12 @@ for ((i=1; i<=$shard3_node_count;i++)); do
     sed -i 's/LOCAL_IP/127.0.0.1/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     if ((i<=TEST_TX_MAX_POOL_INDEX)); then
-        sed -i 's/TEST_POOL_INDEX/'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+        sed -i 's/TEST_POOL_INDEX/'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     else
-        sed -i 's/TEST_POOL_INDEX/-1/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+        sed -i 's/TEST_POOL_INDEX/-1/g' /root/zjnodes/s3_$i/conf/zjchain.conf
     fi
 
-    sed -i 's/TEST_TX_TPS/'$TEST_TX_TPS'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+    sed -i 's/TEST_TX_TPS/'$TEST_TX_TPS'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
 
     if ((i>=100)); then
         sed -i 's/HTTP_PORT/23'$i'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
