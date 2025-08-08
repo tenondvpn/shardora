@@ -1165,10 +1165,15 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     static const uint64_t kSleepTimeMs = 100lu;
     usleep(10000000lu);
+    auto now_tm_sec = common::TimeUtils::TimestampSeconds();
     uint32_t send_out_tps = common::GlobalInfo::Instance()->test_tx_tps() / (1000lu / kSleepTimeMs);
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         if (item_functions_[0] == nullptr) {
             usleep(1000000lu);
+            continue;
+        }
+
+        if (common::TimeUtils::TimestampSeconds() - now_tm_sec < 20) {
             continue;
         }
 
