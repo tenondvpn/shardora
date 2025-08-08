@@ -1163,6 +1163,8 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
     }
 
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
+    static const uint64_t kSleepTimeMs = 100lu;
+    uint32_t send_out_tps = common::GlobalInfo::Instance()->test_tx_tps() / (1000lu / kSleepTimeMs);
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         if (item_functions_[0] == nullptr) {
             usleep(1000000lu);
@@ -1170,32 +1172,34 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
         }
 
         for (auto i = pool_begin; i <= pool_end; ++i) {
-            auto from_prikey = pool_sec[i]->GetPrikey();
-            auto tx_msg_ptr = CreateTransactionWithAttr(
-                pool_sec[i],
-                ++prikey_with_nonce[from_prikey],
-                from_prikey,
-                to,
-                "",
-                "",
-                1980,
-                10000,
-                1,
-                3);
-            tx_msg_ptr->address_info = address_map[from_prikey];
-            pools::TxItemPtr tx_ptr = item_functions_[0](tx_msg_ptr);
-            if (tx_ptr == nullptr) {
-                assert(false);
-                return;
+            for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
+                auto from_prikey = pool_sec[i]->GetPrikey();
+                auto tx_msg_ptr = CreateTransactionWithAttr(
+                    pool_sec[i],
+                    ++prikey_with_nonce[from_prikey],
+                    from_prikey,
+                    to,
+                    "",
+                    "",
+                    1980,
+                    10000,
+                    1,
+                    3);
+                tx_msg_ptr->address_info = address_map[from_prikey];
+                pools::TxItemPtr tx_ptr = item_functions_[0](tx_msg_ptr);
+                if (tx_ptr == nullptr) {
+                    assert(false);
+                    return;
+                }
+            
+                tx_pool_[i].AddTx(tx_ptr);
+                ZJC_DEBUG("success create test tx thread: %s, nonce: %lu",
+                    common::Encode::HexEncode(pool_sec[i]->GetAddress()).c_str(), 
+                    prikey_with_nonce[from_prikey]);
             }
-        
-            tx_pool_[i].AddTx(tx_ptr);
-            ZJC_DEBUG("success create test tx thread: %s, nonce: %lu",
-                common::Encode::HexEncode(pool_sec[i]->GetAddress()).c_str(), 
-                prikey_with_nonce[from_prikey]);
         }
         
-        usleep(1000000lu);
+        usleep(kSleepTimeMs * 1000lu);
     }
 }
 
