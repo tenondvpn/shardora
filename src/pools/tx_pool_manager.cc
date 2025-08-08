@@ -58,6 +58,7 @@ TxPoolManager::TxPoolManager(
             common::GlobalInfo::Instance()->test_pool_index(), 
             common::GlobalInfo::Instance()->test_pool_index(), 
             common::GlobalInfo::Instance()->test_tx_tps());
+        ZJC_WARN("success create test tx thread.");
     }
 #endif
 
@@ -66,6 +67,11 @@ TxPoolManager::TxPoolManager(
 TxPoolManager::~TxPoolManager() {
     destroy_ = true;
     FlushHeightTree();
+#ifdef USE_SERVER_TEST_TRANSACTION
+    if (test_tx_thread_) {
+        test_tx_thread_->join();
+    }
+#endif
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
     }
@@ -1096,7 +1102,7 @@ static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
 static std::unordered_map<std::string, uint64_t> prikey_with_nonce;
 
 static void LoadAllAccounts(int32_t shardnum=3) {
-    FILE* fd = fopen((std::string("../init_accounts") + std::to_string(shardnum)).c_str(), "r");
+    FILE* fd = fopen((std::string("/root/shardora/init_accounts") + std::to_string(shardnum)).c_str(), "r");
     if (fd == nullptr) {
         std::cout << "invalid init acc file." << std::endl;
         exit(1);
@@ -1180,8 +1186,11 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
             }
         
             tx_pool_[i].AddTx(tx_ptr);
+            ZJC_DEBUG("success create test tx thread: %s, nonce: %lu",
+                common::Encode::HexEncode(pool_sec[i]->GetAddress()).c_str(), 
+                prikey_with_nonce[from_prikey]);
         }
-            
+        
         usleep(1000000lu);
     }
 }
