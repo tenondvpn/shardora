@@ -1164,23 +1164,10 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
 
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     static const uint64_t kSleepTimeMs = 100lu;
+    usleep(10000000lu);
     uint32_t send_out_tps = common::GlobalInfo::Instance()->test_tx_tps() / (1000lu / kSleepTimeMs);
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         if (item_functions_[0] == nullptr) {
-            usleep(1000000lu);
-            continue;
-        }
-
-        auto dht_ptr = network::DhtManager::Instance()->GetDht(
-            common::GlobalInfo::Instance()->network_id());
-        if (!dht_ptr) {
-            usleep(1000000lu);
-            continue;
-        }
-
-        ADD_DEBUG_PROCESS_TIMESTAMP();
-        auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
-        if (readobly_dht->size() < 20) {
             usleep(1000000lu);
             continue;
         }
