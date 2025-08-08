@@ -246,6 +246,14 @@ public:
         return tx_user_qps_limit_window_;
     }
 
+    int32_t test_pool_index() const {
+        return test_pool_index_;
+    }
+
+    uint32_t test_tx_tps() const {
+        return test_tx_tps_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -297,6 +305,8 @@ private:
     std::atomic<int32_t> shared_obj_count_[64] = {0};
     int32_t shared_obj_max_count_[64] = {0};
     std::shared_ptr<common::Tick> tick_ptr_;
+    int32_t test_pool_index_ = -1;
+    uint32_t test_tx_tps_ = 1000;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

@@ -51,8 +51,16 @@ TxPoolManager::TxPoolManager(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
 #ifdef USE_SERVER_TEST_TRANSACTION
-    test_tx_thread_ = std::make_shared<std::thread>(&TxPoolManager::CreateTestTxs, this, 0, 0, 1000);
+    if (common::GlobalInfo::Instance()->test_pool_index() >= 0) {
+        test_tx_thread_ = std::make_shared<std::thread>(
+            &TxPoolManager::CreateTestTxs, 
+            this, 
+            common::GlobalInfo::Instance()->test_pool_index(), 
+            common::GlobalInfo::Instance()->test_pool_index(), 
+            common::GlobalInfo::Instance()->test_tx_tps());
+    }
 #endif
+
 }
 
 TxPoolManager::~TxPoolManager() {
