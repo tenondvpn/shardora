@@ -1159,10 +1159,7 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
 
         pool_sec[i] = thread_security;
         address_map[from_prikey] = prefix_db_->GetAddressInfo(thread_security->GetAddress());
-        auto iter = prikey_with_nonce.find(from_prikey);
-        if (iter == prikey_with_nonce.end()) {
-            prikey_with_nonce[from_prikey] = 1;
-        }
+        prikey_with_nonce[from_prikey] = address_map[from_prikey]->nonce();
     }
 
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
