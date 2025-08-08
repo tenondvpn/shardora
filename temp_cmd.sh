@@ -4,6 +4,8 @@ node_count=$3
 bootstrap=$4
 start_shard=$5
 end_shard=$6
+TEST_TX_TPS=1000
+TEST_TX_MAX_POOL_INDEX=0
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
 rm -rf /root/zjnodes/
@@ -66,6 +68,10 @@ deploy_nodes() {
             sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+            if ((i<=TEST_TX_MAX_POOL_INDEX)); then
+                sed -i 's/TEST_POOL_INDEX/'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+            fi
+            sed -i 's/TEST_TX_TPS/'$TEST_TX_TPS'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             if ((i>=100)); then
                 sed -i 's/HTTP_PORT/2'$shard_id''$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
                 sed -i 's/LOCAL_PORT/1'$shard_id''$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
