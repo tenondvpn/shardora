@@ -2,7 +2,7 @@ killall -9 zjchain
 killall -9 txcli
 
 TEST_TX_TPS=1000
-TEST_TX_MAX_POOL_INDEX=0
+TEST_TX_MAX_POOL_INDEX=1
 FOR_CK=0
 TARGET=Debug
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
