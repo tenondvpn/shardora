@@ -1171,6 +1171,20 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
             continue;
         }
 
+        auto dht_ptr = network::DhtManager::Instance()->GetDht(
+            common::GlobalInfo::Instance()->network_id());
+        if (!dht_ptr) {
+            usleep(1000000lu);
+            continue;
+        }
+
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        auto readobly_dht = dht_ptr->readonly_hash_sort_dht();
+        if (readobly_dht->size() < 20) {
+            usleep(1000000lu);
+            continue;
+        }
+
         for (auto i = pool_begin; i <= pool_end; ++i) {
             for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
                 auto from_prikey = pool_sec[i]->GetPrikey();
