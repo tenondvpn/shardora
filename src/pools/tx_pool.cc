@@ -521,8 +521,8 @@ void TxPool::GetTxIdempotently(
 #ifdef USE_SERVER_TEST_TRANSACTION
     if (common::GlobalInfo::Instance()->test_pool_index() >= 0) {
         auto i = pool_index_;
-        for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
-            auto from_prikey = pool_sec[i]->GetPrikey();
+        auto from_prikey = pool_sec[i]->GetPrikey();
+        while (res_map.size() < count) {
             auto tx_msg_ptr = CreateTransactionWithAttr(
                 pool_sec[i],
                 ++prikey_with_nonce[from_prikey],
@@ -542,16 +542,12 @@ void TxPool::GetTxIdempotently(
             }
         
             res_map.push_back(tx_ptr);
-            
             tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
             consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
             ZJC_DEBUG("success add tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu",
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                 tx_ptr->address_info->nonce(), 
                 tx_ptr->tx_info->nonce());
-            if (res_map.size() >= count) {
-                return;
-            }
         }
                 
         return;
