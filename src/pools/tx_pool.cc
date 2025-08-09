@@ -7,14 +7,128 @@
 #include "common/time_utils.h"
 #include "common/global_info.h"
 #include "db/db.h"
+#include "dht/dht_key.h"
 #include "network/network_utils.h"
 #include "pools/tx_pool_manager.h"
 #include "pools/tx_utils.h"
+#include "security/ecdsa/ecdsa.h"
+#include "transport/tcp_transport.h"
 
 namespace shardora {
 
 namespace pools {
     
+
+static transport::MessagePtr CreateTransactionWithAttr(
+        std::shared_ptr<security::Security>& security,
+        uint64_t nonce,
+        const std::string& from_prikey,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_nonce(nonce);
+    new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
+
+static std::unordered_map<std::string, std::string> g_pri_addrs_map;
+static std::vector<std::string> g_prikeys;
+static std::vector<std::string> g_addrs;
+static std::unordered_map<std::string, std::string> g_pri_pub_map;
+static std::vector<std::string> g_oqs_prikeys;
+static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
+static std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+static std::unordered_map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_map;
+std::shared_ptr<address::protobuf::AddressInfo> address_[common::kInvalidPoolIndex];
+std::shared_ptr<security::Security> pool_sec[common::kInvalidPoolIndex];
+
+static void LoadAllAccounts(int32_t shardnum=3) {
+    FILE* fd = fopen((std::string("/root/shardora/init_accounts") + std::to_string(shardnum)).c_str(), "r");
+    if (fd == nullptr) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    bool res = true;
+    std::string filed;
+    const uint32_t kMaxLen = 1024;
+    char* read_buf = new char[kMaxLen];
+    while (true) {
+        char* read_res = fgets(read_buf, kMaxLen, fd);
+        if (read_res == NULL) {
+            break;
+        }
+
+        std::string prikey = common::Encode::HexDecode(std::string(read_res, 64));
+        g_prikeys.push_back(prikey);
+        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+        security->SetPrivateKey(prikey);
+        g_pri_pub_map[prikey] = security->GetPublicKey();
+        std::string addr = security->GetAddress();
+        g_pri_addrs_map[prikey] = addr;
+        g_addrs.push_back(addr);
+        if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
+            break;
+        }
+        std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
+    }
+
+    assert(!g_prikeys.empty());
+    while (g_prikeys.size() < common::kImmutablePoolSize) {
+        g_prikeys.push_back(g_prikeys[0]);
+    }
+
+    fclose(fd);
+    delete[]read_buf;
+}
+
 TxPool::TxPool() {}
 
 TxPool::~TxPool() {}
@@ -64,6 +178,21 @@ void TxPool::InitHeightTree() {
     }
 
     height_tree_ptr_ = height_tree_ptr;
+    LoadAllAccounts(3);
+    auto i = pool_index_;
+    auto from_prikey = g_prikeys[i];
+    std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+    for (uint32_t tmp_idx = 0; tmp_idx < g_prikeys.size(); ++tmp_idx) {
+        from_prikey = g_prikeys[tmp_idx];
+        thread_security->SetPrivateKey(from_prikey);
+        if (common::GetAddressPoolIndex(thread_security->GetAddress()) == i) {
+            break;
+        }
+    }
+
+    pool_sec[i] = thread_security;
+    address_map[from_prikey] = prefix_db_->GetAddressInfo(thread_security->GetAddress());
+    prikey_with_nonce[from_prikey] = address_map[from_prikey]->nonce();
 }
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
@@ -389,6 +518,47 @@ void TxPool::GetTxIdempotently(
         std::vector<pools::TxItemPtr>& res_map,
         uint32_t count,
         pools::CheckAddrNonceValidFunction tx_valid_func) {
+#ifdef USE_SERVER_TEST_TRANSACTION
+    if (common::GlobalInfo::Instance()->test_pool_index() >= 0) {
+        auto i = pool_index_;
+        for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
+            auto from_prikey = pool_sec[i]->GetPrikey();
+            auto tx_msg_ptr = CreateTransactionWithAttr(
+                pool_sec[i],
+                ++prikey_with_nonce[from_prikey],
+                from_prikey,
+                to,
+                "",
+                "",
+                1980,
+                10000,
+                1,
+                3);
+            tx_msg_ptr->address_info = address_map[from_prikey];
+            pools::TxItemPtr tx_ptr = pools_mgr_->CreateTxPtr(tx_msg_ptr);
+            if (tx_ptr == nullptr) {
+                assert(false);
+                return;
+            }
+        
+            res_map.push_back(tx_ptr);
+            
+            // tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+            // consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+            ZJC_DEBUG("success add tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu",
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                tx_ptr->address_info->nonce(), 
+                tx_ptr->tx_info->nonce());
+            if (res_map.size() >= count) {
+                return;
+            }
+        }
+                
+        return;
+    }
+#endif
+
+
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
         ZJC_DEBUG("pop success add system tx nonce addr: %s, "

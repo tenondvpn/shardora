@@ -223,7 +223,6 @@ private:
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void GetMinValidTxCount();
     uint32_t GetTxPoolIndex(const transport::MessagePtr& msg_ptr);
-    void CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32_t tps);
 
     static const uint32_t kPopMessageCountEachTime = 64000u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
@@ -278,9 +277,6 @@ private:
     std::weak_ptr<block::AccountManager> acc_mgr_;
     volatile uint32_t now_max_tx_count_ = 0;
     AccountQpsLruMap<102400> account_tx_qps_check_;
-#ifdef USE_SERVER_TEST_TRANSACTION
-    std::shared_ptr<std::thread> test_tx_thread_ = nullptr;
-#endif
 
     // tps received
     uint64_t prev_tps_count_ = 0;
