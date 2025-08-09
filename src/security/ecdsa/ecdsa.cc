@@ -30,7 +30,7 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
 #ifdef USE_SERVER_TEST_TRANSACTION
     *sign = "1";
     // std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
-    return kSecuritySuccess;#endif
+    return kSecuritySuccess;
 #endif
 
 #ifdef MOCK_SIGN 
@@ -51,7 +51,7 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
 
 int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std::string& sign) {
 #ifdef USE_SERVER_TEST_TRANSACTION
-    return kSecuritySuccess;#endif
+    return kSecuritySuccess;
 #endif
 
 #ifdef MOCK_VERIFY
