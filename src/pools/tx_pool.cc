@@ -451,11 +451,6 @@ void TxPool::GetTxIdempotently(
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
     }
 
-    // TODO: just test
-    if (all_tx_size() < common::kMaxTxCount) {
-        return;
-    }
-
     std::set<uint32_t> system_added_step;
     auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
         for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
