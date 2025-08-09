@@ -522,6 +522,7 @@ void TxPool::GetTxIdempotently(
     if (common::GlobalInfo::Instance()->test_pool_index() >= 0) {
         auto i = pool_index_;
         auto from_prikey = pool_sec[i]->GetPrikey();
+        std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
         while (res_map.size() < count) {
             auto tx_msg_ptr = CreateTransactionWithAttr(
                 pool_sec[i],
