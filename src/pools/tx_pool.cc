@@ -277,6 +277,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         all_delay_tm_us_ = 0;
         all_delay_tx_count_ = 0;
         prev_delay_tm_timeout_ = now_tm_us / 1000lu;
+        common::GlobalInfo::Instance()->set_global_latency(all_delay_tm_us_ / all_delay_tx_count_);
     }
 
 }

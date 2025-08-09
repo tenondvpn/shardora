@@ -1174,11 +1174,15 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
         }
 
         for (auto i = pool_begin; i <= pool_end; ++i) {
-            if (tx_pool_[i].all_tx_size() >= 5 * common::GlobalInfo::Instance()->test_tx_tps()) {
-                break;
-            }
-
             for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
+                if (tx_pool_[i].all_tx_size() >= 2 * common::GlobalInfo::Instance()->test_tx_tps()) {
+                    break;
+                }
+
+                if (common::GlobalInfo::Instance()->global_latency() >= 5000000lu) {
+                    break;
+                }
+
                 auto from_prikey = pool_sec[i]->GetPrikey();
                 auto tx_msg_ptr = CreateTransactionWithAttr(
                     pool_sec[i],

@@ -254,6 +254,14 @@ public:
         return test_tx_tps_;
     }
 
+    uint64_t global_latency() const {
+        return global_latency_;
+    }
+
+    void set_global_latency(uint64_t latency) {
+        global_latency_ = latency;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -307,6 +315,7 @@ private:
     std::shared_ptr<common::Tick> tick_ptr_;
     int32_t test_pool_index_ = -1;
     uint32_t test_tx_tps_ = 1000;
+    volatile uint64_t global_latency_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
