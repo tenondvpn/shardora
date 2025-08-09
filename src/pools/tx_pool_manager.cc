@@ -1165,7 +1165,7 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     static const uint64_t kSleepTimeMs = 100lu;
     common::GlobalInfo::Instance()->get_thread_index();
-    usleep(10000000lu);
+    usleep(60000000lu);
     uint32_t send_out_tps = common::GlobalInfo::Instance()->test_tx_tps() / (1000lu / kSleepTimeMs);
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         if (item_functions_[0] == nullptr) {
@@ -1177,7 +1177,7 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
             if (tx_pool_[i].all_tx_size() >= 5 * common::GlobalInfo::Instance()->test_tx_tps()) {
                 break;
             }
-            
+
             for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
                 auto from_prikey = pool_sec[i]->GetPrikey();
                 auto tx_msg_ptr = CreateTransactionWithAttr(
