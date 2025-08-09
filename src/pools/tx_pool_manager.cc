@@ -1179,11 +1179,6 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
                     break;
                 }
 
-                if (common::GlobalInfo::Instance()->global_latency() >= 5000000lu) {
-                    common::GlobalInfo::Instance()->set_global_latency(0);
-                    break;
-                }
-
                 auto from_prikey = pool_sec[i]->GetPrikey();
                 auto tx_msg_ptr = CreateTransactionWithAttr(
                     pool_sec[i],

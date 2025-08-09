@@ -500,6 +500,7 @@ void TxPool::GetTxIdempotently(
                 }
 
                 valid_nonce = tx_ptr->tx_info->nonce();
+                tx_ptr->receive_tm_us = common::TimeUtils::TimestampUs();
                 res_map.push_back(tx_ptr);
                 ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, key: %s, nonce: %lu, "
                     "res count: %u, count: %u, tx_map size: %u, addr tx size: %u", 
