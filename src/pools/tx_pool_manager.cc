@@ -1180,6 +1180,8 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
                 }
 
                 if (common::GlobalInfo::Instance()->global_latency() >= 5000000lu) {
+                    common::GlobalInfo::Instance()->set_global_latency(0);
+                    usleep(300000lu);
                     break;
                 }
 
