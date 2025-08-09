@@ -178,6 +178,7 @@ void TxPool::InitHeightTree() {
     }
 
     height_tree_ptr_ = height_tree_ptr;
+#ifdef USE_SERVER_TEST_TRANSACTION
     LoadAllAccounts(3);
     auto i = pool_index_;
     auto from_prikey = g_prikeys[i];
@@ -192,7 +193,10 @@ void TxPool::InitHeightTree() {
 
     pool_sec[i] = thread_security;
     address_map[from_prikey] = prefix_db_->GetAddressInfo(thread_security->GetAddress());
-    prikey_with_nonce[from_prikey] = address_map[from_prikey]->nonce();
+    if (address_map[from_prikey]) {
+        prikey_with_nonce[from_prikey] = address_map[from_prikey]->nonce();
+    }
+#endif
 }
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
@@ -536,6 +540,10 @@ void TxPool::GetTxIdempotently(
                 1,
                 3);
             tx_msg_ptr->address_info = address_map[from_prikey];
+            if (!tx_msg_ptr->address_info) {
+                return;
+            }
+            
             pools::TxItemPtr tx_ptr = pools_mgr_->CreateTxPtr(tx_msg_ptr);
             if (tx_ptr == nullptr) {
                 assert(false);
@@ -554,7 +562,6 @@ void TxPool::GetTxIdempotently(
         return;
     }
 #endif
-
 
     TxItemPtr tx_ptr;
     while (added_txs_.pop(&tx_ptr)) {
