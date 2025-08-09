@@ -452,7 +452,7 @@ void TxPool::GetTxIdempotently(
     }
 
     // TODO: just test
-    if (consensus_tx_map_.size() < common::kMaxTxCount) {
+    if (all_tx_size() < common::kMaxTxCount) {
         return;
     }
 

@@ -86,11 +86,14 @@ public:
     void TxOver(view_block::protobuf::ViewBlockItem& view_block);
 
     uint32_t all_tx_size() const {
+        uint32_t cons_map_size = 0;
+        for (auto iter = consensus_tx_map_.begin(); iter != consensus_tx_map_.end(); ++iter) {
+            cons_map_size = iter->second.size();
+        }
+
         return added_txs_.size() + 
             consensus_added_txs_.size() + 
-            tx_map_.size() + 
-            consensus_tx_map_.size() + 
-            system_tx_map_.size();
+            cons_map_size;
     }
     
     uint64_t oldest_timestamp() const {
@@ -178,6 +181,7 @@ private:
     std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;
     std::unordered_set<std::string> over_unique_hash_set_;
+    uint32_t consensus_tx_map_count_ = 0;
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
