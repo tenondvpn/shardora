@@ -34,6 +34,7 @@ init() {
         node_ips='127.0.0.1'
     fi  
 
+    sh cmd.sh $node_ips "tc qdisc del dev eth0 root"
     if [ "$end_shard" == "" ]; then
         end_shard=3
     fi  
