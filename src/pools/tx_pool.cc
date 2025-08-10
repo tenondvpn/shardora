@@ -195,6 +195,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             continue;
         }
 
+        ZJC_WARN("0 now tx size: %u", all_tx_size());
         auto remove_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
             auto tx_iter = tx_map.find(addr);
             if (tx_iter != tx_map.end()) {
@@ -259,13 +260,9 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             }
         };
         
-        ZJC_WARN("0 now tx size: %u", all_tx_size());
         remove_tx_func(system_tx_map_);
-        ZJC_WARN("1 now tx size: %u", all_tx_size());
         remove_tx_func(tx_map_);
-        ZJC_WARN("2 now tx size: %u", all_tx_size());
         remove_tx_func(consensus_tx_map_);
-        ZJC_WARN("3 now tx size: %u", all_tx_size());
         ZJC_DEBUG("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
