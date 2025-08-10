@@ -408,7 +408,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
                 tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
                 0);
         } else {
-            ZJC_INFO("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
+            ZJC_WARN("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().pool_index(), 
                 tmp_block->qc().view(),
