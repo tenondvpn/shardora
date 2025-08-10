@@ -176,6 +176,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
+    ZJC_WARN("0 now tx size: %u", all_tx_size());
     for (uint32_t i = 0; i < view_block.block_info().tx_list_size(); ++i) {
         auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
@@ -195,7 +196,6 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             continue;
         }
 
-        ZJC_WARN("0 now tx size: %u", all_tx_size());
         auto remove_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
             auto tx_iter = tx_map.find(addr);
             if (tx_iter != tx_map.end()) {
