@@ -1826,6 +1826,8 @@ Status Hotstuff::ConstructViewBlock(
 
         auto tmp_block = view_block_chain()->GetViewBlockVithView(new_prev_view);
         if (tmp_block != nullptr) {
+            ZJC_WARN("success change parent view from: %lu, to: %lu",
+                pre_v_block->qc().view(), new_prev_view);
             pre_v_block = tmp_block->view_block;
         }
     }
