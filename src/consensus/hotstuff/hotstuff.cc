@@ -1818,15 +1818,15 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = view_block_chain()->HighViewBlock();
 #ifdef TEST_FORKING_ATTACK
     static std::atomic<uint32_t> gTestChangeViewCount = 0;
+    auto new_prev_view = pre_v_block->qc().view();
     auto rand_count = rand() % 100;
-    if (rand_count <= 10) {
-        auto new_prev_view = pre_v_block->qc().view();
-        if (rand_count <= 5 && new_prev_view > 2) {
+    if (rand_count <= 30 && new_prev_view > 20) {
+        if (rand_count <= 15) {
             new_prev_view -= 1;
         }
 
         auto tmp_block = view_block_chain()->GetViewBlockVithView(new_prev_view);
-        if (tmp_block != nullptr && new_prev_view > 2) {
+        if (tmp_block != nullptr) {
             ZJC_WARN("pool: %d, success change parent view from: %lu, to: %lu, count: %u",
                 pool_idx_, pre_v_block->qc().view(), new_prev_view, gTestChangeViewCount.fetch_add(1));
             pre_v_block = tmp_block->view_block;
