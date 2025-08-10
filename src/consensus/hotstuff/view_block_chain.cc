@@ -447,7 +447,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 #ifdef TEST_FORKING_ATTACK
         auto test_iter = view_with_blocks_.begin();
         while (test_iter != view_with_blocks_.end()) {
-            if (test_iter->fisrt > tmp_block->qc().view()) {
+            if (test_iter->first > tmp_block->qc().view()) {
                 break;
             }
 
