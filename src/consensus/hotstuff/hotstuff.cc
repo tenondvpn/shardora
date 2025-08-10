@@ -273,10 +273,6 @@ Status Hotstuff::Propose(
 
     transport::protobuf::ConsensusDebug consensus_debug;
     consensus_debug.add_messages(propose_debug_str);
-    // for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
-    //     consensus_debug.add_vote_timestamps(0);
-    // }
-
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
     ZJC_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
@@ -1820,6 +1816,20 @@ Status Hotstuff::ConstructViewBlock(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto leader_idx = local_member->index;
     auto pre_v_block = view_block_chain()->HighViewBlock();
+#ifdef TEST_FORKING_ATTACK
+    auto rand_count = rand() % 100;
+    if (rand_count <= 10) {
+        auto new_prev_view = pre_v_block->qc().view();
+        if (rand_count <= 5 && new_prev_view > 2) {
+            new_prev_view -= 1;
+        }
+
+        auto tmp_block = view_block_chain()->GetViewBlockVithView(new_prev_view);
+        if (tmp_block != nullptr) {
+            pre_v_block = tmp_block;
+        }
+    }
+#endif
     auto* qc = view_block->mutable_qc();
     qc->set_leader_idx(leader_idx);
     qc->set_view(pre_v_block->qc().view() + 1);
