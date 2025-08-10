@@ -1818,16 +1818,16 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = view_block_chain()->HighViewBlock();
 #ifdef TEST_FORKING_ATTACK
     auto rand_count = rand() % 100;
-    if (rand_count <= 30) {
+    if (rand_count <= 10) {
         auto new_prev_view = pre_v_block->qc().view();
-        if (rand_count <= 15 && new_prev_view > 2) {
+        if (rand_count <= 5 && new_prev_view > 2) {
             new_prev_view -= 1;
         }
 
         auto tmp_block = view_block_chain()->GetViewBlockVithView(new_prev_view);
-        if (tmp_block != nullptr) {
-            ZJC_WARN("success change parent view from: %lu, to: %lu",
-                pre_v_block->qc().view(), new_prev_view);
+        if (tmp_block != nullptr && new_prev_view > 2) {
+            ZJC_WARN("pool: %d, success change parent view from: %lu, to: %lu",
+                pool_idx_, pre_v_block->qc().view(), new_prev_view);
             pre_v_block = tmp_block->view_block;
         }
     }
