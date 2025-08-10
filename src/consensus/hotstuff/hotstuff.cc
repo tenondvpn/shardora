@@ -1818,9 +1818,9 @@ Status Hotstuff::ConstructViewBlock(
     auto pre_v_block = view_block_chain()->HighViewBlock();
 #ifdef TEST_FORKING_ATTACK
     auto rand_count = rand() % 100;
-    if (rand_count <= 10) {
+    if (rand_count <= 30) {
         auto new_prev_view = pre_v_block->qc().view();
-        if (rand_count <= 5 && new_prev_view > 2) {
+        if (rand_count <= 15 && new_prev_view > 2) {
             new_prev_view -= 1;
         }
 
