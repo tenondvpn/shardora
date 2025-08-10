@@ -444,6 +444,16 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         view_blocks_info_.erase(tmp_block->parent_hash());
+#ifdef TEST_FORKING_ATTACK
+        auto test_iter = view_with_blocks_.begin();
+        while (test_iter != view_with_blocks_.end()) {
+            if (test_iter->fisrt > tmp_block->qc().view()) {
+                break;
+            }
+
+            test_iter = view_with_blocks_.erase(test_iter);
+        }
+#endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
         block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
         commited_view_.insert(tmp_block->qc().view());
