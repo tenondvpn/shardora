@@ -279,6 +279,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         prev_delay_tm_timeout_ = now_tm_us / 1000lu;
     }
 
+    ZJC_WARN("now tx size: %u", all_tx_size());
 }
 
 void TxPool::GetTxSyncToLeader(
@@ -331,6 +332,7 @@ void TxPool::GetTxSyncToLeader(
             tx_ptr->tx_info->nonce());
     }
 
+    ZJC_WARN("now tx size: %u", all_tx_size());
     for (auto iter = tx_map_.begin(); iter != tx_map_.end(); ++iter) {
         uint64_t valid_nonce = common::kInvalidUint64;
         for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
