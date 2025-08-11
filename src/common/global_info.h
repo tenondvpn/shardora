@@ -306,7 +306,7 @@ private:
     std::unordered_map<int, uint8_t> valid_thread_index_;
     volatile bool global_stoped_ = false;
     volatile bool main_inited_success_ = false;
-    uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 3u;
+    uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 4u;
     uint32_t tx_user_qps_limit_window_sconds_ = 1u;
     uint32_t tx_user_qps_limit_window_ = 10240u * 10u;
 

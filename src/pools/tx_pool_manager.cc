@@ -1175,7 +1175,7 @@ void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32
 
         for (auto i = pool_begin; i <= pool_end; ++i) {
             for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
-                if (tx_pool_[i].all_tx_size() >= 2 * common::GlobalInfo::Instance()->test_tx_tps()) {
+                if (tx_pool_[i].all_tx_size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
                     break;
                 }
 
