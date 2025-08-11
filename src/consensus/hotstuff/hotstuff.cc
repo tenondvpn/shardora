@@ -1820,8 +1820,8 @@ Status Hotstuff::ConstructViewBlock(
     static std::atomic<uint32_t> gTestChangeViewCount = 0;
     auto new_prev_view = pre_v_block->qc().view();
     auto rand_count = rand() % 100;
-    if (rand_count <= 30 && new_prev_view > 20) {
-        if (rand_count <= 15) {
+    if (rand_count <= 50 && new_prev_view > 20) {
+        if (rand_count <= 25) {
             new_prev_view -= 1;
         }
 
