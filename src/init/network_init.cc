@@ -236,6 +236,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_WARN("init hotstuff_mgr_ success.");
     kv_sync_->Init(
         block_mgr_,
         hotstuff_mgr_,
@@ -248,6 +249,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_WARN("init elect_mgr_ success.");
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
         if (elect_mgr_->Join(
@@ -263,6 +265,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_WARN("init shard_statistic_ success.");
     block_mgr_->LoadLatestBlocks();
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(
@@ -271,6 +274,7 @@ int NetworkInit::Init(int argc, char** argv) {
     hotstuff_syncer_->Start();
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
+    ZJC_WARN("init hotstuff_mgr_ start success.");
     AddCmds();
     transport::TcpTransport::Instance()->Start(false);
     ZJC_DEBUG("init 6");

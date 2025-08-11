@@ -119,6 +119,7 @@ int HotstuffManager::Init(
         pool_hotstuff_[pool_idx]->Init();
     }
 
+    ZJC_WARN("success init hotstuff manager!");
     RegisterCreateTxCallbacks();
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
