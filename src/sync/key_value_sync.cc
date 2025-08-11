@@ -31,17 +31,23 @@ void KeyValueSync::Init(
         const std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr,
         const std::shared_ptr<db::Db>& db,
         ViewBlockSyncedCallback view_block_synced_callback) {
+    ZJC_DEBUG("init key value sync 0");
     hotstuff_mgr_ = hotstuff_mgr;
+    ZJC_DEBUG("init key value sync 1");
     view_block_synced_callback_ = view_block_synced_callback;
+    ZJC_DEBUG("init key value sync 2");
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
+    ZJC_DEBUG("init key value sync 3");
     kv_tick_.CutOff(
         10000lu,
         std::bind(&KeyValueSync::ConsensusTimerMessage, this));
+    ZJC_DEBUG("init key value sync 4");
     transport::Processor::Instance()->RegisterProcessor(
         common::kHotstuffSyncTimerMessage,
         std::bind(&KeyValueSync::HotstuffConsensusTimerMessage, this, std::placeholders::_1));    
+    ZJC_DEBUG("init key value sync 5");
 }
 
 int KeyValueSync::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
