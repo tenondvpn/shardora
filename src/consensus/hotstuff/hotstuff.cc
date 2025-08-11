@@ -302,10 +302,10 @@ Status Hotstuff::Propose(
     ZJC_WARN("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
-// #ifndef NDEBUG
+#ifndef NDEBUG
     auto t8 = common::TimeUtils::TimestampMs();
     ++sendout_bft_message_count_;
-    ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
         "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, "
@@ -344,7 +344,7 @@ Status Hotstuff::Propose(
             last_leader_propose_view_);
     }
 
-// #endif
+#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
@@ -1125,7 +1125,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_WARN("====2.1 pool: %d, onVote, hash: %s, view: %lu, hash64: %lu",
+    ZJC_DEBUG("====2.1 pool: %d, onVote, hash: %s, view: %lu, hash64: %lu",
         pool_idx_,
         common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
         vote_msg.view(),
@@ -1820,7 +1820,7 @@ Status Hotstuff::ConstructViewBlock(
     static std::atomic<uint32_t> gTestChangeViewCount = 0;
     auto new_prev_view = pre_v_block->qc().view();
     auto rand_count = rand() % 100;
-    if (rand_count <= 50 && new_prev_view > 20) {
+    if (rand_count <= 50 && new_prev_view > 4) {
         if (rand_count <= 25) {
             new_prev_view -= 1;
         }

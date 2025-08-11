@@ -176,7 +176,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
-    ZJC_WARN("0 now tx size: %u", all_tx_size());
+    ZJC_DEBUG("0 now tx size: %u", all_tx_size());
     for (uint32_t i = 0; i < view_block.block_info().tx_list_size(); ++i) {
         auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
@@ -280,7 +280,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         prev_delay_tm_timeout_ = now_tm_us / 1000lu;
     }
 
-    ZJC_WARN("all now tx size: %u", all_tx_size());
+    ZJC_DEBUG("all now tx size: %u", all_tx_size());
 }
 
 void TxPool::GetTxSyncToLeader(
@@ -527,7 +527,7 @@ void TxPool::GetTxIdempotently(
 
     get_tx_func(system_tx_map_);
     get_tx_func(consensus_tx_map_);
-    ZJC_WARN("pool: %d, now get tx by leader all: %u, get: %u", pool_index_, all_tx_size(), res_map.size());
+    ZJC_DEBUG("pool: %d, now get tx by leader all: %u, get: %u", pool_index_, all_tx_size(), res_map.size());
 }
 
 void TxPool::InitLatestInfo() {
