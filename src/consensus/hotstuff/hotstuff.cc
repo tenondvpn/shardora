@@ -17,9 +17,9 @@ namespace shardora {
 
 namespace hotstuff {
 
-#ifndef NDEBUG
-std::atomic<uint32_t> Hotstuff::sendout_bft_message_count_ = 0;
-#endif
+// #ifndef NDEBUG
+static std::atomic<uint32_t> Hotstuff::sendout_bft_message_count_ = 0;
+// #endif
 
 void Hotstuff::Init() {
     // set pacemaker timeout callback function
