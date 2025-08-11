@@ -289,8 +289,7 @@ void TxPool::GetTxSyncToLeader(
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     TxItemPtr tx_ptr;
-    uint32_t pop_count = 0;
-    while ((++pop_count < common::kMaxTxCount) && added_txs_.pop(&tx_ptr)) {
+    while (added_txs_.pop(&tx_ptr)) {
         ZJC_DEBUG("pop success add system tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                 tx_ptr->address_info->nonce(), 
