@@ -282,6 +282,7 @@ private:
     
 // #ifndef NDEBUG
     static std::atomic<uint32_t> sendout_bft_message_count_;
+    uint32_t gTestChangeViewCount = 0;
 // #endif
 };
 

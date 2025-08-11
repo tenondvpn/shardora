@@ -299,7 +299,7 @@ Status Hotstuff::Propose(
         hotstuff_msg->pro_msg().view_item().qc().view(), 
         hotstuff_msg->pro_msg().tc().view());
 
-    ZJC_WARN("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
+    ZJC_DEBUG("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
 #ifndef NDEBUG
@@ -1817,7 +1817,6 @@ Status Hotstuff::ConstructViewBlock(
     auto leader_idx = local_member->index;
     auto pre_v_block = view_block_chain()->HighViewBlock();
 #ifdef TEST_FORKING_ATTACK
-    static std::atomic<uint32_t> gTestChangeViewCount = 0;
     auto new_prev_view = pre_v_block->qc().view();
     auto rand_count = rand() % 100;
     if (rand_count <= 50 && new_prev_view > 4) {
@@ -1828,7 +1827,7 @@ Status Hotstuff::ConstructViewBlock(
         auto tmp_block = view_block_chain()->GetViewBlockVithView(new_prev_view);
         if (tmp_block != nullptr) {
             ZJC_WARN("pool: %d, success change parent view from: %lu, to: %lu, count: %u",
-                pool_idx_, pre_v_block->qc().view(), new_prev_view, gTestChangeViewCount.fetch_add(1));
+                pool_idx_, pre_v_block->qc().view(), new_prev_view, (gTestChangeViewCount++));
             pre_v_block = tmp_block->view_block;
         }
     }
