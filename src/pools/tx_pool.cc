@@ -528,6 +528,7 @@ void TxPool::GetTxIdempotently(
 
     get_tx_func(system_tx_map_);
     get_tx_func(consensus_tx_map_);
+    ZJC_WARN("now get tx by leader all: %u, get: %u", all_tx_size(), res_map.size());
 }
 
 void TxPool::InitLatestInfo() {
