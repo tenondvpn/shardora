@@ -4,7 +4,7 @@ node_count=$3
 bootstrap=$4
 start_shard=$5
 end_shard=$6
-TEST_TX_TPS=1000
+TEST_TX_TPS=20000
 TEST_TX_MAX_POOL_INDEX=1
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"

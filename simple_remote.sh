@@ -176,7 +176,7 @@ scp_package() {
     for ip in "${node_ips_array[@]}"; do 
         sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
         run_cmd_count=$((run_cmd_count + 1))
-        if (($run_cmd_count >= 5)); then
+        if (($run_cmd_count >= 10)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -204,7 +204,7 @@ run_command() {
         fi
 
         run_cmd_count=$(($run_cmd_count + 1))
-        if (($run_cmd_count >= 10)); then
+        if (($run_cmd_count >= 30)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -231,7 +231,7 @@ start_all_nodes() {
             sleep 3
         fi
 
-        sleep 1
+        sleep 0.3
         start_pos=$(($start_pos+$start_nodes_count))
     done
 
