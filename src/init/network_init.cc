@@ -243,7 +243,9 @@ int NetworkInit::Init(int argc, char** argv) {
         db_,
         std::bind(&consensus::HotstuffManager::VerifySyncedViewBlock,
             hotstuff_mgr_, std::placeholders::_1));
+    ZJC_WARN("init kv_sync_ success.");
     tm_block_mgr_->Init(vss_mgr_,account_mgr_);
+    ZJC_WARN("init tm_block_mgr_ success.");
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;

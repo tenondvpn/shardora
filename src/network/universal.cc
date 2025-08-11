@@ -28,7 +28,7 @@ Universal::Universal(
 }
 
 Universal::~Universal() {
-    Destroy();
+    // Destroy();
 }
 
 int Universal::Init(
