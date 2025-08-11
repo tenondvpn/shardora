@@ -47,7 +47,7 @@ void ThreadHandler::HandleMessage() {
     msg_handler_->ThreadWaitNotify();
     while (!destroy_) {
         if (!common::GlobalInfo::Instance()->main_inited_success()) {
-            usleep(100000);
+            usleep(100000lu);
             continue;
         }
         
