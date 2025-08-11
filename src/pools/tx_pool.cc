@@ -200,7 +200,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             auto tx_iter = tx_map.find(addr);
             if (tx_iter != tx_map.end()) {
                 for (auto nonce_iter = tx_iter->second.begin(); nonce_iter != tx_iter->second.end(); ) {
-                    ZJC_WARN("find tx addr success: %s, unique hash: %s, "
+                    ZJC_DEBUG("find tx addr success: %s, unique hash: %s, "
                         "step: %lu, nonce: %lu, consensus nonce: %lu, key: %s", 
                         common::Encode::HexEncode(addr).c_str(),
                         common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(),
@@ -208,7 +208,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         view_block.block_info().tx_list(i).nonce(),
                         nonce_iter->second->tx_info->nonce(),
                         common::Encode::HexEncode(nonce_iter->second->tx_info->key()).c_str());
-                    ZJC_WARN("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
+                    ZJC_DEBUG("find tx addr success: %s, nonce: %lu, remove nonce: %lu", 
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first,
                         view_block.block_info().tx_list(i).nonce());
@@ -238,12 +238,12 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         all_delay_tm_us_ += now_tm_us - nonce_iter->second->receive_tm_us;
                     }
 
-                    ZJC_WARN("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
+                    ZJC_DEBUG("trace tx pool: %d, over tx addr: %s, nonce: %lu", 
                         pool_index_,
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce_iter->first);
                     auto tx_ptr = nonce_iter->second;
-                    ZJC_WARN("over pop success add system tx nonce addr: %s, "
+                    ZJC_DEBUG("over pop success add system tx nonce addr: %s, "
                         "addr nonce: %lu, tx nonce: %lu, unique hash: %s",
                         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                         tx_ptr->address_info->nonce(), 
@@ -256,14 +256,14 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                     tx_map.erase(tx_iter);
                 }
             } else {
-                ZJC_WARN("find tx addr failed: %s", common::Encode::HexEncode(addr).c_str());
+                ZJC_DEBUG("find tx addr failed: %s", common::Encode::HexEncode(addr).c_str());
             }
         };
         
         remove_tx_func(system_tx_map_);
         remove_tx_func(tx_map_);
         remove_tx_func(consensus_tx_map_);
-        ZJC_WARN("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
+        ZJC_DEBUG("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
             pool_index_,
             view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
@@ -475,7 +475,7 @@ void TxPool::GetTxIdempotently(
                         *tx_ptr->tx_info);
                     if (res != 0) {
                         if (res > 0) {
-                            ZJC_WARN("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
+                            ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
                                 pool_index_,
                                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                                 tx_ptr->tx_info->nonce(),
@@ -483,7 +483,7 @@ void TxPool::GetTxIdempotently(
                             continue;
                         }
                         
-                        ZJC_WARN("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
+                        ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
                             pool_index_,
                             common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                             tx_ptr->tx_info->nonce(),
@@ -492,7 +492,7 @@ void TxPool::GetTxIdempotently(
                     }
                 } else {
                     if (tx_ptr->tx_info->nonce() != valid_nonce + 1) {
-                        ZJC_WARN("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
+                        ZJC_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
                             pool_index_,
                             common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                             tx_ptr->tx_info->nonce(),
@@ -504,7 +504,7 @@ void TxPool::GetTxIdempotently(
                 valid_nonce = tx_ptr->tx_info->nonce();
                 tx_ptr->receive_tm_us = common::TimeUtils::TimestampUs();
                 res_map.push_back(tx_ptr);
-                ZJC_WARN("trace tx pool: %d, consensus leader tx addr: %s, key: %s, nonce: %lu, "
+                ZJC_DEBUG("trace tx pool: %d, consensus leader tx addr: %s, key: %s, nonce: %lu, "
                     "res count: %u, count: %u, tx_map size: %u, addr tx size: %u", 
                     pool_index_,
                     common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
