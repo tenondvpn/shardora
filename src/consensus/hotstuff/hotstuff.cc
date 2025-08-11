@@ -302,10 +302,10 @@ Status Hotstuff::Propose(
     ZJC_WARN("new propose message hash: %lu", tmp_msg_ptr->header.hash64());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
     auto t8 = common::TimeUtils::TimestampMs();
     ++sendout_bft_message_count_;
-    ZJC_DEBUG("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
+    ZJC_WARN("pool: %d, header pool: %d, propose, txs size: %lu, view: %lu, "
         "old_last_leader_propose_view_: %lu, "
         "last_leader_propose_view_: %lu, tc view: %lu, hash: %s, "
         "qc_view: %lu, hash64: %lu, propose_debug: %s, t1: %lu, t2: %lu, "
@@ -344,7 +344,7 @@ Status Hotstuff::Propose(
             last_leader_propose_view_);
     }
 
-#endif
+// #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return Status::kSuccess;
 }
