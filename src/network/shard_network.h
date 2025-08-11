@@ -159,6 +159,7 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
 
 template<class DhtType>
 int ShardNetwork<DhtType>::JoinShard() {
+    ZJC_DEBUG("now get universal dht 6");
     auto unversal_dht = network::UniversalManager::Instance()->GetUniversal(
         network::kUniversalNetworkId);
     if (unversal_dht == nullptr) {
@@ -200,6 +201,7 @@ int ShardNetwork<DhtType>::JoinShard() {
         NETWORK_ERROR("join shard network [%u] failed!", sharding_id_);
     }
 
+    ZJC_DEBUG("now get universal dht 7");
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     std::vector<dht::NodePtr> nodes;
     auto dht_ptr = uni_net->readonly_hash_sort_dht();

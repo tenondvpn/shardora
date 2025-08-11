@@ -55,6 +55,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     uint32_t des_net_id = dht::DhtKeyManager::DhtKeyGetNetId(message.des_dht_key());
     dht::BaseDhtPtr dht_ptr{ nullptr };
     if (des_net_id == network::kUniversalNetworkId || des_net_id == network::kNodeNetworkId) {
+        ZJC_DEBUG("now get universal dht 2");
         dht_ptr = UniversalManager::Instance()->GetUniversal(des_net_id);
     } else {
         dht_ptr = DhtManager::Instance()->GetDht(des_net_id);
@@ -105,6 +106,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
+    ZJC_DEBUG("now get universal dht 3");
     auto uni_dht = network::UniversalManager::Instance()->GetUniversal(
             kUniversalNetworkId);
     if (!uni_dht) {
@@ -295,6 +297,7 @@ dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {
     uint32_t net_id = dht::DhtKeyManager::DhtKeyGetNetId(dht_key);
     dht::BaseDhtPtr dht = nullptr;
     if (net_id == kUniversalNetworkId || net_id == kNodeNetworkId) {
+        ZJC_DEBUG("now get universal dht 4");
         dht = UniversalManager::Instance()->GetUniversal(net_id);
     } else {
         dht = DhtManager::Instance()->GetDht(net_id);
@@ -305,6 +308,7 @@ dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {
 
 void Route::RouteByUniversal(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
+    ZJC_DEBUG("now get universal dht 5");
     auto universal_dht = UniversalManager::Instance()->GetUniversal(kUniversalNetworkId);
     if (!universal_dht) {
         return;

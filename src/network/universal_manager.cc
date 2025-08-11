@@ -163,6 +163,7 @@ int UniversalManager::CreateUniversalNetwork(const common::Config& config) {
         return res;
     }
 
+    ZJC_DEBUG("now get universal dht 8");
     auto universal_dht = GetUniversal(kUniversalNetworkId);
     if (universal_dht == nullptr) {
         return kNetworkError;

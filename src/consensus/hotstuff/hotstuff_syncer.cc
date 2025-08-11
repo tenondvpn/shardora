@@ -202,6 +202,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::Vi
     }
     // 获取邻居节点
     std::vector<dht::NodePtr> nodes;
+    ZJC_DEBUG("now get universal dht 0");
     auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht = *dht_ptr->readonly_hash_sort_dht();
     dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);

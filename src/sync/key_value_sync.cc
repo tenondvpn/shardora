@@ -230,6 +230,7 @@ uint64_t KeyValueSync::SendSyncRequest(
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors) {
     std::vector<dht::NodePtr> nodes;
+    ZJC_DEBUG("now get universal dht 9");
     auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht = *dht_ptr->readonly_hash_sort_dht();
     dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
