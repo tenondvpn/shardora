@@ -176,6 +176,7 @@ scp_package() {
     for ip in "${node_ips_array[@]}"; do 
         sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
         sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardora/cp_pkg.sh root@$ip:/root &
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardora/sshpass root@$ip:/usr/bin &
         run_cmd_count=$((run_cmd_count + 1))
         if (($run_cmd_count >= 10)); then
             check_cmd_finished
@@ -199,7 +200,7 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && sh cp_pkg.sh 10"  > /dev/null 2>&1 &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && sh cp_pkg.sh 2"  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi
