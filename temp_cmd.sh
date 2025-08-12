@@ -56,8 +56,8 @@ init_firewall() {
 
     # 模拟公网
     sudo tc qdisc del dev $DEV root
-    sudo tc qdisc add dev $DEV root handle 1: tbf rate 100mbit burst 32kbit latency 400ms
-    sudo tc qdisc add dev $DEV parent 1:1 handle 10: netem delay 150ms 20ms loss 10%
+    sudo tc qdisc add dev $DEV root handle 1: tbf rate 500mbit burst 32kbit latency 400ms
+    sudo tc qdisc add dev $DEV parent 1:1 handle 10: netem delay 750ms 10ms loss 5%
     # # 设置HTB根队列
     # tc qdisc add dev $DEV root handle 1: htb default 12
     # tc class add dev $DEV parent 1: classid 1:1 htb rate 100mbit
