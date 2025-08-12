@@ -113,7 +113,7 @@ int UniversalManager::CreateNetwork(
         const common::Config& config) {
     dht::NodePtr local_node = std::make_shared<dht::Node>(
         network_id,
-        common::GlobalInfo::Instance()->config_local_ip(),
+        common::GlobalInfo::Instance()->config_public_ip(),
         common::GlobalInfo::Instance()->config_local_port(),
         security_->GetPublicKey(),
         security_->GetAddress());

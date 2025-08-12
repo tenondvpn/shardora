@@ -284,7 +284,7 @@ int BaseDht::Bootstrap(
         int32_t sharding_id) {
     assert(!boot_nodes.empty());
     for (uint32_t i = 0; i < boot_nodes.size(); ++i) {
-        if (boot_nodes[i]->public_ip == common::GlobalInfo::Instance()->config_local_ip() &&
+        if (boot_nodes[i]->public_ip == common::GlobalInfo::Instance()->config_public_ip() &&
             boot_nodes[i]->public_port == common::GlobalInfo::Instance()->config_local_port()) {
             continue;
         }

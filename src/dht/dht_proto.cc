@@ -18,7 +18,7 @@ void DhtProto::CreateBootstrapRequest(
     auto* dht_msg = msg.mutable_dht_proto();
     auto* bootstrap_req = dht_msg->mutable_bootstrap_req();
     bootstrap_req->set_pubkey(local_pubkey);
-    bootstrap_req->set_public_ip(common::GlobalInfo::Instance()->config_local_ip());
+    bootstrap_req->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());
     bootstrap_req->set_public_port(common::GlobalInfo::Instance()->config_local_port());
 }
 
@@ -34,7 +34,7 @@ void DhtProto::CreateBootstrapResponse(
     // TODO(tt): add sign
     auto* res_dht_msg = msg.mutable_dht_proto();
     auto* bootstrap_res = res_dht_msg->mutable_bootstrap_res();
-    bootstrap_res->set_public_ip(common::GlobalInfo::Instance()->config_local_ip());
+    bootstrap_res->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());
     bootstrap_res->set_public_port(common::GlobalInfo::Instance()->config_local_port());
     bootstrap_res->set_pubkey(local_pubkey);
 }
@@ -52,7 +52,7 @@ void DhtProto::CreateRefreshNeighborsRequest(
     auto refresh_nei_req = dht_msg->mutable_refresh_neighbors_req();
     refresh_nei_req->set_count(kRefreshNeighborsDefaultCount);
     refresh_nei_req->set_pubkey(local_node->pubkey_str);
-    refresh_nei_req->set_public_ip(common::GlobalInfo::Instance()->config_local_ip());
+    refresh_nei_req->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());
     refresh_nei_req->set_public_port(common::GlobalInfo::Instance()->config_local_port());
     common::BloomFilter bloomfilter{
             kRefreshNeighborsBloomfilterBitCount,
@@ -135,7 +135,7 @@ int32_t DhtProto::CreateConnectRequest(
 
     connect_req->set_is_response(response);
     connect_req->set_pubkey(local_node->pubkey_str);
-    connect_req->set_public_ip(common::GlobalInfo::Instance()->config_local_ip());
+    connect_req->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());
     connect_req->set_public_port(common::GlobalInfo::Instance()->config_local_port());
     connect_req->set_id(local_node->id);
     return kDhtSuccess;

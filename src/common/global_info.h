@@ -37,6 +37,10 @@ public:
         return config_local_port_;
     }
 
+    std::string config_public_ip() const {
+        return config_public_ip_;
+    }
+
     void set_config_local_ip(const std::string& ip) {
         config_local_ip_ = ip;
     }
@@ -278,6 +282,7 @@ private:
     uint32_t http_port_{ 0 };
     bool genesis_start_{ false };
     std::vector<uint32_t> networks_;
+    std::string config_public_ip_;
     uint32_t config_public_port_{ 0 };
     std::string node_tag_;
     volatile uint32_t network_id_{ common::kInvalidUint32 };
