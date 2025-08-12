@@ -47,13 +47,17 @@ init_config() {
 
 init_firewall() {
     iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-    # DEV=eth0
-    # RATE="500mbit"
-    # DELAY="25ms 1ms"
+    DEV=eth0
+    RATE="500mbit"
+    DELAY="25ms 1ms"
 
-    # # 清除旧规则
-    # tc qdisc del dev $DEV root 2>/dev/null
+    # 清除旧规则
+    tc qdisc del dev $DEV root 2>/dev/null
 
+    # 模拟公网
+    sudo tc qdisc del dev $DEV root
+    sudo tc qdisc add dev $DEV root handle 1: tbf rate 100mbit burst 32kbit latency 400ms
+    sudo tc qdisc add dev $DEV parent 1:1 handle 10: netem delay 150ms 20ms loss 10%
     # # 设置HTB根队列
     # tc qdisc add dev $DEV root handle 1: htb default 12
     # tc class add dev $DEV parent 1: classid 1:1 htb rate 100mbit
@@ -82,7 +86,7 @@ deploy_nodes() {
             pubkey=`sed -n "$i""p" /root/pkg/shards$shard_id | awk -F'\t' '{print $2}'`
             cp -rf /root/pkg/temp /root/zjnodes/s$shard_id'_'$i
             sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-            sed -i 's/PUBLIC_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+            sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             if ((i<=TEST_TX_MAX_POOL_INDEX)); then
                 sed -i 's/TEST_POOL_INDEX/'$(($i-1))'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
