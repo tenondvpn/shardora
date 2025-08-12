@@ -75,6 +75,8 @@ init() {
     done
 
     nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
+    nodes_count=$(($nodes_count * 2))
+
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
