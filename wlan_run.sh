@@ -4,13 +4,13 @@ node_ips_array=(${node_ips//,/ })
 count=0
 cp_ips=""
 for ip in "${node_ips_array[@]}"; do 
-    if (($count == 0)); then
+    count=$(($count + 1))
+    if (($count == 1)); then
         cp_ips=$ip
         continue
     fi
 
     cp_ips=$cp_ips","$ip
-    count=$(($count + 1))
     if ((count >= 10)); then
         break
     fi
