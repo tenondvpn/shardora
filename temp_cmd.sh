@@ -49,22 +49,18 @@ init_firewall() {
     iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
     DEV=eth0
     RATE="500mbit"
-    DELAY="25ms 1ms"
+    DELAY="75ms 10ms"
 
     # 清除旧规则
     tc qdisc del dev $DEV root 2>/dev/null
 
-    # 模拟公网
-    sudo tc qdisc del dev $DEV root
-    sudo tc qdisc add dev $DEV root handle 1: tbf rate 500mbit burst 32kbit latency 400ms
-    sudo tc qdisc add dev $DEV parent 1:1 handle 10: netem delay 75ms 10ms loss 5%
-    # # 设置HTB根队列
-    # tc qdisc add dev $DEV root handle 1: htb default 12
-    # tc class add dev $DEV parent 1: classid 1:1 htb rate 100mbit
+    # 设置HTB根队列
+    tc qdisc add dev $DEV root handle 1: htb default 12
+    tc class add dev $DEV parent 1: classid 1:1 htb rate 500mbit
 
-    # # 创建子类并添加延迟
-    # tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE
-    # tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY
+    # 创建子类并添加延迟
+    tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE
+    tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY loss 5%
 
     # tc qdisc del dev eth0 root
     # tc qdisc add dev eth0 root netem delay 25ms
