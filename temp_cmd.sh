@@ -82,7 +82,7 @@ deploy_nodes() {
             pubkey=`sed -n "$i""p" /root/pkg/shards$shard_id | awk -F'\t' '{print $2}'`
             cp -rf /root/pkg/temp /root/zjnodes/s$shard_id'_'$i
             sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-            sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
+            sed -i 's/PUBLIC_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
             if ((i<=TEST_TX_MAX_POOL_INDEX)); then
                 sed -i 's/TEST_POOL_INDEX/'$(($i-1))'/g' /root/zjnodes/s3_$i/conf/zjchain.conf
