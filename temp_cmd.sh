@@ -4,7 +4,7 @@ node_count=$3
 bootstrap=$4
 start_shard=$5
 end_shard=$6
-TEST_TX_TPS=20000
+TEST_TX_TPS=7000
 TEST_TX_MAX_POOL_INDEX=1
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
@@ -48,8 +48,8 @@ init_config() {
 init_firewall() {
     iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
     DEV=eth0
-    RATE="500mbit"
-    DELAY="25ms 1ms"
+    RATE="1000mbit"
+    DELAY="52ms 10ms"
 
     # 清除旧规则
     tc qdisc del dev $DEV root 2>/dev/null
@@ -60,7 +60,7 @@ init_firewall() {
 
     # 创建子类并添加延迟
     tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE
-    tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY
+    tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY loss 0.01%
 
     # tc qdisc del dev eth0 root
     # tc qdisc add dev eth0 root netem delay 25ms
