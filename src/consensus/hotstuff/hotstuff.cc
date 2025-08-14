@@ -346,6 +346,7 @@ Status Hotstuff::Propose(
 
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    ZJC_WARN("propose use time: %lu", (common::TimeUtils::TimestampMs() - btime));
     return Status::kSuccess;
 }
 
@@ -624,6 +625,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         pro_msg.tc().has_view_block_hash());
 #endif
     if (pro_msg.has_tc() && pro_msg.tc().has_view_block_hash()) {
+        auto btime = common::TimeUtils::TimestampMs();
         if (VerifyQC(pro_msg.tc()) != Status::kSuccess) {
             ZJC_ERROR("pool: %d verify tc failed: %lu", pool_idx_, pro_msg.tc().view());
             // assert(false);
@@ -642,6 +644,8 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
             assert(IsQcTcValid(*tc_ptr));
             latest_qc_item_ptr_ = tc_ptr;
         }
+        ZJC_WARN("commit use time: %lu", (common::TimeUtils::TimestampMs() - btime));
+
 // #ifndef NDEBUG
 //         auto msg_hash = GetTCMsgHash(pro_msg.tc());
 //         ZJC_WARN("HandleTC success verify tc %u_%u_%lu, hash: %s called hash: %lu, propose_debug: %s",
@@ -1028,6 +1032,9 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 }
 
 Status Hotstuff::VerifyFollower(const transport::MessagePtr& msg_ptr) {
+#ifdef USE_SERVER_TEST_TRANSACTION
+    return Status::kSuccess;
+#endif
     auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
     auto member = leader_rotation_->GetMember(vote_msg.replica_idx());
     if (!member) {
