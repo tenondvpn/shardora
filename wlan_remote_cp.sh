@@ -5,27 +5,55 @@ end_shard=$3
 PASSWORD=$4
 TARGET=$5
 FIRST_NODE_COUNT=$1
-
+ALL_ARR=("0" "1" "2" "3" "4" "5" "0" "1" "2" "3" "4" "5" "0" "1" "2")
+start_nodes=""
 init() {
-    ips_array=(${node_ips//,/ })
-    ips_len=(${#ips_array[*]})
-    if (($ips_len == 2)); then
-        first_ip=(${ips_array[0]})
-        second_ip=(${ips_array[1]})
-        first_ip_len=(${#first_ip})
-        new_ips=""
-        if (($first_ip_len<=6)); then
+    tmp_ips=(${node_ips//-/ })
+    tmp_ips_len=(${#tmp_ips[*]})
+    ip_max_idx=0
+    if (($tmp_ips_len > 1)); then
+        for tmp_ip_nodes in "${tmp_ips[@]}"; do 
+            ips_array=(${tmp_ip_nodes//,/ })
+            first_ip=(${ips_array[0]})
+            second_ip=(${ips_array[1]})
+
             start=$(($first_ip + 0))
             end=$(($second_ip + 0))
             for ((i=start; i<=end; i++)); do
                 if ((i==end));then
-                    new_ips+="192.168.0.$i"
+                    new_ips+="192.168.$ip_max_idx.$i"
                 else
-                    new_ips+="192.168.0.$i,"
+                    new_ips+="192.168.$ip_max_idx.$i,"
                 fi
             done
-            node_ips=$new_ips
-            echo $node_ips
+
+            new_ips+=","
+            ip_max_idx=$(($ip_max_idx+1))
+        done
+
+        node_ips=$new_ips
+        echo $node_ips
+    else
+        ips_array=(${node_ips//,/ })
+        ips_len=(${#ips_array[*]})
+        if (($ips_len == 2)); then
+            first_ip=(${ips_array[0]})
+            second_ip=(${ips_array[1]})
+            first_ip_len=(${#first_ip})
+            new_ips=""
+            if (($first_ip_len<=6)); then
+                start=$(($first_ip + 0))
+                end=$(($second_ip + 0))
+                for ((i=start; i<=end; i++)); do
+                    if ((i==end));then
+                        new_ips+="192.168.0.$i"
+                    else
+                        new_ips+="192.168.0.$i,"
+                    fi
+                done
+                node_ips=$new_ips
+                echo $node_ips
+            fi
         fi
     fi
 
@@ -69,9 +97,26 @@ init() {
     fi
 
     node_ips_array=(${node_ips//,/ })
+    node_ips_array_len=(${#node_ips_array[*]})
+    each_scp_node_count=$(($node_ips_array_len-15)/15)
     nodes_count=0
+    start_count=0
+    arr_index=0
+    arr_ips=""
+    arr_ips_len=0
     for ip in "${node_ips_array[@]}"; do
         nodes_count=$(($nodes_count + $each_nodes_count))
+        start_count=$(($start_count+1))
+        if (($start_count < 15)); then
+            start_nodes+=$ip","
+        else
+            if (($arr_ips_len < $each_scp_node_count)); then
+                arr_index=$(($arr_index+1))
+                arr_ips_len=0
+            fi
+
+            ALL_ARR[$arr_index]+=$ip","
+        fi
     done
 
     nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
@@ -173,7 +218,7 @@ clear_command() {
 
 scp_package() {
     echo 'scp_package start'
-    node_ips_array=(${node_ips//,/ })
+    node_ips_array=(${start_nodes//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
         sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
@@ -192,9 +237,10 @@ scp_package() {
 
 run_command() {
     echo 'run_command start'
-    node_ips_array=(${node_ips//,/ })
+    node_ips_array=(${start_nodes//,/ })
     run_cmd_count=0
     start_pos=1
+    arr_index=0
     for ip in "${node_ips_array[@]}"; do 
         echo "start node: " $ip $each_nodes_count
         start_nodes_count=$(($each_nodes_count + 0))
@@ -202,7 +248,8 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && sh cp_pkg.sh 2"  > /dev/null 2>&1 &
+        echo $arr_index ${ALL_ARR[@]:$arr_index:1} 
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && sh cp_pkg.sh "${ALL_ARR[@]:$arr_index:1}  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi
@@ -212,35 +259,13 @@ run_command() {
             check_cmd_finished
             run_cmd_count=0
         fi
+        
         start_pos=$(($start_pos+$start_nodes_count))
+        arr_index=$(($arr_index+1))
     done
 
     check_cmd_finished
     echo 'run_command over'
-}
-
-start_all_nodes() {
-    echo 'start_all_nodes start'
-    node_ips_array=(${node_ips//,/ })
-    start_pos=1
-    for ip in "${node_ips_array[@]}"; do
-        echo "start node: " $ip $each_nodes_count
-        start_nodes_count=$(($each_nodes_count + 0))
-        if ((start_pos==1)); then
-            start_nodes_count=$FIRST_NODE_COUNT
-        fi
-
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root/pkg && sh start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard "  &
-        if ((start_pos==1)); then
-            sleep 3
-        fi
-
-        sleep 0.3
-        start_pos=$(($start_pos+$start_nodes_count))
-    done
-
-    check_cmd_finished
-    echo 'start_all_nodes over'
 }
 
 killall -9 sshpass
