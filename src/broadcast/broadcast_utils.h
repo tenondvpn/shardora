@@ -12,7 +12,7 @@ namespace shardora {
 
 namespace broadcast {
 
-static const uint32_t kBroadcastDefaultNeighborCount = 7u;
+static const uint32_t kBroadcastDefaultNeighborCount = 13u;
 static const uint32_t kBloomfilterBitSize = 256u;
 static const uint32_t kBloomfilterHashCount = 3u;
 static const uint32_t kBroadcastHopLimit = 10u;
