@@ -41,15 +41,19 @@ init_config() {
 
     echo "ulimit -SHn 1024000" >> /etc/profile
     # yum install -y wondershaper
+    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 
 #    cd /root/pkg && rpm -ivh gdb-7.6.1-120.el7.x86_64.rpm
 }
 
 init_firewall() {
     iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    grubby --update-kernel=ALL --args="tcp_bbr2=1"
+
     DEV=eth0
-    RATE="1000mbit"
-    DELAY="52ms 10ms"
+    RATE="500mbit"
+    DELAY="25ms"
 
     # 清除旧规则
     tc qdisc del dev $DEV root 2>/dev/null
@@ -60,7 +64,7 @@ init_firewall() {
 
     # 创建子类并添加延迟
     tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE
-    tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY loss 0.01%
+    tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY 
 
     # tc qdisc del dev eth0 root
     # tc qdisc add dev eth0 root netem delay 25ms

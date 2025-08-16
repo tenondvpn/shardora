@@ -7,25 +7,51 @@ TARGET=$5
 FIRST_NODE_COUNT=$1
 
 init() {
-    ips_array=(${node_ips//,/ })
-    ips_len=(${#ips_array[*]})
-    if (($ips_len == 2)); then
-        first_ip=(${ips_array[0]})
-        second_ip=(${ips_array[1]})
-        first_ip_len=(${#first_ip})
-        new_ips=""
-        if (($first_ip_len<=6)); then
+    tmp_ips=(${node_ips//-/ })
+    tmp_ips_len=(${#tmp_ips[*]})
+    ip_max_idx=0
+    if (($tmp_ips_len > 1)); then
+        for tmp_ip_nodes in "${tmp_ips[@]}"; do 
+            ips_array=(${tmp_ip_nodes//,/ })
+            first_ip=(${ips_array[0]})
+            second_ip=(${ips_array[1]})
+
             start=$(($first_ip + 0))
             end=$(($second_ip + 0))
             for ((i=start; i<=end; i++)); do
                 if ((i==end));then
-                    new_ips+="192.168.0.$i"
+                    new_ips+="192.168.$ip_max_idx.$i"
                 else
-                    new_ips+="192.168.0.$i,"
+                    new_ips+="192.168.$ip_max_idx.$i,"
                 fi
             done
-            node_ips=$new_ips
-            echo $node_ips
+
+            ip_max_idx=$(($ip_max_idx+1))
+        done
+
+        node_ips=$new_ips
+        echo $node_ips
+    else
+        ips_array=(${node_ips//,/ })
+        ips_len=(${#ips_array[*]})
+        if (($ips_len == 2)); then
+            first_ip=(${ips_array[0]})
+            second_ip=(${ips_array[1]})
+            first_ip_len=(${#first_ip})
+            new_ips=""
+            if (($first_ip_len<=6)); then
+                start=$(($first_ip + 0))
+                end=$(($second_ip + 0))
+                for ((i=start; i<=end; i++)); do
+                    if ((i==end));then
+                        new_ips+="192.168.0.$i"
+                    else
+                        new_ips+="192.168.0.$i,"
+                    fi
+                done
+                node_ips=$new_ips
+                echo $node_ips
+            fi
         fi
     fi
 
@@ -241,6 +267,7 @@ start_all_nodes() {
 
 killall -9 sshpass
 init 
+exit 0
 make_package
 clear_command
 scp_package
