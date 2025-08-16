@@ -26,6 +26,7 @@ init() {
                 fi
             done
 
+            new_ips+=","
             ip_max_idx=$(($ip_max_idx+1))
         done
 
@@ -267,7 +268,6 @@ start_all_nodes() {
 
 killall -9 sshpass
 init 
-exit 0
 make_package
 clear_command
 scp_package
