@@ -1452,8 +1452,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
-    if (!qc.sign_x().empty())
-    return v_block2_info;
+    // if (!qc.sign_x().empty())
+    // return v_block2_info;
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug2;
     cons_debug2.ParseFromString(v_block2->debug());
