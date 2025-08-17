@@ -148,6 +148,11 @@ run_command() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     start_pos=1
+    nodes_count=0
+    for ip in "${node_ips_array[@]}"; do
+        nodes_count=$(($nodes_count + $each_nodes_count))
+    done
+
     for ip in "${node_ips_array[@]}"; do 
         echo "start node: " $ip $each_nodes_count
         start_nodes_count=$(($each_nodes_count + 0))
@@ -155,7 +160,7 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && tar -zxvf zjchain.tar.gz && cp -rf ./zjchain ./pkg && cp -rf ./temp_cmd.sh ./pkg && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf $nodes_count.tar.gz && tar -zxvf zjchain.tar.gz && cp -rf ./zjchain ./pkg && cp -rf ./temp_cmd.sh ./pkg && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi
