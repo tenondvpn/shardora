@@ -333,7 +333,7 @@ void TxPool::GetTxSyncToLeader(
             tx_ptr->tx_info->nonce());
     }
 
-    ZJC_WARN("now tx size: %u", all_tx_size());
+    // ZJC_WARN("now tx size: %u", all_tx_size());
     for (auto iter = tx_map_.begin(); iter != tx_map_.end(); ++iter) {
         uint64_t valid_nonce = common::kInvalidUint64;
         for (auto nonce_iter = iter->second.begin(); nonce_iter != iter->second.end(); ++nonce_iter) {
