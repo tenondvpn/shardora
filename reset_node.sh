@@ -61,6 +61,7 @@ init() {
         node_ips='127.0.0.1'
     fi 
 
+    cd /root/shardora/ && sh build.sh a Release
     cp -rf /root/shardora/temp_cmd.sh /root/shardora/cbuild_$TARGET
     cd /root/shardora/cbuild_$TARGET && tar -zcvf zjchain.tar.gz ./zjchain ./temp_cmd.sh
 }
