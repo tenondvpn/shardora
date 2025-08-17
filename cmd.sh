@@ -25,7 +25,7 @@ clear_command() {
     for ip in "${node_ips_array[@]}"; do 
         sshpass -p Xf4aGbTaf! ssh -o ConnectTimeout=10 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "$cmd" &
         run_cmd_count=$(($run_cmd_count + 1))
-        if (($run_cmd_count >= 50)); then
+        if (($run_cmd_count >= 250)); then
             check_cmd_finished
             run_cmd_count=0
         fi
