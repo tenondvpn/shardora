@@ -62,61 +62,6 @@ init() {
     fi  
 
     sh cmd.sh $node_ips "tc qdisc del dev eth0 root"  > /dev/null 2>&1 &
-    if [ "$end_shard" == "" ]; then
-        end_shard=3
-    fi  
-
-    if [ "$PASSWORD" == "" ]; then
-        PASSWORD="Xf4aGbTaf!"
-    fi
-
-    if [ "$TARGET" == "" ]; then
-        TARGET=Release
-    fi
-
-    killall -9 zjchain
-    killall -9 txcli
-
-    sh build.sh a $TARGET
-    sudo rm -rf /root/zjnodes
-    sudo cp -rf ./zjnodes_local /root/zjnodes
-    rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
-
-    cp -rf ./zjnodes_local/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
-    cp -rf ./zjnodes_local/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
-    mkdir -p /root/zjnodes/zjchain/log
-
-
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    if [[ "$each_nodes_count" -eq "" ]]; then
-        each_nodes_count=4 
-    fi
-
-    node_ips_array=(${node_ips//,/ })
-    nodes_count=0
-    for ip in "${node_ips_array[@]}"; do
-        nodes_count=$(($nodes_count + $each_nodes_count))
-    done
-
-    nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
-    shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
-    if [ "$shard3_node_count" != "$nodes_count" ]; then
-        echo "new shard nodes file will create."
-        rm -rf /root/shardora/shards*
-    fi  
-
-    echo "node count: " $nodes_count
-    cd /root/zjnodes/zjchain && ./zjchain -U -N $nodes_count
-    cd /root/zjnodes/zjchain && ./zjchain -S 3 -N $nodes_count
-
-    rm -rf /root/zjnodes/r*
-    rm -rf /root/zjnodes/s*
-    rm -rf /root/zjnodes/new*
-    rm -rf /root/zjnodes/node
-    rm -rf /root/zjnodes/param
 }
 
 make_package() {
