@@ -60,9 +60,7 @@ reset_tc() {
     DELAY="50ms 10ms loss 0.01%"
     #DELAY="25ms"
 
-    sh cmd.sh $node_ips "tc qdisc del dev $DEV root && tc qdisc add dev $DEV root handle 1: htb default 12 && tc class add dev $DEV parent 1: classid 1:1 htb rate 1000mbit && tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE && tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY "  > /dev/null 2>&1 &
+    sh cmd.sh $node_ips "tc qdisc del dev $DEV root && tc qdisc add dev $DEV root handle 1: htb default 12 && tc class add dev $DEV parent 1: classid 1:1 htb rate 1000mbit && tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE && tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY "
 }
 
-
-killall -9 sshpass
 reset_tc 
