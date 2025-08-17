@@ -4,7 +4,7 @@ node_count=$3
 bootstrap=$4
 start_shard=$5
 end_shard=$6
-TEST_TX_TPS=7000
+TEST_TX_TPS=5000
 TEST_TX_MAX_POOL_INDEX=1
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
@@ -52,8 +52,9 @@ init_firewall() {
     grubby --update-kernel=ALL --args="tcp_bbr2=1"
 
     DEV=eth0
-    RATE="500mbit"
-    DELAY="25ms"
+    RATE="1000mbit"
+    DELAY="50ms 10ms loss 0.01%"
+    #DELAY="25ms"
 
     # 清除旧规则
     tc qdisc del dev $DEV root 2>/dev/null

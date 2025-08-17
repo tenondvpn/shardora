@@ -248,7 +248,7 @@ private:
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 1000lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 15000lu;
 
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS
