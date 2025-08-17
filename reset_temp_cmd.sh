@@ -60,8 +60,6 @@ init() {
         echo "just use local single node."
         node_ips='127.0.0.1'
     fi 
-
-    cd /root/shardora/cbuild_$TARGET && tar -zcvf zjchain.tar.gz ./zjchain
 }
 
 get_bootstrap() {
@@ -128,7 +126,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardora/cbuild_$TARGET/zjchain.tar.gz root@$ip:/root &
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardora/temp_cmd.sh root@$ip:/root &
         run_cmd_count=$((run_cmd_count + 1))
         if (($run_cmd_count >= 50)); then
             check_cmd_finished
@@ -152,7 +150,7 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && tar -zxvf zjchain.tar.gz && cp -rf ./zjchain ./pkg && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cp -rf ./temp_cmd.sh ./pkg && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi
