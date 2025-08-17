@@ -123,8 +123,13 @@ clear_command() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     start_pos=1
+    nodes_count=0
+    for ip in "${node_ips_array[@]}"; do
+        nodes_count=$(($nodes_count + $each_nodes_count))
+    done
+
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg* && killall -9 zjchain" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "mv /root/pkg.tar.gz /root/$nodes_count.tar.gz; killall -9 zjchain" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
