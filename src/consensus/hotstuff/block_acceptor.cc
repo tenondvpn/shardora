@@ -185,6 +185,13 @@ Status BlockAcceptor::Accept(
         assert(addr_info->has_type());
         assert(addr_info->has_latest_height());
         prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, zjc_host.db_batch_);
+        ZJC_INFO("%u_%u_%lu, success addr info: %s, balance: %u, nonce: %lu", 
+            view_block.qc().network_id(),
+            view_block.qc().pool_index(),
+            view_block.qc().view(),
+            common::Encode::HexEncode(addr_info->addr()).c_str(), 
+            addr_info->has_balance(),
+            addr_info->has_nonce());
     }
 
     for (auto account_iter = zjc_host.accounts_.begin();
