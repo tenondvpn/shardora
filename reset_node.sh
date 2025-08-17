@@ -195,7 +195,6 @@ start_all_nodes() {
 
 killall -9 sshpass
 init 
-make_package
 clear_command
 scp_package
 get_bootstrap
