@@ -1,7 +1,3 @@
-# Shardora
-      A Dynamic Blockchain Sharding System with Resilient and Seamless Shard Reconfiguration
-      paper: https://ccs2025a.hotcrp.com/doc/ccs2025a-paper756.pdf?cap=hcav756eNAubdJqApSsXnJDucFgJMXB
-      
 
 # Quick Start
 ## Requirements
@@ -27,3 +23,4 @@
       cd ./cbuild_Release && make txcli
       ./txcli
 ```
+
