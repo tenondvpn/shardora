@@ -93,8 +93,36 @@ Log on m0 and execute `deploy_genesis.sh` just generated.
 sh deploy_genesis.sh Debug
 ```
 
+## Run docker
+
+### 1. Build docker image
+
+```
+sh build_container.sh Debug/Release
+```
+
+A image will be generated: shardora-image-debug or shardora-image-release
+
+### 2. Start a container with config file
+
+```
+sh start_container.sh ${image_name} ${config_file} ${container_name}
+```
+
+- image_name: thie image name that has been build, shardora-image-debug or shardora-image-release 
+- config_file: the configuration file need to start the node process
+- container_name: a tag to identify container name, eg. r1 r2 s3_1 s4_1, balabala
+
+eg.
+
+```
+sh start_container.sh shardora-image-debug ./zjnodes/s3_1/conf/zjchain.conf s3_1  
+```
+
+
 ## Transaction test
 ```
       cd ./cbuild_Debug && make txcli
       ./txcli
 ```
+

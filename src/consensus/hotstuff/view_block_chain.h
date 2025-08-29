@@ -190,7 +190,7 @@ public:
             }
 
             ++count;
-            if (count >= 4) {
+            if (count >= AllowedEmptyBlockCnt) {
                 break;
             }
 
@@ -207,9 +207,9 @@ public:
             return false;
         }
 
-        // ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", 
-        //     common::Encode::HexEncode(gid).c_str(), 
-        //     common::Encode::HexEncode(parent_hash).c_str());
+        ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", 
+            common::Encode::HexEncode(gid).c_str(), 
+            common::Encode::HexEncode(parent_hash).c_str());
         return true;
     }
 

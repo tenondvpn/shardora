@@ -1176,14 +1176,14 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kContractGasPrepayment:
         case pools::protobuf::kContractCreateByRootFrom: // 只处理 from 不处理合约账户
-            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractCreate:
         case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kContractExcute:
         case pools::protobuf::kNormalTo:
-            account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
+            // account_mgr_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(*view_block, tx_list[i], db_batch);
             // ZJC_DEBUG("DDD txInfo: %s", ProtobufToJson(tx_list[i], true).c_str());
             zjcvm::Execution::Instance()->NewBlockWithTx(tx_list[i], db_batch);

@@ -686,11 +686,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     std::string followers_gids;
-// #ifndef NDEBUG
-//     for (uint32_t i = 0; i < vote_msg.txs_size(); ++i) {
-//         followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
-//     }
-// #endif
+#ifndef NDEBUG
+    for (uint32_t i = 0; i < uint32_t(vote_msg.txs_size()); ++i) {
+        followers_gids += common::Encode::HexEncode(vote_msg.txs(i).gid()) + " ";
+    }
+#endif
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(msg_ptr->header.debug());
     // cons_debug.add_timestamps(
@@ -708,6 +708,10 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         followers_gids.c_str(),
         leader_rotation()->GetLocalMemberIdx());
 
+    // 同步 replica 的 txs
+    // 无论是否是合法的 vote msg，都要尝试添加交易，否则剩余 f 个节点的交易同步会丢失
+    acceptor()->AddTxs(msg_ptr, vote_msg.txs());    
+
     if (VerifyVoteMsg(vote_msg) != Status::kSuccess) {
         ZJC_DEBUG("vote message is error: hash64: %lu", msg_ptr->header.hash64());
         return;
@@ -720,8 +724,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.view(),
         msg_ptr->header.hash64());
 
-    // 同步 replica 的 txs
-    acceptor()->AddTxs(msg_ptr, vote_msg.txs());
     // 生成聚合签名，创建qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
@@ -917,8 +919,7 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
     if (newview_msg.has_tc()) {
         auto tc_ptr = std::make_shared<TC>(newview_msg.tc());
         auto& tc = *tc_ptr;
-        if (tc.view() > pacemaker()->HighTC()->view()) {
-                
+        if (tc.view() > pacemaker()->HighTC()->view()) {                
             if (crypto()->VerifyTC(common::GlobalInfo::Instance()->network_id(), tc) != Status::kSuccess) {
                 ZJC_ERROR("VerifyTC error.");
                 return;
@@ -938,6 +939,8 @@ void Hotstuff::HandleNewViewMsg(const transport::MessagePtr& msg_ptr) {
             }
             
             pacemaker()->AdvanceView(new_sync_info()->WithQC(qc_ptr));
+            TryCommit(msg_ptr, qc, 99999999lu);
+        } else if (qc.view() == pacemaker()->HighQC()->view()) {
             TryCommit(msg_ptr, qc, 99999999lu);
         }
     }
@@ -1131,8 +1134,8 @@ Status Hotstuff::Commit(
     
     auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
     if (latest_committed_block && latest_committed_block->view() >= v_block->view()) {
-        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu", 
-            latest_committed_block->view(), v_block->view());
+        ZJC_DEBUG("commit failed latest view: %lu, noew view: %lu_%lu", 
+            latest_committed_block->view(), pool_idx_, v_block->view());
         return Status::kSuccess;
     }
     
@@ -1141,7 +1144,6 @@ Status Hotstuff::Commit(
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
         auto db_batch = std::make_shared<db::DbWriteBatch>();
-        
 
         // set commit_qc to vblock and store to database
         ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -1155,21 +1157,11 @@ Status Hotstuff::Commit(
             break;
         }
 
-        
-
         ADD_DEBUG_PROCESS_TIMESTAMP();
         
         std::shared_ptr<ViewBlock> parent_block = nullptr;
         parent_block = view_block_chain()->Get(tmp_block->parent_hash());
         if (parent_block == nullptr) {
-            // if (latest_committed_block->view() < tmp_block->view() - 1) {
-                // kv_sync_->AddSyncViewHeight(
-                //     tmp_block->qc().network_id(), 
-                //     tmp_block->qc().pool_index(), 
-                //     tmp_block->qc().view() - 1, 
-                //     0);
-            // }
-
             break;
         }
 
@@ -1589,21 +1581,18 @@ Status Hotstuff::ConstructViewBlock(
 }
 
 bool Hotstuff::IsEmptyBlockAllowed(const ViewBlock& v_block) {
-    auto v_block1 = view_block_chain()->QCRef(std::make_shared<ViewBlock>(v_block));
-    if (!v_block1 || v_block1->block_info().tx_list_size() > 0) {
+    if (v_block.block_info().tx_list_size() > 0) {
         return true;
     }
 
-    std::shared_ptr<ViewBlock> v_block2 = view_block_chain()->Get(v_block.parent_hash());
-    if (!v_block2 || v_block2->block_info().tx_list_size() > 0) {
-        return true;
+    auto current = std::make_shared<ViewBlock>(v_block);
+    for (auto i = 0; i < AllowedEmptyBlockCnt-1; i++) {
+        current = view_block_chain()->Get(current->parent_hash());
+        if (!current || current->block_info().tx_list_size() > 0) {
+            return true;
+        }
     }
 
-    std::shared_ptr<ViewBlock> v_block3 = view_block_chain()->Get(v_block2->parent_hash());
-    if (!v_block3 || v_block3->block_info().tx_list_size() > 0) {
-        return true;
-    }
-    
     return false;
 }
 
@@ -1698,7 +1687,7 @@ void Hotstuff::TryRecoverFromStuck(bool has_user_tx, bool has_system_tx) {
     }
 
     if (!has_user_tx_tag_ && !has_system_tx) {
-        ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
+        // ZJC_DEBUG("!has_user_tx_tag_ && !has_system_tx, pool: %u", pool_idx_);
         return;
     }
 

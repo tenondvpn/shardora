@@ -21,6 +21,7 @@ namespace shardora {
 namespace hotstuff {
 
 static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
+static const int AllowedEmptyBlockCnt = 3; 
 
 typedef uint64_t View;
 typedef std::string HashStr;

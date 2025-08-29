@@ -1,6 +1,8 @@
 #include "consensus/hotstuff/block_acceptor.h"
 
 #include "bls/agg_bls.h"
+#include <common/encode.h>
+#include <common/log.h>
 #include <common/utils.h>
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/block_executor.h>
@@ -505,10 +507,10 @@ Status BlockAcceptor::GetAndAddTxsLocally(
 
     if (txs_ptr->txs.size() != (size_t)tx_propose.txs_size()) {
 // #ifndef NDEBUG
-//         for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
-//             auto tx = &tx_propose.txs(i);
-//             ZJC_WARN("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
-//         }
+        // for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
+        //     auto tx = &tx_propose.txs(i);
+        //     ZJC_WARN("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
+        // }
 // #endif
         ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
             txs_ptr->txs.size(), tx_propose.txs_size());

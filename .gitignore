@@ -1,3 +1,5 @@
+third_party/fmt/
+third_party/pbc/
 src/contract/tests/contracts/openzeppelin
 src/contract/tests/contracts/nohup.out
 src/contract/tests/contracts/node_modules/.staging/
@@ -40,3 +42,4 @@ GRTAGS
 GTAGS
 /.ccls-cache/
 /__pycache__/
+docker_files/

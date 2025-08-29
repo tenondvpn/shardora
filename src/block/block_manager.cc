@@ -765,8 +765,10 @@ void BlockManager::AddNewBlock(
         //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
         //     tx_list[i].status(),
         //     tx_list[i].step());
-        // xufeisofly !!! 这一句将 shard 2 的创世块交易也执行了，导致创世节点余额归 0
-        // account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+        if (tx_list[i].step() != pools::protobuf::kConsensusCreateGenesisAcount) {
+            account_mgr_->NewBlockWithTx(*view_block_item, tx_list[i], db_batch);
+        }
+        
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
             continue;
         }
@@ -786,14 +788,14 @@ void BlockManager::AddNewBlock(
                 ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", view_block_item->block_info().height(), view_block_item->block_info().timestamp());
             }
 
-            // ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
-            //     "gid: %s, bls: %s, %s",
-            //     view_block_item->network_id(),
-            //     view_block_item->pool_index(),
-            //     block_item->height(),
-            //     common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
-            //     common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
+            ZJC_DEBUG("success handle to tx network: %u, pool: %u, height: %lu, "
+                "gid: %s, bls: %s, %s",
+                view_block_item->network_id(),
+                view_block_item->pool_index(),
+                block_item->height(),
+                common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+                common::Encode::HexEncode(view_block_item->qc().sign_x()).c_str(),
+                common::Encode::HexEncode(view_block_item->qc().sign_y()).c_str());
             break;
         }
         case pools::protobuf::kConsensusRootTimeBlock:
@@ -1384,10 +1386,10 @@ std::string BlockManager::GetToTxGid() {
         gid = common::Hash::keccak256(
             std::to_string(latest_to_block->block_info().height()) +
             std::to_string(latest_to_block->block_info().timestamp()));
-        // ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
-        //     common::Encode::HexEncode(gid).c_str(),
-        //     latest_to_block->block_info().height(), 
-        //     latest_to_block->block_info().timestamp());
+        ZJC_DEBUG("set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
+            common::Encode::HexEncode(gid).c_str(),
+            latest_to_block->block_info().height(), 
+            latest_to_block->block_info().timestamp());
     } else {
         // ZJC_DEBUG("default 0000 set to tx gid: %s, latest to block height: %lu, timestamp: %lu", 
         //     common::Encode::HexEncode(gid).c_str(), 0, 0);
@@ -1507,21 +1509,23 @@ void BlockManager::PopTxTicker() {
 }
 
 bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckGidValidFunction gid_valid_fn) {
-        auto cur_time = common::TimeUtils::TimestampMs();
-        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (pool_index != common::kImmutablePoolSize) {
         return false;
     }
+    
+    auto cur_time = common::TimeUtils::TimestampMs();
+    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
         
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
         return false;
     }
 
-    if (!gid_valid_fn(GetToTxGid())) {
-        // ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
-        //     pool_index, 
-        //     common::Encode::HexEncode(GetToTxGid()).c_str());
+    auto gid = GetToTxGid();
+    if (!gid_valid_fn(gid)) {
+        ZJC_DEBUG("invalid has to tx %u, tx gid: %s", 
+            pool_index, 
+            common::Encode::HexEncode(GetToTxGid()).c_str());
         return false;
     }
 

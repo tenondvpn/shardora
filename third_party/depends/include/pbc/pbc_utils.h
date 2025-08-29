@@ -1,6 +1,8 @@
 #ifndef __PBC_UTILS_H__
 #define __PBC_UTILS_H__
 
+#include <stdint.h> // for intptr_t
+
 #ifdef PBC_DEBUG
 
 /*@manual debug
@@ -82,5 +84,14 @@ void pbc_error(const char *err, ...)
 static inline void *int_to_voidp(intptr_t i) {
   return (void *) i;
 }
+
+// Compatibility with x64 MPIR in MSVC
+#if defined(_MSC_VER) && defined(_WIN64)
+typedef unsigned long long int pbc_mpui;
+typedef signed long long int   pbc_mpsi;
+#else
+typedef unsigned long int      pbc_mpui;
+typedef signed long int        pbc_mpsi;
+#endif
 
 #endif //__PBC_UTILS_H__

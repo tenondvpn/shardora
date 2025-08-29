@@ -266,7 +266,7 @@ void ToTxsPools::HandleContractGasPrepayment(
             tx.contract_prepayment(), // prepayment 通过 amount 字段传递, TODO 改为 prepayment 字段
             sharding_id,
             pool_index,
-            "", "", "", 0);
+            "", "", "", 0);        
     }
 }
 
@@ -636,7 +636,7 @@ bool ToTxsPools::StatisticTos(
         return false;
     }
 
-    int32_t pool_size = static_cast<int32_t>(leader_to_heights.heights_size());
+    int32_t pool_size = static_cast<int32_t>(leader_to_heights.heights_size());    
     for (int32_t pool_idx = pool_size - 1; pool_idx >= 0; --pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
@@ -823,7 +823,7 @@ int ToTxsPools::CreateToTxWithHeights(
             for (auto height = min_height; height <= max_height; ++height) {
                 auto hiter = pool_iter->second.find(height);
                 if (hiter == pool_iter->second.end()) {
-    //                 ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
+                    ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
                     continue;
                 }
 
