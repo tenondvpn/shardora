@@ -247,23 +247,23 @@ Status Crypto::VerifyThresSign(
         return Status::kBlsVerifyFailed;
     }
 
-// #ifndef NDEBUG
-//     auto elect_item = GetElectItem(sharding_id, elect_height);
-//     auto val = libBLS::ThresholdUtils::fieldElementToString(
-//         elect_item->common_pk().X.c0);
-//     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-//         reconstructed_sign.X);
-//     ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
-//             "elect height: %lu, common PK: %s, agg sign: %s", 
-//             common::Encode::HexEncode(verify_hash_a).c_str(),
-//             common::Encode::HexEncode(verify_hash_b).c_str(),
-//             common::Encode::HexEncode(msg_hash).c_str(),
-//             sharding_id, 
-//             pool_idx_,
-//             elect_height,
-//             val.c_str(),
-//             agg_sign_str.c_str());
-// #endif
+#ifndef NDEBUG
+    auto elect_item = GetElectItem(sharding_id, elect_height);
+    auto val = libBLS::ThresholdUtils::fieldElementToString(
+        elect_item->common_pk().X.c0);
+    auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
+        reconstructed_sign.X);
+    ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
+            "elect height: %lu, common PK: %s, agg sign: %s", 
+            common::Encode::HexEncode(verify_hash_a).c_str(),
+            common::Encode::HexEncode(verify_hash_b).c_str(),
+            common::Encode::HexEncode(msg_hash).c_str(),
+            sharding_id, 
+            pool_idx_,
+            elect_height,
+            val.c_str(),
+            agg_sign_str.c_str());
+#endif
     return Status::kSuccess;
 }
 
