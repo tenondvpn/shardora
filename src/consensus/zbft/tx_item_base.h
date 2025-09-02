@@ -113,24 +113,24 @@ protected:
         if (iter == acc_balance_map.end()) {
             protos::AddressInfoPtr acc_info = zjc_host.view_block_chain_->ChainGetAccountInfo(id);
             if (acc_info == nullptr) {
-                ZJC_EMPTY_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
+                ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
             }
 
             if (acc_info->destructed()) {
-                ZJC_EMPTY_DEBUG("contract destructed: %s", common::Encode::HexEncode(id).c_str());
+                ZJC_DEBUG("contract destructed: %s", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
             }
 
             acc_balance_map[id] = acc_info;
             *balance = acc_info->balance();
             *nonce = acc_info->nonce();
-            ZJC_EMPTY_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
+            ZJC_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
                 common::Encode::HexEncode(id).c_str(), *balance, *nonce);
         } else {
             *balance = iter->second->balance();
             *nonce = iter->second->nonce();
-            ZJC_EMPTY_DEBUG("success get temp account balance from temp map: %s, balance: %lu, nonce: %lu",
+            ZJC_DEBUG("success get temp account balance from temp map: %s, balance: %lu, nonce: %lu",
                 common::Encode::HexEncode(id).c_str(), *balance, *nonce);
         }
 

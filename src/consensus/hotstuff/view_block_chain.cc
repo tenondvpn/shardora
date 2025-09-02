@@ -57,7 +57,7 @@ Status ViewBlockChain::Store(
 #endif
     if (Has(view_block->qc().view_block_hash())) {
 #ifndef NDEBUG
-        ZJC_EMPTY_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
+        ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
             ProtobufToJson(cons_debug).c_str());        
 #endif
@@ -75,7 +75,7 @@ Status ViewBlockChain::Store(
                 view_block->block_info().address_array(i));
             prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
             (*balane_map_ptr)[new_addr_info->addr()] = new_addr_info;
-            ZJC_EMPTY_DEBUG("step: %d, success add addr: %s, value: %s", 
+            ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
                 0,
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
@@ -92,7 +92,7 @@ Status ViewBlockChain::Store(
     }
 
 #ifndef NDEBUG
-    ZJC_EMPTY_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
+    ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
         "%u_%u_%lu, %lu, hash: %s, prehash: %s",
         balane_map_ptr ? balane_map_ptr->size() : 0, ProtobufToJson(cons_debug).c_str(),
         view_block->qc().network_id(), view_block->qc().pool_index(), 
@@ -139,7 +139,7 @@ Status ViewBlockChain::Store(
     // }
     SetViewBlockToMap(block_info_ptr);
 #ifndef NDEBUG
-    ZJC_EMPTY_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
+    ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         view_block->qc().network_id(), view_block->qc().pool_index(), 
@@ -180,7 +180,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t netwo
         return view_block_ptr;
     }
 
-    ZJC_EMPTY_DEBUG("now get block with height from db.");
+    ZJC_DEBUG("now get block with height from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
@@ -222,7 +222,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
         return view_block_ptr;
     }
 
-    ZJC_EMPTY_DEBUG("now get block with hash from db.");
+    ZJC_DEBUG("now get block with hash from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlock(hash, &view_block)) {
@@ -235,10 +235,10 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end()) {
-        // ZJC_EMPTY_DEBUG("get view block from store propose_debug: %s",
+        // ZJC_DEBUG("get view block from store propose_debug: %s",
         //     it->second->view_block->debug().c_str());
         if (it->second->view_block) {
-            ZJC_EMPTY_DEBUG("get block hash: %s, view block hash: %s, %u_%u_%lu, sign x: %s, parent hash: %s",
+            ZJC_DEBUG("get block hash: %s, view block hash: %s, %u_%u_%lu, sign x: %s, parent hash: %s",
                 common::Encode::HexEncode(hash).c_str(), 
                 common::Encode::HexEncode(it->second->view_block->qc().view_block_hash()).c_str(),
                 it->second->view_block->qc().network_id(),
@@ -259,7 +259,7 @@ bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_blo
     if (it != view_blocks_info_.end() && 
             it->second->view_block != nullptr && 
             !it->second->view_block->qc().sign_x().empty()) {
-        ZJC_EMPTY_DEBUG("");
+        ZJC_DEBUG("");
         return false;
     }
 
@@ -438,7 +438,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
                     acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {
                 account_lru_map_.insert(acc_iter->second);
-                ZJC_EMPTY_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
+                ZJC_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
                     common::Encode::HexEncode(acc_iter->second->addr()).c_str(),
                     acc_iter->second->balance(),
                     acc_iter->second->nonce());
@@ -471,7 +471,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 //                     assert(false);
 //                 }
 
-//                 ZJC_EMPTY_DEBUG("new addr commit %u_%u_%lu, success update addr: %s, balance: %lu, nonce: %lu",
+//                 ZJC_DEBUG("new addr commit %u_%u_%lu, success update addr: %s, balance: %lu, nonce: %lu",
 //                     tmp_block->qc().network_id(), 
 //                     tmp_block->qc().pool_index(), 
 //                     tmp_block->qc().view(),
@@ -517,7 +517,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 // #ifndef NDEBUG
 //     transport::protobuf::ConsensusDebug cons_debug3;
 //     cons_debug3.ParseFromString(v_block->debug());
-//     ZJC_EMPTY_DEBUG("success commit view block %u_%u_%lu, "
+//     ZJC_DEBUG("success commit view block %u_%u_%lu, "
 //         "height: %lu, now chain: %s, propose_debug: %s",
 //         v_block->qc().network_id(), 
 //         v_block->qc().pool_index(), 
@@ -535,7 +535,7 @@ void ViewBlockChain::AddNewBlock(
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
-    ZJC_EMPTY_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+    ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
@@ -553,7 +553,7 @@ void ViewBlockChain::AddNewBlock(
     assert(view_block_item->qc().elect_height() >= 1);
     // block 两条信息持久化
     if (!prefix_db_->SaveBlock(*view_block_item, db_batch)) {
-        ZJC_EMPTY_DEBUG("block saved: %lu", block_item->height());
+        ZJC_DEBUG("block saved: %lu", block_item->height());
         return;
     }
 
@@ -595,7 +595,7 @@ std::string ViewBlockChain::String() const {
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
             view_blocks.push_back(it->second->view_block);
-            ZJC_EMPTY_DEBUG("view block view: %lu, height: %lu, hash: %s, phash: %s, has sign: %d", 
+            ZJC_DEBUG("view block view: %lu, height: %lu, hash: %s, phash: %s, has sign: %d", 
                 it->second->view_block->qc().view(),
                 it->second->view_block->block_info().height(),
                 common::Encode::HexEncode(it->second->view_block->qc().view_block_hash()).c_str(),
@@ -640,7 +640,7 @@ Status GetLatestViewBlockFromDb(
             sharding_id,
             pool_index,
             &pool_info)) {
-        ZJC_EMPTY_DEBUG("failed get genesis block net: %u, pool: %u", sharding_id, pool_index);
+        ZJC_DEBUG("failed get genesis block net: %u, pool: %u", sharding_id, pool_index);
         return Status::kError;
     }
 
@@ -655,13 +655,13 @@ Status GetLatestViewBlockFromDb(
         pool_info.height(), 
         &pb_view_block);
     if (!r) {
-        ZJC_EMPTY_DEBUG("failed get genesis block net: %u, pool: %u, height: %lu",
+        ZJC_DEBUG("failed get genesis block net: %u, pool: %u, height: %lu",
             sharding_id, pool_index, pool_info.height());
         assert(false);
         return Status::kError;
     }
 
-    ZJC_EMPTY_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
+    ZJC_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
         "leader: %d, parent_hash: %s, sign x: %s, sign y: %s",
         pool_index,
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
@@ -684,13 +684,13 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
             break;
         }
 
-        // ZJC_EMPTY_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+        // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
         auto it = view_blocks_info_.find(phash);
         if (it == view_blocks_info_.end()) {
             break;
         }
 
-        ZJC_EMPTY_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
+        ZJC_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
             "stored_to_db_view_: %lu, %s%s", 
             3, pool_index_, it->second->view_block->qc().view(), 
             stored_to_db_view_, common::Encode::HexEncode(id).c_str(), 
@@ -727,7 +727,7 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
             break;
         }
 
-        // ZJC_EMPTY_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+        // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
         auto it = view_blocks_info_.find(phash);
         if (it == view_blocks_info_.end()) {
             break;
@@ -781,7 +781,7 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
                 auto fiter = acc_balance_map.find(iter->first);
                 if (fiter == acc_balance_map.end()) {
                     acc_balance_map[iter->first] = std::make_shared<address::protobuf::AddressInfo>(*iter->second);
-                    ZJC_EMPTY_DEBUG("merge prev all balance merge prev account balance %s, "
+                    ZJC_DEBUG("merge prev all balance merge prev account balance %s, "
                         "balance: %lu, nonce: %lu, %u_%u_%lu, block height: %lu",
                         common::Encode::HexEncode(iter->first).c_str(), 
                         iter->second->balance(), 
@@ -826,7 +826,7 @@ int ViewBlockChain::CheckTxNonceValid(
             auto iter = tmp_map.find(addr);
             if (iter != tmp_map.end()) {
                 if (iter->second->nonce() + 1 != nonce) {
-                    ZJC_EMPTY_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+                    ZJC_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
                         common::Encode::HexEncode(addr).c_str(), 
                         nonce,
                         iter->second->nonce(),
@@ -847,7 +847,7 @@ int ViewBlockChain::CheckTxNonceValid(
 
     auto addr_info = ChainGetAccountInfo(addr);
     if (addr_info == nullptr) {
-        ZJC_EMPTY_DEBUG("failed check tx nonce not exists in db: %s, %lu, phash: %s", 
+        ZJC_DEBUG("failed check tx nonce not exists in db: %s, %lu, phash: %s", 
             common::Encode::HexEncode(addr).c_str(), 
             nonce,
             common::Encode::HexEncode(parent_hash).c_str());
@@ -855,7 +855,7 @@ int ViewBlockChain::CheckTxNonceValid(
     }
 
     if (addr_info->nonce() + 1 != nonce) {
-        ZJC_EMPTY_DEBUG("failed check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+        ZJC_DEBUG("failed check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
             common::Encode::HexEncode(addr).c_str(), 
             nonce,
             addr_info->nonce(),
@@ -863,7 +863,7 @@ int ViewBlockChain::CheckTxNonceValid(
         return addr_info->nonce() + 1 > nonce ? 1 : -1;
     }
 
-    ZJC_EMPTY_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+    ZJC_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
         common::Encode::HexEncode(addr).c_str(), 
         nonce,
         addr_info->nonce(),
@@ -898,7 +898,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             high_view_block_->qc().view() < view_block_ptr->qc().view()) {
 #ifndef NDEBUG
         if (high_view_block_ != nullptr) {
-            ZJC_EMPTY_DEBUG("success add update old high view: %lu, high hash: %s, "
+            ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
                 "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
                 high_view_block_->qc().view(),
                 common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
@@ -913,7 +913,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
 #endif
         
         high_view_block_ = view_block_ptr;
-        ZJC_EMPTY_DEBUG("final success add update high hash: %s, "
+        ZJC_DEBUG("final success add update high hash: %s, "
             "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
             common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
             high_view_block_->qc().view(),
@@ -940,7 +940,7 @@ protos::AddressInfoPtr ViewBlockChain::ChainGetAccountInfo(const std::string& ad
             common::Encode::HexEncode(addr).c_str(), thread_idx);
     } else {
         account_lru_map_.insert(addr_info);
-        ZJC_EMPTY_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
+        ZJC_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
             common::Encode::HexEncode(addr_info->addr()).c_str(),
             addr_info->balance(),
             addr_info->nonce());

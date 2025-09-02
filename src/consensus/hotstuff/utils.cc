@@ -30,13 +30,13 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
     // for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
     //     message.append(tx_info.storages(i).key());
     //     message.append(tx_info.storages(i).value());
-    //     ZJC_EMPTY_DEBUG("add tx key: %s, %s, val: %s",
+    //     ZJC_DEBUG("add tx key: %s, %s, val: %s",
     //         tx_info.storages(i).key().c_str(),
     //         common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
     //         common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
     // }
 
-    ZJC_EMPTY_DEBUG("phash: %s, nonce: %lu, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
+    ZJC_DEBUG("phash: %s, nonce: %lu, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
         "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
         common::Encode::HexEncode(phash).c_str(),
         tx_info.nonce(),
@@ -58,7 +58,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
         msg.append(GetTxMessageHash(block.tx_list(i), view_block.parent_hash()));
     }
 
-    // ZJC_EMPTY_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
+    // ZJC_DEBUG("get block hash txs message: %s, vss_random: %lu, height: %lu, "
     //     "tm height: %lu, tm: %lu, invalid hash size: %u",
     //     common::Encode::HexEncode(msg).c_str(), 
     //     block.consistency_random(), 
@@ -88,7 +88,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     }
 
     auto hash = common::Hash::keccak256(msg);
-    ZJC_EMPTY_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
+    ZJC_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
         "phash: %s, vss_random: %lu, height: %lu, "
         "timeblock_height: %lu, timestamp: %lu, msg: %s",
         common::Encode::HexEncode(hash).c_str(),

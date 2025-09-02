@@ -13,7 +13,7 @@
 #include <google/protobuf/util/json_util.h>
 
 
-#define ZJC_EMPTY_DEBUG(fmt, ...)
+#define ZJC_DEBUG(fmt, ...)
 #ifdef _WIN32
 #define ZJC_LOG_FILE_NAME strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__
 #else

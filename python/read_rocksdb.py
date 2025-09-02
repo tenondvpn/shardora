@@ -12,7 +12,7 @@ from binascii import hexlify # 用于十六进制编码
 # 并且 ViewBlockItem 在其中定义
 from view_block.protobuf import view_block_pb2 # 根据你的实际protobuf模块路径修改
 
-# 配置日志 (模拟 ZJC_EMPTY_DEBUG)
+# 配置日志 (模拟 ZJC_DEBUG)
 # 在实际项目中，你可能在程序的入口处统一配置日志
 logging.basicConfig(level=logging.logging.DEBUG, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ def get_block(db_instance: rocksdb.DB, block_hash: str) -> tuple[bool, view_bloc
         return False, None
 
     if block_str_bytes is None:
-        # 模拟 ZJC_EMPTY_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
+        # 模拟 ZJC_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
         # 这里的 block_hash 已经是传入的原始字符串，直接用即可
         # 如果需要转换为十六进制打印，可以使用 hexlify(decoded_block_hash).decode('utf-8')
         logger.debug(f"Failed to get view block: {block_hash}")

@@ -124,13 +124,13 @@ public:
         std::string val;
         auto st = db_->Get(kAddressPrefix + addr, &val);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("failed get addr: %s", common::Encode::HexEncode(addr).c_str());
+            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
         if (!addr_info->ParseFromString(val)) {
-            ZJC_EMPTY_DEBUG("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
+            ZJC_DEBUG("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 
@@ -227,7 +227,7 @@ public:
             db_batch.Put(key, elect_block.SerializeAsString());
         }
 
-        ZJC_EMPTY_DEBUG("save elect block sharding id: %u, height: %lu",
+        ZJC_DEBUG("save elect block sharding id: %u, height: %lu",
             sharding_id, elect_block.elect_height());
     }
 
@@ -239,7 +239,7 @@ public:
         key.append(kSaveHavePrevLatestElectHeightPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
         std::string val;
-        ZJC_EMPTY_DEBUG("get elect block sharding id: %u",
+        ZJC_DEBUG("get elect block sharding id: %u",
             sharding_id);
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
@@ -250,7 +250,7 @@ public:
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("success get elect block sharding id: %u, height: %lu",
+        ZJC_DEBUG("success get elect block sharding id: %u, height: %lu",
             sharding_id, elect_block->elect_height());
         return true;
     }
@@ -262,7 +262,7 @@ public:
         key.append(kLatestElectBlockPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
         std::string val;
-        ZJC_EMPTY_DEBUG("get elect block sharding id: %u",
+        ZJC_DEBUG("get elect block sharding id: %u",
             sharding_id);
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
@@ -273,7 +273,7 @@ public:
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("success get elect block sharding id: %u, height: %lu",
+        ZJC_DEBUG("success get elect block sharding id: %u, height: %lu",
             sharding_id, elect_block->elect_height());
         return true;
     }
@@ -281,7 +281,7 @@ public:
     void SaveLatestTimeBlock(const timeblock::protobuf::TimeBlock& tmblock, db::DbWriteBatch& db_batch) {
         std::string key(kLatestTimeBlockPrefix);
         db_batch.Put(key, tmblock.SerializeAsString());
-        ZJC_EMPTY_DEBUG("dddddd success latest time block: %lu", tmblock.height());
+        ZJC_DEBUG("dddddd success latest time block: %lu", tmblock.height());
     }
 
     bool GetLatestTimeBlock(timeblock::protobuf::TimeBlock* tmblock) {
@@ -296,7 +296,7 @@ public:
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("dddddd success get latest time block: %lu", tmblock->height());
+        ZJC_DEBUG("dddddd success get latest time block: %lu", tmblock->height());
         return true;
     }
 
@@ -313,7 +313,7 @@ public:
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&height, sizeof(height));
         batch.Put(key, block_hash);
-        ZJC_EMPTY_DEBUG("save sync key value %u_%u_%lu, success save block with height: %u, %u, %lu",
+        ZJC_DEBUG("save sync key value %u_%u_%lu, success save block with height: %u, %u, %lu",
             sharding_id, pool_index, height, sharding_id, pool_index, height);
     }
 
@@ -330,12 +330,12 @@ public:
         key.append((char*)&height, sizeof(height));
         auto st = db_->Get(key, block_hash);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("failed get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
+            ZJC_DEBUG("failed get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
                 sharding_id, pool_index, height, sharding_id, pool_index, height);
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
+        ZJC_DEBUG("get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
             sharding_id, pool_index, height, sharding_id, pool_index, height);
         return true;
     }
@@ -344,7 +344,7 @@ public:
         assert(!view_block.qc().view_block_hash().empty());
         // if (BlockExists(view_block.qc().view_block_hash())) {
         //     auto* block_item = &view_block.block_info();
-        //     ZJC_EMPTY_DEBUG("view_block.qc().view_block_hash() exists: %s, "
+        //     ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
         //         "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         //         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
         //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
@@ -423,7 +423,7 @@ public:
         std::string block_str;
         auto st = db_->Get(key, &block_str);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
+            ZJC_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
             return false;
         }
 
@@ -474,7 +474,7 @@ public:
             uint64_t height,
             view_block::protobuf::ViewBlockItem* block) {
         std::string block_hash;
-        ZJC_EMPTY_DEBUG("GetBlockWithHeight.");
+        ZJC_DEBUG("GetBlockWithHeight.");
         if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
             return false;
         }
@@ -488,7 +488,7 @@ public:
             uint64_t height,
             std::string* block_str) {
         std::string block_hash;
-        ZJC_EMPTY_DEBUG("GetBlockStringWithHeight.");
+        ZJC_DEBUG("GetBlockStringWithHeight.");
         if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
             return false;
         }
@@ -562,7 +562,7 @@ public:
         key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&pool_index, sizeof(pool_index));
         batch.Put(key, pool_info.SerializeAsString());
-        ZJC_EMPTY_DEBUG("save latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
+        ZJC_DEBUG("save latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
             ProtobufToJson(pool_info).c_str(), 
             sharding_id, 
             pool_index, 
@@ -590,7 +590,7 @@ public:
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("get latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
+        ZJC_DEBUG("get latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
             ProtobufToJson(*pool_info).c_str(), 
             sharding_id, 
             pool_index, 
@@ -693,7 +693,7 @@ public:
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_EMPTY_DEBUG("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
+        ZJC_DEBUG("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(node_addr).c_str(),
             common::Encode::HexEncode(bls_prikey).c_str());
@@ -713,7 +713,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("get bls failed: %lu, %u, %s",
+            ZJC_DEBUG("get bls failed: %lu, %u, %s",
                 elect_height,
                 sharding_id,
                 common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
@@ -735,7 +735,7 @@ public:
         }
 
         *bls_prikey = tmp_data.substr(0, int_data[0]);
-        ZJC_EMPTY_DEBUG("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
+        ZJC_DEBUG("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
             sharding_id,
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
             common::Encode::HexEncode(val).c_str(),
@@ -1024,7 +1024,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("get data from db failed local_member_idx: %u, valid_t: %u, id: %s",
+            ZJC_DEBUG("get data from db failed local_member_idx: %u, valid_t: %u, id: %s",
                 local_member_idx, valid_t, common::Encode::HexEncode(id).c_str());
             return false;
         }
@@ -1104,7 +1104,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("get db failed!");
+            ZJC_DEBUG("get db failed!");
             return false;
         }
 
@@ -1142,7 +1142,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("get db failed!");
+            ZJC_DEBUG("get db failed!");
             return false;
         }
 
@@ -1163,7 +1163,7 @@ public:
     //     key.append((char*)&height, sizeof(height));
     //     std::string val = prv_info.SerializeAsString();
     //     db_batch.Put(key, val);
-    //     ZJC_EMPTY_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
+    //     ZJC_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
     //     assert(prv_info.has_common_pubkey());
     //     assert(!prv_info.common_pubkey().x_c0().empty());
     // }
@@ -1180,16 +1180,16 @@ public:
     //     std::string val;
     //     auto st = db_->Get(key, &val);
     //     if (!st.ok()) {
-    //         ZJC_EMPTY_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+    //         ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
     //         return false;
     //     }
 
     //     if (!prv_info->ParseFromString(val)) {
-    //         ZJC_EMPTY_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+    //         ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
     //         return false;
     //     }
 
-    //     ZJC_EMPTY_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
+    //     ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
     //     assert(prv_info->has_common_pubkey());
     //     assert(!prv_info->common_pubkey().x_c0().empty());
     //     return true;
@@ -1332,7 +1332,7 @@ public:
         val_data[1] = view_block.qc().pool_index();
         val_data[2] = view_block.block_info().height();
         db_batch.Put(key, value);
-        ZJC_EMPTY_DEBUG("success save latest to block: %u_%u_%lu",
+        ZJC_DEBUG("success save latest to block: %u_%u_%lu",
             view_block.qc().network_id(), 
             view_block.qc().pool_index(), 
             view_block.block_info().height());
@@ -1349,7 +1349,7 @@ public:
         }
 
         uint64_t* val_data = (uint64_t*)value.data();
-        ZJC_EMPTY_DEBUG("success get latest to block: %u_%u_%lu", static_cast<uint32_t>(val_data[0]), 
+        ZJC_DEBUG("success get latest to block: %u_%u_%lu", static_cast<uint32_t>(val_data[0]), 
             static_cast<uint32_t>(val_data[1]), 
             val_data[2]);
         return GetBlockWithHeight(
@@ -1371,7 +1371,7 @@ public:
             ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_EMPTY_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1384,7 +1384,7 @@ public:
         key.append(kLatestPoolStatisticTagPrefix);
         key.append((char*)&network_id, sizeof(network_id));
         db_batch.Put(key, statistic_info.SerializeAsString());
-        ZJC_EMPTY_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1405,7 +1405,7 @@ public:
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("success GetLatestPoolStatisticTag network: %u, message: %s",
+        ZJC_DEBUG("success GetLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(*statistic_info).c_str());
         return true;
     }
@@ -1444,7 +1444,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_EMPTY_DEBUG("get agg bls failed: %s",
+            ZJC_DEBUG("get agg bls failed: %s",
                 common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
             return false;
         }
@@ -1457,7 +1457,7 @@ public:
             return false;
         }
 
-        ZJC_EMPTY_DEBUG("save agg bls success: %s",
+        ZJC_DEBUG("save agg bls success: %s",
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
 
         *bls_prikey = libff::alt_bn128_Fr(prikey_str.c_str());

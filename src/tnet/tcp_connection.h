@@ -146,13 +146,13 @@ public:
         
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
-            ZJC_EMPTY_DEBUG("should remove connect timeout.");
+            ZJC_DEBUG("should remove connect timeout.");
             ShouldStop();
             return true;
         }
 
         if (GetTcpState() == tnet::TcpConnection::kTcpClosed) {
-            ZJC_EMPTY_DEBUG("should remove connect lost.");
+            ZJC_DEBUG("should remove connect lost.");
             ShouldStop();
             return true;
         }
