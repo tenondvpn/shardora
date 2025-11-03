@@ -75,12 +75,12 @@ protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& ad
 
 protos::AddressInfoPtr AccountManager::GetAccountInfo(const std::string& addr) {
     protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
-    if (addr_info != nullptr && addr_info->type() != address::protobuf::kWaitingRootConfirm) {
+    if (addr_info != nullptr) {
         return addr_info;
     }
 
     addr_info = GetAcountInfoFromDb(addr);
-    if (!addr_info || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+    if (!addr_info) {
         BLOCK_DEBUG(
             "get account failed[%s]", 
             common::Encode::HexEncode(addr).c_str());

@@ -596,7 +596,6 @@ int tx_main(int argc, char** argv) {
     return 0;
 }
 
-
 int base_tx_main(int argc, char** argv) {
     // ./txcli 7 $count $ip $port 
     uint32_t pool_id = -1;

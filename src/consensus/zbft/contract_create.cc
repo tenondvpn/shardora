@@ -181,7 +181,7 @@ int ContractUserCreateCall::HandleTx(
             contract_info->set_balance(block_tx.amount());
             contract_info->set_sharding_id(view_block.qc().network_id());
             contract_info->set_pool_index(view_block.qc().pool_index());
-            contract_info->set_type(address::protobuf::kWaitingRootConfirm);
+            contract_info->set_type(address::protobuf::kNormal);
             contract_info->set_bytes_code(zjc_host.create_bytes_code_);
             contract_info->set_latest_height(view_block.block_info().height());
             contract_info->set_nonce(0);

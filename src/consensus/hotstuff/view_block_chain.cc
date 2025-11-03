@@ -928,13 +928,13 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
 
 protos::AddressInfoPtr ViewBlockChain::ChainGetAccountInfo(const std::string& addr) {
     protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
-    if (addr_info != nullptr && addr_info->type() != address::protobuf::kWaitingRootConfirm) {
+    if (addr_info != nullptr) {
         return addr_info;
     }
 
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     addr_info = account_mgr_->GetAcountInfoFromDb(addr);
-    if (!addr_info || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+    if (!addr_info) {
         BLOCK_DEBUG(
             "get account failed[%s] in thread_idx:%d", 
             common::Encode::HexEncode(addr).c_str(), thread_idx);

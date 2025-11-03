@@ -67,7 +67,6 @@ namespace protobuf {
 
 enum AddressType {
   kNormal = 0,
-  kContract = 1,
   kRootElect = 2,
   kRootTimer = 3,
   kStatistic = 4,
@@ -75,7 +74,6 @@ enum AddressType {
   kLocalToTxAddress = 6,
   kElectAddress = 7,
   kContractPrepayment = 8,
-  kWaitingRootConfirm = 9,
   kPoolAddress = 10
 };
 bool AddressType_IsValid(int value);

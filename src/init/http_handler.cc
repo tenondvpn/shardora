@@ -673,7 +673,7 @@ static void AccountsValid(evhtp_request_t* req, void* data) {
             addr_info = prefix_db->GetAddressInfo(addr);
         }
 
-        if (addr_info == nullptr || addr_info->type() == address::protobuf::kWaitingRootConfirm) {
+        if (addr_info == nullptr) {
             addr_info = nullptr;
         }
 
