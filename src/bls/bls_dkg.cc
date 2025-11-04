@@ -43,7 +43,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    ck_client_ = ck_client;
+    ck_client_ = nullptr;//ck_client;
 }
 
 void BlsDkg::Destroy() {
