@@ -196,7 +196,7 @@ int ContractUserCreateCall::HandleTx(
             acc_balance_map[block_tx.to()] = contract_info;
 
             auto contract_prepayment_info = std::make_shared<address::protobuf::AddressInfo>();
-            contract_prepayment_info->set_addr(block_tx.to() + from);
+            contract_prepayment_info->set_addr(block_tx.to() + block_tx.from());
             contract_prepayment_info->set_balance(block_tx.contract_prepayment());
             contract_prepayment_info->set_sharding_id(view_block.qc().network_id());
             contract_prepayment_info->set_pool_index(view_block.qc().pool_index());
@@ -244,7 +244,7 @@ int ContractUserCreateCall::HandleTx(
 
             ZJC_DEBUG("success add to tx item addr prepayment id: %s, prepayment: %lu",
                 common::Encode::HexEncode(to_item_ptr->des()).c_str(),
-                block_tx.amount());
+                block_tx.contract_prepayment());
         } else {
             to_item_ptr = iter->second;
             to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
