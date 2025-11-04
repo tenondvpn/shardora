@@ -63,7 +63,12 @@ int ContractUserCreateCall::HandleTx(
 
     int64_t tmp_from_balance = from_balance;
     if (block_tx.status() == kConsensusSuccess) {
-        InitHost(zjc_host, block_tx, block_tx.gas_limit() - gas_used, block_tx.gas_price(), view_block);
+        InitHost(
+            zjc_host, 
+            block_tx, 
+            block_tx.gas_limit() - gas_used, 
+            block_tx.gas_price(), 
+            view_block);
         // get caller prepaid gas
         zjc_host.AddTmpAccountBalance(
             block_tx.from(),
@@ -189,6 +194,19 @@ int ContractUserCreateCall::HandleTx(
                 common::Encode::HexEncode(block_tx.to()).c_str(), 
                 ProtobufToJson(*contract_info).c_str());
             acc_balance_map[block_tx.to()] = contract_info;
+
+            auto contract_prepayment_info = std::make_shared<address::protobuf::AddressInfo>();
+            contract_prepayment_info->set_addr(block_tx.to() + from);
+            contract_prepayment_info->set_balance(block_tx.contract_prepayment());
+            contract_prepayment_info->set_sharding_id(view_block.qc().network_id());
+            contract_prepayment_info->set_pool_index(view_block.qc().pool_index());
+            contract_prepayment_info->set_type(address::protobuf::kNormal);
+            contract_prepayment_info->set_latest_height(view_block.block_info().height());
+            contract_prepayment_info->set_nonce(0);
+            ZJC_DEBUG("success add contract address prepayment info: %s, %s", 
+                common::Encode::HexEncode(block_tx.to() + from).c_str(), 
+                ProtobufToJson(*contract_prepayment_info).c_str());
+            acc_balance_map[block_tx.to() + from] = contract_prepayment_info;
         } while (0);
     }
 
