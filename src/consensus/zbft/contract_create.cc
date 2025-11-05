@@ -203,9 +203,10 @@ int ContractUserCreateCall::HandleTx(
             contract_prepayment_info->set_type(address::protobuf::kNormal);
             contract_prepayment_info->set_latest_height(view_block.block_info().height());
             contract_prepayment_info->set_nonce(0);
-            ZJC_DEBUG("success add contract address prepayment info: %s, %s", 
+            ZJC_DEBUG("success add contract address prepayment info: %s, %s, prepayment: %lu", 
                 common::Encode::HexEncode(block_tx.to() + from).c_str(), 
-                ProtobufToJson(*contract_prepayment_info).c_str());
+                ProtobufToJson(*contract_prepayment_info).c_str(),
+                block_tx.contract_prepayment());
             acc_balance_map[block_tx.to() + from] = contract_prepayment_info;
         } while (0);
     }
