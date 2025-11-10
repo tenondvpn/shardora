@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
         message->conn->Send(str_msg);
     };
 
+    net_handler.Start();
     transport::TcpTransport::Instance()->Start(false);
     std::cout << "type: " << type << std::endl;
     for (uint32_t i = 1; i < kTestThreadCount; i++) {

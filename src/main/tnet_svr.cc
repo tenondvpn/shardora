@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
     for (uint8_t i = 0; i <= common::kBlsMessage; ++i) {
         transport::Processor::Instance()->RegisterProcessor(i, svr_msg_callback);
     }
+    net_handler.Start();
     transport::TcpTransport::Instance()->Start(false);
     char stop;
     std::cin >> stop;
