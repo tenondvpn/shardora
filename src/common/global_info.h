@@ -194,7 +194,7 @@ public:
         for (uint8_t i = 0; i < bft_thread; ++i) {
             ZJC_DEBUG("checking thread idx: %d, consensus_thread_index_map_: %d, i: %d", 
                 thread_idx, consensus_thread_index_map_[i], i);
-            if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
+            if (consensus_thread_index_map_[i] == -1) {
                 consensus_thread_index_map_[i] = thread_idx;
                 if (i == message_handler_thread_count_ - 1) {
                     uint32_t tmp_pools_with_thread[common::kInvalidPoolIndex] = { 0 };
@@ -304,7 +304,7 @@ private:
     uint32_t sharding_min_nodes_count_ = 2u;
     int32_t join_root_ = common::kJoinRoot;
     std::set<uint32_t>* thread_with_pools_ = nullptr;
-    uint8_t consensus_thread_index_map_[common::kMaxThreadCount] = { common::kInvalidUint8};
+    int32_t consensus_thread_index_map_[common::kMaxThreadCount] = { -1 };
     uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
     uint8_t now_valid_thread_index_ = 0;
     std::mutex now_valid_thread_index_mutex_;
