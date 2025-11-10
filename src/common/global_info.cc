@@ -93,6 +93,10 @@ int GlobalInfo::Init(const common::Config& config) {
     if (each_tx_pool_max_txs_ < 10240) {
         each_tx_pool_max_txs_ = 10240;
     }
+
+    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        consensus_thread_index_map_[i] = -1;
+    }
     
     auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
