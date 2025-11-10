@@ -48,10 +48,7 @@ int main(int argc, char* argv[]) {
     std::mutex receive_mutex;
     uint64_t b_time = common::TimeUtils::TimestampMs();
     auto svr_msg_callback = [&](const transport::MessagePtr& message) {
-        if (message->conn == nullptr) {
-            return;
-        }
-
+        
         ++receive_count;
         if (receive_count >= 1000) {
             std::lock_guard<std::mutex> g(receive_mutex);
@@ -70,6 +67,10 @@ int main(int argc, char* argv[]) {
         msg.set_hash64(message->header.hash64() + 1);
         std::string str_msg;
         msg.SerializeToString(&str_msg);
+        if (message->conn == nullptr) {
+            return;
+        }
+
         message->conn->Send(str_msg);
     };
 
