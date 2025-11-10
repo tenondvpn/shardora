@@ -36,7 +36,7 @@ private:
     Processor();
     ~Processor();
 
-    MessageProcessor message_processor_[common::kMaxMessageTypeCount];
+    MessageProcessor message_processor_[common::kMaxMessageTypeCount] = { nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(Processor);
 };
