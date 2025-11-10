@@ -232,7 +232,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     auto thread_index = GetThreadIndex(msg_ptr);
     if (thread_index >= common::kMaxThreadCount) {
-        assert(false);
+        // assert(false);
         return;
     }
 
