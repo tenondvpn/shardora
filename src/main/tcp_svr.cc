@@ -9,6 +9,7 @@ using namespace shardora;
 using namespace shardora::tcp;
 
 int main(int argc, char* argv[]) {
+    log4cpp::PropertyConfigurator::configure("./conf/log4cpp.properties");
     TcpServer tcp_server;
     std::atomic<uint32_t> recv_count = 0;
     std::mutex test_m;
