@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
     for (uint32_t i = 0; i < common::kMaxMessageTypeCount; i++) {
         transport::Processor::Instance()->RegisterProcessor(i, cli_msg_callback);
         transport::protobuf::Header msg;
-        msg.set_type(i);
-        msg.set_src_sharding_id(i);
+        msg.set_type(0);
+        msg.set_src_sharding_id(0);
         uint32_t rand_num = rand();
         uint64_t hash64 = (uint64_t(rand_num) << 32) | i;
         msg.set_hash64(hash64);
