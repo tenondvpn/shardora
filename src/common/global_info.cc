@@ -58,8 +58,7 @@ int GlobalInfo::Init(const common::Config& config) {
     message_handler_thread_count_ += 2;
 
     if (!config.Get("zjchain", "local_ip", config_local_ip_)) {
-        ZJC_ERROR("get zjchain local_ip from config failed.");
-        return kCommonError;
+        config_local_ip_ = "127.0.0.1"
     }
 
     config.Get("zjchain", "local_port", config_local_port_);
@@ -72,15 +71,9 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "each_shard_max_members", each_shard_max_members_);
     config.Get("zjchain", "join_root", join_root_);
     std::string str_contry;
-    if (!config.Get("zjchain", "country", str_contry) || str_contry.empty()) {
-        ZJC_ERROR("get zjchain country from config failed.");
-        return kCommonError;
-    }
+    config.Get("zjchain", "country", str_contry);
 
-    if (!config.Get("zjchain", "first_node", config_first_node_)) {
-        ZJC_ERROR("get zjchain first_node from config failed.");
-        return kCommonError;
-    }
+    config.Get("zjchain", "first_node", config_first_node_);
 
     config.Get("zjchain", "public_ip", config_public_ip_);
     config.Get("zjchain", "public_port", config_public_port_);

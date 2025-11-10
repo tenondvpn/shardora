@@ -28,6 +28,8 @@ std::shared_ptr<security::Security> InitSecurity() {
 }
 
 int main(int argc, char* argv[]) {
+    common::Config config;
+    common::GlobalInfo::Instance()->Init(config);
     log4cpp::PropertyConfigurator::configure("../zjnodes_local/zjchain/conf/log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     auto db_ptr = std::make_shared<db::Db>();
