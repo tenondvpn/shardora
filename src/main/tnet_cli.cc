@@ -58,6 +58,12 @@ int main(int argc, char* argv[]) {
     uint64_t b_time = common::TimeUtils::TimestampMs();
     static const uint32_t kTestThreadCount = common::kMaxMessageTypeCount - 1;
     auto cli_msg_callback = [&](const transport::MessagePtr& message) {
+        if (message->conn == nullptr) {
+            std::cout << "invalid conn cli receive type: " << message->header.type() 
+            << ", hash: " << message->header.hash64() << std::endl;
+            return;
+        }
+
         message->header.set_src_sharding_id(message->header.type());
         message->header.set_type(type);
         message->header.set_hash64(message->header.hash64() + 1);
