@@ -64,7 +64,8 @@ int main(int argc, char* argv[]) {
         std::string str_msg;
         message->header.SerializeToString(&str_msg);
         message->conn->Send(str_msg);
-        std::cout << "send type: " << msg.type() << ", hash: " << msg.hash64() << std::endl;
+        std::cout << "cli receive type: " << message->header.type() 
+            << ", hash: " << message->header.hash64() << std::endl;
     };
 
     net_handler.Start();
