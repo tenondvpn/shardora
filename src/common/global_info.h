@@ -192,6 +192,8 @@ public:
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto bft_thread = message_handler_thread_count_;
         for (uint8_t i = 0; i < bft_thread; ++i) {
+            ZJC_DEBUG("checking thread idx: %d, consensus_thread_index_map_: %d, i: %d", 
+                thread_idx, consensus_thread_index_map_[i], i);
             if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
                 consensus_thread_index_map_[i] = thread_idx;
                 if (i == message_handler_thread_count_ - 1) {
