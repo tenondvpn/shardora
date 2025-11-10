@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
         &net_handler);
     srand(time(NULL));
     std::atomic<uint32_t> receive_count = 0;
-    uint32_t type = rand() % (common::kMaxMessageTypeCount);
+    uint32_t type = common::kDhtMessage;
     if (argc >= 2) {
         common::StringUtil::ToUint32(argv[1], &type);
     }
