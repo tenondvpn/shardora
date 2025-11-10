@@ -14,9 +14,9 @@ using namespace shardora;
 std::shared_ptr<security::Security> InitSecurity() {
     std::string prikey("eaa16b476667652327eb9afe2751fdcf22a272e70407b630596fa756abf80ee1")
     auto security = std::make_shared<security::Ecdsa>();
-    if (security_->SetPrivateKey(
+    if (security->SetPrivateKey(
             common::Encode::HexDecode(prikey)) != security::kSecuritySuccess) {
-        INIT_ERROR("init security failed!");
+        ZJC_ERROR("init security failed!");
         return nullptr;
     }
 
