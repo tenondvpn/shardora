@@ -75,7 +75,6 @@ int main(int argc, char* argv[]) {
         uint64_t hash64 = (uint64_t(rand_num) << 32) | i;
         msg.set_hash64(hash64);
         transport::TcpTransport::Instance()->Send(
-            0,
             "127.0.0.1", 8990, msg);
     }
 
