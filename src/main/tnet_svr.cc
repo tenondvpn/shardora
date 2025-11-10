@@ -25,6 +25,8 @@ std::shared_ptr<security::Security> InitSecurity() {
 }
 
 int main(int argc, char* argv[]) {
+    common::Config config;
+    common::GlobalInfo::Instance()->Init(config);
     log4cpp::PropertyConfigurator::configure("../zjnodes_local/zjchain/conf/log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     auto db_ptr = std::make_shared<db::Db>();
@@ -72,6 +74,7 @@ int main(int argc, char* argv[]) {
     }
     net_handler.Start();
     transport::TcpTransport::Instance()->Start(false);
+    common::GlobalInfo::Instance()->set_main_inited_success();
     char stop;
     std::cin >> stop;
     transport::TcpTransport::Instance()->Stop();
