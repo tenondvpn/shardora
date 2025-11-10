@@ -205,6 +205,9 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     ZJC_DEBUG("message coming hash64: %lu", msg_ptr->header.hash64());
     if (common::kConsensusMessage == msg_ptr->header.type()) {
         if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+            ZJC_DEBUG("invalid consensus message network id: %u, msg hash64: %lu",
+                common::GlobalInfo::Instance()->network_id(),
+                msg_ptr->header.hash64());
             return;
         }
 
@@ -213,12 +216,14 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
                 common::GlobalInfo::Instance()->network_id() &&
                 (uint32_t)msg_ptr->header.src_sharding_id() !=
                 common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
+            ZJC_DEBUG("invalid consensus message src sharding id: %u, network id: %u, msg hash64: %lu",
             return;
         }
     }
 
     uint32_t priority = GetPriority(msg_ptr);
     if (thread_vec_.empty()) {
+        ZJC_DEBUG("thread vec empty, message dropped");
         return;
     }
 
@@ -240,6 +245,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     // }
 
     if (msg_ptr->header.hop_count() >= kMaxHops) {
+        ZJC_DEBUG("message hop count over limit: %u, hash64: %lu",
+            msg_ptr->header.hop_count(), msg_ptr->header.hash64());
         return;
     }
 
@@ -269,6 +276,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
             msg_ptr->header.zbft().bft_timeout() && 
             msg_ptr->header.zbft().leader_idx() != -1) {
         HandleSyncBftTimeout(msg_ptr);
+        ZJC_DEBUG("bft timeout message handled directly: %lu", msg_ptr->header.hash64());
         return;
     }
 
