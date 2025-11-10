@@ -58,7 +58,7 @@ int GlobalInfo::Init(const common::Config& config) {
     message_handler_thread_count_ += 2;
 
     if (!config.Get("zjchain", "local_ip", config_local_ip_)) {
-        config_local_ip_ = "127.0.0.1"
+        config_local_ip_ = "127.0.0.1";
     }
 
     config.Get("zjchain", "local_port", config_local_port_);
