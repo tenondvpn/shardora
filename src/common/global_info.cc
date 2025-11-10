@@ -98,6 +98,12 @@ int GlobalInfo::Init(const common::Config& config) {
         consensus_thread_index_map_[i] = -1;
     }
     
+
+    for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
+        ZJC_DEBUG("test checking thread idx: %d, consensus_thread_index_map_: %d, i: %d", 
+            0, consensus_thread_index_map_[i], i);
+    }
+
     auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[common::kMaxThreadCount];
     auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
