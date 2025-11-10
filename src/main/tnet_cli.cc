@@ -46,14 +46,14 @@ int main(int argc, char* argv[]) {
         &net_handler);
     srand(time(NULL));
     std::atomic<uint32_t> receive_count = 0;
-    uint32_t type = rand() % (common::kBlsMessage + 1);
+    uint32_t type = rand() % (common::kMaxMessageTypeCount);
     if (argc >= 2) {
         common::StringUtil::ToUint32(argv[1], &type);
     }
 
     std::mutex receive_mutex;
     uint64_t b_time = common::TimeUtils::TimestampMs();
-    static const uint32_t kTestThreadCount = 500;
+    static const uint32_t kTestThreadCount = common::kMaxMessageTypeCount - 1;
     auto cli_msg_callback = [&](const transport::MessagePtr& message) {
         auto thread_idx = message->header.type() - 1;
         message->header.set_src_sharding_id(message->header.type());
