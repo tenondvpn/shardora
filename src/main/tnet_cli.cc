@@ -7,7 +7,7 @@
 #include "common/global_info.h"
 #include "common/log.h"
 #include "db/db.h"
-#include "security/ecdsa.h"
+#include "security/ecdsa/ecdsa.h"
 #include "transport/tcp_transport.h"
 #include "transport/multi_thread.h"
 #include "transport/processor.h"
