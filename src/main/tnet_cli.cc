@@ -58,13 +58,13 @@ int main(int argc, char* argv[]) {
     uint64_t b_time = common::TimeUtils::TimestampMs();
     static const uint32_t kTestThreadCount = common::kMaxMessageTypeCount - 1;
     auto cli_msg_callback = [&](const transport::MessagePtr& message) {
-        auto thread_idx = message->header.type() - 1;
         message->header.set_src_sharding_id(message->header.type());
         message->header.set_type(type);
         message->header.set_hash64(message->header.hash64() + 1);
         std::string str_msg;
         message->header.SerializeToString(&str_msg);
         message->conn->Send(str_msg);
+        std::cout << "send type: " << msg.type() << ", hash: " << msg.hash64() << std::endl;
     };
 
     net_handler.Start();
