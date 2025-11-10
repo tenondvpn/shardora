@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         ++receive_count;
         if (receive_count >= 1000) {
             std::lock_guard<std::mutex> g(receive_mutex);
-            if (receive_count >= 1000000) {
+            if (receive_count >= 1000) {
                 uint64_t e_time = common::TimeUtils::TimestampMs();
                 std::cout << "qps: " 
                     << (uint32_t)(float(receive_count) / (float(e_time - b_time) / 1000.0f)) 
