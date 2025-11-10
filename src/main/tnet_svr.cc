@@ -12,12 +12,7 @@
 using namespace shardora;
 
 std::shared_ptr<security::Security> InitSecurity() {
-    std::string prikey;
-    if (!conf_.Get("zjchain", "prikey", prikey)) {
-        INIT_ERROR("get private key from config failed!");
-        return nullptr;
-    }
-
+    std::string prikey("eaa16b476667652327eb9afe2751fdcf22a272e70407b630596fa756abf80ee1")
     auto security = std::make_shared<security::Ecdsa>();
     if (security_->SetPrivateKey(
             common::Encode::HexDecode(prikey)) != security::kSecuritySuccess) {
