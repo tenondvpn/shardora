@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
         transport::Processor::Instance()->RegisterProcessor(i, cli_msg_callback);
     }
 
-    for (uint32_t i = 0; i < 20000; i++) {
+    for (uint32_t i = 0; i < 40000; i++) {
         transport::protobuf::Header msg;
         msg.set_type(i % 16);
         msg.set_src_sharding_id(0);
