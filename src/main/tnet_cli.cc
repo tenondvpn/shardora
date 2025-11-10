@@ -12,10 +12,32 @@
 
 using namespace shardora;
 
+std::shared_ptr<security::Security> InitSecurity() {
+    std::string prikey;
+    if (!conf_.Get("zjchain", "prikey", prikey)) {
+        INIT_ERROR("get private key from config failed!");
+        return nullptr;
+    }
+
+    auto security = std::make_shared<security::Ecdsa>();
+    if (security_->SetPrivateKey(
+            common::Encode::HexDecode(prikey)) != security::kSecuritySuccess) {
+        INIT_ERROR("init security failed!");
+        return nullptr;
+    }
+
+    return security;
+}
+
 int main(int argc, char* argv[]) {
     transport::MultiThreadHandler net_handler;
     auto db_ptr = std::make_shared<db::Db>();
-    if (net_handler.Init(db_ptr) != 0) {
+    auto security_ptr = InitSecurity();
+    if (security_ptr == nullptr) {  
+        return 1;
+    }
+
+    if (net_handler.Init(db_ptr, security_ptr) != 0) {
         return 1;
     }
 
