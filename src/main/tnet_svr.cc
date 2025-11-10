@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         }
 
         transport::protobuf::Header msg;
-        msg.set_type(message->header.src_sharding_id());
+        msg.set_type(message->header.type());
         msg.set_hash64(message->header.hash64() + 1);
         std::string str_msg;
         msg.SerializeToString(&str_msg);
