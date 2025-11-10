@@ -420,7 +420,6 @@ bool MultiThreadHandler::IsFromMessageUnique(const std::string& from_ip, uint64_
 }
 
 int MultiThreadHandler::CheckMessageValid(MessagePtr& msg_ptr) {
-    return kFirewallCheckSuccess;
     // if (!IsFromMessageUnique(msg_ptr->conn->PeerIp(), msg_ptr->header.hash64())) {
     //     return kFirewallCheckError;
     // }

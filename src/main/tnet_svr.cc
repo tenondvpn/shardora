@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     }
 
     transport::TcpTransport::Instance()->Init(
-        "127.0.0.1:8990",
+        "192.168.56.128:8990",
         128,
         true,
         &net_handler);
