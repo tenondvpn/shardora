@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
         message->conn->Send(str_msg);
     };
 
-    for (uint8_t i = 0; i <= common::kMaxMessageTypeCount; ++i) {
+    for (uint8_t i = 0; i < common::kMaxMessageTypeCount; ++i) {
         transport::Processor::Instance()->RegisterProcessor(i, svr_msg_callback);
     }
     net_handler.Start();
