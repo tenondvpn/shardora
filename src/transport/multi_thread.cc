@@ -217,6 +217,9 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
                 (uint32_t)msg_ptr->header.src_sharding_id() !=
                 common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
             ZJC_DEBUG("invalid consensus message src sharding id: %u, network id: %u, msg hash64: %lu",
+                msg_ptr->header.src_sharding_id(),
+                common::GlobalInfo::Instance()->network_id(),
+                msg_ptr->header.hash64());
             return;
         }
     }
