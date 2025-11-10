@@ -5,6 +5,7 @@
 
 #include "common/global_info.h"
 #include "common/time_utils.h"
+#include "security/ecdsa.h"
 #include "transport/tcp_transport.h"
 #include "transport/multi_thread.h"
 #include "transport/processor.h"
