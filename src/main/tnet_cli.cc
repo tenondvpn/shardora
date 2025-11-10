@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     net_handler.Start();
     transport::TcpTransport::Instance()->Start(false);
     common::GlobalInfo::Instance()->set_main_inited_success();
-    for (uint32_t i = 1; i < kTestThreadCount; i++) {
+    for (uint32_t i = 0; i < common::kMaxMessageTypeCount; i++) {
         transport::Processor::Instance()->RegisterProcessor(i, cli_msg_callback);
         transport::protobuf::Header msg;
         msg.set_type(type);

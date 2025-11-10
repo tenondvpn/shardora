@@ -71,8 +71,8 @@ void ThreadHandler::HandleMessage() {
                 msg_ptr->thread_index = thread_idx;
             }
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            ZJC_DEBUG("begin message handled msg hash: %lu, thread idx: %d", 
-                msg_ptr->header.hash64(), thread_idx);
+            ZJC_DEBUG("begin message handled msg hash: %lu, type: %d, thread idx: %d", 
+                msg_ptr->header.hash64(), msg_ptr->header.type(), thread_idx);
             // if (msg_ptr->header.type() != common::kPoolsMessage) {
             //     continue;
             // }
