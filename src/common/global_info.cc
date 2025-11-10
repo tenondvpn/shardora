@@ -126,6 +126,8 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         if (main_inited_success_ && begin_run_timestamp_ms_ <= now_tm_ms) {
             should_check_thread_all_valid_ = false;
+            ZJC_DEBUG("all thread valid check success now, thread count: %d", 
+                (int)thread_with_index_.size());
         }
     } else {
         auto iter = thread_with_index_.find(now_thread_id);
@@ -134,6 +136,7 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
         }
             
         thread_idx = iter->second;
+        ZJC_DEBUG("success get thread: %u, thread_index: %d", now_thread_id, thread_idx);
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
