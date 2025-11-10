@@ -63,13 +63,11 @@ int main(int argc, char* argv[]) {
         }
 
         message->header.set_src_sharding_id(message->header.type());
-        message->header.set_type(type);
+        message->header.set_type(message->header.type());
         message->header.set_hash64(message->header.hash64() + 1);
         std::string str_msg;
         message->header.SerializeToString(&str_msg);
         message->conn->Send(str_msg);
-        std::cout << "cli receive type: " << message->header.type() 
-            << ", hash: " << message->header.hash64() << std::endl;
     };
 
     net_handler.Start();
@@ -78,7 +76,7 @@ int main(int argc, char* argv[]) {
     for (uint32_t i = 0; i < common::kMaxMessageTypeCount; i++) {
         transport::Processor::Instance()->RegisterProcessor(i, cli_msg_callback);
         transport::protobuf::Header msg;
-        msg.set_type(type);
+        msg.set_type(i);
         msg.set_src_sharding_id(i);
         uint32_t rand_num = rand();
         uint64_t hash64 = (uint64_t(rand_num) << 32) | i;

@@ -62,15 +62,14 @@ int main(int argc, char* argv[]) {
         }
 
         transport::protobuf::Header msg;
-        msg.set_type(common::kDhtMessage);
+        msg.set_type(message->header.type());
         msg.set_hash64(message->header.hash64() + 1);
         std::string str_msg;
         msg.SerializeToString(&str_msg);
         message->conn->Send(str_msg);
-        std::cout << "send type: " << msg.type() << ", hash: " << msg.hash64() << std::endl;
     };
 
-    for (uint8_t i = 0; i <= common::kBlsMessage; ++i) {
+    for (uint8_t i = 0; i <= common::kMaxMessageTypeCount; ++i) {
         transport::Processor::Instance()->RegisterProcessor(i, svr_msg_callback);
     }
     net_handler.Start();
