@@ -75,6 +75,9 @@ int main(int argc, char* argv[]) {
     common::GlobalInfo::Instance()->set_main_inited_success();
     for (uint32_t i = 0; i < common::kMaxMessageTypeCount; i++) {
         transport::Processor::Instance()->RegisterProcessor(i, cli_msg_callback);
+    }
+
+    for (uint32_t i = 0; i < 1000; i++) {
         transport::protobuf::Header msg;
         msg.set_type(0);
         msg.set_src_sharding_id(0);
