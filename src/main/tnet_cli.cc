@@ -70,7 +70,6 @@ int main(int argc, char* argv[]) {
     net_handler.Start();
     transport::TcpTransport::Instance()->Start(false);
     common::GlobalInfo::Instance()->set_main_inited_success();
-    std::cout << "type: " << type << std::endl;
     for (uint32_t i = 1; i < kTestThreadCount; i++) {
         transport::Processor::Instance()->RegisterProcessor(i, cli_msg_callback);
         transport::protobuf::Header msg;
@@ -85,6 +84,7 @@ int main(int argc, char* argv[]) {
 
     char stop;
     std::cin >> stop;
+    std::cout << "stop: " << stop << std::endl;
     transport::TcpTransport::Instance()->Stop();
     return 0;
 }
