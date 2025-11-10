@@ -59,8 +59,6 @@ int main(int argc, char* argv[]) {
     static const uint32_t kTestThreadCount = common::kMaxMessageTypeCount - 1;
     auto cli_msg_callback = [&](const transport::MessagePtr& message) {
         if (message->conn == nullptr) {
-            std::cout << "invalid conn cli receive type: " << message->header.type() 
-            << ", hash: " << message->header.hash64() << std::endl;
             return;
         }
 
