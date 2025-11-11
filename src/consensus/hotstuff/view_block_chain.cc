@@ -259,7 +259,11 @@ bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_blo
     if (it != view_blocks_info_.end() && 
             it->second->view_block != nullptr && 
             !it->second->view_block->qc().sign_x().empty()) {
-        ZJC_DEBUG("");
+        ZJC_DEBUG("block hash exists %u_%u_%lu, height: %lu",
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->qc().view(), 
+            view_block->block_info().height());
         return false;
     }
 

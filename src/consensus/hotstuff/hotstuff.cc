@@ -1524,7 +1524,7 @@ void Hotstuff::HandleSyncedViewBlock(
             vblock->qc().pool_index(), 
             vblock->qc().view(), 
             vblock->block_info().height());
-        return;
+        // return;
     }
 
     if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
