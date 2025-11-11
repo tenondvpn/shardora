@@ -1,4 +1,7 @@
 1
+DHT_*
+HTTP_*
+WebSocket_*
 allips
 hashtree/
 ips
