@@ -70,7 +70,7 @@ public:
     /// @note adapted from OpenSSL's implementation.
     void cleanse()
     {
-        static std::atomic<unsigned char> s_cleanseCounter{ 0u };
+        static std::atomic<unsigned char> s_cleanseCounter(0);
         uint8_t* p = (uint8_t*)begin();
         size_t const len = (uint8_t*)end() - p;
         size_t loop = len;
