@@ -826,7 +826,7 @@ DecodeKey PkiClAgka::generate_d_for_list(int& index, std::vector<Msg>& msgs) {
     di *= msg_j.d_map.at(index);
   }
 
-  DecodeKey res(index, di);
+  DecodeKey res(index, std::move(di));
   return std::move(res);
 }
 
