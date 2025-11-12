@@ -1489,6 +1489,11 @@ public:
         uint64_t* u64_arr = (uint64_t*)(value + 8);
         u64_arr[0] = view;
         db_batch.Put(key, std::string(value, sizeof(value)));
+        ZJC_DEBUG("save valid view block parent hash: %s, %u_%u_%lu",
+            common::Encode::HexEncode(parent_hash).c_str(), 
+            network_id, 
+            pool_index, 
+            view);
     }
 
 private:

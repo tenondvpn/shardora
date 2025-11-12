@@ -360,17 +360,42 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
+        ZJC_DEBUG("pool: %d, repare commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
+            pool_index_,
+            tmp_block_info->view_block->qc().network_id(), 
+            tmp_block_info->view_block->qc().pool_index(), 
+            tmp_block_info->view_block->qc().view(),
+            common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str(),
+            tmp_block_info->view_block->block_info().tx_list_size() > 0 ? tmp_block_info->view_block->block_info().tx_list(0).step(): -1,
+            0);
         auto tmp_block = tmp_block_info->view_block;
         if (!view_commited(
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().view()) &&
                 !tmp_block->qc().sign_x().empty()) {
+            ZJC_DEBUG("add to commit list view block %u_%u_%lu, hash: %s",
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str());
             to_commit_blocks.push_front(tmp_block_info);
+        } else {
+            ZJC_DEBUG("view block already commited %u_%u_%lu, hash: %s",
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str());
         }
 
         if (tmp_block->qc().sign_x().empty()) {
             if (tmp_block->qc().view() > 0 && !view_commited(
                     tmp_block->qc().network_id(), tmp_block->qc().view())) {
+                ZJC_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu",
+                    common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                    tmp_block->qc().network_id(), 
+                    tmp_block->qc().pool_index(), 
+                    tmp_block->qc().view());
                 kv_sync_->AddSyncViewHash(
                     tmp_block->qc().network_id(), 
                     tmp_block->qc().pool_index(), 
@@ -385,6 +410,11 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
                 if (tmp_block->qc().view() > 0 && !view_commited(
                         tmp_block->qc().network_id(), tmp_block->qc().view() - 1)) {
+                    ZJC_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu",
+                        common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                        tmp_block->qc().network_id(), 
+                        tmp_block->qc().pool_index(), 
+                        tmp_block->qc().view());
                     kv_sync_->AddSyncViewHash(
                         tmp_block->qc().network_id(), 
                         tmp_block->qc().pool_index(), 

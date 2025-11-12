@@ -1404,7 +1404,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
     assert(!qc.view_block_hash().empty());
     auto v_block1_info = view_block_chain()->Get(qc.view_block_hash());
     if (!v_block1_info) {
-        ZJC_DEBUG("Failed get v block 1: %s, %u_%u_%lu",
+        ZJC_DEBUG("pool: %d, Failed get v block 1: %s, %u_%u_%lu",
+            pool_idx_,
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
         if (!view_block_chain()->view_commited(qc.network_id(), qc.view())) {
@@ -1422,14 +1423,16 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(v_block1->debug());
-    ZJC_DEBUG("success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
+    ZJC_DEBUG("pool: %d, success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
+        pool_idx_,
         common::Encode::HexEncode(qc.view_block_hash()).c_str(),
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
 #endif
     assert(v_block1->parent_hash() != qc.view_block_hash());
     auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
     if (!v_block2_info) {
-        ZJC_DEBUG("Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
+        ZJC_DEBUG("pool: %d, Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
+            pool_idx_,
             common::Encode::HexEncode(v_block1->parent_hash()).c_str(), 
             qc.network_id(), 
             qc.pool_index(), 
@@ -1444,8 +1447,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 
     auto v_block2 = v_block2_info->view_block;
     if (v_block2->qc().view() + 1 != v_block1->qc().view()) {
-        ZJC_DEBUG("Failed get v block 2 ref: %s, "
+        ZJC_DEBUG("pool: %d, Failed get v block 2 ref: %s, "
             "v_block2->qc().view() + 1 != v_block1->qc().view(): %lu, %lu",
+            pool_idx_,
             common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
             v_block2->qc().view(), 
             v_block1->qc().view());
@@ -1457,7 +1461,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug2;
     cons_debug2.ParseFromString(v_block2->debug());
-    ZJC_DEBUG("success get v block 2: %s, %u_%u_%lu, propose_debug: %s",
+    ZJC_DEBUG("pool: %d, success get v block 2: %s, %u_%u_%lu, propose_debug: %s",
+        pool_idx_,
         common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
         v_block2->qc().network_id(), v_block2->qc().pool_index(), 
         v_block2->qc().view(), ProtobufToJson(cons_debug2).c_str());
@@ -1465,7 +1470,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 
     auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
     if (!v_block3_info) {
-        ZJC_DEBUG("Failed get v block 3 block hash: %s, %u_%u_%lu, now chain: %s", 
+        ZJC_DEBUG("pool: %d, Failed get v block 3 block hash: %s, %u_%u_%lu, now chain: %s", 
+            pool_idx_,
             common::Encode::HexEncode(v_block2->parent_hash()).c_str(), 
             qc.network_id(), 
             qc.pool_index(), 
@@ -1482,7 +1488,8 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug3;
     cons_debug3.ParseFromString(v_block2->debug());
-    ZJC_DEBUG("success get v block views: %lu, %lu, %lu, hash: %s, %s, %s, %s, %s, now: %s, propose_debug: %s",
+    ZJC_DEBUG("pool: %d, success get v block views: %lu, %lu, %lu, hash: %s, %s, %s, %s, %s, now: %s, propose_debug: %s",
+        pool_idx_,
         v_block1->qc().view(),
         v_block2->qc().view(),
         v_block3->qc().view(),
@@ -1496,8 +1503,9 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 #endif
     // fast hotstuff
     if (v_block3->qc().view() + 1 != v_block2->qc().view()) {
-        ZJC_DEBUG("Failed get v block 2 ref: %s, "
+        ZJC_DEBUG("pool: %d, Failed get v block 2 ref: %s, "
             "v_block3->qc().view() + 1 != v_block2->qc().view(): %lu, %lu",
+            pool_idx_,
             common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
             v_block3->qc().view(),
             v_block2->qc().view());
