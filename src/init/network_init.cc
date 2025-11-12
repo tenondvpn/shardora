@@ -319,41 +319,41 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 int NetworkInit::InitWsServer() {
-    int32_t ws_server = 0;
-    conf_.Get("zjchain", "ws_server", ws_server);
-    if (ws_server > 0) {
-        if (ws_server_.Init(prefix_db_, security_, &net_handler_) != kInitSuccess) {
-            ZJC_ERROR("init ws server failed!");
-            return kInitError;
-        }
+    // int32_t ws_server = 0;
+    // conf_.Get("zjchain", "ws_server", ws_server);
+    // if (ws_server > 0) {
+    //     if (ws_server_.Init(prefix_db_, security_, &net_handler_) != kInitSuccess) {
+    //         ZJC_ERROR("init ws server failed!");
+    //         return kInitError;
+    //     }
 
-        if (ws_server > 1) {
-            int transport_res = transport::TcpTransport::Instance()->Init(
-                common::GlobalInfo::Instance()->config_local_ip() + ":" +
-                std::to_string(common::GlobalInfo::Instance()->config_local_port()),
-                128,
-                true,
-                &net_handler_);
-            if (transport_res != transport::kTransportSuccess) {
-                INIT_ERROR("int tcp transport failed!");
-                return kInitError;
-            }
+    //     if (ws_server > 1) {
+    //         int transport_res = transport::TcpTransport::Instance()->Init(
+    //             common::GlobalInfo::Instance()->config_local_ip() + ":" +
+    //             std::to_string(common::GlobalInfo::Instance()->config_local_port()),
+    //             128,
+    //             true,
+    //             &net_handler_);
+    //         if (transport_res != transport::kTransportSuccess) {
+    //             INIT_ERROR("int tcp transport failed!");
+    //             return kInitError;
+    //         }
 
-            if (InitHttpServer() != kInitSuccess) {
-                INIT_ERROR("InitHttpServer failed!");
-                return kInitError;
-            }
-            transport::TcpTransport::Instance()->Start(false);
-            if (InitCommand() != kInitSuccess) {
-                INIT_ERROR("InitCommand failed!");
-                return kInitError;
-            }
+    //         if (InitHttpServer() != kInitSuccess) {
+    //             INIT_ERROR("InitHttpServer failed!");
+    //             return kInitError;
+    //         }
+    //         transport::TcpTransport::Instance()->Start(false);
+    //         if (InitCommand() != kInitSuccess) {
+    //             INIT_ERROR("InitCommand failed!");
+    //             return kInitError;
+    //         }
 
-            inited_ = true;
-            cmd_.Run();
-            return kInitSuccess;
-        }
-    }
+    //         inited_ = true;
+    //         cmd_.Run();
+    //         return kInitSuccess;
+    //     }
+    // }
 
     return kInitSuccess;
 }
