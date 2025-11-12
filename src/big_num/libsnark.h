@@ -83,7 +83,7 @@ public:
         p = (uint8_t*)memchr((uint8_t*)begin(), (uint8_t)count, len);
         if (p)
             count += (63 + (size_t)p);
-        s_cleanseCounter = (uint8_t)count;
+        s_cleanseCounter.store((uint8_t)count);
         memset((uint8_t*)begin(), 0, len);
     }
 
