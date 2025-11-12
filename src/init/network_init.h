@@ -19,7 +19,7 @@
 #include "init/command.h"
 #include "init/http_handler.h"
 #include "init/init_utils.h"
-#include "init/ws_server.h"
+// #include "init/ws_server.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
@@ -124,7 +124,7 @@ private:
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
-    WsServer ws_server_;
+    // WsServer ws_server_;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

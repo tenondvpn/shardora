@@ -119,14 +119,14 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }    
 
-    uint32_t ws_server = 0;
-    conf_.Get("zjchain", "ws_server", ws_server);
-    if (ws_server > 0) {
-        if (ws_server_.Init(prefix_db_, security_, &net_handler_) != kInitSuccess) {
-            ZJC_ERROR("init ws server failed!");
-            return kInitError;
-        }
-    }
+    // uint32_t ws_server = 0;
+    // conf_.Get("zjchain", "ws_server", ws_server);
+    // if (ws_server > 0) {
+    //     if (ws_server_.Init(prefix_db_, security_, &net_handler_) != kInitSuccess) {
+    //         ZJC_ERROR("init ws server failed!");
+    //         return kInitError;
+    //     }
+    // }
 
     // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>();
