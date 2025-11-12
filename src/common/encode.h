@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
+#include <string>
 
 // #define MOCK_SIGN 0
 // #define MOCK_VERIFY 0
