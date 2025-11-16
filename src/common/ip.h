@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <geoip/GeoLite2PP.hpp>
+#include <geolite2pp/GeoLite2PP.hpp>
 
 #include "common/utils.h"
 
