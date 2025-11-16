@@ -5,3 +5,54 @@
 [submodule "libs/evhtp"]
 	path = libs/evhtp
 	url = git@github.com:ellzey/libevhtp.git
+[submodule "third_party/log4cpp"]
+	path = third_party/log4cpp
+	url = https://github.com/orocos-toolchain/log4cpp.git
+[submodule "third_party/maxmind"]
+	path = third_party/maxmind
+	url = https://github.com/maxmind/libmaxminddb.git
+[submodule "third_party/geolite2pp"]
+	path = third_party/geolite2pp
+	url = https://github.com/nm17/geolite2pp.git
+[submodule "third_party/protobuf"]
+	path = third_party/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "third_party/openssl"]
+	path = third_party/openssl
+	url = https://github.com/openssl/openssl.git
+[submodule "third_party/xxHash"]
+	path = third_party/xxHash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "third_party/ethash"]
+	path = third_party/ethash
+	url = https://github.com/chfast/ethash.git
+[submodule "third_party/gmssl"]
+	path = third_party/gmssl
+	url = https://github.com/guanzhi/GmSSL.git
+[submodule "third_party/gperftools"]
+	path = third_party/gperftools
+	url = https://github.com/gperftools/gperftools.git
+[submodule "third_party/readerwriterqueue"]
+	path = third_party/readerwriterqueue
+	url = https://github.com/cameron314/readerwriterqueue.git
+[submodule "third_party/secp256k1"]
+	path = third_party/secp256k1
+	url = https://github.com/bitcoin-core/secp256k1.git
+[submodule "third_party/boost/multiprecision"]
+	path = third_party/boost/multiprecision
+	url = git@github.com:boostorg/multiprecision.git
+[submodule "third_party/oqs"]
+	path = third_party/oqs
+	url = https://github.com/open-quantum-safe/liboqs.git
+[submodule "third_party/libff"]
+	path = third_party/libff
+	url = https://github.com/scipr-lab/libff.git
+[submodule "third_party/libsodium"]
+	path = third_party/libsodium
+	url = https://github.com/jedisct1/libsodium.git
+[submodule "third_party/libbls"]
+	path = third_party/libbls
+	url = https://github.com/tenondvpn/bls_sign.git
+[submodule "leveldb"]
+	path = leveldb
+	url = https://github.com/google/leveldb.git
