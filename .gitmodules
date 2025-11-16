@@ -53,6 +53,3 @@
 [submodule "third_party/libbls"]
 	path = third_party/libbls
 	url = https://github.com/tenondvpn/bls_sign.git
-[submodule "leveldb"]
-	path = leveldb
-	url = https://github.com/google/leveldb.git
