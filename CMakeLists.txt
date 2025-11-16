@@ -85,6 +85,7 @@ endif()
 include_directories(SYSTEM
     ${DEP_DIR}/include
     ${DEP_DIR}/include/orocos
+    ${DEP_DIR}/include/maxmind
     ${DEP_DIR}/include/libbls
     ${DEP_DIR}/include/geoip
     ${DEP_DIR}/include/uv

@@ -56,7 +56,7 @@ cd $SRC_PATH
 cd third_party/oqs && git checkout 94b421e && cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
 
 cd $SRC_PATH
-cd third_party/leveldb && git checkout 99b3c03 && git submodule init && git submodule update && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
+cd third_party/leveldb && git checkout 99b3c03 && git submodule init && git submodule update && cmake -S . -B build_release -DLEVELDB_BUILD_TESTS=OFF -DLEVELDB_BUILD_BENCHMARKS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
 
 cd $SRC_PATH
 cd third_party/libsodium && ./autogen.sh -s && ./configure --prefix=$SRC_PATH/third_party/ && make -j${nproc} && make install
@@ -64,7 +64,7 @@ cd third_party/libsodium && ./autogen.sh -s && ./configure --prefix=$SRC_PATH/th
 cd $SRC_PATH
 export SODIUM_INCLUDE_DIR=$SRC_PATH/third_party/include
 export SODIUM_LIBRARY=$SRC_PATH/third_party/lib
-cd third_party/libff && rm -rf ./depends/* && git checkout . && git submodule init && git submodule update && sed -i '3594i\#ifdef MIE_USE_X64ASM' ./depends/ate-pairing/src/zm2.cpp && sed -i '3690i\#endif' ./depends/ate-pairing/src/zm2.cpp &&  sed -i 's/private:/\/\/private:/g' ./libff/algebra/fields/prime_base/fp.hpp  && cmake -S . -B build_release -DWITH_PROCPS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
+cd third_party/libff && rm -rf ./depends/* && git checkout . && git submodule init && git submodule update && sed -i '3594i\#ifdef MIE_USE_X64ASM' ./depends/ate-pairing/src/zm2.cpp && sed -i '3690i\#endif' ./depends/ate-pairing/src/zm2.cpp &&  sed -i 's/private:/\/\/private:/g' ./libff/algebra/fields/prime_base/fp.hpp  && cmake -S . -B build_release -DWITH_PROCPS=OFF -DUSE_ASM=False -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
 
 cd $SRC_PATH
 cd third_party/libbls && cd ./deps && PARALLEL_COUNT=1 sh build.sh && cp deps_inst/x86_or_x64/lib64/lib* deps_inst/x86_or_x64/lib/ && cd .. && cmake -S . -B build_release  -DUSE_ASM=False  -DWITH_PROCPS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLIBBLS_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
@@ -74,3 +74,16 @@ cp -rnf ../deps/deps_inst/x86_or_x64/include/boost/* $SRC_PATH/third_party/inclu
 cd $SRC_PATH
 cd third_party/pbc && make -f simple.make
 mkdir -p $SRC_PATH/third_party/include/pbc && cp -rnf ./include/* $SRC_PATH/third_party/include/pbc && cp -rnf ./lib*.a  $SRC_PATH/third_party/lib
+
+cd $SRC_PATH
+cd third_party/fmt && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+
+cd $SRC_PATH
+cd third_party/libevent && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+
+cd $SRC_PATH
+export LIBEVENT_INCLUDE_DIR=$SRC_PATH/third_party/include
+export LIBEVENT_LIBRARY=$SRC_PATH/third_party/lib
+cd third_party/evhtp && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+
+
