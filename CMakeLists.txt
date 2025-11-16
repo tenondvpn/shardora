@@ -34,7 +34,7 @@ endif()
 message("build info: ${PROJECT_NAME}|${CMAKE_SYSTEM_NAME}|${CMAKE_BUILD_TYPE}|${shared_str}|zjchain")
 
 # path definitions
-set(DEP_DIR ${PROJECT_SOURCE_DIR}/third_party/depends)
+set(DEP_DIR ${PROJECT_SOURCE_DIR}/third_party)
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(MAIN_DIR ${PROJECT_SOURCE_DIR}/src/main)
 
@@ -45,7 +45,8 @@ set(LINK_UUID )
 set(LINK_YAML )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LIB_DIR ${DEP_DIR}/libs/linux)
+    set(LIB_DIR ${DEP_DIR}/lib)
+    set(LIB_DIR ${DEP_DIR}/lib64)
     set(LINK_UUID uuid)
     set(LINK_YAML yaml-cpp)
     include_directories(${OPENSSL_INCLUDE_DIR})
@@ -83,6 +84,7 @@ if(MSVC)
 endif()
 include_directories(SYSTEM
     ${DEP_DIR}/include
+    ${DEP_DIR}/include/orocos
     ${DEP_DIR}/include/libbls
     ${DEP_DIR}/include/geoip
     ${DEP_DIR}/include/uv

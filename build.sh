@@ -1,6 +1,4 @@
 # configure
-export CC=/usr/local/gcc-8.3.0/bin/gcc
-export CXX=/usr/local/gcc-8.3.0/bin/g++
 TARGET=Release
 
 if test "$2" = "Debug"

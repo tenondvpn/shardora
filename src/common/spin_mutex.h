@@ -3,7 +3,11 @@
 #include <array>
 #include <thread>
 #include <atomic>
-#include <emmintrin.h>
+#if defined(__aarch64__)
+#define spin_loop_pause() __asm__ __volatile__("isb" : : : "memory")
+#else
+#define spin_loop_pause() _mm_pause()
+#endif
 
 #include "common/utils.h"
 
@@ -27,7 +31,7 @@ public:
                 return;
             }
 
-            _mm_pause();
+            spin_loop_pause();
         }
 
         while (true) {
@@ -36,16 +40,16 @@ public:
                     return;
                 }
 
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
-                _mm_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
+                spin_loop_pause();
             }
 
             std::this_thread::yield();

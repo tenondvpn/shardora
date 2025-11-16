@@ -1,3 +1,7 @@
+third_party/lib/
+third_party/lib64/
+third_party/share/
+third_party/ssl/
 1
 DHT_*
 HTTP_*
