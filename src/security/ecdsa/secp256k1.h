@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include <secp256k1/secp256k1.h>
-#include <secp256k1/secp256k1_ecdh.h>
-#include <secp256k1/secp256k1_recovery.h>
+#include <secp256k1.h>
+#include <secp256k1_ecdh.h>
+#include <secp256k1_recovery.h>
 
 #include "common/utils.h"
 #include "security/ecdsa/crypto_utils.h"
