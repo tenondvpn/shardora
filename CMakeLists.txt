@@ -170,7 +170,6 @@ set(LINK_ARGS
     dht
     transport
     # websocket
-    http
     contract
     pki
     big_num
@@ -193,19 +192,16 @@ set(LINK_ARGS
 target_link_libraries(pkicli ${LINK_ARGS})
 target_link_libraries(blsmain ${LINK_ARGS})
 target_link_libraries(zjchain ${LINK_ARGS})
-target_link_libraries(httpc http common tcmalloc pthread gmp)
-target_link_libraries(https http common tcmalloc pthread gmp)
 # target_link_libraries(wsc websocket common tcmalloc pthread gmp)
 # target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
-target_link_libraries(txcli http security transport common tcmalloc pthread gmp)
+target_link_libraries(txcli security transport common tcmalloc pthread gmp)
 target_link_libraries(hotstuff security transport common tcmalloc pthread gmp)
 
 include_directories(SYSTEM ${SRC_DIR})
 
 add_subdirectory(${SRC_DIR}/common common)
-add_subdirectory(${SRC_DIR}/http http)
 add_subdirectory(${SRC_DIR}/transport transport)
 # add_subdirectory(${SRC_DIR}/websocket websocket)
 add_subdirectory(${SRC_DIR}/dht dht)
