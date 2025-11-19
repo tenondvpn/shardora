@@ -12,8 +12,6 @@
 #include <condition_variable>
 #include <queue>
 
-#include <parallel_hashmap/phmap.h>
-
 #include "common/limit_hash_set.h"
 #include "common/spin_mutex.h"
 #include "common/thread_safe_queue.h"
