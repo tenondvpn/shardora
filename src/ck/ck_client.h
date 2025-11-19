@@ -5,7 +5,7 @@
 #include <thread>
 
 #include <clickhouse/client.h>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "ck/ck_utils.h"
 #include "common/thread_safe_queue.h"

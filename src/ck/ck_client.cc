@@ -2,7 +2,7 @@
 #include <ck/ck_utils.h>
 
 #include <google/protobuf/util/json_util.h>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "common/encode.h"
 #include "common/global_info.h"

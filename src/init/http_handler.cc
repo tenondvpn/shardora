@@ -4,7 +4,7 @@
 
 #include <cpppbc/GT.h>
 #include <cpppbc/Pairing.h>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "common/encode.h"
 #include "common/string_utils.h"

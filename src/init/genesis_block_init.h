@@ -7,7 +7,7 @@
 
 #include <dkg/dkg.h>
 #include <yaml-cpp/node/node.h>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "common/bitmap.h"
 #include "common/utils.h"
