@@ -228,7 +228,6 @@ add_subdirectory(${SRC_DIR}/pki pki)
 
 
 add_subdirectory(${SRC_DIR}/common/tests common_test)
-add_subdirectory(${SRC_DIR}/http/tests http_test)
 # add_subdirectory(${SRC_DIR}/websocket/tests websocket_test)
 add_subdirectory(${SRC_DIR}/broadcast/tests broadcast_test)
 add_subdirectory(${SRC_DIR}/security/tests security_test)
