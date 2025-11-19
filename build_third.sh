@@ -79,11 +79,7 @@ cd $SRC_PATH
 cd third_party/fmt && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 
 cd $SRC_PATH
-cd third_party/libevent && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+cd third_party/httplib && cp ./httplib.h $SRC_PATH/third_party/include/ 
 
-cd $SRC_PATH
-export LIBEVENT_INCLUDE_DIR=$SRC_PATH/third_party/include
-export LIBEVENT_LIBRARY=$SRC_PATH/third_party/lib
-cd third_party/evhtp && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 
 
