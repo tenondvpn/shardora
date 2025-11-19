@@ -1,8 +1,9 @@
 #pragma once
 
+#include <httplib.h>
+
 #include "block/account_manager.h"
 #include "contract/contract_manager.h"
-#include "http/http_server.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
 #include "transport/multi_thread.h"
@@ -42,6 +43,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+    httplib::Server svr;
 
     DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };
