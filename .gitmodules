@@ -59,3 +59,15 @@
 [submodule "third_party/httplib"]
 	path = third_party/httplib
 	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "third_party/evmone"]
+	path = third_party/evmone
+	url = https://github.com/ipsilon/evmone.git
+[submodule "third_party/clickhouse"]
+	path = third_party/clickhouse
+	url = https://github.com/ClickHouse/clickhouse-cpp.git
+[submodule "third_party/cpppbc"]
+	path = third_party/cpppbc
+	url = https://github.com/Arman001/pbcwrapper.git
+[submodule "third_party/json"]
+	path = third_party/json
+	url = https://github.com/nlohmann/json.git
