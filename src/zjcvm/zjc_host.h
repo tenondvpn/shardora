@@ -45,7 +45,7 @@ struct storage_value {
 
 struct MockedAccount {
     int nonce = 0;
-    bytes code;
+    evmc::bytes code;
     evmc::bytes32 codehash;
     evmc::uint256be balance;
     std::map<evmc::bytes32, storage_value> storage;
