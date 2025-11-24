@@ -112,18 +112,18 @@ public:
         const evmc::address& addr,
         const evmc::bytes32& key) noexcept;
     /// @copydoc evmc_host_interface::get_transient_storage
-    virtual bytes32 get_transient_storage(
-            const address& addr,
-            const bytes32& key) const noexcept {
+    virtual evmc::bytes32 get_transient_storage(
+            const evmc::address& addr,
+            const evmc::bytes32& key) const noexcept {
         assert(false);
         return {}
     }
 
     /// @copydoc evmc_host_interface::set_transient_storage
     virtual void set_transient_storage(
-            const address& addr,
-            const bytes32& key,
-            const bytes32& value) noexcept {
+            const evmc::address& addr,
+            const evmc::bytes32& key,
+            const evmc::bytes32& value) noexcept {
         assert(false);
     }
 
