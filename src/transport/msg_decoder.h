@@ -17,7 +17,6 @@ public:
     virtual tnet::Packet* GetPacket();
     virtual void Free();
 
-    int 
 private:
     bool GetPacketLen(const char* buf, size_t len, size_t& pos);
 
