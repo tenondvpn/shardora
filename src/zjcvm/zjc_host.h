@@ -116,7 +116,7 @@ public:
             const evmc::address& addr,
             const evmc::bytes32& key) const noexcept {
         assert(false);
-        return {}
+        return {};
     }
 
     /// @copydoc evmc_host_interface::set_transient_storage
