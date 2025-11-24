@@ -12,7 +12,6 @@ MsgDecoder::~MsgDecoder() {
     }
 
     packet_list_.clear();
-    t
 }
 
 bool MsgDecoder::GetPacketLen(const char* buf, size_t len, size_t& pos) {
