@@ -218,7 +218,7 @@ int Execution::execute(
 
         msg.gas = out_res->gas_left;
         auto& created_account = host.accounts_[msg.recipient];
-        created_account.code = evmc::bytes(out_res->output_data, out_res->output_size);
+        created_account.code = evmc::bytes((char*)out_res->output_data, out_res->output_size);
         exec_code_data = created_account.code.data();
         exec_code_size = created_account.code.size();
     } else {
