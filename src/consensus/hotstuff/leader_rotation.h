@@ -33,7 +33,7 @@ public:
         }
 
         auto now_tm_skip = 0;//common::TimeUtils::TimestampSeconds() / 30lu;
-        auto index = (now_tm_skip + pool_idx_) % members->size();
+        auto index = 0;//(now_tm_skip + pool_idx_) % members->size();
         return (*members)[index];
     }
 
