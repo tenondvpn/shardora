@@ -360,7 +360,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
-        ZJC_DEBUG("pool: %d, repare commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
+        ZJC_DEBUG("pool: %d, prepare commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
             pool_index_,
             tmp_block_info->view_block->qc().network_id(), 
             tmp_block_info->view_block->qc().pool_index(), 
