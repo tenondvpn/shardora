@@ -597,6 +597,15 @@ int NetworkInit::InitHttpServer() {
             contract_mgr_, 
             http_ip, 
             http_port);
+        httplib::Client cli(http_ip, http_port);
+        if (auto res = cli.Get("/query_init")) {
+            std::unique_lock<std::mutex> lock(wait_mutex_);
+            wait_con_.notify_one();
+        }
+
+        ZJC_DEBUG("http init wait response coming.");
+        std::unique_lock<std::mutex> lock(wait_mutex_);
+        wait_con_.wait_for(lock, std::chrono::milliseconds(1000));
     }
 
     return kInitSuccess;
