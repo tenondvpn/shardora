@@ -1022,6 +1022,7 @@ void HttpHandler::Init(
     svr.Post("/commit_gid_valid", GidsValid);
     svr.Post("/prepayment_valid", PrepaymentsValid);
     svr.Post("/get_block_with_gid", GetBlockWithGid);
+    svr.listen("0.0.0.0", 8080);
 }
 
 };  // namespace init
