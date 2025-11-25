@@ -912,6 +912,7 @@ static void QueryInit(const httplib::Request& req, httplib::Response& http_res) 
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
     http_res.set_content(res, "text/plain");
+    ZJC_DEBUG("sunccess init http server: %d", thread_index);
 }
 
 HttpHandler::HttpHandler() {
