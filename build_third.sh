@@ -18,7 +18,7 @@ SRC_PATH=`pwd`
 
 cd $SRC_PATH
 cd third_party/log4cpp && git checkout . &&  sed -i '14i\#include <ctime>' ./include/log4cpp/DailyRollingFileAppender.hh  && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
-exit 0
+
 cd $SRC_PATH
 cd third_party/pbc && make -f simple.make
 mkdir -p $SRC_PATH/third_party/include/pbc && cp -rnf ./include/* $SRC_PATH/third_party/include/pbc && cp -rnf ./lib*.a  $SRC_PATH/third_party/lib
