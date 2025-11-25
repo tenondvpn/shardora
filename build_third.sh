@@ -11,7 +11,9 @@ dnf install -y xz-devel
 #ubuntu
 apt update
 apt install -y libprocps-dev texinfo libgnutls28-dev liblzma-dev
-
+apt install -y pkg-config
+apt install -y yasm
+apt install -y libgnutls28-dev zlib1g-dev libssh2-1-dev
 SRC_PATH=`pwd`
 
 cd $SRC_PATH
