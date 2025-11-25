@@ -1,5 +1,7 @@
 #pragma once
 
+#define CPPHTTPLIB_RECV_BUFSIZ 10 * 1024 * 1024
+#define CPPHTTPLIB_SEND_BUFSIZ 10 * 1024 * 1024
 #include <httplib.h>
 
 #include "block/account_manager.h"
