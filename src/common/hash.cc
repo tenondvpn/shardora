@@ -1,6 +1,7 @@
 #include "common/hash.h"
 
 #include <openssl/sha.h>
+#include <gmssl/sm3.h>
 #include <string.h>
 
 #include "common/log.h"
