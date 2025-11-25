@@ -45,6 +45,9 @@ public:
 
 private:
     void Run();
+
+    std::string http_ip_;
+    uint16_t http_port_;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     transport::MultiThreadHandler* net_handler_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
