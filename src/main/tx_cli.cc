@@ -5,7 +5,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "json/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "common/random.h"
 #include "common/split.h"
