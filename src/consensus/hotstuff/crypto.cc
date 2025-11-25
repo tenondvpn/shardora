@@ -165,7 +165,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     if (s != Status::kSuccess) {
         // TODO: check each partial sign
         ZJC_ERROR("verify thresh sign failed!");
-        assert(false);
+        // assert(false);
         return s;
     }
 
