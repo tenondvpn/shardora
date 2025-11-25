@@ -42,9 +42,6 @@ public:
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         const std::set<uint32_t>& valid_net_ids_set);
-    inline void SetGenesisConfig(const YAML::Node& genesis_config) {
-        genesis_config_ = genesis_config;
-    }
 
 private:
     int CreateRootGenesisBlocks(
@@ -136,7 +133,6 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
-    YAML::Node genesis_config_;
     nlohmann::json bls_pk_json_;
     std::shared_ptr<address::protobuf::AddressInfo> immutable_pool_address_info_;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize];
