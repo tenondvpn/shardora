@@ -1005,8 +1005,7 @@ void HttpHandler::Init(
         transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<protos::PrefixDb>& tmp_prefix_db,
-        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr,
-        http::HttpServer& http_server) {
+        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr) {
     acc_mgr_ = acc_mgr;
     net_handler_ = net_handler;
     security_ptr_ = security_ptr;

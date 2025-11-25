@@ -15,7 +15,6 @@
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
-#include "http/http_server.h"
 #include "init/command.h"
 #include "init/http_handler.h"
 #include "init/init_utils.h"
