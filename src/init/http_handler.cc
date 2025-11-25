@@ -471,7 +471,6 @@ static void QueryAccount(const httplib::Request& req, httplib::Response& http_re
         std::string res = common::StringUtil::Format("param address is null");
         http_res.set_content(res, "text/plain");
         ZJC_DEBUG("%s", res.c_str());
-        free(response_data);
         return;
     }
 
