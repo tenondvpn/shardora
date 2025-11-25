@@ -49,8 +49,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         ${DEP_DIR}/lib 
         ${DEP_DIR}/lib64 
         ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
-    #set(LIB_DIR ${DEP_DIR}/lib64)
-    #set(LIB_DIR ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
     set(LINK_UUID uuid)
     include_directories(${OPENSSL_INCLUDE_DIR})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
