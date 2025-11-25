@@ -45,8 +45,12 @@ set(LINK_UUID )
 set(LINK_YAML )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LIB_DIR ${DEP_DIR}/lib)
-    set(LIB_DIR ${DEP_DIR}/lib64)
+    set(LIB_DIR 
+        ${DEP_DIR}/lib 
+        ${DEP_DIR}/lib64 
+        ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
+    #set(LIB_DIR ${DEP_DIR}/lib64)
+    #set(LIB_DIR ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
     set(LINK_UUID uuid)
     set(LINK_YAML yaml-cpp)
     include_directories(${OPENSSL_INCLUDE_DIR})
@@ -90,6 +94,7 @@ include_directories(SYSTEM
     ${DEP_DIR}/include/geoip
     ${DEP_DIR}/include/uv
     ${DEP_DIR}/include/sslib
+    ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/include/
     ${CURL_INCLUDE_DIRS} # for curl
 )
 
