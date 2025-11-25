@@ -589,7 +589,14 @@ std::string http_ip = "0.0.0.0";
     uint16_t http_port = 0;
     conf_.Get("zjchain", "http_ip", http_ip);
     if (conf_.Get("zjchain", "http_port", http_port) && http_port != 0) {
-        http_handler_.Init(account_mgr_, &net_handler_, security_, prefix_db_, contract_mgr_);
+        http_handler_.Init(
+            account_mgr_, 
+            &net_handler_, 
+            security_, 
+            prefix_db_, 
+            contract_mgr_, 
+            http_ip, 
+            http_port);
     }
 
     return kInitSuccess;

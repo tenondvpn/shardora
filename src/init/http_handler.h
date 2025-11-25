@@ -22,7 +22,9 @@ public:
         transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<protos::PrefixDb>& tmp_prefix_db,
-        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr);
+        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr，
+        const std::string& ip,
+        uint16_t port);
 
     std::shared_ptr<security::Security> security_ptr() {
         return security_ptr_;

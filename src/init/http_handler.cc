@@ -282,94 +282,174 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
 
 static void QueryContract(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_DEBUG("query contract coming.");
-    // const char* tmp_contract_addr = evhtp_kv_find(req->uri->query, "address");
-    // const char* tmp_input = evhtp_kv_find(req->uri->query, "input");
-    // const char* tmp_from = evhtp_kv_find(req->uri->query, "from");
-    // if (tmp_contract_addr == nullptr || tmp_from == nullptr || tmp_input == nullptr) {
-    //     std::string res = common::StringUtil::Format(
-    //         "param invalid contract_addr valid: %d, input valid: %d",
-    //         (tmp_contract_addr != nullptr), (tmp_input != nullptr), (tmp_from != nullptr));
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract param error: %s.", res.c_str());
-    //     return;
-    // }
+    auto tmp_contract_addr = req.get_param_value("address");
+    auto tmp_input = req.get_param_value("input");
+    auto tmp_from = req.get_param_value("from");
+    std::string from = common::Encode::HexDecode(tmp_from);
+    std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
+    std::string input = common::Encode::HexDecode(tmp_input);
 
-    // std::string from = common::Encode::HexDecode(tmp_from);
-    // std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
-    // std::string input = common::Encode::HexDecode(tmp_input);
-    // uint64_t height = 0;
+    uint64_t height = 0;
+    auto contract_prepayment_id = contract_addr + from;
+    protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+    if (!addr_info) {
+        addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+    }
 
-    // auto contract_prepayment_id = contract_addr + from;
-    // protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
-    // if (!addr_info) {
-    //     addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
-    // }
+    if (!addr_info) {
+        std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // if (!addr_info) {
-    //     std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract param error: %s.", res.c_str());
-    //     return;
-    // }
+    uint64_t prepayment = 9999999999lu;//addr_info->balance();
+    auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
+    if (contract_addr_info == nullptr) {
+        std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
+        http_res.set_content(res, "text/plain");
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
 
-    // uint64_t prepayment = 9999999999lu;//addr_info->balance();
-    // auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
-    // if (contract_addr_info == nullptr) {
-    //     std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract param error: %s.", res.c_str());
-    //     return;
-    // }
-
-    // zjcvm::ZjchainHost zjc_host;
-    // zjc_host.tx_context_.tx_origin = evmc::address{};
-    // zjc_host.tx_context_.block_coinbase = evmc::address{};
-    // zjc_host.tx_context_.block_number = 0;
-    // zjc_host.tx_context_.block_timestamp = 0;
-    // uint64_t chanin_id = 0;
-    // zjcvm::Uint64ToEvmcBytes32(
-    //     zjc_host.tx_context_.chain_id,
-    //     chanin_id);
-    // zjc_host.contract_mgr_ = contract_mgr;
-    // zjc_host.my_address_ = contract_addr;
-    // zjc_host.tx_context_.block_gas_limit = prepayment;
-    // // user caller prepayment 's gas
-    // uint64_t from_balance = prepayment;
-    // uint64_t to_balance = contract_addr_info->balance();
-    // zjc_host.AddTmpAccountBalance(
-    //     from,
-    //     from_balance);
-    // zjc_host.AddTmpAccountBalance(
-    //     contract_addr,
-    //     to_balance);
-    // evmc_result evmc_res = {};
-    // evmc::Result result{ evmc_res };
-    // int exec_res = zjcvm::Execution::Instance()->execute(
-    //     contract_addr_info->bytes_code(),
-    //     input,
-    //     from,
-    //     contract_addr,
-    //     from,
-    //     0,
-    //     prepayment,
-    //     0,
-    //     zjcvm::kJustCall,
-    //     zjc_host,
-    //     &result);
-    // if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
-    //     std::string res = "query contract failed: " + 
-    //         std::to_string(result.status_code) + 
-    //         ", exec_res: " + std::to_string(exec_res);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract error: %s.", res.c_str());
-    //     return;
-    // }
+    zjcvm::ZjchainHost zjc_host;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = 0;
+    zjc_host.tx_context_.block_timestamp = 0;
+    uint64_t chanin_id = 0;
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.contract_mgr_ = contract_mgr;
+    zjc_host.my_address_ = contract_addr;
+    zjc_host.tx_context_.block_gas_limit = prepayment;
+    // user caller prepayment 's gas
+    uint64_t from_balance = prepayment;
+    uint64_t to_balance = contract_addr_info->balance();
+    zjc_host.AddTmpAccountBalance(
+        from,
+        from_balance);
+    zjc_host.AddTmpAccountBalance(
+        contract_addr,
+        to_balance);
+    evmc_result evmc_res = {};
+    evmc::Result result{ evmc_res };
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        contract_addr_info->bytes_code(),
+        input,
+        from,
+        contract_addr,
+        from,
+        0,
+        prepayment,
+        0,
+        zjcvm::kJustCall,
+        zjc_host,
+        &result);
+    if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
+        std::string res = "query contract failed: " + 
+            std::to_string(result.status_code) + 
+            ", exec_res: " + std::to_string(exec_res);
+        http_res.set_content(res, "text/plain");
+        ZJC_INFO("query contract error: %s.", res.c_str());
+        return;
+    }
 	
-    // std::string qdata((char*)result.output_data, result.output_size);
+    std::string qdata((char*)result.output_data, result.output_size);
+    ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    if (result.output_size < 64) {
+        auto res = common::Encode::HexEncode(qdata); 
+        http_res.set_content(res, "text/plain");
+        return;
+    }
+    evmc_bytes32 len_bytes;
+    memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
+    uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
+    std::string http_res(qdata.c_str() + 64, len);
+    http_res.set_content(http_res, "text/plain");
+    ZJC_INFO("query contract success data: %s", http_res.c_str());
+}
+
+
+static void AbiQueryContract(const httplib::Request& req, httplib::Response& http_res) {
+    ZJC_DEBUG("query contract coming.");
+    auto tmp_contract_addr = req.get_param_value("address");
+    auto tmp_input = req.get_param_value("input");
+    auto tmp_from = req.get_param_value("from");
+    std::string from = common::Encode::HexDecode(tmp_from);
+    std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
+    std::string input = common::Encode::HexDecode(tmp_input);
+    uint64_t height = 0;
+
+    auto contract_prepayment_id = contract_addr + from;
+    protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+    if (!addr_info) {
+        addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+    }
+
+    if (!addr_info) {
+        std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
+        http_res.set_content(res, "text/plain");
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    uint64_t prepayment = addr_info->balance();
+    auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
+    if (contract_addr_info == nullptr) {
+        std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
+        http_res.set_content(res, "text/plain");
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    zjcvm::ZjchainHost zjc_host;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = 0;
+    zjc_host.tx_context_.block_timestamp = 0;
+    uint64_t chanin_id = 0;
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.contract_mgr_ = contract_mgr;
+    zjc_host.my_address_ = contract_addr;
+    zjc_host.tx_context_.block_gas_limit = prepayment;
+    // user caller prepayment 's gas
+    uint64_t from_balance = prepayment;
+    uint64_t to_balance = contract_addr_info->balance();
+    zjc_host.AddTmpAccountBalance(
+        from,
+        from_balance);
+    zjc_host.AddTmpAccountBalance(
+        contract_addr,
+        to_balance);
+    evmc_result evmc_res = {};
+    evmc::Result result{ evmc_res };
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        contract_addr_info->bytes_code(),
+        input,
+        from,
+        contract_addr,
+        from,
+        0,
+        999999999999lu,
+        0,
+        zjcvm::kJustCall,
+        zjc_host,
+        &result);
+    if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
+        std::string res = "query contract failed: " + 
+            std::to_string(result.status_code) + 
+            ", exec_res: " + std::to_string(exec_res);
+        http_res.set_content(res, "text/plain");
+        ZJC_INFO("query contract error: %s.", res.c_str());
+        return;
+    }
+	
+    std::string qdata((char*)result.output_data, result.output_size);
+    auto hex_data = common::Encode::HexEncode(qdata);
     // ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     // if (result.output_size < 64) {
     //     auto res = common::Encode::HexEncode(qdata); 
@@ -381,609 +461,465 @@ static void QueryContract(const httplib::Request& req, httplib::Response& http_r
     // memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
     // uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     // std::string http_res(qdata.c_str() + 64, len);
-    // evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
-    // ZJC_INFO("query contract success data: %s", http_res.c_str());
-}
-
-
-static void AbiQueryContract(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("query contract coming.");
-    // const char* tmp_contract_addr = evhtp_kv_find(req->uri->query, "address");
-    // const char* tmp_input = evhtp_kv_find(req->uri->query, "input");
-    // const char* tmp_from = evhtp_kv_find(req->uri->query, "from");
-    // if (tmp_contract_addr == nullptr || tmp_from == nullptr || tmp_input == nullptr) {
-    //     std::string res = common::StringUtil::Format(
-    //         "param invalid contract_addr valid: %d, input valid: %d",
-    //         (tmp_contract_addr != nullptr), (tmp_input != nullptr), (tmp_from != nullptr));
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract param error: %s.", res.c_str());
-    //     return;
-    // }
-
-    // std::string from = common::Encode::HexDecode(tmp_from);
-    // std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
-    // std::string input = common::Encode::HexDecode(tmp_input);
-    // uint64_t height = 0;
-
-    // auto contract_prepayment_id = contract_addr + from;
-    // protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
-    // if (!addr_info) {
-    //     addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
-    // }
-
-    // if (!addr_info) {
-    //     std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract param error: %s.", res.c_str());
-    //     return;
-    // }
-
-    // uint64_t prepayment = addr_info->balance();
-    // auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
-    // if (contract_addr_info == nullptr) {
-    //     std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract param error: %s.", res.c_str());
-    //     return;
-    // }
-
-    // zjcvm::ZjchainHost zjc_host;
-    // zjc_host.tx_context_.tx_origin = evmc::address{};
-    // zjc_host.tx_context_.block_coinbase = evmc::address{};
-    // zjc_host.tx_context_.block_number = 0;
-    // zjc_host.tx_context_.block_timestamp = 0;
-    // uint64_t chanin_id = 0;
-    // zjcvm::Uint64ToEvmcBytes32(
-    //     zjc_host.tx_context_.chain_id,
-    //     chanin_id);
-    // zjc_host.contract_mgr_ = contract_mgr;
-    // zjc_host.my_address_ = contract_addr;
-    // zjc_host.tx_context_.block_gas_limit = prepayment;
-    // // user caller prepayment 's gas
-    // uint64_t from_balance = prepayment;
-    // uint64_t to_balance = contract_addr_info->balance();
-    // zjc_host.AddTmpAccountBalance(
-    //     from,
-    //     from_balance);
-    // zjc_host.AddTmpAccountBalance(
-    //     contract_addr,
-    //     to_balance);
-    // evmc_result evmc_res = {};
-    // evmc::Result result{ evmc_res };
-    // int exec_res = zjcvm::Execution::Instance()->execute(
-    //     contract_addr_info->bytes_code(),
-    //     input,
-    //     from,
-    //     contract_addr,
-    //     from,
-    //     0,
-    //     999999999999lu,
-    //     0,
-    //     zjcvm::kJustCall,
-    //     zjc_host,
-    //     &result);
-    // if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
-    //     std::string res = "query contract failed: " + 
-    //         std::to_string(result.status_code) + 
-    //         ", exec_res: " + std::to_string(exec_res);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_INFO("query contract error: %s.", res.c_str());
-    //     return;
-    // }
-	
-    // std::string qdata((char*)result.output_data, result.output_size);
-    // auto hex_data = common::Encode::HexEncode(qdata);
-    // // ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
-    // // if (result.output_size < 64) {
-    // //     auto res = common::Encode::HexEncode(qdata); 
-    // //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    // //     evhtp_send_reply(req, EVHTP_RES_OK);
-    // //     return;
-    // // }
-    // // evmc_bytes32 len_bytes;
-    // // memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
-    // // uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
-    // // std::string http_res(qdata.c_str() + 64, len);
-    // evbuffer_add(req->buffer_out, hex_data.c_str(), hex_data.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
-    // ZJC_INFO("query contract success data: %s", hex_data.c_str());
+    http_res.set_content(hex_data, "text/plain");
+    ZJC_INFO("query contract success data: %s", hex_data.c_str());
 }
 
 static void QueryAccount(const httplib::Request& req, httplib::Response& http_res) {
-    // const char* tmp_addr = evhtp_kv_find(req->uri->query, "address");
-    // if (tmp_addr == nullptr) {
-    //     struct evbuffer* input = req->buffer_in;
-    //     size_t len = evbuffer_get_length(input);
-    //     char* response_data = (char*)malloc(len + 1);
-    //     evbuffer_copyout(input, response_data, len);
-    //     response_data[len] = '\0';
+    auto tmp_addr = req.get_param_value("address");
+    if (tmp_addr.empty()) {
+        struct evbuffer* input = req->buffer_in;
+        size_t len = evbuffer_get_length(input);
+        char* response_data = (char*)malloc(len + 1);
+        evbuffer_copyout(input, response_data, len);
+        response_data[len] = '\0';
         
-    //     std::string res = common::StringUtil::Format("param address is null req: %s", response_data);
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_DEBUG("%s", res.c_str());
-    //     free(response_data);
-    //     return;
-    // }
+        std::string res = common::StringUtil::Format("param address is null req: %s", response_data);
+        http_res.set_content(res, "text/plain");
+        ZJC_DEBUG("%s", res.c_str());
+        free(response_data);
+        return;
+    }
 
-    // std::string addr = common::Encode::HexDecode(tmp_addr);
-    // auto addr_info = prefix_db->GetAddressInfo(addr);
-    // if (addr_info == nullptr) {
-    //     std::string res = "get address failed from db: " + addr;
-    //     addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
-    // }
+    std::string addr = common::Encode::HexDecode(tmp_addr);
+    auto addr_info = prefix_db->GetAddressInfo(addr);
+    if (addr_info == nullptr) {
+        std::string res = "get address failed from db: " + addr;
+        addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+    }
 
-    // if (addr_info == nullptr) {
-    //     std::string res = "get address failed from cache: " + addr;
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_DEBUG("%s", res.c_str());
-    //     return;
-    // }
+    if (addr_info == nullptr) {
+        std::string res = "get address failed from cache: " + addr;
+        http_res.set_content(res, "text/plain");
+        ZJC_DEBUG("%s", res.c_str());
+        return;
+    }
 
-    // std::string json_str;
-    // auto st = google::protobuf::util::MessageToJsonString(*addr_info, &json_str);
-    // if (!st.ok()) {
-    //     std::string res = "json parse failed: " + addr;
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     ZJC_DEBUG("%s", res.c_str());
-    //     return;
-    // }
+    std::string json_str;
+    auto st = google::protobuf::util::MessageToJsonString(*addr_info, &json_str);
+    if (!st.ok()) {
+        std::string res = "json parse failed: " + addr;
+        http_res.set_content(res, "text/plain");
+        ZJC_DEBUG("%s", res.c_str());
+        return;
+    }
 
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
-    // ZJC_DEBUG("%s", json_str.c_str());
+    http_res.set_content(json_str, "text/plain");
+    ZJC_DEBUG("%s", json_str.c_str());
 }
 
 static void AccountsValid(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_DEBUG("query account.");
-    // const char* balance = evhtp_kv_find(req->uri->query, "balance");
-    // uint64_t balance_val = 0;
-    // if (!common::StringUtil::ToUint64(std::string(balance), &balance_val)) {
-    //     std::string res = std::string("balance not integer: ") + balance;
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto balance = req.get_param_value("balance");
+    uint64_t balance_val = 0;
+    if (!common::StringUtil::ToUint64(balance, &balance_val)) {
+        std::string res = std::string("balance not integer: ") + balance;
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
-    // if (tmp_addrs == nullptr) {
-    //     std::string res = common::StringUtil::Format("param address is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto tmp_addrs = req.get_param_value("addrs");
+    if (tmp_addrs.empty()) {
+        std::string res = common::StringUtil::Format("param address is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // nlohmann::json res_json;
-    // auto tmp_res_addrs = res_json["addrs"];
-    // res_json["status"] = 0;
-    // res_json["msg"] = "success";
-    // auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
-    // uint32_t invalid_addr_index = 0;
-    // for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
-    //     std::string addr = common::Encode::HexDecode(addrs_splits[i]);
-    //     if (addr.length() < 20) {
-    //         continue;
-    //     }
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["addrs"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string addr = common::Encode::HexDecode(addrs_splits[i]);
+        if (addr.length() < 20) {
+            continue;
+        }
 
-    //     protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
-    //     if (addr_info == nullptr) {
-    //         std::string res = "get address failed from db: " + addr;
-    //         addr_info = prefix_db->GetAddressInfo(addr);
-    //     }
+        protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(addr);
+        if (addr_info == nullptr) {
+            std::string res = "get address failed from db: " + addr;
+            addr_info = prefix_db->GetAddressInfo(addr);
+        }
 
-    //     if (addr_info == nullptr) {
-    //         addr_info = nullptr;
-    //     }
+        if (addr_info == nullptr) {
+            addr_info = nullptr;
+        }
 
-    //     if (addr_info != nullptr && addr_info->balance() >= balance_val) {
-    //         res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
-    //         ZJC_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
-    //     } else {
-    //         ZJC_DEBUG("invalid addr: %s, balance: %lu",
-    //             addrs_splits[i], 
-    //             (addr_info ? addr_info->balance() : 0));
-    //     }
-    // }
+        if (addr_info != nullptr && addr_info->balance() >= balance_val) {
+            res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+        } else {
+            ZJC_DEBUG("invalid addr: %s, balance: %lu",
+                addrs_splits[i], 
+                (addr_info ? addr_info->balance() : 0));
+        }
+    }
 
-    // auto json_str = res_json.dump();
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    auto json_str = res_json.dump();
+    http_res.set_content(json_str, "text/plain");
 }
 
 static void GetBlockWithGid(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_DEBUG("query account.");
-    // const char* addr = evhtp_kv_find(req->uri->query, "addr");
-    // if (addr == nullptr) {
-    //     std::string res = std::string("addr not exists.");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto addr = req.get_param_value("addr");
+    const char* addr = evhtp_kv_find(req->uri->query, "addr");
+    if (addr.empty()) {
+        std::string res = std::string("addr not exists.");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // const char* nonce = evhtp_kv_find(req->uri->query, "nonce");
-    // if (nonce == nullptr) {
-    //     std::string res = std::string("nonce not exists.");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto nonce = req.get_param_value("nonce");
+    if (nonce.empty()) {
+        std::string res = std::string("nonce not exists.");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // uint64_t tmp_nonce = 0;
-    // if (!common::StringUtil::ToUint64(nonce, &tmp_nonce)) {
-    //     std::string res = std::string("nonce not exists.");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    uint64_t tmp_nonce = 0;
+    if (!common::StringUtil::ToUint64(nonce, &tmp_nonce)) {
+        std::string res = std::string("nonce not exists.");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // nlohmann::json res_json;
-    // res_json["status"] = 0;
-    // res_json["msg"] = "success";
-    // view_block::protobuf::ViewBlockItem view_block;
-    
-    // bool res = prefix_db->GetBlockWithHeight(3, 15, 3, &view_block);
-    // if (res) {
-    //     res_json["block"]["height"] = view_block.block_info().height();
-    //     res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());
-    //     res_json["block"]["parent_hash"] = common::Encode::HexEncode(view_block.parent_hash());
-    //     res_json["block"]["timestamp"] = view_block.block_info().timestamp();
-    //     res_json["block"]["no"] = view_block.qc().view();
-    // }
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    view_block::protobuf::ViewBlockItem view_block;
+    bool res = prefix_db->GetBlockWithHeight(3, 15, 3, &view_block);
+    if (res) {
+        res_json["block"]["height"] = view_block.block_info().height();
+        res_json["block"]["hash"] = common::Encode::HexEncode(view_block.qc().view_block_hash());
+        res_json["block"]["parent_hash"] = common::Encode::HexEncode(view_block.parent_hash());
+        res_json["block"]["timestamp"] = view_block.block_info().timestamp();
+        res_json["block"]["no"] = view_block.qc().view();
+    }
        
-    // auto json_str = res_json.dump();
-    // ZJC_DEBUG("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    auto json_str = res_json.dump();
+    ZJC_DEBUG("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
+    http_res.set_content(res_json, "text/plain");
 }
 
 static void PrepaymentsValid(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_DEBUG("query account.");
-    // const char* balance = evhtp_kv_find(req->uri->query, "balance");
-    // if (balance == nullptr) {
-    //     std::string res = std::string("balance not exists.");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto balance = req.get_param_value("balance");
+    if (balance.empty()) {
+        std::string res = std::string("balance not exists.");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // uint64_t balance_val = 0;
-    // if (!common::StringUtil::ToUint64(std::string(balance), &balance_val)) {
-    //     std::string res = std::string("balance not integer: ") + balance;
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    uint64_t balance_val = 0;
+    if (!common::StringUtil::ToUint64(std::string(balance), &balance_val)) {
+        std::string res = std::string("balance not integer: ") + balance;
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // const char* contract = evhtp_kv_find(req->uri->query, "contract");
-    // if (contract == nullptr) {
-    //     std::string res = std::string("contract not exists.");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto contract = req.get_param_value("contract");
+    if (contract.empty()) {
+        std::string res = std::string("contract not exists.");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // auto contract_addr = common::Encode::HexDecode(contract);
-    // const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
-    // if (tmp_addrs == nullptr) {
-    //     std::string res = common::StringUtil::Format("param address is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto contract_addr = common::Encode::HexDecode(contract);
+    const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
+    if (tmp_addrs == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // nlohmann::json res_json;
-    // auto tmp_res_addrs = res_json["prepayments"];
-    // res_json["status"] = 0;
-    // res_json["msg"] = "success";
-    // auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
-    // uint32_t invalid_addr_index = 0;
-    // for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
-    //     std::string addr = common::Encode::HexDecode(addrs_splits[i]);
-    //     if (addr.length() < 20) {
-    //         continue;
-    //     }
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["prepayments"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string addr = common::Encode::HexDecode(addrs_splits[i]);
+        if (addr.length() < 20) {
+            continue;
+        }
 
-    //     uint64_t height = 0;
-    //     uint64_t tmp_balance = 0;
-    //     auto contract_prepayment_id = contract_addr + addr;
-    //     protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
-    //     if (addr_info == nullptr) {
-    //         std::string res = "get address failed from db: " + contract_prepayment_id;
-    //         addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
-    //     }
+        uint64_t height = 0;
+        uint64_t tmp_balance = 0;
+        auto contract_prepayment_id = contract_addr + addr;
+        protos::AddressInfoPtr addr_info =  http_handler->acc_mgr()->GetAccountInfo(contract_prepayment_id);
+        if (addr_info == nullptr) {
+            std::string res = "get address failed from db: " + contract_prepayment_id;
+            addr_info = prefix_db->GetAddressInfo(contract_prepayment_id);
+        }
 
-    //     if (addr_info != nullptr && addr_info->balance() >= balance_val) {
-    //         res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
-    //         ZJC_DEBUG("valid prepayment: %s, balance: %lu", addrs_splits[i], addr_info->balance());
-    //     } else {
-    //         ZJC_DEBUG("invalid prepayment: %s, balance: %lu",
-    //             addrs_splits[i], 
-    //             (addr_info ? addr_info->balance() : 0));
-    //     }
-    // }
+        if (addr_info != nullptr && addr_info->balance() >= balance_val) {
+            res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("valid prepayment: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+        } else {
+            ZJC_DEBUG("invalid prepayment: %s, balance: %lu",
+                addrs_splits[i], 
+                (addr_info ? addr_info->balance() : 0));
+        }
+    }
 
-    // auto json_str = res_json.dump();
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    auto json_str = res_json.dump();
+    http_res.set_content(json_str, "text/plain");
 }
 
 static void GidsValid(const httplib::Request& req, httplib::Response& http_res) {
-    // const char* tmp_gids = evhtp_kv_find(req->uri->query, "gids");
-    // if (tmp_gids == nullptr) {
-    //     std::string res = common::StringUtil::Format("param gids is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto tmp_gids = req.get_param_value("gids");
+    if (tmp_gids.empty()) {
+        std::string res = common::StringUtil::Format("param gids is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // nlohmann::json res_json;
-    // auto tmp_res_addrs = res_json["gids"];
-    // res_json["status"] = 0;
-    // res_json["msg"] = "success";
-    // auto addrs_splits = common::Split<1024>(tmp_gids, '_');
-    // uint32_t invalid_addr_index = 0;
-    // for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
-    //     std::string gid = common::Encode::HexDecode(addrs_splits[i]);
-    //     if (gid.length() < 32) {
-    //         continue;
-    //     }
+    nlohmann::json res_json;
+    auto tmp_res_addrs = res_json["gids"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    auto addrs_splits = common::Split<1024>(tmp_gids, '_');
+    uint32_t invalid_addr_index = 0;
+    for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
+        std::string gid = common::Encode::HexDecode(addrs_splits[i]);
+        if (gid.length() < 32) {
+            continue;
+        }
 
-    //     ZJC_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
-    //     auto res = false; //prefix_db->JustCheckCommitedGidExists(gid);
-    //     if (res) {
-    //         res_json["gids"][invalid_addr_index++] = addrs_splits[i];
-    //         ZJC_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
-    //     }
-    // }
+        ZJC_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
+        auto res = false; //prefix_db->JustCheckCommitedGidExists(gid);
+        if (res) {
+            res_json["gids"][invalid_addr_index++] = addrs_splits[i];
+            ZJC_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
+        }
+    }
 
-    // auto json_str = res_json.dump();
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    auto json_str = res_json.dump();
+    http_res.set_content(json_str, "text/plain");
 }
 
 static void GetProxyReencInfo(const httplib::Request& req, httplib::Response& http_res) {
-    // const char* id = evhtp_kv_find(req->uri->query, "id");
-    // if (id == nullptr) {
-    //     std::string res = common::StringUtil::Format("param address is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto id = req.get_param_value("id");
+    if (id.empty()) {
+        std::string res = common::StringUtil::Format("param address is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // const char* contract = evhtp_kv_find(req->uri->query, "contract");
-    // if (contract == nullptr) {
-    //     std::string res = common::StringUtil::Format("param contract is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto contract = req.get_param_value("contract");
+    if (contract.empty()) {
+        std::string res = common::StringUtil::Format("param contract is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // const char* count_str = evhtp_kv_find(req->uri->query, "count");
-    // if (count_str == nullptr) {
-    //     std::string res = common::StringUtil::Format("param count is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto count_str = req.get_param_value("count");
+    if (count_str.empty()) {
+        std::string res = common::StringUtil::Format("param count is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // std::string proxy_id = id;
-    // std::string contract_str = common::Encode::HexDecode(contract);
-    // uint32_t count = 0;
-    // if (!common::StringUtil::ToUint32(count_str, &count) || count > 10) {
-    //     std::string res = common::StringUtil::Format("param count is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    std::string proxy_id = id;
+    std::string contract_str = common::Encode::HexDecode(contract);
+    uint32_t count = 0;
+    if (!common::StringUtil::ToUint32(count_str, &count) || count > 10) {
+        std::string res = common::StringUtil::Format("param count is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
     
-    // nlohmann::json res_json;
-    // auto bls_pk_json = res_json["value"];
-    // res_json["status"] = 0;
-    // res_json["msg"] = "success";
-    // ZJC_WARN("GetProxyReencInfo 4.");
-    // for (uint32_t i = 0; i < count; ++i) {
-    //     auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
-    //     std::string prikey;
-    //     zjcvm::Execution::Instance()->GetStorage(contract_str, private_key, &prikey);
-    //     auto public_key = proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
-    //     std::string pubkey;
-    //     zjcvm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
-    //     ZJC_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
-    //         common::Encode::HexEncode(private_key).c_str(), 
-    //         common::Encode::HexEncode(public_key).c_str(), 
-    //         common::Encode::HexEncode(prikey).c_str(),
-    //         common::Encode::HexEncode(pubkey).c_str());
+    nlohmann::json res_json;
+    auto bls_pk_json = res_json["value"];
+    res_json["status"] = 0;
+    res_json["msg"] = "success";
+    ZJC_WARN("GetProxyReencInfo 4.");
+    for (uint32_t i = 0; i < count; ++i) {
+        auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
+        std::string prikey;
+        zjcvm::Execution::Instance()->GetStorage(contract_str, private_key, &prikey);
+        auto public_key = proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
+        std::string pubkey;
+        zjcvm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
+        ZJC_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
+            common::Encode::HexEncode(private_key).c_str(), 
+            common::Encode::HexEncode(public_key).c_str(), 
+            common::Encode::HexEncode(prikey).c_str(),
+            common::Encode::HexEncode(pubkey).c_str());
 
         
-    //     res_json["value"][i]["node_index"] = i;
-    //     res_json["value"][i]["private_key"] = common::Encode::HexEncode(prikey);
-    //     res_json["value"][i]["public_key"] = common::Encode::HexEncode(pubkey);
-    // }
+        res_json["value"][i]["node_index"] = i;
+        res_json["value"][i]["private_key"] = common::Encode::HexEncode(prikey);
+        res_json["value"][i]["public_key"] = common::Encode::HexEncode(pubkey);
+    }
    
-    // auto json_str = res_json.dump();
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    auto json_str = res_json.dump();
+    http_res.set_content(json_str, "text/plain");
 }
 
 
 static void GetSecAndEncData(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_DEBUG("http transaction coming.");
-    // contract::ContractReEncryption prox_renc;
-    // zjcvm::ZjchainHost zjc_host;
-    // contract::CallParameters param;
-    // param.zjc_host = &zjc_host;
-    // const char* data = evhtp_kv_find(req->uri->query, "data");
-    // if (data == nullptr) {
-    //     std::string res = common::StringUtil::Format("param data is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    contract::ContractReEncryption prox_renc;
+    zjcvm::ZjchainHost zjc_host;
+    contract::CallParameters param;
+    param.zjc_host = &zjc_host;
+    auto data = req.get_param_value("data");
+    if (data.empty()) {
+        std::string res = common::StringUtil::Format("param data is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // std::string hash256 = common::Hash::Hash256(data);
-    // std::string test_data(common::Encode::HexEncode(hash256));
-    // std::string pair_param = ("type a\n"
-    //     "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
-    //     "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
-    //     "r 730750818665451621361119245571504901405976559617\n"
-    //     "exp2 159\n"
-    //     "exp1 107\n"
-    //     "sign1 1\n"
-    //     "sign0 1\n");
-    // auto pairing_ptr = std::make_shared<Pairing>(pair_param.c_str(), pair_param.size());
-    // auto& e = *pairing_ptr;
-    // GT m(e, test_data.c_str(), test_data.size());
-    // auto seckey = common::Hash::Hash256(m.toString());
-    // std::string sec_data;
-    // secptr->Encrypt(data, seckey, &sec_data);
-    // ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
-    //     test_data.c_str(), 
-    //     common::Encode::HexEncode(test_data).c_str(),
-    //     common::Encode::HexEncode(m.toString()).c_str(), 
-    //     common::Encode::HexEncode(hash256).c_str(),
-    //     common::Encode::HexEncode(sec_data).c_str());
-    // nlohmann::json res_json;
-    // res_json["status"] = 0;
-    // res_json["seckey"] = common::Encode::HexEncode(m.toString());
-    // res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
-    // res_json["secdata"] = common::Encode::HexEncode(sec_data);
-    // prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + seckey, sec_data);
-    // auto json_str = res_json.dump();
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    std::string hash256 = common::Hash::Hash256(data);
+    std::string test_data(common::Encode::HexEncode(hash256));
+    std::string pair_param = ("type a\n"
+        "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
+        "h 12016012264891146079388821366740534204802954401251311822919615131047207289359704531102844802183906537786776\n"
+        "r 730750818665451621361119245571504901405976559617\n"
+        "exp2 159\n"
+        "exp1 107\n"
+        "sign1 1\n"
+        "sign0 1\n");
+    auto pairing_ptr = std::make_shared<Pairing>(pair_param.c_str(), pair_param.size());
+    auto& e = *pairing_ptr;
+    GT m(e, test_data.c_str(), test_data.size());
+    auto seckey = common::Hash::Hash256(m.toString());
+    std::string sec_data;
+    secptr->Encrypt(data, seckey, &sec_data);
+    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+        test_data.c_str(), 
+        common::Encode::HexEncode(test_data).c_str(),
+        common::Encode::HexEncode(m.toString()).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
+        common::Encode::HexEncode(sec_data).c_str());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["seckey"] = common::Encode::HexEncode(m.toString());
+    res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
+    res_json["secdata"] = common::Encode::HexEncode(sec_data);
+    prefix_db->SaveTemporaryKv(std::string("proxy_reenc_") + seckey, sec_data);
+    auto json_str = res_json.dump();
+    http_res.set_content(json_str, "text/plain");
 }
 
 static void ProxDecryption(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_WARN("ProxDecryption coming 0.");
-    // contract::ContractReEncryption prox_renc;
-    // zjcvm::ZjchainHost zjc_host;
-    // contract::CallParameters param;
-    // param.from = common::Encode::HexDecode("48e1eab96c9e759daa3aff82b40e77cd615a41d0");
-    // param.zjc_host = &zjc_host;
-    // const char* id = evhtp_kv_find(req->uri->query, "id");
-    // if (id == nullptr) {
-    //     std::string res = common::StringUtil::Format("param data is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    contract::ContractReEncryption prox_renc;
+    zjcvm::ZjchainHost zjc_host;
+    contract::CallParameters param;
+    param.from = common::Encode::HexDecode("48e1eab96c9e759daa3aff82b40e77cd615a41d0");
+    param.zjc_host = &zjc_host;
+    auto id = req.get_param_value("id");
+    if (id.empty()) {
+        std::string res = common::StringUtil::Format("param data is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // ZJC_WARN("ProxDecryption coming 2.");
-    // std::string res_data;
-    // prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
-    // std::string hash256 = common::Hash::Hash256(res_data);
-    // std::string tmp_encdata;
-    // if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + hash256, &tmp_encdata)) {
-    //     std::string res = common::StringUtil::Format("get encdata is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    ZJC_WARN("ProxDecryption coming 2.");
+    std::string res_data;
+    prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
+    std::string hash256 = common::Hash::Hash256(res_data);
+    std::string tmp_encdata;
+    if (!prefix_db->GetTemporaryKv(std::string("proxy_reenc_") + hash256, &tmp_encdata)) {
+        std::string res = common::StringUtil::Format("get encdata is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // block::protobuf::KeyValueInfo kv_info;
-    // if (!kv_info.ParseFromString(tmp_encdata)) {
-    //     std::string res = common::StringUtil::Format("get encdata is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    block::protobuf::KeyValueInfo kv_info;
+    if (!kv_info.ParseFromString(tmp_encdata)) {
+        std::string res = common::StringUtil::Format("get encdata is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // std::string dec_data;
-    // secptr->Decrypt(kv_info.value(), hash256, &dec_data);
-    // ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
-    //     dec_data.c_str(), 
-    //     common::Encode::HexEncode(dec_data).c_str(),
-    //     common::Encode::HexEncode(res_data).c_str(), 
-    //     common::Encode::HexEncode(hash256).c_str(),
-    //     common::Encode::HexEncode(kv_info.value()).c_str());
-    // nlohmann::json res_json;
-    // res_json["status"] = 0;
-    // res_json["seckey"] = common::Encode::HexEncode(res_data);
-    // res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
-    // res_json["encdata"] = common::Encode::HexEncode(kv_info.value());
-    // res_json["decdata"] = std::string(dec_data.c_str());
-    // auto json_str = res_json.dump();
-    // ZJC_WARN("ProxDecryption coming 3.");
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
-    // ZJC_WARN("ProxDecryption coming 4.");
+    std::string dec_data;
+    secptr->Decrypt(kv_info.value(), hash256, &dec_data);
+    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+        dec_data.c_str(), 
+        common::Encode::HexEncode(dec_data).c_str(),
+        common::Encode::HexEncode(res_data).c_str(), 
+        common::Encode::HexEncode(hash256).c_str(),
+        common::Encode::HexEncode(kv_info.value()).c_str());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    res_json["seckey"] = common::Encode::HexEncode(res_data);
+    res_json["hash_seckey"] = common::Encode::HexEncode(hash256);
+    res_json["encdata"] = common::Encode::HexEncode(kv_info.value());
+    res_json["decdata"] = std::string(dec_data.c_str());
+    auto json_str = res_json.dump();
+    ZJC_WARN("ProxDecryption coming 3.");
+    http_res.set_content(json_str, "text/plain");
+    ZJC_WARN("ProxDecryption coming 4.");
 }
 
 static void ArsCreateSecKeys(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_WARN("ArsCreateSecKeys coming 0.");
-    // const char* keys = evhtp_kv_find(req->uri->query, "keys");
-    // if (keys == nullptr) {
-    //     std::string res = common::StringUtil::Format("param keys is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto keys = req.get_param_value("keys");
+    if (keys.empty()) {
+        std::string res = common::StringUtil::Format("param keys is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // const char* tmp_signer_count = evhtp_kv_find(req->uri->query, "signer_count");
-    // if (tmp_signer_count == nullptr) {
-    //     std::string res = common::StringUtil::Format("param signer_count is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    auto tmp_signer_count = req.get_param_value("signer_count");
+    if (tmp_signer_count.empty()) {
+        std::string res = common::StringUtil::Format("param signer_count is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // contract::ContractArs ars;
-    // auto signer_count = 0;
-    // if (!common::StringUtil::ToInt32(tmp_signer_count, &signer_count)) {
-    //     std::string res = common::StringUtil::Format("get signer_count is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    contract::ContractArs ars;
+    auto signer_count = 0;
+    if (!common::StringUtil::ToInt32(tmp_signer_count, &signer_count)) {
+        std::string res = common::StringUtil::Format("get signer_count is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // if (signer_count <= 0 || signer_count >= ars.ring_size()) {
-    //     std::string res = common::StringUtil::Format("get signer_count is null");
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_BADREQ);
-    //     return;
-    // }
+    if (signer_count <= 0 || signer_count >= ars.ring_size()) {
+        std::string res = common::StringUtil::Format("get signer_count is null");
+        http_res.set_content(res, "text/plain");
+        return;
+    }
 
-    // // 创建环中的公钥和私钥对
-    // std::vector<element_t> private_keys(ars.ring_size());
-    // std::vector<element_t> public_keys(ars.ring_size());
-    // nlohmann::json res_json;
-    // res_json["status"] = 0;
-    // auto nodes = res_json["nodes"];
-    // auto keys_splits = common::Split<>(keys, '-');
-    // ars.set_ring_size(keys_splits.Count());
-    // for (int i = 0; i < ars.ring_size(); ++i) {
-    //     ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
-    //     unsigned char bytes_data[10240] = {0};
-    //     auto len = element_to_bytes(bytes_data, private_keys[i]);
-    //     std::string x_i_str((char*)bytes_data, len);
-    //     len = element_to_bytes_compressed(bytes_data, public_keys[i]);
-    //     std::string y_i_str((char*)bytes_data, len);
-    //     res_json["nodes"][i]["node_index"] = i;
-    //     res_json["nodes"][i]["private_key"] = common::Encode::HexEncode(x_i_str);
-    //     res_json["nodes"][i]["public_key"] = common::Encode::HexEncode(y_i_str);
-    //     element_clear(private_keys[i]);
-    //     element_clear(public_keys[i]);
-    // }
+    // 创建环中的公钥和私钥对
+    std::vector<element_t> private_keys(ars.ring_size());
+    std::vector<element_t> public_keys(ars.ring_size());
+    nlohmann::json res_json;
+    res_json["status"] = 0;
+    auto nodes = res_json["nodes"];
+    auto keys_splits = common::Split<>(keys, '-');
+    ars.set_ring_size(keys_splits.Count());
+    for (int i = 0; i < ars.ring_size(); ++i) {
+        ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
+        unsigned char bytes_data[10240] = {0};
+        auto len = element_to_bytes(bytes_data, private_keys[i]);
+        std::string x_i_str((char*)bytes_data, len);
+        len = element_to_bytes_compressed(bytes_data, public_keys[i]);
+        std::string y_i_str((char*)bytes_data, len);
+        res_json["nodes"][i]["node_index"] = i;
+        res_json["nodes"][i]["private_key"] = common::Encode::HexEncode(x_i_str);
+        res_json["nodes"][i]["public_key"] = common::Encode::HexEncode(y_i_str);
+        element_clear(private_keys[i]);
+        element_clear(public_keys[i]);
+    }
 
-    // auto json_str = res_json.dump();
-    // ZJC_WARN("ArsCreateSecKeys coming 3.");
-    // evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
-    // ZJC_WARN("ArsCreateSecKeys coming 4.");
+    auto json_str = res_json.dump();
+    ZJC_WARN("ArsCreateSecKeys coming 3.");
+    http_res.set_content(json_str, "text/plain");
+    ZJC_WARN("ArsCreateSecKeys coming 4.");
 }
 
 static void QueryInit(const httplib::Request& req, httplib::Response& http_res) {
-    // auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    // std::string res = "ok";
-    // evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    // evhtp_send_reply(req, EVHTP_RES_OK);
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    std::string res = "ok";
+    http_res.set_content(res, "text/plain");
 }
 
 HttpHandler::HttpHandler() {
@@ -997,7 +933,9 @@ void HttpHandler::Init(
         transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<protos::PrefixDb>& tmp_prefix_db,
-        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr) {
+        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr,
+        const std::string& ip,
+        uint16_t port) {
     acc_mgr_ = acc_mgr;
     net_handler_ = net_handler;
     security_ptr_ = security_ptr;
@@ -1018,7 +956,7 @@ void HttpHandler::Init(
     svr.Post("/commit_gid_valid", GidsValid);
     svr.Post("/prepayment_valid", PrepaymentsValid);
     svr.Post("/get_block_with_gid", GetBlockWithGid);
-    svr.listen("0.0.0.0", 8080);
+    svr.listen(ip, port);
 }
 
 };  // namespace init
