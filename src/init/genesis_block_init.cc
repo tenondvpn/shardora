@@ -34,7 +34,6 @@
 #include "security/ecdsa/ecdsa.h"
 #include "security/ecdsa/secp256k1.h"
 #include "timeblock/time_block_utils.h"
-#include "yaml-cpp/yaml.h"
 #include "consensus/hotstuff/types.h"
 
 namespace shardora {

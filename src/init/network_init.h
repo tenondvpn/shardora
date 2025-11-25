@@ -30,7 +30,6 @@
 #include "vss/vss_manager.h"
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
 #include <protos/prefix_db.h>
-#include <yaml-cpp/node/node.h>
 
 namespace shardora {
 

@@ -47,7 +47,6 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/execution.h"
-#include "yaml-cpp/yaml.h"
 #include "common/defer.h"
 
 namespace shardora {

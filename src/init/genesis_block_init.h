@@ -6,7 +6,6 @@
 #include <vector>
 
 #include <dkg/dkg.h>
-#include <yaml-cpp/node/node.h>
 #include <nlohmann/json.hpp>
 
 #include "common/bitmap.h"
