@@ -5,6 +5,7 @@
 // #define CPPHTTPLIB_COMPRESSION_BUFSIZ size_t(1 * 1024 * 1024)
 // #define CPPHTTPLIB_RECV_BUFSIZ 104857600
 #define CPPHTTPLIB_FORM_URL_ENCODED_PAYLOAD_MAX_LENGTH  size_t(10 * 1024 * 1024)
+#define CPPHTTPLIB_THREAD_POOL_COUNT size_t(0)
 #include <httplib.h>
 
 #include "block/account_manager.h"
