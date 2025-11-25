@@ -935,6 +935,7 @@ void HttpHandler::Init(
     prefix_db = tmp_prefix_db;
     contract_mgr = tmp_contract_mgr;
 
+    svr.set_payload_max_length(10 * 1024 * 1024);
     svr.Post("/transaction", HttpTransaction);
     svr.Post("/get_seckey_and_encrypt_data", GetSecAndEncData);
     svr.Post("/proxy_decrypt", ProxDecryption);
