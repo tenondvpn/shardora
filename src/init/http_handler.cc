@@ -954,13 +954,13 @@ void HttpHandler::Init(
     svr.Post("/commit_gid_valid", GidsValid);
     svr.Post("/prepayment_valid", PrepaymentsValid);
     svr.Post("/get_block_with_gid", GetBlockWithGid);
-    auto svr_thread = [&]() {
+    // auto svr_thread = [&]() {
         ZJC_DEBUG("http server now listen!");
         svr.listen(ip, port);
         ZJC_DEBUG("http server now listen over!");
-    };
+    // };
 
-    http_svr_thread_ = std::make_shared<std::thread>(svr_thread);
+    // http_svr_thread_ = std::make_shared<std::thread>(svr_thread);
 }
 
 };  // namespace init
