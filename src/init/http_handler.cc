@@ -916,6 +916,10 @@ static void QueryInit(const httplib::Request& req, httplib::Response& http_res) 
 
 HttpHandler::HttpHandler() {
     http_handler = this;
+    if (http_svr_thread_) {
+        svr.stop();
+        http_svr_thread_->join();
+    }
 }
 
 HttpHandler::~HttpHandler() {}
@@ -949,7 +953,11 @@ void HttpHandler::Init(
     svr.Post("/commit_gid_valid", GidsValid);
     svr.Post("/prepayment_valid", PrepaymentsValid);
     svr.Post("/get_block_with_gid", GetBlockWithGid);
-    svr.listen(ip, port);
+    auto svr_thread = [&]() {
+        svr.listen(ip, port);
+    }
+
+    http_svr_thread_ = std::make_shared<std::thread>(svr_thread);
 }
 
 };  // namespace init

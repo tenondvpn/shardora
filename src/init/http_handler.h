@@ -50,6 +50,7 @@ private:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
     httplib::Server svr;
+    std::shared_ptr<std::thread> http_svr_thread_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };
