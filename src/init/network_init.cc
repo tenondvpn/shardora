@@ -597,7 +597,7 @@ int NetworkInit::InitHttpServer() {
             contract_mgr_, 
             http_ip, 
             http_port);
-        httplib::Client cli('127.0.0.1', http_port);
+        httplib::Client cli("127.0.0.1", http_port);
         if (auto res = cli.Get("/query_init")) {
             ZJC_DEBUG("http init wait response coming.");
             std::unique_lock<std::mutex> lock(wait_mutex_);
