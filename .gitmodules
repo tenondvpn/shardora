@@ -44,9 +44,6 @@
 [submodule "third_party/oqs"]
 	path = third_party/oqs
 	url = https://github.com/open-quantum-safe/liboqs.git
-[submodule "third_party/libff"]
-	path = third_party/libff
-	url = https://github.com/scipr-lab/libff.git
 [submodule "third_party/libsodium"]
 	path = third_party/libsodium
 	url = https://github.com/jedisct1/libsodium.git
