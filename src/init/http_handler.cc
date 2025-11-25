@@ -72,7 +72,7 @@ static int CreateTransactionWithAttr(
         uint64_t gas_limit,
         uint64_t gas_price,
         int32_t des_net_id,
-        evhtp_kvs_t* evhtp_kvs,
+        const httplib::Request& req,
         transport::protobuf::Header& msg) {
     auto from = http_handler->security_ptr()->GetAddress(from_pk);
     if (from.empty()) {
@@ -104,13 +104,9 @@ static int CreateTransactionWithAttr(
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_nonce(nonce);
     new_tx->set_pubkey(from_pk);
-    const char* step = evhtp_kv_find(evhtp_kvs, "type");
-    if (step == nullptr) {
-        return kHttpError;
-    }
-
+    auto step = req.get_param_value("type");
     uint32_t step_val = 0;
-    if (!common::StringUtil::ToUint32(std::string(step), &step_val)) {
+    if (!common::StringUtil::ToUint32(step, &step_val)) {
         return kHttpError;
     }
 
@@ -121,29 +117,29 @@ static int CreateTransactionWithAttr(
     new_tx->set_gas_price(gas_price);
     ADD_TX_DEBUG_INFO(new_tx);
     
-    const char* key = evhtp_kv_find(evhtp_kvs, "key");
-    const char* val = evhtp_kv_find(evhtp_kvs, "val");
-    if (key != nullptr) {
+    auto key = req.get_param_value("key");
+    auto val = req.get_param_value("val");
+    if (!key.empty()) {
         new_tx->set_key(key);
-        if (val != nullptr) {
+        if (!val.empty()) {
             new_tx->set_value(val);
         }
     }
 
-    const char* contract_bytes = evhtp_kv_find(evhtp_kvs, "bytes_code");
-    if (contract_bytes != nullptr) {
+    auto contract_bytes = req.get_param_value("bytes_code");
+    if (!contract_bytes.empty()) {
         new_tx->set_contract_code(common::Encode::HexDecode(contract_bytes));
     }
 
-    const char* input = evhtp_kv_find(evhtp_kvs, "input");
-    if (input != nullptr) {
+    auto input = req.get_param_value("input");
+    if (!input.empty()) {
         new_tx->set_contract_input(common::Encode::HexDecode(input));
     }
 
-    const char* pepay = evhtp_kv_find(evhtp_kvs, "pepay");
-    if (pepay != nullptr) {
+    auto pepay = req.get_param_value("pepay");
+    if (!pepay.empty()) {
         uint64_t pepay_val = 0;
-        if (!common::StringUtil::ToUint64(std::string(pepay), &pepay_val)) {
+        if (!common::StringUtil::ToUint64(pepay, &pepay_val)) {
             ZJC_WARN("get prepay failed %s", pepay);
             return kSignatureInvalid;
         }
@@ -252,7 +248,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
         gas_limit_val,
         gas_price_val,
         shard_id_val,
-        req->uri->query,
+        req,
         msg);
     if (status != http::kHttpSuccess) {
         std::string res = std::string("transaction invalid: ") + GetStatus(status);
