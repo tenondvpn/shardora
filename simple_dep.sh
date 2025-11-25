@@ -7,7 +7,7 @@ FOR_CK=0
 TARGET=Debug
 #VALGRIND='valgrind --log-file=./valgrind_report.log --leak-check=full --show-leak-kinds=all --show-reachable=no --track-origins=yes'
 VALGRIND=''
-sh build.sh a $TARGET
+bash build.sh a $TARGET
 rm -rf /root/zjnodes
 cp -rf ./zjnodes_local /root/zjnodes/
 mkdir -p /root/zjnodes/zjchain/log
