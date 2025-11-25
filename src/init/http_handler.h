@@ -1,7 +1,7 @@
 #pragma once
 
-// #define CPPHTTPLIB_RECV_BUFSIZ 10 * 1024 * 1024
-// #define CPPHTTPLIB_SEND_BUFSIZ 10 * 1024 * 1024
+#define CPPHTTPLIB_RECV_BUFSIZ size_t(10 * 1024 * 1024)
+#define CPPHTTPLIB_SEND_BUFSIZ size_t(10 * 1024 * 1024)
 // #define CPPHTTPLIB_RECV_BUFSIZ 104857600
 #include <httplib.h>
 
