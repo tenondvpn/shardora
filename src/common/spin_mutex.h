@@ -12,7 +12,7 @@
 
 #include "common/utils.h"
 
-namespace P2P {
+namespace shardora {
 
 namespace common {
 
@@ -87,4 +87,4 @@ private:
 
 };  // namespace common
 
-};  // namespace P2P
+};  // namespace shardora
