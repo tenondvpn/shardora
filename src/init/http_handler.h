@@ -2,6 +2,7 @@
 
 #define CPPHTTPLIB_RECV_BUFSIZ size_t(1 * 1024 * 1024)
 #define CPPHTTPLIB_SEND_BUFSIZ size_t(1 * 1024 * 1024)
+#define CPPHTTPLIB_COMPRESSION_BUFSIZ size_t(1 * 1024 * 1024)
 // #define CPPHTTPLIB_RECV_BUFSIZ 104857600
 #include <httplib.h>
 
