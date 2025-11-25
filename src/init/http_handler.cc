@@ -925,6 +925,12 @@ HttpHandler::~HttpHandler() {
     }
 }
 
+void HttpHandler::Run() {
+    ZJC_DEBUG("http server now listen!");
+    svr.listen(ip, port);
+    ZJC_DEBUG("http server now listen over!");
+}
+
 void HttpHandler::Init(
         std::shared_ptr<block::AccountManager>& acc_mgr,
         transport::MultiThreadHandler* net_handler,
@@ -954,13 +960,7 @@ void HttpHandler::Init(
     svr.Post("/commit_gid_valid", GidsValid);
     svr.Post("/prepayment_valid", PrepaymentsValid);
     svr.Post("/get_block_with_gid", GetBlockWithGid);
-    // auto svr_thread = [&]() {
-        ZJC_DEBUG("http server now listen!");
-        svr.listen(ip, port);
-        ZJC_DEBUG("http server now listen over!");
-    // };
-
-    // http_svr_thread_ = std::make_shared<std::thread>(svr_thread);
+    http_svr_thread_ = std::make_shared<std::thread>(std::bind(&HttpHandler::Run, this));
 }
 
 };  // namespace init

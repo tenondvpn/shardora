@@ -585,7 +585,7 @@ static std::condition_variable wait_con_;
 static std::mutex wait_mutex_;
 
 int NetworkInit::InitHttpServer() {
-std::string http_ip = "0.0.0.0";
+    std::string http_ip = "0.0.0.0";
     uint16_t http_port = 0;
     conf_.Get("zjchain", "http_ip", http_ip);
     if (conf_.Get("zjchain", "http_port", http_port) && http_port != 0) {

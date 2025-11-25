@@ -44,6 +44,7 @@ public:
     }
 
 private:
+    void Run();
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     transport::MultiThreadHandler* net_handler_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
