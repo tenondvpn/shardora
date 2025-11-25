@@ -980,10 +980,10 @@ static void ArsCreateSecKeys(const httplib::Request& req, httplib::Response& htt
 }
 
 static void QueryInit(const httplib::Request& req, httplib::Response& http_res) {
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    std::string res = "ok";
-    evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    evhtp_send_reply(req, EVHTP_RES_OK);
+    // auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    // std::string res = "ok";
+    // evbuffer_add(req->buffer_out, res.c_str(), res.size());
+    // evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
 HttpHandler::HttpHandler() {
