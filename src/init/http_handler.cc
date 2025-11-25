@@ -955,7 +955,7 @@ void HttpHandler::Init(
     svr.Post("/get_block_with_gid", GetBlockWithGid);
     auto svr_thread = [&]() {
         svr.listen(ip, port);
-    }
+    };
 
     http_svr_thread_ = std::make_shared<std::thread>(svr_thread);
 }
