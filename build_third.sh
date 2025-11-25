@@ -17,6 +17,9 @@ apt install -y libgnutls28-dev zlib1g-dev libssh2-1-dev
 SRC_PATH=`pwd`
 
 cd $SRC_PATH
+cd third_party/fmt &&  git submodule update --init && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DJSON_BuildTests=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+exit 0
+cd $SRC_PATH
 cd third_party/log4cpp && git checkout . &&  sed -i '14i\#include <ctime>' ./include/log4cpp/DailyRollingFileAppender.hh  && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 
 cd $SRC_PATH
@@ -87,14 +90,6 @@ cd third_party/oqs && git checkout 94b421e && cmake -S . -B build_release -DCMAK
 
 cd $SRC_PATH
 cd third_party/leveldb && git checkout 99b3c03 && git submodule init && git submodule update && cmake -S . -B build_release -DLEVELDB_BUILD_TESTS=OFF -DLEVELDB_BUILD_BENCHMARKS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
-
-cd $SRC_PATH
-cd third_party/libsodium && ./autogen.sh -s && ./configure --prefix=$SRC_PATH/third_party/ && make -j${nproc} && make install
-
-cd $SRC_PATH
-export SODIUM_INCLUDE_DIR=$SRC_PATH/third_party/include
-export SODIUM_LIBRARY=$SRC_PATH/third_party/lib
-cd third_party/libff && rm -rf ./depends/* && git checkout . && git submodule init && git submodule update && sed -i '3594i\#ifdef MIE_USE_X64ASM' ./depends/ate-pairing/src/zm2.cpp && sed -i '3690i\#endif' ./depends/ate-pairing/src/zm2.cpp &&  sed -i 's/private:/\/\/private:/g' ./libff/algebra/fields/prime_base/fp.hpp  && cmake -S . -B build_release -DWITH_PROCPS=OFF -DUSE_ASM=False -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
 
 cd $SRC_PATH
 cd third_party/libbls && cd ./deps && PARALLEL_COUNT=1 sh build.sh && cp deps_inst/x86_or_x64/lib64/lib* deps_inst/x86_or_x64/lib/ && cd .. && cmake -S . -B build_release  -DUSE_ASM=False  -DWITH_PROCPS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLIBBLS_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
