@@ -366,9 +366,9 @@ static void QueryContract(const httplib::Request& req, httplib::Response& http_r
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
-    std::string http_res(qdata.c_str() + 64, len);
-    http_res.set_content(http_res, "text/plain");
-    ZJC_INFO("query contract success data: %s", http_res.c_str());
+    std::string http_res_str(qdata.c_str() + 64, len);
+    http_res.set_content(http_res_str, "text/plain");
+    ZJC_INFO("query contract success data: %s", http_res_str.c_str());
 }
 
 
@@ -468,13 +468,7 @@ static void AbiQueryContract(const httplib::Request& req, httplib::Response& htt
 static void QueryAccount(const httplib::Request& req, httplib::Response& http_res) {
     auto tmp_addr = req.get_param_value("address");
     if (tmp_addr.empty()) {
-        struct evbuffer* input = req->buffer_in;
-        size_t len = evbuffer_get_length(input);
-        char* response_data = (char*)malloc(len + 1);
-        evbuffer_copyout(input, response_data, len);
-        response_data[len] = '\0';
-        
-        std::string res = common::StringUtil::Format("param address is null req: %s", response_data);
+        std::string res = common::StringUtil::Format("param address is null");
         http_res.set_content(res, "text/plain");
         ZJC_DEBUG("%s", res.c_str());
         free(response_data);
@@ -529,7 +523,7 @@ static void AccountsValid(const httplib::Request& req, httplib::Response& http_r
     auto tmp_res_addrs = res_json["addrs"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
+    auto addrs_splits = common::Split<1024>(tmp_addrs.c_str(), '_');
     uint32_t invalid_addr_index = 0;
     for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
         std::string addr = common::Encode::HexDecode(addrs_splits[i]);
@@ -637,7 +631,7 @@ static void PrepaymentsValid(const httplib::Request& req, httplib::Response& htt
     auto tmp_res_addrs = res_json["prepayments"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    auto addrs_splits = common::Split<1024>(tmp_addrs, '_');
+    auto addrs_splits = common::Split<1024>(tmp_addrs.c_str(), '_');
     uint32_t invalid_addr_index = 0;
     for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
         std::string addr = common::Encode::HexDecode(addrs_splits[i]);
@@ -680,7 +674,7 @@ static void GidsValid(const httplib::Request& req, httplib::Response& http_res) 
     auto tmp_res_addrs = res_json["gids"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    auto addrs_splits = common::Split<1024>(tmp_gids, '_');
+    auto addrs_splits = common::Split<1024>(tmp_gids.c_str(), '_');
     uint32_t invalid_addr_index = 0;
     for (uint32_t i = 0; i < addrs_splits.Count(); ++i) {
         std::string gid = common::Encode::HexDecode(addrs_splits[i]);
@@ -893,7 +887,7 @@ static void ArsCreateSecKeys(const httplib::Request& req, httplib::Response& htt
     nlohmann::json res_json;
     res_json["status"] = 0;
     auto nodes = res_json["nodes"];
-    auto keys_splits = common::Split<>(keys, '-');
+    auto keys_splits = common::Split<>(keys.c_str(), '-');
     ars.set_ring_size(keys_splits.Count());
     for (int i = 0; i < ars.ring_size(); ++i) {
         ars.KeyGen(keys_splits[i], private_keys[i], public_keys[i]);
