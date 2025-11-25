@@ -2,7 +2,7 @@
 
 // #define CPPHTTPLIB_RECV_BUFSIZ 10 * 1024 * 1024
 // #define CPPHTTPLIB_SEND_BUFSIZ 10 * 1024 * 1024
-#define CPPHTTPLIB_RECV_BUFSIZ 104857600
+// #define CPPHTTPLIB_RECV_BUFSIZ 104857600
 #include <httplib.h>
 
 #include "block/account_manager.h"
