@@ -936,7 +936,6 @@ void HttpHandler::Init(
     contract_mgr = tmp_contract_mgr;
 
     svr.set_payload_max_length(512 * 1024 * 1024);
-    svr.set_form_url_encoded_payload_max_length(200 * 1024 * 1024); // 专门针对 form 表单的上限
     svr.Post("/transaction", HttpTransaction);
     svr.Post("/get_seckey_and_encrypt_data", GetSecAndEncData);
     svr.Post("/proxy_decrypt", ProxDecryption);
