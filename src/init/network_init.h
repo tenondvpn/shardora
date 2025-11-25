@@ -111,7 +111,6 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;    
-    http::HttpServer http_server_;
     HttpHandler http_handler_;
     common::Tick init_tick_;
     common::Tick join_elect_tick_;

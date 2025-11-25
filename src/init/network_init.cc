@@ -583,36 +583,13 @@ int NetworkInit::InitSecurity() {
 
 static std::condition_variable wait_con_;
 static std::mutex wait_mutex_;
-static evhtp_res http_init_callback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
-    ZJC_DEBUG("http init response coming.");
-    std::unique_lock<std::mutex> lock(wait_mutex_);
-    wait_con_.notify_one();
-    return EVHTP_RES_OK;
-}
 
 int NetworkInit::InitHttpServer() {
 std::string http_ip = "0.0.0.0";
     uint16_t http_port = 0;
     conf_.Get("zjchain", "http_ip", http_ip);
     if (conf_.Get("zjchain", "http_port", http_port) && http_port != 0) {
-        if (http_server_.Init(http_ip.c_str(), http_port, 1) != 0) {
-            INIT_ERROR("init http server failed! %s:%d", http_ip.c_str(), http_port);
-            return kInitError;
-        }
-
-        http_handler_.Init(account_mgr_, &net_handler_, security_, prefix_db_, contract_mgr_, http_server_);
-        http_server_.Start();
-
-        http::HttpClient cli;
-        std::string peer_ip = http_ip;
-        if (peer_ip == "0.0.0.0") {
-            peer_ip = "127.0.0.1";
-        }
-
-        cli.Get(peer_ip.c_str(), http_port, "ok", http_init_callback);
-        ZJC_DEBUG("http init wait response coming.");
-        std::unique_lock<std::mutex> lock(wait_mutex_);
-        wait_con_.wait_for(lock, std::chrono::milliseconds(1000));
+        http_handler_.Init(account_mgr_, &net_handler_, security_, prefix_db_, contract_mgr_);
     }
 
     return kInitSuccess;
