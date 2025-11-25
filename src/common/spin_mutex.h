@@ -6,12 +6,13 @@
 #if defined(__aarch64__)
 #define spin_loop_pause() __asm__ __volatile__("isb" : : : "memory")
 #else
+#include <emmintrin.h>
 #define spin_loop_pause() _mm_pause()
 #endif
 
 #include "common/utils.h"
 
-namespace shardora {
+namespace P2P {
 
 namespace common {
 
@@ -86,4 +87,4 @@ private:
 
 };  // namespace common
 
-};  // namespace shardora
+};  // namespace P2P

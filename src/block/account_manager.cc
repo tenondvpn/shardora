@@ -22,7 +22,6 @@ namespace block {
 
 AccountManager::AccountManager() {
     
-
 }
 
 AccountManager::~AccountManager() {}
