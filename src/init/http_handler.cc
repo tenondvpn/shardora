@@ -147,10 +147,6 @@ static int CreateTransactionWithAttr(
         new_tx->set_contract_prepayment(pepay_val);
     }
 
-    if (key != nullptr && val != nullptr) {
-        ZJC_WARN("create transaction key: %s, value: %s", key, val);
-    }
-    
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
@@ -185,36 +181,36 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     auto shard_id = req.get_param_value("shard_id");
     uint64_t nonce = 0;
     if (!common::StringUtil::ToUint64(nonce_str, &nonce)) {
-        std::string res = std::string("amount not integer: ") + nonce_ptr;
-        http_res.set_content(res, "text/plain"));
+        std::string res = std::string("amount not integer: ") + nonce_str;
+        http_res.set_content(res, "text/plain");
         return;
     }
     
     uint64_t amount_val = 0;
     if (!common::StringUtil::ToUint64(amount, &amount_val)) {
         std::string res = std::string("amount not integer: ") + amount;
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
 
     uint64_t gas_limit_val = 0;
     if (!common::StringUtil::ToUint64(gas_limit, &gas_limit_val)) {
         std::string res = std::string("gas_limit not integer: ") + gas_limit;
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
 
     uint64_t gas_price_val = 0;
     if (!common::StringUtil::ToUint64(gas_price, &gas_price_val)) {
         std::string res = std::string("gas_price not integer: ") + gas_price;
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
 
     int32_t shard_id_val = 0;
     if (!common::StringUtil::ToInt32(shard_id, &shard_id_val)) {
         std::string res = std::string("shard_id not integer: ") + shard_id;
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
 
@@ -231,7 +227,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     int32_t tmp_sign_v = 0;
     if (!common::StringUtil::ToInt32(sign_v, &tmp_sign_v)) {
         std::string res = std::string("sign_v not integer: ") + sign_v;
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
 
@@ -250,9 +246,9 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
         shard_id_val,
         req,
         msg);
-    if (status != http::kHttpSuccess) {
+    if (status != kHttpSuccess) {
         std::string res = std::string("transaction invalid: ") + GetStatus(status);
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
 
@@ -267,7 +263,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     if (msg_ptr->address_info == nullptr) {
         std::string res = std::string("address invalid: ") + common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk)));
-        http_res.set_content(res, "text/plain"));
+        http_res.set_content(res, "text/plain");
         return;
     }
     
@@ -279,7 +275,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
         msg_ptr->header.hash64());
     http_handler->net_handler()->NewHttpServer(msg_ptr);
     std::string res = std::string("ok");
-    http_res.set_content(res, "text/plain"));
+    http_res.set_content(res, "text/plain");
     ZJC_WARN("http transaction success %s, %s, nonce: %lu", common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, nonce);
 }
