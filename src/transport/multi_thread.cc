@@ -61,8 +61,8 @@ void ThreadHandler::HandleMessage() {
                 break;
             }
 
-            // ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
-            //     msg_ptr->header.hash64(), thread_idx);
+            ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d",
+                msg_ptr->header.hash64(), thread_idx);
             msg_ptr->times_idx = 0;
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             if (msg_ptr->thread_index != -1) {
@@ -97,7 +97,7 @@ void ThreadHandler::HandleMessage() {
                         "ProtobufToJson(msg_ptr->header).c_str()");
             }
 
-            // ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
+            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
         auto btime = common::TimeUtils::TimestampUs();
