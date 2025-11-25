@@ -564,7 +564,6 @@ static void AccountsValid(const httplib::Request& req, httplib::Response& http_r
 static void GetBlockWithGid(const httplib::Request& req, httplib::Response& http_res) {
     ZJC_DEBUG("query account.");
     auto addr = req.get_param_value("addr");
-    const char* addr = evhtp_kv_find(req->uri->query, "addr");
     if (addr.empty()) {
         std::string res = std::string("addr not exists.");
         http_res.set_content(res, "text/plain");
@@ -627,8 +626,8 @@ static void PrepaymentsValid(const httplib::Request& req, httplib::Response& htt
     }
 
     auto contract_addr = common::Encode::HexDecode(contract);
-    const char* tmp_addrs = evhtp_kv_find(req->uri->query, "addrs");
-    if (tmp_addrs == nullptr) {
+    auto tmp_addrs = req.get_param_value("addrs");
+    if (tmp_addrs.empty()) {
         std::string res = common::StringUtil::Format("param address is null");
         http_res.set_content(res, "text/plain");
         return;
