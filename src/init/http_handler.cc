@@ -916,13 +916,14 @@ static void QueryInit(const httplib::Request& req, httplib::Response& http_res) 
 
 HttpHandler::HttpHandler() {
     http_handler = this;
+}
+
+HttpHandler::~HttpHandler() {
     if (http_svr_thread_) {
         svr.stop();
         http_svr_thread_->join();
     }
 }
-
-HttpHandler::~HttpHandler() {}
 
 void HttpHandler::Init(
         std::shared_ptr<block::AccountManager>& acc_mgr,
