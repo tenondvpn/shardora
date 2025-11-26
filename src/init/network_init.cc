@@ -288,8 +288,10 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    ZJC_DEBUG("init 8");
     inited_ = true;
     common::GlobalInfo::Instance()->set_main_inited_success();
+    ZJC_DEBUG("init 9");
     cmd_.AddCommand("gs", [this](const std::vector<std::string>& args) {
         if (args.size() < 3) {
             return;
