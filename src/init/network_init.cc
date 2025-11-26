@@ -597,6 +597,7 @@ int NetworkInit::InitHttpServer() {
             contract_mgr_, 
             http_ip, 
             http_port);
+        std::this_thread::sleep_for(std::chrono::milliseconds{200});
         httplib::Client cli("127.0.0.1", http_port);
         if (auto res = cli.Post("/query_init", "text", "text/plain")) {
             ZJC_DEBUG("http init wait response coming.");
