@@ -59,7 +59,6 @@ int GlobalInfo::Init(const common::Config& config) {
 
     if (!config.Get("shardora", "local_ip", config_local_ip_)) {
         SHARDORA_ERROR("get shardora local_ip from config failed.");
-        return kCommonError;
     }
 
     config.Get("shardora", "local_port", config_local_port_);
@@ -74,12 +73,10 @@ int GlobalInfo::Init(const common::Config& config) {
     std::string str_contry;
     if (!config.Get("shardora", "country", str_contry) || str_contry.empty()) {
         SHARDORA_ERROR("get shardora country from config failed.");
-        return kCommonError;
     }
 
     if (!config.Get("shardora", "first_node", config_first_node_)) {
         SHARDORA_ERROR("get shardora first_node from config failed.");
-        return kCommonError;
     }
 
     config.Get("shardora", "public_ip", config_public_ip_);
