@@ -14,9 +14,6 @@ mkdir -p /root/zjnodes/shardora/log
 
 
 sudo cp -rf ./cbuild_$TARGET/shardora /root/zjnodes/shardora
-sudo cp -f ./conf/genesis.yml /root/zjnodes/shardora/genesis.yml
-
-sudo cp -rf ./cbuild_$TARGET/shardora /root/zjnodes/shardora
 nodes_count=$1
 if [[ "$nodes_count" -eq "" ]]; then
    nodes_count=4 
