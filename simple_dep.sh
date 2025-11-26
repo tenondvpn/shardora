@@ -32,12 +32,6 @@ echo "node count: " $nodes_count
 cd /root/zjnodes/shardora && ./shardora -U -N $nodes_count
 cd /root/zjnodes/shardora && ./shardora -S 3 -N $nodes_count
 
-rm -rf /root/zjnodes/r*
-rm -rf /root/zjnodes/s*
-rm -rf /root/zjnodes/new*
-rm -rf /root/zjnodes/node
-rm -rf /root/zjnodes/param
-
 shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
 root_node_count=`wc -l /root/shardora/root_nodes | awk -F' ' '{print $1}'`
 bootstrap=""
