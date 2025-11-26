@@ -1,10 +1,10 @@
 # option
 option(BUILD_SHARED_LIBS "build shared library(.so/.a)" OFF)
-option(BUILD_CLIENT "build zjchain client" OFF)
+option(BUILD_CLIENT "build shardora client" OFF)
 
 # version required
 cmake_minimum_required(VERSION 3.24.0)
-project(zjchain)
+project(shardora)
 
 if(NOT BUILD_CLIENT)
     if(MSVC)
@@ -31,7 +31,7 @@ else()
     set(shared_str "static")
 endif()
 
-message("build info: ${PROJECT_NAME}|${CMAKE_SYSTEM_NAME}|${CMAKE_BUILD_TYPE}|${shared_str}|zjchain")
+message("build info: ${PROJECT_NAME}|${CMAKE_SYSTEM_NAME}|${CMAKE_BUILD_TYPE}|${shared_str}|shardora")
 
 # path definitions
 set(DEP_DIR ${PROJECT_SOURCE_DIR}/third_party)
@@ -144,7 +144,7 @@ link_directories(
 
 # bin/lib
 add_executable(pkicli ${MAIN_DIR}/pki.cc)
-add_executable(zjchain ${MAIN_DIR}/main.cc)
+add_executable(shardora ${MAIN_DIR}/main.cc)
 add_executable(https ${MAIN_DIR}/http_svr.cc)
 add_executable(httpc ${MAIN_DIR}/http_cli.cc)
 add_executable(wss ${MAIN_DIR}/ws_svr.cc)
@@ -193,7 +193,7 @@ set(LINK_ARGS
 
 target_link_libraries(pkicli ${LINK_ARGS})
 target_link_libraries(blsmain ${LINK_ARGS})
-target_link_libraries(zjchain ${LINK_ARGS})
+target_link_libraries(shardora ${LINK_ARGS})
 # target_link_libraries(wsc websocket common tcmalloc pthread gmp)
 # target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)

@@ -51,7 +51,7 @@ namespace shardora {
 
 namespace init {
 
-static const std::string kDefaultConfigPath("./conf/zjchain.conf");
+static const std::string kDefaultConfigPath("./conf/shardora.conf");
 static const uint32_t kDefaultBufferSize = 1024u * 1024u;
 static const std::string kInitJoinWaitingPoolDbKey = "__kInitJoinWaitingPoolDbKey";
 
@@ -85,7 +85,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     std::string db_path = "./db";
-    conf_.Get("zjchain", "db_path", db_path);
+    conf_.Get("shardora", "db_path", db_path);
     db_ = std::make_shared<db::Db>();
     if (!db_->Init(db_path)) {
         INIT_ERROR("init db failed!");
@@ -117,7 +117,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }    
 
     // uint32_t ws_server = 0;
-    // conf_.Get("zjchain", "ws_server", ws_server);
+    // conf_.Get("shardora", "ws_server", ws_server);
     // if (ws_server > 0) {
     //     if (ws_server_.Init(prefix_db_, security_, &net_handler_) != kInitSuccess) {
     //         SHARDORA_ERROR("init ws server failed!");
@@ -132,7 +132,7 @@ int NetworkInit::Init(int argc, char** argv) {
     InitLocalNetworkId();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         uint32_t config_net_id = 0;
-        if (conf_.Get("zjchain", "net_id", config_net_id) &&
+        if (conf_.Get("shardora", "net_id", config_net_id) &&
                 config_net_id >= network::kRootCongressNetworkId && 
                 config_net_id <= network::kConsensusShardEndNetworkId) {
             common::GlobalInfo::Instance()->set_network_id(
@@ -319,7 +319,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
 int NetworkInit::InitWsServer() {
     // int32_t ws_server = 0;
-    // conf_.Get("zjchain", "ws_server", ws_server);
+    // conf_.Get("shardora", "ws_server", ws_server);
     // if (ws_server > 0) {
     //     if (ws_server_.Init(prefix_db_, security_, &net_handler_) != kInitSuccess) {
     //         SHARDORA_ERROR("init ws server failed!");
@@ -566,7 +566,7 @@ void NetworkInit::InitLocalNetworkId() {
 
 int NetworkInit::InitSecurity() {
     std::string prikey;
-    if (!conf_.Get("zjchain", "prikey", prikey)) {
+    if (!conf_.Get("shardora", "prikey", prikey)) {
         INIT_ERROR("get private key from config failed!");
         return kInitError;
     }
@@ -589,8 +589,8 @@ static std::mutex wait_mutex_;
 int NetworkInit::InitHttpServer() {
     std::string http_ip = "0.0.0.0";
     uint16_t http_port = 0;
-    conf_.Get("zjchain", "http_ip", http_ip);
-    if (conf_.Get("zjchain", "http_port", http_port) && http_port != 0) {
+    conf_.Get("shardora", "http_ip", http_ip);
+    if (conf_.Get("shardora", "http_port", http_port) && http_port != 0) {
         http_handler_.Init(
             account_mgr_, 
             &net_handler_, 
@@ -624,14 +624,14 @@ void NetworkInit::Destroy() {
 
 int NetworkInit::InitCommand() {
     bool first_node = false;
-    if (!conf_.Get("zjchain", "first_node", first_node)) {
-        INIT_ERROR("get conf zjchain first_node failed!");
+    if (!conf_.Get("shardora", "first_node", first_node)) {
+        INIT_ERROR("get conf shardora first_node failed!");
         return kInitError;
     }
 
     bool show_cmd = false;
-    if (!conf_.Get("zjchain", "show_cmd", show_cmd)) {
-        INIT_ERROR("get conf zjchain show_cmd failed!");
+    if (!conf_.Get("shardora", "show_cmd", show_cmd)) {
+        INIT_ERROR("get conf shardora show_cmd failed!");
         return kInitError;
     }
 
@@ -709,7 +709,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
     std::string country;
     parser_arg.Get("o", country);
     if (!country.empty()) {
-        if (!conf_.Set("zjchain", "country", country)) {
+        if (!conf_.Set("shardora", "country", country)) {
             INIT_ERROR("set config failed [node][country][%s]", country.c_str());
             return kInitError;
         }
@@ -718,7 +718,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
     std::string local_ip;
     parser_arg.Get("a", local_ip);
     if (!local_ip.empty()) {
-        if (!conf_.Set("zjchain", "local_ip", local_ip)) {
+        if (!conf_.Set("shardora", "local_ip", local_ip)) {
             INIT_ERROR("set config failed [node][local_ip][%s]", local_ip.c_str());
             return kInitError;
         }
@@ -726,7 +726,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
 
     uint16_t local_port = 0;
     if (parser_arg.Get("l", local_port) == common::kParseSuccess) {
-        if (!conf_.Set("zjchain", "local_port", local_port)) {
+        if (!conf_.Set("shardora", "local_port", local_port)) {
             INIT_ERROR("set config failed [node][local_port][%d]", local_port);
             return kInitError;
         }
@@ -735,7 +735,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
     std::string prikey;
     parser_arg.Get("k", prikey);
     if (!prikey.empty()) {
-        if (!conf_.Set("zjchain", "prikey", prikey)) {
+        if (!conf_.Set("shardora", "prikey", prikey)) {
             INIT_ERROR("set config failed [node][id][%s]", prikey.c_str());
             return kInitError;
         }
@@ -748,7 +748,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
             first_node = true;
         }
 
-        if (!conf_.Set("zjchain", "first_node", first_node)) {
+        if (!conf_.Set("shardora", "first_node", first_node)) {
             INIT_ERROR("set config failed [node][first_node][%d]", first_node);
             return kInitError;
         }
@@ -756,7 +756,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
 
     std::string network_ids;
     if (parser_arg.Get("n", network_ids) == common::kParseSuccess) {
-        if (!conf_.Set("zjchain", "net_ids", network_ids)) {
+        if (!conf_.Set("shardora", "net_ids", network_ids)) {
             INIT_ERROR("set config failed [node][net_id][%s]", network_ids.c_str());
             return kInitError;
         }
@@ -765,7 +765,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
     std::string peer;
     parser_arg.Get("p", peer);
     if (!peer.empty()) {
-        if (!conf_.Set("zjchain", "bootstrap", peer)) {
+        if (!conf_.Set("shardora", "bootstrap", peer)) {
             INIT_ERROR("set config failed [node][bootstrap][%s]", peer.c_str());
             return kInitError;
         }
@@ -774,7 +774,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
     std::string id;
     parser_arg.Get("i", id);
     if (!id.empty()) {
-        if (!conf_.Set("zjchain", "id", id)) {
+        if (!conf_.Set("shardora", "id", id)) {
             INIT_ERROR("set config failed [node][id][%s]", peer.c_str());
             return kInitError;
         }
@@ -782,7 +782,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
 
     int show_cmd = 1;
     if (parser_arg.Get("g", show_cmd) == common::kParseSuccess) {
-        if (!conf_.Set("zjchain", "show_cmd", show_cmd == 1)) {
+        if (!conf_.Set("shardora", "show_cmd", show_cmd == 1)) {
             INIT_ERROR("set config failed [node][show_cmd][%d]", show_cmd);
             return kInitError;
         }
@@ -790,7 +790,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
 
     int vpn_vip_level = 0;
     if (parser_arg.Get("V", vpn_vip_level) == common::kParseSuccess) {
-        if (!conf_.Set("zjchain", "vpn_vip_level", vpn_vip_level)) {
+        if (!conf_.Set("shardora", "vpn_vip_level", vpn_vip_level)) {
             INIT_ERROR("set config failed [node][vpn_vip_level][%d]", vpn_vip_level);
             return kInitError;
         }
@@ -798,7 +798,7 @@ int NetworkInit::ResetConfig(common::ParserArgs& parser_arg) {
 
     std::string log_path;
     if (parser_arg.Get("L", log_path) != common::kParseSuccess) {
-        log_path = "log/zjchain.log";
+        log_path = "log/shardora.log";
     }
 
     if (!conf_.Set("log", "path", log_path)) {

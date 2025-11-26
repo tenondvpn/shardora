@@ -32,7 +32,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
     evm_ = evmc::VM{ evmc_create_evmone()};
 
 // 	evmc_loader_error_code ec = EVMC_LOADER_UNSPECIFIED_ERROR;
-//     evm_ = evmc::VM{ evmc_load_and_configure("/root/zjchain/third_party/evmone/build/lib64/libevmone.so", &ec)};
+//     evm_ = evmc::VM{ evmc_load_and_configure("/root/shardora/third_party/evmone/build/lib64/libevmone.so", &ec)};
 // 	if (ec != EVMC_LOADER_SUCCESS) {
 // 		const auto error = evmc_last_error_msg();
 // 		if (error != nullptr)
