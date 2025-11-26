@@ -82,14 +82,14 @@ public:
             zjc_host.view_block_chain_ = view_block_chain;
             std::string val;
             if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                ZJC_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
+                SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
                     common::Encode::HexEncode(tx_info.to()).c_str(),
                     common::Encode::HexEncode(tx_info.key()).c_str(),
                     tx_info.step());
                 return 1;
             }
 
-            ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+            SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
                 common::Encode::HexEncode(tx_info.to()).c_str(),
                 common::Encode::HexEncode(tx_info.key()).c_str());
             return 0;

@@ -50,7 +50,7 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     // for (uint32_t idx = 0; idx < all_consen_stats.size(); idx++) {
     //     ret += std::to_string(idx) + ": " + std::to_string(all_consen_stats[idx]->succ_num) + ", ";
     // }
-    // ZJC_DEBUG("pool: %d get all stat: %s", ret.c_str());
+    // SHARDORA_DEBUG("pool: %d get all stat: %s", ret.c_str());
     
     
     return Status::kSuccess;

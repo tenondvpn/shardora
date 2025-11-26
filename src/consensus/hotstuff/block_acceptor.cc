@@ -77,7 +77,7 @@ Status BlockAcceptor::Accept(
     auto& view_block = *pro_msg_wrap->view_block_ptr;
     if (propose_msg.txs().empty()) {
         if (no_tx_allowed) {
-            ZJC_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
+            SHARDORA_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, "
                 "height: %lu, view hash: %s", 
                 0, 
                 view_block.block_info().tx_list_size(), 
@@ -88,7 +88,7 @@ Status BlockAcceptor::Accept(
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
             assert(view_block.qc().view_block_hash().empty());
             view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-            ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu, "
+            SHARDORA_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu, "
                 "chain has hash: %d, db has hash: %d",
                 common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                 common::Encode::HexEncode(view_block.parent_hash()).c_str(),
@@ -109,14 +109,14 @@ Status BlockAcceptor::Accept(
             }
         }
 
-        ZJC_DEBUG("propose_msg.txs().empty() error!");
+        SHARDORA_DEBUG("propose_msg.txs().empty() error!");
         return no_tx_allowed ? Status::kSuccess : Status::kAcceptorTxsEmpty;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // 1. verify block
     if (!IsBlockValid(view_block)) {
-        ZJC_WARN("IsBlockValid error!");
+        SHARDORA_WARN("IsBlockValid error!");
         return Status::kAcceptorBlockInvalid;
     }
 
@@ -144,7 +144,7 @@ Status BlockAcceptor::Accept(
         zjc_host);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
-        ZJC_WARN("GetAndAddTxsLocally error!");
+        SHARDORA_WARN("GetAndAddTxsLocally error!");
         return s;
     }
     
@@ -164,7 +164,7 @@ Status BlockAcceptor::Accept(
     zjc_host.view_ = view_block.qc().view();
     s = DoTransactions(txs_ptr, &view_block, balance_and_nonce_map, zjc_host);
     if (s != Status::kSuccess) {
-        ZJC_WARN("DoTransactions error!");
+        SHARDORA_WARN("DoTransactions error!");
         return s;
     }
 
@@ -176,7 +176,7 @@ Status BlockAcceptor::Accept(
         }
 
         auto* addr_info = view_block.mutable_block_info()->add_address_array();
-        ZJC_INFO("%u_%u_%lu, success addr info: %s, balance: %lu, nonce: %lu", 
+        SHARDORA_INFO("%u_%u_%lu, success addr info: %s, balance: %lu, nonce: %lu", 
             view_block.qc().network_id(),
             view_block.qc().pool_index(),
             view_block.qc().view(),
@@ -209,7 +209,7 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
-            ZJC_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
+            SHARDORA_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view(),
@@ -230,7 +230,7 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
-            ZJC_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
+            SHARDORA_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view(),
@@ -245,20 +245,20 @@ Status BlockAcceptor::Accept(
         UpdateDesShardingId(cross_to_item, zjc_host);
         assert(cross_to_item->des_sharding_id() >= network::kRootCongressNetworkId && 
             cross_to_item->des_sharding_id() < network::kConsensusShardEndNetworkId);
-        ZJC_DEBUG("success add cross to item: %s, amount: %lu", 
+        SHARDORA_DEBUG("success add cross to item: %s, amount: %lu", 
             common::Encode::HexEncode(cross_to_item->des()).c_str(),
             cross_to_item->amount());
     }
 
     if (view_block.block_info().cross_shard_to_array_size() > 0) {
-        ZJC_DEBUG("success add cross to shard: %u_%u_%lu, %s",
+        SHARDORA_DEBUG("success add cross to shard: %u_%u_%lu, %s",
             view_block.qc().network_id(), 
             view_block.qc().pool_index(), 
             view_block.qc().view(),
             ProtobufToJson(view_block).c_str());
     }
 
-    ZJC_INFO("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu, "
+    SHARDORA_INFO("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu, "
         "timeblock height: %lu, local latest timeblock height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
@@ -270,7 +270,7 @@ Status BlockAcceptor::Accept(
         tm_block_mgr_->LatestTimestampHeight());
 
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
-    ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+    SHARDORA_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block.parent_hash()).c_str(),
         view_block.qc().network_id(),
@@ -320,7 +320,7 @@ Status BlockAcceptor::addTxsToPool(
         BalanceAndNonceMap& now_balance_map,
         zjcvm::ZjchainHost& zjc_host) {
     if (txs.size() == 0) {
-        ZJC_INFO("accepte empty called!");
+        SHARDORA_INFO("accepte empty called!");
         return Status::kAcceptorTxsEmpty;
     }
     
@@ -328,7 +328,7 @@ Status BlockAcceptor::addTxsToPool(
     BalanceAndNonceMap prevs_balance_map;
     // view_block_chain_->MergeAllPrevStorageMap(parent_hash, zjc_host);
     view_block_chain_->MergeAllPrevBalanceMap(parent_hash, prevs_balance_map);
-    // ZJC_DEBUG("merge prev all balance size: %u, tx size: %u",
+    // SHARDORA_DEBUG("merge prev all balance size: %u, tx size: %u",
     //     prevs_balance_map.size(), txs.size());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& txs_map = txs_ptr->txs;
@@ -344,14 +344,14 @@ Status BlockAcceptor::addTxsToPool(
         
         std::string val;
         if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
+            SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
                 common::Encode::HexEncode(tx_info.to()).c_str(),
                 common::Encode::HexEncode(tx_info.key()).c_str(),
                 tx_info.step());
             return 1;
         }
 
-        ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+        SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
             common::Encode::HexEncode(tx_info.to()).c_str(),
             common::Encode::HexEncode(tx_info.key()).c_str());
         return 0;
@@ -379,7 +379,7 @@ Status BlockAcceptor::addTxsToPool(
             address_info = view_block_chain_->ChainGetAccountInfo(tx->to() + from_id);
             contract_address_info = view_block_chain_->ChainGetAccountInfo(tx->to());
             if (!contract_address_info) {
-                ZJC_WARN("get contract address failed %s, nonce: %lu", 
+                SHARDORA_WARN("get contract address failed %s, nonce: %lu", 
                     common::Encode::HexEncode(tx->to()).c_str(), tx->nonce());
                 return Status::kError;
             }
@@ -392,7 +392,7 @@ Status BlockAcceptor::addTxsToPool(
         }
 
         if (!address_info) {
-            ZJC_WARN("get address failed nonce: %lu", tx->nonce());
+            SHARDORA_WARN("get address failed nonce: %lu", tx->nonce());
             return Status::kError;
         }
 
@@ -401,7 +401,7 @@ Status BlockAcceptor::addTxsToPool(
             if (pools::IsUserTransaction(tx->step())) {
                 if (view_block_chain_ && view_block_chain_->CheckTxNonceValid(
                         address_info->addr(), tx->nonce(), parent_hash) != 0) {
-                    ZJC_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
+                    SHARDORA_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
                         common::Encode::HexEncode(address_info->addr()).c_str(),
                         tx->nonce(), 
                         common::Encode::HexEncode(parent_hash).c_str());
@@ -410,7 +410,7 @@ Status BlockAcceptor::addTxsToPool(
             } else {
                 std::string val;
                 if (zjc_host.GetKeyValue(tx->to(), tx->key(), &val) == zjcvm::kZjcvmSuccess) {
-                    ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                    SHARDORA_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
                         common::Encode::HexEncode(tx->to()).c_str(),
                         common::Encode::HexEncode(tx->key()).c_str());
                     return Status::kError;
@@ -486,7 +486,7 @@ Status BlockAcceptor::addTxsToPool(
                     address_info);
             std::string val;
             if (zjc_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
-                ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                SHARDORA_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
                     common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
                     common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                 tx_ptr = nullptr;
@@ -513,7 +513,7 @@ Status BlockAcceptor::addTxsToPool(
                     tx_ptr = *(tx_item->txs.begin());
                     std::string val;
                     if (zjc_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
-                        ZJC_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                        SHARDORA_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
                             common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
                             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                         tx_ptr = nullptr;
@@ -527,7 +527,7 @@ Status BlockAcceptor::addTxsToPool(
         case pools::protobuf::kStatistic:
         {
             // TODO 这些 Single Tx 还是从本地交易池直接拿
-            ZJC_WARN("add tx now get statistic tx: %u", pool_idx());
+            SHARDORA_WARN("add tx now get statistic tx: %u", pool_idx());
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
@@ -536,7 +536,7 @@ Status BlockAcceptor::addTxsToPool(
                 if (tx_item != nullptr && !tx_item->txs.empty()) {
                     tx_ptr = *(tx_item->txs.begin());
                 } else {
-                    ZJC_WARN("failed get statistic nonce: %lu, pool: %u, tx_proto: %s",
+                    SHARDORA_WARN("failed get statistic nonce: %lu, pool: %u, tx_proto: %s",
                         tx->nonce(), pool_idx_, ProtobufToJson(*tx).c_str());
                     // assert(false);
                 }
@@ -550,7 +550,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kConsensusRootElectShard:
         {
-            ZJC_WARN("now root elect shard coming: tx size: %u", txs.size());
+            SHARDORA_WARN("now root elect shard coming: tx size: %u", txs.size());
             if (directly_user_leader_txs) {
                 std::shared_ptr<bls::BlsManager> bls_mgr;
                 tx_ptr = std::make_shared<consensus::ElectTxItem>(
@@ -610,7 +610,7 @@ Status BlockAcceptor::addTxsToPool(
                 (*tx).pubkey(),
                 keypair->pk(),
                 keypair->proof());
-            ZJC_WARN("add tx now get join elect tx: %u", pool_idx());
+            SHARDORA_WARN("add tx now get join elect tx: %u", pool_idx());
             break;
         }
         case pools::protobuf::kPoolStatisticTag:
@@ -620,7 +620,7 @@ Status BlockAcceptor::addTxsToPool(
                 account_mgr_, 
                 security_ptr_, 
                 address_info);
-            ZJC_WARN("add tx now get kPoolStatisticTag tx: %u", pool_idx());
+            SHARDORA_WARN("add tx now get kPoolStatisticTag tx: %u", pool_idx());
             break;
         }
         case pools::protobuf::kCreateLibrary: {
@@ -629,13 +629,13 @@ Status BlockAcceptor::addTxsToPool(
                 account_mgr_, 
                 security_ptr_, 
                 address_info);
-            ZJC_WARN("add tx now get CreateLibrary tx: %u", pool_idx());
+            SHARDORA_WARN("add tx now get CreateLibrary tx: %u", pool_idx());
             break;
         }
         default:
             // TODO 没完！还需要支持其他交易的写入
             // break;
-            ZJC_FATAL("invalid tx step: %d", tx->step());
+            SHARDORA_FATAL("invalid tx step: %d", tx->step());
             return Status::kError;
         }
 
@@ -714,12 +714,12 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         balance_map,
         zjc_host);
     if (add_txs_status != Status::kSuccess) {
-        ZJC_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
+        SHARDORA_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
         return add_txs_status;
     }
 
     if (!txs_ptr) {
-        ZJC_ERROR("invalid consensus, tx empty.");
+        SHARDORA_ERROR("invalid consensus, tx empty.");
         return Status::kAcceptorTxsEmpty;
     }
 
@@ -727,10 +727,10 @@ Status BlockAcceptor::GetAndAddTxsLocally(
 // #ifndef NDEBUG
 //         for (uint32_t i = 0; i < uint32_t(tx_propose.txs_size()); i++) {
 //             auto tx = &tx_propose.txs(i);
-//             ZJC_WARN("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
+//             SHARDORA_WARN("leader tx step: %u, gid: %s", tx->step(), common::Encode::HexEncode(tx->gid()).c_str());
 //         }
 // #endif
-        ZJC_ERROR("invalid consensus, txs not equal to leader %u, %u",
+        SHARDORA_ERROR("invalid consensus, txs not equal to leader %u, %u",
             txs_ptr->txs.size(), tx_propose.txs_size());
         // assert(false);
         return Status::kAcceptorTxsEmpty;
@@ -745,7 +745,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     auto* zjc_block = &view_block.block_info();
     uint64_t pool_height = pools_mgr_->latest_height(pool_idx());
     if (zjc_block->height() <= pool_height || pool_height == common::kInvalidUint64) {
-        ZJC_WARN("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
+        SHARDORA_WARN("Accept height error: %lu, %lu", zjc_block->height(), pool_height);
         return false;
     }
 
@@ -753,7 +753,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     // 新块的时间戳必须大于上一个块的时间戳
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
     if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
-        ZJC_WARN("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
+        SHARDORA_WARN("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);
         return false;
     }
     
@@ -776,7 +776,7 @@ Status BlockAcceptor::DoTransactions(
 //         bool valid = true;
 //         for (uint32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
 //             auto& tx = view_block->block_info().tx_list(i);
-//             ZJC_WARN("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
+//             SHARDORA_WARN("block tx from: %s, to: %s, amount: %lu, balance: %lu, %u_%u_%u, height: %lu",
 //                 (tx.from().empty() ? 
 //                 "" : 
 //                 common::Encode::HexEncode(tx.from()).c_str()), 
@@ -802,7 +802,7 @@ Status BlockAcceptor::DoTransactions(
 //                     assert(false);
 //                 }
                     
-//             ZJC_WARN("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
+//             SHARDORA_WARN("transaction balance map addr: %s, balance: %lu, view_block_hash: %s, prehash: %s",
 //                     common::Encode::HexEncode(*addr).c_str(), addr_iter->second, 
 //                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
 //                     common::Encode::HexEncode(view_block->parent_hash()).c_str());

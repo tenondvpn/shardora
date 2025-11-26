@@ -38,13 +38,13 @@ int RootToTxItem::HandleTx(
     auto& unique_hash = tx_info->key();
     std::string val;
     if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
     
     pools::protobuf::ToTxMessageItem to_item;
     if (!to_item.ParseFromString(tx_info->value())) {
-        ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         assert(false);
         return consensus::kConsensusError;
     }
@@ -108,12 +108,12 @@ int RootToTxItem::HandleTx(
             }
         }
 
-        ZJC_DEBUG("success add addr cross to: %s, to info: %s", 
+        SHARDORA_DEBUG("success add addr cross to: %s, to info: %s", 
             common::Encode::HexEncode(to_item.des()).c_str(), 
             ProtobufToJson(*to_item_ptr).c_str());
     }
 
-    ZJC_DEBUG("success add addr to: %s, value: %s", 
+    SHARDORA_DEBUG("success add addr to: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
     return kConsensusSuccess;

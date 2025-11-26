@@ -39,7 +39,7 @@ void GlobalInfo::Timer() {
             shared_obj_max_count_[i] = count;
         }
 
-        ZJC_INFO("index %d get all shared object count now: %d, max: %d", 
+        SHARDORA_INFO("index %d get all shared object count now: %d, max: %d", 
             i, count, shared_obj_max_count_[i]);
     }
 
@@ -58,7 +58,7 @@ int GlobalInfo::Init(const common::Config& config) {
     message_handler_thread_count_ += 2;
 
     if (!config.Get("zjchain", "local_ip", config_local_ip_)) {
-        ZJC_ERROR("get zjchain local_ip from config failed.");
+        SHARDORA_ERROR("get zjchain local_ip from config failed.");
         return kCommonError;
     }
 
@@ -73,12 +73,12 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "join_root", join_root_);
     std::string str_contry;
     if (!config.Get("zjchain", "country", str_contry) || str_contry.empty()) {
-        ZJC_ERROR("get zjchain country from config failed.");
+        SHARDORA_ERROR("get zjchain country from config failed.");
         return kCommonError;
     }
 
     if (!config.Get("zjchain", "first_node", config_first_node_)) {
-        ZJC_ERROR("get zjchain first_node from config failed.");
+        SHARDORA_ERROR("get zjchain first_node from config failed.");
         return kCommonError;
     }
 
@@ -125,7 +125,7 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
         if (iter == thread_with_index_.end()) {
             thread_idx = now_valid_thread_index_++;
             thread_with_index_[now_thread_id] = thread_idx;
-            ZJC_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
+            SHARDORA_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         } else {
             thread_idx = iter->second;
         }
@@ -137,7 +137,7 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
     } else {
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
-            ZJC_FATAL("invalid get new thread index: %u", now_thread_id);
+            SHARDORA_FATAL("invalid get new thread index: %u", now_thread_id);
         }
             
         thread_idx = iter->second;

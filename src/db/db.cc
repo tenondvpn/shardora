@@ -29,13 +29,13 @@ void Db::Destroy() {
 #ifdef LEVELDB
 bool Db::Init(const std::string& db_path) {
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
     std::unique_lock<std::mutex> lock(mutex);
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
@@ -60,7 +60,7 @@ bool Db::Init(const std::string& db_path) {
     // options.compression = leveldb::kSnappyCompression;
     DbStatus status = leveldb::DB::Open(options, db_path, &db_);
     if (!status.ok()) {
-        ZJC_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
+        SHARDORA_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
         return false;
     }
 
@@ -72,13 +72,13 @@ bool Db::Init(const std::string& db_path) {
 
 bool Db::Init(const std::string& db_path) {
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
     std::unique_lock<std::mutex> lock(mutex);
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
@@ -106,7 +106,7 @@ bool Db::Init(const std::string& db_path) {
 
     rocksdb::Status status = rocksdb::DB::Open(options, db_path, &db_);
     if (!status.ok()) {
-        ZJC_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
+        SHARDORA_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
         return false;
     }
 

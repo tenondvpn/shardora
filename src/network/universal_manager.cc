@@ -43,22 +43,22 @@ void UniversalManager::Destroy() {
 
 void UniversalManager::RegisterUniversal(uint32_t network_id, dht::BaseDhtPtr& dht) {
     if (network_id >= kUniversalNetworkCount) {
-        ZJC_ERROR("invalid network id: %u", network_id);
+        SHARDORA_ERROR("invalid network id: %u", network_id);
         return;
     }
 
     if (dhts_[network_id] != nullptr) {
-        // ZJC_ERROR("regiestered network id: %u", network_id);
+        // SHARDORA_ERROR("regiestered network id: %u", network_id);
         return;
     }
 
     dhts_[network_id] = dht;
-    // ZJC_DEBUG("add universal network: %d", network_id);
+    // SHARDORA_DEBUG("add universal network: %d", network_id);
 }
 
 void UniversalManager::UnRegisterUniversal(uint32_t network_id) {
     if (network_id >= kUniversalNetworkCount) {
-        ZJC_ERROR("invalid network id: %u", network_id);
+        SHARDORA_ERROR("invalid network id: %u", network_id);
         return;
     }
 
@@ -70,7 +70,7 @@ void UniversalManager::UnRegisterUniversal(uint32_t network_id) {
 
 dht::BaseDhtPtr UniversalManager::GetUniversal(uint32_t network_id) {
     if (network_id >= kUniversalNetworkCount) {
-//         ZJC_ERROR("invalid network id: %u", network_id);
+//         SHARDORA_ERROR("invalid network id: %u", network_id);
         return nullptr;
     }
 
@@ -163,7 +163,7 @@ int UniversalManager::CreateUniversalNetwork(const common::Config& config) {
         return res;
     }
 
-    ZJC_DEBUG("now get universal dht 8");
+    SHARDORA_DEBUG("now get universal dht 8");
     auto universal_dht = GetUniversal(kUniversalNetworkId);
     if (universal_dht == nullptr) {
         return kNetworkError;

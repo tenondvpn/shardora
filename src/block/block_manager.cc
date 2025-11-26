@@ -98,7 +98,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
     // prev_timer_ms_ = now_tm_ms;
     // auto now_tm = common::TimeUtils::TimestampUs();
-    // ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
+    // SHARDORA_DEBUG("now check CreateStatisticTx %lu, %lu",
     //     prev_create_statistic_tx_tm_us_, now_tm);
     // if (prev_create_statistic_tx_tm_us_ < now_tm) {
     //     prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
@@ -135,7 +135,7 @@ void BlockManager::ConsensusAddBlock(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     auto block_item = block_item_info->view_block;
     consensus_block_queues_[thread_idx].push(block_item_info);
-    ZJC_DEBUG("add new block thread: %d, size: %u, %u_%u_%lu", 
+    SHARDORA_DEBUG("add new block thread: %d, size: %u, %u_%u_%lu", 
         thread_idx, consensus_block_queues_[thread_idx].size(),
         block_item->qc().network_id(),
         block_item->qc().pool_index(),
@@ -146,7 +146,7 @@ void BlockManager::HandleAllConsensusBlocks() {
     common::GlobalInfo::Instance()->get_thread_index();
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         auto now_tm = common::TimeUtils::TimestampUs();
-        // ZJC_DEBUG("now check CreateStatisticTx %lu, %lu",
+        // SHARDORA_DEBUG("now check CreateStatisticTx %lu, %lu",
         //     prev_create_statistic_tx_tm_us_, now_tm);
         if (prev_create_statistic_tx_tm_us_ < now_tm) {
             prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
@@ -167,7 +167,7 @@ void BlockManager::HandleAllConsensusBlocks() {
     
                     auto view_block_ptr = view_block_info_ptr->view_block;
                     auto* block_ptr = &view_block_ptr->block_info();
-                    ZJC_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
+                    SHARDORA_DEBUG("from consensus new block coming sharding id: %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
                         view_block_ptr->qc().network_id(),
                         view_block_ptr->qc().pool_index(),
@@ -180,7 +180,7 @@ void BlockManager::HandleAllConsensusBlocks() {
                     AddNewBlock(view_block_info_ptr);
                     auto use_time = (common::TimeUtils::TimestampMs() - btime);
                     if (use_time >= 200)
-                    ZJC_DEBUG(" %u, pool: %d, height: %lu, "
+                    SHARDORA_DEBUG(" %u, pool: %d, height: %lu, "
                         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu, use time: %lu, size: %u",
                         view_block_ptr->qc().network_id(),
                         view_block_ptr->qc().pool_index(),
@@ -195,17 +195,17 @@ void BlockManager::HandleAllConsensusBlocks() {
 
                 if (count >= kEachTimeHandleBlocksCount) {
                     no_sleep = true;
-                    ZJC_DEBUG("pool index: %d, has block over from consensus new block coming sharding id:count: %u", i, consensus_block_queues_[i].size());
+                    SHARDORA_DEBUG("pool index: %d, has block over from consensus new block coming sharding id:count: %u", i, consensus_block_queues_[i].size());
                 }
             }
 
             // auto btime = common::TimeUtils::TimestampMs();
             // auto st = db_->Put(db_batch);
             // if (!st.ok()) {
-            //     ZJC_FATAL("write to db faield!");
+            //     SHARDORA_FATAL("write to db faield!");
             // }
 
-            // ZJC_DEBUG("write to db use time: %lu, size: %u", 
+            // SHARDORA_DEBUG("write to db use time: %lu, size: %u", 
             //     (common::TimeUtils::TimestampMs() - btime), 
             //     db_batch.ApproximateSize());
         }
@@ -226,7 +226,7 @@ void BlockManager::HandleStatisticTx(const view_block::protobuf::ViewBlockItem& 
     if (elect_statistic.sharding_id() == net_id) {
         auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
         if (iter != shard_statistics_map_.end()) {
-            ZJC_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
+            SHARDORA_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
             shard_statistics_map_.erase(iter);
             CHECK_MEMORY_SIZE(shard_statistics_map_);
             auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
@@ -245,7 +245,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
     }
 
     // for (int32_t i = 0; i < tx.storages_size(); ++i) {
-    //     ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
+    //     SHARDORA_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
     //     uint32_t* des_sharding_and_pool = (uint32_t*)(tx.storages(i).value().c_str());
     //     if (des_sharding_and_pool[0] != common::GlobalInfo::Instance()->network_id()) {
     //         return;
@@ -263,7 +263,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
     //     tos->set_pool_index(des_sharding_and_pool[1]);
     //     tos->set_library_bytes(tx.contract_code());
     //     to_txs.mutable_to_heights()->set_sharding_id(des_sharding_and_pool[0]);
-    //     ZJC_DEBUG("address: %s, amount: %lu, success handle root create address: %u, "
+    //     SHARDORA_DEBUG("address: %s, amount: %lu, success handle root create address: %u, "
     //         "local net: %u, step: %d, %u_%u_%lu, block height: %lu",
     //         common::Encode::HexEncode(tx.to()).c_str(),
     //         tx.amount(),
@@ -281,7 +281,7 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto& view_block = *view_block_ptr;
     if (view_block.block_info().normal_to().to_tx_arr_size() <= 0) {
-        ZJC_DEBUG("0 handle normale to message coming: %u_%u_%lu, des: %u, %s", 
+        SHARDORA_DEBUG("0 handle normale to message coming: %u_%u_%lu, des: %u, %s", 
             view_block.qc().network_id(), 
             view_block.qc().pool_index(), 
             view_block.qc().view(), 
@@ -290,7 +290,7 @@ void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::
         return;
     }
 
-    ZJC_DEBUG("handle normale to message coming: %u_%u_%lu, des: %u, %s", 
+    SHARDORA_DEBUG("handle normale to message coming: %u_%u_%lu, des: %u, %s", 
         view_block.qc().network_id(), 
         view_block.qc().pool_index(), 
         view_block.qc().view(), 
@@ -300,7 +300,7 @@ void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = view_block_ptr;
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
+        SHARDORA_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
             view_block.block_info().height(), view_block.block_info().timestamp());
     }
 
@@ -312,7 +312,7 @@ void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::
     auto& to_txs = view_block.block_info().normal_to();
     for (uint32_t i = 0; i < to_txs.to_tx_arr_size(); ++i) {
         if (to_txs.to_tx_arr(i).des_shard() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_WARN("sharding invalid: %u, %u",
+            SHARDORA_WARN("sharding invalid: %u, %u",
                 to_txs.to_heights().sharding_id(),
                 common::GlobalInfo::Instance()->network_id());
             continue;
@@ -333,7 +333,7 @@ void BlockManager::RootHandleNormalToTx(
     // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        ZJC_DEBUG("to tx new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
+        SHARDORA_DEBUG("to tx new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
             tos_item.prepayment(),
@@ -363,7 +363,7 @@ void BlockManager::RootHandleNormalToTx(
             std::to_string(block.height()) + "_" +
             std::to_string(i));
         tx->set_key(unique_hash);
-        ZJC_DEBUG("create new address %s, "
+        SHARDORA_DEBUG("create new address %s, "
             "nonce: %lu, unique hash: %s, contract code: %s",
             ProtobufToJson(tos_item).c_str(),
             0,
@@ -378,7 +378,7 @@ void BlockManager::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
-    ZJC_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
+    SHARDORA_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
         to_txs.tos_size(),
         "",
         0,
@@ -400,7 +400,7 @@ void BlockManager::AddNewBlock(
     auto* block_item = &view_block_item->block_info();
     // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+    SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s, ck_client_: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
@@ -420,7 +420,7 @@ void BlockManager::AddNewBlock(
     // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
         pools_mgr_->OnNewCrossBlock(view_block_item);
-        ZJC_DEBUG("new cross block coming: %u, %u, %lu",
+        SHARDORA_DEBUG("new cross block coming: %u, %u, %lu",
             view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     } else {
         if (statistic_mgr_) {
@@ -443,7 +443,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->cross_shard_to_array_size() > 0) {
-        ZJC_DEBUG("now handle root cross %u_%u_%lu, local net: %d,  block: %s",
+        SHARDORA_DEBUG("now handle root cross %u_%u_%lu, local net: %d,  block: %s",
             view_block_item->qc().network_id(),
             view_block_item->qc().pool_index(),
             view_block_item->qc().view(),
@@ -481,7 +481,7 @@ void BlockManager::CreateLocalToTx(
         const pools::protobuf::ToTxMessageItem& to_tx_item) {
     if (to_tx_item.des().size() != common::kUnicastAddressLength && 
             to_tx_item.des().size() != common::kPreypamentAddressLength) {
-        ZJC_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
+        SHARDORA_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
         assert(false);
         return;
     }
@@ -513,7 +513,7 @@ void BlockManager::CreateLocalToTx(
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_nonce(++step_with_nonce_[tx->step()]);
     pools_mgr_->HandleMessage(msg_ptr);
-    ZJC_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
+    SHARDORA_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
         common::Encode::HexEncode(uinique_tx_str).c_str(),
         msg_ptr->address_info->nonce(),
         0,
@@ -524,7 +524,7 @@ void BlockManager::HandleElectTx(const view_block::protobuf::ViewBlockItem& view
     auto& block = view_block.block_info();
     auto& elect_block = block.elect_block();
     AddMiningToken(view_block, elect_block);
-    ZJC_DEBUG("success add elect block elect height: %lu, net: %u, "
+    SHARDORA_DEBUG("success add elect block elect height: %lu, net: %u, "
         "pool: %u, height: %lu, common pk: %s, prev elect height: %lu", 
         view_block.qc().elect_height(),
         view_block.qc().network_id(),
@@ -567,7 +567,7 @@ void BlockManager::AddMiningToken(
         to_item.set_pool_index(pool_index);
         to_item.set_des(id);
         to_item.set_amount(elect_block.in(i).mining_amount());
-        ZJC_DEBUG("mining success add local transfer to %s, %lu",
+        SHARDORA_DEBUG("mining success add local transfer to %s, %lu",
             common::Encode::HexEncode(id).c_str(), elect_block.in(i).mining_amount());
         CreateLocalToTx(view_block, to_item);
     }
@@ -604,18 +604,18 @@ void BlockManager::AddMiningToken(
     //     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     //     tx->set_nonce(0);
     //     pools_mgr_->HandleMessage(msg_ptr);
-    //     ZJC_DEBUG("mining success create kConsensusLocalTos %s nonce: %lu",
+    //     SHARDORA_DEBUG("mining success create kConsensusLocalTos %s nonce: %lu",
     //         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
     //         tx->nonce());
     // }
 }
 
 void BlockManager::LoadLatestBlocks() {
-    ZJC_DEBUG("load latest block called!");
+    SHARDORA_DEBUG("load latest block called!");
     timeblock::protobuf::TimeBlock tmblock;
     db::DbWriteBatch db_batch;
     if (prefix_db_->GetLatestTimeBlock(&tmblock)) {
-        ZJC_DEBUG("load latest time block called!");
+        SHARDORA_DEBUG("load latest time block called!");
         auto tmblock_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
         auto& block = *tmblock_ptr;
         if (GetBlockWithHeight(
@@ -623,12 +623,12 @@ void BlockManager::LoadLatestBlocks() {
                 common::kImmutablePoolSize,
                 tmblock.height(),
                 block) == kBlockSuccess) {
-            ZJC_DEBUG("load latest elect block called!");
+            SHARDORA_DEBUG("load latest elect block called!");
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(tmblock_ptr, db_batch);
             }
         } else {
-            ZJC_FATAL("load latest timeblock failed!");
+            SHARDORA_FATAL("load latest timeblock failed!");
         }
     }
 
@@ -638,12 +638,12 @@ void BlockManager::LoadLatestBlocks() {
             elect::protobuf::ElectBlock elect_block;
             if (load_idx == 0) {
                 if (!prefix_db_->GetLatestElectBlock(i, &elect_block)) {
-                    ZJC_ERROR("get elect latest block failed: %u", i);
+                    SHARDORA_ERROR("get elect latest block failed: %u", i);
                     break;
                 }
             } else {
                 if (!prefix_db_->GetHavePrevlatestElectBlock(i, &elect_block)) {
-                    ZJC_ERROR("get elect latest block failed: %u", i);
+                    SHARDORA_ERROR("get elect latest block failed: %u", i);
                     break;
                 }
             }
@@ -660,12 +660,12 @@ void BlockManager::LoadLatestBlocks() {
                 }
 
                 AddMiningToken(block, elect_block);
-                ZJC_DEBUG("get block with height success: %u, %u, %lu",
+                SHARDORA_DEBUG("get block with height success: %u, %u, %lu",
                     network::kRootCongressNetworkId,
                     elect_block.shard_network_id() % common::kImmutablePoolSize,
                     elect_block.elect_height());
             } else {
-                ZJC_FATAL("get block with height failed: %u, %u, %lu",
+                SHARDORA_FATAL("get block with height failed: %u, %u, %lu",
                     network::kRootCongressNetworkId,
                     elect_block.shard_network_id() % common::kImmutablePoolSize,
                     elect_block.elect_height());
@@ -679,7 +679,7 @@ void BlockManager::LoadLatestBlocks() {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index] = latest_to_tx_block;
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
-        ZJC_DEBUG("success set latest to block ptr: %lu, tm: %lu",
+        SHARDORA_DEBUG("success set latest to block ptr: %lu, tm: %lu",
             latest_to_tx_block->block_info().height(), latest_to_tx_block->block_info().timestamp());
     }
 
@@ -705,19 +705,19 @@ void BlockManager::CreateStatisticTx() {
     assert(now_thread_id_tmp == tmp_thread_id_tmp);
 #endif
     if (create_statistic_tx_cb_ == nullptr) {
-        ZJC_DEBUG("create_statistic_tx_cb_ == nullptr");
+        SHARDORA_DEBUG("create_statistic_tx_cb_ == nullptr");
         return;
     }
 
     pools::protobuf::ElectStatistic elect_statistic;
     uint64_t timeblock_height = prev_timeblock_height_;
-    ZJC_DEBUG("StatisticWithHeights called!");
+    SHARDORA_DEBUG("StatisticWithHeights called!");
 
     // Some nodes will receive statistic block ahead of timeblock.
     // This happens accasionally, making statistic tx failed to be found
     // So we should make sure that one timeblock can only gathered statistic info for once
     if (IsTimeblockHeightStatisticDone(timeblock_height)) {
-        ZJC_DEBUG("repeat StatisticWithHeights, %lu, latest: %lu",
+        SHARDORA_DEBUG("repeat StatisticWithHeights, %lu, latest: %lu",
             timeblock_height, latest_statistic_timeblock_height_);
         return;
     }
@@ -725,7 +725,7 @@ void BlockManager::CreateStatisticTx() {
     if (statistic_mgr_->StatisticWithHeights(
             elect_statistic,
             timeblock_height) != pools::kPoolsSuccess) {
-        ZJC_DEBUG("failed StatisticWithHeights!");
+        SHARDORA_DEBUG("failed StatisticWithHeights!");
         return;
     }
 
@@ -737,7 +737,7 @@ void BlockManager::CreateStatisticTx() {
         std::string("create_statistic_tx_") + 
         std::to_string(elect_statistic.sharding_id()) + "_" +
         std::to_string(elect_statistic.statistic_height()));
-    ZJC_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
+    SHARDORA_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
         common::Encode::HexEncode(unique_hash).c_str(), 
         timeblock_height, ProtobufToJson(elect_statistic).c_str());
     if (!unique_hash.empty()) {
@@ -760,7 +760,7 @@ void BlockManager::CreateStatisticTx() {
             tx_ptr->tx_hash = unique_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu, "
+            SHARDORA_DEBUG("success add statistic tx: %s, statistic elect height: %lu, "
                 "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
                 "nonce: %lu, timeblock_height: %lu",
                 common::Encode::HexEncode(unique_hash).c_str(),
@@ -784,7 +784,7 @@ void BlockManager::HandleStatisticBlock(
         const pools::protobuf::ElectStatistic& elect_statistic) {
     auto& block = view_block.block_info();
     if (create_elect_tx_cb_ == nullptr) {
-        ZJC_DEBUG("create_elect_tx_cb_ == nullptr");
+        SHARDORA_DEBUG("create_elect_tx_cb_ == nullptr");
         return;
     }
 
@@ -797,7 +797,7 @@ void BlockManager::HandleStatisticBlock(
     }
 #ifdef NDEBUG
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
-        ZJC_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
+        SHARDORA_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
             elect_statistic.sharding_id(), 
             common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
             elect_statistic.join_elect_nodes(i).stoke(),
@@ -806,7 +806,7 @@ void BlockManager::HandleStatisticBlock(
     }
 
     assert(view_block.qc().network_id() == elect_statistic.sharding_id());
-    ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, "
+    SHARDORA_DEBUG("success handle statistic block net: %u, sharding: %u, "
         "pool: %u, height: %lu, elect height: %lu",
         view_block.qc().network_id(), elect_statistic.sharding_id(), view_block.qc().pool_index(), 
         block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());
@@ -834,7 +834,7 @@ void BlockManager::HandleStatisticBlock(
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
     shard_elect_tx_[view_block.qc().network_id()] = shard_elect_tx;
-    ZJC_DEBUG("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, "
+    SHARDORA_DEBUG("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, "
         "statistic elect height: %lu, unique hash: %s",
         view_block.qc().network_id(), block.timeblock_height(),
         tx->nonce(),
@@ -861,17 +861,17 @@ pools::TxItemPtr BlockManager::GetToTx(
             return nullptr;
         }
 
-        ZJC_DEBUG("now leader get to to tx.");
+        SHARDORA_DEBUG("now leader get to to tx.");
         leader_prev_get_to_tx_tm_ = cur_time + 3000lu;
         auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
         if (latest_to_block_ptr != nullptr &&
                 latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
-            ZJC_DEBUG("now leader get to to tx timestamp error");
+            SHARDORA_DEBUG("now leader get to to tx timestamp error");
             return nullptr;
         }
 
         if (to_txs_pool_->LeaderCreateToHeights(heights) != pools::kPoolsSuccess) {
-            ZJC_DEBUG("now leader get to to tx leader get error");
+            SHARDORA_DEBUG("now leader get to to tx leader get error");
             return nullptr;
         }
     } else {
@@ -886,13 +886,13 @@ pools::TxItemPtr BlockManager::GetToTx(
     if (tx_ptr != nullptr) {
         // heights_str_map_[height_hash] = tx_ptr;
         // CHECK_MEMORY_SIZE(heights_str_map_);
-        ZJC_DEBUG("success get to tx tx info: %s, nonce: %lu, val: %s, heights: %s",
+        SHARDORA_DEBUG("success get to tx tx info: %s, nonce: %lu, val: %s, heights: %s",
             ProtobufToJson(*tx_ptr->tx_info).c_str(),
             tx_ptr->tx_info->nonce(), 
             "common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str()",
             ProtobufToJson(heights).c_str());
     } else {
-        ZJC_DEBUG("failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
+        SHARDORA_DEBUG("failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
     }
 
     return tx_ptr;
@@ -916,12 +916,12 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
                 heights,
                 to_tx) != pools::kPoolsSuccess) {
             all_to_txs.mutable_to_tx_arr()->RemoveLast();
-            ZJC_DEBUG("1 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
+            SHARDORA_DEBUG("1 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
         }
     }
 
     if (all_to_txs.to_tx_arr_size() == 0) {
-        ZJC_DEBUG("2 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
+        SHARDORA_DEBUG("2 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
         return nullptr;
     }
     
@@ -945,7 +945,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     tx->set_nonce(++step_with_nonce_[tx->step()]);
     auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
     tx_ptr->time_valid += kToValidTimeout;
-    ZJC_DEBUG("success get to tx unique hash: %s, heights: %s",
+    SHARDORA_DEBUG("success get to tx unique hash: %s, heights: %s",
         common::Encode::HexEncode(tx->key()).c_str(), 
         ProtobufToJson(prev_heights).c_str());
     return tx_ptr;
@@ -957,19 +957,19 @@ bool BlockManager::HasSingleTx(
         pools::CheckAddrNonceValidFunction tx_valid_func) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (HasToTx(pool_index, tx_valid_func)) {
-        // ZJC_DEBUG("success check has to tx.");
+        // SHARDORA_DEBUG("success check has to tx.");
         return true;
     }
 
     // ADD_DEBUG_PROCESS_TIMESTAMP();
     // if (HasStatisticTx(pool_index, tx_valid_func)) {
-    //     // ZJC_DEBUG("success check has statistic tx.");
+    //     // SHARDORA_DEBUG("success check has statistic tx.");
     //     return true;
     // }
 
     // ADD_DEBUG_PROCESS_TIMESTAMP();
     // if (HasElectTx(pool_index, tx_valid_func)) {
-    //     // ZJC_DEBUG("success check has elect tx.");
+    //     // SHARDORA_DEBUG("success check has elect tx.");
     //     return true;
     // }
 
@@ -982,7 +982,7 @@ void BlockManager::PopTxTicker() {
     while (shard_statistics_map_ptr_queue_.pop(&static_tmp_map)) {}
     if (static_tmp_map != nullptr) {
         for (auto iter = static_tmp_map->begin(); iter != static_tmp_map->end(); ++iter) {
-            ZJC_DEBUG("now pop statistic tx tx nonce: %lu, tm height: %lu",
+            SHARDORA_DEBUG("now pop statistic tx tx nonce: %lu, tm height: %lu",
                 iter->second->tx_ptr->tx_info->nonce(), iter->first);
         }
 
@@ -1007,7 +1007,7 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFuncti
     auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_];
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
-        ZJC_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
+        SHARDORA_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
         return false;
     }
 
@@ -1031,7 +1031,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceVali
     auto iter = statistic_map_ptr->begin();
     auto shard_statistic_tx = iter->second;
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr");
+        SHARDORA_DEBUG("shard_statistic_tx == nullptr");
         return false;
     }
 
@@ -1051,7 +1051,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceVali
             return false;
         }
 
-        // ZJC_DEBUG("has statistic %u, tx nonce: %lu", 
+        // SHARDORA_DEBUG("has statistic %u, tx nonce: %lu", 
         //     pool_index, 
         //     common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
         return true;
@@ -1076,7 +1076,7 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFun
             return false;
         }
         
-        ZJC_DEBUG("has elect %u, tx nonce: %lu", 
+        SHARDORA_DEBUG("has elect %u, tx nonce: %lu", 
             pool_index, 
             shard_elect_tx_[i]->tx_ptr->tx_info->nonce());
         return true;
@@ -1095,12 +1095,12 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
 
     auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_];
     if (statistic_map_ptr == nullptr) {
-        ZJC_DEBUG("statistic_map_ptr == nullptr");
+        SHARDORA_DEBUG("statistic_map_ptr == nullptr");
         return nullptr;
     }
 
     if (statistic_map_ptr->empty()) {
-        ZJC_DEBUG("statistic_map_ptr->empty()");
+        SHARDORA_DEBUG("statistic_map_ptr->empty()");
         return nullptr;
     }
 
@@ -1119,7 +1119,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (shard_statistic_tx == nullptr) {
-        ZJC_DEBUG("shard_statistic_tx == nullptr, unqiue_hash: %s, is leader: %d",
+        SHARDORA_DEBUG("shard_statistic_tx == nullptr, unqiue_hash: %s, is leader: %d",
             common::Encode::HexEncode(unqiue_hash).c_str(),
             leader);
         if (pool_index == common::kImmutablePoolSize) {
@@ -1137,13 +1137,13 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     if (shard_statistic_tx != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
+            SHARDORA_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
             return nullptr;
         }
 
         if (iter->first >= latest_timeblock_height_) {
             if (leader) {
-                ZJC_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
+                SHARDORA_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
                     iter->first, latest_timeblock_height_);
             }
 
@@ -1153,7 +1153,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
-                ZJC_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
+                SHARDORA_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
                     prev_timeblock_tm_sec_, 
                     (common::kRotationPeriod / 1000000lu), 
                     (now_tm / 1000000lu));
@@ -1164,7 +1164,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         }
 
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("time_valid invalid!");
+            SHARDORA_DEBUG("time_valid invalid!");
             return nullptr;
         }
 
@@ -1172,7 +1172,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             account_mgr_->pools_address_info(pool_index);
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx->set_to(shard_statistic_tx->tx_ptr->address_info->addr());
-        ZJC_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
+        SHARDORA_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
             prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,
@@ -1181,7 +1181,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
     }
 
     if (leader) {
-        ZJC_DEBUG("failed get statistic tx");
+        SHARDORA_DEBUG("failed get statistic tx");
     }
     return nullptr;
 }
@@ -1193,7 +1193,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         if (shard_elect_tx_[i] == nullptr) {
-            ZJC_DEBUG("0 failed get elect tx pool index: %u, tx hash: %s",
+            SHARDORA_DEBUG("0 failed get elect tx pool index: %u, tx hash: %s",
                 pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
@@ -1201,24 +1201,24 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         auto shard_elect_tx = shard_elect_tx_[i];
         if (!tx_hash.empty()) {
             if (shard_elect_tx->tx_ptr->tx_info->key() == tx_hash) {
-                ZJC_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
+                SHARDORA_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
                     pool_index, common::Encode::HexEncode(tx_hash).c_str());
                 return shard_elect_tx->tx_ptr;
             }
 
-            ZJC_DEBUG("1 failed get elect tx pool index: %u, tx hash: %s",
+            SHARDORA_DEBUG("1 failed get elect tx pool index: %u, tx hash: %s",
                 pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
 
         auto now_tm = common::TimeUtils::TimestampUs();
         if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("2 failed get elect tx pool index: %u, tx hash: %s",
+            SHARDORA_DEBUG("2 failed get elect tx pool index: %u, tx hash: %s",
                 pool_index, common::Encode::HexEncode(tx_hash).c_str());
             continue;
         }
 
-        ZJC_DEBUG("1 success get elect tx pool index: %u, unique hash: %s",
+        SHARDORA_DEBUG("1 success get elect tx pool index: %u, unique hash: %s",
             pool_index, 
             common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_info->key()).c_str());
         return shard_elect_tx->tx_ptr;
@@ -1235,7 +1235,7 @@ void BlockManager::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
-    ZJC_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
+    SHARDORA_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
         latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
@@ -1245,7 +1245,7 @@ void BlockManager::OnTimeBlock(
     latest_timeblock_height_ = latest_time_block_height;
     prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
     latest_timeblock_tm_sec_ = lastest_time_block_tm;
-    ZJC_DEBUG("success update timeblock height: %lu, %lu, tm: %lu, %lu",
+    SHARDORA_DEBUG("success update timeblock height: %lu, %lu, tm: %lu, %lu",
         prev_timeblock_height_, latest_timeblock_height_,
         prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
 }

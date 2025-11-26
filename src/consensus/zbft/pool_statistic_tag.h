@@ -22,7 +22,7 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("pools statistic tag tx consensus coming: %s, nonce: %lu, val: %s", 
+        SHARDORA_DEBUG("pools statistic tag tx consensus coming: %s, nonce: %lu, val: %s", 
             common::Encode::HexEncode(tx_info.to()).c_str(), 
             tx_info.nonce(),
             common::Encode::HexEncode(tx_info.value()).c_str());
@@ -46,13 +46,13 @@ public:
                 acc_balance_map, 
                 &to_balance, 
                 &to_nonce) != consensus::kConsensusSuccess) {
-            ZJC_INFO("GetTempAccountBalance unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
+            SHARDORA_INFO("GetTempAccountBalance unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
             return consensus::kConsensusError;
         }
 
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), tx_info->key(), &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
+            SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(tx_info->key()).c_str());
             return consensus::kConsensusError;
         }
 
@@ -62,7 +62,7 @@ public:
         uint64_t* udata = (uint64_t*)tx_info->value().c_str();
         uint64_t statistic_height = udata[0];
         block_tx.set_nonce(to_nonce + 1);
-        ZJC_WARN("success call pool statistic height: %lu, pool: %d, view: %lu, "
+        SHARDORA_WARN("success call pool statistic height: %lu, pool: %d, view: %lu, "
             "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s, parent hash: %s", 
             statistic_height,
             view_block.qc().pool_index(), view_block.qc().view(),
@@ -72,7 +72,7 @@ public:
             common::Encode::HexEncode(view_block.parent_hash()).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
-        ZJC_DEBUG("success add addr: %s, value: %s", 
+        SHARDORA_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
         view_block.mutable_block_info()->set_pool_statistic_height(statistic_height);

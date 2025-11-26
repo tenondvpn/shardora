@@ -8,12 +8,12 @@ namespace tnet {
 
 bool ListenSocket::Listen(int backlog) const {
     if (fd_ < 0) {
-        ZJC_ERROR("listen on bad fd [%d]", fd_);
+        SHARDORA_ERROR("listen on bad fd [%d]", fd_);
         return false;
     }
 
     if (listen(fd_, backlog) < 0) {
-        ZJC_ERROR("listen on fd [%d] failed, errno [%d]", fd_, errno);
+        SHARDORA_ERROR("listen on fd [%d] failed, errno [%d]", fd_, errno);
         return false;
     }
     return true;
@@ -23,7 +23,7 @@ bool ListenSocket::Accept(ServerSocket** socket) const
 {
     *socket = NULL;
     if (fd_ < 0) {
-        ZJC_ERROR("accept on bad fd [%d]", fd_);
+        SHARDORA_ERROR("accept on bad fd [%d]", fd_);
         return false;
     }
 
@@ -32,7 +32,7 @@ bool ListenSocket::Accept(ServerSocket** socket) const
     int fd = accept(fd_, (sockaddr*)&addr, &addrlen);
     if (fd < 0) {
         if (errno != EAGAIN) {
-            ZJC_ERROR("accept failed [%s]", strerror(errno));
+            SHARDORA_ERROR("accept failed [%s]", strerror(errno));
         }
 
         return false;
@@ -45,7 +45,7 @@ bool ListenSocket::Accept(ServerSocket** socket) const
             local_addr_,
             local_port_);
     if (server_socket == nullptr) {
-        ZJC_ERROR("create tcp server socket failed");
+        SHARDORA_ERROR("create tcp server socket failed");
         close(fd);
         return false;
     }

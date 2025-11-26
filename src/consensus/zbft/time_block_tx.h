@@ -42,13 +42,13 @@ public:
         auto& unique_hash = tx_info->key();
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
         auto& timer_block = *view_block.mutable_block_info()->mutable_timer_block();
         if (!timer_block.ParseFromString(tx_info->value())) {
-            ZJC_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
@@ -56,11 +56,11 @@ public:
         zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
         block_tx.set_unique_hash(unique_hash);
         block_tx.set_nonce(to_nonce + 1);
-        ZJC_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        SHARDORA_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        ZJC_DEBUG("success add addr: %s, value: %s", 
+        SHARDORA_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
 

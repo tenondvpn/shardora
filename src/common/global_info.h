@@ -208,7 +208,7 @@ public:
                             }
                         }
 
-                        ZJC_DEBUG("thread: %d, src_thread_idx: %d, pools: %s", 
+                        SHARDORA_DEBUG("thread: %d, src_thread_idx: %d, pools: %s", 
                             valid_thread_idx, src_thread_idx, tmp_str.c_str());
                     }
 
@@ -217,12 +217,12 @@ public:
                     }
                 }
 
-                ZJC_INFO("thread index %d set cosensus index: %d", thread_idx, i);
+                SHARDORA_INFO("thread index %d set cosensus index: %d", thread_idx, i);
                 return i;
             }
         }
 
-        ZJC_FATAL("invalid thread idx: %d, bft_thread: %d", thread_idx, bft_thread);
+        SHARDORA_FATAL("invalid thread idx: %d, bft_thread: %d", thread_idx, bft_thread);
         return common::kInvalidUint8;
     }
 

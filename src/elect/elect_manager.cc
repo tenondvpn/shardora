@@ -115,7 +115,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
     auto& elect_block = *elect_block_ptr;
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
-        ZJC_DEBUG("elect block sharding id invalid: %u", elect_block.shard_network_id());
+        SHARDORA_DEBUG("elect block sharding id invalid: %u", elect_block.shard_network_id());
         return nullptr;
     }
 
@@ -154,7 +154,7 @@ void ElectManager::ElectedToConsensusShard(
         protobuf::ElectBlock& elect_block,
         bool cons_elected) {
     auto local_netid = common::GlobalInfo::Instance()->network_id();
-    ZJC_DEBUG("now join network local sharding id: %u, elect sharding id: %u, elected: %d",
+    SHARDORA_DEBUG("now join network local sharding id: %u, elect sharding id: %u, elected: %d",
         local_netid, elect_block.shard_network_id(), cons_elected);
     if (!cons_elected) {
         if (local_netid == elect_block.shard_network_id()) {
@@ -220,11 +220,11 @@ bool ElectManager::ProcessPrevElectMembers(
     }
 
     if (prev_elect_block.in_size() <= 0) {
-        ZJC_DEBUG("prev elect block in size error.");
+        SHARDORA_DEBUG("prev elect block in size error.");
         return false;
     }
 
-    ZJC_DEBUG("now handle block in size success.");
+    SHARDORA_DEBUG("now handle block in size success.");
     auto& added_heights = added_height_[elect_block.shard_network_id()];
     if (added_heights.find(elect_block.prev_members().prev_elect_height()) != added_heights.end()) {
         ELECT_ERROR("height has added: %lu", elect_block.prev_members().prev_elect_height());
@@ -527,7 +527,7 @@ bool ElectManager::NodeHasElected(uint32_t network_id, const std::string& node_i
     if (valid_members != nullptr) {
         for (auto iter = valid_members->begin(); iter != valid_members->end(); ++iter) {
             if ((*iter)->id == node_id) {
-                ZJC_DEBUG("sharding id: %u, has elected: %s",
+                SHARDORA_DEBUG("sharding id: %u, has elected: %s",
                     network_id, common::Encode::HexEncode(node_id).c_str());
                 return true;
             }
@@ -538,7 +538,7 @@ bool ElectManager::NodeHasElected(uint32_t network_id, const std::string& node_i
     if (waiting_members != nullptr) {
         for (auto iter = waiting_members->begin(); iter != waiting_members->end(); ++iter) {
             if ((*iter)->id == node_id) {
-                ZJC_DEBUG("waiting sharding id: %u, has elected: %s",
+                SHARDORA_DEBUG("waiting sharding id: %u, has elected: %s",
                     network_id, common::Encode::HexEncode(node_id).c_str());
                 return true;
             }

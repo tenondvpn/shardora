@@ -166,7 +166,7 @@ public:
         }
 
         // 允许设置旧的 view block
-        ZJC_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
+        SHARDORA_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->block_info().height(),
@@ -209,7 +209,7 @@ private:
         if (it != view_blocks_info_.end() && it->second->view_block != nullptr) {
             auto strings = String();
             if (strings.empty()) {
-                ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, "
+                SHARDORA_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, "
                     "parent hash: %s, tx size: %u",
                     common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
                     view_block_info->view_block->qc().network_id(),
@@ -219,7 +219,7 @@ private:
                     common::Encode::HexEncode(view_block_info->view_block->parent_hash()).c_str(),
                     view_block_info->view_block->block_info().tx_list_size());
             } else {
-                ZJC_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, "
+                SHARDORA_DEBUG("exists, failed add view block: %s, %u_%u_%lu, height: %lu, "
                     "parent hash: %s, tx size: %u, strings: %s",
                     common::Encode::HexEncode(view_block_info->view_block->qc().view_block_hash()).c_str(),
                     view_block_info->view_block->qc().network_id(),

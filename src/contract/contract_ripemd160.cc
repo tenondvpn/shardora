@@ -29,7 +29,7 @@ const size_t EXPECTED_COMBINED_DATA_LENGTH = 37; // 32 字节哈希 + 5 字节 "
         create_address_.c_str(), \
         sizeof(res->create_address.bytes)); \
     res->gas_left -= 1000; \
-    ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
+    SHARDORA_WARN("contract_reencryption TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
     return kContractSuccess; \
 }
 
@@ -292,7 +292,7 @@ int Ripemd160::call(
             memset((void*)res->output_data, 0, 32);
             res->output_size = 32;
             res->gas_left -= 1000;
-            ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", 
+            SHARDORA_WARN("contract_reencryption TestProxyReEncryption: %s", 
                 common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
             return kContractSuccess;
         }
@@ -301,7 +301,7 @@ int Ripemd160::call(
         memset((void*)res->output_data, 1, 32);
         res->output_size = 32;
         res->gas_left -= 1000;
-        ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", 
+        SHARDORA_WARN("contract_reencryption TestProxyReEncryption: %s", 
             common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
         return kContractSuccess;
     }
@@ -320,10 +320,10 @@ int Ripemd160::call(
         create_address_.c_str(),
         sizeof(res->create_address.bytes));
     res->gas_left -= gas_used;
-    ZJC_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+    SHARDORA_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
     return kContractSuccess;
 } catch(std::exception& e) {
-    ZJC_ERROR("catch error: %s", e.what());
+    SHARDORA_ERROR("catch error: %s", e.what());
     DEFAULT_CALL_RESULT();
 }
 
@@ -441,13 +441,13 @@ int Ripemd160::RabpreInit(
         ContractArs ars;
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
-        ZJC_DEBUG("line_splits.Count() < 2");
+        SHARDORA_DEBUG("line_splits.Count() < 2");
         return kContractError;
     }
 
     auto lambda_count = 32;
     if (!common::StringUtil::ToInt32(line_splits[1], &lambda_count)) {
-        ZJC_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
+        SHARDORA_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
         return kContractError;
     }
 
@@ -493,7 +493,7 @@ int Ripemd160::RabpreInit(
         // cout<<"重加密密文: "<<get<0>(get<1>(ct_new))<<endl;
         // long long m2 = Rabpre::DECRE(ct_new, sk1, hsk1, mpk);
         // cout << "重加密解密结果: " << m2 << endl;
-        ZJC_DEBUG("init RabpreInit success id: %s, lambda_count: %u",
+        SHARDORA_DEBUG("init RabpreInit success id: %s, lambda_count: %u",
             common::Encode::HexEncode(id).c_str(), lambda_count);
     } catch (const exception& e) {
         cerr << "错误: " << e.what() << endl;
@@ -540,17 +540,17 @@ int Ripemd160::RabpreEnc(
         const std::string& value) {
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
-        ZJC_DEBUG("line_splits.Count() < 2");
+        SHARDORA_DEBUG("line_splits.Count() < 2");
         return kContractError;
     }
 
     int64_t plaintext = 0;
     if (!common::StringUtil::ToInt64(line_splits[1], &plaintext)) {
-        ZJC_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
+        SHARDORA_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
         return kContractError;
     }
 
-    ZJC_DEBUG("rabpre enc 0");
+    SHARDORA_DEBUG("rabpre enc 0");
     auto id = common::Encode::HexDecode(line_splits[0]);
     std::tuple<long long, long long, long long, long long, long long, long long> mpk;
     std::tuple<long long, long long, long long, long long, long long> hsk0;
@@ -558,17 +558,17 @@ int Ripemd160::RabpreEnc(
     auto tmp_key = std::string("rabpre_agg_") + id;
     std::string val;
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
-    ZJC_DEBUG("rabpre enc 1");
+    SHARDORA_DEBUG("rabpre enc 1");
     LoadAgg(val, &mpk, &hsk0, &hsk1);
-    ZJC_DEBUG("rabpre enc 2");
+    SHARDORA_DEBUG("rabpre enc 2");
     auto ct = Rabpre::ENCRYPT(mpk, plaintext, 1);
     std::string enc_val;
-    ZJC_DEBUG("rabpre enc 3");
+    SHARDORA_DEBUG("rabpre enc 3");
     SaveEncVal(ct, &enc_val);
     tmp_key = std::string("rabpre_enc_") + id;
-    ZJC_DEBUG("rabpre enc 4");
+    SHARDORA_DEBUG("rabpre enc 4");
     param.zjc_host->SaveKeyValue(param.from, tmp_key, enc_val);
-    ZJC_DEBUG("Rabpre enc success id: %s, plaintext: %ld",
+    SHARDORA_DEBUG("Rabpre enc success id: %s, plaintext: %ld",
         common::Encode::HexEncode(id).c_str(), plaintext);
     return kContractSuccess;
 }
@@ -611,7 +611,7 @@ int Ripemd160::RabpreDec(
     param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
     LoadEncVal(val, &ct);
     long long decrypted = Rabpre::DEC(ct, sk0, hsk0, mpk);
-    ZJC_DEBUG("Rabpre enc success id: %s, decrypted: %ld",
+    SHARDORA_DEBUG("Rabpre enc success id: %s, decrypted: %ld",
         common::Encode::HexEncode(id).c_str(), decrypted);
     return kContractSuccess;
 }
@@ -705,7 +705,7 @@ int Ripemd160::RabpreReEnc(
     SaveReenc(ct_new, &reenc_val);
     tmp_key = std::string("rabpre_reenc_") + id;
     param.zjc_host->SaveKeyValue(param.from, tmp_key, reenc_val);
-    ZJC_DEBUG("Rabpre reenc success id: %s",
+    SHARDORA_DEBUG("Rabpre reenc success id: %s",
         common::Encode::HexEncode(id).c_str());
     return kContractSuccess;
 }
@@ -755,7 +755,7 @@ int Ripemd160::RabpreReDec(
                 long long, long long>, long long> ct_new;
     LoadReenc(val, &ct_new);
     long long m2 = Rabpre::DECRE(ct_new, sk1, hsk1, mpk);
-    ZJC_DEBUG("Rabpre redec success id: %s, m2: %ld",
+    SHARDORA_DEBUG("Rabpre redec success id: %s, m2: %ld",
         common::Encode::HexEncode(id).c_str(), m2);
     return kContractSuccess;
 }
@@ -768,7 +768,7 @@ int Ripemd160::CreateArsKeys(
     // 初始化公私钥对
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
-        ZJC_DEBUG("line_splits.Count() < 2");
+        SHARDORA_DEBUG("line_splits.Count() < 2");
         return kContractError;
     }
 
@@ -776,19 +776,19 @@ int Ripemd160::CreateArsKeys(
     ars.set_ring_size(keys_splits.Count());
     auto ex_splits = common::Split<>(line_splits[1], ',');
     if (ex_splits.Count() < 2) {
-        ZJC_DEBUG("ex_splits.Count() < 2");
+        SHARDORA_DEBUG("ex_splits.Count() < 2");
         return kContractError;
     }
 
     auto signer_count = 0;
     if (!common::StringUtil::ToInt32(ex_splits[0], &signer_count)) {
-        ZJC_DEBUG("common::StringUtil::ToInt32(ex_splits[0], &signer_count) failed");
+        SHARDORA_DEBUG("common::StringUtil::ToInt32(ex_splits[0], &signer_count) failed");
         return kContractError;
     }
 
     ars.set_signer_count(signer_count);
     if (signer_count <= 0 || signer_count >= ars.ring_size()) {
-        ZJC_DEBUG("signer_count <= 0 || signer_count >= ars.ring_size(): %u, %u", signer_count, ars.ring_size());
+        SHARDORA_DEBUG("signer_count <= 0 || signer_count >= ars.ring_size(): %u, %u", signer_count, ars.ring_size());
         return kContractError;
     }
 
@@ -814,7 +814,7 @@ int Ripemd160::CreateArsKeys(
     auto tmp_key = std::string("ars_create_") + id;
     auto val = common::StringUtil::Format("%u,%u", ars.ring_size(), ars.signer_count());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("init sign success: %s, from: %s, key: %s, ring size: %d, signer_count: %d",
+    SHARDORA_DEBUG("init sign success: %s, from: %s, key: %s, ring size: %d, signer_count: %d",
         ex_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), 
         common::Encode::HexEncode(tmp_key).c_str(),
@@ -849,7 +849,7 @@ int Ripemd160::SingleSign(
         const std::string& value) {
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
-        ZJC_WARN("line_splits.Count() < 2 failed");
+        SHARDORA_WARN("line_splits.Count() < 2 failed");
         return kContractError;
     }
 
@@ -864,13 +864,13 @@ int Ripemd160::SingleSign(
     auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
     int32_t ring_size = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
-        ZJC_WARN("ring_size failed key: %s, val: %s", common::Encode::HexEncode(tmp_key).c_str(), val.c_str());
+        SHARDORA_WARN("ring_size failed key: %s, val: %s", common::Encode::HexEncode(tmp_key).c_str(), val.c_str());
         return kContractError;
     }
 
     int32_t signer_count = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
-        ZJC_WARN("signer_count failed: %s", val.c_str());
+        SHARDORA_WARN("signer_count failed: %s", val.c_str());
         return kContractError;
     }
 
@@ -880,24 +880,24 @@ int Ripemd160::SingleSign(
     // 设置环的大小和签名者数量
     std::vector<element_t> ring(ars.ring_size());
     if (GetRing(id, param, ars, ring) != kContractSuccess) {
-        ZJC_WARN("GetRing failed");
+        SHARDORA_WARN("GetRing failed");
         return kContractError;
     }
 
     auto splits = common::Split<>(line_splits[0], ',');
     if (splits.Count() < 3) {
-        ZJC_WARN("invalid splits count: %s", value.c_str());
+        SHARDORA_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     int signer_idx = 0;
     if (!common::StringUtil::ToInt32(splits[0], &signer_idx)) {
-        ZJC_WARN("invalid splits count: %s", value.c_str());
+        SHARDORA_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     if (signer_idx < 0 || signer_idx > ars.ring_size()) {
-        ZJC_WARN("invalid splits count: %s", value.c_str());
+        SHARDORA_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
@@ -930,7 +930,7 @@ int Ripemd160::SingleSign(
     }
 
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_WARN("single sign success: %d, %s, from: %s, key: %s",
+    SHARDORA_WARN("single sign success: %d, %s, from: %s, key: %s",
         signer_idx, line_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
     element_clear(delta_prime);
@@ -947,7 +947,7 @@ int Ripemd160::AggSignAndVerify(
         // 聚合签名生成
     auto id = common::Encode::HexDecode(value);
     auto tmp_key = std::string("ars_create_") + id;
-    ZJC_DEBUG("get create ars key: %s", common::Encode::HexEncode(tmp_key).c_str());
+    SHARDORA_DEBUG("get create ars key: %s", common::Encode::HexEncode(tmp_key).c_str());
     std::string val;
     if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
@@ -968,7 +968,7 @@ int Ripemd160::AggSignAndVerify(
     ContractArs ars;
     ars.set_ring_size(ring_size);
     ars.set_signer_count(signer_count);
-    ZJC_DEBUG("success get signer_count: %d, ring_size: %d", signer_count, ring_size);
+    SHARDORA_DEBUG("success get signer_count: %d, ring_size: %d", signer_count, ring_size);
     element_t agg_signature;
     element_init_G1(agg_signature, ars.get_pairing());
     std::vector<std::string> messages;
@@ -990,11 +990,11 @@ int Ripemd160::AggSignAndVerify(
             continue;
         }
 
-        ZJC_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
+        SHARDORA_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
             tmp_key.c_str(), common::Encode::HexEncode(val).c_str(), val.c_str());
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
-            ZJC_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
+            SHARDORA_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
             continue;
         }
 
@@ -1036,14 +1036,14 @@ int Ripemd160::AggSignAndVerify(
         auto len = element_to_bytes_compressed(data, agg_signature);
         auto val = common::Encode::HexEncode(std::string((char*)data, len)) + ",";
         param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-        ZJC_WARN("agg sign success: %s", val.c_str());
+        SHARDORA_WARN("agg sign success: %s", val.c_str());
 
         // 聚合签名验证
         bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
         if (is_aggregate_valid) {
-            ZJC_WARN("Aggregate signature verification passed: %s", value.c_str());
+            SHARDORA_WARN("Aggregate signature verification passed: %s", value.c_str());
         } else {
-            ZJC_WARN("Aggregate signature verification failed!");
+            SHARDORA_WARN("Aggregate signature verification failed!");
         }
 
         element_clear(agg_signature);
@@ -1135,11 +1135,11 @@ void Ripemd160::TestArs(
     bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
     if (is_aggregate_valid)
     {
-        ZJC_DEBUG("Aggregate signature verification passed!");
+        SHARDORA_DEBUG("Aggregate signature verification passed!");
     }
     else
     {
-        ZJC_DEBUG("Aggregate signature verification failed!");
+        SHARDORA_DEBUG("Aggregate signature verification failed!");
     }
 
     // 清理资源

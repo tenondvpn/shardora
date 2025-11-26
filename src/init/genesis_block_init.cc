@@ -163,7 +163,7 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
     immutable_pool_address_info_->set_type(address::protobuf::kImmutablePoolAddress);
     immutable_pool_address_info_->set_latest_height(0);
     immutable_pool_address_info_->set_nonce(0);
-    ZJC_DEBUG("init pool immutable index net: %u, base address: %s", 
+    SHARDORA_DEBUG("init pool immutable index net: %u, base address: %s", 
         network_id, common::Encode::HexEncode(immutable_pool_addr).c_str());
     uint32_t i = 0;
     std::unordered_set<uint32_t> pool_idx_set;
@@ -184,7 +184,7 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
 
         pool_address_info_[pool_idx] = CreateAddress("", 0, network_id, pool_idx, addr, 0, 0);
         pool_idx_set.insert(pool_idx);
-        ZJC_DEBUG("init pool index: %u, base address: %s", 
+        SHARDORA_DEBUG("init pool index: %u, base address: %s", 
             pool_idx, common::Encode::HexEncode(addr).c_str());
     }
 }
@@ -399,7 +399,7 @@ bool CheckRecomputeG2s(
             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
         auto verified_val = verfy_final_vals.SerializeAsString();
         prefix_db->SaveVerifiedG2s(local_member_index, id, i + 1, verfy_final_vals);
-        ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+        SHARDORA_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
             local_member_index,
             join_info.member_idx(),
             i + 1,
@@ -432,7 +432,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             
             char* data = new char[file_size+1];
             if (fgets(data, file_size+1, fd) == nullptr) {
-                ZJC_FATAL("load bls init info failed: %s", file.c_str());
+                SHARDORA_FATAL("load bls init info failed: %s", file.c_str());
                 return;
             }
 
@@ -440,7 +440,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             std::string tmp_data(data, strlen(data) - 1);
             std::string val = common::Encode::HexDecode(tmp_data);
             if (!local_poly.ParseFromString(val)) {
-                ZJC_FATAL("load bls init info failed!");
+                SHARDORA_FATAL("load bls init info failed!");
                 return;
             }
         }
@@ -553,7 +553,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
                 local_bls_str,
                 genesis_nodes[idx]->prikey,
                 &enc_data) != security::kSecuritySuccess) {
-            ZJC_FATAL("encrypt data failed!");
+            SHARDORA_FATAL("encrypt data failed!");
             return false;
         }
 
@@ -566,7 +566,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             sharding_id,
             genesis_nodes[idx]->id,
             std::string(all_data, sizeof(all_data)));
-        ZJC_INFO("save bls success: %lu, %u, %s, index: %d, prikey: %s, local bls item: %s, src: %s, enc: %s",
+        SHARDORA_INFO("save bls success: %lu, %u, %s, index: %d, prikey: %s, local bls item: %s, src: %s, enc: %s",
             elect_height,
             sharding_id,
             common::Encode::HexEncode(genesis_nodes[idx]->id).c_str(),
@@ -578,7 +578,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     }
 
     common_pk_[sharding_id] = common_public_key;
-    ZJC_DEBUG("success create common pk: %u, %s",
+    SHARDORA_DEBUG("success create common pk: %u, %s",
         sharding_id, libBLS::ThresholdUtils::fieldElementToString(common_public_key.X.c0).c_str());
     return true;
 }
@@ -609,7 +609,7 @@ void GenesisBlockInit::SetPrevElectInfo(
     }
 
     *block.mutable_prev_elect_block() = block_item.elect_block();
-    ZJC_DEBUG("success set prev elect block: %s", ProtobufToJson(block_item.elect_block()).c_str());
+    SHARDORA_DEBUG("success set prev elect block: %s", ProtobufToJson(block_item.elect_block()).c_str());
 }
 
 int GenesisBlockInit::CreateElectBlock(
@@ -667,7 +667,7 @@ int GenesisBlockInit::CreateElectBlock(
         }
 
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
-        ZJC_INFO("sharding: %d success add member: %s, %s", 
+        SHARDORA_INFO("sharding: %d success add member: %s, %s", 
             shard_netid,
             common::Encode::HexEncode((*iter)->prikey).c_str(), 
             common::Encode::HexEncode((*iter)->id).c_str());
@@ -701,7 +701,7 @@ int GenesisBlockInit::CreateElectBlock(
         // prefix_db_->SaveElectHeightCommonPk(shard_netid, prev_height, *prev_members, db_batch);
         // auto st = db_->Put(db_batch);
         // assert(st.ok());
-        ZJC_WARN("genesis elect shard: %u, prev_height: %lu, "
+        SHARDORA_WARN("genesis elect shard: %u, prev_height: %lu, "
             "init bls common public key: %s, %s, %s, %s", 
             shard_netid, prev_height, 
             common_pk_strs->at(0).c_str(), 
@@ -737,7 +737,7 @@ int GenesisBlockInit::CreateElectBlock(
     auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
     auto& db_batch = *db_batch_ptr;
     auto tenon_block_ptr = std::make_shared<block::protobuf::Block>(*tenon_block);
-    ZJC_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
+    SHARDORA_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
     std::string ec_val = common::Encode::HexEncode(view_block_ptr->SerializeAsString()) +
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";    
     fputs(ec_val.c_str(), root_gens_init_block_file);
@@ -747,12 +747,12 @@ int GenesisBlockInit::CreateElectBlock(
     db_->Put(db_batch);
     auto account_ptr = account_mgr_->GetAcountInfoFromDb(account_info->addr());
     if (account_ptr == nullptr) {
-        ZJC_FATAL("get address failed! [%s]",
+        SHARDORA_FATAL("get address failed! [%s]",
             common::Encode::HexEncode(account_info->addr()).c_str());
     }
 
     if (account_ptr->balance() != 0) {
-        ZJC_FATAL("get address balance failed! [%s]",
+        SHARDORA_FATAL("get address balance failed! [%s]",
             common::Encode::HexEncode(account_info->addr()).c_str());
     }
 
@@ -782,7 +782,7 @@ int GenesisBlockInit::CreateAllQc(
 
     commit_qc->set_sign_x(libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
     commit_qc->set_sign_y(libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
-    ZJC_DEBUG("success create qc: %u_%u_%lu, agg sign x: %s",
+    SHARDORA_DEBUG("success create qc: %u_%u_%lu, agg sign x: %s",
         network_id, pool_index, view_block_ptr->qc().view(), commit_qc->sign_x().c_str());
     assert(!view_block_ptr->qc().sign_x().empty());
     return kInitSuccess;
@@ -957,13 +957,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         auto addr_info = immutable_pool_address_info_;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(addr_info->addr());
         if (account_ptr == nullptr) {
-            ZJC_FATAL("get address info failed! [%s]",
+            SHARDORA_FATAL("get address info failed! [%s]",
                 common::Encode::HexEncode(addr_info->addr()).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
-            ZJC_FATAL("get address balance failed! [%s]",
+            SHARDORA_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(addr_info->addr()).c_str());
             return kInitError;
         }
@@ -1139,7 +1139,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
-        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
+        SHARDORA_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
         return kInitError;
     }
 
@@ -1153,7 +1153,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
-        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
+        SHARDORA_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
         return kInitError;
     }
 
@@ -1174,7 +1174,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
-            ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
+            SHARDORA_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
             return kInitError;
         }
 
@@ -1188,7 +1188,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
-            ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
+            SHARDORA_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
             return kInitError;
         }
 
@@ -1335,13 +1335,13 @@ bool GenesisBlockInit::TestBlsAggSignViewBlock(
             g1_hash,
             &sign);
 
-        ZJC_DEBUG("use network %u, index: %d, prikey: %s",
+        SHARDORA_DEBUG("use network %u, index: %d, prikey: %s",
             commit_qc.network_id(), i, 
             libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[i]->bls_prikey).c_str());
         std::lock_guard<std::mutex> lock(mutex);
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
-        ZJC_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
+        SHARDORA_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
     };
 
     uint32_t all_each_sign_tm_ms = 0;
@@ -1402,13 +1402,13 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
             g1_hash,
             &sign);
 
-        ZJC_DEBUG("use network %u, index: %d, prikey: %s",
+        SHARDORA_DEBUG("use network %u, index: %d, prikey: %s",
             commit_qc.network_id(), i, 
             libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[i]->bls_prikey).c_str());
         std::lock_guard<std::mutex> lock(mutex);
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
-        ZJC_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
+        SHARDORA_DEBUG("push back i: %d, n: %d, t: %d", i, n, t);
     };
 
     std::vector<std::thread> threads;
@@ -1433,7 +1433,7 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
             lagrange_coeffs));
 #ifndef MOCK_SIGN
     if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[commit_qc.network_id()])) {
-        ZJC_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
+        SHARDORA_FATAL("agg sign failed shard: %u, hash: %s, pk: %s",
             commit_qc.network_id(), common::Encode::HexEncode(qc_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str());
         return false;
@@ -1441,13 +1441,13 @@ bool GenesisBlockInit::BlsAggSignViewBlock(
 #endif
 
     agg_sign->to_affine_coordinates();
-    ZJC_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s, sign x: %s",
+    SHARDORA_INFO("agg sign success shard: %u_%u, hash: %s, pk: %s, sign x: %s",
         commit_qc.network_id(), commit_qc.pool_index(),  common::Encode::HexEncode(qc_hash).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(common_pk_[commit_qc.network_id()].X.c0).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(agg_sign->X).c_str());
     return true;
 } catch (std::exception& e) {
-    ZJC_ERROR("catch bls exception: %s", e.what());
+    SHARDORA_ERROR("catch bls exception: %s", e.what());
     return false;
 }
 
@@ -1463,7 +1463,7 @@ void GenesisBlockInit::AddBlockItemToCache(
     pool_info.set_view(view_block->qc().view());
     prefix_db_->SaveLatestPoolInfo(
         view_block->qc().network_id(), view_block->qc().pool_index(), pool_info, db_batch);
-    ZJC_DEBUG("success add pool latest info: %u_%u_%lu, block height: %lu, tm: %lu",
+    SHARDORA_DEBUG("success add pool latest info: %u_%u_%lu, block height: %lu, tm: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         view_block->qc().view(), block->height(), block->timestamp());
     for (auto iter = address_info_map.begin(); iter != address_info_map.end(); ++iter) {
@@ -1472,7 +1472,7 @@ void GenesisBlockInit::AddBlockItemToCache(
         *addr_info = *iter->second;
         assert(addr_info->sharding_id() != network::kRootCongressNetworkId);
         prefix_db_->AddAddressInfo(addr_info->addr(), *addr_info, db_batch);
-        ZJC_INFO("success add address info: %s, %s",
+        SHARDORA_INFO("success add address info: %s, %s",
             common::Encode::HexEncode(addr_info->addr()).c_str(), 
             ProtobufToJson(*addr_info).c_str());
     }
@@ -1501,7 +1501,7 @@ void GenesisBlockInit::AddBlockItemToCache(
         auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
             view_block->block_info().address_array(i));
         prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, db_batch);
-        ZJC_DEBUG("step: %d, success add addr: %s, value: %s", 
+        SHARDORA_DEBUG("step: %d, success add addr: %s, value: %s", 
             0,
             common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
             ProtobufToJson(*new_addr_info).c_str());
@@ -1526,13 +1526,13 @@ void GenesisBlockInit::AddBlockItemToCache(
             db_batch);
         
         if (join_info.g2_req().verify_vec_size() <= 0) {
-            ZJC_DEBUG("success handle kElectJoin tx: %s, not has verfications.",
+            SHARDORA_DEBUG("success handle kElectJoin tx: %s, not has verfications.",
                 common::Encode::HexEncode(join_info.addr()).c_str());
             continue;
         }
 
         prefix_db_->SaveNodeVerificationVector(join_info.addr(), join_info, db_batch);
-        ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
+        SHARDORA_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu, local net id: %u",
             common::Encode::HexEncode(join_info.addr()).c_str(), 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
@@ -1560,7 +1560,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     std::map<std::string, GenisisNodeInfoPtr> valid_ids;
     for (auto iter = root_genesis_nodes.begin(); iter != root_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
-            ZJC_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
+            SHARDORA_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
             return kInitError;
         }
 
@@ -1569,7 +1569,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
     for (auto iter = cons_genesis_nodes.begin(); iter != cons_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
-            ZJC_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
+            SHARDORA_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
             return kInitError;
         }
 
@@ -1646,23 +1646,23 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(iter->first);
         if (account_ptr == nullptr) {
-            ZJC_FATAL("get address failed! [%s]", common::Encode::HexEncode(iter->first).c_str());
+            SHARDORA_FATAL("get address failed! [%s]", common::Encode::HexEncode(iter->first).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != genesis_account_balance) {
-            ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(iter->first).c_str());
+            SHARDORA_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(iter->first).c_str());
             return kInitError;
         }
         all_balance += account_ptr->balance();
-        ZJC_INFO("new address %s, genesis balance: %lu, nonce: %lu",
+        SHARDORA_INFO("new address %s, genesis balance: %lu, nonce: %lu",
             common::Encode::HexEncode(account_ptr->addr()).c_str(), 
             account_ptr->balance(),
             account_ptr->nonce());
     }
 
     if (all_balance != expect_all_balance) {
-        ZJC_FATAL("all_balance != expect_all_balance failed! [%lu][%llu]",
+        SHARDORA_FATAL("all_balance != expect_all_balance failed! [%lu][%llu]",
             all_balance, expect_all_balance);
         return kInitError;
     }
@@ -1738,7 +1738,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
                 tx_info->set_balance(balance_iter->second);
                 tx_info->set_gas_limit(0);
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                ZJC_DEBUG("net_id: %d, success add address: %s, balance: %lu",
+                SHARDORA_DEBUG("net_id: %d, success add address: %s, balance: %lu",
                     net_id, common::Encode::HexEncode(addr_iter->first).c_str(), balance_iter->second);
                 address_info_map[addr_iter->first] = CreateAddress(
                     "", tx_info->balance(), net_id, i, 
@@ -1856,14 +1856,14 @@ void GenesisBlockInit::InitShardGenesisAccount() {
                 break;
             }
 
-            ZJC_INFO("now handle line: %s", lines[i]);
+            SHARDORA_INFO("now handle line: %s", lines[i]);
             assert(strlen(items[0]) == 64);
             std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(common::Encode::HexDecode(items[0]));
             auto pool_idx = common::GetAddressPoolIndex(secptr->GetAddress());
             pool_index_map[pool_idx][secptr->GetAddress()] = 0;
             ++net_pool_index_map_addr_count_;
-            ZJC_INFO("success add address net: %d, pool: %d, addr: %s", 
+            SHARDORA_INFO("success add address net: %d, pool: %d, addr: %s", 
                 net_id, pool_idx, common::Encode::HexEncode(secptr->GetAddress()).c_str());
             valid_ids.insert(secptr->GetAddress());
         }
@@ -1891,7 +1891,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         }
 
         genesis_acount_balance_map_.insert(std::pair<std::string, uint64_t>(*it, balance));
-        ZJC_INFO("genesis add addr: %s, balance: %lu", common::Encode::HexEncode(*it).c_str(), balance);
+        SHARDORA_INFO("genesis add addr: %s, balance: %lu", common::Encode::HexEncode(*it).c_str(), balance);
     }
 
     hasRunOnce = true;

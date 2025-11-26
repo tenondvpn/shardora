@@ -60,7 +60,7 @@ public:
 
         if (height_tree_ptr_ != nullptr) {
             height_tree_ptr_->Set(height);
-            ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
+            SHARDORA_DEBUG("success set height, net: %u, pool: %u, height: %lu",
                 des_sharding_id_, pool_index_, height);
         }
 
@@ -82,7 +82,7 @@ public:
             SyncBlock();
         }
 
-        ZJC_DEBUG("pool index: %d, new height: %lu, new synced height: %lu,"
+        SHARDORA_DEBUG("pool index: %d, new height: %lu, new synced height: %lu,"
             "prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
             pool_index_, height, synced_height_, prev_synced_height_,
             to_sync_max_height_, latest_height_);
@@ -108,7 +108,7 @@ public:
                 (prev_synced_height_ < synced_height_ + 64);
                 ++prev_synced_height_) {
             if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
-                ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+                SHARDORA_DEBUG("now add sync height 1, %u_%u_%lu", 
                     des_sharding_id_,
                     pool_index_,
                     prev_synced_height_ + 1);
@@ -144,7 +144,7 @@ protected:
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
-                ZJC_DEBUG("init height tree latest info network: %u, pool %lu, init height: %lu",
+                SHARDORA_DEBUG("init height tree latest info network: %u, pool %lu, init height: %lu",
                     network_id, pool_index_, latest_height_);
             }
         }

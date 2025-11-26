@@ -11,7 +11,7 @@ namespace common {
 
 class ConvertException : public std::exception {
 public:
-    ConvertException() : err_message_("ZJC_ERROR: convert string to number failed!") {}
+    ConvertException() : err_message_("SHARDORA_ERROR: convert string to number failed!") {}
     explicit ConvertException(const std::string& err) : err_message_(err) {
     }
     virtual char const* what() const noexcept { return err_message_.c_str(); }

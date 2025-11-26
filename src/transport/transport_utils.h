@@ -20,10 +20,10 @@
 #include "tnet/tcp_interface.h"
 #include "tnet/tcp_connection.h"
 
-#define TRANSPORT_DEBUG(fmt, ...) ZJC_DEBUG("[transport]" fmt, ## __VA_ARGS__)
-#define TRANSPORT_INFO(fmt, ...) ZJC_INFO("[transport]" fmt, ## __VA_ARGS__)
-#define TRANSPORT_WARN(fmt, ...) ZJC_WARN("[transport]" fmt, ## __VA_ARGS__)
-#define TRANSPORT_ERROR(fmt, ...) ZJC_ERROR("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_DEBUG(fmt, ...) SHARDORA_DEBUG("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_INFO(fmt, ...) SHARDORA_INFO("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_WARN(fmt, ...) SHARDORA_WARN("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_ERROR(fmt, ...) SHARDORA_ERROR("[transport]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 
@@ -95,14 +95,14 @@ public:
         times_idx = 0;
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
-        // ZJC_DEBUG("memory check create new transport message: %d", now_count);
+        // SHARDORA_DEBUG("memory check create new transport message: %d", now_count);
          common::GlobalInfo::Instance()->AddSharedObj(11);
 
     }
 
     ~TransportMessage() {
         // auto now_count = testTransportMessageCount.fetch_sub(1);
-        // ZJC_DEBUG("memory check remove transport message: %d", now_count);
+        // SHARDORA_DEBUG("memory check remove transport message: %d", now_count);
         common::GlobalInfo::Instance()->DecSharedObj(11);
     }
 

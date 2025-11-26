@@ -38,7 +38,7 @@ ContractArs::ContractArs() : ContractInterface("") {
     q = pairing_length_in_bytes_x_only_G1(pairing);
     char data[10240] = {0};
     element_snprintf(data, sizeof(data), "G: %B, H: %B, bytes g: %s, h: %s", G, H, common::Encode::HexEncode(g_data).c_str(), common::Encode::HexEncode(h_data).c_str());
-    ZJC_DEBUG("init paring ars: %s", data);
+    SHARDORA_DEBUG("init paring ars: %s", data);
 }
 
 // 密钥生成
@@ -55,7 +55,7 @@ void ContractArs::KeyGen(element_t &x_i, element_t &y_i) {
     // 调试输出密钥对
     char data[10240] = {0};
     element_snprintf(data, sizeof(data), "x: %s, y: %s", common::Encode::HexEncode(x_i_str).c_str(), common::Encode::HexEncode(y_i_str).c_str());
-    ZJC_DEBUG("KeyGen ars: %s", data);
+    SHARDORA_DEBUG("KeyGen ars: %s", data);
 }
 
 void ContractArs::KeyGen(const std::string& val, element_t &x_i, element_t &y_i) {
@@ -152,7 +152,7 @@ void ContractArs::SingleSign(
         common::Encode::HexEncode(x_prime_str).c_str(),
         common::Encode::HexEncode(r_prime_str).c_str(),
         y_i);
-    ZJC_DEBUG("single sign message: %s", data);
+    SHARDORA_DEBUG("single sign message: %s", data);
 }
 
 // 聚合签名生成
@@ -192,7 +192,7 @@ void ContractArs::AggreSign(
         for (auto &y : ring) {
             if (VerifyProof(*pi_i[i], y_primes[i], delta_primes[i], messages[i], ring, y)) {
                 proof_valid = true;
-                ZJC_DEBUG("agg sign verify: %s", element_to_string(agg_signature).c_str());
+                SHARDORA_DEBUG("agg sign verify: %s", element_to_string(agg_signature).c_str());
                 break;
             }
         }
@@ -213,7 +213,7 @@ void ContractArs::AggreSign(
 
     std::cout << "Aggregate signature generated: ";
     element_printf("%B\n", agg_signature);
-    ZJC_DEBUG("agg sign message: %s", element_to_string(agg_signature).c_str());
+    SHARDORA_DEBUG("agg sign message: %s", element_to_string(agg_signature).c_str());
 
 }
 

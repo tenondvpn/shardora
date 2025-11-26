@@ -52,7 +52,7 @@ public:
     }
 
     void Stop() {
-        ZJC_DEBUG("network socket stopted.");
+        SHARDORA_DEBUG("network socket stopted.");
         stoped_ = true;
     }
 

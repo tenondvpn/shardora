@@ -30,7 +30,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         int res = (*iter)->TxToBlockTx(*tx_info, &block_tx);
         if (res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
-            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, res: %d",
+            SHARDORA_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, res: %d",
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 
                 view_block->qc().view(), 
@@ -55,7 +55,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
             block_tx);
         if (do_tx_res != consensus::kConsensusSuccess) {
             tx_list->RemoveLast();
-            ZJC_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, do_tx_res: %d",
+            SHARDORA_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, do_tx_res: %d",
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 
                 view_block->qc().view(), 
@@ -76,7 +76,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         }
 
         zjc_host.recorded_logs_.clear();
-        // ZJC_DEBUG("handle tx success: %u_%u_%lu, tx step: %d, nonce: %lu",
+        // SHARDORA_DEBUG("handle tx success: %u_%u_%lu, tx step: %d, nonce: %lu",
         //     view_block->qc().network_id(), 
         //     view_block->qc().pool_index(), 
         //     view_block->qc().view(), 

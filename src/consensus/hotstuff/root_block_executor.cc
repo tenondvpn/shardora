@@ -108,7 +108,7 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     if (do_tx_res != consensus::kConsensusSuccess) {
         tx_list->RemoveLast();
         //assert(false);
-        ZJC_WARN("consensus elect tx failed!");
+        SHARDORA_WARN("consensus elect tx failed!");
         return;
     }
 }

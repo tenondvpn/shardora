@@ -94,19 +94,19 @@ int TcpConnection::SendPacket(Packet& packet) {
 int TcpConnection::SendPacketWithoutLock(Packet& packet) {
     auto* msg_pkg = dynamic_cast<MsgPacket*>(&packet);
     if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
-        ZJC_ERROR("bad state, %d, %lu", tcp_state_, msg_pkg->msg_id());
+        SHARDORA_ERROR("bad state, %d, %lu", tcp_state_, msg_pkg->msg_id());
         return -1;
     }
 
     ByteBufferPtr buf_ptr(new ByteBuffer);
     if (!packet_encoder_->Encode(packet, buf_ptr.get())) {
-        ZJC_ERROR("encode packet failed: %lu", msg_pkg->msg_id());
+        SHARDORA_ERROR("encode packet failed: %lu", msg_pkg->msg_id());
         return -1;
     }
 
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
         if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
-            ZJC_ERROR("out_buffer_list_ out of size %d, %d, %lu", 
+            SHARDORA_ERROR("out_buffer_list_ out of size %d, %d, %lu", 
                 OUT_BUFFER_LIST_SIZE, out_buffer_list_.size(), msg_pkg->msg_id());
             return 1;
         }
@@ -129,7 +129,7 @@ int TcpConnection::SendPacketWithoutLock(Packet& packet) {
         int n = socket_->Write(buf_ptr->data(), len);
         if (n < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                ZJC_ERROR("write failed on [%d] [%s], %lu", socket_->GetFd(), strerror(errno), msg_pkg->msg_id());
+                SHARDORA_ERROR("write failed on [%d] [%s], %lu", socket_->GetFd(), strerror(errno), msg_pkg->msg_id());
                 rc = false;
             }
 
@@ -212,7 +212,7 @@ void TcpConnection::ActionAfterPacketSent() {
     }
 
     if (good) {
-        ZJC_ERROR("close connection after packet sent");
+        SHARDORA_ERROR("close connection after packet sent");
         NotifyCmdPacketAndClose(CmdPacket::CT_CONNECTION_CLOSED);
     }
 }
@@ -316,12 +316,12 @@ void TcpConnection::OnWrite() {
             int n = socket_->Write(bufferPtr->data(), len);
             if (n < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                    ZJC_ERROR("write failed on fd[%d] [%s]", 
+                    SHARDORA_ERROR("write failed on fd[%d] [%s]", 
                                  socket_->GetFd(), 
                                  strerror(errno));
                     ioError = true;
                 } else {
-                    ZJC_DEBUG("writeAble false, [%d] [%s], n: %d", socket_->GetFd(), strerror(errno), n);
+                    SHARDORA_DEBUG("writeAble false, [%d] [%s], n: %d", socket_->GetFd(), strerror(errno), n);
                     writeAble = false;
                 }
 
@@ -341,7 +341,7 @@ void TcpConnection::OnWrite() {
         cmd_type = CmdPacket::CT_WRITE_ERROR;
     } else if (writeAble) {
         if (action_ == kActionClose) {
-            ZJC_ERROR("close connection after packet sent");
+            SHARDORA_ERROR("close connection after packet sent");
             cmd_type = CmdPacket::CT_CONNECTION_CLOSED;
         } else {
             NotifyWriteable(false, false);
@@ -356,28 +356,28 @@ void TcpConnection::OnWrite() {
 
 bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
     if (tcp_state_ != kTcpNone) {
-        ZJC_ERROR("bad state");
+        SHARDORA_ERROR("bad state");
         return false;
     }
 
     if (!packet_handler_) {
-        ZJC_ERROR("packet handler must be set");
+        SHARDORA_ERROR("packet handler must be set");
         return false;
     }
 
     if (socket_ == NULL) {
-        ZJC_ERROR("socket must be set");
+        SHARDORA_ERROR("socket must be set");
         return false;
     }
 
     ClientSocket* socket = dynamic_cast<ClientSocket*>(socket_);
     if (socket == NULL) {
-        ZJC_ERROR("cast to TcpClientSocket failed");
+        SHARDORA_ERROR("cast to TcpClientSocket failed");
         return false;
     }
 
     if (!event_loop_.EnableIoEvent(socket->GetFd(), kEventRead | kEventWrite, *this)) {
-        ZJC_ERROR("enable read or write event failed");
+        SHARDORA_ERROR("enable read or write event failed");
         return false;
     }
 
@@ -385,7 +385,7 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
 //     socket->SetOption(SO_REUSEPORT, &optval, sizeof(optval));
     int rc = socket->Connect();
     if (rc < 0) {
-        ZJC_ERROR("connect failed");
+        SHARDORA_ERROR("connect failed");
         socket->Close();
         return false;
     }
@@ -407,13 +407,13 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
 
 bool TcpConnection::ProcessConnecting() {
     if (tcp_state_ != kTcpConnecting) {
-//         ZJC_ERROR("bad state [%d]", tcp_state_);
+//         SHARDORA_ERROR("bad state [%d]", tcp_state_);
         return false;
     }
 
     int code = 0;
     if (!socket_->GetSoError(&code) || code != 0) {
-//         ZJC_ERROR("connect error");
+//         SHARDORA_ERROR("connect error");
         return false;
     }
 

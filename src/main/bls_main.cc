@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#define ZJC_UNITTEST
+#define SHARDORA_UNITTEST
 #include "bzlib.h"
 
 #include "common/random.h"
@@ -181,7 +181,7 @@ public:
         auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
         prefix_db->AddBlsVerifyG2(sec_ptr->GetAddress(), bls_verify_req);
         prefix_db->SaveLocalPolynomial(sec_ptr, sec_ptr->GetAddress(), local_poly);
-        ZJC_DEBUG("SaveLocalPolynomial success: %s",
+        SHARDORA_DEBUG("SaveLocalPolynomial success: %s",
             common::Encode::HexEncode(sec_ptr->GetAddress()).c_str());
     }
 

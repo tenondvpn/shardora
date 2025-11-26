@@ -13,11 +13,11 @@
 #include <google/protobuf/util/json_util.h>
 
 
-#define ZJC_DEBUG(fmt, ...)
+#define SHARDORA_DEBUG(fmt, ...)
 #ifdef _WIN32
-#define ZJC_LOG_FILE_NAME strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__
+#define SHARDORA_LOG_FILE_NAME strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__
 #else
-#define ZJC_LOG_FILE_NAME strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__
+#define SHARDORA_LOG_FILE_NAME strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__
 #endif
 
 #define LOG_INS log4cpp::Category::getInstance(std::string("sub1"))
@@ -25,35 +25,35 @@
 
 #ifdef NDEBUG
 #define DEBUG(fmt, ...)
-#define ZJC_DEBUG(fmt, ...)
+#define SHARDORA_DEBUG(fmt, ...)
 #else
 // #define DEBUG(fmt, ...)
-// #define ZJC_DEBUG(fmt, ...)
+// #define SHARDORA_DEBUG(fmt, ...)
 
 #define DEBUG(fmt, ...)  do {\
-    LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    LOG_INS.debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
-// #define ZJC_DEBUG(fmt, ...)
-#define ZJC_DEBUG(fmt, ...)  do {\
-    LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+// #define SHARDORA_DEBUG(fmt, ...)
+#define SHARDORA_DEBUG(fmt, ...)  do {\
+    LOG_INS.debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 #endif
 
-#define ZJC_INFO(fmt, ...)  do {\
-    LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_INFO(fmt, ...)  do {\
+    LOG_INS.info("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_WARN(fmt, ...)  do {\
-    LOG_INS.warn("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_WARN(fmt, ...)  do {\
+    LOG_INS.warn("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_ERROR(fmt, ...)  do {\
-    LOG_INS.error("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_ERROR(fmt, ...)  do {\
+    LOG_INS.error("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_FATAL(fmt, ...)  do {\
-    printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    LOG_INS.fatal("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_FATAL(fmt, ...)  do {\
+    printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    LOG_INS.fatal("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
 } while (0)
@@ -61,34 +61,34 @@
 
 #ifdef NDEBUG
 #define DEBUG(fmt, ...)
-#define ZJC_DEBUG(fmt, ...)
+#define SHARDORA_DEBUG(fmt, ...)
 #else
 // #define DEBUG(fmt, ...)
-// #define ZJC_DEBUG(fmt, ...)
+// #define SHARDORA_DEBUG(fmt, ...)
 #define DEBUG(fmt, ...)  do {\
-    LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    LOG_INS.debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
-#define ZJC_DEBUG(fmt, ...)  do {\
-    LOG_INS.debug("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_DEBUG(fmt, ...)  do {\
+    LOG_INS.debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 #endif
-// #define ZJC_INFO(fmt, ...)
-// #define ZJC_WARN(fmt, ...)
-#define ZJC_INFO(fmt, ...)  do {\
-    LOG_INS.info("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+// #define SHARDORA_INFO(fmt, ...)
+// #define SHARDORA_WARN(fmt, ...)
+#define SHARDORA_INFO(fmt, ...)  do {\
+    LOG_INS.info("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_WARN(fmt, ...)  do {\
-    LOG_INS.warn("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_WARN(fmt, ...)  do {\
+    LOG_INS.warn("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_ERROR(fmt, ...)  do {\
-    LOG_INS.error("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_ERROR(fmt, ...)  do {\
+    LOG_INS.error("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_FATAL(fmt, ...)  do {\
-    printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    LOG_INS.fatal("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_FATAL(fmt, ...)  do {\
+    printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    LOG_INS.fatal("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
 } while (0)
@@ -98,44 +98,44 @@
 #ifdef LOG
 #undef LOG
 #endif // LOG
-#define LOG(level) LOG_INS << level << "[" << ZJC_LOG_FILE_NAME << ": " << __LINE__ << "]" 
+#define LOG(level) LOG_INS << level << "[" << SHARDORA_LOG_FILE_NAME << ": " << __LINE__ << "]" 
 
 #ifdef FOR_CONSOLE_DEBUG
 #undef DEBUG
-#undef ZJC_INFO
-#undef ZJC_WARN
-#undef ZJC_ERROR
+#undef SHARDORA_INFO
+#undef SHARDORA_WARN
+#undef SHARDORA_ERROR
 
 #ifdef NDEBUG
 #define DEBUG(fmt, ...)
-#define ZJC_DEBUG(fmt, ...)
+#define SHARDORA_DEBUG(fmt, ...)
 #else
  #define DEBUG(fmt, ...)
- #define ZJC_DEBUG(fmt, ...)
+ #define SHARDORA_DEBUG(fmt, ...)
 /*
 #define DEBUG(fmt, ...)  do {\
-    printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
-#define ZJC_DEBUG(fmt, ...)  do {\
-    printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_DEBUG(fmt, ...)  do {\
+    printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 */
 #endif
 
-#define ZJC_INFO(fmt, ...)  do {\
-    printf("[INFO][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_INFO(fmt, ...)  do {\
+    printf("[INFO][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_WARN(fmt, ...)  do {\
-    printf("[WARN][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_WARN(fmt, ...)  do {\
+    printf("[WARN][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_ERROR(fmt, ...)  do {\
-    printf("[ERROR][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_ERROR(fmt, ...)  do {\
+    printf("[ERROR][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
 } while (0)
 
-#define ZJC_FATAL(fmt, ...)  do {\
-    printf("[FATAL][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+#define SHARDORA_FATAL(fmt, ...)  do {\
+    printf("[FATAL][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
 } while (0)

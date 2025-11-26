@@ -14,7 +14,7 @@ int ToTxLocalItem::HandleTx(
     pools::protobuf::ToTxMessageItem to_tx_item;
     if (!to_tx_item.ParseFromString(tx_info->value())) {
         block_tx.set_status(kConsensusError);
-        ZJC_WARN("local get to txs info failed: %s",
+        SHARDORA_WARN("local get to txs info failed: %s",
             common::Encode::HexEncode(tx_info->value()).c_str());
         return consensus::kConsensusSuccess;
     }
@@ -25,7 +25,7 @@ int ToTxLocalItem::HandleTx(
     auto& unique_hash = tx_info->key();
     std::string val;
     if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-        ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        SHARDORA_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
         return consensus::kConsensusError;
     }
 
@@ -35,14 +35,14 @@ int ToTxLocalItem::HandleTx(
     block_tx.set_nonce(src_to_nonce + 1);
     auto& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
     CreateLocalToTx(view_block, zjc_host, acc_balance_map, to_tx_item, block_to_txs);
-    ZJC_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+    SHARDORA_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-    ZJC_DEBUG("success add addr: %s, value: %s", 
+    SHARDORA_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
-    ZJC_DEBUG("success consensus local transfer to unique hash: %s, %s",
+    SHARDORA_DEBUG("success consensus local transfer to unique hash: %s, %s",
         common::Encode::HexEncode(unique_hash).c_str(), 
         ProtobufToJson(block_to_txs).c_str());
     return consensus::kConsensusSuccess;
@@ -56,7 +56,7 @@ void ToTxLocalItem::CreateLocalToTx(
         block::protobuf::ConsensusToTxs& block_to_txs) {
     if (to_tx_item.des().size() != common::kUnicastAddressLength && 
             to_tx_item.des().size() != common::kPreypamentAddressLength) {
-        ZJC_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
+        SHARDORA_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
         assert(false);
         return;
     }
@@ -71,7 +71,7 @@ void ToTxLocalItem::CreateLocalToTx(
             &to_balance, 
             &nonce);
         if (balance_status != kConsensusSuccess) {
-            ZJC_DEBUG("create new address: %s, balance: %lu",
+            SHARDORA_DEBUG("create new address: %s, balance: %lu",
                 common::Encode::HexEncode(addr).c_str(),
                 amount);
             to_balance = 0;
@@ -83,14 +83,14 @@ void ToTxLocalItem::CreateLocalToTx(
             addr_info->set_latest_height(view_block.block_info().height());
             acc_balance_map[addr] = addr_info;
         } else {
-            ZJC_DEBUG("success get to balance: %s, %lu",
+            SHARDORA_DEBUG("success get to balance: %s, %lu",
                 common::Encode::HexEncode(addr).c_str(), 
                 to_balance);
         }
 
         if (amount <= 0 && 
                 to_tx_item.library_bytes().empty()) {
-            ZJC_DEBUG("failed just contract set prepayment add addr: %s, value: %s, to item: %s", 
+            SHARDORA_DEBUG("failed just contract set prepayment add addr: %s, value: %s, to item: %s", 
                 common::Encode::HexEncode(addr).c_str(), 
                 ProtobufToJson(*(acc_balance_map[addr])).c_str(),
                 ProtobufToJson(to_tx_item).c_str());
@@ -104,11 +104,11 @@ void ToTxLocalItem::CreateLocalToTx(
             acc_balance_map[addr]->set_bytes_code(to_tx_item.library_bytes());
         }
 
-        ZJC_DEBUG("success add addr: %s, value: %s, to item: %s", 
+        SHARDORA_DEBUG("success add addr: %s, value: %s, to item: %s", 
             common::Encode::HexEncode(addr).c_str(), 
             ProtobufToJson(*(acc_balance_map[addr])).c_str(),
             ProtobufToJson(to_tx_item).c_str());
-        ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
+        SHARDORA_DEBUG("add local to: %s, balance: %lu, amount: %lu",
             common::Encode::HexEncode(addr).c_str(),
             to_balance,
             amount);

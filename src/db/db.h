@@ -180,7 +180,7 @@ public:
             return db::DbStatus();
         }
 
-        ZJC_DEBUG("write to db datasize: %u", db_batch.ApproximateSize());
+        SHARDORA_DEBUG("write to db datasize: %u", db_batch.ApproximateSize());
         DbWriteOptions write_opt;
 #ifndef LEVELDB
         // write_opt.disableWAL = true;

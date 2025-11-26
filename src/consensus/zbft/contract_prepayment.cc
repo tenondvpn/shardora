@@ -38,7 +38,7 @@ int ContractPrepayment::HandleTx(
             consensus::kKeyValueStorageEachBytes;
         if (from_balance < gas_used  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("balance error: %lu, %lu, %lu",
+            SHARDORA_DEBUG("balance error: %lu, %lu, %lu",
                 from_balance,
                 block_tx.gas_limit(),
                 block_tx.gas_price());
@@ -47,7 +47,7 @@ int ContractPrepayment::HandleTx(
 
         if (block_tx.gas_limit() < gas_used) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
+            SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
                 from_balance, block_tx.gas_limit(), gas_used);
             break;
         }
@@ -63,12 +63,12 @@ int ContractPrepayment::HandleTx(
             } else {
                 from_balance -= gas_used * block_tx.gas_price();
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
+                SHARDORA_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
             }
         } else {
             from_balance = 0;
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
-            ZJC_ERROR("leader balance error: %llu, %llu",
+            SHARDORA_ERROR("leader balance error: %llu, %llu",
                 from_balance, gas_used * block_tx.gas_price());
         }
     } else {
@@ -86,12 +86,12 @@ int ContractPrepayment::HandleTx(
     assert(acc_balance_map[from]->has_addr());
     assert(acc_balance_map[from]->has_type());
     assert(acc_balance_map[from]->has_latest_height());
-    ZJC_DEBUG("success add addr: %s, value: %s", 
+    SHARDORA_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu, balance: %lu",
+    SHARDORA_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu, balance: %lu",
         block_tx.status(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),

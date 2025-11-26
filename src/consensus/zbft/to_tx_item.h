@@ -23,7 +23,7 @@ public:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        ZJC_DEBUG("to tx consensus coming: %s, nonce: %lu, val: %s", 
+        SHARDORA_DEBUG("to tx consensus coming: %s, nonce: %lu, val: %s", 
             common::Encode::HexEncode(tx_info.to()).c_str(), 
             tx_info.nonce(),
             common::Encode::HexEncode(tx_info.value()).c_str());
@@ -48,19 +48,19 @@ public:
         GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
         // if (to_nonce + 1 != block_tx.nonce()) {
         //     block_tx.set_status(kConsensusNonceInvalid);
-        //     ZJC_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        //     SHARDORA_WARN("failed call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
         //         view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         //     return consensus::kConsensusSuccess;
         // }
 
-        ZJC_WARN("call to tx item pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        SHARDORA_WARN("call to tx item pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
         auto& unique_hash = tx_info->key();
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-            ZJC_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            SHARDORA_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
@@ -79,7 +79,7 @@ public:
         //     auto to_heights = all_to_txs.mutable_to_tx_arr(i);
         //     auto& heights = *to_heights->mutable_to_heights();
         //     heights.set_block_height(view_block.block_info().height());
-        //     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
+        //     SHARDORA_DEBUG("new to tx coming: %lu, sharding id: %u, to_tx: %s, des sharding id: %u",
         //         view_block.block_info().height(), 
         //         heights.sharding_id(), 
         //         ProtobufToJson(*to_heights).c_str(),
@@ -96,7 +96,7 @@ public:
         //                     tos_item.des(),
         //                     tos_item.join_infos(join_i),
         //                     zjc_host.db_batch_);
-        //                 ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, block net: %u, "
+        //                 SHARDORA_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, block net: %u, "
         //                     "block pool: %u, block height: %lu, local net id: %u", 
         //                     common::Encode::HexEncode(tos_item.des()).c_str(), 
         //                     tos_item.sharding_id(),
@@ -112,11 +112,11 @@ public:
 
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
-        ZJC_DEBUG("success add addr: %s, value: %s", 
+        SHARDORA_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
 
-        ZJC_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        SHARDORA_WARN("success call time block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         return consensus::kConsensusSuccess;
     }

@@ -37,7 +37,7 @@ int AccountManager::Init(
     uint16_t network_id = network::GetLocalConsensusNetworkId();
     immutable_pool_addr.append(std::string((char*)&network_id, sizeof(network_id)));
     immutable_pool_addr_ = immutable_pool_addr;
-    ZJC_DEBUG("init pool immutable index net: %u, base address: %s", 
+    SHARDORA_DEBUG("init pool immutable index net: %u, base address: %s", 
         network_id, common::Encode::HexEncode(immutable_pool_addr_).c_str());
     std::unordered_set<uint32_t> pool_idx_set;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
@@ -57,7 +57,7 @@ int AccountManager::Init(
 
         pool_base_addrs_[pool_idx] = addr;
         pool_idx_set.insert(pool_idx);
-        ZJC_DEBUG("init pool index: %u, base address: %s", 
+        SHARDORA_DEBUG("init pool index: %u, base address: %s", 
             pool_idx, common::Encode::HexEncode(addr).c_str());
     }
 

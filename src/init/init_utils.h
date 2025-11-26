@@ -14,10 +14,10 @@
 #include "common/utils.h"
 #include "protos/bls.pb.h"
 
-#define INIT_DEBUG(fmt, ...) ZJC_DEBUG("[init]" fmt, ## __VA_ARGS__)
-#define INIT_INFO(fmt, ...) ZJC_INFO("[init]" fmt, ## __VA_ARGS__)
-#define INIT_WARN(fmt, ...) ZJC_WARN("[init]" fmt, ## __VA_ARGS__)
-#define INIT_ERROR(fmt, ...) ZJC_ERROR("[init]" fmt, ## __VA_ARGS__)
+#define INIT_DEBUG(fmt, ...) SHARDORA_DEBUG("[init]" fmt, ## __VA_ARGS__)
+#define INIT_INFO(fmt, ...) SHARDORA_INFO("[init]" fmt, ## __VA_ARGS__)
+#define INIT_WARN(fmt, ...) SHARDORA_WARN("[init]" fmt, ## __VA_ARGS__)
+#define INIT_ERROR(fmt, ...) SHARDORA_ERROR("[init]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

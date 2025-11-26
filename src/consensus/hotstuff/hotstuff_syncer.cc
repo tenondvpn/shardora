@@ -110,7 +110,7 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
         // 发送本地区块链，只发送 hash 和 parent_hash
         auto vb_item = req->add_view_blocks();
         vb_item->mutable_qc()->set_view_block_hash(vb->qc().view_block_hash());
-        ZJC_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
+        SHARDORA_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
             common::Encode::HexEncode(vb_item->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(vb_item->parent_hash()).c_str(),
             vb_item->qc().network_id(),
@@ -141,7 +141,7 @@ void HotstuffSyncer::SyncAllPools() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
             if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-                // ZJC_DEBUG("pool: %d, cur chain: %s, local: %d",
+                // SHARDORA_DEBUG("pool: %d, cur chain: %s, local: %d",
                 //     pool_idx, view_block_chain(pool_idx)->String().c_str(),
                 //     crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
                 SyncPool(pool_idx, 1);
@@ -202,7 +202,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::Vi
     }
     // 获取邻居节点
     std::vector<dht::NodePtr> nodes;
-    ZJC_DEBUG("now get universal dht 0");
+    SHARDORA_DEBUG("now get universal dht 0");
     auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht = *dht_ptr->readonly_hash_sort_dht();
     dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
@@ -245,7 +245,7 @@ Status HotstuffSyncer::SendRequest(uint32_t network_id, view_block::protobuf::Vi
 
 // 处理 request 类型消息
 Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("handle message hash: %lu", msg_ptr->header.hash64());
+    SHARDORA_DEBUG("handle message hash: %lu", msg_ptr->header.hash64());
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_req());
     
@@ -386,7 +386,7 @@ Status HotstuffSyncer::processRequest(const transport::MessagePtr& msg_ptr) {
 }
 
 Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("handle message hash: %lu", msg_ptr->header.hash64());
+    SHARDORA_DEBUG("handle message hash: %lu", msg_ptr->header.hash64());
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_single_req());
 
@@ -435,7 +435,7 @@ Status HotstuffSyncer::processRequestSingle(const transport::MessagePtr& msg_ptr
     view_block_res.set_query_hash(query_hash); // 用于帮助 src 节点过滤冗余
     res_view_block_msg.set_create_time_us(common::TimeUtils::TimestampUs());
 
-    ZJC_DEBUG("pool: %d Send response single, block_size: %lu, network: %lu",
+    SHARDORA_DEBUG("pool: %d Send response single, block_size: %lu, network: %lu",
         pool_idx, view_block_res.view_block_items().size(), network_id);
 
     return ReplyMsg(network_id, res_view_block_msg, msg_ptr);
@@ -474,7 +474,7 @@ Status HotstuffSyncer::ReplyMsg(
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto ip = msg_ptr->header.view_block_proto().src_ip();
     auto port = msg_ptr->header.view_block_proto().src_port();
-    ZJC_DEBUG("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d, hash64: %lu",
+    SHARDORA_DEBUG("pool: %d, network: %lu, ip: %s, port: %d, with_query_hash: %d, hash64: %lu",
         view_block_msg.view_block_res().pool_idx(), network_id,
         ip.c_str(),
         port,
@@ -486,7 +486,7 @@ Status HotstuffSyncer::ReplyMsg(
 
 // 处理 response 类型消息
 Status HotstuffSyncer::processResponse(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("handle hotstuff syncer message hash64: %lu", msg_ptr->header.hash64());
+    SHARDORA_DEBUG("handle hotstuff syncer message hash64: %lu", msg_ptr->header.hash64());
     auto& view_block_msg = msg_ptr->header.view_block_proto();
     assert(view_block_msg.has_view_block_res());
     uint32_t network_id = view_block_msg.view_block_res().network_id();
@@ -533,7 +533,7 @@ Status HotstuffSyncer::processResponseQcTc(
         if (high_view_block->qc().network_id() != common::GlobalInfo::Instance()->network_id() ||
                 (view_block_res.has_high_tc() &&
                 view_block_res.high_tc().network_id() != common::GlobalInfo::Instance()->network_id())) {
-            ZJC_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
+            SHARDORA_DEBUG("error network id hight qc: %u, hight tc: %u, local: %u",
                 high_view_block->qc().network_id(), view_block_res.high_tc().network_id(), 
                 common::GlobalInfo::Instance()->network_id());
             assert(false);
@@ -542,7 +542,7 @@ Status HotstuffSyncer::processResponseQcTc(
 
         // 设置 view_block 的 qc
         // view_block_chain(pool_idx)->SetQcOf(highqc->view_block_hash(), highqc);
-        ZJC_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
+        SHARDORA_DEBUG("response received qctc pool_idx: %d, tc: %d, qc: %d",
             pool_idx, view_block_res.high_tc().view(), high_view_block->qc().view());
     }
     
@@ -551,7 +551,7 @@ Status HotstuffSyncer::processResponseQcTc(
     // pm->NewTc(tc_ptr);
     // 尝试做 commit
     if (high_view_block) {
-        ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
+        SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu",
             high_view_block->qc().view(),
             high_view_block->qc().network_id(),
             high_view_block->qc().pool_index(),
@@ -579,7 +579,7 @@ Status HotstuffSyncer::processResponseLatestCommittedBlock(
         return Status::kSuccess;
     }
 
-    ZJC_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, pb_latest_committed_block.qc().view());
+    SHARDORA_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, pb_latest_committed_block.qc().view());
     // 执行 latest committed block
     auto hf = hotstuff_mgr_->hotstuff(pb_latest_committed_block.qc().pool_index());
     auto latest_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>(pb_latest_committed_block);
@@ -635,7 +635,7 @@ Status HotstuffSyncer::MergeChain(
         }
         Status s = onRecViewBlock(pool_idx, ori_chain, *sync_block);
         if (s != Status::kSuccess) {
-            ZJC_ERROR("pool: %d, merge chain block: %lu failed, s: %d",
+            SHARDORA_ERROR("pool: %d, merge chain block: %lu failed, s: %d",
                 pool_idx, sync_block->qc().view(), s);
             continue;
         }
@@ -645,7 +645,7 @@ Status HotstuffSyncer::MergeChain(
     // 保证落后节点虽然没有最新的提案，但是有最新的 qc，并且 leader 一致
     transport::MessagePtr msg_ptr;
     hotstuff_mgr_->hotstuff(pool_idx)->TryCommit(msg_ptr, high_commit_qc.qc());
-    ZJC_DEBUG("0 success new set qc view: %lu, %u_%u_%lu",
+    SHARDORA_DEBUG("0 success new set qc view: %lu, %u_%u_%lu",
             high_commit_qc.qc().view(),
             high_commit_qc.qc().network_id(),
             high_commit_qc.qc().pool_index(),
@@ -666,7 +666,7 @@ Status HotstuffSyncer::onRecViewBlock(
 
     Status s = Status::kSuccess;    
     auto view_block_ptr = std::make_shared<ViewBlock>(view_block);
-    ZJC_DEBUG("success new set qc view: %lu, %u_%u_%lu",
+    SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu",
         view_block_ptr->qc().view(),
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
@@ -687,7 +687,7 @@ Status HotstuffSyncer::onRecViewBlock(
     }
     s = accep->AcceptSync(*view_block_ptr);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d sync accept failed", pool_idx);
+        SHARDORA_ERROR("pool: %d sync accept failed", pool_idx);
         return s;
     }    
 
@@ -695,7 +695,7 @@ Status HotstuffSyncer::onRecViewBlock(
     // TODO: check valid
     s = hotstuff->view_block_chain()->Store(view_block_ptr, true, nullptr, nullptr, false);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,
+        SHARDORA_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,
             common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(), 
             view_block.qc().view(), 
             view_block_chain(pool_idx)->String().c_str());

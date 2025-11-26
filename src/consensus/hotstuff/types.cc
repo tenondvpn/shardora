@@ -18,7 +18,7 @@ HashStr GetQCMsgHash(const view_block::protobuf::QcItem& qc_item) {
         proto_qc->elect_height() << proto_qc->leader_idx();
     std::string msg = ss.str();
     auto msg_hash = common::Hash::keccak256(msg); 
-    ZJC_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
+    SHARDORA_DEBUG("success get qc msg hash net: %u, pool: %u, view: %lu, view_block_hash: %s, "
         " elect_height: %lu, leader_idx: %u, msg_hash: %s",
         proto_qc->network_id(),
         proto_qc->pool_index(),
@@ -50,7 +50,7 @@ bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item) {
 //     proto_qc_->set_sign_z(libBLS::ThresholdUtils::fieldElementToString(bls_agg_sign_->Z));
 //     bool res = proto_qc_->SerializeToString(res);
 //     if (!res) {
-//         ZJC_FATAL("serilize protobuf failed!");
+//         SHARDORA_FATAL("serilize protobuf failed!");
 //     }
 // }
 
@@ -107,7 +107,7 @@ bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item) {
 //         msg.append((char*)&fail_num, sizeof(fail_num));
 //     }
 
-//     ZJC_DEBUG("do hash qc_hash: %s, block hash: %s, parent_hash: %s, leader_idx: %u, view: %lu", 
+//     SHARDORA_DEBUG("do hash qc_hash: %s, block hash: %s, parent_hash: %s, leader_idx: %u, view: %lu", 
 //         common::Encode::HexEncode(qc_hash).c_str(), 
 //         common::Encode::HexEncode(block_hash).c_str(),
 //         common::Encode::HexEncode(view_block_item.parent_hash()).c_str(),

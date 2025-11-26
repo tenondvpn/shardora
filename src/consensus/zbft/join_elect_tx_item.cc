@@ -52,14 +52,14 @@ int JoinElectTxItem::HandleTx(
             if (join_info.shard_id() != common::GlobalInfo::Instance()->network_id() ||
                     join_info.shard_id() != address_info->sharding_id()) {
                 block_tx.set_status(consensus::kConsensusError);
-                ZJC_DEBUG("shard error: %lu", join_info.shard_id());
+                SHARDORA_DEBUG("shard error: %lu", join_info.shard_id());
                 break;
             }
         }
 
         if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("id: %s balance error: %lu, %lu, %lu",
+            SHARDORA_DEBUG("id: %s balance error: %lu, %lu, %lu",
                 common::Encode::HexEncode(from).c_str(),
                 from_balance, block_tx.gas_limit(), block_tx.gas_price());
             break;
@@ -67,7 +67,7 @@ int JoinElectTxItem::HandleTx(
 
         if (block_tx.gas_limit() < gas_used) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("1 id: %s  balance error: %lu, %lu, %lu",
+            SHARDORA_DEBUG("1 id: %s  balance error: %lu, %lu, %lu",
                 common::Encode::HexEncode(from).c_str(),
                 from_balance, block_tx.gas_limit(), gas_used);
             break;
@@ -81,7 +81,7 @@ int JoinElectTxItem::HandleTx(
         } else {
             from_balance = 0;
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
-            ZJC_ERROR("id: %s leader balance error: %llu, %llu",
+            SHARDORA_ERROR("id: %s leader balance error: %llu, %llu",
                 common::Encode::HexEncode(from).c_str(),
                 from_balance, gas_used * block_tx.gas_price());
         }
@@ -114,14 +114,14 @@ int JoinElectTxItem::HandleTx(
 
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
-    ZJC_DEBUG("success add addr: %s, value: %s", 
+    SHARDORA_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     auto* block_join_info = view_block.mutable_block_info()->add_joins();
     *block_join_info = join_info;
-    ZJC_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
+    SHARDORA_DEBUG("status: %d, success join elect: %s, pool: %u, height: %lu, des shard: %d",
         block_tx.status(), common::Encode::HexEncode(from).c_str(),
         view_block.qc().pool_index(),
         block.height(),

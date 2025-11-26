@@ -65,7 +65,7 @@ public:
 
     inline int32_t push(Type val) {
         if (size_ >= max_size_ && OperaterMinOrMax(val, data_[0])) {
-            ZJC_ERROR("min heap push failed![%d] is max heap: %d",
+            SHARDORA_ERROR("min heap push failed![%d] is max heap: %d",
                 OperaterMinOrMax(val, data_[0]));
             return -1;
         }

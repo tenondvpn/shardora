@@ -76,23 +76,23 @@ static int CreateTransactionWithAttr(
         transport::protobuf::Header& msg) {
     auto from = http_handler->security_ptr()->GetAddress(from_pk);
     if (from.empty()) {
-        ZJC_DEBUG("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
+        SHARDORA_DEBUG("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
         return kAccountNotExists;
     }
 
     if (from == to) {
-        ZJC_DEBUG("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
+        SHARDORA_DEBUG("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
         return kFromEqualToInvalid;
     }
 
     if (from.size() != 20 || to.size() != 20) {
-        ZJC_DEBUG("failed get address size error: %s, %s",
+        SHARDORA_DEBUG("failed get address size error: %s, %s",
             common::Encode::HexEncode(from).c_str(), 
             common::Encode::HexEncode(to).c_str());
         return kAccountNotExists;
     }
 
-    ZJC_DEBUG("from: %s, to: %s, nonce: %lu",
+    SHARDORA_DEBUG("from: %s, to: %s, nonce: %lu",
         common::Encode::HexEncode(from).c_str(),
         common::Encode::HexEncode(to).c_str(),
         nonce);
@@ -140,7 +140,7 @@ static int CreateTransactionWithAttr(
     if (!pepay.empty()) {
         uint64_t pepay_val = 0;
         if (!common::StringUtil::ToUint64(pepay, &pepay_val)) {
-            ZJC_WARN("get prepay failed %s", pepay);
+            SHARDORA_WARN("get prepay failed %s", pepay);
             return kSignatureInvalid;
         }
 
@@ -152,7 +152,7 @@ static int CreateTransactionWithAttr(
     sign[64] = char(sign_v);
     if (http_handler->security_ptr()->Verify(
             tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-        ZJC_ERROR("verify signature failed tx_hash: %s, "
+        SHARDORA_ERROR("verify signature failed tx_hash: %s, "
             "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
             common::Encode::HexEncode(tx_hash).c_str(),
             common::Encode::HexEncode(sign_r).c_str(),
@@ -168,7 +168,7 @@ static int CreateTransactionWithAttr(
 }
  
 static void HttpTransaction(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("http transaction coming.");
+    SHARDORA_DEBUG("http transaction coming.");
     auto nonce_str = req.get_param_value("nonce");
     auto frompk = req.get_param_value("pubkey");
     auto to = req.get_param_value("to");
@@ -253,7 +253,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     }
 
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    ZJC_DEBUG("http handler success get http server thread index: %d, address: %s", 
+    SHARDORA_DEBUG("http handler success get http server thread index: %d, address: %s", 
         thread_index, 
         common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str());
@@ -268,7 +268,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     }
     
     transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-    ZJC_WARN("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
+    SHARDORA_WARN("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
         thread_index, 
         common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(),
@@ -276,12 +276,12 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     http_handler->net_handler()->NewHttpServer(msg_ptr);
     std::string res = std::string("ok");
     http_res.set_content(res, "text/plain");
-    ZJC_WARN("http transaction success %s, %s, nonce: %lu", common::Encode::HexEncode(
+    SHARDORA_WARN("http transaction success %s, %s, nonce: %lu", common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddress(common::Encode::HexDecode(frompk))).c_str(), to, nonce);
 }
 
 static void QueryContract(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("query contract coming.");
+    SHARDORA_DEBUG("query contract coming.");
     auto tmp_contract_addr = req.get_param_value("address");
     auto tmp_input = req.get_param_value("input");
     auto tmp_from = req.get_param_value("from");
@@ -298,7 +298,7 @@ static void QueryContract(const httplib::Request& req, httplib::Response& http_r
 
     if (!addr_info) {
         std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
-        ZJC_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         http_res.set_content(res, "text/plain");
         return;
     }
@@ -308,7 +308,7 @@ static void QueryContract(const httplib::Request& req, httplib::Response& http_r
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         http_res.set_content(res, "text/plain");
-        ZJC_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
@@ -352,12 +352,12 @@ static void QueryContract(const httplib::Request& req, httplib::Response& http_r
             std::to_string(result.status_code) + 
             ", exec_res: " + std::to_string(exec_res);
         http_res.set_content(res, "text/plain");
-        ZJC_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_INFO("query contract error: %s.", res.c_str());
         return;
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
-    ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    SHARDORA_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     if (result.output_size < 64) {
         auto res = common::Encode::HexEncode(qdata); 
         http_res.set_content(res, "text/plain");
@@ -368,12 +368,12 @@ static void QueryContract(const httplib::Request& req, httplib::Response& http_r
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res_str(qdata.c_str() + 64, len);
     http_res.set_content(http_res_str, "text/plain");
-    ZJC_INFO("query contract success data: %s", http_res_str.c_str());
+    SHARDORA_INFO("query contract success data: %s", http_res_str.c_str());
 }
 
 
 static void AbiQueryContract(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("query contract coming.");
+    SHARDORA_DEBUG("query contract coming.");
     auto tmp_contract_addr = req.get_param_value("address");
     auto tmp_input = req.get_param_value("input");
     auto tmp_from = req.get_param_value("from");
@@ -391,7 +391,7 @@ static void AbiQueryContract(const httplib::Request& req, httplib::Response& htt
     if (!addr_info) {
         std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
         http_res.set_content(res, "text/plain");
-        ZJC_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
@@ -400,7 +400,7 @@ static void AbiQueryContract(const httplib::Request& req, httplib::Response& htt
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         http_res.set_content(res, "text/plain");
-        ZJC_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
@@ -444,13 +444,13 @@ static void AbiQueryContract(const httplib::Request& req, httplib::Response& htt
             std::to_string(result.status_code) + 
             ", exec_res: " + std::to_string(exec_res);
         http_res.set_content(res, "text/plain");
-        ZJC_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_INFO("query contract error: %s.", res.c_str());
         return;
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
     auto hex_data = common::Encode::HexEncode(qdata);
-    // ZJC_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    // SHARDORA_DEBUG("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     // if (result.output_size < 64) {
     //     auto res = common::Encode::HexEncode(qdata); 
     //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -462,7 +462,7 @@ static void AbiQueryContract(const httplib::Request& req, httplib::Response& htt
     // uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     // std::string http_res(qdata.c_str() + 64, len);
     http_res.set_content(hex_data, "text/plain");
-    ZJC_INFO("query contract success data: %s", hex_data.c_str());
+    SHARDORA_INFO("query contract success data: %s", hex_data.c_str());
 }
 
 static void QueryAccount(const httplib::Request& req, httplib::Response& http_res) {
@@ -470,7 +470,7 @@ static void QueryAccount(const httplib::Request& req, httplib::Response& http_re
     if (tmp_addr.empty()) {
         std::string res = common::StringUtil::Format("param address is null");
         http_res.set_content(res, "text/plain");
-        ZJC_DEBUG("%s", res.c_str());
+        SHARDORA_DEBUG("%s", res.c_str());
         return;
     }
 
@@ -484,7 +484,7 @@ static void QueryAccount(const httplib::Request& req, httplib::Response& http_re
     if (addr_info == nullptr) {
         std::string res = "get address failed from cache: " + addr;
         http_res.set_content(res, "text/plain");
-        ZJC_DEBUG("%s", res.c_str());
+        SHARDORA_DEBUG("%s", res.c_str());
         return;
     }
 
@@ -493,16 +493,16 @@ static void QueryAccount(const httplib::Request& req, httplib::Response& http_re
     if (!st.ok()) {
         std::string res = "json parse failed: " + addr;
         http_res.set_content(res, "text/plain");
-        ZJC_DEBUG("%s", res.c_str());
+        SHARDORA_DEBUG("%s", res.c_str());
         return;
     }
 
     http_res.set_content(json_str, "text/plain");
-    ZJC_DEBUG("%s", json_str.c_str());
+    SHARDORA_DEBUG("%s", json_str.c_str());
 }
 
 static void AccountsValid(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("query account.");
+    SHARDORA_DEBUG("query account.");
     auto balance = req.get_param_value("balance");
     uint64_t balance_val = 0;
     if (!common::StringUtil::ToUint64(balance, &balance_val)) {
@@ -542,9 +542,9 @@ static void AccountsValid(const httplib::Request& req, httplib::Response& http_r
 
         if (addr_info != nullptr && addr_info->balance() >= balance_val) {
             res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
-            ZJC_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+            SHARDORA_DEBUG("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
         } else {
-            ZJC_DEBUG("invalid addr: %s, balance: %lu",
+            SHARDORA_DEBUG("invalid addr: %s, balance: %lu",
                 addrs_splits[i], 
                 (addr_info ? addr_info->balance() : 0));
         }
@@ -555,7 +555,7 @@ static void AccountsValid(const httplib::Request& req, httplib::Response& http_r
 }
 
 static void GetBlockWithGid(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("query account.");
+    SHARDORA_DEBUG("query account.");
     auto addr = req.get_param_value("addr");
     if (addr.empty()) {
         std::string res = std::string("addr not exists.");
@@ -591,12 +591,12 @@ static void GetBlockWithGid(const httplib::Request& req, httplib::Response& http
     }
        
     auto json_str = res_json.dump();
-    ZJC_DEBUG("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
+    SHARDORA_DEBUG("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
     http_res.set_content(res_json, "text/plain");
 }
 
 static void PrepaymentsValid(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("query account.");
+    SHARDORA_DEBUG("query account.");
     auto balance = req.get_param_value("balance");
     if (balance.empty()) {
         std::string res = std::string("balance not exists.");
@@ -649,9 +649,9 @@ static void PrepaymentsValid(const httplib::Request& req, httplib::Response& htt
 
         if (addr_info != nullptr && addr_info->balance() >= balance_val) {
             res_json["prepayments"][invalid_addr_index++] = addrs_splits[i];
-            ZJC_DEBUG("valid prepayment: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+            SHARDORA_DEBUG("valid prepayment: %s, balance: %lu", addrs_splits[i], addr_info->balance());
         } else {
-            ZJC_DEBUG("invalid prepayment: %s, balance: %lu",
+            SHARDORA_DEBUG("invalid prepayment: %s, balance: %lu",
                 addrs_splits[i], 
                 (addr_info ? addr_info->balance() : 0));
         }
@@ -681,11 +681,11 @@ static void GidsValid(const httplib::Request& req, httplib::Response& http_res) 
             continue;
         }
 
-        ZJC_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
+        SHARDORA_DEBUG("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         auto res = false; //prefix_db->JustCheckCommitedGidExists(gid);
         if (res) {
             res_json["gids"][invalid_addr_index++] = addrs_splits[i];
-            ZJC_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
+            SHARDORA_DEBUG("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
 
@@ -728,7 +728,7 @@ static void GetProxyReencInfo(const httplib::Request& req, httplib::Response& ht
     auto bls_pk_json = res_json["value"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    ZJC_WARN("GetProxyReencInfo 4.");
+    SHARDORA_WARN("GetProxyReencInfo 4.");
     for (uint32_t i = 0; i < count; ++i) {
         auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string prikey;
@@ -736,7 +736,7 @@ static void GetProxyReencInfo(const httplib::Request& req, httplib::Response& ht
         auto public_key = proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
         std::string pubkey;
         zjcvm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
-        ZJC_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
+        SHARDORA_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
             common::Encode::HexEncode(private_key).c_str(), 
             common::Encode::HexEncode(public_key).c_str(), 
             common::Encode::HexEncode(prikey).c_str(),
@@ -754,7 +754,7 @@ static void GetProxyReencInfo(const httplib::Request& req, httplib::Response& ht
 
 
 static void GetSecAndEncData(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_DEBUG("http transaction coming.");
+    SHARDORA_DEBUG("http transaction coming.");
     contract::ContractReEncryption prox_renc;
     zjcvm::ZjchainHost zjc_host;
     contract::CallParameters param;
@@ -782,7 +782,7 @@ static void GetSecAndEncData(const httplib::Request& req, httplib::Response& htt
     auto seckey = common::Hash::Hash256(m.toString());
     std::string sec_data;
     secptr->Encrypt(data, seckey, &sec_data);
-    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+    SHARDORA_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         test_data.c_str(), 
         common::Encode::HexEncode(test_data).c_str(),
         common::Encode::HexEncode(m.toString()).c_str(), 
@@ -799,7 +799,7 @@ static void GetSecAndEncData(const httplib::Request& req, httplib::Response& htt
 }
 
 static void ProxDecryption(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_WARN("ProxDecryption coming 0.");
+    SHARDORA_WARN("ProxDecryption coming 0.");
     contract::ContractReEncryption prox_renc;
     zjcvm::ZjchainHost zjc_host;
     contract::CallParameters param;
@@ -812,7 +812,7 @@ static void ProxDecryption(const httplib::Request& req, httplib::Response& http_
         return;
     }
 
-    ZJC_WARN("ProxDecryption coming 2.");
+    SHARDORA_WARN("ProxDecryption coming 2.");
     std::string res_data;
     prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
     std::string hash256 = common::Hash::Hash256(res_data);
@@ -832,7 +832,7 @@ static void ProxDecryption(const httplib::Request& req, httplib::Response& http_
 
     std::string dec_data;
     secptr->Decrypt(kv_info.value(), hash256, &dec_data);
-    ZJC_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+    SHARDORA_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         dec_data.c_str(), 
         common::Encode::HexEncode(dec_data).c_str(),
         common::Encode::HexEncode(res_data).c_str(), 
@@ -845,13 +845,13 @@ static void ProxDecryption(const httplib::Request& req, httplib::Response& http_
     res_json["encdata"] = common::Encode::HexEncode(kv_info.value());
     res_json["decdata"] = std::string(dec_data.c_str());
     auto json_str = res_json.dump();
-    ZJC_WARN("ProxDecryption coming 3.");
+    SHARDORA_WARN("ProxDecryption coming 3.");
     http_res.set_content(json_str, "text/plain");
-    ZJC_WARN("ProxDecryption coming 4.");
+    SHARDORA_WARN("ProxDecryption coming 4.");
 }
 
 static void ArsCreateSecKeys(const httplib::Request& req, httplib::Response& http_res) {
-    ZJC_WARN("ArsCreateSecKeys coming 0.");
+    SHARDORA_WARN("ArsCreateSecKeys coming 0.");
     auto keys = req.get_param_value("keys");
     if (keys.empty()) {
         std::string res = common::StringUtil::Format("param keys is null");
@@ -903,16 +903,16 @@ static void ArsCreateSecKeys(const httplib::Request& req, httplib::Response& htt
     }
 
     auto json_str = res_json.dump();
-    ZJC_WARN("ArsCreateSecKeys coming 3.");
+    SHARDORA_WARN("ArsCreateSecKeys coming 3.");
     http_res.set_content(json_str, "text/plain");
-    ZJC_WARN("ArsCreateSecKeys coming 4.");
+    SHARDORA_WARN("ArsCreateSecKeys coming 4.");
 }
 
 static void QueryInit(const httplib::Request& req, httplib::Response& http_res) {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
     http_res.set_content(res, "text/plain");
-    ZJC_DEBUG("sunccess init http server: %d", thread_index);
+    SHARDORA_DEBUG("sunccess init http server: %d", thread_index);
 }
 
 HttpHandler::HttpHandler() {
@@ -927,9 +927,9 @@ HttpHandler::~HttpHandler() {
 }
 
 void HttpHandler::Run() {
-    ZJC_DEBUG("http server now listen!");
+    SHARDORA_DEBUG("http server now listen!");
     svr.listen(http_ip_, http_port_);
-    ZJC_DEBUG("http server now listen over!");
+    SHARDORA_DEBUG("http server now listen over!");
 }
 
 void HttpHandler::Init(

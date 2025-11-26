@@ -33,7 +33,7 @@
 //     for (auto iter = orders.begin(); iter != orders.end(); ++iter) {
 //         order_map_[(*iter)->buyer()] = *iter;
 //         CHECK_MEMORY_SIZE(order_map_);
-//         ZJC_DEBUG("success init get order: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
+//         SHARDORA_DEBUG("success init get order: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
 //             common::Encode::HexEncode((*iter)->seller()).c_str(), 
 //             common::Encode::HexEncode((*iter)->buyer()).c_str(),
 //             (*iter)->all(), 
@@ -44,7 +44,7 @@
 //     for (auto iter = sells.begin(); iter != sells.end(); ++iter) {
 //         sell_map_[(*iter)->seller()] = *iter;
 //         CHECK_MEMORY_SIZE(sell_map_);
-//         ZJC_DEBUG("success init get sell: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
+//         SHARDORA_DEBUG("success init get sell: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
 //             common::Encode::HexEncode((*iter)->seller()).c_str(), 
 //             common::Encode::HexEncode((*iter)->buyer()).c_str(),
 //             (*iter)->all(), 
@@ -53,7 +53,7 @@
 //     }
 
 //     if (GetAllC2cs() != 0) {
-//         ZJC_DEBUG("get all c2cs failed!");
+//         SHARDORA_DEBUG("get all c2cs failed!");
 //         // return 1;
 //     }
 
@@ -71,7 +71,7 @@
 //     CheckC2cStatus(ws_tx_res);
 //     if (ws_tx_res.txs_size() > 0 || ws_tx_res.has_init_info()) {
 //         // std::lock_guard<std::mutex> g(refresh_hdls_mutex_);
-//         ZJC_INFO("success broadcast ws message: %d, %d", ws_tx_res.txs_size(), refresh_hdls_.size());
+//         SHARDORA_INFO("success broadcast ws message: %d, %d", ws_tx_res.txs_size(), refresh_hdls_.size());
 //         std::string msg = common::Encode::HexEncode(ws_tx_res.SerializeAsString());
 //         for (auto iter = refresh_hdls_.begin(); iter != refresh_hdls_.end(); ++iter) {
 //             websocketpp::connection_hdl hdl = *iter;
@@ -96,7 +96,7 @@
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //             ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//                 ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//                 SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //                 if (ck_block.GetRowCount() > got_count) {
 //                     got_count = ck_block.GetRowCount();
 //                 }
@@ -125,12 +125,12 @@
 //                         CHECK_MEMORY_SIZE(user_balance_);
 //                     }
 
-//                     ZJC_INFO("new tx coming: %s, %s, %lu, realid: %s", 
+//                     SHARDORA_INFO("new tx coming: %s, %s, %lu, realid: %s", 
 //                         from_str.c_str(), to_str.c_str(), user_info->balance, common::Encode::HexEncode(user_info->id).c_str());
 //                 }
 //             });
 //         } catch (std::exception& e) {
-//             ZJC_ERROR("catch error: %s", e.what());
+//             SHARDORA_ERROR("catch error: %s", e.what());
 //         }
 //     } while (got_count >= 1000);
 // }
@@ -145,7 +145,7 @@
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //         ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//             ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//             SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //             for (uint32_t i = 0; i < ck_block.GetRowCount(); ++i) {
 //                 auto* ws_item = ws_tx_res.add_txs();
 //                 std::string from_str(ck_block[0]->As<clickhouse::ColumnString>()->At(i));
@@ -177,13 +177,13 @@
 //                     user_info_queue_.push(user_info);
 //                 }
 
-//                 ZJC_INFO("new tx coming: %s, %s, %lu, %lu, realid: %s", 
+//                 SHARDORA_INFO("new tx coming: %s, %s, %lu, %lu, realid: %s", 
 //                     from_str.c_str(), to_str.c_str(), ws_item->amount(), 
 //                     ws_item->balance(), common::Encode::HexEncode(user_info->id).c_str());
 //             }
 //         });
 //     } catch (std::exception& e) {
-//         ZJC_ERROR("catch error: %s", e.what());
+//         SHARDORA_ERROR("catch error: %s", e.what());
 //     }
 // }
 
@@ -198,7 +198,7 @@
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //         ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//             ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//             SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //             for (uint32_t i = 0; i < ck_block.GetRowCount(); ++i) {
 //                 std::string user = common::Encode::HexDecode(std::string(ck_block[0]->As<clickhouse::ColumnString>()->At(i)));
 //                 auto prepayment = ck_block[1]->As<clickhouse::ColumnUInt64>()->At(i);
@@ -227,12 +227,12 @@
 //                     }
 //                 }
 
-//                 ZJC_INFO("new prepayment coming: %s, %lu, %lu", 
+//                 SHARDORA_INFO("new prepayment coming: %s, %lu, %lu", 
 //                     common::Encode::HexEncode(user_info->id).c_str(), prepayment, height);
 //             }
 //         });
 //     } catch (std::exception& e) {
-//         ZJC_ERROR("catch error: %s", e.what());
+//         SHARDORA_ERROR("catch error: %s", e.what());
 //     }
 // }
 
@@ -243,7 +243,7 @@
 //         std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from zjc_ck_c2c_table where contract='" + 
 //             c2c_contract_addr() + "' and height > " + std::to_string(max_c2c_height_) +  " order by height asc limit 1000;";
 //         uint32_t all_transactions = 0;
-//         ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), 0);
+//         SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), 0);
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
 //                 SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -251,7 +251,7 @@
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //             ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//                 ZJC_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//                 SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //                 for (uint32_t i = 0; i < ck_block.GetRowCount(); ++i) {
 //                     std::string user(ck_block[0]->As<clickhouse::ColumnString>()->At(i));
 //                     std::string encode_buyer(ck_block[1]->As<clickhouse::ColumnString>()->At(i));
@@ -270,15 +270,15 @@
 //                     auto buyer = common::Encode::HexDecode(encode_buyer);
 //                     auto iter = sell_map_.find(id);
 //                     if (iter == sell_map_.end()) {
-//                         ZJC_ERROR("local sell info error: %s!", user.c_str());
+//                         SHARDORA_ERROR("local sell info error: %s!", user.c_str());
 //                         continue;
 //                     }
 
-//                     ZJC_INFO("get all c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
+//                     SHARDORA_INFO("get all c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
 //                         user.c_str(), encode_buyer.c_str(), amount, height, iter->second->height(), iter->second->status(), max_c2c_height_);
 //                     auto order_iter = order_map_.find(buyer);
 //                     if (iter->second->height() > height) {
-//                         ZJC_ERROR("local sell info height error: %s %lu, %lu!", user.c_str(), iter->second->height(), height);
+//                         SHARDORA_ERROR("local sell info height error: %s %lu, %lu!", user.c_str(), iter->second->height(), height);
 //                         continue;
 //                     }
 
@@ -369,7 +369,7 @@
 //                 }
 //             });
 //         } catch (std::exception& e) {
-//             ZJC_ERROR("catch error: %s", e.what());
+//             SHARDORA_ERROR("catch error: %s", e.what());
 //             status = 1;
 //         }
 //     } while (got_count >= 1000);
@@ -387,7 +387,7 @@
 
 //     for (auto iter = sell_map.begin(); iter != sell_map.end(); ++iter) {
 //         auto old_status = iter->second->status();
-//         ZJC_DEBUG("get sell status %s %d update tm: %lu, peariod: %lu, now tm: %lu", 
+//         SHARDORA_DEBUG("get sell status %s %d update tm: %lu, peariod: %lu, now tm: %lu", 
 //             common::Encode::HexEncode(iter->first).c_str(), old_status, 
 //             iter->second->timestamp(), c2c_timeout_ms(), now_tm);
 //         if (old_status == ws::protobuf::kSellCreated) {
@@ -465,7 +465,7 @@
 //     std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from zjc_ck_c2c_table where contract='" + 
 //         c2c_contract_addr() + "' and height > " + std::to_string(max_c2c_height_) +  " limit 1000;";
 //     uint32_t all_transactions = 0;
-//     ZJC_DEBUG("get c2c run cmd: %s", cmd.c_str());
+//     SHARDORA_DEBUG("get c2c run cmd: %s", cmd.c_str());
 //     try {
 //         clickhouse::Client ck_client0(clickhouse::ClientOptions().
 //             SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -495,7 +495,7 @@
 //                     std::lock_guard<std::mutex> g(sell_map_mutex_);
 //                     auto iter = sell_map_.find(id);
 //                     if (iter == sell_map_.end()) {
-//                         ZJC_ERROR("local sell info error: %s!", user.c_str());
+//                         SHARDORA_ERROR("local sell info error: %s!", user.c_str());
 //                         return;
 //                     }
 
@@ -506,10 +506,10 @@
 //                     }
 //                 }
 
-//                 ZJC_INFO("get c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
+//                 SHARDORA_INFO("get c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
 //                     user.c_str(), encode_buyer.c_str(), amount, height, sellptr->height(), sellptr->status(), max_c2c_height_);
 //                 if (sellptr->height() >= height) {
-//                     ZJC_ERROR("local sell info height error: %s %lu, %lu!", user.c_str(), sellptr->height(), height);
+//                     SHARDORA_ERROR("local sell info height error: %s %lu, %lu!", user.c_str(), sellptr->height(), height);
 //                     continue;
 //                 }
                 
@@ -597,12 +597,12 @@
 
 //                 auto* sellinfo = ws_tx_res.mutable_init_info()->mutable_c2c()->add_sells();
 //                 *sellinfo = *sellptr;
-//                 ZJC_INFO("get sell info seller: %s, buyer: %s, status: %d", 
+//                 SHARDORA_INFO("get sell info seller: %s, buyer: %s, status: %d", 
 //                     user.c_str(), encode_buyer.c_str(), sellptr->status());
 //             }
 //         });
 //     } catch (std::exception& e) {
-//         ZJC_ERROR("catch error: %s", e.what());
+//         SHARDORA_ERROR("catch error: %s", e.what());
 //     }
 // }
 
@@ -626,12 +626,12 @@
 //                         uint64_t balance = ck_block[1]->As<clickhouse::ColumnUInt64>()->At(i);
 //                         user_balance_[id] = balance;
 //                         CHECK_MEMORY_SIZE(user_balance_);
-//                         ZJC_INFO("get balance: %s, balance: %lu", from_str.c_str(), balance);
+//                         SHARDORA_INFO("get balance: %s, balance: %lu", from_str.c_str(), balance);
 //                     }
 //                 }
 //             });
 //         } catch (std::exception& e) {
-//             ZJC_ERROR("catch error: %s", e.what());
+//             SHARDORA_ERROR("catch error: %s", e.what());
 //         }
 
 //         if (get_count < 10000) {
@@ -678,7 +678,7 @@
 //             }
 //         }
         
-//         ZJC_INFO("bandwidth message handle success %s: %lu", common::Encode::HexEncode(bw.id()).c_str(), all_bw);
+//         SHARDORA_INFO("bandwidth message handle success %s: %lu", common::Encode::HexEncode(bw.id()).c_str(), all_bw);
 //     }
     
 //     if (bw_res.bws_size() > 0) {
@@ -791,7 +791,7 @@
 
 //     int32_t tmp_sign_v = tx_info.signv()[0];
 //     if (tmp_sign_v < 27) {
-//         ZJC_ERROR("invalid sign v: %d", tmp_sign_v);
+//         SHARDORA_ERROR("invalid sign v: %d", tmp_sign_v);
 //         return 1;
 //     }
 
@@ -799,7 +799,7 @@
 //     sign[64] = char(tmp_sign_v - 27);
 //     auto tx_hash = GetTxMessageHash(*new_tx);
 //     if (security_->Verify(tx_hash, tx_info.pubkey(), sign) != security::kSecuritySuccess) {
-//         ZJC_ERROR("verify signature failed tx_hash: %s, "
+//         SHARDORA_ERROR("verify signature failed tx_hash: %s, "
 //             "sign_r: %s, sign_s: %s, sign_v: %d %d, pk: %s",
 //             common::Encode::HexEncode(tx_hash).c_str(),
 //             common::Encode::HexEncode(tx_info.signr()).c_str(),
@@ -817,16 +817,16 @@
 // }
 
 // void WsServer::C2cNewSell(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("new c2c sell comming.");
+//     SHARDORA_DEBUG("new c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("new c2c sell parse failed.");
+//         SHARDORA_DEBUG("new c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("new c2c sell no message id.");
+//         SHARDORA_DEBUG("new c2c sell no message id.");
 //         return;
 //     }
 
@@ -834,7 +834,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("new c2c sell exists message id.");
+//             SHARDORA_DEBUG("new c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -842,7 +842,7 @@
 //     auto& tx = c2c_msg.tx();
 //     if (tx.amount() < min_c2c_sellout_amount()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount");
-//         ZJC_DEBUG("new c2c sell invalid amount min invalid: %lu, %lu", 
+//         SHARDORA_DEBUG("new c2c sell invalid amount min invalid: %lu, %lu", 
 //             tx.amount(), min_c2c_sellout_amount());
 //         return;
 //     }
@@ -852,20 +852,20 @@
 //     auto prepayment_iter = contract_prepayment_.find(seller);
 //     if (prepayment_iter == contract_prepayment_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("new c2c sell invalid amount prepayment not exists: %s.", 
+//         SHARDORA_DEBUG("new c2c sell invalid amount prepayment not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
 //     if (tx.amount() + 10000000lu > prepayment_iter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("new c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//         SHARDORA_DEBUG("new c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
 //         return;
 //     }
 
 //     if (prepayment_iter->second < min_c2c_prepayment()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prepayment");
-//         ZJC_DEBUG("new c2c sell invalid prepayment.");
+//         SHARDORA_DEBUG("new c2c sell invalid prepayment.");
 //         return;
 //     }
 
@@ -881,14 +881,14 @@
     
 //     if (sell_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("new c2c sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellPrepayment && 
 //             sell_ptr->status() != ws::protobuf::kSellTxCreateError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("new c2c sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, status invalid");
 //         return;
 //     }
 
@@ -898,7 +898,7 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("new c2c sell invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, failed handle transaction.");
 //         return;
 //     }
 
@@ -907,7 +907,7 @@
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("new c2c sell invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -923,12 +923,12 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+//         SHARDORA_DEBUG("success send chain message: %s:%d", item[0], port);
 //     }
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingCreate, "ok");
-//     ZJC_INFO("create new sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("create new sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1012,7 +1012,7 @@
 //         *order_info = *iter->second;
 //     }
 
-//     ZJC_DEBUG("success get all sells: %d", c2c->sells_size());
+//     SHARDORA_DEBUG("success get all sells: %d", c2c->sells_size());
 //     auto res = common::Encode::HexEncode(ws_msg.SerializeAsString());
 //     ws_server_.Send(hdl, res.c_str(), res.size());
 // }
@@ -1031,22 +1031,22 @@
 //             CHECK_MEMORY_SIZE(contract_prepayment_);
 //         }
 
-//         ZJC_DEBUG("update balance %s, %lu, %lu", 
+//         SHARDORA_DEBUG("update balance %s, %lu, %lu", 
 //             common::Encode::HexEncode(user_info->id).c_str(), user_info->balance, user_info->prepayment);
 //     }
 // }
 
 // void WsServer::C2cPrepayment(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("new c2c sell comming.");
+//     SHARDORA_DEBUG("new c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("new c2c sell parse failed.");
+//         SHARDORA_DEBUG("new c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("new c2c sell no message id.");
+//         SHARDORA_DEBUG("new c2c sell no message id.");
 //         return;
 //     }
 
@@ -1054,7 +1054,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("new c2c sell exists message id.");
+//             SHARDORA_DEBUG("new c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1062,13 +1062,13 @@
 //     auto& tx = c2c_msg.tx();
 //     if (tx.amount() != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount");
-//         ZJC_DEBUG("new c2c sell invalid amount.");
+//         SHARDORA_DEBUG("new c2c sell invalid amount.");
 //         return;
 //     }
 
 //     if (tx.contract_prepayment() < min_c2c_prepayment()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prepayment");
-//         ZJC_DEBUG("new c2c sell invalid prepayment.");
+//         SHARDORA_DEBUG("new c2c sell invalid prepayment.");
 //         return;
 //     }
 
@@ -1077,13 +1077,13 @@
 //     auto biter = user_balance_.find(seller);
 //     if (biter == user_balance_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid balance");
-//         ZJC_DEBUG("new c2c sell invalid balance.");
+//         SHARDORA_DEBUG("new c2c sell invalid balance.");
 //         return;
 //     }
 
 //     if (tx.contract_prepayment() > biter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid balance");
-//         ZJC_DEBUG("new c2c sell invalid balance: %lu, %lu", tx.contract_prepayment(), biter->second);
+//         SHARDORA_DEBUG("new c2c sell invalid balance: %lu, %lu", tx.contract_prepayment(), biter->second);
 //         return;
 //     }
 
@@ -1093,7 +1093,7 @@
 //         if (iter != sell_map_.end()) {
 //             if (iter->second->status() != ws::protobuf::kSellReleased) {
 //                 C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, old exists");
-//                 ZJC_DEBUG("new c2c sell invalid sell, old exists.");
+//                 SHARDORA_DEBUG("new c2c sell invalid sell, old exists.");
 //                 return;
 //             }
 //         }
@@ -1101,17 +1101,17 @@
 
 //     ws::protobuf::SellInfo tmp_sell;
 //     if (!tmp_sell.ParseFromString(tx.value())) {
-//         ZJC_WARN("from string failed sell info: %s, to: %s, amount: %d",
+//         SHARDORA_WARN("from string failed sell info: %s, to: %s, amount: %d",
 //             common::Encode::HexEncode(tx.pubkey()).c_str(),
 //             common::Encode::HexEncode(tx.to()).c_str(),
 //             tx.amount());
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "parse from string failed sell info.");
-//         ZJC_DEBUG("new c2c sell invalid sell, parse from string failed sell info.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, parse from string failed sell info.");
 //         return;
 //     }
 
 //     if (tmp_sell.price() <= 0) {
-//         ZJC_WARN("sell price invalid sell info: %s, to: %s, price: %d",
+//         SHARDORA_WARN("sell price invalid sell info: %s, to: %s, price: %d",
 //             common::Encode::HexEncode(tx.pubkey()).c_str(),
 //             common::Encode::HexEncode(tx.to()).c_str(),
 //             tmp_sell.price());
@@ -1120,7 +1120,7 @@
 //     }
 
 //     if (tmp_sell.receivable().receivable_size() <= 0) {
-//         ZJC_WARN("sell price invalid receivable info: %s, to: %s, price: %d",
+//         SHARDORA_WARN("sell price invalid receivable info: %s, to: %s, price: %d",
 //             common::Encode::HexEncode(tx.pubkey()).c_str(),
 //             common::Encode::HexEncode(tx.to()).c_str(),
 //             tmp_sell.price());
@@ -1144,20 +1144,20 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("new c2c sell invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, failed handle transaction.");
 //         return;
 //     }
 
 //     if (tx.amount() + 1000000llu > tx.contract_prepayment()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prepayment!");
-//         ZJC_DEBUG("new c2c sell invalid sell, invalid prepayment.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, invalid prepayment.");
 //         return;
 //     }
 
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("new c2c sell invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -1173,7 +1173,7 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+//         SHARDORA_DEBUG("success send chain message: %s:%d", item[0], port);
 //     }
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
@@ -1184,7 +1184,7 @@
 //     }
     
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingPrepayment, "ok");
-//     ZJC_INFO("create new sell success create tm: %lu, seller: %s, username: %s, all: %lu, price: %lu, receivable size: %d",
+//     SHARDORA_INFO("create new sell success create tm: %lu, seller: %s, username: %s, all: %lu, price: %lu, receivable size: %d",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1194,16 +1194,16 @@
 // }
 
 // void WsServer::C2cCancelSell(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("cancel c2c sell comming.");
+//     SHARDORA_DEBUG("cancel c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("cancel c2c sell parse failed.");
+//         SHARDORA_DEBUG("cancel c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("cancel c2c sell no message id.");
+//         SHARDORA_DEBUG("cancel c2c sell no message id.");
 //         return;
 //     }
 
@@ -1211,7 +1211,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("cancel c2c sell exists message id.");
+//             SHARDORA_DEBUG("cancel c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1222,14 +1222,14 @@
 //     auto prepayment_iter = contract_prepayment_.find(seller);
 //     if (prepayment_iter == contract_prepayment_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("cancel c2c sell invalid amount prepayment not exists: %s.", 
+//         SHARDORA_DEBUG("cancel c2c sell invalid amount prepayment not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
 //     if (1000000lu > prepayment_iter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("cancel c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//         SHARDORA_DEBUG("cancel c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
 //         return;
 //     }
 
@@ -1244,14 +1244,14 @@
     
 //     if (sell_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("cancel c2c sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("cancel c2c sell invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellCreated && 
 //             sell_ptr->status() != ws::protobuf::kSellTxUserReleaseError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("cancel c2c sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("cancel c2c sell invalid sell, status invalid");
 //         return;
 //     }
 
@@ -1261,7 +1261,7 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("cancel c2c sell invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("cancel c2c sell invalid sell, failed handle transaction.");
 //         return;
 //     }
 
@@ -1270,7 +1270,7 @@
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("cancel c2c sell invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("cancel c2c sell invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -1286,12 +1286,12 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+//         SHARDORA_DEBUG("success send chain message: %s:%d", item[0], port);
 //     }
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellUserWaitingRelease, "ok");
-//     ZJC_INFO("cancelsell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("cancelsell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1300,16 +1300,16 @@
 // }
 
 // void WsServer::C2cManagerCancelSell(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("manager cancel c2c sell comming.");
+//     SHARDORA_DEBUG("manager cancel c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("manager cancel c2c sell parse failed.");
+//         SHARDORA_DEBUG("manager cancel c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("manager cancel c2c sell no message id.");
+//         SHARDORA_DEBUG("manager cancel c2c sell no message id.");
 //         return;
 //     }
 
@@ -1317,7 +1317,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("manager cancel c2c sell exists message id.");
+//             SHARDORA_DEBUG("manager cancel c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1328,14 +1328,14 @@
 //     auto prepayment_iter = contract_prepayment_.find(seller);
 //     if (prepayment_iter == contract_prepayment_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("manager cancel c2c sell invalid amount prepayment not exists: %s.", 
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid amount prepayment not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
 //     if (1000000lu > prepayment_iter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("manager cancel c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
 //         return;
 //     }
 
@@ -1350,13 +1350,13 @@
     
 //     if (sell_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("manager cancel c2c sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellUserReleased && sell_ptr->status() != ws::protobuf::kSellTxManagerReleaseError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("manager cancel c2c sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid sell, status invalid");
 //         return;
 //     }
 
@@ -1366,7 +1366,7 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("manager cancel c2c sell invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid sell, failed handle transaction.");
 //         return;
 //     }
 
@@ -1375,7 +1375,7 @@
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("manager cancel c2c sell invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -1391,12 +1391,12 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+//         SHARDORA_DEBUG("success send chain message: %s:%d", item[0], port);
 //     }
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellManagerWaitingRelease, "ok");
-//     ZJC_INFO("manager cancel sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("manager cancel sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1405,16 +1405,16 @@
 // }
 
 // void WsServer::Transaction(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("new transaction comming.");
+//     SHARDORA_DEBUG("new transaction comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("new transaction parse failed.");
+//         SHARDORA_DEBUG("new transaction parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("new transaction message id.");
+//         SHARDORA_DEBUG("new transaction message id.");
 //         return;
 //     }
 
@@ -1422,7 +1422,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("new transaction exists message id.");
+//             SHARDORA_DEBUG("new transaction exists message id.");
 //             return;
 //         }
 //     }
@@ -1430,7 +1430,7 @@
 //     auto& tx = c2c_msg.tx();
 //     if (tx.amount() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount");
-//         ZJC_DEBUG("new transaction invalid amount.");
+//         SHARDORA_DEBUG("new transaction invalid amount.");
 //         return;
 //     }
 
@@ -1439,13 +1439,13 @@
 //     auto biter = user_balance_.find(from_address);
 //     if (biter == user_balance_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid balance");
-//         ZJC_DEBUG("new transaction invalid balance.");
+//         SHARDORA_DEBUG("new transaction invalid balance.");
 //         return;
 //     }
 
 //     if (tx.amount() + consensus::kTransferGas > biter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid balance");
-//         ZJC_DEBUG("new transaction invalid balance: %lu, %lu", tx.contract_prepayment(), biter->second);
+//         SHARDORA_DEBUG("new transaction invalid balance: %lu, %lu", tx.contract_prepayment(), biter->second);
 //         return;
 //     }
 
@@ -1454,14 +1454,14 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("new transaction invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("new transaction invalid sell, failed handle transaction.");
 //         return;
 //     }
 
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("new transaction invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("new transaction invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -1477,27 +1477,27 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d, nonce: %lu, hash64: %lu",
+//         SHARDORA_DEBUG("success send chain message: %s:%d, nonce: %lu, hash64: %lu",
 //             item[0], port, tx.nonce(), chain_msg.hash64());
 //     }
 
 //     C2cResponse(hdl, c2c_msg.msg_id(), 0, "ok");
-//     ZJC_INFO("create transaction success create from: %s, amount: %lu",
+//     SHARDORA_INFO("create transaction success create from: %s, amount: %lu",
 //         common::Encode::HexEncode(from_address).c_str(), 
 //         tx.amount());    
 // }
 
 // void WsServer::Purchase(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("purchase c2c sell comming.");
+//     SHARDORA_DEBUG("purchase c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("purchase c2c sell parse failed.");
+//         SHARDORA_DEBUG("purchase c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("purchase c2c sell no message id.");
+//         SHARDORA_DEBUG("purchase c2c sell no message id.");
 //         return;
 //     }
 
@@ -1505,7 +1505,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("purchase c2c sell exists message id.");
+//             SHARDORA_DEBUG("purchase c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1515,7 +1515,7 @@
 //     if (c2c_msg.c2c().order().buyer().size() != c2c_msg.c2c().order().seller().size() || 
 //             c2c_msg.c2c().order().buyer() == c2c_msg.c2c().order().seller()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, invalid buyer");
-//         ZJC_DEBUG("purchase c2c sell invalid sell, invalid buyer.");
+//         SHARDORA_DEBUG("purchase c2c sell invalid sell, invalid buyer.");
 //         return;
 //     }
 
@@ -1530,19 +1530,19 @@
     
 //     if (sell_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("purchase c2c sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("purchase c2c sell invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellCreated) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("purchase c2c sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("purchase c2c sell invalid sell, status invalid");
 //         return;
 //     }
 
 //     if (c2c_msg.c2c().order().amount() < c2c_min_purchase_amount()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, amount invalid");
-//         ZJC_DEBUG("purchase c2c sell invalid sell, amount invalid %lu, %lu", 
+//         SHARDORA_DEBUG("purchase c2c sell invalid sell, amount invalid %lu, %lu", 
 //             c2c_msg.c2c().order().amount(), 
 //             c2c_min_purchase_amount());
 //         return;
@@ -1550,7 +1550,7 @@
 
 //     if (c2c_msg.c2c().order().amount() > sell_ptr->all()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, amount invalid");
-//         ZJC_DEBUG("purchase c2c sell invalid sell, amount invalid");
+//         SHARDORA_DEBUG("purchase c2c sell invalid sell, amount invalid");
 //         return;
 //     }
 
@@ -1578,7 +1578,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     ZJC_INFO("purchase sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("purchase sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -1589,16 +1589,16 @@
 // }
 
 // void WsServer::CancelOrder(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("cancel order c2c sell comming.");
+//     SHARDORA_DEBUG("cancel order c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("cancel order c2c sell parse failed.");
+//         SHARDORA_DEBUG("cancel order c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("cancel order c2c sell no message id.");
+//         SHARDORA_DEBUG("cancel order c2c sell no message id.");
 //         return;
 //     }
 
@@ -1606,7 +1606,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("cancel order c2c sell exists message id.");
+//             SHARDORA_DEBUG("cancel order c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1616,7 +1616,7 @@
 //     if (c2c_msg.c2c().order().buyer().size() != c2c_msg.c2c().order().seller().size() || 
 //             c2c_msg.c2c().order().buyer() == c2c_msg.c2c().order().seller()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, invalid buyer");
-//         ZJC_DEBUG("cancel order c2c sell invalid sell, invalid buyer.");
+//         SHARDORA_DEBUG("cancel order c2c sell invalid sell, invalid buyer.");
 //         return;
 //     }
 
@@ -1637,7 +1637,7 @@
     
 //     if (sell_ptr == nullptr || order_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("cancel order c2c sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("cancel order c2c sell invalid sell, not exists.");
 //         return;
 //     }
 
@@ -1645,13 +1645,13 @@
 //             sell_ptr->status() != ws::protobuf::kReported &&
 //             sell_ptr->status() != ws::protobuf::kSellWaitingConfirmTxError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("cancel order c2c sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("cancel order c2c sell invalid sell, status invalid");
 //         return;
 //     }
 
 //     if (c2c_msg.c2c().order().buyer() != c2c_msg.c2c().order().buyer()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, buyer invalid");
-//         ZJC_DEBUG("cancel order c2c sell invalid sell, buyer invalid");
+//         SHARDORA_DEBUG("cancel order c2c sell invalid sell, buyer invalid");
 //         return;
 //     }
 
@@ -1673,7 +1673,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     ZJC_INFO("cancel order sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("cancel order sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -1684,16 +1684,16 @@
 // }
 
 // void WsServer::ConfirmOrder(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("confirm order comming.");
+//     SHARDORA_DEBUG("confirm order comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("confirm order parse failed.");
+//         SHARDORA_DEBUG("confirm order parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("confirm order no message id.");
+//         SHARDORA_DEBUG("confirm order no message id.");
 //         return;
 //     }
 
@@ -1701,7 +1701,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("confirm order exists message id.");
+//             SHARDORA_DEBUG("confirm order exists message id.");
 //             return;
 //         }
 //     }
@@ -1711,7 +1711,7 @@
 //     auto seller = security_->GetAddress(tx.pubkey());
 //     if (seller != c2c_msg.c2c().order().seller()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid seller.");
-//         ZJC_DEBUG("confirm order invalid seller: %s %s.", 
+//         SHARDORA_DEBUG("confirm order invalid seller: %s %s.", 
 //             common::Encode::HexEncode(seller).c_str(), common::Encode::HexEncode(c2c_msg.c2c().order().seller()).c_str());
 //         return;
 //     }
@@ -1719,21 +1719,21 @@
 //     auto prepayment_iter = contract_prepayment_.find(seller);
 //     if (prepayment_iter == contract_prepayment_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("confirm order invalid amount prepayment not exists: %s.", 
+//         SHARDORA_DEBUG("confirm order invalid amount prepayment not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
 //     if (tx.amount() != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount");
-//         ZJC_DEBUG("confirm order invalid sell, invalid amount %lu", tx.amount());
+//         SHARDORA_DEBUG("confirm order invalid sell, invalid amount %lu", tx.amount());
 //         return;
 //     }
 
 //     auto confirm_amount = c2c_msg.c2c().order().amount();
 //     if (100000lu > prepayment_iter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("confirm order invalid amount: %lu, prepayment: %lu", 100000lu, prepayment_iter->second);
+//         SHARDORA_DEBUG("confirm order invalid amount: %lu, prepayment: %lu", 100000lu, prepayment_iter->second);
 //         return;
 //     }
 
@@ -1748,20 +1748,20 @@
     
 //     if (sell_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("confirm order invalid sell, not exists.");
+//         SHARDORA_DEBUG("confirm order invalid sell, not exists.");
 //         return;
 //     }
     
 //     if (sell_ptr->amount() != confirm_amount) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount");
-//         ZJC_DEBUG("confirm order invalid sell, invalid amount %lu, %lu.", sell_ptr->amount(), confirm_amount);
+//         SHARDORA_DEBUG("confirm order invalid sell, invalid amount %lu, %lu.", sell_ptr->amount(), confirm_amount);
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellWaitingConfirm && 
 //             sell_ptr->status() != ws::protobuf::kSellWaitingConfirmTxError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("confirm order invalid sell, status invalid");
+//         SHARDORA_DEBUG("confirm order invalid sell, status invalid");
 //         return;
 //     }
 
@@ -1771,7 +1771,7 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("confirm order invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("confirm order invalid sell, failed handle transaction.");
 //         return;
 //     }
 
@@ -1780,7 +1780,7 @@
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("confirm order invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("confirm order invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -1796,12 +1796,12 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+//         SHARDORA_DEBUG("success send chain message: %s:%d", item[0], port);
 //     }
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirmTx, "ok");
-//     ZJC_INFO("confirm order success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("confirm order success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1810,16 +1810,16 @@
 // }
 
 // void WsServer::C2cManagerCancelForceSell(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("manager cancel force c2c sell comming.");
+//     SHARDORA_DEBUG("manager cancel force c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("manager cancel force c2c sell parse failed.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("manager cancel force c2c sell no message id.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell no message id.");
 //         return;
 //     }
 
@@ -1827,7 +1827,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("manager cancel force c2c sell exists message id.");
+//             SHARDORA_DEBUG("manager cancel force c2c sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1838,14 +1838,14 @@
 //     auto prepayment_iter = contract_prepayment_.find(seller);
 //     if (prepayment_iter == contract_prepayment_.end()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("manager cancel force c2c sell invalid amount prepayment not exists: %s.", 
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid amount prepayment not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
 //     if (1000000lu > prepayment_iter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         ZJC_DEBUG("manager cancel force c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
 //         return;
 //     }
 
@@ -1860,14 +1860,14 @@
     
 //     if (sell_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("manager cancel force c2c sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellReleased && 
 //             sell_ptr->status() != ws::protobuf::kSellForceReleaseWaitingTxError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("manager cancel force c2c sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid sell, status invalid");
 //         return;
 //     }
 
@@ -1877,7 +1877,7 @@
 //     int status = CreateTransactionWithAttr(tx, chain_msg);
 //     if (status != 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "failed handle transaction.");
-//         ZJC_DEBUG("manager cancel force c2c sell invalid sell, failed handle transaction.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid sell, failed handle transaction.");
 //         return;
 //     }
 
@@ -1886,7 +1886,7 @@
 //     auto chain_ip_split = common::Split<>(chain_ips().c_str(), ',');
 //     if (chain_ip_split.Count() <= 0) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid chain!");
-//         ZJC_DEBUG("manager cancel force c2c sell invalid sell, invalid chain.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid sell, invalid chain.");
 //         return;
 //     }
 
@@ -1902,12 +1902,12 @@
 //         }
 
 //         transport::TcpTransport::Instance()->Send(item[0], port, chain_msg);
-//         ZJC_DEBUG("success send chain message: %s:%d", item[0], port);
+//         SHARDORA_DEBUG("success send chain message: %s:%d", item[0], port);
 //     }
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellForceReleaseWaitingTx, "ok");
-//     ZJC_INFO("manager cancel force sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("manager cancel force sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1916,16 +1916,16 @@
 // }
 
 // void WsServer::C2cManagerResetSell(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("manager reset sell comming.");
+//     SHARDORA_DEBUG("manager reset sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("manager reset sell parse failed.");
+//         SHARDORA_DEBUG("manager reset sell parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("manager reset sell no message id.");
+//         SHARDORA_DEBUG("manager reset sell no message id.");
 //         return;
 //     }
 
@@ -1933,7 +1933,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("manager reset sell exists message id.");
+//             SHARDORA_DEBUG("manager reset sell exists message id.");
 //             return;
 //         }
 //     }
@@ -1943,7 +1943,7 @@
 //     if (c2c_msg.c2c().order().buyer().size() != c2c_msg.c2c().order().seller().size() || 
 //             c2c_msg.c2c().order().buyer() == c2c_msg.c2c().order().seller()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, invalid buyer");
-//         ZJC_DEBUG("manager reset sell invalid sell, invalid buyer.");
+//         SHARDORA_DEBUG("manager reset sell invalid sell, invalid buyer.");
 //         return;
 //     }
 
@@ -1964,14 +1964,14 @@
     
 //     if (sell_ptr == nullptr || order_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("manager reset sell invalid sell, not exists.");
+//         SHARDORA_DEBUG("manager reset sell invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (sell_ptr->status() != ws::protobuf::kSellWaitingConfirm && 
 //             sell_ptr->status() != ws::protobuf::kSellWaitingConfirmTxError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
-//         ZJC_DEBUG("manager reset sell invalid sell, status invalid");
+//         SHARDORA_DEBUG("manager reset sell invalid sell, status invalid");
 //         return;
 //     }
 
@@ -1993,7 +1993,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     ZJC_INFO("manager reset sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("manager reset sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -2004,16 +2004,16 @@
 // }
 
 // void WsServer::Appeal(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
-//     ZJC_DEBUG("user appeal comming.");
+//     SHARDORA_DEBUG("user appeal comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
 //     if (!c2c_msg.ParseFromString(msg)) {
-//         ZJC_DEBUG("user appeal parse failed.");
+//         SHARDORA_DEBUG("user appeal parse failed.");
 //         return;
 //     }
 
 //     if (!c2c_msg.has_msg_id() || c2c_msg.msg_id() <= 0) {
-//         ZJC_DEBUG("user appeal no message id.");
+//         SHARDORA_DEBUG("user appeal no message id.");
 //         return;
 //     }
 
@@ -2021,7 +2021,7 @@
 //         std::shared_ptr<ws::protobuf::StatusInfo> status = nullptr;
 //         if (status_map_.Get(c2c_msg.msg_id(), &status)) {
 //             C2cResponse(hdl, *status);
-//             ZJC_DEBUG("user appeal exists message id.");
+//             SHARDORA_DEBUG("user appeal exists message id.");
 //             return;
 //         }
 //     }
@@ -2031,7 +2031,7 @@
 //     if (c2c_msg.c2c().appeal().buyer().size() != c2c_msg.c2c().appeal().seller().size() || 
 //             c2c_msg.c2c().appeal().buyer() == c2c_msg.c2c().appeal().seller()) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, invalid buyer");
-//         ZJC_DEBUG("user appeal invalid sell, invalid buyer.");
+//         SHARDORA_DEBUG("user appeal invalid sell, invalid buyer.");
 //         return;
 //     }
 
@@ -2046,7 +2046,7 @@
 
 //         if (order_ptr == nullptr) {
 //             C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//             ZJC_DEBUG("user appeal invalid sell, not exists.");
+//             SHARDORA_DEBUG("user appeal invalid sell, not exists.");
 //             return;
 //         }
 
@@ -2058,14 +2058,14 @@
     
 //     if (sell_ptr == nullptr || order_ptr == nullptr) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, not exists");
-//         ZJC_DEBUG("user appeal invalid sell, not exists.");
+//         SHARDORA_DEBUG("user appeal invalid sell, not exists.");
 //         return;
 //     }
 
 //     if (c2c_msg.c2c().appeal().type() == 1) {
 //         if (order_ptr->status() == ws::protobuf::Status::kReported) {
 //             C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid status");
-//             ZJC_DEBUG("user appeal invalid sell, invalid status.");
+//             SHARDORA_DEBUG("user appeal invalid sell, invalid status.");
 //             return;
 //         }
 
@@ -2075,7 +2075,7 @@
 //                 sell_ptr->status() == ws::protobuf::Status::kSellWaitingConfirmTx || 
 //                 sell_ptr->status() == ws::protobuf::Status::kSellWaitingConfirmTxError) {
 //             C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid status");
-//             ZJC_DEBUG("user appeal invalid sell, invalid status.");
+//             SHARDORA_DEBUG("user appeal invalid sell, invalid status.");
 //             return;
 //         }
 
@@ -2088,7 +2088,7 @@
 //     } else if (c2c_msg.c2c().appeal().type() == 2) {
 //         if (sell_ptr->status() != ws::protobuf::Status::kReportedByOrder) {
 //             C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid status");
-//             ZJC_DEBUG("user appeal invalid sell, invalid status.");
+//             SHARDORA_DEBUG("user appeal invalid sell, invalid status.");
 //             return;
 //         }
 
@@ -2099,7 +2099,7 @@
 //         sell_ptr->set_status(ws::protobuf::Status::kReported);
 //     } else {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid type");
-//         ZJC_DEBUG("user appeal invalid sell, invalid type.");
+//         SHARDORA_DEBUG("user appeal invalid sell, invalid type.");
 //         return;
 //     }
 
@@ -2120,7 +2120,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     ZJC_INFO("user appeal success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_INFO("user appeal success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -2136,7 +2136,7 @@
 //             "0.0.0.0", 
 //             9082, 
 //             std::bind(&WsServer::CloseCallback, this, std::placeholders::_1)) != 0) {
-//         ZJC_ERROR("init websocket failed!");
+//         SHARDORA_ERROR("init websocket failed!");
 //         return kInitError;
 //     }
 

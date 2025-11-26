@@ -97,11 +97,11 @@ include_directories(SYSTEM
 
 # compile definitions
 add_definitions(
-    #-DZJC_UNITTEST # for testing
+    #-DSHARDORA_UNITTEST # for testing
     #-DFOR_CONSOLE_DEBUG
     -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r
 #    -DTEST_TRANSPORT_PERFOMANCE
-#    -DZJC_TRACE_MESSAGE
+#    -DSHARDORA_TRACE_MESSAGE
     -DLEVELDB
 #   -DCLIENT_USE_UV
 #    -DMAKE_CLIENT_LIB

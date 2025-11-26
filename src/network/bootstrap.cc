@@ -53,7 +53,7 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
         std::string pubkey = common::Encode::HexDecode(
             std::string(field_split[0], field_split.SubLen(0)));
         if (pubkey.size() != security::kPublicCompressKeySize) {
-            ZJC_INFO("invalid public key: %s", split[i]);
+            SHARDORA_INFO("invalid public key: %s", split[i]);
             continue;
         }
 
@@ -89,7 +89,7 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
 std::vector<dht::NodePtr> Bootstrap::GetNetworkBootstrap(
         uint32_t network_id,
         uint32_t count) {
-    ZJC_DEBUG("now get universal dht 1");
+    SHARDORA_DEBUG("now get universal dht 1");
     auto tmp_dht = UniversalManager::Instance()->GetUniversal(kUniversalNetworkId);
     std::shared_ptr<Universal> universal_dht = std::dynamic_pointer_cast<Universal>(tmp_dht);
     if (!universal_dht) {

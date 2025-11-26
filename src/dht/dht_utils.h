@@ -12,10 +12,10 @@
 #include "common/log.h"
 #include "protos/dht.pb.h"
 
-#define DHT_DEBUG(fmt, ...) ZJC_DEBUG("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_INFO(fmt, ...) ZJC_INFO("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_WARN(fmt, ...) ZJC_WARN("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_ERROR(fmt, ...) ZJC_ERROR("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_DEBUG(fmt, ...) SHARDORA_DEBUG("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_INFO(fmt, ...) SHARDORA_INFO("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_WARN(fmt, ...) SHARDORA_WARN("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_ERROR(fmt, ...) SHARDORA_ERROR("[dht]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

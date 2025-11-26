@@ -113,7 +113,7 @@ private:
     std::string GetSwapKeyFromJoinInfo(uint32_t peer_index);
 
     bool IsVerifyBrdPeriod() {
-#ifdef ZJC_UNITTEST
+#ifdef SHARDORA_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -125,7 +125,7 @@ private:
     }
 
     bool IsSwapKeyPeriod() {
-#ifdef ZJC_UNITTEST
+#ifdef SHARDORA_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -138,7 +138,7 @@ private:
     }
 
     bool IsFinishPeriod() {
-#ifdef ZJC_UNITTEST
+#ifdef SHARDORA_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -190,7 +190,7 @@ private:
     std::string valid_seck_keys_str_;
     bool change_local_contribution_ = false;
 
-#ifdef ZJC_UNITTEST
+#ifdef SHARDORA_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;
     std::vector<libff::alt_bn128_G2> g2_vec_;

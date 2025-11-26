@@ -7,10 +7,10 @@
 #include "common/log.h"
 #include "common/utils.h"
 
-#define CRYPTO_DEBUG(fmt, ...) ZJC_DEBUG("[crypto]" fmt, ## __VA_ARGS__)
-#define CRYPTO_INFO(fmt, ...) ZJC_INFO("[crypto]" fmt, ## __VA_ARGS__)
-#define CRYPTO_WARN(fmt, ...) ZJC_WARN("[crypto]" fmt, ## __VA_ARGS__)
-#define CRYPTO_ERROR(fmt, ...) ZJC_ERROR("[crypto]" fmt, ## __VA_ARGS__)
+#define CRYPTO_DEBUG(fmt, ...) SHARDORA_DEBUG("[crypto]" fmt, ## __VA_ARGS__)
+#define CRYPTO_INFO(fmt, ...) SHARDORA_INFO("[crypto]" fmt, ## __VA_ARGS__)
+#define CRYPTO_WARN(fmt, ...) SHARDORA_WARN("[crypto]" fmt, ## __VA_ARGS__)
+#define CRYPTO_ERROR(fmt, ...) SHARDORA_ERROR("[crypto]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

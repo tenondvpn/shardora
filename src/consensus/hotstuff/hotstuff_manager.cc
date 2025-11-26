@@ -119,7 +119,7 @@ int HotstuffManager::Init(
         pool_hotstuff_[pool_idx]->Init();
     }
 
-    ZJC_WARN("success init hotstuff manager!");
+    SHARDORA_WARN("success init hotstuff manager!");
     RegisterCreateTxCallbacks();
     network::Route::Instance()->RegisterMessage(common::kHotstuffMessage,
         std::bind(&HotstuffManager::HandleMessage, this, std::placeholders::_1));
@@ -154,7 +154,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
 
     // 由于验签很占资源，再检查一下数据库，避免重复同步
     if (prefix_db_->BlockExists(pb_vblock.qc().view_block_hash())) {
-        ZJC_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
+        SHARDORA_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
             pb_vblock.qc().network_id(),
             pb_vblock.qc().pool_index(),
             pb_vblock.block_info().height(),
@@ -172,7 +172,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
 // 验证有 qc 的 view block
 Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& vblock) {
     if (!vblock.has_qc() || !vblock.has_block_info()) {
-        ZJC_ERROR("vblock is not valid, blockview: %lu, qcview: %lu");
+        SHARDORA_ERROR("vblock is not valid, blockview: %lu, qcview: %lu");
         return Status::kInvalidArgument;
     }
 
@@ -181,7 +181,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     }
 
     // if (view_block_hash != vblock.qc().view_block_hash()) {
-    //     ZJC_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
+    //     SHARDORA_ERROR("hash is not same with qc, block: %s, commit_hash: %s",
     //         common::Encode::HexEncode(view_block_hash).c_str(),
     //         common::Encode::HexEncode(vblock.qc().view_block_hash()).c_str());
     //     assert(false);
@@ -202,7 +202,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
             vblock.qc().network_id(), 
             vblock.qc().elect_height());
     if (s != Status::kSuccess) {
-        ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, "
+        SHARDORA_ERROR("qc verify failed, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
             s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),
@@ -215,7 +215,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
         return s;
     }
 
-    ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
+    SHARDORA_DEBUG("qc verify success, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
             s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),
@@ -242,7 +242,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     }
 
     auto view_block_hash = GetQCMsgHash(vblock.qc());
-    ZJC_DEBUG("view block hash: %s, get hash: %s, now check bls sign: x: %s, y: %s, z: %s", 
+    SHARDORA_DEBUG("view block hash: %s, get hash: %s, now check bls sign: x: %s, y: %s, z: %s", 
         common::Encode::HexEncode(vblock.qc().view_block_hash()).c_str(),
         common::Encode::HexEncode(view_block_hash).c_str(),
         vblock.qc().sign_x().c_str(),
@@ -255,7 +255,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
         view_block_hash, 
         sign);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("qc verify failed, s: %d, blockview: %lu, "
+        SHARDORA_ERROR("qc verify failed, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
             s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),
@@ -268,7 +268,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
         return s;
     }
 
-    ZJC_DEBUG("qc verify success, s: %d, blockview: %lu, "
+    SHARDORA_DEBUG("qc verify success, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
             s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),
@@ -298,7 +298,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             security_ptr_->GetAddress());
         if (msg_ptr->header.des_dht_key() != dht_key.StrKey()) {
             network::Route::Instance()->Send(msg_ptr);
-            ZJC_DEBUG("hotstuff message resend to leader by latest node net: %u, "
+            SHARDORA_DEBUG("hotstuff message resend to leader by latest node net: %u, "
                 "id: %s, des dht: %s, local: %s, hash64: %lu, "
                 "header.has_hotstuff_timeout_proto(): %d, type: %d",
                 msg_ptr->header.src_sharding_id(), 
@@ -313,21 +313,21 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (!header.has_hotstuff() && !header.has_hotstuff_timeout_proto()) {
-        ZJC_ERROR("transport message is error.");
+        SHARDORA_ERROR("transport message is error.");
         return;
     }
 
-    ZJC_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
+    SHARDORA_DEBUG("hotstuff message coming from: %s:%d, hash64: %lu, has hoststuff: %d, type: %d", 
         msg_ptr->conn ? msg_ptr->conn->PeerIp().c_str() : "", msg_ptr->conn ? msg_ptr->conn->PeerPort() : 0, 
         header.hash64(), header.has_hotstuff(), header.hotstuff().type());
     if (header.has_hotstuff()) {
         auto& hotstuff_msg = header.hotstuff();
         if (hotstuff_msg.net_id() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_ERROR("net_id is error.");
+            SHARDORA_ERROR("net_id is error.");
             return;
         }
         if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
-            ZJC_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
+            SHARDORA_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
             return;
         }
         switch (hotstuff_msg.type())
@@ -336,7 +336,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 ADD_DEBUG_PROCESS_TIMESTAMP();
                 Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
                 if (s != Status::kSuccess) {
-                    ZJC_DEBUG("verify message failed: hash64: %lu", header.hash64());
+                    SHARDORA_DEBUG("verify message failed: hash64: %lu", header.hash64());
                     return;
                 }
                 
@@ -355,7 +355,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 ADD_DEBUG_PROCESS_TIMESTAMP();
                 break;
             default:
-                ZJC_WARN("consensus message type is error.");
+                SHARDORA_WARN("consensus message type is error.");
                 break;
         }
         return;
@@ -402,14 +402,14 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                 zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
                 std::string val;
                 if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                    ZJC_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
+                    SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
                         common::Encode::HexEncode(tx_info.to()).c_str(),
                         common::Encode::HexEncode(tx_info.key()).c_str(),
                         tx_info.step());
                     return 1;
                 }
 
-                ZJC_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+                SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
                     common::Encode::HexEncode(tx_info.to()).c_str(),
                     common::Encode::HexEncode(tx_info.key()).c_str());
                 return 0;
@@ -443,7 +443,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (tps >= 0.000001) {
-            ZJC_WARN("tps: %.2f", tps);
+            SHARDORA_WARN("tps: %.2f", tps);
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -471,7 +471,7 @@ void HotstuffManager::PopPoolsMessage() {
 
                 auto& txs = *txs_ptr;
                 consensus_tx_count += txs.size();
-                ZJC_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
+                SHARDORA_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
                 for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
                     auto* tx = &txs[i];
                     protos::AddressInfoPtr address_info = nullptr;
@@ -500,7 +500,7 @@ void HotstuffManager::PopPoolsMessage() {
                     }
             
                     if (!address_info) {
-                        ZJC_WARN("get address failed nonce: %lu", tx->nonce());
+                        SHARDORA_WARN("get address failed nonce: %lu", tx->nonce());
                         continue;
                     }
             
@@ -605,7 +605,7 @@ void HotstuffManager::PopPoolsMessage() {
             }
         }
         if (consensus_tx_count > 0)
-        ZJC_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
+        SHARDORA_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
         std::unique_lock<std::mutex> lock(pop_tx_mu_);
         pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
@@ -626,7 +626,7 @@ void HotstuffManager::InitLatestInfo(pools::protobuf::PoolLatestInfo& pool_info,
             network_id,
             pool_index,
             &pool_info)) {
-        ZJC_ERROR("failed get pool latest info: %d", pool_index);
+        SHARDORA_ERROR("failed get pool latest info: %d", pool_index);
     }
 }
 

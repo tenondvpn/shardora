@@ -17,7 +17,7 @@ int GmSsl::SetPrivateKey(const std::string& prikey) {
     prikey_ = std::make_shared<SM2_KEY>();
     // 根据私钥生成公钥
     if (sm2_key_set_private_key(prikey_.get(), (uint8_t*)prikey.c_str()) != 1) {
-        ZJC_ERROR("Failed to generate public key from private key.");
+        SHARDORA_ERROR("Failed to generate public key from private key.");
         return kSecurityError;
     }
 
@@ -46,7 +46,7 @@ int GmSsl::Verify(const std::string& hash, const std::string& str_pk, const std:
     auto tmp_pk = std::string((char*)points[1].x, 32) + std::string((char*)points[1].y, 32);
     if (memcmp(tmp_pk.c_str(), str_pk.c_str(), tmp_pk.size()) != 0 && 
             memcmp(tmp_pk0.c_str(), str_pk.c_str(), tmp_pk0.size()) != 0) {
-        ZJC_DEBUG("sign get pk: %s, pk1: %s, src pk: %s, points_cnt: %d", 
+        SHARDORA_DEBUG("sign get pk: %s, pk1: %s, src pk: %s, points_cnt: %d", 
             common::Encode::HexEncode(tmp_pk0).c_str(), 
             common::Encode::HexEncode(tmp_pk).c_str(), 
             common::Encode::HexEncode(str_pk).c_str(),
@@ -58,14 +58,14 @@ int GmSsl::Verify(const std::string& hash, const std::string& str_pk, const std:
 }
 
 std::string GmSsl::GetSign(const std::string& r, const std::string& s, uint8_t v) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return "";
 }
 
 std::string GmSsl::Recover(
         const std::string& sign,
         const std::string& hash) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return "";
 }
 
@@ -86,22 +86,22 @@ const std::string& GmSsl::GetPublicKeyUnCompressed() const {
 }
 
 int GmSsl::Encrypt(const std::string& msg, const std::string& key, std::string* out) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return -1;
 }
 
 int GmSsl::Decrypt(const std::string& msg, const std::string& key, std::string* out) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return -1;
 }
 
 bool GmSsl::IsValidPublicKey(const std::string& pubkey) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return false;
 }
 
 std::string GmSsl::UnicastAddress(const std::string& src_address) {
-    ZJC_FATAL("invalid");
+    SHARDORA_FATAL("invalid");
     return "";
 }
 

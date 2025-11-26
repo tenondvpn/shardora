@@ -35,7 +35,7 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
     //下标为0的用户0作为加密者，其余用户(1~9)为接受者。
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
-        ZJC_WARN("failed!");
+        SHARDORA_WARN("failed!");
         return kContractError;
     }
 
@@ -52,7 +52,7 @@ int ContractReEncryption::CreatePrivateAndPublicKeys(
         pk.push_back(tmp_pk);
         auto private_key = id + "_" + std::string("init_prikey_") + std::to_string(i);
         auto public_key = id + "_" + std::string("init_pubkey_") + std::to_string(i);
-        ZJC_WARN("create member private and public key: %s, %s sk: %s, pk: %s",
+        SHARDORA_WARN("create member private and public key: %s, %s sk: %s, pk: %s",
             private_key.c_str(), public_key.c_str(), common::Encode::HexEncode(x.toString()).c_str(),
             common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
         param.zjc_host->SaveKeyValue(param.from, private_key, x.toString());
@@ -76,7 +76,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
-        ZJC_WARN("failed!");
+        SHARDORA_WARN("failed!");
         return kContractError;
     }
 
@@ -110,7 +110,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
     //即只有不少于t个代理参与重加密，才能正确解密。
     auto line_split = common::Split<>(lines[1], '\n');
     if (line_split.Count() < 5) {
-        ZJC_WARN("failed!");
+        SHARDORA_WARN("failed!");
         return kContractError;
     }
 
@@ -125,7 +125,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         auto tmp_pid_str = common::Encode::HexDecode(sk_splits[i]);
         auto tmp_proxy_id = Zr(e, tmp_pid_str.c_str(), tmp_pid_str.size());
         proxyId.push_back(tmp_proxy_id);
-        ZJC_WARN("create member proxy id: %d, proxy_id: %s",
+        SHARDORA_WARN("create member proxy id: %d, proxy_id: %s",
             i, common::Encode::HexEncode(tmp_proxy_id.toString()).c_str());
         auto key = id + "_" + std::string("create_renc_key_proxyid_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, tmp_proxy_id.toString());
@@ -141,7 +141,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         auto tmp_h = Zr(e, tmp_h_str.c_str(), tmp_h_str.size());
         coefficientsF.push_back(tmp_f);
         coefficientsH.push_back(tmp_h);
-        ZJC_WARN("create member private and public key: %d, f: %s, h: %s",
+        SHARDORA_WARN("create member private and public key: %d, f: %s, h: %s",
             i, common::Encode::HexEncode(tmp_f.toString()).c_str(),
             common::Encode::HexEncode(tmp_h.toString()).c_str());
     }
@@ -158,7 +158,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
 
         fid.push_back(resultf);
         hid.push_back(resulth);
-        ZJC_WARN("create member hid: %d, hid: %s", i, common::Encode::HexEncode(resulth.toString()).c_str());
+        SHARDORA_WARN("create member hid: %d, hid: %s", i, common::Encode::HexEncode(resulth.toString()).c_str());
         auto key = id + "_" + std::string("create_renc_key_hid_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, resulth.toString());
     }
@@ -171,7 +171,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         auto x_str = common::Encode::HexDecode(x_splits[i - 1]);
         X[i] = GT(e, x_str.c_str(), x_str.size());
         Hx[i] = G1(e,X[i].toString().c_str(),X[i].getElementSize());//GT到G1的哈希
-        ZJC_WARN("create member hid: %d, Xi: %s", i, common::Encode::HexEncode(X[i].toString()).c_str());
+        SHARDORA_WARN("create member hid: %d, Xi: %s", i, common::Encode::HexEncode(X[i].toString()).c_str());
     }
 
     //计算重加密密钥 rk=(rk1,rk2,rk3)
@@ -183,16 +183,16 @@ int ContractReEncryption::CreateReEncryptionKeys(
     for(int i = 1; i < nu;i++){
         auto rk_str = common::Encode::HexDecode(rk_splits[i - 1]);
         Zr r(e, rk_str.c_str(), rk_str.size());
-        ZJC_WARN("create member hid: %d, RKi: %s", i, common::Encode::HexEncode(r.toString()).c_str());
+        SHARDORA_WARN("create member hid: %d, RKi: %s", i, common::Encode::HexEncode(r.toString()).c_str());
         auto tmp_rk2 = g^r;
         rk2.push_back(tmp_rk2);
-        ZJC_WARN("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
+        SHARDORA_WARN("create member rk2: %d, rk2: %s", i, common::Encode::HexEncode(tmp_rk2.toString(true)).c_str());
         auto rk2_key = id + "_" + std::string("create_renc_key_rk2_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, rk2_key, tmp_rk2.toString(true));
 
         auto tmp_rk3 = X[i]*e(g1,pk[i]^r);
         rk3.push_back(tmp_rk3);
-        ZJC_WARN("create member rk3: %d, rk3: %s", i, common::Encode::HexEncode(tmp_rk3.toString()).c_str());
+        SHARDORA_WARN("create member rk3: %d, rk3: %s", i, common::Encode::HexEncode(tmp_rk3.toString()).c_str());
         auto rk3_key = id + "_" + std::string("create_renc_key_rk3_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, rk3_key, tmp_rk3.toString());
         vector<G1> tmp;
@@ -208,7 +208,7 @@ int ContractReEncryption::CreateReEncryptionKeys(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp.size(); ++tmp_idx) {
-            ZJC_WARN("create member rk1: %d, %d, rk1: %s",
+            SHARDORA_WARN("create member rk1: %d, %d, rk1: %s",
             i, tmp_idx, common::Encode::HexEncode(tmp[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_renc_key_rk1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             param.zjc_host->SaveKeyValue(param.from, key, tmp[tmp_idx].toString(true));
@@ -232,7 +232,7 @@ int ContractReEncryption::EncryptUserMessage(
 
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
-        ZJC_WARN("failed!");
+        SHARDORA_WARN("failed!");
         return kContractError;
     }
 
@@ -262,7 +262,7 @@ int ContractReEncryption::EncryptUserMessage(
         G1 tmp_pk(e, (const unsigned char*)val.c_str(), val.size(), true, 0);
         pk.push_back(tmp_pk);
 
-        ZJC_WARN("init member private and public key: %d, sk: %s, pk: %s",
+        SHARDORA_WARN("init member private and public key: %d, sk: %s, pk: %s",
             i, common::Encode::HexEncode(x.toString()).c_str(),
             common::Encode::HexEncode(tmp_pk.toString(true)).c_str());
     }
@@ -332,10 +332,10 @@ int ContractReEncryption::EncryptUserMessage(
     vector<GT> c2,c4,c6;
     std::string test_data = lines[1];
     GT m(e, test_data.c_str(), test_data.size());
-    ZJC_WARN("enc m data src: %s, tom: %s",
+    SHARDORA_WARN("enc m data src: %s, tom: %s",
         test_data.c_str(), 
         common::Encode::HexEncode(m.toString()).c_str());
-    ZJC_WARN("get m data: %s, %s, %s", 
+    SHARDORA_WARN("get m data: %s, %s, %s", 
         test_data.c_str(), 
         common::Encode::HexEncode(m.toString()).c_str(), 
         (const char*)m.getElement()->data);
@@ -369,7 +369,7 @@ int ContractReEncryption::EncryptUserMessage(
         common::Encode::HexDecode("7a4862984defcf29a65b2e4aa09603be99995f04ce6c9daf0a3c8d645fce348daa25d3d315cde539f23305207ea249b2edd0db1dc7f0bd301f7ab7e44d80b8b58df2a0f9f311960681eceded415682dd7d809e8120083d6308e9469414a45e5962571f9e1b8fc33a0274a38bf649fe2d42801cac32f14ba256b25ae2ca49a9ba")
     };
 
-    ZJC_WARN("re encryption create key r: %s, z: %s", common::Encode::HexEncode(r.toString()).c_str(), common::Encode::HexEncode(z.toString()).c_str());
+    SHARDORA_WARN("re encryption create key r: %s, z: %s", common::Encode::HexEncode(r.toString()).c_str(), common::Encode::HexEncode(z.toString()).c_str());
     for (int i = 0; i < np; i++) {
         auto tmp_c1 = g^r;
         auto tmp_c2 = (m*(e(g1,pk[0])^r))^hid[i];
@@ -377,14 +377,14 @@ int ContractReEncryption::EncryptUserMessage(
         auto tmp_c4 = e(g1,pk[0])^(z*hid[i]);
         auto tmp_c5 = G1(e, c5_vec[i].c_str(), c5_vec[i].size());
         auto tmp_c6 = GT(e, c6_vec[i].c_str(), c6_vec[i].size());
-        ZJC_WARN("re encryption create key i: %d, c5: %s, c6: %s", i, common::Encode::HexEncode(tmp_c5.toString(true)).c_str(), common::Encode::HexEncode(tmp_c6.toString()).c_str());
+        SHARDORA_WARN("re encryption create key i: %d, c5: %s, c6: %s", i, common::Encode::HexEncode(tmp_c5.toString(true)).c_str(), common::Encode::HexEncode(tmp_c6.toString()).c_str());
         c1.push_back(tmp_c1);
         c2.push_back(tmp_c2);
         c3.push_back(tmp_c3);
         c4.push_back(tmp_c4);
         c5.push_back(tmp_c5);
         c6.push_back(tmp_c6);
-        ZJC_WARN("c-6 create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
+        SHARDORA_WARN("c-6 create member %d c1: %s, c2: %s, c3: %s, c4: %s, c5: %s, c6: %s",
                 i, common::Encode::HexEncode(tmp_c1.toString(true)).c_str(),
                 common::Encode::HexEncode(tmp_c2.toString()).c_str(),
                 common::Encode::HexEncode(tmp_c3.toString(true)).c_str(),
@@ -394,7 +394,7 @@ int ContractReEncryption::EncryptUserMessage(
         {
             auto key = id + "_" + std::string("create_enc_user_msg_c1_") + std::to_string(i);
             param.zjc_host->SaveKeyValue(param.from, key, tmp_c1.toString(true));
-            ZJC_WARN("save now create g1 i: %d, from:%s, key: %s, val: %s",
+            SHARDORA_WARN("save now create g1 i: %d, from:%s, key: %s, val: %s",
                 i, 
                 common::Encode::HexEncode(param.from).c_str(), 
                 key.c_str(), 
@@ -441,7 +441,7 @@ int ContractReEncryption::EncryptUserMessage(
         }
 
         lag.push_back(result);
-        ZJC_WARN("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
+        SHARDORA_WARN("create member lag: %d, lag: %s", i, common::Encode::HexEncode(result.toString()).c_str());
         auto key = id + "_" + std::string("create_enc_user_msg_lag_") + std::to_string(i);
         param.zjc_host->SaveKeyValue(param.from, key, result.toString());
     }
@@ -453,14 +453,14 @@ int ContractReEncryption::EncryptUserMessage(
 
     GT result1(tempc2 / e(c1[0], g1 ^ sk[0]));
     if (m == result1) {
-        ZJC_WARN("user encryption success: %s", common::Encode::HexEncode(result1.toString()).c_str());
+        SHARDORA_WARN("user encryption success: %s", common::Encode::HexEncode(result1.toString()).c_str());
     } else {
-        ZJC_WARN("user encryption failed: %s, %s", common::Encode::HexEncode(m.toString()).c_str(), common::Encode::HexEncode(result1.toString()).c_str());
+        SHARDORA_WARN("user encryption failed: %s, %s", common::Encode::HexEncode(m.toString()).c_str(), common::Encode::HexEncode(result1.toString()).c_str());
     }
 
     return kContractSuccess;
 } catch(std::exception& e) {
-    ZJC_WARN("user encryption data catch error: %s", e.what());
+    SHARDORA_WARN("user encryption data catch error: %s", e.what());
     return kContractError;
 }
 
@@ -620,7 +620,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
         Zr w1(e, w1_vec[i - 1].c_str(), w1_vec[i - 1].size());
         Zr w2(e, w2_vec[i - 1].c_str(), w2_vec[i - 1].size());
-        ZJC_WARN("encrypt data i: %d, w1: %s, w2: %s",
+        SHARDORA_WARN("encrypt data i: %d, w1: %s, w2: %s",
             i, 
             common::Encode::HexEncode(w1.toString()).c_str(), 
             common::Encode::HexEncode(w2.toString()).c_str());
@@ -641,7 +641,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
         for (uint32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp1: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -649,7 +649,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp2: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -657,7 +657,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp3: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -665,7 +665,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp4: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -673,7 +673,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp5: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -681,7 +681,7 @@ int ContractReEncryption::ReEncryptUserMessage(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp6: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -698,7 +698,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         const std::string& value) {
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
-        ZJC_WARN("failed!");
+        SHARDORA_WARN("failed!");
         return kContractError;
     }
 
@@ -706,7 +706,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
 
     int32_t member_idx = -1;
     if (!common::StringUtil::ToInt32(value, &member_idx)) {
-        ZJC_WARN("member index failed!");
+        SHARDORA_WARN("member index failed!");
         return kContractError;
     }
 
@@ -714,7 +714,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
     int nu = 10;
     int np=10,t=4;
     if (member_idx < 1 || member_idx >= nu) {
-        ZJC_WARN("failed!");
+        SHARDORA_WARN("failed!");
         return kContractError;
     }
 
@@ -867,7 +867,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         //例如每个代理都向其他代理发送w1i和w2i，每个代理接收后都做累加得到w1和w2。
         Zr w1(e, w1_vec[i - 1].c_str(), w1_vec[i - 1].size());
         Zr w2(e, w2_vec[i - 1].c_str(), w2_vec[i - 1].size());
-        ZJC_WARN("encrypt data i: %d, w1: %s, w2: %s",
+        SHARDORA_WARN("encrypt data i: %d, w1: %s, w2: %s",
             i, 
             common::Encode::HexEncode(w1.toString()).c_str(), 
             common::Encode::HexEncode(w2.toString()).c_str());
@@ -888,7 +888,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
         for (uint32_t tmp_idx = 0; tmp_idx < tmp1.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp1: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp1: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp1[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -896,7 +896,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp2.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp2: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp2: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp2[tmp_idx].toString()).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -904,7 +904,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp3.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp3: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp3: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp3[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -912,7 +912,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp4.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp4: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp4: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp4[tmp_idx].toString()).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -920,7 +920,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp5.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp5: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp5: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp5[tmp_idx].toString(true)).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -928,7 +928,7 @@ int ContractReEncryption::ReEncryptUserMessageWithMember(
         }
 
         for (uint32_t tmp_idx = 0; tmp_idx < tmp6.size(); ++tmp_idx) {
-            ZJC_WARN("create member reenc data: %d, %d, tmp6: %s", 
+            SHARDORA_WARN("create member reenc data: %d, %d, tmp6: %s", 
                 i, tmp_idx, 
                 common::Encode::HexEncode(tmp6[tmp_idx].toString()).c_str());
             auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -944,14 +944,14 @@ int ContractReEncryption::Decryption(
         const std::string& key, 
         const std::string& value,
         std::string* res) try {
-    ZJC_WARN("called 0!");
+    SHARDORA_WARN("called 0!");
     auto lines = common::Split<>(value.c_str(), ';');
     if (lines.Count() != 2) {
-        ZJC_WARN("failed: %s, count: %d", value.c_str(), lines.Count());
+        SHARDORA_WARN("failed: %s, count: %d", value.c_str(), lines.Count());
         return kContractError;
     }
 
-    ZJC_WARN("called 1!");
+    SHARDORA_WARN("called 1!");
     std::string id(lines[0]);
     auto& e = *pairing_ptr_;
     //密钥生成，这里生成10个用户。
@@ -973,7 +973,7 @@ int ContractReEncryption::Decryption(
         sk.push_back(x);
     }
 
-    ZJC_WARN("called 2!");
+    SHARDORA_WARN("called 2!");
     std::string g1_str(common::Encode::HexDecode("7c8ae882453932ed180735e6eef3c983c93e0501dcfe6a1230fbfea4ac95f4c22795fe5a8137549d1a1b7427519b189431e794e365be5910fcd8e1c91bbc67fa00"));
     G1 g1(e, g1_str.c_str(), g1_str.size());
 
@@ -990,7 +990,7 @@ int ContractReEncryption::Decryption(
                 return kContractError;
             }
 
-            ZJC_WARN("now create g1 i: %d, from:%s, key: %s, val: %s",
+            SHARDORA_WARN("now create g1 i: %d, from:%s, key: %s, val: %s",
                 i, 
                 common::Encode::HexEncode(param.from).c_str(), 
                 key.c_str(), 
@@ -1049,7 +1049,7 @@ int ContractReEncryption::Decryption(
         }
     }
 
-    ZJC_WARN("called 3!");
+    SHARDORA_WARN("called 3!");
     rc1.push_back(c1);
     rc2.push_back(c2);
     rc3.push_back(c3);
@@ -1059,24 +1059,24 @@ int ContractReEncryption::Decryption(
 
     //有nu-1个接受者，则需重加密nu-1次
     for (int i = 1; i < nu; i++) {
-        ZJC_WARN("called 3 0!");
+        SHARDORA_WARN("called 3 0!");
         vector<G1> tmp1;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
-            ZJC_WARN("called 3 0 0!");
+            SHARDORA_WARN("called 3 0 0!");
             auto key = id + "_" + std::string("create_reenc_user_msg_rc1_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
             std::string val;
-            ZJC_WARN("called 3 0 1!");
+            SHARDORA_WARN("called 3 0 1!");
             if (param.zjc_host->GetKeyValue(param.from, key, &val) != 0) {
                 CONTRACT_ERROR("get key value failed: %s", key.c_str());
                 return kContractError;
             }
 
-            ZJC_WARN("called 3 0 2!");
+            SHARDORA_WARN("called 3 0 2!");
             tmp1.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
-            ZJC_WARN("called 3 0 3!");
+            SHARDORA_WARN("called 3 0 3!");
         }
 
-        ZJC_WARN("called 3 1!");
+        SHARDORA_WARN("called 3 1!");
         vector<GT> tmp2;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc2_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1089,7 +1089,7 @@ int ContractReEncryption::Decryption(
             tmp2.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
-        ZJC_WARN("called 3 2!");
+        SHARDORA_WARN("called 3 2!");
         vector<G1> tmp3;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc3_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1102,7 +1102,7 @@ int ContractReEncryption::Decryption(
             tmp3.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
-        ZJC_WARN("called 3 3!");
+        SHARDORA_WARN("called 3 3!");
         vector<GT> tmp4;
         for (int32_t tmp_idx = 0; tmp_idx < t; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc4_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1115,7 +1115,7 @@ int ContractReEncryption::Decryption(
             tmp4.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
-        ZJC_WARN("called 3 4!");
+        SHARDORA_WARN("called 3 4!");
         vector<G1> tmp5;
         for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc5_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1128,7 +1128,7 @@ int ContractReEncryption::Decryption(
             tmp5.push_back(G1(e, (const unsigned char*)val.c_str(), val.size(), true, 0));
         }
 
-        ZJC_WARN("called 3 5!");
+        SHARDORA_WARN("called 3 5!");
         vector<GT> tmp6;
         for (int32_t tmp_idx = 0; tmp_idx < 1; ++tmp_idx) {
             auto key = id + "_" + std::string("create_reenc_user_msg_rc6_") + std::to_string(i) + "_" + std::to_string(tmp_idx);
@@ -1141,17 +1141,17 @@ int ContractReEncryption::Decryption(
             tmp6.push_back(GT(e, (const unsigned char*)val.c_str(), val.size(), 0));
         }
 
-        ZJC_WARN("called 3 6!");
+        SHARDORA_WARN("called 3 6!");
         rc1.push_back(tmp1);
         rc2.push_back(tmp2);
         rc3.push_back(tmp3);
         rc4.push_back(tmp4);
         rc5.push_back(tmp5);
         rc6.push_back(tmp6);
-        ZJC_WARN("called 3 7!");
+        SHARDORA_WARN("called 3 7!");
     }
 
-    ZJC_WARN("called 4");
+    SHARDORA_WARN("called 4");
     vector<Zr> lag;
     for (int i = 0; i < t; i++) {
         auto key = id + "_" + std::string("create_enc_user_msg_lag_") + std::to_string(i);
@@ -1166,7 +1166,7 @@ int ContractReEncryption::Decryption(
 
     // std::string test_data = "e49b72939ac609cf50e1773ea4af277b29f048981ec6438a45ac38b8c7f489ff";
     // GT m(e, test_data.c_str(), test_data.size());
-    // ZJC_WARN("dec m data src: %s, tom: %s",
+    // SHARDORA_WARN("dec m data src: %s, tom: %s",
     //     test_data.c_str(), 
     //     common::Encode::HexEncode(m.toString()).c_str());
     // 重加密密文的解密如下(为了方便，选前t个碎片解密)
@@ -1178,7 +1178,7 @@ int ContractReEncryption::Decryption(
         }
 
         GT result2 = tempc2 / e(rc1[i][0], G1(e, Xi.toString().c_str(), Xi.getElementSize()));
-        ZJC_WARN("get m data user %d success, res2 data: %s", 
+        SHARDORA_WARN("get m data user %d success, res2 data: %s", 
             i, 
             common::Encode::HexEncode(result2.toString()).c_str());
         // if (m == result2) {
@@ -1187,11 +1187,11 @@ int ContractReEncryption::Decryption(
                 return kContractSuccess;
             }
         // } else {
-        //     ZJC_WARN("user %d failed.", i);
+        //     SHARDORA_WARN("user %d failed.", i);
         // }
     }
 
-    ZJC_WARN("called 6");
+    SHARDORA_WARN("called 6");
     return kContractSuccess;
 }  catch (std::exception& e) {
     CONTRACT_ERROR("get exception failed: %s", e.what());

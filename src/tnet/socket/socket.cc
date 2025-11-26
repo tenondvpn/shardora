@@ -17,7 +17,7 @@ Socket::~Socket() {
 
 int Socket::Read(void* buf, size_t len) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return -1;
     }
 
@@ -38,7 +38,7 @@ int Socket::Read(void* buf, size_t len) const {
 
 int Socket::Write(const void* buf, size_t len) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return -1;
     }
 
@@ -60,7 +60,7 @@ int Socket::Write(const void* buf, size_t len) const {
 void Socket::Close() {
     if (fd_ >= 0) {
         if (close(fd_) < 0) {
-            ZJC_ERROR("close fd [%d] failed [%s]", fd_, strerror(errno));
+            SHARDORA_ERROR("close fd [%d] failed [%s]", fd_, strerror(errno));
         }
 
         fd_ = -1;
@@ -81,13 +81,13 @@ void Socket::ShutdownRead() {
 
 bool Socket::SetNonBlocking(bool enable) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     int flags = 0;
     if ((flags = fcntl(fd_, F_GETFL)) == -1) {
-        ZJC_ERROR("fcntl fd [%d] F_GETFL failed [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("fcntl fd [%d] F_GETFL failed [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -98,7 +98,7 @@ bool Socket::SetNonBlocking(bool enable) const {
     }
 
     if (fcntl(fd_, F_SETFL, flags) == -1) {
-        ZJC_ERROR("fcntl fd [%d] F_SETFL failed [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("fcntl fd [%d] F_SETFL failed [%s]", fd_, strerror(errno));
         return false;
     }
     return true;
@@ -106,13 +106,13 @@ bool Socket::SetNonBlocking(bool enable) const {
 
 bool Socket::SetCloseExec(bool enable) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     int flags = 0;
     if ((flags = fcntl(fd_, F_GETFD)) == -1) {
-        ZJC_ERROR("fcntl fd [%d] F_GETFD failed [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("fcntl fd [%d] F_GETFD failed [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -123,7 +123,7 @@ bool Socket::SetCloseExec(bool enable) const {
     }
 
     if (fcntl(fd_, F_SETFD, flags) == -1) {
-        ZJC_ERROR("fcntl fd [%d] F_SETFD failed [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("fcntl fd [%d] F_SETFD failed [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -132,13 +132,13 @@ bool Socket::SetCloseExec(bool enable) const {
 
 bool Socket::SetTcpNoDelay(bool enable) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     int noDelay = enable ? 1 : 0;
     if (setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY, &noDelay, sizeof(noDelay)) < 0) {
-        ZJC_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -147,7 +147,7 @@ bool Socket::SetTcpNoDelay(bool enable) const {
 
 bool Socket::SetSoLinger(bool enable, int seconds) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
@@ -156,7 +156,7 @@ bool Socket::SetSoLinger(bool enable, int seconds) const {
     lingerValue.l_linger = seconds;
 
     if (setsockopt(fd_, SOL_SOCKET, SO_LINGER, &lingerValue, sizeof(lingerValue)) < 0) {
-        ZJC_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -165,24 +165,24 @@ bool Socket::SetSoLinger(bool enable, int seconds) const {
 
 bool Socket::SetTcpKeepAlive(int idleTime, int keepInterval, int cnt) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     if (setsockopt(fd_, SOL_TCP, TCP_KEEPIDLE, &idleTime, 
                    sizeof(idleTime)) < 0) {
-        ZJC_ERROR("setsockopt TCP_KEEPIDLE failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt TCP_KEEPIDLE failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
     if (setsockopt(fd_, SOL_TCP, TCP_KEEPINTVL, &keepInterval, 
                    sizeof(keepInterval)) < 0) {
-        ZJC_ERROR("setsockopt TCP_KEEPINTVL failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt TCP_KEEPINTVL failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
     if (setsockopt(fd_, SOL_TCP, TCP_KEEPCNT, &cnt, sizeof(cnt)) < 0) {
-        ZJC_ERROR("setsockopt TCP_KEEPCNT failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt TCP_KEEPCNT failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -191,12 +191,12 @@ bool Socket::SetTcpKeepAlive(int idleTime, int keepInterval, int cnt) const {
 
 bool Socket::SetSoRcvBuf(int buffSize) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     if (setsockopt(fd_, SOL_SOCKET, SO_RCVBUF, &buffSize, sizeof(buffSize)) < 0) {
-        ZJC_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -205,12 +205,12 @@ bool Socket::SetSoRcvBuf(int buffSize) const {
 
 bool Socket::SetSoSndBuf(int buffSize) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     if (setsockopt(fd_, SOL_SOCKET, SO_SNDBUF, &buffSize, sizeof(buffSize)) < 0) {
-        ZJC_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -219,12 +219,12 @@ bool Socket::SetSoSndBuf(int buffSize) const {
 
 bool Socket::SetOption(int option, const void* value, size_t len) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
 
     if (setsockopt(fd_, SOL_SOCKET, option, value, len) < 0) {
-        ZJC_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("setsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
@@ -233,17 +233,17 @@ bool Socket::SetOption(int option, const void* value, size_t len) const {
 
 bool Socket::GetSoError(int* code) const {
     if (fd_ < 0) {
-        ZJC_ERROR("bad fd [%d]", fd_);
+        SHARDORA_ERROR("bad fd [%d]", fd_);
         return false;
     }
     socklen_t codeLen = sizeof(*code);
     if (getsockopt(fd_, SOL_SOCKET, SO_ERROR, code, &codeLen) < 0) {
-        ZJC_ERROR("getsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
+        SHARDORA_ERROR("getsockopt failed on fd [%d] [%s]", fd_, strerror(errno));
         return false;
     }
 
     if (codeLen != sizeof(*code)) {
-        ZJC_ERROR("result size not match");
+        SHARDORA_ERROR("result size not match");
         return false;
     }
 

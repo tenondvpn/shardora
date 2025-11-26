@@ -110,10 +110,10 @@ struct AggregateSignature {
                 sig_.Z = libff::alt_bn128_Fq(agg_sig_proto.sign_z().c_str());
             }
         } catch (const std::exception& e) {   
-            ZJC_ERROR("load from proto failed, err: %s", e.what());
+            SHARDORA_ERROR("load from proto failed, err: %s", e.what());
             return false;
         } catch (...) {
-            ZJC_ERROR("load from proto failed, unknown err");
+            SHARDORA_ERROR("load from proto failed, unknown err");
             return false;
         }
 

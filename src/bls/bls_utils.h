@@ -17,10 +17,10 @@
 #include "common/utils.h"
 #include "protos/elect.pb.h"
 
-#define BLS_DEBUG(fmt, ...) ZJC_DEBUG("[bls]" fmt, ## __VA_ARGS__)
-#define BLS_INFO(fmt, ...) ZJC_INFO("[bls]" fmt, ## __VA_ARGS__)
-#define BLS_WARN(fmt, ...) ZJC_WARN("[bls]" fmt, ## __VA_ARGS__)
-#define BLS_ERROR(fmt, ...) ZJC_ERROR("[bls]" fmt, ## __VA_ARGS__)
+#define BLS_DEBUG(fmt, ...) SHARDORA_DEBUG("[bls]" fmt, ## __VA_ARGS__)
+#define BLS_INFO(fmt, ...) SHARDORA_INFO("[bls]" fmt, ## __VA_ARGS__)
+#define BLS_WARN(fmt, ...) SHARDORA_WARN("[bls]" fmt, ## __VA_ARGS__)
+#define BLS_ERROR(fmt, ...) SHARDORA_ERROR("[bls]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

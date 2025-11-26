@@ -38,7 +38,7 @@ inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* po
 #ifndef _WIN32
     common::Split<> split(s.c_str(), ':', s.size());
     if (split.Count() != 2) {
-        ZJC_ERROR("bad spec [%s]", s.c_str());
+        SHARDORA_ERROR("bad spec [%s]", s.c_str());
         return false;
     }
 
@@ -50,7 +50,7 @@ inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* po
         memset(&hint, 0, sizeof(hint));
         hint.ai_family = AF_INET;
         if (getaddrinfo(str_host.c_str(), NULL, &hint, &result) != 0) {
-            ZJC_ERROR("getaddrinfo failed");
+            SHARDORA_ERROR("getaddrinfo failed");
             return false;
         }
 
@@ -62,7 +62,7 @@ inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* po
 
     int tmp_port = atoi(str_port.c_str());
     if (tmp_port > UINT16_MAX || tmp_port < 0) {
-        ZJC_ERROR("bad port number [%d]", tmp_port);
+        SHARDORA_ERROR("bad port number [%d]", tmp_port);
         return false;
     }
 

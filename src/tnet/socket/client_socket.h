@@ -17,16 +17,16 @@ public:
             : TcpSocket(local_addr, local_port),
               peer_addr_(peer_addr),
               peer_port_(peer_port) {
-        ZJC_DEBUG("memory check client socket create: %p", this);
+        SHARDORA_DEBUG("memory check client socket create: %p", this);
     }
 
     virtual ~ClientSocket() {
-        ZJC_DEBUG("memory check client socket destroy: %p", this);
+        SHARDORA_DEBUG("memory check client socket destroy: %p", this);
     }
 
     int Connect() const {
         if (fd_ < 0) {
-            ZJC_ERROR("connect on bad fd [%d]", fd_);
+            SHARDORA_ERROR("connect on bad fd [%d]", fd_);
             return -1;
         }
 #ifndef _WIN32
@@ -40,7 +40,7 @@ public:
                 return 1;
             }
 
-            ZJC_ERROR("connect failed on fd [%d] [%s] con_res[%d] errorno[%d]",
+            SHARDORA_ERROR("connect failed on fd [%d] [%s] con_res[%d] errorno[%d]",
                     fd_, strerror(errno), con_res, errno);
             return -1;
         }

@@ -9,10 +9,10 @@
 #include "common/utils.h"
 #include "protos/elect.pb.h"
 
-#define ELECT_DEBUG(fmt, ...) ZJC_DEBUG("[elect]" fmt, ## __VA_ARGS__)
-#define ELECT_INFO(fmt, ...) ZJC_INFO("[elect]" fmt, ## __VA_ARGS__)
-#define ELECT_WARN(fmt, ...) ZJC_WARN("[elect]" fmt, ## __VA_ARGS__)
-#define ELECT_ERROR(fmt, ...) ZJC_ERROR("[elect]" fmt, ## __VA_ARGS__)
+#define ELECT_DEBUG(fmt, ...) SHARDORA_DEBUG("[elect]" fmt, ## __VA_ARGS__)
+#define ELECT_INFO(fmt, ...) SHARDORA_INFO("[elect]" fmt, ## __VA_ARGS__)
+#define ELECT_WARN(fmt, ...) SHARDORA_WARN("[elect]" fmt, ## __VA_ARGS__)
+#define ELECT_ERROR(fmt, ...) SHARDORA_ERROR("[elect]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

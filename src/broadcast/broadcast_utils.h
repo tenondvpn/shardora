@@ -3,10 +3,10 @@
 #include "common/utils.h"
 #include "common/log.h"
 
-#define BROAD_DEBUG(fmt, ...) ZJC_DEBUG("[broadcast]" fmt, ## __VA_ARGS__)
-#define BROAD_INFO(fmt, ...) ZJC_INFO("[broadcast]" fmt, ## __VA_ARGS__)
-#define BROAD_WARN(fmt, ...) ZJC_WARN("[broadcast]" fmt, ## __VA_ARGS__)
-#define BROAD_ERROR(fmt, ...) ZJC_ERROR("[broadcast]" fmt, ## __VA_ARGS__)
+#define BROAD_DEBUG(fmt, ...) SHARDORA_DEBUG("[broadcast]" fmt, ## __VA_ARGS__)
+#define BROAD_INFO(fmt, ...) SHARDORA_INFO("[broadcast]" fmt, ## __VA_ARGS__)
+#define BROAD_WARN(fmt, ...) SHARDORA_WARN("[broadcast]" fmt, ## __VA_ARGS__)
+#define BROAD_ERROR(fmt, ...) SHARDORA_ERROR("[broadcast]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

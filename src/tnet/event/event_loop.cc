@@ -17,7 +17,7 @@ EventLoop::~EventLoop() {
 
 bool EventLoop::Init() {
     if (epoll_manager_ != NULL) {
-        ZJC_ERROR("event loop already init");
+        SHARDORA_ERROR("event loop already init");
         return false;
     }
 
@@ -25,7 +25,7 @@ bool EventLoop::Init() {
     if (!epoll_manager_->Init()) {
         delete epoll_manager_;
         epoll_manager_ = nullptr;
-        ZJC_ERROR("init epoll event manager failed");
+        SHARDORA_ERROR("init epoll event manager failed");
         return false;
     }
 

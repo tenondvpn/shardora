@@ -17,13 +17,13 @@ public:
         uint16_t port = 0;
 
         if (!ParseSpec(spec, &addr, &port)) {
-            ZJC_ERROR("parse spec [%s] failed", spec.c_str());
+            SHARDORA_ERROR("parse spec [%s] failed", spec.c_str());
             return NULL;
         }
 
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) {
-            ZJC_ERROR("create socket failed [%s], spec [%s]",
+            SHARDORA_ERROR("create socket failed [%s], spec [%s]",
                     strerror(errno), spec.c_str());
             return NULL;
         }
@@ -31,7 +31,7 @@ public:
         ListenSocket* socket = new ListenSocket(addr, port);
         socket->SetFd(fd);
         if (!socket->Bind()) {
-            ZJC_ERROR("bind failed, spec [%s]", spec.c_str());
+            SHARDORA_ERROR("bind failed, spec [%s]", spec.c_str());
             socket->Free();
             socket = new ListenSocket(addr, 0);
             socket->SetFd(fd);
@@ -54,18 +54,18 @@ public:
         in_addr_t local_addr = 0;
         uint16_t local_port = 0;
         if (!ParseSpec(peer, &peer_addr, &peer_port)) {
-            ZJC_ERROR("parse spec [%s] failed", peer.c_str());
+            SHARDORA_ERROR("parse spec [%s] failed", peer.c_str());
             return NULL;
         }
 
         if (!local.empty() && !ParseSpec(local, &local_addr, &local_port)) {
-            ZJC_ERROR("parse spec [%s] failed", local.c_str());
+            SHARDORA_ERROR("parse spec [%s] failed", local.c_str());
             return NULL;
         }
 
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) {
-            ZJC_ERROR("create socket failed [%s]", strerror(errno));
+            SHARDORA_ERROR("create socket failed [%s]", strerror(errno));
             return NULL;
         }
 
@@ -77,7 +77,7 @@ public:
         client_socket->SetFd(fd);
 
         if (!local.empty() && !client_socket->Bind()) {
-            ZJC_ERROR("bind failed, spec [%s]", local.c_str());
+            SHARDORA_ERROR("bind failed, spec [%s]", local.c_str());
             client_socket->Free();
             return NULL;
         }

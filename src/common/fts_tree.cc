@@ -95,7 +95,7 @@ int32_t FtsTree::GetOneNode(std::mt19937_64& g2) {
         uint64_t rand_value = 0;
         if (fts_nodes_[choose_idx].fts_value > 0) {
             auto rand_val = g2();
-            ZJC_DEBUG("fts tree get random value: %lu", rand_val);
+            SHARDORA_DEBUG("fts tree get random value: %lu", rand_val);
             rand_value = rand_val % fts_nodes_[choose_idx].fts_value;
         }
 

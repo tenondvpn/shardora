@@ -39,12 +39,12 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
 // 			std::cerr << error << "\n";
 // 		else
 // 			std::cerr << "Loading error " << ec << "\n";
-//         ZJC_FATAL("evm.set_option error.");
+//         SHARDORA_FATAL("evm.set_option error.");
 //         return;
 // 	}
 // 
 //     if (evm_.set_option("trace", "0") != EVMC_SET_OPTION_SUCCESS) {
-//         ZJC_FATAL("evm.set_option error.");
+//         SHARDORA_FATAL("evm.set_option error.");
 //         return;
 //     }
 
@@ -82,7 +82,7 @@ bool Execution::GetStorage(
         std::string((char*)key.bytes, sizeof(key.bytes));
     std::string val;
     auto res = prefix_db_->GetTemporaryKv(str_key, &val);
-    ZJC_DEBUG("get storage: %s, %s, valid: %d",
+    SHARDORA_DEBUG("get storage: %s, %s, valid: %d",
         common::Encode::HexEncode(str_key).c_str(), 
         common::Encode::HexEncode(val).c_str(),
         !val.empty());
@@ -127,7 +127,7 @@ bool Execution::GetStorage(
     }
 
     *val = kv_info.value();
-    ZJC_DEBUG("get storage: %s, %s", 
+    SHARDORA_DEBUG("get storage: %s, %s", 
         common::Encode::HexEncode(str_key).c_str(), 
         "common::Encode::HexEncode(*val).c_str()");
     return res;
@@ -152,7 +152,7 @@ int Execution::execute(
             from_address.size() != common::kUnicastAddressLength ||
             to_address.size() != common::kUnicastAddressLength ||
             depth >= kContractCallMaxDepth) {
-        ZJC_DEBUG("invalid params code_size: %u, from size: %u, "
+        SHARDORA_DEBUG("invalid params code_size: %u, from size: %u, "
             "to size: %u, depth: %u, gas_limit: %lu, from_address: %s, to_address: %s, origin_address: %s",
             code_size, from_address.size(), to_address.size(), depth, gas_limit,
             common::Encode::HexEncode(from_address).c_str(),
@@ -180,7 +180,7 @@ int Execution::execute(
         sizeof(msg.recipient.bytes));
     const uint8_t* exec_code_data = nullptr;
     size_t exec_code_size = 0;
-    ZJC_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, to: %s, value: %lu, bytes_code.size: %ld, input: %s",
+    SHARDORA_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, to: %s, value: %lu, bytes_code.size: %ld, input: %s",
         common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str(),
         call_mode,
         common::Encode::HexEncode(from_address).c_str(),
@@ -198,7 +198,7 @@ int Execution::execute(
             bytes_code.size());
         if (out_res->status_code != EVMC_SUCCESS) {
             const auto gas_used = msg.gas - out_res->gas_left;
-            ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, EVMC_SUCCESS: %d, "
+            SHARDORA_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, EVMC_SUCCESS: %d, "
                 "gas_used: %lu, gas limit: %lu, codes: %s, from: %s, to: %s",
                 out_res->status_code, EVMC_SUCCESS, gas_used, create_gas,
                 "common::Encode::HexEncode(bytes_code).c_str()",
@@ -207,7 +207,7 @@ int Execution::execute(
             return kZjcvmSuccess;
         } else {
             const auto gas_used = msg.gas - out_res->gas_left;
-            ZJC_DEBUG("out_res->status_code == EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
+            SHARDORA_DEBUG("out_res->status_code == EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
                 out_res->status_code, gas_used, create_gas, "common::Encode::HexEncode(bytes_code).c_str()");
         }
 
@@ -229,7 +229,7 @@ int Execution::execute(
     auto src_gas_left = out_res->gas_left;
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
     auto etime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("execute res: %d, from: %s, to: %s, gas_limit: %lu, "
+    SHARDORA_DEBUG("execute res: %d, from: %s, to: %s, gas_limit: %lu, "
         "src_gas_left: %lu, gas_left: %lu, gas_refund: %lu, use time: %lu, output: %s",
         out_res->status_code, 
         common::Encode::HexEncode(from_address).c_str(),

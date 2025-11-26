@@ -269,7 +269,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    // ZJC_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
+    // SHARDORA_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
     //     "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
     //     common::Encode::HexEncode(tx_info.gid()).c_str(),
     //     common::Encode::HexEncode(tx_info.pubkey()).c_str(),
@@ -284,7 +284,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
     //     common::Encode::HexEncode(tx_info.key()).c_str(),
     //     common::Encode::HexEncode(tx_info.value()).c_str());
 
-    // ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
+    // SHARDORA_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 
@@ -375,9 +375,9 @@ public:
         uint64_t now_tm = common::TimeUtils::TimestampUs();
         receive_tm_us = now_tm;
         time_valid = now_tm + kBftStartDeltaTime;
-#ifdef ZJC_UNITTEST
+#ifdef SHARDORA_UNITTEST
         time_valid = 0;
-#endif // ZJC_UNITTEST
+#endif // SHARDORA_UNITTEST
         remove_timeout = now_tm + kTxPoolTimeoutUs;
         tx_key = GetTxKey(addr_info->addr(), tx_info->nonce());
     }

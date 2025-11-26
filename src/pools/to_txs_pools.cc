@@ -44,7 +44,7 @@ void ToTxsPools::ThreadToStatistic(
 #endif
     auto& block = view_block_ptr->block_info();
     if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
-        ZJC_DEBUG("network invalid: %d, local: %d", 
+        SHARDORA_DEBUG("network invalid: %d, local: %d", 
             view_block_ptr->qc().network_id(), 
             common::GlobalInfo::Instance()->network_id());
         return;
@@ -55,7 +55,7 @@ void ToTxsPools::ThreadToStatistic(
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(view_block_ptr->debug());
-    ZJC_DEBUG("to txs new block coming %u_%u_%lu, "
+    SHARDORA_DEBUG("to txs new block coming %u_%u_%lu, "
         "cons height: %lu, tx size: %d, propose_debug: %s, step: %d, tx status: %d, block: %s",
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
@@ -73,7 +73,7 @@ void ToTxsPools::ThreadToStatistic(
         for (uint32_t i = 0; i < block.cross_shard_to_array_size(); ++i) {
             auto& to = block.cross_shard_to_array(i);
             tx_map[to.des()] = to;
-            ZJC_DEBUG("success add to item: %s, %lu",
+            SHARDORA_DEBUG("success add to item: %s, %lu",
                 common::Encode::HexEncode(to.des()).c_str(), to.amount());
         }
 
@@ -86,7 +86,7 @@ void ToTxsPools::ThreadToStatistic(
     }
 
     if (block.has_normal_to()) {
-        ZJC_INFO("success update to heights: %s", ProtobufToJson(block.normal_to()).c_str());
+        SHARDORA_INFO("success update to heights: %s", ProtobufToJson(block.normal_to()).c_str());
         common::AutoSpinLock lock(prev_to_heights_mutex_);
         prev_to_heights_ = std::make_shared<pools::protobuf::ShardToTxItem>(
             block.normal_to().to_heights());
@@ -97,7 +97,7 @@ void ToTxsPools::ThreadToStatistic(
                     break;
                 }
 
-                ZJC_DEBUG("sucess remove pool: %d, height: %lu", i, iter->first);
+                SHARDORA_DEBUG("sucess remove pool: %d, height: %lu", i, iter->first);
                 iter = added_heights_[i].erase(iter);
             }
         }
@@ -166,13 +166,13 @@ void ToTxsPools::LoadLatestHeights() {
         for (int32_t i = 0; i < this_net_heights.size(); ++i) {
             pool_consensus_heihgts_[i] = this_net_heights[i];
             has_statistic_height_[i] = this_net_heights[i];
-            ZJC_DEBUG("set consensus height: %u, height: %lu", i, this_net_heights[i]);
+            SHARDORA_DEBUG("set consensus height: %u, height: %lu", i, this_net_heights[i]);
         }
     }
 
     for (uint32_t i = 0; i <= max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
-        ZJC_DEBUG("pool latest height: %u, %lu", i, pool_latest_height);
+        SHARDORA_DEBUG("pool latest height: %u, %lu", i, pool_latest_height);
         if (pool_latest_height == common::kInvalidUint64) {
             continue;
         }
@@ -196,7 +196,7 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
-    ZJC_DEBUG("to txs get consensus heights: %s", ProtobufToJson(to_heights).c_str());
+    SHARDORA_DEBUG("to txs get consensus heights: %s", ProtobufToJson(to_heights).c_str());
 }
 
 void ToTxsPools::HandleElectJoinVerifyVec(
@@ -237,7 +237,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
             }
 
             if (valided_heights_[i].find(cons_height) == valided_heights_[i].end()) {
-                ZJC_DEBUG("leader get to heights error, pool: %u, height: %lu", i, cons_height);
+                SHARDORA_DEBUG("leader get to heights error, pool: %u, height: %lu", i, cons_height);
                 return kPoolsError;
             }
 
@@ -255,13 +255,13 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     }
 
     if (!valid) {
-        ZJC_DEBUG("final leader get to heights error, pool: %u, height: %lu", 0, 0);
+        SHARDORA_DEBUG("final leader get to heights error, pool: %u, height: %lu", 0, 0);
         return kPoolsError;
     }
 
     for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) > to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
+            SHARDORA_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), to_heights.heights(i));
             return kPoolsError;
         }
@@ -269,7 +269,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
 
     for (uint32_t i = 0; i < to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) < to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
+            SHARDORA_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), to_heights.heights(i));
             return kPoolsSuccess;
         }
@@ -288,7 +288,7 @@ int ToTxsPools::CreateToTxWithHeights(
     return kPoolsError;
 #endif
     if (leader_to_heights.heights_size() != common::kInvalidPoolIndex) {
-        ZJC_DEBUG("leader_to_heights.heights_size() != common::kInvalidPoolIndex: %u, %u", 
+        SHARDORA_DEBUG("leader_to_heights.heights_size() != common::kInvalidPoolIndex: %u, %u", 
             leader_to_heights.heights_size(), common::kInvalidPoolIndex);
         assert(false);
         return kPoolsError;
@@ -302,7 +302,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
     for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) > leader_to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
+            SHARDORA_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), leader_to_heights.heights(i));
             return kPoolsError;
         }
@@ -311,14 +311,14 @@ int ToTxsPools::CreateToTxWithHeights(
     bool heights_valid = false;
     for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) < leader_to_heights.heights(i)) {
-            ZJC_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
+            SHARDORA_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), leader_to_heights.heights(i));
             heights_valid = true;
             break;
         }
     }
 
-    ZJC_DEBUG("sharding id valid: %d, %d, statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+    SHARDORA_DEBUG("sharding id valid: %d, %d, statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
         sharding_id, 
         heights_valid,
         ProtobufToJson(*prev_to_heights).c_str(), 
@@ -334,12 +334,12 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        ZJC_DEBUG("pool %u, now statistic to height: %lu, consensus height: %lu",
+        SHARDORA_DEBUG("pool %u, now statistic to height: %lu, consensus height: %lu",
             pool_idx,
             max_height,
             pool_consensus_heihgts_[pool_idx]);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
-            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
+            SHARDORA_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx,
                 max_height,
                 pool_consensus_heihgts_[pool_idx]);
@@ -349,12 +349,12 @@ int ToTxsPools::CreateToTxWithHeights(
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
         auto& height_map = network_txs_pools_[pool_idx];
-        // ZJC_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
+        // SHARDORA_DEBUG("find pool index: %u min_height: %lu, max height: %lu", 
         //     pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = height_map.find(height);
             if (hiter == height_map.end()) {
-                ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
+                SHARDORA_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
                 // assert(false);
                 return kPoolsError;
             }
@@ -363,7 +363,7 @@ int ToTxsPools::CreateToTxWithHeights(
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto des_sharding_id = to_iter->second.des_sharding_id();
                 if (des_sharding_id != sharding_id) {
-                    ZJC_DEBUG("statistic des shard: %u, %u_%u_%lu, find pool index: %u "
+                    SHARDORA_DEBUG("statistic des shard: %u, %u_%u_%lu, find pool index: %u "
                         "height: %lu sharding: %u, %u failed id: %s, amount: %lu",
                         sharding_id,
                         common::GlobalInfo::Instance()->network_id(),
@@ -377,10 +377,10 @@ int ToTxsPools::CreateToTxWithHeights(
                 
                 auto amount_iter = acc_amount_map.find(to_iter->first);
                 if (amount_iter == acc_amount_map.end()) {
-                    ZJC_DEBUG("len: %u, addr: %s",
+                    SHARDORA_DEBUG("len: %u, addr: %s",
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
-                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                    SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
                         "transfer amount height: %lu, id: %s, amount: %lu, to info: %s",
                         pool_idx, height,
                         height, common::Encode::HexEncode(to_iter->first).c_str(),
@@ -396,7 +396,7 @@ int ToTxsPools::CreateToTxWithHeights(
                         amount_iter->second.set_prepayment(amount_iter->second.prepayment() + to_iter->second.prepayment());
                     }
                     
-                    ZJC_DEBUG("to block pool: %u, height: %lu, success add account "
+                    SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
                         "transfer amount height: %lu, id: %s, amount: %lu, all: %lu, to info: %s",
                         pool_idx, height,
                         height, common::Encode::HexEncode(to_iter->first).c_str(),
@@ -411,17 +411,17 @@ int ToTxsPools::CreateToTxWithHeights(
     // if (acc_amount_map.empty() && cross_set.empty()) {
     if (acc_amount_map.empty()) {
 //         assert(false);
-        ZJC_DEBUG("acc amount map empty.");
+        SHARDORA_DEBUG("acc amount map empty.");
         return kPoolsError;
     }
 
-    ZJC_INFO("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
+    SHARDORA_INFO("success statistic to txs prev_to_heights: %s, leader_to_heights: %s", 
         ProtobufToJson(*prev_to_heights).c_str(), 
         ProtobufToJson(leader_to_heights).c_str());
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         auto to_item = to_tx.add_tos();
         *to_item = iter->second;
-        ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d, prepayment: %lu",
+        SHARDORA_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d, prepayment: %lu",
             common::Encode::HexEncode(to_item->des()).c_str(),
             iter->second.amount(), to_item->sharding_id(), 
             sharding_id, to_item->pool_index(), to_item->prepayment());

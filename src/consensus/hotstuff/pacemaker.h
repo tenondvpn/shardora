@@ -93,7 +93,7 @@ public:
         duration_ = dur;
         
         StopTimeoutTimer();
-        ZJC_DEBUG("local time set start duration is reset view duration called start timeout: %lu", pool_idx_);
+        SHARDORA_DEBUG("local time set start duration is reset view duration called start timeout: %lu", pool_idx_);
         StartTimeoutTimer();
     }
 
@@ -107,20 +107,20 @@ private:
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
         duration_us_ = duration_->Duration();
-        ZJC_DEBUG("pool: %d local time set start duration is %lu ms", pool_idx_, duration_us_/1000);
+        SHARDORA_DEBUG("pool: %d local time set start duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 
     inline void StopTimeoutTimer() {
         last_time_us_ = 0;
         duration_us_ = 0;
-        ZJC_DEBUG("pool: %d local time set stop timer called!", pool_idx_);
+        SHARDORA_DEBUG("pool: %d local time set stop timer called!", pool_idx_);
     }
 
     inline bool IsTimeout() {
         // duration_us_ = 0;
         bool timeout = (last_time_us_ != 0 && 
             (common::TimeUtils::TimestampUs() - last_time_us_) > (duration_us_ + 10000000lu));
-        // ZJC_DEBUG("pool: %u, local time last_time_us_: %lu, duration_us_: %lu, now time: %lu, dec: %lu, timeout: %d",
+        // SHARDORA_DEBUG("pool: %u, local time last_time_us_: %lu, duration_us_: %lu, now time: %lu, dec: %lu, timeout: %d",
         //     pool_idx_, last_time_us_, duration_us_, 
         //     common::TimeUtils::TimestampUs(), 
         //     (common::TimeUtils::TimestampUs() - last_time_us_),

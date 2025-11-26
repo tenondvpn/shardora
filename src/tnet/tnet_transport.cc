@@ -34,31 +34,31 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         uint32_t timeout) {
     ClientSocket* socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
     if (socket == NULL) {
-        ZJC_ERROR("create tcp client socket failed");
+        SHARDORA_ERROR("create tcp client socket failed");
         return NULL;
     }
 
     if (!socket->SetNonBlocking(true)) {
-        ZJC_ERROR("set non-blocking failed");
+        SHARDORA_ERROR("set non-blocking failed");
         socket->Free();
         return NULL;
     }
 
     if (!socket->SetCloseExec(true)) {
-        ZJC_ERROR("set close-exec failed");
+        SHARDORA_ERROR("set close-exec failed");
     }
 
     if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
-        ZJC_ERROR("set recv buf failed");
+        SHARDORA_ERROR("set recv buf failed");
     }
 
     if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
-        ZJC_ERROR("set recv buf failed");
+        SHARDORA_ERROR("set recv buf failed");
     }
 
     auto conn = CreateTcpConnection(GetNextEventLoop(), *socket);
     if (conn == nullptr) {
-        ZJC_ERROR("create tcp connection failed");
+        SHARDORA_ERROR("create tcp connection failed");
         socket->Free();
         return nullptr;
     }
@@ -67,7 +67,7 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     conn->SetPacketEncoder(packet_factory_->CreateEncoder());
     conn->SetPacketDecoder(packet_factory_->CreateDecoder());
     if (!conn->Connect(timeout)) {
-        ZJC_ERROR("connect peer [%s] failed[%d][%s]",
+        SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
                 peer_spec.c_str(), errno, strerror(errno));
         conn->Destroy(true);
         return nullptr;
@@ -91,7 +91,7 @@ bool TnetTransport::Init() {
     if (acceptor_isolate_thread_) {
         EventLoop* acceptor_event_loop = new EventLoop;
         if (!acceptor_event_loop->Init()) {
-            ZJC_ERROR("init acceptor event loop failed");
+            SHARDORA_ERROR("init acceptor event loop failed");
             delete acceptor_event_loop;
             acceptor_event_loop = nullptr;
             return false;
@@ -104,14 +104,14 @@ bool TnetTransport::Init() {
     for (i = 0; i < thread_count_; ++i) {
         EventLoop* event_loop = new EventLoop;
         if (!event_loop->Init()) {
-            ZJC_ERROR("init event loop failed");
+            SHARDORA_ERROR("init event loop failed");
             delete event_loop;
             event_loop = nullptr;
             break;
         }
 
         event_loop_vec_.push_back(event_loop);
-        ZJC_DEBUG("success add event loop: %d", i);
+        SHARDORA_DEBUG("success add event loop: %d", i);
     }
 
     if (i == thread_count_) {
@@ -167,7 +167,7 @@ void TnetTransport::Dispatch() {
 
 bool TnetTransport::Start() {
     if (!stoped_) {
-        ZJC_ERROR("already start");
+        SHARDORA_ERROR("already start");
         return false;
     }
 
@@ -205,7 +205,7 @@ bool TnetTransport::Stop() {
 
     if (acceptor_event_loop_ != NULL) {
         if (!acceptor_event_loop_->Shutdown()) {
-            ZJC_ERROR("accept event loop shutdown failed");
+            SHARDORA_ERROR("accept event loop shutdown failed");
             return false;
         }
     }
@@ -213,7 +213,7 @@ bool TnetTransport::Stop() {
     for (size_t i = 0; i < event_loop_vec_.size(); i++) {
         EventLoop* event_loop = event_loop_vec_[i];
         if (!event_loop->Shutdown()) {
-            ZJC_ERROR("event loop shutdown failed");
+            SHARDORA_ERROR("event loop shutdown failed");
             return false;
         }
     }

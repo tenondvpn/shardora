@@ -82,7 +82,7 @@ public:
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
                     // assert(false);
                 }
-                ZJC_DEBUG("0 save bls pk and secret key success.height: %lu, network_id: %u, %d, %d",
+                SHARDORA_DEBUG("0 save bls pk and secret key success.height: %lu, network_id: %u, %d, %d",
                     height, network_id,
                     (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()),
                     (new_item->local_sec_key == libff::alt_bn128_Fr::zero()));
@@ -113,7 +113,7 @@ public:
                 assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-                ZJC_DEBUG("2 success get local sec key.");
+                SHARDORA_DEBUG("2 success get local sec key.");
             }
         } else {
             new_item->local_sec_key = libff::alt_bn128_Fr::zero();
@@ -121,7 +121,7 @@ public:
         }
 
         members_ptrs_[network_id][min_index] = new_item;
-        ZJC_DEBUG("1 save bls pk and secret key success.height: %lu, "
+        SHARDORA_DEBUG("1 save bls pk and secret key success.height: %lu, "
             "network_id: %u, local_sec_key: %s, is zero: %d, common pk is zero: %d",
             height, network_id,
             libBLS::ThresholdUtils::fieldElementToString(new_item->local_sec_key).c_str(),
@@ -142,7 +142,7 @@ public:
             return nullptr;
         }
         
-        ZJC_DEBUG("get bls pk and secret key success.height: %lu, "
+        SHARDORA_DEBUG("get bls pk and secret key success.height: %lu, "
             "network_id: %u, end net id: %u, offset: %u",
             height, 
             network_id, 
@@ -157,18 +157,18 @@ public:
             if (item_ptr != nullptr && item_ptr->height == height) {
                 if (common_pk != nullptr) {
                     *common_pk = item_ptr->common_bls_publick_key;
-                    ZJC_DEBUG("0 get bls pk and secret key success.height: %lu, network_id: %u",
+                    SHARDORA_DEBUG("0 get bls pk and secret key success.height: %lu, network_id: %u",
                         height, network_id);
 
                 }
 
                 if (local_sec_key != nullptr) {
                     *local_sec_key = item_ptr->local_sec_key;
-                    ZJC_DEBUG("1 uccess get local sec key get bls pk and secret key success.height: %lu, network_id: %u",
+                    SHARDORA_DEBUG("1 uccess get local sec key get bls pk and secret key success.height: %lu, network_id: %u",
                         height, network_id);
                 }
 
-                ZJC_DEBUG("success get bls pk and secret key success.height: %lu, "
+                SHARDORA_DEBUG("success get bls pk and secret key success.height: %lu, "
                     "network_id: %u, end net id: %u, offset: %u, local sec key: %s",
                     height, 
                     network_id, 
@@ -192,7 +192,7 @@ public:
                         assert(false);
                     } else {
                         iter->second->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-                        ZJC_DEBUG("1 success get local sec key.");
+                        SHARDORA_DEBUG("1 success get local sec key.");
                     }
                 }
             }
@@ -208,7 +208,7 @@ public:
 
             if (local_sec_key != nullptr) {
                 *local_sec_key = iter->second->local_sec_key;
-                ZJC_DEBUG("1 0 success get local sec key.");
+                SHARDORA_DEBUG("1 0 success get local sec key.");
             }
 
             return iter->second->members_ptr;
@@ -217,7 +217,7 @@ public:
         libff::alt_bn128_G2 temp_common_pk = libff::alt_bn128_G2::zero();
         auto shard_members = GetMembers(security, network_id, height, &temp_common_pk);
         if (shard_members == nullptr) {
-            ZJC_DEBUG("failed get members.");
+            SHARDORA_DEBUG("failed get members.");
             // assert(false);
             return nullptr;
         }
@@ -229,7 +229,7 @@ public:
         auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
         new_item->common_bls_publick_key = temp_common_pk;
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-            ZJC_DEBUG("new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()"
+            SHARDORA_DEBUG("new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()"
                 " network_id: %d, height: %lu", network_id, height);
             // assert(false);
             return shard_members;
@@ -245,7 +245,7 @@ public:
                 assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-                ZJC_DEBUG("success get local sec key.");
+                SHARDORA_DEBUG("success get local sec key.");
             }
         }
 
@@ -255,7 +255,7 @@ public:
 
         if (local_sec_key != nullptr) {
             *local_sec_key = new_item->local_sec_key;
-            ZJC_DEBUG("1 success get local sec key.");
+            SHARDORA_DEBUG("1 success get local sec key.");
         }
 
         if (height_with_members_[network_id].size() >= kMaxCacheElectBlockCount) {
@@ -278,7 +278,7 @@ private:
                 network_id % common::kImmutablePoolSize,
                 height,
                 &view_block)) {
-            ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+            SHARDORA_INFO("failed get block with height net: %u, pool: %u, height: %lu",
                 network::kRootCongressNetworkId, network_id, height);
             //             assert(false);
             return nullptr;
@@ -340,7 +340,7 @@ private:
                     shard_members_ptr->at(i)->bls_publick_key = *pkey.getPublicKey();
                     assert(shard_members_ptr->at(i)->bls_publick_key != libff::alt_bn128_G2::zero());
                 } catch(...) {
-                    ZJC_DEBUG("failed get bls public key: %d", i);
+                    SHARDORA_DEBUG("failed get bls public key: %d", i);
                 }
                 
             }

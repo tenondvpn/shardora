@@ -37,7 +37,7 @@ int ShardStatistic::Init() {
             common::GlobalInfo::Instance()->network_id(), 
             &statistic_info)) {
         latest_statisticed_height_ = statistic_info.height();
-        ZJC_INFO("success set latest statisticed height: %lu, info: %s", 
+        SHARDORA_INFO("success set latest statisticed height: %lu, info: %s", 
             latest_statisticed_height_, 
             ProtobufToJson(statistic_info).c_str());
         if (statistic_info.pool_statisitcs_size() != common::kInvalidPoolIndex) {
@@ -55,7 +55,7 @@ int ShardStatistic::Init() {
             pool_map[i] = statistic_item;
         }
     } else {
-        ZJC_INFO("failed load latest pool statistic tag: %d", common::GlobalInfo::Instance()->network_id());
+        SHARDORA_INFO("failed load latest pool statistic tag: %d", common::GlobalInfo::Instance()->network_id());
         assert(false);
         return kPoolsError;
     }
@@ -108,7 +108,7 @@ void ShardStatistic::ThreadCallback() {
 void ShardStatistic::ThreadToStatistic(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto* block_ptr = &view_block_ptr->block_info();
-    ZJC_INFO("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
+    SHARDORA_INFO("new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
         block_ptr->height(),
@@ -121,7 +121,7 @@ void ShardStatistic::ThreadToStatistic(
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
     if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
         pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
-        ZJC_INFO("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
+        SHARDORA_INFO("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
             view_block_ptr->qc().network_id(),
             view_block_ptr->qc().pool_index(),
             block_ptr->height(),
@@ -152,7 +152,7 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
 // void ShardStatistic::HandleStatisticBlock(
 //         const block::protobuf::Block& block) {
 //     auto& elect_statistic = block.elect_statistic();
-//     ZJC_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu, %d, %d",
+//     SHARDORA_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu, %d, %d",
 //         ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_,
 //         block.has_elect_statistic(),
 //         block.has_pool_st_info());
@@ -163,7 +163,7 @@ void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
     //         break;
     //     }
             
-    //     ZJC_INFO("erase statistic height: %lu", st_iter->first);
+    //     SHARDORA_INFO("erase statistic height: %lu", st_iter->first);
     //     st_iter = statistic_pool_info_.erase(st_iter);
     //     CHECK_MEMORY_SIZE(statistic_pool_info_);
     // }
@@ -181,7 +181,7 @@ void ShardStatistic::HandleStatistic(
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
     if (block.timeblock_height() < latest_timeblock_height_) {
-        ZJC_INFO("timeblock not less than latest timeblock: %lu, %lu", 
+        SHARDORA_INFO("timeblock not less than latest timeblock: %lu, %lu", 
             block.timeblock_height(), latest_timeblock_height_);
     }
 
@@ -191,7 +191,7 @@ void ShardStatistic::HandleStatistic(
         pool_statistic_height_with_block_height_map_[block.pool_statistic_height()][pool_idx] = block.height();
         auto exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
         if (exist_iter == statistic_pool_info_.end()) {
-            ZJC_INFO(
+            SHARDORA_INFO(
                 "not exists success handle kPoolStatisticTag tx statistic_height: %lu, "
                 "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
                 block.pool_statistic_height(), 
@@ -199,7 +199,7 @@ void ShardStatistic::HandleStatistic(
                 block.height(), 
                 block.height() + 1,
                 0);
-            ZJC_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
+            SHARDORA_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
                 latest_timeblock_height_, block.pool_statistic_height());
             StatisticInfoItem statistic_item;
             std::map<uint32_t, StatisticInfoItem> pool_map;
@@ -212,7 +212,7 @@ void ShardStatistic::HandleStatistic(
         } 
         
         exist_iter->second[pool_idx].statistic_min_height = block.height() + 1;
-        ZJC_INFO(
+        SHARDORA_INFO(
             "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
             "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
             block.pool_statistic_height(), 
@@ -222,7 +222,7 @@ void ShardStatistic::HandleStatistic(
             0);
     }
 
-    ZJC_INFO("real handle new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
+    SHARDORA_INFO("real handle new block coming net: %u, pool: %u, height: %lu, timeblock height: %lu",
         view_block_ptr->qc().network_id(),
         view_block_ptr->qc().pool_index(),
         block.height(),
@@ -235,11 +235,11 @@ void ShardStatistic::HandleStatistic(
     auto pool_statistic_riter = statistic_pool_info_.rbegin();
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
         auto pool_iter = pool_statistic_riter->second.find(pool_idx);
-        ZJC_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
+        SHARDORA_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
             pool_iter->first, pool_idx, block.height(), 
             (pool_iter != pool_statistic_riter->second.end()));
         if (pool_iter != pool_statistic_riter->second.end()) {
-            ZJC_INFO("pool: %u, get block height and statistic height: %lu, max_height: %lu",
+            SHARDORA_INFO("pool: %u, get block height and statistic height: %lu, max_height: %lu",
                 pool_idx,
                 block.height(),
                 pool_iter->second.statistic_max_height);
@@ -252,7 +252,7 @@ void ShardStatistic::HandleStatistic(
     }
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
-        ZJC_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
+        SHARDORA_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
         // assert(false);
         return;
     }
@@ -274,7 +274,7 @@ void ShardStatistic::HandleStatistic(
                 auto tmp_pool_iter = iter->second.find(pool_idx);
                 if (tmp_pool_iter != iter->second.end()) {
                     statistic_info_ptr->statistic_max_height = tmp_pool_iter->second;
-                    ZJC_INFO("pool statistic set min and max height: %u, %lu, %lu, "
+                    SHARDORA_INFO("pool statistic set min and max height: %u, %lu, %lu, "
                         "exists statistic height: %lu, prev statistic height: %lu",
                         pool_iter->first, 
                         statistic_info_ptr->statistic_min_height, 
@@ -295,7 +295,7 @@ void ShardStatistic::HandleStatistic(
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
     auto handle_joins_func = [&](const bls::protobuf::JoinElectInfo& join_info) {
-        ZJC_INFO("join elect tx comming.");
+        SHARDORA_INFO("join elect tx comming.");
         auto join_addr = secptr_->GetAddress(join_info.public_key());
         id_pk_map[join_addr] =join_info.public_key();
         {
@@ -307,7 +307,7 @@ void ShardStatistic::HandleStatistic(
 
             auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
             elect_stoke_map[join_addr] = join_info.stoke();
-            ZJC_INFO("success add elect node stoke %s, %lu, "
+            SHARDORA_INFO("success add elect node stoke %s, %lu, "
                 "elect height: %lu, tm height: %lu",
                 common::Encode::HexEncode(join_addr).c_str(), 
                 join_info.stoke(),
@@ -334,7 +334,7 @@ void ShardStatistic::HandleStatistic(
 
             auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
             elect_shard_map[join_addr] = join_info.shard_id();
-            ZJC_INFO("kJoinElect add new elect node: %s, shard: %u, pool: %u, "
+            SHARDORA_INFO("kJoinElect add new elect node: %s, shard: %u, pool: %u, "
                 "height: %lu, elect height: %lu, tm height: %lu",
                 common::Encode::HexEncode(join_addr).c_str(),
                 join_info.shard_id(),
@@ -367,7 +367,7 @@ void ShardStatistic::HandleStatistic(
             auto& accoutPoceInfoIterm = acc_iter->second;
             accoutPoceInfoIterm->consensus_gap += 1;
             accoutPoceInfoIterm->credit += node.fts_value();;
-            ZJC_INFO("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
+            SHARDORA_INFO("HandleElectStatistic addr: %s, consensus_gap: %lu, credit: %lu",
                 common::Encode::HexEncode(addr).c_str(), 
                 accoutPoceInfoIterm->consensus_gap, 
                 accoutPoceInfoIterm->credit);
@@ -383,7 +383,7 @@ void ShardStatistic::HandleStatistic(
                 break;
             }
                 
-            ZJC_INFO("erase statistic height: %lu", st_iter->first);
+            SHARDORA_INFO("erase statistic height: %lu", st_iter->first);
             st_iter = statistic_pool_info_.erase(st_iter);
             CHECK_MEMORY_SIZE(statistic_pool_info_);
         }
@@ -392,7 +392,7 @@ void ShardStatistic::HandleStatistic(
         latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
         for (int32_t node_idx = 0;
                 node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
-            ZJC_INFO("success get shard election: %lu, %lu, "
+            SHARDORA_INFO("success get shard election: %lu, %lu, "
                 "join nodes size: %u, shard: %u",
                 elect_statistic.sharding_id(),
                 elect_statistic.statistic_height(),
@@ -417,7 +417,7 @@ void ShardStatistic::HandleStatistic(
                 auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
                 elect_shard_map[elect_statistic.join_elect_nodes(node_idx).pubkey()] = 
                     network::kRootCongressNetworkId;
-                ZJC_INFO("root sharding kJoinElect add new elect node: %s, "
+                SHARDORA_INFO("root sharding kJoinElect add new elect node: %s, "
                     "stoke: %lu, elect height: %lu",
                     common::Encode::HexEncode(
                         elect_statistic.join_elect_nodes(node_idx).pubkey()).c_str(),
@@ -464,7 +464,7 @@ void ShardStatistic::HandleStatistic(
         }
     }
 
-    ZJC_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
+    SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
         "debug_str: %s, statistic_pool_debug_str: %s",
         pool_statistic_riter->first,
@@ -486,7 +486,7 @@ std::string ShardStatistic::getLeaderIdFromBlock(
         nullptr,
         nullptr);
     if (members == nullptr) {
-        ZJC_INFO("block leader not exit block.hash %s block.electHeight:%d, network_id:%d ",
+        SHARDORA_INFO("block leader not exit block.hash %s block.electHeight:%d, network_id:%d ",
                   common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
                   view_block.qc().elect_height(),
                   view_block.qc().network_id());
@@ -508,7 +508,7 @@ void ShardStatistic::OnNewElectBlock(
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
     prepare_elect_height_ = prepare_elect_height;
-    ZJC_INFO("new elect block: %lu, %lu, prepare_elect_height_: %lu",
+    SHARDORA_INFO("new elect block: %lu, %lu, prepare_elect_height_: %lu",
         prev_elect_height_, now_elect_height_, prepare_elect_height_);
 }
 
@@ -520,7 +520,7 @@ void ShardStatistic::OnTimeBlock(
         return;
     }
 
-    ZJC_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
+    SHARDORA_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
         latest_timeblock_height_, latest_time_block_height);
     StatisticInfoItem statistic_item;
     std::map<uint32_t, StatisticInfoItem> pool_map;
@@ -544,7 +544,7 @@ int ShardStatistic::StatisticWithHeights(
     auto iter = statistic_pool_info_.rbegin();
     auto piter = statistic_pool_info_.rend();
     while (iter != statistic_pool_info_.rend() && iter->first > latest_statisticed_height_) {
-        ZJC_INFO("iter->first: %lu, size: %u, piter->first: %lu, size: %u, latest_statisticed_height_: %lu", 
+        SHARDORA_INFO("iter->first: %lu, size: %u, piter->first: %lu, size: %u, latest_statisticed_height_: %lu", 
             iter->first, 
             iter->second.size(), 
             piter !=  statistic_pool_info_.rend() ? piter->first : 0lu, 
@@ -567,7 +567,7 @@ int ShardStatistic::StatisticWithHeights(
             iter_debug_str += std::to_string(test_iter->first) + ", ";
         }
 
-        ZJC_INFO("failed iter == statistic_pool_info_.end() piter: %d, iter: %d, "
+        SHARDORA_INFO("failed iter == statistic_pool_info_.end() piter: %d, iter: %d, "
             "piter_debug_str: %s, iter_debug_str: %s, iter->first: %lu, latest_statisticed_height_: %lu",
             (piter == statistic_pool_info_.rend()), 
             (iter == statistic_pool_info_.rend()),
@@ -586,7 +586,7 @@ int ShardStatistic::StatisticWithHeights(
                 std::to_string(titer->second.statistic_min_height) + ":" + 
                 std::to_string(titer->second.statistic_max_height) + ",";
         }
-        ZJC_INFO("pool not full statistic height: %lu, now: %u, all: %u, "
+        SHARDORA_INFO("pool not full statistic height: %lu, now: %u, all: %u, "
             "now_size: %u, %s, latest_statisticed_height_: %lu", 
             piter->first,
             piter->second.size(), 
@@ -600,18 +600,18 @@ int ShardStatistic::StatisticWithHeights(
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
         for (auto tmp_iter = pool_statistic_height_with_block_height_map_.begin(); 
                 tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
-            ZJC_INFO("pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+            SHARDORA_INFO("pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
                 "tmp_iter->first: %lu iter->first: %lu",
                 tmp_pool_idx, tmp_iter->first, iter->first);
             if (tmp_iter->first > iter->first) {
                 auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
                 if (tmp_pool_iter != tmp_iter->second.end()) {
                     iter->second[tmp_pool_idx].statistic_max_height = tmp_pool_iter->second;
-                    ZJC_INFO("success get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                    SHARDORA_INFO("success get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
                         "tmp_iter->first: %lu iter->first: %lu, tmp_pool_iter->second: %lu",
                         tmp_pool_idx, tmp_iter->first, iter->first, tmp_pool_iter->second);
                 } else {
-                    ZJC_INFO("failed get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                    SHARDORA_INFO("failed get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
                         "tmp_iter->first: %lu iter->first: %lu",
                         tmp_pool_idx, tmp_iter->first, iter->first);
                 }
@@ -622,7 +622,7 @@ int ShardStatistic::StatisticWithHeights(
         
         if (iter->second[tmp_pool_idx].statistic_min_height >
                 iter->second[tmp_pool_idx].statistic_max_height) {
-            ZJC_INFO("pool: %d, statistic height: %lu, min height: %lu, max height: %lu",
+            SHARDORA_INFO("pool: %d, statistic height: %lu, min height: %lu, max height: %lu",
                 tmp_pool_idx,
                 iter->first,
                 iter->second[tmp_pool_idx].statistic_min_height,
@@ -631,7 +631,7 @@ int ShardStatistic::StatisticWithHeights(
                     tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
                 auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
                 if (tmp_pool_iter != tmp_iter->second.end()) {
-                    ZJC_INFO("pool: %u, statistic height: %lu, block height: %lu",
+                    SHARDORA_INFO("pool: %u, statistic height: %lu, block height: %lu",
                         tmp_pool_idx, tmp_iter->first, tmp_pool_iter->second);
                 }
             }
@@ -643,7 +643,7 @@ int ShardStatistic::StatisticWithHeights(
     auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
-        ZJC_INFO("success get exists statistic message iter->first: %lu, "
+        SHARDORA_INFO("success get exists statistic message iter->first: %lu, "
             "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
             "now tm height: %lu, statistic: %s",
             iter->first,
@@ -674,7 +674,7 @@ int ShardStatistic::StatisticWithHeights(
         nullptr,
         nullptr);
     if (now_elect_members == nullptr) {
-        ZJC_INFO("now_elect_members == nullptr.");
+        SHARDORA_INFO("now_elect_members == nullptr.");
         return kPoolsError;
     }
 
@@ -685,7 +685,7 @@ int ShardStatistic::StatisticWithHeights(
             added_id_set.insert((*now_elect_members)[i]->pubkey);
         }
     } else {
-        ZJC_INFO("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
+        SHARDORA_INFO("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
     }
 
     uint64_t all_gas_amount = 0;
@@ -766,7 +766,7 @@ int ShardStatistic::StatisticWithHeights(
                     if (stoke_iter == tmp_iter->second.end()) {
                         tmp_iter->second[join_elect_shard_iter->first] = join_elect_shard_iter->second;
                     } else {
-                        ZJC_ERROR("invalid pk and shard id: %s, %u",
+                        SHARDORA_ERROR("invalid pk and shard id: %s, %u",
                             common::Encode::HexEncode(join_elect_shard_iter->first).c_str(), 
                             join_elect_shard_iter->second);
                         assert(false);
@@ -841,7 +841,7 @@ int ShardStatistic::StatisticWithHeights(
         height_item->set_max_height(iter->second[tmp_pool_idx].statistic_max_height);
     }
 
-    ZJC_INFO("success create statistic message prev_timeblock_height_: %lu, "
+    SHARDORA_INFO("success create statistic message prev_timeblock_height_: %lu, "
         "statisticed_timeblock_height: %lu, "
         "now tm height: %lu, statistic: %s, new statistic height: %lu, "
         "now satistic height: %lu, statistic with height now: %s, tx_count_debug_str: %s",
@@ -878,7 +878,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
         for (uint32_t i = 0; i < prepare_members->size(); ++i) {
             auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
             if (inc_iter != added_id_set.end()) {
-                // ZJC_INFO("id is in elect: %s", common::Encode::HexEncode(
+                // SHARDORA_INFO("id is in elect: %s", common::Encode::HexEncode(
                 //     secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str());
                 continue;
             }
@@ -902,7 +902,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
             join_elect_node->set_elect_pos(0);
             join_elect_node->set_stoke(stoke);
             join_elect_node->set_shard(shard);
-            ZJC_INFO("add node to election prepare member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
+            SHARDORA_INFO("add node to election prepare member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
                       common::Encode::HexEncode((*prepare_members)[i]->pubkey).c_str(),
                       common::Encode::HexEncode(secptr_->GetAddress((*prepare_members)[i]->pubkey)).c_str(),
                       stoke, shard,
@@ -911,7 +911,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
     }
 
     if (prepare_members != nullptr) {
-        ZJC_INFO("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
+        SHARDORA_INFO("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
             "new nodes size: %u, now members size: %u, prepare members size: %u",
             now_elect_height_,
             prepare_elect_height_,
@@ -932,7 +932,7 @@ void ShardStatistic::addNewNode2JoinStatics(
 #ifndef NDEBUG
     for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
         for (auto id_iter = iter->second.begin(); id_iter != iter->second.end(); ++id_iter) {
-            ZJC_INFO("stoke map eh: %lu, id: %s, stoke: %lu",
+            SHARDORA_INFO("stoke map eh: %lu, id: %s, stoke: %lu",
                 iter->first,
                 common::Encode::HexEncode(id_iter->first).c_str(),
                 id_iter->second);
@@ -941,7 +941,7 @@ void ShardStatistic::addNewNode2JoinStatics(
 
     for (auto iter = join_elect_shard_map.begin(); iter != join_elect_shard_map.end(); ++iter) {
         for (auto id_iter = iter->second.begin(); id_iter != iter->second.end(); ++id_iter) {
-            ZJC_INFO("shard map eh: %lu, id: %s, shard: %u",
+            SHARDORA_INFO("shard map eh: %lu, id: %s, shard: %u",
                 iter->first,
                 common::Encode::HexEncode(id_iter->first).c_str(),
                 id_iter->second);
@@ -958,18 +958,18 @@ void ShardStatistic::addNewNode2JoinStatics(
         const auto &shard_map = r_siter->second;
         for (auto &[node_id, stoke] : stoke_map) {
             if (shard_map.count(node_id) == 0) {
-                ZJC_INFO("failed get shard: %s", common::Encode::HexEncode(node_id).c_str());
+                SHARDORA_INFO("failed get shard: %s", common::Encode::HexEncode(node_id).c_str());
                 continue;
             }
 
             if (added_id_set.count(node_id) > 0) {
                 // 说明节点是之前的委员会成员 。
-                ZJC_INFO("not added id: %s", common::Encode::HexEncode(node_id).c_str());
+                SHARDORA_INFO("not added id: %s", common::Encode::HexEncode(node_id).c_str());
                 continue;
             }
 
             elect_nodes.push_back(node_id);
-            ZJC_INFO("elect nodes add: %s, %lu",
+            SHARDORA_INFO("elect nodes add: %s, %lu",
                       common::Encode::HexEncode(node_id).c_str(), stoke);
             added_id_set.insert(node_id);
         }
@@ -1023,12 +1023,12 @@ void ShardStatistic::addNewNode2JoinStatics(
         join_elect_node->set_stoke(stoke);
         join_elect_node->set_shard(shard_id);
         join_elect_node->set_elect_pos(0);
-        ZJC_INFO("add node to election new member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
+        SHARDORA_INFO("add node to election new member: %s, %s, stoke: %lu, shard: %u, elect pos: %d",
                   common::Encode::HexEncode(pubkey).c_str(),
                   common::Encode::HexEncode(secptr_->GetAddress(pubkey)).c_str(),
                   iter->second, shard_iter->second,
                   0);
-        ZJC_INFO("add new elect node: %s, stoke: %lu, shard: %u",
+        SHARDORA_INFO("add new elect node: %s, stoke: %lu, shard: %u",
             common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
 }

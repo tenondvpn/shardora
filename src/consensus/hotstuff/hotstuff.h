@@ -115,7 +115,7 @@ public:
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
             last_vote_view_ = view;
-            ZJC_DEBUG("pool: %u, set last vote view: %lu", pool_idx_, view);
+            SHARDORA_DEBUG("pool: %u, set last vote view: %lu", pool_idx_, view);
         }
     }
 

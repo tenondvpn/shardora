@@ -22,7 +22,7 @@ public:
         assert(message.type() < common::kMaxMessageTypeCount);
         auto handler = message_processor_[message.type()];
         if (handler == nullptr) {
-            ZJC_ERROR("error msg type: %d", message.type());
+            SHARDORA_ERROR("error msg type: %d", message.type());
             assert(false);
             return;
         }

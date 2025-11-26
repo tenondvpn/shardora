@@ -56,13 +56,13 @@ public:
 
             if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
                 block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-                ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
+                SHARDORA_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
                 break;
             }
 
             if (block_tx.gas_limit() < gas_used) {
                 block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-                ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
+                SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
                 break;
             }
         } while (0);
@@ -75,12 +75,12 @@ public:
                 } else {
                     from_balance -= gas_used * block_tx.gas_price();
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                    ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
+                    SHARDORA_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
                 }
             } else {
                 from_balance = 0;
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu",
+                SHARDORA_ERROR("leader balance error: %llu, %llu",
                     from_balance, gas_used * block_tx.gas_price());
             }
         } else {
@@ -93,12 +93,12 @@ public:
 
         acc_balance_map[from]->set_balance(from_balance);
         acc_balance_map[from]->set_nonce(block_tx.nonce());
-        ZJC_DEBUG("success add addr: %s, value: %s", 
+        SHARDORA_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(from).c_str(), 
             ProtobufToJson(*(acc_balance_map[from])).c_str());
         block_tx.set_balance(from_balance);
         block_tx.set_gas_used(gas_used);
-        ZJC_DEBUG("create library called handle tx success nonce: %lu, %lu, %lu, status: %d",
+        SHARDORA_DEBUG("create library called handle tx success nonce: %lu, %lu, %lu, status: %d",
             block_tx.nonce(),
             block_tx.balance(),
             block_tx.gas_used(),

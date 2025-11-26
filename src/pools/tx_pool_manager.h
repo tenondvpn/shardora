@@ -74,11 +74,11 @@ public:
     void OnNewCrossBlock(
             const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
         auto* block_item = &view_block->block_info();
-        ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
+        SHARDORA_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
             view_block->qc().network_id(), view_block->qc().pool_index(), block_item->height());
         if (view_block->qc().network_id() == network::kRootCongressNetworkId) {
             root_cross_pools_[view_block->qc().pool_index()].UpdateLatestInfo(block_item->height());
-            ZJC_DEBUG("root cross succcess update cross block latest info net: %u, pool: %u, height: %lu",
+            SHARDORA_DEBUG("root cross succcess update cross block latest info net: %u, pool: %u, height: %lu",
                 view_block->qc().network_id(), view_block->qc().pool_index(), block_item->height());
             return;
         }
@@ -88,7 +88,7 @@ public:
         }
 
         cross_pools_[view_block->qc().network_id()].UpdateLatestInfo(block_item->height());
-        ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
+        SHARDORA_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
             view_block->qc().network_id(), view_block->qc().pool_index(), block_item->height());
     }
 
@@ -107,7 +107,7 @@ public:
 
                     if ((*members)[i]->id == security_->GetAddress()) {
                         member_index_ = i;
-                        ZJC_DEBUG("local member index is: %lu", member_index_);
+                        SHARDORA_DEBUG("local member index is: %lu", member_index_);
                     }
                 }
 
@@ -115,7 +115,7 @@ public:
             }
         }
 
-        ZJC_DEBUG("succcess set elect max sharding id: %u", sharding_id);
+        SHARDORA_DEBUG("succcess set elect max sharding id: %u", sharding_id);
         if (sharding_id > now_max_sharding_id_) {
             now_max_sharding_id_ = sharding_id;
         }
@@ -144,7 +144,7 @@ public:
         return tx_pool_[pool_index].latest_timestamp();
     }
 
-#ifdef ZJC_UNITTEST
+#ifdef SHARDORA_UNITTEST
     // just for test
     int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
         if (pool_index >= common::kInvalidPoolIndex) {
@@ -165,7 +165,7 @@ public:
         uint32_t sharding_id = view_block->qc().network_id();
         uint32_t pool_index = view_block->qc().pool_index();
         const std::string& hash = view_block->qc().view_block_hash();
-        ZJC_DEBUG("sharding_id: %u, pool index: %u, update height: %lu", sharding_id, pool_index, height);
+        SHARDORA_DEBUG("sharding_id: %u, pool index: %u, update height: %lu", sharding_id, pool_index, height);
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
         }

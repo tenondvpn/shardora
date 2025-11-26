@@ -48,7 +48,7 @@ public:
             // 检查 agg bls 的 Proof of Posession，确保公钥不是假的，规避密钥消除攻击
             if (bls::AggBls::PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
                 member_aggbls_pk_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G2>(agg_bls_pk);
-                ZJC_INFO("pop verify succ, member: %lu, elect_height: %lu, shard: %d, pk: %s",
+                SHARDORA_INFO("pop verify succ, member: %lu, elect_height: %lu, shard: %d, pk: %s",
                     (*members)[i]->index,
                     elect_height,
                     sharding_id,
@@ -132,7 +132,7 @@ public:
         if (member_aggbls_pk_map_.find(member_idx) != member_aggbls_pk_map_.end()) {
             return member_aggbls_pk_map_[member_idx];
         }
-        ZJC_ERROR("cannot find agg pk, member: %lu, elect: %lu, right: %d", member_idx, elect_height_, member_aggbls_pk_map_[member_idx] != nullptr);
+        SHARDORA_ERROR("cannot find agg pk, member: %lu, elect: %lu, right: %d", member_idx, elect_height_, member_aggbls_pk_map_[member_idx] != nullptr);
         assert(false);
         return nullptr;
     }
@@ -208,7 +208,7 @@ public:
 //                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
 //             }
 // #endif
-        ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu",
+        SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu",
             sharding_id, elect_item->ElectHeight());
     }
 
@@ -234,7 +234,7 @@ public:
             &common_pk,
             &sec_key);
         if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
-            ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
+            SHARDORA_ERROR("failed get elect members or common pk: %u, %lu, %d",
                 sharding_id,
                 elect_height,
                 (common_pk == libff::alt_bn128_G2::zero()));
@@ -242,7 +242,7 @@ public:
             return nullptr;
         }
         
-        ZJC_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %d",
+        SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %d",
             sharding_id, elect_height, (common_pk != libff::alt_bn128_G2::zero()));
 // #ifndef NDEBUG
 //         if (sharding_id == common::GlobalInfo::Instance()->network_id())
@@ -261,7 +261,7 @@ public:
 
     inline std::shared_ptr<ElectItem> GetElectItemWithShardingId(uint32_t sharding_id) const {
         if (sharding_id > network::kConsensusShardEndNetworkId) {
-            ZJC_DEBUG("get elect item failed sharding id: %u", sharding_id);
+            SHARDORA_DEBUG("get elect item failed sharding id: %u", sharding_id);
             return nullptr;
         }
 
@@ -271,11 +271,11 @@ public:
     // 更新 elect_item members 的 addr
     void RefreshMemberAddrs(uint32_t sharding_id) {
         if (!elect_items_[sharding_id]) {
-            ZJC_DEBUG("Leader pool elect item null");
+            SHARDORA_DEBUG("Leader pool elect item null");
             return;
         }
         for (auto& member : *(elect_items_[sharding_id]->Members())) {
-            // ZJC_DEBUG("get Leader pool %s failed: %d, %u %d", 
+            // SHARDORA_DEBUG("get Leader pool %s failed: %d, %u %d", 
             //     common::Encode::HexEncode(member->id).c_str(), 
             //     common::GlobalInfo::Instance()->network_id(),
             //     member->public_ip,
@@ -288,7 +288,7 @@ public:
                         if ((*iter)->id == member->id) {
                             member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
                             member->public_port = (*iter)->public_port;
-                            ZJC_DEBUG("set member %s ip port %s:%d",
+                            SHARDORA_DEBUG("set member %s ip port %s:%d",
                                 common::Encode::HexEncode((*iter)->id).c_str(), 
                                 (*iter)->public_ip.c_str(), 
                                 (*iter)->public_port);

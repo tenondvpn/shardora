@@ -60,7 +60,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
-    ZJC_INFO("success create timeblock tx key: %s",
+    SHARDORA_INFO("success create timeblock tx key: %s",
         common::Encode::HexEncode(pools::GetTxKey(
             msg_ptr->address_info->addr(), 
             msg_ptr->address_info->nonce())).c_str());
@@ -77,7 +77,7 @@ bool TimeBlockManager::HasTimeblockTx(
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         // if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-        //     ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+        //     SHARDORA_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
         //     return nullptr;
         // }
 
@@ -102,12 +102,12 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (leader && tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-            // ZJC_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+            // SHARDORA_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
             return nullptr;
         }
 
         if (!CanCallTimeBlockTx()) {
-            ZJC_DEBUG("CanCallTimeBlockTx leader: %d", leader);
+            SHARDORA_DEBUG("CanCallTimeBlockTx leader: %d", leader);
             return nullptr;
         }
 
@@ -131,7 +131,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         }
 
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s, to: %s",
+        SHARDORA_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s, to: %s",
             timer_block.timestamp(), timer_block.vss_random(), leader,
             common::Encode::HexEncode(tx_info->key()).c_str(),
             common::Encode::HexEncode(tx_info->to()).c_str());
@@ -149,7 +149,7 @@ void TimeBlockManager::OnTimeBlock(
         return;
     }
 
-    ZJC_INFO("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
+    SHARDORA_INFO("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
         latest_time_block_height,
         latest_time_block_height_,
         latest_time_block_tm,

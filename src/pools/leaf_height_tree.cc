@@ -74,7 +74,7 @@ void LeafHeightTree::Set(uint64_t child_index, uint64_t val) {
     data_[parent_idx] = val;
     BranchButtomUp(parent_idx);
     dirty_ = true;
-    ZJC_DEBUG("0 dirty called!");
+    SHARDORA_DEBUG("0 dirty called!");
 }
 
 void LeafHeightTree::Set(uint64_t index) {
@@ -102,7 +102,7 @@ void LeafHeightTree::Set(uint64_t index) {
     data_[vec_index] |= (uint64_t)((uint64_t)(1) << bit_index);
     ButtomUp(vec_index);
     dirty_ = true;
-    ZJC_DEBUG("1 dirty called!");
+    SHARDORA_DEBUG("1 dirty called!");
 }
 
 bool LeafHeightTree::Valid(uint64_t index) {
@@ -168,7 +168,7 @@ uint32_t LeafHeightTree::GetAlignMaxLevel() {
     }
 
     if (tmp > 1024) {
-        ZJC_DEBUG("get leaf height max level data size: %u", tmp);
+        SHARDORA_DEBUG("get leaf height max level data size: %u", tmp);
     }
     
     assert(tmp < 20480);

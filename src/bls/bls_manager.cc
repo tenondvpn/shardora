@@ -68,7 +68,7 @@ void BlsManager::TimerMessage() {
 
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - now_tm_ms >= 10) {
-            ZJC_WARN("BlsManager handle message use time: %lu", (etime - now_tm_ms));
+            SHARDORA_WARN("BlsManager handle message use time: %lu", (etime - now_tm_ms));
         }
     }
 
@@ -81,7 +81,7 @@ void BlsManager::OnNewElectBlock(
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
-        ZJC_INFO("remove finish_networks_map_ sharding_id: %d", sharding_id);
+        SHARDORA_INFO("remove finish_networks_map_ sharding_id: %d", sharding_id);
         finish_networks_map_.erase(iter);
         CHECK_MEMORY_SIZE(finish_networks_map_);
     }
@@ -114,7 +114,7 @@ void BlsManager::OnNewElectBlock(
     elect_item->members = members;
     elect_members_[sharding_id] = elect_item;
     CHECK_MEMORY_SIZE(elect_members_);
-//     ZJC_WARN("sharding: %u, success add new bls dkg, elect_height: %lu",
+//     SHARDORA_WARN("sharding: %u, success add new bls dkg, elect_height: %lu",
 //         sharding_id, elect_height);
     if (sharding_id != common::GlobalInfo::Instance()->network_id() &&
             sharding_id + network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
@@ -152,7 +152,7 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         db_,
         ck_client_);
-//     ZJC_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
+//     SHARDORA_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls->OnNewElectionBlock(
         latest_elect_height_,
         elect_height,
@@ -160,7 +160,7 @@ void BlsManager::OnNewElectBlock(
         latest_timeblock_info_);
     latest_elect_height_ = elect_height;
     waiting_bls_ = waiting_bls;
-    ZJC_WARN("success add new bls dkg, elect_height: %lu", elect_height);
+    SHARDORA_WARN("success add new bls dkg, elect_height: %lu", elect_height);
 }
 
 int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
@@ -179,7 +179,7 @@ int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         }
     }
 
-    ZJC_WARN("check firewall success!");
+    SHARDORA_WARN("check firewall success!");
     return transport::kFirewallCheckSuccess;
 }
 
@@ -188,18 +188,18 @@ int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
             bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return transport::kFirewallCheckError;
     }
 
     auto elect_iter = elect_members_.find(bls_msg.finish_req().network_id());
     if (elect_iter == elect_members_.end()) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return transport::kFirewallCheckError;
     }
 
     if (elect_iter->second->height != bls_msg.elect_height()) {
-        ZJC_WARN("finish network error: %d, elect height now: %lu, req: %lu",
+        SHARDORA_WARN("finish network error: %d, elect height now: %lu, req: %lu",
             bls_msg.finish_req().network_id(),
             elect_iter->second->height,
             bls_msg.elect_height());
@@ -258,7 +258,7 @@ int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
             t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return transport::kFirewallCheckError;
     }
@@ -311,7 +311,7 @@ int BlsManager::Sign(
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    ZJC_WARN("sign t: %u, n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+    SHARDORA_WARN("sign t: %u, n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n,
         (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
         (sign_x).c_str(), (sign_y).c_str(),
@@ -340,7 +340,7 @@ int BlsManager::Sign(
 //     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
 //     BLSPublicKeyShare pkey(local_sec_key, t, n);
 //     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-//     ZJC_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+//     SHARDORA_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
 //         t, n, 
 //         (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
 //         (*sign_x).c_str(), (*sign_y).c_str(),
@@ -380,7 +380,7 @@ int BlsManager::Verify(
 //     auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
 //     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
 //     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-//     ZJC_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
+//     SHARDORA_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
 //         t, n,
 //         (sign_x).c_str(), (sign_y).c_str(),
 //         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
@@ -433,7 +433,7 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
         finish_msg_queue_.push(msg_ptr);
-        ZJC_WARN("queue size finish_msg_queue_: %d, hash64: %lu",
+        SHARDORA_WARN("queue size finish_msg_queue_: %d, hash64: %lu",
             finish_msg_queue_.size(), msg_ptr->header.hash64());
         return;
     }
@@ -460,23 +460,23 @@ void BlsManager::PopFinishMessage() {
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
-    ZJC_WARN("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
+    SHARDORA_WARN("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
             bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return;
     }
 
     auto elect_iter = elect_members_.find(bls_msg.finish_req().network_id());
     if (elect_iter == elect_members_.end()) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return;
     }
 
     if (elect_iter->second->height != bls_msg.elect_height()) {
-        ZJC_WARN("finish network error: %d, elect height now: %lu, req: %lu",
+        SHARDORA_WARN("finish network error: %d, elect height now: %lu, req: %lu",
             bls_msg.finish_req().network_id(),
             elect_iter->second->height,
             bls_msg.elect_height());
@@ -535,7 +535,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
             t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return;
     }
@@ -545,14 +545,14 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     if (iter == finish_networks_map_.end()) {
         finish_item = std::make_shared<BlsFinishItem>();
         finish_networks_map_[bls_msg.finish_req().network_id()] = finish_item;
-        ZJC_INFO("success add finish_networks_map_ network id: %d", bls_msg.finish_req().network_id());
+        SHARDORA_INFO("success add finish_networks_map_ network id: %d", bls_msg.finish_req().network_id());
         CHECK_MEMORY_SIZE(finish_networks_map_);
     } else {
         finish_item = iter->second;
     }
 
     if (finish_item->verified[bls_msg.index()]) {
-        ZJC_WARN("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
+        SHARDORA_WARN("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -582,18 +582,18 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->success_verified) {
-        ZJC_WARN("success check all members agg signature, elect_height: %lu",
+        SHARDORA_WARN("success check all members agg signature, elect_height: %lu",
             bls_msg.elect_height());
     }
 
-    ZJC_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s",
+    SHARDORA_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s",
         bls_msg.finish_req().network_id(),
         bls_msg.index(),
         common::Encode::HexEncode(cpk_hash).c_str());
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
-        ZJC_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
+        SHARDORA_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
             max_iter->second->count,
             bls_msg.finish_req().network_id(),
             bls_msg.index(),
@@ -656,7 +656,7 @@ void BlsManager::CheckAggSignValid(
             finish_item->all_common_public_keys[member_idx] = libff::alt_bn128_G2::zero();
             BLS_ERROR("invalid bls item index: %d", member_idx);
         } else {
-            ZJC_WARN("valid bls item index: %d", member_idx);
+            SHARDORA_WARN("valid bls item index: %d", member_idx);
         }
 
         return;
@@ -869,7 +869,7 @@ bool BlsManager::VerifyAggSignValid(
                 *bls_agg_sign,
                 g1_hash,
                 &verify_hash) != bls::kBlsSuccess) {
-            ZJC_ERROR("verify agg sign failed t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+            SHARDORA_ERROR("verify agg sign failed t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
                 t, n,
                 common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
                 libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
@@ -877,14 +877,14 @@ bool BlsManager::VerifyAggSignValid(
             return false;
         }
 
-        ZJC_WARN("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+        SHARDORA_WARN("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
             t, n,
             common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
             sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());
         return true;
     } catch (...) {
-        ZJC_ERROR("verify agg sign failed");
+        SHARDORA_ERROR("verify agg sign failed");
     }
 
     return false;
@@ -1034,7 +1034,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
     pre_ec_members->set_prev_elect_height(elect_iter->second->height);
-    ZJC_WARN("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
+    SHARDORA_WARN("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
         ec_block.shard_network_id(),
         elect_iter->second->height,

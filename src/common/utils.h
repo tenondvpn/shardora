@@ -19,7 +19,7 @@
         TypeName& operator=(const TypeName&)
 #endif  // !DISALLOW_COPY_AND_ASSIGN
 
-#ifdef ZJC_TRACE_MESSAGE
+#ifdef SHARDORA_TRACE_MESSAGE
 struct Construct {
     uint32_t net_id;
     uint8_t country;
@@ -29,12 +29,12 @@ struct Construct {
     char hash[24];
 };
 
-#define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append) \
+#define SHARDORA_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append) \
     do { \
         if ((message).has_debug()) { \
             Construct* src_cons_key = (Construct*)((message).src_dht_key().c_str()); \
             Construct* des_cons_key = (Construct*)((message).des_dht_key().c_str()); \
-            ZJC_ERROR("[%s][handled: %d] [hash: %llu][hop: %d][src_net: %u][des_net: %u][id:%u]" \
+            SHARDORA_ERROR("[%s][handled: %d] [hash: %llu][hop: %d][src_net: %u][des_net: %u][id:%u]" \
                 "[broad: %d][universal: %d][type: %d] %s", \
                 (message).debug().c_str(), \
                 (message).handled(), \
@@ -50,7 +50,7 @@ struct Construct {
         } \
     } while (0)
 #else
-#define ZJC_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
+#define SHARDORA_NETWORK_DEBUG_FOR_PROTOMESSAGE(message, append)
 #endif
 
 #ifndef NDEBUG
@@ -62,8 +62,8 @@ struct Construct {
 //         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
 //         auto btime = common::TimeUtils::TimestampUs(); \
 //         uint64_t diff_time = 0; \
-//         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 200000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
-//         msg_ptr->debug_str[msg_ptr->times_idx] = std::string(ZJC_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
+//         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 200000lu)SHARDORA_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+//         msg_ptr->debug_str[msg_ptr->times_idx] = std::string(SHARDORA_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
 //         msg_ptr->times[msg_ptr->times_idx] = btime; \
 //         msg_ptr->times_idx++; \
 //     } \
@@ -74,8 +74,8 @@ struct Construct {
 //         assert(msg_ptr->times_idx < (sizeof(msg_ptr->times) / sizeof(msg_ptr->times[0]))); \
 //         auto btime = common::TimeUtils::TimestampUs(); \
 //         uint64_t diff_time = 0; \
-//         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 10000lu)ZJC_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
-//         msg_ptr->debug_str[msg_ptr->times_idx] = std::string(ZJC_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
+//         if (msg_ptr->times_idx > 0) { diff_time = btime - msg_ptr->times[msg_ptr->times_idx - 1]; if (diff_time > 10000lu)SHARDORA_INFO("over handle message debug use time: %lu, type: %d", diff_time, msg_ptr->header.type());} \
+//         msg_ptr->debug_str[msg_ptr->times_idx] = std::string(SHARDORA_LOG_FILE_NAME) + ":" + std::to_string(__LINE__); \
 //         msg_ptr->times[msg_ptr->times_idx] = btime; \
 //         msg_ptr->times_idx++; \
 //     } \
@@ -88,13 +88,13 @@ struct Construct {
 #ifndef NDEBUG
 #define CHECK_MEMORY_SIZE(data_map) { \
     if (data_map.size() >= 102400) { \
-        ZJC_INFO("data size: %u", data_map.size()); \
+        SHARDORA_INFO("data size: %u", data_map.size()); \
     } \
 }
 
 #define CHECK_MEMORY_SIZE_WITH_MESSAGE(data_map, msg) { \
     if (data_map.size() >= 102400) { \
-        ZJC_INFO("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
+        SHARDORA_INFO("%s data size: %u, msg: %s", #data_map, data_map.size(), msg); \
     } \
 }
 
@@ -108,7 +108,7 @@ struct Construct {
 // #define ADD_TX_DEBUG_INFO(tx_proto) { \
 //     auto* tx_debug = tx_proto->add_tx_debug(); \
 //     tx_debug->set_tx_debug_tm_ms(common::TimeUtils::TimestampMs()); \
-//     tx_debug->set_tx_debug_info(std::string(ZJC_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
+//     tx_debug->set_tx_debug_info(std::string(SHARDORA_LOG_FILE_NAME) + ":" +  std::string(__FUNCTION__) + ":" + std::to_string(__LINE__)); \
 // }
 #else
 #define ADD_TX_DEBUG_INFO(tx_proto)
@@ -442,7 +442,7 @@ static inline bool isFileExist(const std::string& path) {
     ++count; \
     static std::thread::id init_thread_id = std::this_thread::get_id(); \
     auto now_thread_id = std::this_thread::get_id(); \
-    ZJC_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, init_thread_id, count); \
+    SHARDORA_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, init_thread_id, count); \
     if (count > 3) { \
         assert(init_thread_id == now_thread_id); \
     } else { \

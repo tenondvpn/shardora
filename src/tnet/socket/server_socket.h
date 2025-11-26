@@ -25,12 +25,12 @@ public:
             : TcpSocket(local_addr, local_port),
               peer_addr_(peer_addr),
               peer_port_(peer_port) {
-        ZJC_DEBUG("memory check create server socket: %p", this);
+        SHARDORA_DEBUG("memory check create server socket: %p", this);
         SetFd(fd);
     }
 
     virtual ~ServerSocket() {
-        ZJC_DEBUG("memory check release server socket: %p", this);
+        SHARDORA_DEBUG("memory check release server socket: %p", this);
     }
 
 private:
