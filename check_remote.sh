@@ -46,7 +46,7 @@ init
 if [ "$RUNC_COMMAND_STR" == "check_network" ]; then
     node_ips_array=(${node_ips//,/ })
     for ip in "${node_ips_array[@]}"; do 
-        ip_node_count=`sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "ps -ef | grep zjchain" | grep s3 | wc -l`
+        ip_node_count=`sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "ps -ef | grep shardora" | grep s3 | wc -l`
         if [ $ip_node_count -eq $each_nodes_count ]; then
             echo $ip " valid node count: " $ip_node_count
         else

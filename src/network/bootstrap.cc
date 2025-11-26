@@ -18,13 +18,13 @@ Bootstrap* Bootstrap::Instance() {
 
 int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>& security) {
     std::string bootstrap;
-    if (!config.Get("zjchain", "bootstrap", bootstrap) || bootstrap.empty()) {
-        NETWORK_ERROR("config has no zjchain bootstrap info.");
+    if (!config.Get("shardora", "bootstrap", bootstrap) || bootstrap.empty()) {
+        NETWORK_ERROR("config has no shardora bootstrap info.");
         return kNetworkError;
     }
 
     std::string bootstrap_net;
-    config.Get("zjchain", "bootstrap_net", bootstrap_net) ;
+    config.Get("shardora", "bootstrap_net", bootstrap_net) ;
     bootstrap += ',' + bootstrap_net;
 
     common::Split<2048> boot_spliter(bootstrap.c_str(), ',');

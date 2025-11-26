@@ -64,7 +64,7 @@ init() {
     sh cmd.sh $node_ips "tc qdisc del dev eth0 root"  > /dev/null 2>&1 &
     cd /root/shardora/ && sh build.sh a Release
     cp -rf /root/shardora/temp_cmd.sh /root/shardora/cbuild_$TARGET
-    cd /root/shardora/cbuild_$TARGET && tar -zcvf zjchain.tar.gz ./zjchain ./temp_cmd.sh
+    cd /root/shardora/cbuild_$TARGET && tar -zcvf shardora.tar.gz ./shardora ./temp_cmd.sh
 }
 
 get_bootstrap() {
@@ -109,7 +109,7 @@ clear_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg; rm -rf zjnodes; killall -9 zjchain" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg; rm -rf zjnodes; killall -9 shardora" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
@@ -131,7 +131,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardora/cbuild_$TARGET/zjchain.tar.gz root@$ip:/root &
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardora/cbuild_$TARGET/shardora.tar.gz root@$ip:/root &
         run_cmd_count=$((run_cmd_count + 1))
         if (($run_cmd_count >= 100)); then
             check_cmd_finished
@@ -160,7 +160,7 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf $nodes_count.tar.gz && tar -zxvf zjchain.tar.gz && cp -rf ./zjchain ./pkg && cp -rf ./temp_cmd.sh ./pkg && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf $nodes_count.tar.gz && tar -zxvf shardora.tar.gz && cp -rf ./shardora ./pkg && cp -rf ./temp_cmd.sh ./pkg && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi

@@ -24,7 +24,7 @@ for n in  "${nodes[@]}"; do
         mkdir -p "/root/zjnodes/${n}/log"
         mkdir -p "/root/zjnodes/${n}/conf"
 
-        cp -rf ./zjnodes/${n}/conf/zjchain.conf /root/zjnodes/${n}/conf/zjchain.conf
+        cp -rf ./zjnodes/${n}/conf/shardora.conf /root/zjnodes/${n}/conf/shardora.conf
         echo "cp $n"
 done
 

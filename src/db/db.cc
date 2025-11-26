@@ -118,4 +118,4 @@ bool Db::Init(const std::string& db_path) {
 
 }  // db
 
-}  // zjchain
+}  // shardora

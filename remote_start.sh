@@ -7,7 +7,7 @@ TARGET=$5
 FIRST_NODE_COUNT=10
 
 init() {
-    killall -9 zjchain
+    killall -9 shardora
     killall -9 txcli
     rm -rf /root/zjnodes/r*
     rm -rf /root/zjnodes/s*
@@ -20,10 +20,10 @@ init() {
 }
 
 make_package() {
-    rm -rf /root/zjnodes/zjchain/pkg*
+    rm -rf /root/zjnodes/shardora/pkg*
     cp -rf /root/shardora/sshpass /usr/bin/
     cd /root/shardora && tar -zxvf pkg.tar.gz
-    cp -rf /root/shardora/cbuild_$TARGET/zjchain /root/shardora/pkg/
+    cp -rf /root/shardora/cbuild_$TARGET/shardora /root/shardora/pkg/
     cd /root/shardora/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1 
 }
 
@@ -69,7 +69,7 @@ clear_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "rm -rf /root/pkg*; killall -9 zjchain; rm -rf /root/zjnodes/*" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "rm -rf /root/pkg*; killall -9 shardora; rm -rf /root/zjnodes/*" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3

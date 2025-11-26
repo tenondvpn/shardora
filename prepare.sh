@@ -10,7 +10,7 @@ if [ "$PASSWORD" == "" ]; then
     PASSWORD="Xf4aGbTaf!"
 fi
 
-killall -9 zjchain
+killall -9 shardora
 killall -9 txcli
 
 sh build.sh a $TARGET
@@ -19,7 +19,7 @@ rm -rf shardora && mkdir shardora
 mkdir shardora
 cp -rf ./*.sh ./shardora/
 mkdir -p ./shardora/cbuild_$TARGET
-cp -rf cbuild_$TARGET/zjchain ./shardora/cbuild_$TARGET
+cp -rf cbuild_$TARGET/shardora ./shardora/cbuild_$TARGET
 cp -rf zjnodes_* ./shardora/
 cp -rf ./shards* ./shardora/
 cp -rf ./root_nodes ./shardora/

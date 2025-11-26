@@ -65,21 +65,21 @@ init() {
 }
 
 make_package() {
-    rm -rf /root/zjnodes/zjchain/pkg
-    mkdir /root/zjnodes/zjchain/pkg
-    cp /root/zjnodes/zjchain/zjchain /root/zjnodes/zjchain/pkg
-    cp /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/zjchain/pkg
-    cp /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/pkg
-    cp /root/shardora/shards3 /root/zjnodes/zjchain/pkg
-    cp /root/shardora/root_nodes /root/zjnodes/zjchain/pkg/shards2
-    cp /root/shardora/temp_cmd.sh /root/zjnodes/zjchain/pkg
-    cp /root/shardora/start_cmd.sh /root/zjnodes/zjchain/pkg
-    cp /root/shardora/wondershaper /root/zjnodes/zjchain/pkg
-    cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
-    cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
-    cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
-    cp -rf /root/shardora/gdb/* /root/zjnodes/zjchain/pkg
-    cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1
+    rm -rf /root/zjnodes/shardora/pkg
+    mkdir /root/zjnodes/shardora/pkg
+    cp /root/zjnodes/shardora/shardora /root/zjnodes/shardora/pkg
+    cp /root/zjnodes/shardora/conf/GeoLite2-City.mmdb /root/zjnodes/shardora/pkg
+    cp /root/zjnodes/shardora/conf/log4cpp.properties /root/zjnodes/shardora/pkg
+    cp /root/shardora/shards3 /root/zjnodes/shardora/pkg
+    cp /root/shardora/root_nodes /root/zjnodes/shardora/pkg/shards2
+    cp /root/shardora/temp_cmd.sh /root/zjnodes/shardora/pkg
+    cp /root/shardora/start_cmd.sh /root/zjnodes/shardora/pkg
+    cp /root/shardora/wondershaper /root/zjnodes/shardora/pkg
+    cp -rf /root/zjnodes/shardora/root_db /root/zjnodes/shardora/pkg/shard_db_2
+    cp -rf /root/zjnodes/shardora/shard_db_3 /root/zjnodes/shardora/pkg
+    cp -rf /root/zjnodes/temp /root/zjnodes/shardora/pkg
+    cp -rf /root/shardora/gdb/* /root/zjnodes/shardora/pkg
+    cd /root/zjnodes/shardora/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1
 }
 
 get_bootstrap() {
@@ -129,7 +129,7 @@ clear_command() {
     done
 
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "mv /root/pkg.tar.gz /root/$nodes_count.tar.gz; killall -9 zjchain" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "mv /root/pkg.tar.gz /root/$nodes_count.tar.gz; killall -9 shardora" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
@@ -151,7 +151,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/shardora/pkg.tar.gz root@$ip:/root &
         run_cmd_count=$((run_cmd_count + 1))
         if (($run_cmd_count >= 100)); then
             check_cmd_finished

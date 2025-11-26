@@ -18,14 +18,14 @@ def gen_new_zjnodes_conf_files(server_conf: dict, join_root_num):
  
 
 
-        zjchain_conf = {
+        shardora_conf = {
             'db': {
                 'path': './db',
             },
             'log': {
-                'path': 'log/zjchain.log',
+                'path': 'log/shardora.log',
             },
-            'zjchain': {
+            'shardora': {
                 'bootstrap': bootstrap,
                 'ck_ip': '127.0.0.1',
                 'ck_passworkd': '',
@@ -53,11 +53,11 @@ def gen_new_zjnodes_conf_files(server_conf: dict, join_root_num):
             os.makedirs(sub_folder)
             if not os.path.exists(sub_conf_folder):
                 os.makedirs(sub_conf_folder)
-        filename = f'{sub_conf_folder}/zjchain.conf'
+        filename = f'{sub_conf_folder}/shardora.conf'
         print(os.path.abspath(filename))
 
         with open(filename, 'w') as f:
-            toml.dump(zjchain_conf, f)
+            toml.dump(shardora_conf, f)
 
 
 def gen_dispatch_coin_sh(content):
@@ -107,7 +107,7 @@ def gen_new_node_deploy_sh(server_conf):
     code_str = f"""#!/bin/bash
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
-ps -ef | grep zjchain | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep shardora | grep new_node | awk -F' ' '{{print $2}}' | xargs kill -9
 
 {node_list}
 
@@ -117,10 +117,10 @@ for n in  "${{nodes[@]}}"; do
 
         mkdir -p "/root/zjnodes/${{n}}/log"
         mkdir -p "/root/zjnodes/${{n}}/conf"
-        ln -s /root/zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
-        ln -s /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
-        ln -s /root/zjnodes/zjchain/zjchain /root/zjnodes/${{n}}/
-        cp -rf ./zjnodes/${{n}}/conf/zjchain.conf /root/zjnodes/${{n}}/conf/zjchain.conf
+        ln -s /root/zjnodes/shardora/GeoLite2-City.mmdb /root/zjnodes/${{n}}/conf/
+        ln -s /root/zjnodes/shardora/conf/log4cpp.properties /root/zjnodes/${{n}}/conf/
+        ln -s /root/zjnodes/shardora/shardora /root/zjnodes/${{n}}/
+        cp -rf ./zjnodes/${{n}}/conf/shardora.conf /root/zjnodes/${{n}}/conf/shardora.conf
         echo "cp $n"
 done
 
@@ -128,7 +128,7 @@ ulimit -c unlimited
 
 
 for node in "${{nodes[@]}}"; do
-  cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node new_node> /dev/null 2>&1 &
+  cd /root/zjnodes/$node/ && nohup ./shardora -f 0 -g 0 $node new_node> /dev/null 2>&1 &
   echo "start $node"
 
 done
@@ -204,10 +204,10 @@ def get_new_tcp_port(node_idx, net_id):
 
 
 def get_root_boostrap_strs():
-    filepath = "zjnodes/r1/conf/zjchain.conf"
+    filepath = "zjnodes/r1/conf/shardora.conf"
     config = configparser.ConfigParser()
     config.read(filepath)
-    bootstrap = config.get('zjchain', 'bootstrap')
+    bootstrap = config.get('shardora', 'bootstrap')
     print(f"bootstrap: {bootstrap}")
     return bootstrap
 

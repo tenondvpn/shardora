@@ -54,49 +54,49 @@ int GlobalInfo::Init(const common::Config& config) {
     memset(consensus_thread_index_map_, common::kInvalidUint8, sizeof(consensus_thread_index_map_));
     begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 10000lu;
     message_handler_thread_count_ = 8;
-    config.Get("zjchain", "consensus_thread_count", message_handler_thread_count_);
+    config.Get("shardora", "consensus_thread_count", message_handler_thread_count_);
     message_handler_thread_count_ += 2;
 
-    if (!config.Get("zjchain", "local_ip", config_local_ip_)) {
-        SHARDORA_ERROR("get zjchain local_ip from config failed.");
+    if (!config.Get("shardora", "local_ip", config_local_ip_)) {
+        SHARDORA_ERROR("get shardora local_ip from config failed.");
         return kCommonError;
     }
 
-    config.Get("zjchain", "local_port", config_local_port_);
-    if (!config.Get("zjchain", "http_port", http_port_)) {
+    config.Get("shardora", "local_port", config_local_port_);
+    if (!config.Get("shardora", "http_port", http_port_)) {
         http_port_ = 0;
     }
        
-    config.Get("zjchain", "sharding_min_nodes_count", sharding_min_nodes_count_);
-    config.Get("zjchain", "for_ck", for_ck_server_);
-    config.Get("zjchain", "each_shard_max_members", each_shard_max_members_);
-    config.Get("zjchain", "join_root", join_root_);
+    config.Get("shardora", "sharding_min_nodes_count", sharding_min_nodes_count_);
+    config.Get("shardora", "for_ck", for_ck_server_);
+    config.Get("shardora", "each_shard_max_members", each_shard_max_members_);
+    config.Get("shardora", "join_root", join_root_);
     std::string str_contry;
-    if (!config.Get("zjchain", "country", str_contry) || str_contry.empty()) {
-        SHARDORA_ERROR("get zjchain country from config failed.");
+    if (!config.Get("shardora", "country", str_contry) || str_contry.empty()) {
+        SHARDORA_ERROR("get shardora country from config failed.");
         return kCommonError;
     }
 
-    if (!config.Get("zjchain", "first_node", config_first_node_)) {
-        SHARDORA_ERROR("get zjchain first_node from config failed.");
+    if (!config.Get("shardora", "first_node", config_first_node_)) {
+        SHARDORA_ERROR("get shardora first_node from config failed.");
         return kCommonError;
     }
 
-    config.Get("zjchain", "public_ip", config_public_ip_);
-    config.Get("zjchain", "public_port", config_public_port_);
-    config.Get("zjchain", "node_tag", node_tag_);
+    config.Get("shardora", "public_ip", config_public_ip_);
+    config.Get("shardora", "public_port", config_public_port_);
+    config.Get("shardora", "node_tag", node_tag_);
     ip_db_path_ = "./conf/GeoLite2-City.mmdb";
-    config.Get("zjchain", "ip_db_path", ip_db_path_);
-    config.Get("zjchain", "missing_node", missing_node_);
-    config.Get("zjchain", "ck_port", ck_port_);
-    config.Get("zjchain", "ck_host", ck_host_);
-    config.Get("zjchain", "ck_user", ck_user_);
-    config.Get("zjchain", "ck_pass", ck_pass_);
-    config.Get("zjchain", "tx_user_qps_limit_window_sconds", tx_user_qps_limit_window_sconds_);
-    config.Get("zjchain", "tx_user_qps_limit_window", tx_user_qps_limit_window_);
-    config.Get("zjchain", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
-    config.Get("zjchain", "test_pool_index", test_pool_index_);
-    config.Get("zjchain", "test_tx_tps", test_tx_tps_);
+    config.Get("shardora", "ip_db_path", ip_db_path_);
+    config.Get("shardora", "missing_node", missing_node_);
+    config.Get("shardora", "ck_port", ck_port_);
+    config.Get("shardora", "ck_host", ck_host_);
+    config.Get("shardora", "ck_user", ck_user_);
+    config.Get("shardora", "ck_pass", ck_pass_);
+    config.Get("shardora", "tx_user_qps_limit_window_sconds", tx_user_qps_limit_window_sconds_);
+    config.Get("shardora", "tx_user_qps_limit_window", tx_user_qps_limit_window_);
+    config.Get("shardora", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
+    config.Get("shardora", "test_pool_index", test_pool_index_);
+    config.Get("shardora", "test_tx_tps", test_tx_tps_);
 
     if (each_tx_pool_max_txs_ < 10240) {
         each_tx_pool_max_txs_ = 10240;
