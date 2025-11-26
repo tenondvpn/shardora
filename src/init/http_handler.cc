@@ -912,7 +912,7 @@ static void QueryInit(const httplib::Request& req, httplib::Response& http_res) 
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
     http_res.set_content(res, "text/plain");
-    SHARDORA_DEervBUG("sunccess init http ser: %d", thread_index);
+    SHARDORA_DEBUG("sunccess init http ser: %d", thread_index);
 }
 
 HttpHandler::HttpHandler() {
