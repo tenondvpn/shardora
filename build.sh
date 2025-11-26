@@ -26,7 +26,7 @@ then
     ./transport_test/transport_test
     exit 0
 fi
-
+nproc=8
 make -j${nproc} zjchain
 echo $1
 if [[ $1 == "test" ]];
