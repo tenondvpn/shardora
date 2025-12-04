@@ -162,16 +162,16 @@ void MultiThreadHandler::Start() {
         thread_vec_.push_back(std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]));
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
          thread_wait_con_.wait_for(lock, std::chrono::milliseconds(10000lu), [&] {
-            return thread_init_success_;
+            return thread_init_success_.load(std::memory_order_acquire); ;
         });
 
         if (!thread_init_success_) {
-            P2P_FATAL("init server thread failed!");
+            SHARDORA_FATAL("init server thread failed!");
             return;
         }
 
         if (thread_handler->thread_idx() == common::kInvalidUint8) {
-            P2P_FATAL("init server thread failed!");
+            SHARDORA_FATAL("init server thread failed!");
             return;
         }
     }
