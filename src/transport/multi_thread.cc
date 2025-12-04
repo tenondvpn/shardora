@@ -159,7 +159,8 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<securi
 void MultiThreadHandler::Start() {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         thread_init_success_ = false;
-        thread_vec_.push_back(std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]));
+        auto thread_handler = std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]);
+        thread_vec_.push_back(thread_handler);
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
          thread_wait_con_.wait_for(lock, std::chrono::milliseconds(10000lu), [&] {
             return thread_init_success_.load(std::memory_order_acquire); ;
