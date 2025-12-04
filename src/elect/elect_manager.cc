@@ -383,8 +383,8 @@ void ElectManager::ProcessNewElectBlock(
             height,
             elect_block.prev_members().prev_elect_height(),
             common::Encode::HexEncode(id).c_str(),
-            static_cast<int>(in[i].pool_idx_mod_num()),
-            local_waiting_node_member_index_);
+            in[i].pool_idx_mod_num(),
+            static_cast<int>(local_waiting_node_member_index_));
     }
 
     waiting_members_ptr_[elect_block.shard_network_id()] = shard_members_ptr;
