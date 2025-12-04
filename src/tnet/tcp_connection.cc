@@ -94,7 +94,7 @@ int TcpConnection::SendPacket(Packet& packet) {
 int TcpConnection::SendPacketWithoutLock(Packet& packet) {
     auto* msg_pkg = dynamic_cast<MsgPacket*>(&packet);
     if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
-        SHARDORA_ERROR("bad state, %d, %lu", tcp_state_, msg_pkg->msg_id());
+        SHARDORA_ERROR("bad state, %d, %lu", static_cast<int>(tcp_state_), msg_pkg->msg_id());
         return -1;
     }
 
