@@ -370,7 +370,7 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
         return false;
     }
 
-    auto socket = dynamic_pointer_cast<ClientSocket>(socket_);
+    auto socket = std::dynamic_pointer_cast<ClientSocket>(socket_);
     if (socket_ == NULL) {
         SHARDORA_ERROR("cast to TcpClientSocket failed");
         return false;
