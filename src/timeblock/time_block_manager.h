@@ -36,7 +36,7 @@ public:
     }
 
     uint64_t LatestTimestampHeight() {
-        SHARDORA_INFO("latest_time_block_height_ get: %lu", latest_time_block_height_);
+        SHARDORA_INFO("latest_time_block_height_ get: %lu", static_cast<int>(latest_time_block_height_));
         return latest_time_block_height_;
     }
 
