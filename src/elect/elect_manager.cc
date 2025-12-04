@@ -293,7 +293,7 @@ bool ElectManager::ProcessPrevElectMembers(
             elect_block.prev_members().prev_elect_height(),
             prev_elect_block.shard_network_id(),
             common::Encode::HexEncode((*iter)->id).c_str(),
-            (*iter)->pool_index_mod_num,
+            static_cast<int>((*iter)->pool_index_mod_num),
             ((*iter)->bls_publick_key != libff::alt_bn128_G2::zero()));
     }
 
@@ -383,7 +383,7 @@ void ElectManager::ProcessNewElectBlock(
             height,
             elect_block.prev_members().prev_elect_height(),
             common::Encode::HexEncode(id).c_str(),
-            in[i].pool_idx_mod_num(),
+            static_cast<int>(in[i].pool_idx_mod_num()),
             local_waiting_node_member_index_);
     }
 
