@@ -59,8 +59,8 @@ public:
 private:
     
     int32_t event_type_{ 0 };
-    volatile bool should_stop_ = false;
-    volatile bool stoped_ = false;
+    std::atomic<bool> should_stop_ = false;
+    std::atomic<bool> stoped_ = false;
     uint64_t should_stop_timeout_ms_ = 0;
 
 };

@@ -160,10 +160,10 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    volatile uint32_t max_sharding_id_ = 3;
+    std::atomic<uint32_t> max_sharding_id_ = 3;
     common::Tick cross_tick_;
-    volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
-    volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
+    std::atomic<uint64_t> cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
+    std::atomic<uint64_t> cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { 1 };
     bool inited_heights_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(CrossBlockManager);

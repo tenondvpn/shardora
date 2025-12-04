@@ -122,8 +122,8 @@ private:
     std::mutex added_net_id_set_mutex_;
     std::unordered_map<uint32_t, std::unordered_set<uint32_t>> added_net_ip_set_;
     std::mutex added_net_ip_set_mutex_;
-    volatile uint32_t local_node_member_index_{ kInvalidMemberIndex };
-    volatile uint32_t local_waiting_node_member_index_{ kInvalidMemberIndex };
+    std::atomic<uint32_t> local_node_member_index_{ kInvalidMemberIndex };
+    std::atomic<uint32_t> local_waiting_node_member_index_{ kInvalidMemberIndex };
     common::MembersPtr members_ptr_[network::kConsensusShardEndNetworkId];
     common::MembersPtr waiting_members_ptr_[network::kConsensusShardEndNetworkId];
     uint64_t waiting_elect_height_[network::kConsensusShardEndNetworkId];

@@ -219,7 +219,7 @@ void TcpConnection::ActionAfterPacketSent() {
 
 bool TcpConnection::OnRead() {
     int type = CmdPacket::CT_NONE;
-    volatile bool userBreak = false;
+    std::atomic<bool> userBreak = false;
     char buf[10 * 1024];
 
     spin_mutex_.lock();

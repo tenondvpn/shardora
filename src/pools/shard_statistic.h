@@ -124,7 +124,7 @@ public:
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> view_block_queue_;
     std::condition_variable thread_wait_conn_;
     std::mutex thread_wait_mutex_;
-    volatile bool destroy_ = false;
+    std::atomic<bool> destroy_ = false;
     std::map<uint64_t, std::map<uint32_t, uint64_t>> pool_statistic_height_with_block_height_map_;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);

@@ -285,9 +285,9 @@ private:
     std::string config_public_ip_;
     uint32_t config_public_port_{ 0 };
     std::string node_tag_;
-    volatile uint32_t network_id_{ common::kInvalidUint32 };
-    volatile uint64_t now_gas_price_{ 100llu };
-    volatile uint64_t gas_price_{ 1 };
+    std::atomic<uint32_t> network_id_{ common::kInvalidUint32 };
+    std::atomic<uint64_t> now_gas_price_{ 100llu };
+    std::atomic<uint64_t> gas_price_{ 1 };
     bool missing_node_{ false };
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
@@ -307,10 +307,10 @@ private:
     uint8_t now_valid_thread_index_ = 0;
     std::mutex now_valid_thread_index_mutex_;
     uint64_t begin_run_timestamp_ms_ = 0;
-    volatile bool should_check_thread_all_valid_ = true;
+    std::atomic<bool> should_check_thread_all_valid_ = true;
     std::unordered_map<int, uint8_t> valid_thread_index_;
-    volatile bool global_stoped_ = false;
-    volatile bool main_inited_success_ = false;
+    std::atomic<bool> global_stoped_ = false;
+    std::atomic<bool> main_inited_success_ = false;
     uint32_t each_tx_pool_max_txs_ = common::kMaxTxCount * 4u;
     uint32_t tx_user_qps_limit_window_sconds_ = 1u;
     uint32_t tx_user_qps_limit_window_ = 10240u * 10u;
@@ -320,7 +320,7 @@ private:
     std::shared_ptr<common::Tick> tick_ptr_;
     int32_t test_pool_index_ = -1;
     uint32_t test_tx_tps_ = 1000;
-    volatile uint64_t global_latency_ = 0;
+    std::atomic<uint64_t> global_latency_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

@@ -84,7 +84,7 @@ private:
     MultiThreadHandler* msg_handler_ = nullptr;
     uint64_t thread_msg_count_[common::kMaxThreadCount] = { 0 };
     std::string msg_random_;
-    volatile bool destroy_ = false;
+    std::atomic<bool> destroy_ = false;
     std::shared_ptr<std::thread> output_thread_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<ClientItem>> output_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> from_client_conn_queues_;

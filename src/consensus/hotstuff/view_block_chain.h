@@ -265,8 +265,8 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-    volatile View stored_to_db_view_ = 0llu;
-    volatile View commited_max_view_ = 0llu;
+    std::atomic<View> stored_to_db_view_ = 0llu;
+    std::atomic<View> commited_max_view_ = 0llu;
     common::ThreadSafeQueue<View> stored_view_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;

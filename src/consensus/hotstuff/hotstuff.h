@@ -276,7 +276,7 @@ private:
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
-    volatile View db_stored_view_ = 0llu;
+    std::atomic<View> db_stored_view_ = 0llu;
     uint64_t prev_sync_latest_view_tm_ms_ = 0;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     

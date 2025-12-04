@@ -252,9 +252,9 @@ private:
     uint64_t prev_synced_pool_index_ = 0;
     uint64_t root_prev_synced_pool_index_ = 0;
     uint64_t prev_sync_height_tree_tm_ms_ = 0;
-    volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
-    volatile uint64_t root_synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
-    volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 0 };
+    std::atomic<uint64_t> synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    std::atomic<uint64_t> root_synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    std::atomic<uint64_t> cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { 0 };
     common::MembersPtr latest_members_;
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
@@ -267,7 +267,7 @@ private:
     common::Tick tools_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
-    volatile bool destroy_ = false;
+    std::atomic<bool> destroy_ = false;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     uint32_t min_valid_tx_count_ = 1;
     uint64_t min_valid_timestamp_ = 0;
@@ -276,7 +276,7 @@ private:
     uint64_t prev_show_tm_ms_ = 0;
     uint64_t prev_msgs_show_tm_ms_ = 0;
     std::weak_ptr<block::AccountManager> acc_mgr_;
-    volatile uint32_t now_max_tx_count_ = 0;
+    std::atomic<uint32_t> now_max_tx_count_ = 0;
     AccountQpsLruMap<102400> account_tx_qps_check_;
 #ifdef USE_SERVER_TEST_TRANSACTION
     std::shared_ptr<std::thread> test_tx_thread_ = nullptr;

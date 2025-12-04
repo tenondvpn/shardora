@@ -74,6 +74,7 @@ public:
     }
 
     void ThreadWaitNotify() {
+        thread_init_success_ = true;
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
         thread_wait_con_.notify_one();
     }
@@ -127,6 +128,7 @@ private:
     FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };
     common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
     std::condition_variable thread_wait_con_;
+    std::atomic<bool> thread_init_success_ = false;
     std::mutex thread_wait_mutex_;
     // common::ThreadSafeQueue<uint64_t> local_broadcast_messages_[common::kMaxThreadCount];
 

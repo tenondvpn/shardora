@@ -62,7 +62,7 @@ private:
     PacketFactory* packet_factory_{ nullptr };
     std::condition_variable con_;
     std::mutex mutex_;
-    volatile bool waiting_success_ = false;
+    std::atomic<bool> waiting_success_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(TnetTransport);
 };

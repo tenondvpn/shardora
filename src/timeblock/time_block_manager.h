@@ -81,8 +81,8 @@ private:
     }
 
 
-    volatile uint64_t latest_time_block_height_ = common::kInvalidUint64;
-    volatile uint64_t latest_time_block_tm_{ 0 };
+    std::atomic<uint64_t> latest_time_block_height_ = common::kInvalidUint64;
+    std::atomic<uint64_t> latest_time_block_tm_{ 0 };
 
     common::Tick check_bft_tick_;
     common::Tick broadcast_tm_tick_;

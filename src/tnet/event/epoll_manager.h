@@ -28,7 +28,7 @@ private:
     int epoll_fd_{ 0 };
     bool inited_{ false };
     int wakeup_pipe_[2];
-    volatile bool wakeup_event_is_set_{ false };
+    std::atomic<bool> wakeup_event_is_set_{ false };
     mutable common::SpinMutex wakeup_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(EpollManager);

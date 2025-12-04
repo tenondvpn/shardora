@@ -196,7 +196,7 @@ private:
     common::SpinMutex spin_mutex_;
     BufferList out_buffer_list_;
     WriteableHandlerList writeable_handle_list_;
-    volatile TcpState tcp_state_{ kTcpNone };
+    std::atomic<TcpState> tcp_state_{ kTcpNone };
     int action_{ 0 };
     EventLoop& event_loop_;
     std::shared_ptr<Socket> socket_{ nullptr };

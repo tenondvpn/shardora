@@ -166,9 +166,9 @@ private:
     uint32_t all_finish_tx_count_ = 0;
     uint32_t all_tx_count_ = 0;
     uint32_t checked_count_ = 0;
-    volatile uint32_t finish_tx_count_ = 0;
+    std::atomic<uint32_t> finish_tx_count_ = 0;
     std::map<uint64_t, std::string> checked_height_with_prehash_;
-    volatile uint64_t oldest_timestamp_ = 0;
+    std::atomic<uint64_t> oldest_timestamp_ = 0;
     uint64_t prev_tx_count_tm_us_ = 0;
     TxPoolManager* pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;

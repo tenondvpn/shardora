@@ -1502,7 +1502,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     uint64_t prev_gid_tm_us_ = 0;
     common::Tick db_batch_tick_;
-    volatile bool dumped_gid_ = false;
+    std::atomic<bool> dumped_gid_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };

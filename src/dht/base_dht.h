@@ -130,7 +130,7 @@ protected:
     DhtPtr readonly_dht_ = nullptr;
     NodePtr local_node_{ nullptr };
     std::unordered_map<uint64_t, NodePtr> node_map_;
-    volatile bool joined_{ false };
+    std::atomic<bool> joined_{ false };
     bool wait_vpn_res_{ false };
     std::atomic<uint32_t> boot_res_count_{ 0 };
     common::Tick refresh_neighbors_tick_;
