@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include<netdb.h>
 #endif
-#include <errno.h>
+//#include <errno.h>
 
 #include <functional>
 #include <memory>
@@ -22,6 +22,7 @@ enum TnetErrorCode {
     kTnetError = 1,
     kTnetTimeout = 2,
 };
+
 
 static const int kEpollMaxWaitTime = 100;
 static const uint32_t kEpollMaxEvents = 256u;

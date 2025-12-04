@@ -32,7 +32,7 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         const std::string& peer_spec,
         const std::string& local_spec,
         uint32_t timeout) {
-    ClientSocket* socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
+    auto socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
     if (socket == NULL) {
         SHARDORA_ERROR("create tcp client socket failed");
         return NULL;
@@ -56,10 +56,9 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         SHARDORA_ERROR("set recv buf failed");
     }
 
-    auto conn = CreateTcpConnection(GetNextEventLoop(), *socket);
+    auto conn = CreateTcpConnection(GetNextEventLoop(), socket);
     if (conn == nullptr) {
         SHARDORA_ERROR("create tcp connection failed");
-        socket->Free();
         return nullptr;
     }
 
@@ -171,29 +170,49 @@ bool TnetTransport::Start() {
         return false;
     }
 
+    SHARDORA_DEBUG("waiting for work_thread.");
     for (size_t i = 0; i < event_loop_vec_.size(); i++) {
+        waiting_success_ = false;
         std::thread* tmp_thread = new std::thread(std::bind(
                 &TnetTransport::ThreadProc,
                 this,
                 event_loop_vec_[i]));
+        SHARDORA_DEBUG("waiting for work_thread now.");
         std::unique_lock<std::mutex> lock(mutex_);
-        con_.wait_for(lock, std::chrono::milliseconds(1000));
-//         tmp_thread->detach();
+        con_.wait_for(lock, std::chrono::milliseconds(3000), [&] { 
+            return waiting_success_; 
+        });
+
+        if (!waiting_success_) {
+            SHARDORA_DEBUG("waiting for work_thread failed.");
+            return false;
+        }
         thread_vec_.push_back(tmp_thread);
     }
 
+    SHARDORA_DEBUG("waiting for work_thread success.");
     stoped_ = false;
     if (acceptor_event_loop_ == NULL) {
         return true;
     }
 
+    SHARDORA_DEBUG("waiting for accept_thread.");
+    waiting_success_ = false;
     acceptor_thread_ = new std::thread(std::bind(
             &TnetTransport::ThreadProc,
             this,
             acceptor_event_loop_));
+    SHARDORA_DEBUG("waiting for work_thread now.");
     std::unique_lock<std::mutex> lock(mutex_);
-    con_.wait(lock);
+    con_.wait_for(lock, std::chrono::milliseconds(3000), [&] { 
+        return waiting_success_; 
+    });
 
+    if (!waiting_success_) {
+        SHARDORA_DEBUG("waiting for work_thread failed.");
+        return false;
+    }
+    SHARDORA_DEBUG("waiting for accept_thread success.");
 //     acceptor_thread_->detach();
     return true;
 }
@@ -262,7 +281,7 @@ void TnetTransport::ImplResourceDestroy() {
 
 std::shared_ptr<TcpConnection> TnetTransport::CreateTcpConnection(
         EventLoop& event_loop,
-        ClientSocket& socket) {
+        std::shared_ptr<Socket> socket) {
     auto conn = std::make_shared<TcpConnection>(event_loop);
     conn->SetSocket(socket);
     common::GlobalInfo::Instance()->AddSharedObj(16);
@@ -273,6 +292,7 @@ void TnetTransport::ThreadProc(EventLoop* event_loop) {
     {
         auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
         std::unique_lock<std::mutex> lock(mutex_);
+        waiting_success_ = true;
         con_.notify_one();
     }
     

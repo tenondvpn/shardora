@@ -45,7 +45,7 @@ public:
         return NULL;
     }
 
-    static ClientSocket* CreateTcpClientSocket(
+    static std::shared_ptr<Socket> CreateTcpClientSocket(
             const std::string& peer,
             const std::string& local) {
 #ifndef _WIN32
@@ -69,7 +69,7 @@ public:
             return NULL;
         }
 
-        ClientSocket* client_socket = new ClientSocket(
+        auto client_socket = std::make_shared<ClientSocket>(
                 peer_addr,
                 peer_port,
                 local_addr,
@@ -87,13 +87,13 @@ public:
         return NULL;
     }
 
-    static ServerSocket* CreateTcpServerSocket(
+    static std::shared_ptr<Socket> CreateTcpServerSocket(
             int fd,
             in_addr_t peer_addr,
             uint16_t peer_port,
             in_addr_t local_addr,
             uint16_t local_port) {
-        return new ServerSocket(fd, peer_addr, peer_port, local_addr, local_port);
+        return std::make_shared<ServerSocket>(fd, peer_addr, peer_port, local_addr, local_port);
     }
 };
 

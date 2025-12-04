@@ -45,7 +45,7 @@ protected:
 private:
     std::shared_ptr<TcpConnection> CreateTcpConnection(
             EventLoop& event_loop,
-            ClientSocket& socket);
+            std::shared_ptr<Socket> socket);
     void ThreadProc(EventLoop* event_loop);
 
     bool acceptor_isolate_thread_{ true };
@@ -62,6 +62,7 @@ private:
     PacketFactory* packet_factory_{ nullptr };
     std::condition_variable con_;
     std::mutex mutex_;
+    volatile bool waiting_success_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(TnetTransport);
 };

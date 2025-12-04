@@ -41,7 +41,7 @@ private:
     virtual void ImplResourceDestroy();
     std::shared_ptr<TcpConnection> CreateTcpServerConnection(
             EventLoop& evnetLoop,
-            ServerSocket& socket);
+            std::shared_ptr<Socket> socket);
     void ReleaseByIOThread();
     virtual bool OnRead();
     virtual void OnWrite();
@@ -62,8 +62,8 @@ private:
     std::vector<EventLoop*> event_loops_;
     volatile bool destroy_ = false;
     std::unordered_map<std::string, std::shared_ptr<TcpConnection>> conn_map_;
-    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>> in_check_queue_;
-    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>> out_check_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>>* in_check_queue_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>>* out_check_queue_ = nullptr;
     std::deque<std::shared_ptr<TcpConnection>> waiting_check_queue_;
     common::Tick check_conn_tick_;
 

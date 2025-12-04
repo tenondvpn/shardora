@@ -83,6 +83,10 @@ public:
         return res;
     }
 
+    virtual bool CanDirectSend() const {
+        return true;
+    };
+
     void SetPacketEncoder(PacketEncoder* encoder);
     void SetPacketDecoder(PacketDecoder* decoder);
     void SetPacketHandler(const PacketHandler& handler);
@@ -110,12 +114,12 @@ public:
         return event_loop_;
     }
 
-    Socket* GetSocket() const {
+    std::shared_ptr<Socket> GetSocket() const {
         return socket_;
     }
 
-    void SetSocket(Socket& socket) {
-        socket_ = &socket;
+    void SetSocket(std::shared_ptr<Socket> socket) {
+        socket_ = socket;
         socket_->GetIpPort(&socket_ip_, &socket_port_);
     }
 
@@ -195,7 +199,7 @@ private:
     volatile TcpState tcp_state_{ kTcpNone };
     int action_{ 0 };
     EventLoop& event_loop_;
-    Socket* socket_{ nullptr };
+    std::shared_ptr<Socket> socket_{ nullptr };
     PacketEncoder* packet_encoder_{ nullptr };
     PacketDecoder* packet_decoder_{ nullptr };
     std::atomic<int64_t> bytes_recv_{ 0 };

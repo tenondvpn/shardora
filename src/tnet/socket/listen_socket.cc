@@ -19,12 +19,10 @@ bool ListenSocket::Listen(int backlog) const {
     return true;
 }
 
-bool ListenSocket::Accept(ServerSocket** socket) const
-{
-    *socket = NULL;
+std::shared_ptr<Socket> ListenSocket::Accept() const {
     if (fd_ < 0) {
         SHARDORA_ERROR("accept on bad fd [%d]", fd_);
-        return false;
+        return nullptr;
     }
 
     sockaddr_in addr;
@@ -35,10 +33,10 @@ bool ListenSocket::Accept(ServerSocket** socket) const
             SHARDORA_ERROR("accept failed [%s]", strerror(errno));
         }
 
-        return false;
+        return nullptr;
     }
 
-    ServerSocket* server_socket = new ServerSocket(
+    auto server_socket = std::make_shared<ServerSocket>(
             fd,
             addr.sin_addr.s_addr,
             ntohs(addr.sin_port),
@@ -47,11 +45,10 @@ bool ListenSocket::Accept(ServerSocket** socket) const
     if (server_socket == nullptr) {
         SHARDORA_ERROR("create tcp server socket failed");
         close(fd);
-        return false;
+        return nullptr;
     }
 
-    *socket = server_socket;
-    return true;
+    return server_socket;
 }
 
 }  // namespace tnet
