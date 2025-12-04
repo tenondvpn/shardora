@@ -287,7 +287,7 @@ void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
                 root_prev_synced_pool_index_,
                 res, 
                 root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
-                root_synced_max_heights_[root_prev_synced_pool_index_]);
+                static_cast<uint64_t>(root_synced_max_heights_[root_prev_synced_pool_index_]));
         }
     }
 
@@ -302,7 +302,7 @@ void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
             SHARDORA_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 root_prev_synced_pool_index_,
                 res, root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
-                root_synced_max_heights_[root_prev_synced_pool_index_]);
+                static_cast<uint64_t>(root_synced_max_heights_[root_prev_synced_pool_index_]));
         }
     }
 }
@@ -325,7 +325,7 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 prev_synced_pool_index_,
                 res, 
                 tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
+                static_cast<uint64_t>(synced_max_heights_[prev_synced_pool_index_]));
         }
     }
 
@@ -340,7 +340,7 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
             SHARDORA_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 prev_synced_pool_index_,
                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
+                static_cast<uint64_t>(synced_max_heights_[prev_synced_pool_index_]));
         }
     }
 }
@@ -673,7 +673,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     SHARDORA_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
                         "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
                         sharding_id, update_height, update_height,
-                        cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
+                        static_cast<uint64_t>(cross_synced_max_heights_[sharding_id]), cross_pools_[sharding_id].latest_height(),
                         cross_heights[0]);
                     cross_synced_max_heights_[sharding_id] = cross_heights[0];
                 } while (0);
