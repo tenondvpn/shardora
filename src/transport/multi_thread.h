@@ -39,6 +39,9 @@ public:
         std::mutex& wait_mutex);
     ~ThreadHandler();
     void Join();
+    uint8_t thread_idx() const {
+        return thread_idx_;
+    }
 
 private:
     void HandleMessage();
@@ -48,6 +51,7 @@ private:
     MultiThreadHandler* msg_handler_ = nullptr;
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;
+    std::atomic<uint8_t> thread_idx_ = common::kInvalidUint8;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadHandler);
 };
