@@ -282,8 +282,12 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     return Status::kSuccess;
 }
 
-void HotstuffManager::OnNewElectBlock(uint64_t block_tm_ms, uint32_t sharding_id, uint64_t elect_height,
-    common::MembersPtr& members, const libff::alt_bn128_G2& common_pk, const libff::alt_bn128_Fr& sec_key) {        
+void HotstuffManager::OnNewElectBlock(
+        uint32_t sharding_id, 
+        uint64_t elect_height,
+        common::MembersPtr& members, 
+        const libff::alt_bn128_G2& common_pk, 
+        const libff::alt_bn128_Fr& sec_key) {        
     elect_info_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
 }
 

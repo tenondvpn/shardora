@@ -1269,8 +1269,7 @@ void NetworkInit::HandleElectionBlock(
         elect_height,
         members,
         elect_block);
-    hotstuff_mgr_->OnNewElectBlock(
-        block->timestamp(),sharding_id, elect_height, members, common_pk, sec_key);
+    hotstuff_mgr_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());

@@ -78,7 +78,6 @@ public:
         std::shared_ptr<db::Db>& db,
         BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
-        uint64_t block_tm_ms,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
