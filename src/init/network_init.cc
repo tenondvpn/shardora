@@ -422,7 +422,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleAddrRes(msg_ptr);
     }
 
-    if (msg_ptr->header.type() == kPoolTimerMessage) {
+    if (msg_ptr->header.type() == common::kPoolTimerMessage) {
         HandleNewBlock();
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
