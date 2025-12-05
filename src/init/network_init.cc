@@ -1065,6 +1065,13 @@ void NetworkInit::HandleNewBlock() {
         while (new_blocks_queue_[i].size() > 0) {
             std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block;
             new_blocks_queue_[i].pop(&view_block);
+            auto* block = &view_block->block_info();
+            SHARDORA_DEBUG("handle new block coming sharding id: %u_%d_%lu, tx size: %u, hash: %s",
+                view_block->qc().network_id(),
+                view_block->qc().pool_index(),
+                block->height(),
+                block->tx_list_size(),
+                common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
             if (view_block) {
                 DbNewBlockCallback(view_block);
             }
