@@ -986,7 +986,10 @@ void NetworkInit::GetNetworkNodesFromConf(
     // }
 }
 
-void NetworkInit::InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& secptr, std::shared_ptr<protos::PrefixDb>& prefix_db) {
+void NetworkInit::InitAggBlsForGenesis(
+        const std::string& node_id, 
+        std::shared_ptr<security::Security>& secptr, 
+        std::shared_ptr<protos::PrefixDb>& prefix_db) {
     libff::alt_bn128_Fr agg_bls_sk = libff::alt_bn128_Fr::zero();
     GetAggBlsSkFromFile(node_id, &agg_bls_sk);
     if (agg_bls_sk == libff::alt_bn128_Fr::zero()) {
@@ -1058,14 +1061,12 @@ void NetworkInit::AddBlockItemToCache(
 }
 
 void NetworkInit::HandleNewBlock() {
-    while (!destroy_) {
-        for (uint32_t i = 0; i < common::kMaxThreadCount; i++) {
-            while (new_blocks_queue_[i].size() > 0) {
-                std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block;
-                new_blocks_queue_[i].pop(&view_block);
-                if (view_block) {
-                    DbNewBlockCallback(view_block);
-                }
+    for (uint32_t i = 0; i < common::kMaxThreadCount; i++) {
+        while (new_blocks_queue_[i].size() > 0) {
+            std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block;
+            new_blocks_queue_[i].pop(&view_block);
+            if (view_block) {
+                DbNewBlockCallback(view_block);
             }
         }
     }
