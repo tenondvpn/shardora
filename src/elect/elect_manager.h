@@ -96,7 +96,7 @@ private:
     std::map<uint32_t, ElectNodePtr> elect_network_map_;
     std::shared_ptr<ElectNode> elect_node_ptr_{ nullptr };
     std::unordered_set<uint64_t> added_height_[network::kConsensusShardEndNetworkId];
-    uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];
+    std::atomic<uint64_t> elect_net_heights_map_[network::kConsensusShardEndNetworkId];
     std::set<std::string> prev_elected_ids_;
     std::set<std::string> now_elected_ids_;
 
