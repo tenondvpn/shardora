@@ -1144,7 +1144,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         if (iter->first >= latest_timeblock_height_) {
             if (leader) {
                 SHARDORA_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
-                    iter->first, latest_timeblock_height_);
+                    iter->first, static_cast<uint64_t>(latest_timeblock_height_));
             }
 
             return nullptr;
@@ -1175,7 +1175,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         SHARDORA_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
-            prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,
+            static_cast<uint64_t>(prev_timeblock_tm_sec_),
+            iter->first,
+            static_cast<uint64_t>(latest_timeblock_height_),
             leader);
         return shard_statistic_tx->tx_ptr;
     }
@@ -1236,7 +1238,7 @@ void BlockManager::OnTimeBlock(
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
     SHARDORA_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
-        latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
+        static_cast<uint64_t>(latest_timeblock_height_,) latest_time_block_height, lastest_time_block_tm);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
     }
