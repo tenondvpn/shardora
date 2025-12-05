@@ -43,7 +43,6 @@ public:
         NewElectBlockCallback new_elect_cb);
     ~ElectManager();
     int Init();
-    int Join(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
     common::MembersPtr OnNewElectBlock(
         uint64_t height,

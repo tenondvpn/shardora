@@ -156,7 +156,8 @@ bool Route::CheckPoolsMessage(const transport::MessagePtr& header_ptr, dht::Base
         return false;
     }
 
-    auto members = all_shard_members_[common::GlobalInfo::Instance()->network_id()];
+    auto members = all_shard_members_[common::GlobalInfo::Instance()->network_id()].load(
+        std::memory_order_acquire);
     if (members == nullptr) {
         dht_ptr->SendToClosestNode(header_ptr);
         // SHARDORA_DEBUG("pools message check route coming no members.");
@@ -188,7 +189,7 @@ void Route::OnNewElectBlock(
     }
 
     latest_elect_height_[sharding_id] = elect_height;
-    all_shard_members_[sharding_id] = members;
+    all_shard_members_[sharding_id].store(members, std::memory_order_acquire);
 }
 
 void Route::Broadcasting() {

@@ -48,7 +48,7 @@ private:
 
     static const uint32_t kUniversalNetworkCount = 2;
 
-    dht::BaseDhtPtr dhts_[kUniversalNetworkCount];  // just universal and node network
+    std::atomic<dht::BaseDhtPtr> dhts_[kUniversalNetworkCount];  // just universal and node network
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;

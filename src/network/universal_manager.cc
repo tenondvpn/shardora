@@ -181,8 +181,9 @@ void UniversalManager::OnNewElectBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
-    if (dhts_[kUniversalNetworkId] != nullptr) {
-        Universal* unidht = static_cast<Universal*>(dhts_[kUniversalNetworkId].get());
+    auto dht_ptr = dhts_[kUniversalNetworkId].load(std::memory_order_acquire);
+    if (dht_ptr != nullptr) {
+        Universal* unidht = static_cast<Universal*>(dht_ptr.get());
         unidht->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     }
 }
@@ -195,15 +196,17 @@ UniversalManager::~UniversalManager() {
 
 void UniversalManager::DropNode(const std::string& ip, uint16_t port) {
     for (uint32_t i = 0; i < kUniversalNetworkCount; ++i) {
-        if (dhts_[i] != nullptr) {
-            dhts_[i]->Drop(ip, port);
+        auto dht_ptr = dhts_[i].load(std::memory_order_acquire);
+        if (dht_ptr != nullptr) {
+            dht_ptr->Drop(ip, port);
         }
     }
 }
 
 void UniversalManager::Join(const dht::NodePtr& node) {
-    if (dhts_[kNodeNetworkId] != nullptr) {
-        dhts_[kNodeNetworkId]->UniversalJoin(node);
+    auto dht_ptr = dhts_[kNodeNetworkId].load(std::memory_order_acquire);
+    if (dht_ptr != nullptr) {
+        dht_ptr->UniversalJoin(node);
     }
 }
 

@@ -118,7 +118,7 @@ void ThreadHandler::HandleMessage() {
             ADD_DEBUG_PROCESS_TIMESTAMP();
         }
 
-        if (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count())) {
+        if (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)) {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPoolTimerMessage);
@@ -346,9 +346,10 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kVssMessage:
     case common::kBlsMessage:
     case common::kInitMessage:
-        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
     case common::kPoolsMessage:
-        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_ + 1);
+        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
+    // case common::kPoolsMessage:
+    //     return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_ + 1);
     case common::kConsensusMessage:
         if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
