@@ -265,6 +265,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     SHARDORA_WARN("init shard_statistic_ success.");
+    new_block_thread_ = std::make_shared<std::thread>(&NetworkInit::HandleNewBlock, this);
     block_mgr_->LoadLatestBlocks();
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(
@@ -615,6 +616,16 @@ int NetworkInit::InitHttpServer() {
 }
 
 void NetworkInit::Destroy() {
+    if (destroy_) {
+        return;
+    }
+
+    destroy_ = true;
+    if (new_block_thread_) {
+        new_block_thread_->join();
+        new_block_thread_ = nullptr;
+    }
+
     cmd_.Destroy();
     net_handler_.Destroy();
 //     if (db_ != nullptr) {
@@ -1139,18 +1150,38 @@ void NetworkInit::AddBlockItemToCache(
         block->tx_list_size(),
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str());
     if (network::IsSameToLocalShard(view_block->qc().network_id())) {
+        // thread thafe
         pools_mgr_->UpdateLatestInfo(view_block, db_batch);
     } else {
+        // thread thafe
         pools_mgr_->UpdateCrossLatestInfo(view_block, db_batch);
     }
 
-    DbNewBlockCallback(view_block, db_batch);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    new_blocks_queue_[thread_idx].push(view_block);
+    new_blocks_cv_.notify_one();
 }
 
-// pool tx thread, thread safe
+void NetworkInit::HandleNewBlock() {
+    while (!destroy_) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; i++) {
+            while (new_blocks_queue_[i].size() > 0) {
+                std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block;
+                new_blocks_queue_[i].pop(&view_block);
+                if (view_block) {
+                    DbNewBlockCallback(view_block);
+                }
+            }
+        }
+        
+        std::unique_lock<std::mutex> l(new_blocks_mutex_);
+        new_blocks_cv_.wait_for(l, std::chrono::milliseconds(10));
+    }
+}
+
+// TODO: check thread thafe
 bool NetworkInit::DbNewBlockCallback(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-        db::DbWriteBatch& db_batch) {
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
     auto* block = &view_block->block_info();
     for (int32_t i = 0; i < block->tx_list_size(); ++i) {
         switch (block->tx_list(i).step()) {

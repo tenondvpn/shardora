@@ -65,8 +65,7 @@ private:
         db::DbWriteBatch& db_batch);
     void InitLocalNetworkId();
     bool DbNewBlockCallback(
-        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
-        db::DbWriteBatch& db_batch);
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block);
     void HandleTimeBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         const block::protobuf::BlockTx& tx);
@@ -86,12 +85,14 @@ private:
     void CreateInitAddress(uint32_t net_id);
     void SendJoinElectTransaction();
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
+    void HandleNewBlock();
         
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
 
     common::Config conf_;
     bool inited_{ false };
+    std::atomic<bool> destroy_ = false;
     Command cmd_;
     transport::MultiThreadHandler net_handler_;
     std::string config_path_;
@@ -120,6 +121,10 @@ private:
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
     // WsServer ws_server_;
+    std::shared_ptr<std::thread> new_block_thread_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> new_blocks_queue_[common::kMaxThreadCount];
+    std::mutex new_blocks_mutex_;
+    std::condition_variable new_blocks_cv_;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };
