@@ -727,7 +727,7 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
         SHARDORA_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
             "stored_to_db_view_: %lu, %s%s", 
             3, pool_index_, it->second->view_block->qc().view(), 
-            stored_to_db_view_, common::Encode::HexEncode(id).c_str(), 
+            static_cast<uint64_t>(stored_to_db_view_), common::Encode::HexEncode(id).c_str(), 
             common::Encode::HexEncode(key).c_str());
         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
             break;
