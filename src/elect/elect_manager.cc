@@ -351,7 +351,7 @@ void ElectManager::ProcessNewElectBlock(
         now_elected_ids_.insert(id);
         ELECT_WARN("FFFFFFFF ProcessNewElectBlock network: %d, "
             "elect height: %lu, pre elect height: %lu, "
-            "member leader: %s"
+            "member leader: %s",
             elect_block.shard_network_id(),
             height,
             elect_block.prev_members().prev_elect_height(),
