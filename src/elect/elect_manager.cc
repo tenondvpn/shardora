@@ -110,8 +110,7 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 common::MembersPtr ElectManager::OnNewElectBlock(
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block_ptr,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block_ptr,
-        db::DbWriteBatch& db_batch) {
+        const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block_ptr) {
     auto& elect_block = *elect_block_ptr;
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
@@ -129,8 +128,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
         height,
         elect_block,
         &elected,
-        *prev_elect_block_ptr,
-        db_batch);
+        *prev_elect_block_ptr);
     ProcessNewElectBlock(height, elect_block, &elected);
     if (!cons_elect_valid && !elected) {
         if (common::GlobalInfo::Instance()->network_id() == elect_block.shard_network_id()) {
@@ -207,8 +205,7 @@ bool ElectManager::ProcessPrevElectMembers(
         uint64_t height,
         protobuf::ElectBlock& elect_block,
         bool* elected,
-        elect::protobuf::ElectBlock& prev_elect_block,
-        db::DbWriteBatch& db_batch) {
+        elect::protobuf::ElectBlock& prev_elect_block) {
     if (!elect_block.has_prev_members() || elect_block.prev_members().prev_elect_height() <= 0) {
         ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu, shard: %u, height: %lu",
             elect_block.has_prev_members(),

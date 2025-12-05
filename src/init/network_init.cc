@@ -1155,10 +1155,10 @@ bool NetworkInit::DbNewBlockCallback(
     for (int32_t i = 0; i < block->tx_list_size(); ++i) {
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
-            HandleTimeBlock(view_block, block->tx_list(i), db_batch);
+            HandleTimeBlock(view_block, block->tx_list(i));
             break;
         case pools::protobuf::kConsensusRootElectShard:
-            HandleElectionBlock(view_block, block->tx_list(i), db_batch);
+            HandleElectionBlock(view_block, block->tx_list(i));
             break;
         default:
             break;
@@ -1170,8 +1170,7 @@ bool NetworkInit::DbNewBlockCallback(
 
 void NetworkInit::HandleTimeBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     SHARDORA_INFO("time block coming %u_%u_%lu, %u_%u_%lu, tm: %lu, vss: %lu",
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
@@ -1196,8 +1195,7 @@ void NetworkInit::HandleTimeBlock(
 
 void NetworkInit::HandleElectionBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-        const block::protobuf::BlockTx& block_tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& block_tx) {
     auto* block = &view_block->block_info();
     SHARDORA_DEBUG("new elect block coming, net: %u, pool: %u, height: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), block->height());
@@ -1221,8 +1219,7 @@ void NetworkInit::HandleElectionBlock(
     auto members = elect_mgr_->OnNewElectBlock(
         block->height(),
         elect_block,
-        prev_elect_block,
-        db_batch);
+        prev_elect_block);
     if (members == nullptr) {
         SHARDORA_ERROR("elect manager handle elect block failed!");
         return;

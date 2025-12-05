@@ -50,8 +50,7 @@ public:
     common::MembersPtr OnNewElectBlock(
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block,
-        db::DbWriteBatch& db_batch);
+        const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block);
     common::MembersPtr GetNetworkMembersWithHeight(
         uint64_t elect_height,
         uint32_t network_id,
@@ -91,8 +90,7 @@ private:
         uint64_t height,
         protobuf::ElectBlock& elect_block,
         bool* elected,
-        elect::protobuf::ElectBlock& prev_elect_block,
-        db::DbWriteBatch& db_batch);
+        elect::protobuf::ElectBlock& prev_elect_block);
     void ProcessNewElectBlock(
         uint64_t height,
         protobuf::ElectBlock& elect_block,
