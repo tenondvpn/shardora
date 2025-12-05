@@ -1241,13 +1241,15 @@ void BlockManager::OnTimeBlock(
         return;
     }
 
-    prev_timeblock_height_ = latest_timeblock_height_;
+    prev_timeblock_height_.store(latest_timeblock_height_.load());
     latest_timeblock_height_ = latest_time_block_height;
-    prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
+    prev_timeblock_tm_sec_.store(latest_timeblock_tm_sec_.load());
     latest_timeblock_tm_sec_ = lastest_time_block_tm;
     SHARDORA_DEBUG("success update timeblock height: %lu, %lu, tm: %lu, %lu",
-        prev_timeblock_height_, latest_timeblock_height_,
-        prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
+        static_cast<uint64_t>(prev_timeblock_height_), 
+        static_cast<uint64_t>(latest_timeblock_height_),
+        static_cast<uint64_t>(prev_timeblock_tm_sec_), 
+        static_cast<uint64_t>(latest_timeblock_tm_sec_));
 }
 
 }  // namespace block
