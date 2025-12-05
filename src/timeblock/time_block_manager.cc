@@ -59,7 +59,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
+    tmblock_tx_ptr_.store(create_tm_tx_cb_(msg_ptr), std::memory_order_release);
     SHARDORA_INFO("success create timeblock tx key: %s",
         common::Encode::HexEncode(pools::GetTxKey(
             msg_ptr->address_info->addr(), 
@@ -137,7 +137,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
             common::Encode::HexEncode(tx_info->to()).c_str());
     }
 
-    return tmblock_tx_ptr_;
+    return tmblock_tx_ptr_.load(std::memory_order_acquire);
 }
 
 void TimeBlockManager::OnTimeBlock(
