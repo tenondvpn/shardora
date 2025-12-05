@@ -988,6 +988,7 @@ protos::AddressInfoPtr ViewBlockChain::ChainGetPoolAccountInfo(uint32_t pool_ind
     return ChainGetAccountInfo(addr);
 }
 
+// same thread: common::kPoolsMessage common::kPoolTimerMessage
 void ViewBlockChain::AddPoolStatisticTag(uint64_t height) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->address_info = ChainGetPoolAccountInfo(pool_index_);

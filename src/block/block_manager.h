@@ -69,7 +69,6 @@ public:
         uint32_t pool_index,
         uint64_t height,
         view_block::protobuf::ViewBlockItem& block_item);
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     void LoadLatestBlocks();
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
@@ -95,7 +94,7 @@ private:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-
+    void CallNewElectBlock(uint32_t sharding_id, uint64_t elect_height);
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
     bool HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
     bool HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
@@ -162,7 +161,7 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
     uint64_t prev_retry_create_statistic_tx_ms_ = 0;
-    uint32_t max_consensus_sharding_id_ = 3;
+    std::atomic<uint32_t> max_consensus_sharding_id_ = 3;
     std::atomic<std::shared_ptr<BlockTxsItem>> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
@@ -178,8 +177,6 @@ private:
     uint64_t prev_timeblock_height_ = 0;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
-    common::MembersPtr latest_members_ = nullptr;
-    uint64_t latest_elect_height_ = 0;
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
     StatisticMap shard_statistics_map_;

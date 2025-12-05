@@ -110,23 +110,9 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
-void BlockManager::OnNewElectBlock(
-        uint32_t sharding_id, 
-        uint64_t elect_height, 
-        common::MembersPtr& members) {
+void BlockManager::CallNewElectBlock(uint32_t sharding_id) {
     if (sharding_id > max_consensus_sharding_id_) {
         max_consensus_sharding_id_ = sharding_id;
-    }
-
-    if (sharding_id == common::GlobalInfo::Instance()->network_id() ||
-            sharding_id + network::kConsensusWaitingShardOffset ==
-            common::GlobalInfo::Instance()->network_id()) {
-        if (elect_height <= latest_elect_height_) {
-            return;
-        }
-
-        latest_members_ = members;
-        latest_elect_height_ = elect_height;
     }
 }
 
@@ -421,7 +407,8 @@ void BlockManager::AddNewBlock(
     if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
         pools_mgr_->OnNewCrossBlock(view_block_item);
         SHARDORA_DEBUG("new cross block coming: %u, %u, %lu",
-            view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(), block_item->height());
     } else {
         if (statistic_mgr_) {
             statistic_mgr_->OnNewBlock(view_block_item);
@@ -436,6 +423,10 @@ void BlockManager::AddNewBlock(
 
     if (block_item->has_elect_block()) {
         HandleElectTx(*view_block_item);
+        CallNewElectBlock(block->elect_block().sharding_id());
+        if (statistic_mgr_) {
+            statistic_mgr_->CallNewElectBlock(block->elect_block().sharding_id(), block->height());
+        }
     }
 
     if (block_item->has_normal_to()) {

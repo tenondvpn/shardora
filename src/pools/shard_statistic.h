@@ -44,10 +44,9 @@ public:
         handle_block_thread_->join();
     }
     int Init();
-    void OnNewElectBlock(
+    void CallNewElectBlock(
         uint32_t sharding_id,
-        uint64_t prepare_elect_height,
-        uint64_t elect_height);
+        uint64_t prepare_elect_height);
     void OnNewBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block);
     // just block manager to call
     void CallTimeBlock(
@@ -107,10 +106,9 @@ public:
     std::shared_ptr<PoolBlocksInfo> pools_consensus_blocks_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    uint64_t prev_elect_height_ = 0;
-    uint64_t now_elect_height_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    uint64_t prepare_elect_height_ = 0;
+    std::atomic<uint64_t> now_elect_height_ = 0;
+    std::atomic<uint64_t> prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
     common::Tick tick_to_statistic_;
     std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;

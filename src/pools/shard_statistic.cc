@@ -497,19 +497,18 @@ std::string ShardStatistic::getLeaderIdFromBlock(
     return leader_id;
 }
 
-void ShardStatistic::OnNewElectBlock(
+void ShardStatistic::CallNewElectBlock(
         uint32_t sharding_id,
-        uint64_t prepare_elect_height,
-        uint64_t elect_height) {
+        uint64_t prepare_elect_height) {
     if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
         return;
     }
 
-    prev_elect_height_ = now_elect_height_;
-    now_elect_height_ = elect_height;
+    now_elect_height_ = elect_mgr_->latest_height(sharding_id);
     prepare_elect_height_ = prepare_elect_height;
-    SHARDORA_INFO("new elect block: %lu, %lu, prepare_elect_height_: %lu",
-        prev_elect_height_, now_elect_height_, prepare_elect_height_);
+    SHARDORA_INFO("new elect block: %lu, prepare_elect_height_: %lu",
+        static_cast<uint64_t>(now_elect_height_),
+        static_cast<uint64_t>(prepare_elect_height_));
 }
 
 void ShardStatistic::CallTimeBlock(
@@ -685,7 +684,8 @@ int ShardStatistic::StatisticWithHeights(
             added_id_set.insert((*now_elect_members)[i]->pubkey);
         }
     } else {
-        SHARDORA_INFO("failed get prepare members prepare_elect_height_: %lu", prepare_elect_height_);
+        SHARDORA_INFO("failed get prepare members prepare_elect_height_: %lu",
+            static_cast<uint64_t>(prepare_elect_height_));
     }
 
     uint64_t all_gas_amount = 0;
@@ -913,8 +913,8 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
     if (prepare_members != nullptr) {
         SHARDORA_INFO("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
             "new nodes size: %u, now members size: %u, prepare members size: %u",
-            now_elect_height_,
-            prepare_elect_height_,
+            static_cast<uint64_t>(now_elect_height_),
+            static_cast<uint64_t>(prepare_elect_height_),
             elect_statistic.join_elect_nodes_size(),
             now_elect_members->size(),
             prepare_members->size());
