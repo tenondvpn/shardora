@@ -1162,6 +1162,7 @@ void NetworkInit::AddBlockItemToCache(
 }
 
 void NetworkInit::HandleNewBlock() {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         for (uint32_t i = 0; i < common::kMaxThreadCount; i++) {
             while (new_blocks_queue_[i].size() > 0) {
