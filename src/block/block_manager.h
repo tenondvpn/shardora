@@ -43,6 +43,16 @@ class BlockManager {
 public:
     BlockManager(transport::MultiThreadHandler& net_handler_, std::shared_ptr<ck::ClickHouseClient> ck_client);
     ~BlockManager();
+
+    // TODO: not thread thafe
+    bool HasSingleTx(
+        const transport::MessagePtr& msg_ptr,
+        uint32_t pool_index, 
+        pools::CheckAddrNonceValidFunction tx_valid_func);
+    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string&);
+    pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
+
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
@@ -60,16 +70,9 @@ public:
         uint64_t height,
         view_block::protobuf::ViewBlockItem& block_item);
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
-    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string&);
-    pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks();
     bool ShouldStopConsensus();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
-    bool HasSingleTx(
-        const transport::MessagePtr& msg_ptr,
-        uint32_t pool_index, 
-        pools::CheckAddrNonceValidFunction tx_valid_func);
 
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
@@ -160,7 +163,7 @@ private:
     uint64_t prev_create_to_tx_ms_ = 0;
     uint64_t prev_retry_create_statistic_tx_ms_ = 0;
     uint32_t max_consensus_sharding_id_ = 3;
-    std::shared_ptr<BlockTxsItem> shard_elect_tx_[network::kConsensusShardEndNetworkId];
+    std::atomic<std::shared_ptr<BlockTxsItem>> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
@@ -181,14 +184,14 @@ private:
     int32_t leader_create_statistic_heights_index_ = 0;
     StatisticMap shard_statistics_map_;
     common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
-    std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_[2] = { nullptr };
+    std::atomic<std::shared_ptr<StatisticMap>> got_latest_statistic_map_ptr_[2] = { nullptr };
     uint32_t valid_got_latest_statistic_map_ptr_index_ = 0;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
     uint64_t prev_timer_ms_ = 0;
     common::Tick pop_tx_tick_;
-    std::shared_ptr<view_block::protobuf::ViewBlockItem> latest_to_block_ptr_[2] = { nullptr };
+    std::atomic<std::shared_ptr<view_block::protobuf::ViewBlockItem>> latest_to_block_ptr_[2] = { nullptr };
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;

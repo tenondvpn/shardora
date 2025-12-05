@@ -46,7 +46,6 @@ public:
     int Join(uint32_t network_id);
     int Quit(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
-    void OnTimeBlock(uint64_t tm_block_tm);
     common::MembersPtr OnNewElectBlock(
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,

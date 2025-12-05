@@ -100,9 +100,6 @@ int ElectManager::Quit(uint32_t network_id) {
     return kElectSuccess;
 }
 
-void ElectManager::OnTimeBlock(uint64_t tm_block_tm) {
-}
-
 void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(false);
 }

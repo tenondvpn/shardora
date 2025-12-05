@@ -121,7 +121,6 @@ private:
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
     // WsServer ws_server_;
-    std::shared_ptr<std::thread> new_block_thread_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> new_blocks_queue_[common::kMaxThreadCount];
     std::mutex new_blocks_mutex_;
     std::condition_variable new_blocks_cv_;

@@ -283,7 +283,7 @@ private:
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     StorageLruMap<10240> storage_lru_map_;
     std::shared_ptr<block::BlockManager> block_mgr_;
-    uint64_t latest_timeblock_height_ = 0;
+    std::atomic<uint64_t> latest_timeblock_height_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::set<uint64_t> commited_view_;
     uint64_t prev_check_timeout_blocks_ms_ = 0;

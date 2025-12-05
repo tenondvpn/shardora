@@ -1024,7 +1024,7 @@ void ViewBlockChain::OnTimeBlock(
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
     SHARDORA_INFO("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
-        latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
+        static_cast<uint64_t>(latest_timeblock_height_), latest_time_block_height, lastest_time_block_tm);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
     }

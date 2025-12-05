@@ -172,6 +172,9 @@ int NetworkInit::Init(int argc, char** argv) {
     network::Route::Instance()->RegisterMessage(
         common::kInitMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
+    network::Route::Instance()->RegisterMessage(
+        common::kPoolTimerMessage,
+        std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
     account_mgr_ = std::make_shared<block::AccountManager>();
     network::UniversalManager::Instance()->Init(security_, db_, account_mgr_);
     SHARDORA_DEBUG("init 0 10");
@@ -264,7 +267,6 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     SHARDORA_WARN("init shard_statistic_ success.");
-    new_block_thread_ = std::make_shared<std::thread>(&NetworkInit::HandleNewBlock, this);
     block_mgr_->LoadLatestBlocks();
     // 启动共识和同步
     hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(
@@ -418,6 +420,10 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
+    }
+
+    if (msg_ptr->header.type() == kPoolTimerMessage) {
+        HandleNewBlock();
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
@@ -620,11 +626,6 @@ void NetworkInit::Destroy() {
     }
 
     destroy_ = true;
-    if (new_block_thread_) {
-        new_block_thread_->join();
-        new_block_thread_ = nullptr;
-    }
-
     cmd_.Destroy();
     net_handler_.Destroy();
 //     if (db_ != nullptr) {
@@ -1158,11 +1159,9 @@ void NetworkInit::AddBlockItemToCache(
 
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     new_blocks_queue_[thread_idx].push(view_block);
-    new_blocks_cv_.notify_one();
 }
 
 void NetworkInit::HandleNewBlock() {
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     while (!destroy_) {
         for (uint32_t i = 0; i < common::kMaxThreadCount; i++) {
             while (new_blocks_queue_[i].size() > 0) {
@@ -1173,9 +1172,6 @@ void NetworkInit::HandleNewBlock() {
                 }
             }
         }
-
-        std::unique_lock<std::mutex> l(new_blocks_mutex_);
-        new_blocks_cv_.wait_for(l, std::chrono::milliseconds(10));
     }
 }
 
@@ -1216,7 +1212,6 @@ void NetworkInit::HandleTimeBlock(
         auto vss_random = block.timer_block().vss_random();
         hotstuff_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         bls_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
-        vss_mgr_->OnTimeBlock(view_block);
         tm_block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         SHARDORA_INFO("new time block called height: %lu, tm: %lu", block.height(), vss_random);
     }
