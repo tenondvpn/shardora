@@ -284,7 +284,6 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
     SHARDORA_DEBUG("init 7");
-    GetAddressShardingId();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -412,115 +411,11 @@ int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (msg_ptr->header.init_proto().has_addr_req()) {
-        HandleAddrReq(msg_ptr);
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (msg_ptr->header.init_proto().has_addr_res()) {
-        HandleAddrRes(msg_ptr);
-    }
-
     if (msg_ptr->header.type() == common::kPoolTimerMessage) {
         HandleNewBlock();
         bls_mgr_->PoolTimerMessage();
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
-}
-
-void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
-    protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(
-        msg_ptr->header.init_proto().addr_req().id());
-    if (account_info == nullptr) {
-        return;
-    }
-
-    transport::protobuf::Header msg;
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kInitMessage);
-    dht::DhtKeyManager dht_key(network::kUniversalNetworkId);
-    msg.set_des_dht_key(dht_key.StrKey());
-    auto& init_msg = *msg.mutable_init_proto()->mutable_addr_res();
-    if (!prefix_db_->GetBlockWithHeight(
-            network::kRootCongressNetworkId,
-            account_info->pool_index(),
-            account_info->latest_height(),
-            init_msg.mutable_view_block())) {
-        return;
-    }
-
-    bool tx_valid = false;
-    for (int32_t i = 0; i < init_msg.view_block().block_info().tx_list_size(); ++i) {
-        if (init_msg.view_block().block_info().tx_list(i).to() == account_info->addr()) {
-            tx_valid = true;
-            break;
-        }
-    }
-
-    if (!tx_valid) {
-        return;
-    }
-
-    SHARDORA_DEBUG("success handle init req message: %s",
-        common::Encode::HexEncode(msg_ptr->header.init_proto().addr_req().id()).c_str());
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
-    transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-}
-
-void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
-    if (des_sharding_id_ != common::kInvalidUint32) {
-        return;
-    }
-
-    auto& block = msg_ptr->header.init_proto().addr_res().view_block().block_info();
-    if (block.tx_list_size() != 1) {
-        return;
-    }
-
-    uint32_t sharding_id = common::kInvalidUint32;
-    if (sharding_id == common::kInvalidUint32) {
-        return;
-    }
-
-    des_sharding_id_ = sharding_id;
-    // random chance to join root shard
-    if (common::GlobalInfo::Instance()->join_root() == common::kJoinRoot) {
-        sharding_id = network::kRootCongressNetworkId;
-    } else if (common::GlobalInfo::Instance()->join_root() == common::kRandom &&
-            common::Random::RandomInt32() % 4 == 1) {
-        sharding_id = network::kRootCongressNetworkId;
-    }
-
-    prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
-    SHARDORA_DEBUG("success save local sharding %u, %u", sharding_id, des_sharding_id_);
-    auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
-    if (elect_mgr_->Join(waiting_network_id) != elect::kElectSuccess) {
-        INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
-        return;
-    }
-
-    common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
-}
-
-void NetworkInit::GetAddressShardingId() {
-    if (des_sharding_id_ != common::kInvalidUint32) {
-        return;
-    }
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kInitMessage);
-    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
-    msg.set_des_dht_key(dht_key.StrKey());
-    auto& init_msg = *msg.mutable_init_proto();
-    auto& init_req = *init_msg.mutable_addr_req();
-    init_req.set_id(security_->GetAddress());
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
-    network::Route::Instance()->Send(msg_ptr);
-    SHARDORA_DEBUG("sent get addresss info success.");
-    init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this));
 }
 
 void NetworkInit::InitLocalNetworkId() {

@@ -73,9 +73,6 @@ private:
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block,
         const block::protobuf::BlockTx& tx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void HandleAddrReq(const transport::MessagePtr& msg_ptr);
-    void HandleAddrRes(const transport::MessagePtr& msg_ptr);
-    void GetAddressShardingId();
     void BroadcastInvalidPools(
         std::shared_ptr<LeaderRotationInfo> leader_rotation,
         int32_t mod_num);

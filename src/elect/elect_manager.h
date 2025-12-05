@@ -44,7 +44,6 @@ public:
     ~ElectManager();
     int Init();
     int Join(uint32_t network_id);
-    int Quit(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
     common::MembersPtr OnNewElectBlock(
         uint64_t height,
@@ -83,31 +82,23 @@ private:
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::map<uint32_t, ElectNodePtr> elect_network_map_;
-    std::mutex elect_network_map_mutex_;
-    std::shared_ptr<ElectNode> elect_node_ptr_{ nullptr };
-    common::Tick create_elect_block_tick_;
-    std::unordered_set<uint64_t> added_height_[network::kConsensusShardEndNetworkId];
-    uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];
-    std::mutex elect_members_mutex_;
-    std::mutex network_leaders_mutex_;
-    std::mutex valid_shard_networks_mutex_;
-    common::Tick waiting_hb_tick_;
-    std::atomic<uint32_t> local_node_member_index_{ kInvalidMemberIndex };
-    std::atomic<common::MembersPtr> members_ptr_[network::kConsensusShardEndNetworkId];
-    std::atomic<common::MembersPtr> waiting_members_ptr_[network::kConsensusShardEndNetworkId];
-    int32_t latest_member_count_[network::kConsensusShardEndNetworkId];
-    int32_t latest_leader_count_[network::kConsensusShardEndNetworkId];
-    std::shared_ptr<HeightWithElectBlock> height_with_block_ = nullptr;
-    common::BftMemberPtr pool_mod_leaders_[common::kInvalidPoolIndex];
-    std::set<std::string> prev_elected_ids_;
-    std::set<std::string> now_elected_ids_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
-    NewElectBlockCallback new_elect_cb_ = nullptr;
-    uint32_t max_sharding_id_ = 3;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+
+    // mul thread access
+    std::atomic<common::MembersPtr> members_ptr_[network::kConsensusShardEndNetworkId];
+    std::atomic<common::MembersPtr> waiting_members_ptr_[network::kConsensusShardEndNetworkId];
+    std::shared_ptr<HeightWithElectBlock> height_with_block_ = nullptr;
+
+    // just new elect block thread
+    std::map<uint32_t, ElectNodePtr> elect_network_map_;
+    std::shared_ptr<ElectNode> elect_node_ptr_{ nullptr };
+    std::unordered_set<uint64_t> added_height_[network::kConsensusShardEndNetworkId];
+    uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];
+    std::set<std::string> prev_elected_ids_;
+    std::set<std::string> now_elected_ids_;
 
     DISALLOW_COPY_AND_ASSIGN(ElectManager);
 };

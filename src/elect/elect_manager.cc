@@ -37,7 +37,6 @@ ElectManager::ElectManager(
     block_mgr_ = block_mgr;
     security_ = security;
     db_ = db;
-    new_elect_cb_ = new_elect_cb;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     bls_mgr_ = bls_mgr;
@@ -79,25 +78,6 @@ int ElectManager::Join(uint32_t network_id) {
     return kElectSuccess;
 }
 
-int ElectManager::Quit(uint32_t network_id) {
-    ElectNodePtr elect_node = nullptr;
-    {
-        std::lock_guard<std::mutex> guard(elect_network_map_mutex_);
-        auto iter = elect_network_map_.find(network_id);
-        if (iter == elect_network_map_.end()) {
-            ELECT_INFO("this node has join network[%u]", network_id);
-            return kElectNetworkNotJoined;
-        }
-
-        elect_node = iter->second;
-        elect_network_map_.erase(iter);
-        CHECK_MEMORY_SIZE(elect_network_map_);
-    }
-
-    elect_node->Destroy();
-    return kElectSuccess;
-}
-
 void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(false);
 }
@@ -111,10 +91,6 @@ common::MembersPtr ElectManager::OnNewElectBlock(
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
         SHARDORA_DEBUG("elect block sharding id invalid: %u", elect_block.shard_network_id());
         return nullptr;
-    }
-
-    if (max_sharding_id_ < elect_block.shard_network_id()) {
-        max_sharding_id_ = elect_block.shard_network_id();
     }
 
     bool elected = false;
@@ -143,7 +119,6 @@ void ElectManager::ElectedToConsensusShard(
         local_netid, elect_block.shard_network_id(), cons_elected);
     if (!cons_elected) {
         if (local_netid == elect_block.shard_network_id()) {
-//             Quit(local_netid);
             if (Join(local_netid + network::kConsensusWaitingShardOffset) != kElectSuccess) {
                 ELECT_ERROR("join elected network failed![%u]",
                     local_netid + network::kConsensusWaitingShardOffset);
@@ -156,7 +131,6 @@ void ElectManager::ElectedToConsensusShard(
         }
     } else {
         if (local_netid != elect_block.shard_network_id()) {
-//             Quit(local_netid);
             if (Join(elect_block.shard_network_id()) != kElectSuccess) {
                 ELECT_ERROR("join elected network failed![%u]", elect_block.shard_network_id());
             } else {
@@ -437,10 +411,6 @@ void ElectManager::UpdatePrevElectMembers(
 //             elect_block.prev_members().common_pubkey().x_c1().c_str(),
 //             elect_block.prev_members().common_pubkey().y_c0().c_str(),
 //             elect_block.prev_members().common_pubkey().y_c1().c_str());
-    }
-
-    if (*elected) {
-        local_node_member_index_ = local_member_index;
     }
 }
 
