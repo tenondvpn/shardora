@@ -625,7 +625,7 @@ void BlockManager::LoadLatestBlocks() {
                 block) == kBlockSuccess) {
             SHARDORA_DEBUG("load latest elect block called!");
             if (new_block_callback_ != nullptr) {
-                new_block_callback_(tmblock_ptr, db_batch);
+                new_block_callback_(tmblock_ptr);
             }
         } else {
             SHARDORA_FATAL("load latest timeblock failed!");
@@ -656,7 +656,7 @@ void BlockManager::LoadLatestBlocks() {
                     elect_block.elect_height(),
                     block) == kBlockSuccess) {
                 if (new_block_callback_ != nullptr) {
-                    new_block_callback_(elect_block_ptr, db_batch);
+                    new_block_callback_(elect_block_ptr);
                 }
 
                 AddMiningToken(block, elect_block);

@@ -140,9 +140,7 @@ inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageIt
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
-typedef std::function<bool(
-    const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-    db::DbWriteBatch& db_batch)> DbBlockCallback;
+typedef std::function<bool(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block)> DbBlockCallback;
 
 }  // namespace block
 

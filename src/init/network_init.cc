@@ -198,8 +198,7 @@ int NetworkInit::Init(int argc, char** argv) {
     auto new_db_cb = std::bind(
         &NetworkInit::DbNewBlockCallback,
         this,
-        std::placeholders::_1,
-        std::placeholders::_2);
+        std::placeholders::_1);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(
         elect_mgr_, db_, security_, pools_mgr_, contract_mgr_);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
@@ -1173,7 +1172,7 @@ void NetworkInit::HandleNewBlock() {
                 }
             }
         }
-        
+
         std::unique_lock<std::mutex> l(new_blocks_mutex_);
         new_blocks_cv_.wait_for(l, std::chrono::milliseconds(10));
     }
