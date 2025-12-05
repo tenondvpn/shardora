@@ -443,7 +443,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->has_timer_block()) {
-        auto vss_random = block_item->htimer_block().vss_random();
+        auto vss_random = block_item->timer_block().vss_random();
         CallTimeBlock(block_item->timer_block().timestamp(), block_item->height(), vss_random);
         SHARDORA_INFO("new time block called height: %lu, tm: %lu", block_item->height(), vss_random);
     }
