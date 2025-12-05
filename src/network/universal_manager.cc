@@ -35,8 +35,10 @@ void UniversalManager::Init(
 
 void UniversalManager::Destroy() {
     for (uint32_t i = 0; i < kUniversalNetworkCount; ++i) {
-        if (dhts_[i] != nullptr) {
-            dhts_[i]->Destroy();
+        auto dht_ptr = dhts_[i].load(std::memory_order_acquire);
+        if (dht_ptr != nullptr) {
+            dht_ptr->Destroy();
+            dhts_[i].store(nullptr, std::memory_order_acquire);
         }
     }
 }
@@ -47,12 +49,13 @@ void UniversalManager::RegisterUniversal(uint32_t network_id, dht::BaseDhtPtr& d
         return;
     }
 
-    if (dhts_[network_id] != nullptr) {
+    auto dht_ptr = dhts_[network_id].load(std::memory_order_acquire);
+    if (dht_ptr != nullptr) {
         // SHARDORA_ERROR("regiestered network id: %u", network_id);
         return;
     }
 
-    dhts_[network_id] = dht;
+    dhts_[network_id].store(dht, std::memory_order_acquire);
     // SHARDORA_DEBUG("add universal network: %d", network_id);
 }
 
@@ -62,9 +65,10 @@ void UniversalManager::UnRegisterUniversal(uint32_t network_id) {
         return;
     }
 
-    if (dhts_[network_id] != nullptr) {
-        dhts_[network_id]->Destroy();
-        dhts_[network_id] = nullptr;
+    auto dht_ptr = dhts_[network_id].load(std::memory_order_acquire);
+    if (dht_ptr != nullptr) {
+        dht_ptr->Destroy();
+        dhts_[network_id].store(nullptr, std::memory_order_acquire);
     }
 }
 
@@ -74,7 +78,7 @@ dht::BaseDhtPtr UniversalManager::GetUniversal(uint32_t network_id) {
         return nullptr;
     }
 
-    return dhts_[network_id];
+    return dhts_[network_id].load(std::memory_order_acquire);
 }
 
 void UniversalManager::DhtBootstrapResponseCallback(
