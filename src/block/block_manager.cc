@@ -1144,7 +1144,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         if (iter->first >= latest_timeblock_height_) {
             if (leader) {
                 SHARDORA_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
-                    iter->first, static_cast<uint64_t>(latest_timeblock_height_));
+                    iter->first, latest_timeblock_height_);
             }
 
             return nullptr;
@@ -1154,7 +1154,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
                 SHARDORA_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
-                    static_cast<uint64_t>(prev_timeblock_tm_sec_), 
+                    prev_timeblock_tm_sec_, 
                     (common::kRotationPeriod / 1000000lu), 
                     (now_tm / 1000000lu));
                 prev_get_tx_tm1 = now_tx_tm;
@@ -1175,9 +1175,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
         SHARDORA_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
-            static_cast<uint64_t>(prev_timeblock_tm_sec_),
-            iter->first,
-            static_cast<uint64_t>(latest_timeblock_height_),
+            prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,
             leader);
         return shard_statistic_tx->tx_ptr;
     }
@@ -1238,20 +1236,18 @@ void BlockManager::OnTimeBlock(
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
     SHARDORA_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
-        static_cast<uint64_t>(latest_timeblock_height_), latest_time_block_height, lastest_time_block_tm);
+        latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
     }
 
-    prev_timeblock_height_.store(latest_timeblock_height_.load());
+    prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
-    prev_timeblock_tm_sec_.store(latest_timeblock_tm_sec_.load());
+    prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
     latest_timeblock_tm_sec_ = lastest_time_block_tm;
     SHARDORA_DEBUG("success update timeblock height: %lu, %lu, tm: %lu, %lu",
-        static_cast<uint64_t>(prev_timeblock_height_), 
-        static_cast<uint64_t>(latest_timeblock_height_),
-        static_cast<uint64_t>(prev_timeblock_tm_sec_), 
-        static_cast<uint64_t>(latest_timeblock_tm_sec_));
+        prev_timeblock_height_, latest_timeblock_height_,
+        prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
 }
 
 }  // namespace block

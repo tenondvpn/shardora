@@ -521,7 +521,7 @@ void ShardStatistic::OnTimeBlock(
     }
 
     SHARDORA_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
-        latest_timeblock_height_, latest_time_block_height);
+        static_cast<uint64_t>(latest_timeblock_height_), latest_time_block_height);
     StatisticInfoItem statistic_item;
     std::map<uint32_t, StatisticInfoItem> pool_map;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
@@ -530,7 +530,7 @@ void ShardStatistic::OnTimeBlock(
 
     statistic_pool_info_[latest_time_block_height] = pool_map;
     CHECK_MEMORY_SIZE(statistic_pool_info_);
-    prev_timeblock_height_ = latest_timeblock_height_;
+    prev_timeblock_height_.store(latest_timeblock_height_.load());
     latest_timeblock_height_ = latest_time_block_height;
 }
 

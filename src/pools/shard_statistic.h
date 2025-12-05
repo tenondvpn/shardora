@@ -100,9 +100,9 @@ public:
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    uint64_t latest_timeblock_height_ = 0;
-    uint64_t prev_timeblock_height_ = 0;
-    uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
+    std::atomic<uint64_t> latest_timeblock_height_ = 0;
+    std::atomic<uint64_t> prev_timeblock_height_ = 0;
+    std::atomic<uint64_t> pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     std::shared_ptr<PoolBlocksInfo> pools_consensus_blocks_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
