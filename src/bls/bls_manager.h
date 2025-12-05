@@ -63,6 +63,7 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
+    void PoolTimerMessage();
     void SetUsedElectionBlock(
         uint64_t elect_height,
         uint32_t network_id,
@@ -129,7 +130,6 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void TimerMessage();
     void PopFinishMessage();
     int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 

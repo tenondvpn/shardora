@@ -192,15 +192,16 @@ public:
             return;
         }
 
-        if (elect_items_[sharding_id] != nullptr &&
-                elect_items_[sharding_id]->ElectHeight() >= elect_height) {
+        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        if (elect_items_ptr != nullptr &&
+                elect_items_ptr->ElectHeight() >= elect_height) {
             return;
         }
 
         auto elect_item = std::make_shared<ElectItem>(security_ptr_,
             sharding_id, elect_height, members, common_pk, sk);
-        prev_elect_items_[sharding_id] = elect_items_[sharding_id];
-        elect_items_[sharding_id] = elect_item;
+        prev_elect_items_[sharding_id].store(elect_items_ptr, std::memory_order_release);
+        elect_items_[sharding_id].store(elect_item, std::memory_order_release);
         RefreshMemberAddrs(sharding_id);
 // #ifndef NDEBUG
 //         if (sharding_id == common::GlobalInfo::Instance()->network_id())
@@ -213,12 +214,14 @@ public:
     }
 
     std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t elect_height) const {
-        if (elect_items_[sharding_id] &&
-                elect_height == elect_items_[sharding_id]->ElectHeight()) {
-            return elect_items_[sharding_id];
-        } else if (prev_elect_items_[sharding_id] &&
-                elect_height == prev_elect_items_[sharding_id]->ElectHeight()) {
-            return prev_elect_items_[sharding_id];
+        auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load(std::memory_order_release);
+        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        if (elect_items_ptr &&
+                elect_height == elect_items_ptr->ElectHeight()) {
+            return elect_items_ptr;
+        } else if (prev_elect_items_ptr &&
+                elect_height == prev_elect_items_ptr->ElectHeight()) {
+            return prev_elect_items_ptr;
         }
         
         // 内存中没有从 ElectManager 获取
@@ -265,16 +268,19 @@ public:
             return nullptr;
         }
 
-        return elect_items_[sharding_id] != nullptr ? elect_items_[sharding_id] : prev_elect_items_[sharding_id];
+        auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load(std::memory_order_release);
+        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        return elect_items_ptr != nullptr ? elect_items_ptr : prev_elect_items_ptr;
     }
 
     // 更新 elect_item members 的 addr
     void RefreshMemberAddrs(uint32_t sharding_id) {
-        if (!elect_items_[sharding_id]) {
+        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        if (!elect_items_ptr) {
             SHARDORA_DEBUG("Leader pool elect item null");
             return;
         }
-        for (auto& member : *(elect_items_[sharding_id]->Members())) {
+        for (auto& member : *(elect_items_ptr->Members())) {
             // SHARDORA_DEBUG("get Leader pool %s failed: %d, %u %d", 
             //     common::Encode::HexEncode(member->id).c_str(), 
             //     common::GlobalInfo::Instance()->network_id(),
@@ -304,8 +310,8 @@ public:
     }
     
 private:
-    std::shared_ptr<ElectItem> prev_elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
-    std::shared_ptr<ElectItem> elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::atomic<std::shared_ptr<ElectItem>> prev_elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::atomic<std::shared_ptr<ElectItem>> elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;

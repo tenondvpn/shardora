@@ -47,12 +47,12 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
+    // bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 BlsManager::~BlsManager() {}
 
-void BlsManager::TimerMessage() {
+void BlsManager::PoolTimerMessage() {
 #ifdef TEST_NO_CROSS
     return;
 #endif
@@ -71,8 +71,6 @@ void BlsManager::TimerMessage() {
             SHARDORA_WARN("BlsManager handle message use time: %lu", (etime - now_tm_ms));
         }
     }
-
-    bls_tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 void BlsManager::OnNewElectBlock(
