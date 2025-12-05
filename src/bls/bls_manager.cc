@@ -153,11 +153,13 @@ void BlsManager::OnNewElectBlock(
         db_,
         ck_client_);
 //     SHARDORA_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
+    auto latest_timeblock_info_ptr = latest_timeblock_info_.load(std::memory_order_acquire);
+    assert(latest_timeblock_info_ptr);
     waiting_bls->OnNewElectionBlock(
         latest_elect_height_,
         elect_height,
         members,
-        latest_timeblock_info_.load(std::memory_order_acquire));
+        latest_timeblock_info_ptr);
     latest_elect_height_ = elect_height;
     waiting_bls_ = waiting_bls;
     SHARDORA_WARN("success add new bls dkg, elect_height: %lu", elect_height);
