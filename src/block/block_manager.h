@@ -53,10 +53,6 @@ public:
         std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
-    void OnTimeBlock(
-        uint64_t lastest_time_block_tm,
-        uint64_t latest_time_block_height,
-        uint64_t vss_random);
     void ConsensusAddBlock(const std::shared_ptr<hotstuff::ViewBlockInfo>& block_item);
     int GetBlockWithHeight(
         uint32_t network_id,
@@ -92,6 +88,11 @@ public:
     }
 
 private:
+    void CallTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random);
+
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
     bool HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
     bool HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);

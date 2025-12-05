@@ -1215,10 +1215,8 @@ void NetworkInit::HandleTimeBlock(
     if (block.has_timer_block()) {
         auto vss_random = block.timer_block().vss_random();
         hotstuff_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
-        vss_mgr_->OnTimeBlock(view_block);
         bls_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
-        shard_statistic_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
-        block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
+        vss_mgr_->OnTimeBlock(view_block);
         tm_block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         SHARDORA_INFO("new time block called height: %lu, tm: %lu", block.height(), vss_random);
     }

@@ -512,7 +512,7 @@ void ShardStatistic::OnNewElectBlock(
         prev_elect_height_, now_elect_height_, prepare_elect_height_);
 }
 
-void ShardStatistic::OnTimeBlock(
+void ShardStatistic::CallTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {

@@ -442,6 +442,12 @@ void BlockManager::AddNewBlock(
         HandleNormalToTx(view_block_item);
     }
 
+    if (block_item->has_timer_block()) {
+        auto vss_random = block_item->htimer_block().vss_random();
+        CallTimeBlock(block_item->timer_block().timestamp(), block_item->height(), vss_random);
+        SHARDORA_INFO("new time block called height: %lu, tm: %lu", block_item->height(), vss_random);
+    }
+
     if (block_item->cross_shard_to_array_size() > 0) {
         SHARDORA_DEBUG("now handle root cross %u_%u_%lu, local net: %d,  block: %s",
             view_block_item->qc().network_id(),
@@ -1231,7 +1237,7 @@ bool BlockManager::ShouldStopConsensus() {
     return false;
 }
 
-void BlockManager::OnTimeBlock(
+void BlockManager::CallTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
@@ -1248,6 +1254,10 @@ void BlockManager::OnTimeBlock(
     SHARDORA_DEBUG("success update timeblock height: %lu, %lu, tm: %lu, %lu",
         prev_timeblock_height_, latest_timeblock_height_,
         prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
+
+    if (statistic_mgr_) {
+        statistic_mgr_->CallTimeBlock(lastest_time_block_tm, latest_time_block_height, vss_random);
+    }
 }
 
 }  // namespace block

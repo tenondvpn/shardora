@@ -49,7 +49,8 @@ public:
         uint64_t prepare_elect_height,
         uint64_t elect_height);
     void OnNewBlock(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& block);
-    void OnTimeBlock(
+    // just block manager to call
+    void CallTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
