@@ -74,6 +74,7 @@ private:
     void ElectedToConsensusShard(
         protobuf::ElectBlock& elect_block,
         bool elected);
+    int Join(uint32_t network_id);
 
     static const uint64_t kWaitingHeartbeatPeriod = 20000000llu;
 
