@@ -157,7 +157,7 @@ void BlsManager::OnNewElectBlock(
         latest_elect_height_,
         elect_height,
         members,
-        latest_timeblock_info_);
+        latest_timeblock_info_.load(std::memory_order_acquire));
     latest_elect_height_ = elect_height;
     waiting_bls_ = waiting_bls;
     SHARDORA_WARN("success add new bls dkg, elect_height: %lu", elect_height);
@@ -270,8 +270,9 @@ void BlsManager::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
-    if (latest_timeblock_info_ != nullptr) {
-        if (latest_time_block_height <= latest_timeblock_info_->latest_time_block_height) {
+    auto latest_timeblock_info_ptr = latest_timeblock_info_.load(std::memory_order_acquire);
+    if (latest_timeblock_info_ptr != nullptr) {
+        if (latest_time_block_height <= latest_timeblock_info_ptr->latest_time_block_height) {
             return;
         }
     }
@@ -280,7 +281,7 @@ void BlsManager::OnTimeBlock(
     timeblock_info->lastest_time_block_tm = lastest_time_block_tm;
     timeblock_info->latest_time_block_height = latest_time_block_height;
     timeblock_info->vss_random = vss_random;
-    latest_timeblock_info_ = timeblock_info;
+    latest_timeblock_info_.store(timeblock_info, std::memory_order_release);;
 }
 
 void BlsManager::SetUsedElectionBlock(

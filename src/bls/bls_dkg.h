@@ -53,7 +53,7 @@ public:
         uint64_t prev_elect_height,
         uint64_t elect_height,
         common::MembersPtr& members,
-        std::atomic<std::shared_ptr<TimeBlockItem>>& latest_timeblock_info);
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
     bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
     void Destroy();
