@@ -74,10 +74,11 @@ bool TimeBlockManager::HasTimeblockTx(
         return false;
     }
     
-    if (tmblock_tx_ptr_ != nullptr) {
+    auto tmblock_tx_ptr = tmblock_tx_ptr_.load(std::memory_order_acquire);
+    if (tmblock_tx_ptr != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        // if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-        //     SHARDORA_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+        // if (tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+        //     SHARDORA_DEBUG("tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
         //     return nullptr;
         // }
 
@@ -85,7 +86,7 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (tx_valid_func(*tmblock_tx_ptr_->address_info, *tmblock_tx_ptr_->tx_info) != 0) {
+        if (tx_valid_func(*tmblock_tx_ptr->address_info, *tmblock_tx_ptr->tx_info) != 0) {
             return false;
         }
         
@@ -99,10 +100,11 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         bool leader, 
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func) {
-    if (tmblock_tx_ptr_ != nullptr) {
+    auto tmblock_tx_ptr = tmblock_tx_ptr_.load(std::memory_order_acquire);
+    if (tmblock_tx_ptr != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        if (leader && tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-            // SHARDORA_DEBUG("tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+        if (leader && tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+            // SHARDORA_DEBUG("tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
             return nullptr;
         }
 
@@ -112,7 +114,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         }
 
 
-        auto& tx_info = tmblock_tx_ptr_->tx_info;
+        auto& tx_info = tmblock_tx_ptr->tx_info;
         uint64_t now_tm_sec = now_tm_us / 1000000lu;
         uint64_t new_time_block_tm = latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds;
         while (new_time_block_tm < now_tm_sec && now_tm_sec - new_time_block_tm >= 30lu) {
@@ -130,14 +132,14 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
             return nullptr;
         }
 
-        tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
+        tmblock_tx_ptr->prev_consensus_tm_us = now_tm_us;
         SHARDORA_DEBUG("success create timeblock tx tm: %lu, vss: %lu, leader: %d, unique hash: %s, to: %s",
             timer_block.timestamp(), timer_block.vss_random(), leader,
             common::Encode::HexEncode(tx_info->key()).c_str(),
             common::Encode::HexEncode(tx_info->to()).c_str());
     }
 
-    return tmblock_tx_ptr_.load(std::memory_order_acquire);
+    return tmblock_tx_ptr;
 }
 
 void TimeBlockManager::OnTimeBlock(
