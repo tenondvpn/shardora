@@ -423,10 +423,10 @@ void BlockManager::AddNewBlock(
 
     if (block_item->has_elect_block()) {
         HandleElectTx(*view_block_item);
-        CallNewElectBlock(block_item->elect_block().sharding_id());
+        CallNewElectBlock(block_item->elect_block().shard_network_id());
         if (statistic_mgr_) {
             statistic_mgr_->CallNewElectBlock(
-                block_item->elect_block().sharding_id(),
+                block_item->elect_block().shard_network_id(),
                 block_item->height());
         }
     }
