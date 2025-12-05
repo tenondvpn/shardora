@@ -93,24 +93,20 @@ int JoinElectTxItem::HandleTx(
         }
     }
 
-    if (elect_mgr_->IsIdExistsInAnyShard(from)) {
-        block_tx.set_status(kConsensusElectNodeExists);
-    } else {
-        uint64_t stoke = 0;
-        prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stoke);
-        auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(from_agg_bls_pk_);
-        if (agg_bls_pk_proto) {
-            *join_info.mutable_bls_pk() = *agg_bls_pk_proto;
-        }
-
-        auto proof_proto = bls::BlsPopProof2Proto(from_agg_bls_pk_proof_);
-        if (proof_proto) {
-            *join_info.mutable_bls_proof() = *proof_proto;
-        }
-
-        join_info.set_stoke(stoke);
-        join_info.set_public_key(from_pk_);
+    uint64_t stoke = 0;
+    prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stoke);
+    auto agg_bls_pk_proto = bls::BlsPublicKey2Proto(from_agg_bls_pk_);
+    if (agg_bls_pk_proto) {
+        *join_info.mutable_bls_pk() = *agg_bls_pk_proto;
     }
+
+    auto proof_proto = bls::BlsPopProof2Proto(from_agg_bls_pk_proof_);
+    if (proof_proto) {
+        *join_info.mutable_bls_proof() = *proof_proto;
+    }
+
+    join_info.set_stoke(stoke);
+    join_info.set_public_key(from_pk_);
 
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
