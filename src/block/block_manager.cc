@@ -1154,7 +1154,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
             if (now_tx_tm > prev_get_tx_tm1 + 10000) {
                 SHARDORA_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
-                    prev_timeblock_tm_sec_, 
+                    static_cast<uint64_t>(prev_timeblock_tm_sec_), 
                     (common::kRotationPeriod / 1000000lu), 
                     (now_tm / 1000000lu));
                 prev_get_tx_tm1 = now_tx_tm;
@@ -1238,7 +1238,7 @@ void BlockManager::OnTimeBlock(
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
     SHARDORA_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
-        static_cast<uint64_t>(latest_timeblock_height_,) latest_time_block_height, lastest_time_block_tm);
+        static_cast<uint64_t>(latest_timeblock_height_), latest_time_block_height, lastest_time_block_tm);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
     }
