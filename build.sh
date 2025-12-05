@@ -1,9 +1,14 @@
 # configure
-TARGET=Release
+TARGET=Debug
 
-if test "$2" = "Debug"
+if test "$2" = "D"
 then
 	TARGET=Debug
+fi
+
+if test "$2" = "R"
+then
+        TARGET=Release
 fi
 
 mkdir -p cbuild_$TARGET

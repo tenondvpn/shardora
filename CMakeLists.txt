@@ -21,7 +21,7 @@ endif()
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 #set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -132,7 +132,7 @@ if(MSVC)
 else()
     add_compile_options(-Wall -pthread)
     add_compile_options(-Wno-unused-variable)
-    add_compile_options(-std=c++17) # cmake 2.8(default in centos 7) can't recognize 'CMAKE_CXX_STANDARD'
+    add_compile_options(-std=c++20) # cmake 2.8(default in centos 7) can't recognize 'CMAKE_CXX_STANDARD'
     set(LINK_DL dl)
 endif()
 
