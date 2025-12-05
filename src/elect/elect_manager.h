@@ -43,6 +43,7 @@ public:
         NewElectBlockCallback new_elect_cb);
     ~ElectManager();
     int Init();
+    int Join(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
     common::MembersPtr OnNewElectBlock(
         uint64_t height,
@@ -74,7 +75,6 @@ private:
     void ElectedToConsensusShard(
         protobuf::ElectBlock& elect_block,
         bool elected);
-    int Join(uint32_t network_id);
 
     static const uint64_t kWaitingHeartbeatPeriod = 20000000llu;
 
