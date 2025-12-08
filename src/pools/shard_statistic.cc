@@ -53,6 +53,11 @@ int ShardStatistic::Init() {
             StatisticInfoItem statistic_item;
             statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
             pool_map[i] = statistic_item;
+            SHARDORA_INFO("success set latest statisticed height "
+                "pool: %d, %lu, statistic_min_height: %lu", 
+                i,
+                latest_statisticed_height_, 
+                statistic_item.statistic_min_height);
         }
     } else {
         SHARDORA_INFO("failed load latest pool statistic tag: %d", common::GlobalInfo::Instance()->network_id());
@@ -214,7 +219,7 @@ void ShardStatistic::HandleStatistic(
         exist_iter->second[pool_idx].statistic_min_height = block.height() + 1;
         SHARDORA_INFO(
             "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
-            "pool: %u, height: %lu, statistic_max_height: %lu, nonce: %lu", 
+            "pool: %u, height: %lu, statistic_min_height: %lu, nonce: %lu", 
             block.pool_statistic_height(), 
             pool_idx, 
             block.height(), 
