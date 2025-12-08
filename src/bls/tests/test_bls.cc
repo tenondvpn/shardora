@@ -946,8 +946,22 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
-        dkg[i].security_ = tmp_security_ptr;
+        std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        bls_manager->security_ = tmp_security_ptr;
+        LocalCreateContribution(tmp_security_ptr);
+        dkg[i].Init(
+            bls_manager,
+            tmp_security_ptr,
+            t,
+            n,
+            libff::alt_bn128_Fr::zero(),
+            libff::alt_bn128_G2::zero(),
+            libff::alt_bn128_G2::zero(),
+            db_ptr,
+            nullptr);
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
+        dkg[i].security_ = tmp_security_ptr;
         dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution(n, t);
