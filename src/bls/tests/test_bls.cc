@@ -1064,6 +1064,10 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
             continue;
         }
 
+        std::cout << "i: " << i << ", " 
+            << (dkg[i].common_public_key_ == dkg[0].common_public_key_) 
+            << ", " << (bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash) == kBlsSuccess) 
+            << std::endl;
         EXPECT_EQ(dkg[i].common_public_key_, dkg[0].common_public_key_);
         BlsSign bls_sign;
         std::string verify_hash;
