@@ -397,6 +397,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->has_elect_block()) {
+        SHARDORA_DEBUG("now call new elect block: %s", ProtobufToJson(*block_item).c_str());
         HandleElectTx(*view_block_item);
         CallNewElectBlock(block_item->elect_block().shard_network_id());
         if (statistic_mgr_) {
