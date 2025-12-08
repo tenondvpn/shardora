@@ -7,8 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "bzlib.h"
-
 #include "common/random.h"
 #include "common/hash.h"
 #include "db/db.h"
