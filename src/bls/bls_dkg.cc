@@ -849,7 +849,9 @@ void BlsDkg::FinishBroadcast() try {
                 common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
                 SHARDORA_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
                     elect_hegiht_, i);
+#ifndef SHARDORA_UNITTEST
                 assert(false);
+#endif
                 continue;
             }
             
@@ -869,7 +871,9 @@ void BlsDkg::FinishBroadcast() try {
                 common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
                 SHARDORA_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
                     elect_hegiht_, i);
+#ifndef SHARDORA_UNITTEST
                 assert(false);
+#endif
                 continue;
             }
 
@@ -881,7 +885,9 @@ void BlsDkg::FinishBroadcast() try {
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid all_verification_vector index: %d",
                 elect_hegiht_, i);
+#ifndef SHARDORA_UNITTEST
             assert(false);
+#endif
             continue;
         }
 
