@@ -634,6 +634,13 @@ void BlockManager::LoadLatestBlocks() {
                     new_block_callback_(elect_block_ptr);
                 }
 
+                CallNewElectBlock(block->elect_block().shard_network_id());
+                if (statistic_mgr_) {
+                    statistic_mgr_->CallNewElectBlock(
+                        block->elect_block().shard_network_id(),
+                        block->height());
+                }
+
                 AddMiningToken(block, elect_block);
                 SHARDORA_DEBUG("get block with height success: %u, %u, %lu",
                     network::kRootCongressNetworkId,
