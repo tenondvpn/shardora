@@ -657,11 +657,15 @@ public:
         if (!st.ok()) {
             SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
+
+        SHARDORA_DEBUG("%s add bls verify g2: %s", 
+            common::Encode::HexEncode(id).c_str(), ProtobufToJson(verfy_req).c_str());
     }
 
     bool GetBlsVerifyG2(
             const std::string& id,
             bls::protobuf::VerifyVecBrdReq* verfy_req) {
+        SHARDORA_DEBUG("%s get bls verify g2", common::Encode::HexEncode(id).c_str());
         std::string key = kBlsVerifyPrefex + id;
         std::string val;
         auto st = db_->Get(key, &val);
