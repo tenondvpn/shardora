@@ -539,13 +539,11 @@ TEST_F(TestBls, FileSigns) {
     std::string tmp_data(data, len);
     std::string proto_data = common::Encode::HexDecode(tmp_data);
     bls::protobuf::VerifyVecBrdReq proto_signs;
-    std::cout << "proto_data:" << proto_data << std::endl;
     EXPECT_TRUE(proto_signs.ParseFromString(proto_data));
 
     static const uint32_t n = proto_signs.verify_vec_size();
     static const uint32_t t = common::GetSignerCount(n);
 
-    std::cout << "success proto_data:" << ProtobufToJson(proto_signs) << std::endl;
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec(t);
     for (int32_t i = 0; i < proto_signs.verify_vec_size() - 1; ++i) {
@@ -571,12 +569,9 @@ TEST_F(TestBls, FileSigns) {
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     auto common_pk = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 
-    std::cout << "0" << std::endl;
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     auto time5 = common::TimeUtils::TimestampUs();
-    std::cout << "1" << std::endl;
     auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
-    std::cout << "2" << std::endl;
     auto time61 = common::TimeUtils::TimestampUs();
     std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
     time5 = time61;
