@@ -557,7 +557,6 @@ TEST_F(TestBls, FileSigns) {
         }
     }
 
-    std::cout << "0" << std::endl;
     auto& item = proto_signs.verify_vec(proto_signs.verify_vec_size() - 1);
     auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
     auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -568,13 +567,14 @@ TEST_F(TestBls, FileSigns) {
     auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-    std::cout << "1" << std::endl;
     auto common_pk = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-    std::cout << "2" << std::endl;
 
+    std::cout << "0" << std::endl;
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     auto time5 = common::TimeUtils::TimestampUs();
+    std::cout << "1" << std::endl;
     auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+    std::cout << "2" << std::endl;
     auto time61 = common::TimeUtils::TimestampUs();
     std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
     time5 = time61;
