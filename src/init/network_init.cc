@@ -42,6 +42,7 @@
 #include "timeblock/time_block_manager.h"
 #include "timeblock/time_block_utils.h"
 #include "transport/multi_thread.h"
+#include "transport/processor.h"
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/execution.h"
