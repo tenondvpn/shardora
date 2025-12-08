@@ -911,12 +911,12 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     static uint32_t t = common::GetSignerCount(n);
 
     BlsDkg dkg[n];
-    for (uint32_t i = 0; i < n; i++) {
-        dkg[i].Init(
-            bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr,
-            nullptr);
-    }
+    // for (uint32_t i = 0; i < n; i++) {
+    //     dkg[i].Init(
+    //         bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
+    //         libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr,
+    //         nullptr);
+    // }
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
     for (uint32_t i = 0; i < n; ++i) {
