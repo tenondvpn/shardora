@@ -532,8 +532,6 @@ TEST_F(TestBls, LagrangeCoeffs) {
 }
 
 TEST_F(TestBls, FileSigns) {
-    static const uint32_t n = 1024;
-    static const uint32_t t = common::GetSignerCount(n);
     FILE* fd_signs = fopen("signs", "r");
     char* data = new char[1024 * 1024 * 10];
     size_t len = fread(data, 1, 10 * 1024 * 1024, fd_signs);
@@ -543,6 +541,10 @@ TEST_F(TestBls, FileSigns) {
     bls::protobuf::VerifyVecBrdReq proto_signs;
     std::cout << "proto_data:" << proto_data << std::endl;
     EXPECT_TRUE(proto_signs.ParseFromString(proto_data));
+
+    static const uint32_t n = proto_signs.verify_vec_size();
+    static const uint32_t t = common::GetSignerCount(n);
+
     std::cout << "success proto_data:" << ProtobufToJson(proto_signs) << std::endl;
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec(t);
