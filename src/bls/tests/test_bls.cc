@@ -547,6 +547,7 @@ TEST_F(TestBls, FileSigns) {
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec(t);
     for (int32_t i = 0; i < proto_signs.verify_vec_size() - 1; ++i) {
+        std::cout << i << std::endl;
         auto X = libff::alt_bn128_Fq(common::Encode::HexEncode(proto_signs.verify_vec(i).x_c0()).c_str());
         auto Y = libff::alt_bn128_Fq(common::Encode::HexEncode(proto_signs.verify_vec(i).x_c1()).c_str());
         auto Z = libff::alt_bn128_Fq(common::Encode::HexEncode(proto_signs.verify_vec(i).y_c0()).c_str());
