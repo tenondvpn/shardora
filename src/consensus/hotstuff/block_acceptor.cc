@@ -240,8 +240,8 @@ Status BlockAcceptor::Accept(
     }
 
     
-    for (int32_t i = 0; i < view_block.block_info().join_infos_size(); i++) {
-        auto& join_info = view_block.block_info().join_infos(i);
+    for (int32_t i = 0; i < view_block.block_info().joins_size(); i++) {
+        auto& join_info = view_block.block_info().joins(i);
         auto addr = security_ptr_->GetAddress(join_info.pubkey());
         prefix_db_->SaveNodeVerificationVector(
             addr,
