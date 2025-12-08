@@ -943,7 +943,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
-        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         LocalCreateContribution(tmp_security_ptr);
