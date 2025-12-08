@@ -946,9 +946,6 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
-        std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
-        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
-        bls_manager->security_ = tmp_security_ptr;
         LocalCreateContribution(tmp_security_ptr);
         dkg[i].Init(
             bls_manager,
