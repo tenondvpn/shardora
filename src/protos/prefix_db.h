@@ -665,19 +665,21 @@ public:
     bool GetBlsVerifyG2(
             const std::string& id,
             bls::protobuf::VerifyVecBrdReq* verfy_req) {
-        SHARDORA_DEBUG("%s get bls verify g2", common::Encode::HexEncode(id).c_str());
         std::string key = kBlsVerifyPrefex + id;
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
+            SHARDORA_DEBUG("%s get bls verify g2 failed", common::Encode::HexEncode(id).c_str());
             return false;
         }
 
         if (!verfy_req->ParseFromString(val)) {
             assert(false);
+            SHARDORA_DEBUG("%s get bls verify g2 failed", common::Encode::HexEncode(id).c_str());
             return false;
         }
 
+        SHARDORA_DEBUG("%s get bls verify g2 success", common::Encode::HexEncode(id).c_str());
         return true;
     }
 
