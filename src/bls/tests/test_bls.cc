@@ -907,8 +907,8 @@ TEST_F(TestBls, AllSuccess) {
 
 TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     // t = 7, n = 10
-    static uint32_t t = 7;
     static uint32_t n = 10;
+    static uint32_t t = common::GetSignerCount(n);
 
     BlsDkg dkg[n];
     for (uint32_t i = 0; i < n; i++) {
