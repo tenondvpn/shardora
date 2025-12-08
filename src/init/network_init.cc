@@ -172,7 +172,7 @@ int NetworkInit::Init(int argc, char** argv) {
     network::Route::Instance()->RegisterMessage(
         common::kInitMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
-    network::Route::Instance()->RegisterMessage(
+    transport::Processor::Instance()->RegisterMessage(
         common::kPoolTimerMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
     account_mgr_ = std::make_shared<block::AccountManager>();
