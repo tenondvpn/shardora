@@ -950,6 +950,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
         dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
+        dkg[i].CreateContribution(n, valid_t);
         dkg[i].BroadcastVerfify();
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
     }
