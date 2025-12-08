@@ -634,11 +634,11 @@ void BlockManager::LoadLatestBlocks() {
                     new_block_callback_(elect_block_ptr);
                 }
 
-                CallNewElectBlock(block->block_info().elect_block().shard_network_id());
+                CallNewElectBlock(block.block_info().elect_block().shard_network_id());
                 if (statistic_mgr_) {
                     statistic_mgr_->CallNewElectBlock(
-                        block->block_info().elect_block().shard_network_id(),
-                        block->block_info().height());
+                        block.block_info().elect_block().shard_network_id(),
+                        block.block_info().height());
                 }
 
                 AddMiningToken(block, elect_block);
