@@ -101,7 +101,6 @@ private:
     bool HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
     void HandleAllNewBlock();
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage(const transport::MessagePtr& message);
     pools::TxItemPtr HandleToTxsMessage(
         const pools::protobuf::ShardToTxItem& msg_ptr);
     void HandleAllConsensusBlocks();

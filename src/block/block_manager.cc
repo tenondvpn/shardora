@@ -72,9 +72,7 @@ int BlockManager::Init(
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
     consensus_block_queues_ = new common::ThreadSafeQueue<std::shared_ptr<hotstuff::ViewBlockInfo>>[common::kMaxThreadCount];
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+
     bool genesis = false;
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
     leader_prev_get_to_tx_tm_ = common::TimeUtils::TimestampMs();
@@ -85,29 +83,6 @@ int BlockManager::Init(
 
 int BlockManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
-}
-
-void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // account_mgr_->GetAccountInfo("");
-    // auto now_tm_ms = common::TimeUtils::TimestampMs();
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (prev_timer_ms_ + 100lu > now_tm_ms) {
-    //     return;
-    // }
-
-    // prev_timer_ms_ = now_tm_ms;
-    // auto now_tm = common::TimeUtils::TimestampUs();
-    // SHARDORA_DEBUG("now check CreateStatisticTx %lu, %lu",
-    //     prev_create_statistic_tx_tm_us_, now_tm);
-    // if (prev_create_statistic_tx_tm_us_ < now_tm) {
-    //     prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
-    //     CreateStatisticTx();
-    // }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    // HandleAllConsensusBlocks();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void BlockManager::CallNewElectBlock(uint32_t sharding_id) {
