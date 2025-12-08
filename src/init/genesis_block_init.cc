@@ -1247,8 +1247,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             auto statistic_info = pool_st_info.add_pool_statisitcs();
             statistic_info->set_pool_index(i);
-            statistic_info->set_min_height(pool_with_heights[i]);
-            statistic_info->set_max_height(pool_with_heights[i]);
+            statistic_info->set_min_height(pool_with_heights[i] - 1);
+            statistic_info->set_max_height(pool_with_heights[i] - 1);
         }
 
         auto* heights = tenon_block->mutable_normal_to()->mutable_to_heights();
@@ -1807,8 +1807,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             auto statistic_info = pool_st_info.add_pool_statisitcs();
             statistic_info->set_pool_index(i);
-            statistic_info->set_min_height(pool_with_heights[i]);
-            statistic_info->set_max_height(pool_with_heights[i]);
+            statistic_info->set_min_height(pool_with_heights[i] - 1);
+            statistic_info->set_max_height(pool_with_heights[i] - 1);
         }
 
         auto* heights = tenon_block->mutable_normal_to()->mutable_to_heights();
