@@ -1117,7 +1117,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
     
-#ifdef SHARDORA_UNITEST
+#ifdef SHARDORA_UNITTEST
     g2_vec_.clear();
     g2_vec_.push_back(polynomial[0] * libff::alt_bn128_G2::one());
 #endif // SHARDORA_UNITTEST
