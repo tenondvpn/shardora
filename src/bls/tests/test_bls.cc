@@ -802,6 +802,7 @@ TEST_F(TestBls, AllSuccess) {
     auto etime = common::TimeUtils::TimestampMs();
     std::cout << "all over use time: " << (etime - btime) << std::endl;
     auto time0 = common::TimeUtils::TimestampUs();
+    // broadcast verify
     std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
