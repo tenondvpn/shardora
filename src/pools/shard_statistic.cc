@@ -68,8 +68,7 @@ int ShardStatistic::Init() {
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         pools_consensus_blocks_[i] = std::make_shared<PoolBlocksInfo>();
         assert(statistic_info.pool_statisitcs(i).max_height() > 0);
-        pools_consensus_blocks_[i]->latest_consensus_height_ =
-            statistic_info.pool_statisitcs(i).max_height() - 1llu;
+        pools_consensus_blocks_[i]->latest_consensus_height_ = statistic_info.pool_statisitcs(i).max_height();
         for (uint64_t height = statistic_info.pool_statisitcs(i).max_height();; ++height) {
             auto view_block_ptr = std::make_shared<view_block::protobuf::ViewBlockItem>();
             auto& view_block = *view_block_ptr;
