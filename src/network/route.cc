@@ -242,6 +242,7 @@ void Route::RegisterMessage(uint32_t type, transport::MessageProcessor proc) {
     transport::Processor::Instance()->RegisterProcessor(
             type,
             std::bind(&Route::HandleMessage, this, std::placeholders::_1));
+    ZJC_INFO("success register message type: %d", type);
 }
 
 void Route::UnRegisterMessage(uint32_t type) {
