@@ -238,7 +238,6 @@ Status BlockAcceptor::Accept(
                 common::Encode::HexEncode(kv_info.key()).c_str());
         }
     }
-
     
     for (int32_t i = 0; i < view_block.block_info().joins_size(); i++) {
         auto& join_info = view_block.block_info().joins(i);

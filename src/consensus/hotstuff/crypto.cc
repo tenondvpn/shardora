@@ -51,7 +51,7 @@ Status Crypto::PartialSign(
 #ifndef NDEBUG
     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
             elect_item->LocalMember()->bls_publick_key.X.c0);
-    SHARDORA_DEBUG("bls parial sign t: %u, n: %u, member index: %u"
+    SHARDORA_DEBUG("bls parial sign t: %u, n: %u, member index: %u, "
         "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
         elect_item->t(),
         elect_item->n(),
@@ -210,7 +210,6 @@ Status Crypto::VerifyThresSign(
         return Status::kBlsVerifyFailed;
     }    
     std::string verify_hash_a;
-    std::string verify_hash_b;
     Status s = GetVerifyHashA(sharding_id, elect_height, msg_hash, &verify_hash_a);
     if (s != Status::kSuccess) {
         SHARDORA_DEBUG("GetVerifyHashA faile net: %u, pool: %u, height: %lu, hash: %s",
@@ -220,6 +219,7 @@ Status Crypto::VerifyThresSign(
         return s;
     }
 
+    std::string verify_hash_b;
     s = GetVerifyHashB(sharding_id, elect_height, reconstructed_sign, &verify_hash_b);
     if (s != Status::kSuccess) {
         SHARDORA_DEBUG("GetVerifyHashB failed!");

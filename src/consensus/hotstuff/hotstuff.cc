@@ -1205,9 +1205,11 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     qc_item.set_elect_height(elect_height);
     qc_item.set_leader_idx(vote_msg.leader_idx());
     auto qc_hash = GetQCMsgHash(qc_item);
-    SHARDORA_DEBUG("success set view block hash: %s, qc_hash: %s, %u_%u_%lu",
+    SHARDORA_DEBUG("success set view block hash: %s, qc_hash: %s, sign x: %s, replica: %d, %u_%u_%lu",
         common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
         common::Encode::HexEncode(qc_hash).c_str(),
+        common::Encode::HexEncode(vote_msg.sign_x()).c_str(),
+        replica_idx,
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view());
