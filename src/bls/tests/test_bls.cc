@@ -541,7 +541,9 @@ TEST_F(TestBls, FileSigns) {
     std::string tmp_data(data, len);
     std::string proto_data = common::Encode::HexDecode(tmp_data);
     bls::protobuf::VerifyVecBrdReq proto_signs;
-    ASSERT_TRUE(proto_signs.ParseFromString(proto_data));
+    std::cout << "proto_data:" << proto_data << std::endl;
+    EXPECT_TRUE(proto_signs.ParseFromString(proto_data));
+    std::cout << "success proto_data:" << ProtobufToJson(proto_signs) << std::endl;
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec(t);
     for (int32_t i = 0; i < proto_signs.verify_vec_size() - 1; ++i) {
