@@ -1060,7 +1060,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         all_signs,
         lagrange_coeffs);
     for (uint32_t i = 0; i < n; ++i) {
-        if (i == kInvalidNodeIndex || i == kInvalidSwapNodeIndex2) {
+        if (i == kInvalidNodeIndex || i == kInvalidSwapNodeIndex || i == kInvalidSwapNodeIndex2) {
             continue;
         }
 
