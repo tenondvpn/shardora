@@ -1119,6 +1119,7 @@ void NetworkInit::HandleTimeBlock(
         hotstuff_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         bls_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         tm_block_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
+        vss_mgr_->OnTimeBlock(block.timer_block().timestamp(), block.height(), vss_random);
         SHARDORA_INFO("new time block called height: %lu, tm: %lu", block.height(), vss_random);
     }
 }
