@@ -596,7 +596,7 @@ TEST_F(TestBls, FileSigns) {
 
 TEST_F(TestBls, AllSuccess) {
     system("sudo rm -rf ./db_* prikey*");
-    static const uint32_t n = 100;
+    static const uint32_t n = 10;
     // static const uint32_t n = 10;
     static const uint32_t t = common::GetSignerCount(n);
     std::vector<std::string> pri_vec;
@@ -877,6 +877,7 @@ TEST_F(TestBls, AllSuccess) {
     fwrite(signs_val.c_str(), 1, signs_val.size(), fd_signs);
     fclose(fd_signs);
 
+    std::cout << "proto_signs: " << ProtobufToJson(proto_signs) << std::endl;
     for (int32_t i = 0; i < (n - t - 1); ++i) {
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<size_t> idx_vec(t);
