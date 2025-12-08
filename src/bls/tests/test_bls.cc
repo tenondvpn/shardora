@@ -248,6 +248,22 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
+
+    common::MembersPtr members = std::make_shared<common::Members>();
+    for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
+            std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        std::string pubkey_str = tmp_security_ptr->GetPublicKey();
+        std::string id = tmp_security_ptr->GetAddress();
+        auto member = std::make_shared<common::BftMember>(
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
+        member->public_ip = common::IpToUint32("127.0.0.1");
+        member->public_port = 123;
+        members->push_back(member);
+    }
+
     for (uint32_t i = 0; i < n; i++) {
         std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
