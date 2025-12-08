@@ -538,8 +538,10 @@ TEST_F(TestBls, FileSigns) {
     char* data = new char[1024 * 1024 * 10];
     size_t len = fread(data, 1, 10 * 1024 * 1024, fd_signs);
     fclose(fd_signs);
+    std::string tmp_data(data, len);
+    std::string proto_data = common::Encode::HexDecode(tmp_data);
     bls::protobuf::VerifyVecBrdReq proto_signs;
-    ASSERT_TRUE(proto_signs.ParseFromArray(data, len));
+    ASSERT_TRUE(proto_signs.ParseFromString(proto_data));
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec(t);
     for (int32_t i = 0; i < proto_signs.verify_vec_size() - 1; ++i) {
