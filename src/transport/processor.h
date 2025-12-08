@@ -15,7 +15,7 @@ public:
     inline void RegisterProcessor(uint32_t type, MessageProcessor processor) {
         assert(type < common::kMaxMessageTypeCount);
         message_processor_[type] = processor;
-        ZJC_INFO("success register message type: %d", type);
+        SHARDORA_INFO("success register message type: %d", type);
     }
 
     inline void HandleMessage(MessagePtr& msg_ptr) {
