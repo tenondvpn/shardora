@@ -252,7 +252,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     common::MembersPtr members = std::make_shared<common::Members>();
     for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
             std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
-        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        tmp_security_ptr->SetPrivateKey(pri_vec[idx]);
         std::string pubkey_str = tmp_security_ptr->GetPublicKey();
         std::string id = tmp_security_ptr->GetAddress();
         auto member = std::make_shared<common::BftMember>(
