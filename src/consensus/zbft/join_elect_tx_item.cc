@@ -107,7 +107,6 @@ int JoinElectTxItem::HandleTx(
 
     join_info.set_stoke(stoke);
     join_info.set_public_key(from_pk_);
-
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
     SHARDORA_DEBUG("success add addr: %s, value: %s", 
@@ -122,22 +121,6 @@ int JoinElectTxItem::HandleTx(
         view_block.qc().pool_index(),
         block.height(),
         join_info.shard_id());
-
-    if (block_tx.status() == kConsensusSuccess) {
-        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
-        std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
-        if (iter == zjc_host.cross_to_map_.end()) {
-            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
-            to_item_ptr->set_des(block_tx.from());
-            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
-        } else {
-            to_item_ptr = iter->second;
-        }
-
-        // *to_item_ptr->mutable_join_info() = join_info;
-    }
-
-    assert(false);
     return kConsensusSuccess;
 }
 
