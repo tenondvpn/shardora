@@ -1028,9 +1028,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
         dkg[i].FinishBroadcast();
-        // if (i != kInvalidNodeIndex) {
-        //     ASSERT_TRUE(dkg[i].finished_);
-        // }
+        if (i != kInvalidNodeIndex) {
+            ASSERT_TRUE(dkg[i].finished_);
+        }
     }
 
     std::vector<libff::alt_bn128_G1> all_signs;
