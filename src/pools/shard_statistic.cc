@@ -92,21 +92,22 @@ void ShardStatistic::OnNewBlock(
 #ifdef TEST_NO_CROSS
     return;
 #endif
-    view_block_queue_.push(view_block_ptr);
-    thread_wait_conn_.notify_one();
+    ThreadToStatistic(view_block_ptr);
+    // view_block_queue_.push(view_block_ptr);
+    // thread_wait_conn_.notify_one();
 }
 
 void ShardStatistic::ThreadCallback() {
-    common::GlobalInfo::Instance()->get_thread_index();
-    while (!destroy_) {
-        std::shared_ptr<view_block::protobuf::ViewBlockItem> block_ptr;
-        while (view_block_queue_.pop(&block_ptr)) {
-            ThreadToStatistic(block_ptr);
-        }
+    // common::GlobalInfo::Instance()->get_thread_index();
+    // while (!destroy_) {
+    //     std::shared_ptr<view_block::protobuf::ViewBlockItem> block_ptr;
+    //     while (view_block_queue_.pop(&block_ptr)) {
+    //         ThreadToStatistic(block_ptr);
+    //     }
 
-        std::unique_lock<std::mutex> lock(thread_wait_mutex_);
-        thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
-    }
+    //     std::unique_lock<std::mutex> lock(thread_wait_mutex_);
+    //     thread_wait_conn_.wait_for(lock, std::chrono::milliseconds(1000));
+    // }
 }
 
 void ShardStatistic::ThreadToStatistic(

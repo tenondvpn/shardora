@@ -107,13 +107,6 @@ void BlockManager::HandleAllConsensusBlocks() {
     common::GlobalInfo::Instance()->get_thread_index();
     while (!common::GlobalInfo::Instance()->global_stoped()) {
         auto now_tm = common::TimeUtils::TimestampUs();
-        // SHARDORA_DEBUG("now check CreateStatisticTx %lu, %lu",
-        //     prev_create_statistic_tx_tm_us_, now_tm);
-        if (prev_create_statistic_tx_tm_us_ < now_tm) {
-            prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
-            CreateStatisticTx();
-        }
-
         bool no_sleep = true;
         while (no_sleep) {
             no_sleep = false;
@@ -171,6 +164,11 @@ void BlockManager::HandleAllConsensusBlocks() {
             //     db_batch.ApproximateSize());
         }
         
+        if (prev_create_statistic_tx_tm_us_ < now_tm) {
+            prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
+            CreateStatisticTx();
+        }
+
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
     }

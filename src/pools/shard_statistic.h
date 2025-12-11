@@ -35,13 +35,13 @@ public:
             std::shared_ptr<contract::ContractManager>& tmp_contract_mgr)
             : elect_mgr_(elect_mgr), secptr_(sec_ptr), pools_mgr_(pools_mgr), contract_mgr_(tmp_contract_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-        handle_block_thread_ = std::make_shared<std::thread>(
-            std::bind(&ShardStatistic::ThreadCallback, this));
+        // handle_block_thread_ = std::make_shared<std::thread>(
+        //     std::bind(&ShardStatistic::ThreadCallback, this));
     }
 
     ~ShardStatistic() {
         destroy_ = true;
-        handle_block_thread_->join();
+        // handle_block_thread_->join();
     }
     int Init();
     void CallNewElectBlock(
