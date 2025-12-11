@@ -203,63 +203,75 @@ public:
         prev_elect_items_[sharding_id].store(elect_items_ptr, std::memory_order_release);
         elect_items_[sharding_id].store(elect_item, std::memory_order_release);
         RefreshMemberAddrs(sharding_id);
-// #ifndef NDEBUG
-//         if (sharding_id == common::GlobalInfo::Instance()->network_id())
-//             for (auto iter = members->begin(); iter != members->end(); ++iter) {
-//                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
-//             }
-// #endif
-        SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu",
-            sharding_id, elect_item->ElectHeight());
+    #ifndef NDEBUG
+        auto val = libBLS::ThresholdUtils::fieldElementToString(
+            elect_item->common_pk().X.c0);
+        SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %s",
+            sharding_id, elect_item->ElectHeight(), val.c_str());
+    #endif
     }
 
     std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t elect_height) const {
-        auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load(std::memory_order_release);
-        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
-        if (elect_items_ptr &&
-                elect_height == elect_items_ptr->ElectHeight()) {
-            return elect_items_ptr;
-        } else if (prev_elect_items_ptr &&
-                elect_height == prev_elect_items_ptr->ElectHeight()) {
-            return prev_elect_items_ptr;
-        }
-        
-        // 内存中没有从 ElectManager 获取
-        libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
-        libff::alt_bn128_Fr sec_key;
-        if (!elect_mgr_) {
-            return nullptr;
-        }
-        
-        auto members = elect_mgr_->GetNetworkMembersWithHeight(
-            elect_height,
-            sharding_id,
-            &common_pk,
-            &sec_key);
-        if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
-            SHARDORA_ERROR("failed get elect members or common pk: %u, %lu, %d",
+        std::shared_ptr<ElectItem> res_ptr = nullptr;
+        do {
+            auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load(std::memory_order_release);
+            auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+            if (elect_items_ptr &&
+                    elect_height == elect_items_ptr->ElectHeight()) {
+                res_ptr = elect_items_ptr;
+                break;
+            } else if (prev_elect_items_ptr &&
+                    elect_height == prev_elect_items_ptr->ElectHeight()) {
+                res_ptr = prev_elect_items_ptr;
+                break;
+            }
+            
+            // 内存中没有从 ElectManager 获取
+            libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
+            libff::alt_bn128_Fr sec_key;
+            if (!elect_mgr_) {
+                break;
+            }
+            
+            auto members = elect_mgr_->GetNetworkMembersWithHeight(
+                elect_height,
+                sharding_id,
+                &common_pk,
+                &sec_key);
+            if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
+                SHARDORA_ERROR("failed get elect members or common pk: %u, %lu, %d",
+                    sharding_id,
+                    elect_height,
+                    (common_pk == libff::alt_bn128_G2::zero()));
+                // assert(false);      
+                break;
+            }
+            
+            SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %d",
+                sharding_id, elect_height, (common_pk != libff::alt_bn128_G2::zero()));
+    // #ifndef NDEBUG
+    //         if (sharding_id == common::GlobalInfo::Instance()->network_id())
+    //             for (auto iter = members->begin(); iter != members->end(); ++iter) {
+    //                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
+    //             }
+    // #endif
+            res_ptr = std::make_shared<ElectItem>(
+                security_ptr_,
                 sharding_id,
                 elect_height,
-                (common_pk == libff::alt_bn128_G2::zero()));
-            // assert(false);      
-            return nullptr;
+                members,
+                common_pk,
+                sec_key);
+        } while (0);
+#ifndef NDEBUG
+        if (res_ptr) {
+            auto val = libBLS::ThresholdUtils::fieldElementToString(
+                res_ptr->common_pk().X.c0);
+            SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %s",
+                sharding_id, res_ptr->ElectHeight(), val.c_str());
         }
-        
-        SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %d",
-            sharding_id, elect_height, (common_pk != libff::alt_bn128_G2::zero()));
-// #ifndef NDEBUG
-//         if (sharding_id == common::GlobalInfo::Instance()->network_id())
-//             for (auto iter = members->begin(); iter != members->end(); ++iter) {
-//                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
-//             }
-// #endif
-        return std::make_shared<ElectItem>(
-            security_ptr_,
-            sharding_id,
-            elect_height,
-            members,
-            common_pk,
-            sec_key);
+#endif
+        return res_ptr;
     }
 
     inline std::shared_ptr<ElectItem> GetElectItemWithShardingId(uint32_t sharding_id) const {
