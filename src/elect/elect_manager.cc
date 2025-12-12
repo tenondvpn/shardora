@@ -238,16 +238,17 @@ bool ElectManager::ProcessPrevElectMembers(
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
+        auto val = libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0);
         ELECT_WARN("DDDDDDDDDD now height: %lu, now elect height: %lu, "
             "elect height: %lu, network: %d,"
-            "leader: %s, pool_index_mod_num: %d, valid pk: %d",
+            "leader: %s, pool_index_mod_num: %d, valid pk: %s",
             height,
             elect_block.elect_height(),
             elect_block.prev_members().prev_elect_height(),
             prev_elect_block.shard_network_id(),
             common::Encode::HexEncode((*iter)->id).c_str(),
             static_cast<int>((*iter)->pool_index_mod_num),
-            ((*iter)->bls_publick_key != libff::alt_bn128_G2::zero()));
+            val.c_str());
     }
 
     if (*elected) {
@@ -406,11 +407,12 @@ void ElectManager::UpdatePrevElectMembers(
             elect_block.shard_network_id(),
             members->size(),
             *common_pk.getPublicKey());
-//         ELECT_DEBUG("use common public key: %s, %s, %s, %s",
-//             elect_block.prev_members().common_pubkey().x_c0().c_str(),
-//             elect_block.prev_members().common_pubkey().x_c1().c_str(),
-//             elect_block.prev_members().common_pubkey().y_c0().c_str(),
-//             elect_block.prev_members().common_pubkey().y_c1().c_str());
+        ELECT_DEBUG("elect height: %lu, use common public key: %s, %s, %s, %s",
+            elect_block.prev_members().prev_elect_height(),
+            elect_block.prev_members().common_pubkey().x_c0().c_str(),
+            elect_block.prev_members().common_pubkey().x_c1().c_str(),
+            elect_block.prev_members().common_pubkey().y_c0().c_str(),
+            elect_block.prev_members().common_pubkey().y_c1().c_str());
     }
 }
 

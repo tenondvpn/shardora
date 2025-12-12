@@ -267,8 +267,9 @@ public:
         if (res_ptr) {
             auto val = libBLS::ThresholdUtils::fieldElementToString(
                 res_ptr->common_pk().X.c0);
-            SHARDORA_DEBUG("new elect coming sharding: %u, elect height: %lu, common pk: %s",
-                sharding_id, res_ptr->ElectHeight(), val.c_str());
+            SHARDORA_DEBUG("success get elect sharding: %u, des elect_height: %lu, "
+                "elect height: %lu, common pk: %s",
+                sharding_id, elect_height, res_ptr->ElectHeight(), val.c_str());
         }
 #endif
         return res_ptr;
