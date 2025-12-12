@@ -1496,7 +1496,7 @@ void GenesisBlockInit::AddBlockItemToCache(
         prefix_db_->SaveElectHeightWithBlock(
             block->prev_elect_block().sharding_id(), 
             block->prev_elect_block().elect_height(), 
-            block->hash(), 
+            view_block->qc().view_block_hash(), 
             db_batch);
     }
 
