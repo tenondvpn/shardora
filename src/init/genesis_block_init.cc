@@ -1494,7 +1494,7 @@ void GenesisBlockInit::AddBlockItemToCache(
 
     if (block->has_prev_elect_block()) {
         prefix_db_->SaveElectHeightWithBlock(
-            block->prev_elect_block().sharding_id(), 
+            block->prev_elect_block().shard_network_id(), 
             block->prev_elect_block().elect_height(), 
             view_block->qc().view_block_hash(), 
             db_batch);

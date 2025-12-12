@@ -600,7 +600,7 @@ void ViewBlockChain::AddNewBlock(
 
     if (block_item->has_prev_elect_block()) {
         prefix_db_->SaveElectHeightWithBlock(
-            block_item->prev_elect_block().sharding_id(), 
+            block_item->prev_elect_block().shard_network_id(), 
             block_item->prev_elect_block().elect_height(), 
             view_block_item->qc().view_block_hash(), 
             db_batch);
