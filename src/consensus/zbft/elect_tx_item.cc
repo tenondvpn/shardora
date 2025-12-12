@@ -596,7 +596,7 @@ void ElectTxItem::SetPrevElectInfo(
     }
 
     *block_item.mutable_prev_elect_block() = prev_block_item.elect_block();
-    ZJC_DEBUG("success set prev elect block info: %s",
+    SHARDORA_DEBUG("success set prev elect block info: %s",
         ProtobufToJson(prev_block_item.elect_block()).c_str());
 }
 
