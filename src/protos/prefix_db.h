@@ -68,7 +68,6 @@ static const std::string kLocalTempCommonPublicKeyPrefix = "ag\x01";
 static const std::string kNodeVerificationVectorPrefix = "ah\x01";
 static const std::string kNodeLocalElectPosPrefix = "ai\x01";
 static const std::string kCrossCheckHeightPrefix = "aj\x01";
-static const std::string kElectHeightWithBlsCommonPkPrefix = "ak\x01";
 static const std::string kViewBlockInfoPrefix = "an\x01";
 
 static const std::string kBandwidthPrefix = "ao\x01";
@@ -85,6 +84,7 @@ static const std::string kViewBlockVaildParentHash = "ba\x01";
 static const std::string kViewBlockVaildView = "bb\x01";
 static const std::string kUserTxPrefix = "bc\x01";
 static const std::string kUserTxGidPrefix = "bd\x01";
+static const std::string kElectHeightWithElectBlock = "bd\x02";
 
 class PrefixDb {
 public:
@@ -1157,50 +1157,6 @@ public:
         return true;
     }
 
-    // void SaveElectHeightCommonPk(
-    //         uint32_t des_shard,
-    //         uint64_t height,
-    //         const elect::protobuf::PrevMembers& prv_info,
-    //         db::DbWriteBatch& db_batch) {
-    //     std::string key;
-    //     key.reserve(128);
-    //     key.append(kElectHeightWithBlsCommonPkPrefix);
-    //     key.append((char*)&des_shard, sizeof(des_shard));
-    //     key.append((char*)&height, sizeof(height));
-    //     std::string val = prv_info.SerializeAsString();
-    //     db_batch.Put(key, val);
-    //     SHARDORA_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
-    //     assert(prv_info.has_common_pubkey());
-    //     assert(!prv_info.common_pubkey().x_c0().empty());
-    // }
-
-    // bool GetElectHeightCommonPk(
-    //         uint32_t des_shard,
-    //         uint64_t height,
-    //         elect::protobuf::PrevMembers* prv_info) {
-    //     std::string key;
-    //     key.reserve(128);
-    //     key.append(kElectHeightWithBlsCommonPkPrefix);
-    //     key.append((char*)&des_shard, sizeof(des_shard));
-    //     key.append((char*)&height, sizeof(height));
-    //     std::string val;
-    //     auto st = db_->Get(key, &val);
-    //     if (!st.ok()) {
-    //         SHARDORA_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
-    //         return false;
-    //     }
-
-    //     if (!prv_info->ParseFromString(val)) {
-    //         SHARDORA_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
-    //         return false;
-    //     }
-
-    //     SHARDORA_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
-    //     assert(prv_info->has_common_pubkey());
-    //     assert(!prv_info->common_pubkey().x_c0().empty());
-    //     return true;
-    // }
-
     bool SaveIdBandwidth(
             const std::string& id,
             uint64_t bw,
@@ -1500,6 +1456,44 @@ public:
             network_id, 
             pool_index, 
             view);
+    }
+
+    void SaveElectHeightWithBlock(
+            uint32_t sharding_id, 
+            uint64_t elect_height, 
+            const std::string& block_hash, 
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(48);
+        key.append(kElectHeightWithElectBlock);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&elect_height, sizeof(elect_height));
+        db_batch.Put(key, block_hash);
+        SHARDORA_DEBUG("save elect height with block hash: %s, sharding id: %u, elect height: %lu",
+            common::Encode::HexEncode(block_hash).c_str(), 
+            sharding_id, 
+            elect_height);
+    }
+
+    bool GetBlockWithElectHeight(
+            uint32_t sharding_id, 
+            uint64_t elect_height, 
+            const std::string& block_hash, 
+            view_block::protobuf::ViewBlockItem* block) {
+        std::string key;
+        key.reserve(48);
+        key.append(kElectHeightWithElectBlock);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&elect_height, sizeof(elect_height));
+        std::string block_hash;
+        auto st = db_->Get(key, &block_hash);
+        if (!st.ok()) {
+            SHARDORA_DEBUG("get agg bls failed: %s",
+                common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
+            return false;
+        }
+        
+        return GetBlock(block_hash, block);
     }
 
 private:

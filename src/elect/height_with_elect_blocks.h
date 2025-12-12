@@ -180,92 +180,91 @@ public:
             }
         }
 
-        return nullptr;
         // lock it
-        // std::lock_guard<std::mutex> g(height_with_members_mutex_);
-        // auto iter = height_with_members_[network_id].find(height);
-        // if (iter != height_with_members_[network_id].end()) {
-        //     if (iter->second->local_sec_key == libff::alt_bn128_Fr::zero()) {
-        //         std::string bls_prikey;
-        //         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
-        //             bls::protobuf::LocalBlsItem bls_item;
-        //             if (!bls_item.ParseFromString(bls_prikey)) {
-        //                 iter->second->local_sec_key = libff::alt_bn128_Fr::zero();
-        //                 assert(false);
-        //             } else {
-        //                 iter->second->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-        //                 SHARDORA_DEBUG("1 success get local sec key.");
-        //             }
-        //         }
-        //     }
+        std::lock_guard<std::mutex> g(height_with_members_mutex_);
+        auto iter = height_with_members_[network_id].find(height);
+        if (iter != height_with_members_[network_id].end()) {
+            if (iter->second->local_sec_key == libff::alt_bn128_Fr::zero()) {
+                std::string bls_prikey;
+                if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
+                    bls::protobuf::LocalBlsItem bls_item;
+                    if (!bls_item.ParseFromString(bls_prikey)) {
+                        iter->second->local_sec_key = libff::alt_bn128_Fr::zero();
+                        assert(false);
+                    } else {
+                        iter->second->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                        SHARDORA_DEBUG("1 success get local sec key.");
+                    }
+                }
+            }
 
-        //     if (iter->second->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-        //         assert(false);
-        //         return nullptr;
-        //     }
+            if (iter->second->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
+                assert(false);
+                return nullptr;
+            }
 
-        //     if (common_pk != nullptr) {
-        //         *common_pk = iter->second->common_bls_publick_key;
-        //     }
+            if (common_pk != nullptr) {
+                *common_pk = iter->second->common_bls_publick_key;
+            }
 
-        //     if (local_sec_key != nullptr) {
-        //         *local_sec_key = iter->second->local_sec_key;
-        //         SHARDORA_DEBUG("1 0 success get local sec key.");
-        //     }
+            if (local_sec_key != nullptr) {
+                *local_sec_key = iter->second->local_sec_key;
+                SHARDORA_DEBUG("1 0 success get local sec key.");
+            }
 
-        //     return iter->second->members_ptr;
-        // }
+            return iter->second->members_ptr;
+        }
 
-        // libff::alt_bn128_G2 temp_common_pk = libff::alt_bn128_G2::zero();
-        // auto shard_members = GetMembers(security, network_id, height, &temp_common_pk);
-        // if (shard_members == nullptr) {
-        //     SHARDORA_DEBUG("failed get members.");
-        //     // assert(false);
-        //     return nullptr;
-        // }
+        libff::alt_bn128_G2 temp_common_pk = libff::alt_bn128_G2::zero();
+        auto shard_members = GetMembers(security, network_id, height, &temp_common_pk);
+        if (shard_members == nullptr) {
+            SHARDORA_DEBUG("failed get members.");
+            // assert(false);
+            return nullptr;
+        }
 
-        // if (common_pk == nullptr) {
-        //     return shard_members;
-        // }
+        if (common_pk == nullptr) {
+            return shard_members;
+        }
 
-        // auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
-        // new_item->common_bls_publick_key = temp_common_pk;
-        // if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-        //     SHARDORA_DEBUG("new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()"
-        //         " network_id: %d, height: %lu", network_id, height);
-        //     // assert(false);
-        //     return shard_members;
-        // }
+        auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
+        new_item->common_bls_publick_key = temp_common_pk;
+        if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
+            SHARDORA_DEBUG("new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()"
+                " network_id: %d, height: %lu", network_id, height);
+            // assert(false);
+            return shard_members;
+        }
 
-        // height_with_members_[network_id][height] = new_item;
-        // CHECK_MEMORY_SIZE(height_with_members_[network_id]);
-        // std::string bls_prikey;
-        // if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
-        //     bls::protobuf::LocalBlsItem bls_item;
-        //     if (!bls_item.ParseFromString(bls_prikey)) {
-        //         new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-        //         assert(false);
-        //     } else {
-        //         new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-        //         SHARDORA_DEBUG("success get local sec key.");
-        //     }
-        // }
+        height_with_members_[network_id][height] = new_item;
+        CHECK_MEMORY_SIZE(height_with_members_[network_id]);
+        std::string bls_prikey;
+        if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
+            bls::protobuf::LocalBlsItem bls_item;
+            if (!bls_item.ParseFromString(bls_prikey)) {
+                new_item->local_sec_key = libff::alt_bn128_Fr::zero();
+                assert(false);
+            } else {
+                new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
+                SHARDORA_DEBUG("success get local sec key.");
+            }
+        }
 
-        // if (common_pk != nullptr) {
-        //     *common_pk = new_item->common_bls_publick_key;
-        // }
+        if (common_pk != nullptr) {
+            *common_pk = new_item->common_bls_publick_key;
+        }
 
-        // if (local_sec_key != nullptr) {
-        //     *local_sec_key = new_item->local_sec_key;
-        //     SHARDORA_DEBUG("1 success get local sec key.");
-        // }
+        if (local_sec_key != nullptr) {
+            *local_sec_key = new_item->local_sec_key;
+            SHARDORA_DEBUG("1 success get local sec key.");
+        }
 
-        // if (height_with_members_[network_id].size() >= kMaxCacheElectBlockCount) {
-        //     height_with_members_[network_id].erase(height_with_members_[network_id].begin());
-        //     CHECK_MEMORY_SIZE(height_with_members_[network_id]);
-        // }
+        if (height_with_members_[network_id].size() >= kMaxCacheElectBlockCount) {
+            height_with_members_[network_id].erase(height_with_members_[network_id].begin());
+            CHECK_MEMORY_SIZE(height_with_members_[network_id]);
+        }
 
-        // return shard_members;
+        return shard_members;
     }
 
 private:
@@ -275,9 +274,8 @@ private:
             uint64_t height,
             libff::alt_bn128_G2* temp_common_pk) {
         view_block::protobuf::ViewBlockItem view_block;
-        if (!prefix_db_->GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                network_id % common::kImmutablePoolSize,
+        if (!prefix_db_->GetBlockWithElectHeight(
+                network_id,
                 height,
                 &view_block)) {
             SHARDORA_INFO("failed get block with height net: %u, pool: %u, height: %lu",

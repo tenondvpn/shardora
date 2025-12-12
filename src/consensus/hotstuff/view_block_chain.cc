@@ -597,6 +597,14 @@ void ViewBlockChain::AddNewBlock(
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
         db_batch);
+
+    if (block->has_prev_elect_block()) {
+        prefix_db_->SaveElectHeightWithBlock(
+            block->prev_elect_block().sharding_id(), 
+            block->prev_elect_block().elect_height(), 
+            block->hash(), 
+            db_batch);
+    }
 }
 
 bool ViewBlockChain::IsValid() {

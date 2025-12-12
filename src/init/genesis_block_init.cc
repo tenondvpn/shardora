@@ -1492,6 +1492,14 @@ void GenesisBlockInit::AddBlockItemToCache(
         prefix_db_->SaveLatestElectBlock(block->elect_block(), db_batch);
     }
 
+    if (block->has_prev_elect_block()) {
+        prefix_db_->SaveElectHeightWithBlock(
+            block->prev_elect_block().sharding_id(), 
+            block->prev_elect_block().elect_height(), 
+            block->hash(), 
+            db_batch);
+    }
+
     if (block->has_timer_block()) {
         prefix_db_->SaveLatestTimeBlock(block->timer_block(), db_batch);
     }
