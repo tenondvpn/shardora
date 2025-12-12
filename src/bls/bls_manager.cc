@@ -47,12 +47,12 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
+    // bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 BlsManager::~BlsManager() {}
 
-void BlsManager::TimerMessage() {
+void BlsManager::PoolTimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
@@ -69,7 +69,7 @@ void BlsManager::TimerMessage() {
         }
     }
 
-    bls_tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
+    // bls_tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 void BlsManager::OnNewElectBlock(

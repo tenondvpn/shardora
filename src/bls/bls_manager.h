@@ -106,6 +106,7 @@ public:
     std::shared_ptr<security::Security> security() {
         return security_;
     }
+    void PoolTimerMessage();
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);
@@ -129,7 +130,6 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void TimerMessage();
     void ResetLeaders(
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
