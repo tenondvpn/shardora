@@ -246,7 +246,7 @@ public:
                 assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-                SHARDORA_DEBUG("success get local sec key.");
+                SHARDORA_DEBUG("success get local sec key: %s", bls_item.local_private_key().c_str());
             }
         }
 
