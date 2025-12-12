@@ -238,7 +238,7 @@ bool ElectManager::ProcessPrevElectMembers(
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
-        auto val = libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0);
+        auto val = libBLS::ThresholdUtils::fieldElementToString(common_pk.getPublicKey()->X.c0);
         ELECT_WARN("DDDDDDDDDD now height: %lu, now elect height: %lu, "
             "elect height: %lu, network: %d,"
             "leader: %s, pool_index_mod_num: %d, valid pk: %s",
