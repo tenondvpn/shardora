@@ -1209,7 +1209,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         "sign x: %s, replica: %d, elect_height: %lu, %u_%u_%lu",
         common::Encode::HexEncode(qc_item.view_block_hash()).c_str(),
         common::Encode::HexEncode(qc_hash).c_str(),
-        common::Encode::HexEncode(vote_msg.sign_x()).c_str(),
+        vote_msg.sign_x().c_str(),
         replica_idx,
         elect_height,
         qc_item.network_id(),
@@ -1460,8 +1460,6 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         return nullptr;
     }
 
-    // if (!qc.sign_x().empty())
-    // return v_block2_info;
 #ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug2;
     cons_debug2.ParseFromString(v_block2->debug());
