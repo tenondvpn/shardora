@@ -1128,8 +1128,9 @@ void NetworkInit::HandleElectionBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
         const block::protobuf::BlockTx& block_tx) {
     auto* block = &view_block->block_info();
-    SHARDORA_DEBUG("new elect block coming, net: %u, pool: %u, height: %lu",
-        view_block->qc().network_id(), view_block->qc().pool_index(), block->height());
+    SHARDORA_DEBUG("new elect block coming, net: %u, pool: %u, height: %lu, block info: %s",
+        view_block->qc().network_id(), view_block->qc().pool_index(), block->height(),
+        ProtobufToJson(view_block->block_info()).c_str());
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     if (block->has_elect_block()) {
