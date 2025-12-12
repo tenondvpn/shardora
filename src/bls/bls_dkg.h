@@ -110,7 +110,7 @@ private:
     void HandleBlsMessage(const transport::MessagePtr& msg_ptr);
 
     bool IsVerifyBrdPeriod() {
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -122,7 +122,7 @@ private:
     }
 
     bool IsSwapKeyPeriod() {
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -135,7 +135,7 @@ private:
     }
 
     bool IsFinishPeriod() {
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -186,7 +186,7 @@ private:
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     std::string valid_seck_keys_str_;
 
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;
     std::vector<libff::alt_bn128_G2> g2_vec_;
