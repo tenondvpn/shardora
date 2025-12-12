@@ -56,7 +56,8 @@ int ElectTxItem::HandleTx(
         return consensus::kConsensusError;
     }
 
-    SHARDORA_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, new node size: %u, %s, unique_hash: %s",
+    SHARDORA_DEBUG("get sharding statistic info sharding: %u, statistic_height: %lu, "
+        "new node size: %u, %s, unique_hash: %s",
         elect_statistic_.sharding_id(), 
         elect_statistic_.statistic_height(), 
         elect_statistic_.join_elect_nodes_size(),
@@ -153,15 +154,18 @@ int ElectTxItem::processElect(
     {
         std::string ids;
         for (uint32_t i = 0; i < src_elect_nodes_to_choose.size(); ++i) {
-            ids += common::Encode::HexEncode(src_elect_nodes_to_choose[i]->pubkey) + ":" + std::to_string(src_elect_nodes_to_choose[i]->index) + ",";
+            ids += common::Encode::HexEncode(src_elect_nodes_to_choose[i]->pubkey) + ":" +
+                std::to_string(src_elect_nodes_to_choose[i]->index) + ",";
         }
 
         SHARDORA_DEBUG("befor get leader: %s", ids.c_str());
     }
 
     FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
-    SHARDORA_DEBUG("net: %u, elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d, random_str: %s, leader index: %d",
-        elect_statistic_.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str(), *leader_nodes.begin());
+    SHARDORA_DEBUG("net: %u, elect use height to random order: %lu, leader size: %d, "
+        "nodes count: %u, leader size: %d, random_str: %s, leader index: %d",
+        elect_statistic_.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count,
+        elect_nodes.size(), leader_nodes.size(), random_str.c_str(), *leader_nodes.begin());
     if (leader_nodes.size() != (uint32_t)expect_leader_count) {
         SHARDORA_ERROR("choose leader failed: %u", elect_statistic_.sharding_id());
         return kConsensusError;
@@ -592,6 +596,8 @@ void ElectTxItem::SetPrevElectInfo(
     }
 
     *block_item.mutable_prev_elect_block() = prev_block_item.elect_block();
+    ZJC_DEBUG("success set prev elect block info: %s",
+        ProtobufToJson(prev_block_item.elect_block()).c_str());
 }
 
 uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
