@@ -63,7 +63,6 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    void PoolTimerMessage();
     void SetUsedElectionBlock(
         uint64_t elect_height,
         uint32_t network_id,
@@ -130,6 +129,10 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
+    void TimerMessage();
+    void ResetLeaders(
+        const common::MembersPtr& members,
+        elect::protobuf::PrevMembers* prev_members);
     void PopFinishMessage();
     int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 
@@ -139,7 +142,7 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::atomic<std::shared_ptr<TimeBlockItem>> latest_timeblock_info_ = nullptr;
+    std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
     uint64_t latest_elect_height_ = 0;
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
     common::Tick bls_tick_;

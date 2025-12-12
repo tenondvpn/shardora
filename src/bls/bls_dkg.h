@@ -50,7 +50,6 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<ck::ClickHouseClient> ck_client);
     void OnNewElectionBlock(
-        uint64_t prev_elect_height,
         uint64_t elect_height,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
@@ -104,16 +103,14 @@ private:
     void CheckSwapKeyAllValid();
     void SendGetSwapKey(int32_t index);
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
-    void DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_seck_keys);
+    void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
     bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
     void PopBlsMessage();
     void HandleBlsMessage(const transport::MessagePtr& msg_ptr);
-    libff::alt_bn128_G2 GetVerifyG2FromJoinInfo(uint32_t peer_index);
-    std::string GetSwapKeyFromJoinInfo(uint32_t peer_index);
 
     bool IsVerifyBrdPeriod() {
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -125,7 +122,7 @@ private:
     }
 
     bool IsSwapKeyPeriod() {
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -138,7 +135,7 @@ private:
     }
 
     bool IsFinishPeriod() {
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -158,7 +155,6 @@ private:
 
     int64_t kDkgPeriodUs = kTimeBlsPeriodSeconds / 10 * 1000u * 1000u;
     common::MembersPtr members_{ nullptr };
-    uint64_t prev_elect_hegiht_{ 1llu };
     uint64_t elect_hegiht_{ 0 };
     std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution_;
     uint32_t local_member_index_{ common::kInvalidUint32 };
@@ -174,6 +170,7 @@ private:
     std::string max_finish_hash_;
     uint32_t max_finish_count_{ 0 };
     std::unordered_set<uint32_t> valid_swapkey_set_;
+    bool valid_swaped_keys_[common::kEachShardMaxNodeCount];
     bool has_swaped_keys_[common::kEachShardMaxNodeCount];
     uint64_t begin_time_us_{ 0 };
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -188,9 +185,8 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     std::string valid_seck_keys_str_;
-    bool change_local_contribution_ = false;
 
-#ifdef SHARDORA_UNITTEST
+#ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;
     std::vector<libff::alt_bn128_G2> g2_vec_;
