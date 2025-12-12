@@ -1478,7 +1478,6 @@ public:
     bool GetBlockWithElectHeight(
             uint32_t sharding_id, 
             uint64_t elect_height, 
-            const std::string& block_hash, 
             view_block::protobuf::ViewBlockItem* block) {
         std::string key;
         key.reserve(48);
@@ -1488,8 +1487,6 @@ public:
         std::string block_hash;
         auto st = db_->Get(key, &block_hash);
         if (!st.ok()) {
-            SHARDORA_DEBUG("get agg bls failed: %s",
-                common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
             return false;
         }
         
