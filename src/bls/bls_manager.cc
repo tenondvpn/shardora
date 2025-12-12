@@ -1019,7 +1019,7 @@ void BlsManager::ResetLeaders(
             if (bls_pk->x_c0().empty()) {
                 for (uint32_t mem_idx = 0; mem_idx < members->size(); ++mem_idx) {
                     if ((*members)[mem_idx]->pool_index_mod_num < 0) {
-                        (*members)[mem_idx]->pool_index_mod_num = (*members)[i]->pool_index_mod_num;
+                        (*members)[mem_idx]->pool_index_mod_num.store((*members)[i]->pool_index_mod_num);
                         auto prev_bls_pk = prev_members->mutable_bls_pubkey(mem_idx);
                         prev_bls_pk->set_pool_idx_mod_num((*members)[i]->pool_index_mod_num);
                         break;
