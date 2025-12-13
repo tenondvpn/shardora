@@ -319,10 +319,11 @@ private:
                 elect_block.shard_network_id(),
                 id,
                 in[i].pubkey(),
-                member_index++,
+                member_index,
                 in[i].pool_idx_mod_num(),
                 *agg_bls_pk,
                 *agg_bls_pk_proof));
+            member_index++;
         }
 
         auto& prev_members = elect_block.prev_members();
