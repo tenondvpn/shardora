@@ -257,7 +257,7 @@ void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::
         ProtobufToJson(view_block).c_str());
     if (network::IsSameToLocalShard(view_block.qc().network_id())) {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-        latest_to_block_ptr_[tmp_latest_to_block_ptr_index].store(view_block_ptr, std::memory_order_release);
+        latest_to_block_ptr_[tmp_latest_to_block_ptr_index].store(view_block_ptr);
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
         SHARDORA_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
             view_block.block_info().height(), view_block.block_info().timestamp());
@@ -658,7 +658,7 @@ void BlockManager::LoadLatestBlocks() {
     if (prefix_db_->GetLatestToBlock(&block)) {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
         latest_to_block_ptr_[tmp_latest_to_block_ptr_index].store(
-            latest_to_tx_block, std::memory_order_release);
+            latest_to_tx_block);
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
         SHARDORA_DEBUG("success set latest to block ptr: %lu, tm: %lu",
             latest_to_tx_block->block_info().height(), latest_to_tx_block->block_info().timestamp());
@@ -814,7 +814,7 @@ void BlockManager::HandleStatisticBlock(
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
-    shard_elect_tx_[view_block.qc().network_id()].store(shard_elect_tx, std::memory_order_release);
+    shard_elect_tx_[view_block.qc().network_id()].store(shard_elect_tx);
     SHARDORA_DEBUG("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, "
         "statistic elect height: %lu, unique hash: %s",
         view_block.qc().network_id(), block.timeblock_height(),
@@ -844,8 +844,7 @@ pools::TxItemPtr BlockManager::GetToTx(
 
         SHARDORA_DEBUG("now leader get to to tx.");
         leader_prev_get_to_tx_tm_ = cur_time + 3000lu;
-        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load(
-            std::memory_order_acquire);
+        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load();
         if (latest_to_block_ptr != nullptr &&
                 latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
             SHARDORA_DEBUG("now leader get to to tx timestamp error");
@@ -970,7 +969,7 @@ void BlockManager::PopTxTicker() {
 
         auto valid_got_latest_statistic_map_ptr_index_tmp = (valid_got_latest_statistic_map_ptr_index_ + 1) % 2;
         got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_tmp].store(
-            static_tmp_map, std::memory_order_release);
+            static_tmp_map);
         valid_got_latest_statistic_map_ptr_index_ = valid_got_latest_statistic_map_ptr_index_tmp;
     }
 
@@ -987,8 +986,7 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFuncti
     }
 
     auto cur_time = common::TimeUtils::TimestampMs();
-    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load(
-        std::memory_order_acquire);;
+    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load();
     if (latest_to_block_ptr != nullptr &&
             latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
         SHARDORA_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
@@ -1003,8 +1001,7 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceVali
         return false;
     }
 
-    auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_].load(
-        std::memory_order_acquire);
+    auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_].load();
     if (statistic_map_ptr == nullptr) {
         return false;
     }
@@ -1051,7 +1048,7 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFun
             continue;
         }
 
-        auto shard_elect_tx = shard_elect_tx_[i].load(std::memory_order_acquire);
+        auto shard_elect_tx = shard_elect_tx_[i].load();
         if (shard_elect_tx == nullptr) {
             continue;
         }
@@ -1179,7 +1176,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
             continue;
         }
 
-        auto shard_elect_tx = shard_elect_tx_[i].load(std::memory_order_acquire);
+        auto shard_elect_tx = shard_elect_tx_[i].load();
         if (shard_elect_tx == nullptr) {
             SHARDORA_DEBUG("0 failed get elect tx pool index: %u, tx hash: %s",
                 pool_index, common::Encode::HexEncode(tx_hash).c_str());

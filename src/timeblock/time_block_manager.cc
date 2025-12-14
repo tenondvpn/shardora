@@ -59,7 +59,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tmblock_tx_ptr_.store(create_tm_tx_cb_(msg_ptr), std::memory_order_release);
+    tmblock_tx_ptr_.store(create_tm_tx_cb_(msg_ptr));
     SHARDORA_INFO("success create timeblock tx key: %s",
         common::Encode::HexEncode(pools::GetTxKey(
             msg_ptr->address_info->addr(), 
@@ -74,7 +74,7 @@ bool TimeBlockManager::HasTimeblockTx(
         return false;
     }
     
-    auto tmblock_tx_ptr = tmblock_tx_ptr_.load(std::memory_order_acquire);
+    auto tmblock_tx_ptr = tmblock_tx_ptr_.load();
     if (tmblock_tx_ptr != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         // if (tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us) {
@@ -100,7 +100,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         bool leader, 
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func) {
-    auto tmblock_tx_ptr = tmblock_tx_ptr_.load(std::memory_order_acquire);
+    auto tmblock_tx_ptr = tmblock_tx_ptr_.load();
     if (tmblock_tx_ptr != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (leader && tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us) {

@@ -186,7 +186,7 @@ void MultiThreadHandler::Start() {
         thread_vec_.push_back(thread_handler);
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
          thread_wait_con_.wait_for(lock, std::chrono::milliseconds(10000lu), [&] {
-            return thread_init_success_.load(std::memory_order_acquire); ;
+            return thread_init_success_.load(); ;
         });
 
         if (!thread_init_success_) {

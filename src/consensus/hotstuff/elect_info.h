@@ -192,7 +192,7 @@ public:
             return;
         }
 
-        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        auto elect_items_ptr = elect_items_[sharding_id].load();
         if (elect_items_ptr != nullptr &&
                 elect_items_ptr->ElectHeight() >= elect_height) {
             return;
@@ -200,8 +200,8 @@ public:
 
         auto elect_item = std::make_shared<ElectItem>(security_ptr_,
             sharding_id, elect_height, members, common_pk, sk);
-        prev_elect_items_[sharding_id].store(elect_items_ptr, std::memory_order_release);
-        elect_items_[sharding_id].store(elect_item, std::memory_order_release);
+        prev_elect_items_[sharding_id].store(elect_items_ptr);
+        elect_items_[sharding_id].store(elect_item);
         RefreshMemberAddrs(sharding_id);
     #ifndef NDEBUG
         auto val = libBLS::ThresholdUtils::fieldElementToString(
@@ -214,8 +214,8 @@ public:
     std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t elect_height) const {
         std::shared_ptr<ElectItem> res_ptr = nullptr;
         do {
-            auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load(std::memory_order_release);
-            auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+            auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load();
+            auto elect_items_ptr = elect_items_[sharding_id].load();
             if (elect_items_ptr &&
                     elect_height == elect_items_ptr->ElectHeight()) {
                 res_ptr = elect_items_ptr;
@@ -281,14 +281,14 @@ public:
             return nullptr;
         }
 
-        auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load(std::memory_order_release);
-        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load();
+        auto elect_items_ptr = elect_items_[sharding_id].load();
         return elect_items_ptr != nullptr ? elect_items_ptr : prev_elect_items_ptr;
     }
 
     // 更新 elect_item members 的 addr
     void RefreshMemberAddrs(uint32_t sharding_id) {
-        auto elect_items_ptr = elect_items_[sharding_id].load(std::memory_order_release);
+        auto elect_items_ptr = elect_items_[sharding_id].load();
         if (!elect_items_ptr) {
             SHARDORA_DEBUG("Leader pool elect item null");
             return;

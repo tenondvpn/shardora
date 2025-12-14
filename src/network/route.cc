@@ -189,7 +189,7 @@ void Route::OnNewElectBlock(
     }
 
     latest_elect_height_[sharding_id] = elect_height;
-    all_shard_members_[sharding_id].store(members, std::memory_order_acquire);
+    all_shard_members_[sharding_id].store(members);
 }
 
 void Route::Broadcasting() {

@@ -180,7 +180,7 @@ bool TnetTransport::Start() {
         SHARDORA_DEBUG("waiting for work_thread now.");
         std::unique_lock<std::mutex> lock(mutex_);
         con_.wait_for(lock, std::chrono::milliseconds(3000), [&] { 
-            return waiting_success_.load(std::memory_order_acquire);
+            return waiting_success_.load();
         });
 
         if (!waiting_success_) {
@@ -205,7 +205,7 @@ bool TnetTransport::Start() {
     SHARDORA_DEBUG("waiting for work_thread now.");
     std::unique_lock<std::mutex> lock(mutex_);
     con_.wait_for(lock, std::chrono::milliseconds(3000), [&] { 
-        return waiting_success_.load(std::memory_order_acquire); 
+        return waiting_success_.load(); 
     });
 
     if (!waiting_success_) {
