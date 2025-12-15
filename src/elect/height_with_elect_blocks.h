@@ -63,7 +63,7 @@ public:
         uint64_t min_height = common::kInvalidUint64;
         uint64_t min_index = 0;
         for (int32_t i = 0; i < 3; ++i) {
-            if (members_ptrs_[network_id][i].load(std::memory_order_acquire) == nullptr) {
+            if (members_ptrs_[network_id][i].load() == nullptr) {
                 auto new_item = std::make_shared<HeightMembersItem>(
                     members_ptr,
                     height);
@@ -86,11 +86,11 @@ public:
                     height, network_id,
                     (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()),
                     (new_item->local_sec_key == libff::alt_bn128_Fr::zero()));
-                members_ptrs_[network_id][i].store(new_item, std::memory_order_acquire);
+                members_ptrs_[network_id][i].store(new_item);
                 return;
             }
 
-            auto members_ptr = members_ptrs_[network_id][i].load(std::memory_order_acquire);
+            auto members_ptr = members_ptrs_[network_id][i].load();
             if (members_ptr->height < min_height) {
                 min_height = members_ptr->height;
                 min_index = i;
@@ -121,7 +121,7 @@ public:
             // assert(false);
         }
 
-        members_ptrs_[network_id][min_index].store(new_item, std::memory_order_acquire);
+        members_ptrs_[network_id][min_index].store(new_item);
         SHARDORA_DEBUG("1 save bls pk and secret key success.height: %lu, "
             "network_id: %u, local_sec_key: %s, is zero: %d, common pk is zero: %d",
             height, network_id,
@@ -154,7 +154,7 @@ public:
         }
 
         for (int32_t i = 0; i < 3; ++i) {
-            auto item_ptr = members_ptrs_[network_id][i].load(std::memory_order_acquire);
+            auto item_ptr = members_ptrs_[network_id][i].load();
             if (item_ptr != nullptr && item_ptr->height == height) {
                 if (common_pk != nullptr) {
                     *common_pk = item_ptr->common_bls_publick_key;
@@ -319,10 +319,11 @@ private:
                 elect_block.shard_network_id(),
                 id,
                 in[i].pubkey(),
-                member_index++,
+                member_index,
                 in[i].pool_idx_mod_num(),
                 *agg_bls_pk,
                 *agg_bls_pk_proof));
+            member_index++;
         }
 
         auto& prev_members = elect_block.prev_members();

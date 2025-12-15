@@ -35,10 +35,10 @@ void UniversalManager::Init(
 
 void UniversalManager::Destroy() {
     for (uint32_t i = 0; i < kUniversalNetworkCount; ++i) {
-        auto dht_ptr = dhts_[i].load(std::memory_order_acquire);
+        auto dht_ptr = dhts_[i].load();
         if (dht_ptr != nullptr) {
             dht_ptr->Destroy();
-            dhts_[i].store(nullptr, std::memory_order_acquire);
+            dhts_[i].store(nullptr);
         }
     }
 }
@@ -49,13 +49,13 @@ void UniversalManager::RegisterUniversal(uint32_t network_id, dht::BaseDhtPtr& d
         return;
     }
 
-    auto dht_ptr = dhts_[network_id].load(std::memory_order_acquire);
+    auto dht_ptr = dhts_[network_id].load();
     if (dht_ptr != nullptr) {
         // SHARDORA_ERROR("regiestered network id: %u", network_id);
         return;
     }
 
-    dhts_[network_id].store(dht, std::memory_order_acquire);
+    dhts_[network_id].store(dht);
     // SHARDORA_DEBUG("add universal network: %d", network_id);
 }
 
@@ -65,10 +65,10 @@ void UniversalManager::UnRegisterUniversal(uint32_t network_id) {
         return;
     }
 
-    auto dht_ptr = dhts_[network_id].load(std::memory_order_acquire);
+    auto dht_ptr = dhts_[network_id].load();
     if (dht_ptr != nullptr) {
         dht_ptr->Destroy();
-        dhts_[network_id].store(nullptr, std::memory_order_acquire);
+        dhts_[network_id].store(nullptr);
     }
 }
 
@@ -78,7 +78,7 @@ dht::BaseDhtPtr UniversalManager::GetUniversal(uint32_t network_id) {
         return nullptr;
     }
 
-    return dhts_[network_id].load(std::memory_order_acquire);
+    return dhts_[network_id].load();
 }
 
 void UniversalManager::DhtBootstrapResponseCallback(
@@ -185,7 +185,7 @@ void UniversalManager::OnNewElectBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
-    auto dht_ptr = dhts_[kUniversalNetworkId].load(std::memory_order_acquire);
+    auto dht_ptr = dhts_[kUniversalNetworkId].load();
     if (dht_ptr != nullptr) {
         Universal* unidht = static_cast<Universal*>(dht_ptr.get());
         unidht->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
@@ -200,7 +200,7 @@ UniversalManager::~UniversalManager() {
 
 void UniversalManager::DropNode(const std::string& ip, uint16_t port) {
     for (uint32_t i = 0; i < kUniversalNetworkCount; ++i) {
-        auto dht_ptr = dhts_[i].load(std::memory_order_acquire);
+        auto dht_ptr = dhts_[i].load();
         if (dht_ptr != nullptr) {
             dht_ptr->Drop(ip, port);
         }
@@ -208,7 +208,7 @@ void UniversalManager::DropNode(const std::string& ip, uint16_t port) {
 }
 
 void UniversalManager::Join(const dht::NodePtr& node) {
-    auto dht_ptr = dhts_[kNodeNetworkId].load(std::memory_order_acquire);
+    auto dht_ptr = dhts_[kNodeNetworkId].load();
     if (dht_ptr != nullptr) {
         dht_ptr->UniversalJoin(node);
     }

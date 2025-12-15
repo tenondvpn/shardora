@@ -827,13 +827,14 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         if (CreateAllQc(
                 common::GlobalInfo::Instance()->network_id(),
                 common::kImmutablePoolSize,
-                root_pool_view[common::kImmutablePoolSize]++, 
+                root_pool_view[common::kImmutablePoolSize], 
                 genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
         }
         
+        root_pool_view[common::kImmutablePoolSize]++;
         fputs((common::Encode::HexEncode(view_block_ptr->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
@@ -881,12 +882,14 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         if (CreateAllQc(
                 common::GlobalInfo::Instance()->network_id(),
                 common::kImmutablePoolSize,
-                root_pool_view[common::kImmutablePoolSize]++, 
+                root_pool_view[common::kImmutablePoolSize], 
                 genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
         }
+                
+        root_pool_view[common::kImmutablePoolSize]++;
         auto tmp_str = view_block_ptr->SerializeAsString();
         
         auto db_batch_ptr = std::make_shared<db::DbWriteBatch>();
@@ -1108,13 +1111,14 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         if (CreateAllQc(
                 network::kRootCongressNetworkId,
                 i,
-                vb_latest_view[i]++, 
+                vb_latest_view[i], 
                 root_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
         }
 
+        vb_latest_view[i]++;
         pool_prev_vb_hash_map[i] = view_block_ptr->qc().view_block_hash();
         vb_prehashes[i] = view_block_ptr->qc().view_block_hash();
         // 提交 view block
@@ -1133,9 +1137,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
             vb_prehashes[network::kRootCongressNetworkId],
-            pool_with_heights[network::kRootCongressNetworkId]++,
+            pool_with_heights[network::kRootCongressNetworkId],
             common::kInvalidUint64,
-            vb_latest_view[network::kRootCongressNetworkId]++,
+            vb_latest_view[network::kRootCongressNetworkId],
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
@@ -1143,13 +1147,15 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
+    vb_latest_view[network::kRootCongressNetworkId]++;
+    pool_with_heights[network::kRootCongressNetworkId]++;
     if (CreateElectBlock(
             network::kRootCongressNetworkId,
             prehashes[network::kRootCongressNetworkId],
             vb_prehashes[network::kRootCongressNetworkId],
-            pool_with_heights[network::kRootCongressNetworkId]++,
+            pool_with_heights[network::kRootCongressNetworkId],
             pool_with_heights[network::kRootCongressNetworkId] - 1 ,
-            vb_latest_view[network::kRootCongressNetworkId]++,
+            vb_latest_view[network::kRootCongressNetworkId],
             root_gens_init_block_file,
             root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
@@ -1157,6 +1163,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
+    pool_with_heights[network::kRootCongressNetworkId]++;
+    vb_latest_view[network::kRootCongressNetworkId]++;
     // 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     pool_prev_vb_hash_map[network::kRootCongressNetworkId] = vb_prehashes[network::kRootCongressNetworkId];
@@ -1168,9 +1176,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 net_id,
                 prehashes[net_id],
                 vb_prehashes[net_id],
-                pool_with_heights[net_id]++,
+                pool_with_heights[net_id],
                 common::kInvalidUint64,
-                vb_latest_view[net_id]++,
+                vb_latest_view[net_id],
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
@@ -1178,13 +1186,15 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             return kInitError;
         }
 
+        pool_with_heights[net_id]++;
+        vb_latest_view[net_id]++;
         if (CreateElectBlock(
                 net_id,
                 prehashes[net_id],
                 vb_prehashes[net_id],
-                pool_with_heights[net_id]++,
+                pool_with_heights[net_id],
                 pool_with_heights[net_id] - 1,
-                vb_latest_view[net_id]++,
+                vb_latest_view[net_id],
                 root_gens_init_block_file,
                 root_genesis_nodes,
                 genesis_nodes) != kInitSuccess) {
@@ -1192,6 +1202,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             return kInitError;
         }
 
+        vb_latest_view[net_id]++;
+        pool_with_heights[net_id]++;
         pool_prev_hash_map[net_id] = prehashes[net_id];
         pool_prev_vb_hash_map[net_id] = vb_prehashes[net_id];
     }
@@ -1233,13 +1245,14 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         if (CreateAllQc(
                 net_id,
                 pool_index,
-                vb_latest_view[pool_index]++, 
+                vb_latest_view[pool_index], 
                 root_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
         }
 
+        vb_latest_view[pool_index]++;
         pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pools::protobuf::PoolStatisticTxInfo& pool_st_info = *tenon_block->mutable_pool_st_info();
@@ -1626,7 +1639,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             if (CreateAllQc(
                     net_id,
                     pool_index,
-                    pool_latest_view[pool_index]++, 
+                    pool_latest_view[pool_index], 
                     root_genesis_nodes, 
                     view_block_ptr) != kInitSuccess) {
                 assert(false);
@@ -1636,7 +1649,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             if (CreateAllQc(
                     net_id,
                     pool_index,
-                    pool_latest_view[pool_index]++, 
+                    pool_latest_view[pool_index], 
                     cons_genesis_nodes, 
                     view_block_ptr) != kInitSuccess) {
                 assert(false);
@@ -1644,6 +1657,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             }
         }
 
+        pool_latest_view[pool_index]++;
         pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
@@ -1761,13 +1775,14 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         if (CreateAllQc(
                 net_id,
                 i,
-                vb_latest_view[i]++, 
+                vb_latest_view[i], 
                 cons_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
         }
 
+        vb_latest_view[i]++;
         // 更新所有 pool 的 prehash
         pool_prev_hash_map[i] = view_block_ptr->qc().view_block_hash();
         pool_prev_vb_hash_map[i] = view_block_ptr->qc().view_block_hash();
@@ -1801,13 +1816,14 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         if (CreateAllQc(
                 net_id,
                 pool_index,
-                vb_latest_view[pool_index]++, 
+                vb_latest_view[pool_index], 
                 cons_genesis_nodes, 
                 view_block_ptr) != kInitSuccess) {
             assert(false);
             return kInitError;
         }
 
+        vb_latest_view[pool_index]++;
         pool_prev_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pool_prev_vb_hash_map[pool_index] = view_block_ptr->qc().view_block_hash();
         pools::protobuf::PoolStatisticTxInfo& pool_st_info = *tenon_block->mutable_pool_st_info();
