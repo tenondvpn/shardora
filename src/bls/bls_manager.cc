@@ -110,10 +110,11 @@ void BlsManager::OnNewElectBlock(
     elect_item->members = members;
     elect_members_[sharding_id] = elect_item;
     CHECK_MEMORY_SIZE(elect_members_);
-//     SHARDORA_WARN("sharding: %u, success add new bls dkg, elect_height: %lu",
-//         sharding_id, elect_height);
+    SHARDORA_WARN("sharding: %u, success add new bls dkg, elect_height: %lu, member count: %u",
+        sharding_id, elect_height, members->size());
     if (sharding_id != common::GlobalInfo::Instance()->network_id() &&
-            sharding_id + network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
+            sharding_id + network::kConsensusWaitingShardOffset != 
+            common::GlobalInfo::Instance()->network_id()) {
         return;
     }
 
