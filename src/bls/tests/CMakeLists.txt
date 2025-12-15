@@ -20,8 +20,6 @@ target_link_libraries(bls_test PRIVATE bls network gtest gtest_main gmock gmock_
     broadcast
     dht
     transport
-    websocket
-    http
     contract
     pki
     big_num

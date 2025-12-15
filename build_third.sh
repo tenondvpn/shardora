@@ -15,6 +15,10 @@ apt install -y pkg-config
 apt install -y yasm
 apt install -y libgnutls28-dev zlib1g-dev libssh2-1-dev
 SRC_PATH=`pwd`
+
+cd $SRC_PATH
+cd third_party/gtest &&  git submodule update --init && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+exit 0
 cd $SRC_PATH
 cd third_party/zstd &&  git submodule update --init && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DJSON_BuildTests=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 

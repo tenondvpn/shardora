@@ -97,7 +97,7 @@ include_directories(SYSTEM
 
 # compile definitions
 add_definitions(
-    #-DSHARDORA_UNITTEST # for testing
+#    -DSHARDORA_UNITTEST # for testing
     #-DFOR_CONSOLE_DEBUG
     -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r
 #    -DTEST_TRANSPORT_PERFOMANCE
@@ -110,8 +110,8 @@ add_definitions(
     #-DHOTSTUFF_TEST
     #-DUSE_SERVER_TEST_TRANSACTION
     #-DTEST_FORKING_ATTACK
-    -DMOCK_VERIFY
-    -DMOCK_SIGN
+    #-DMOCK_VERIFY
+    #-DMOCK_SIGN
     -DENABLE_HOTSTUFF
     -DDISABLE_GENESIS_BLS_VERIFY
     #-DTEST_NO_CROSS
