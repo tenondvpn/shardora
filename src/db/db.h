@@ -186,18 +186,29 @@ public:
         // write_opt.disableWAL = true;
 #endif
         auto st = db_->Write(write_opt, &db_batch.db_batch_);
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
         db_batch.Clear();
         return st;
     }
 
     DbStatus Put(const std::string& key, const std::string& value) {
         DbWriteOptions write_opt;
-        return db_->Put(write_opt, DbSlice(key), DbSlice(value));
+        auto st = db_->Put(write_opt, DbSlice(key), DbSlice(value));
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
+        return st;
     }
 
     DbStatus Put(const std::string& key, const char* value, size_t len) {
         DbWriteOptions write_opt;
-        return db_->Put(write_opt, DbSlice(key), DbSlice(value, len));
+        auto st = db_->Put(write_opt, DbSlice(key), DbSlice(value, len));
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
+        return st;
     }
 
     DbStatus Get(const std::string& key, std::string* value) {
@@ -213,7 +224,11 @@ public:
 
     DbStatus Delete(const std::string& key) {
         DbWriteOptions write_opt;
-        return db_->Delete(write_opt, DbSlice(key));
+        auto st = db_->Delete(write_opt, DbSlice(key));
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
+        return st;
     }
 
     // void CompactRange(const std::string& start_key, const std::string& end_key) {

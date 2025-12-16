@@ -638,11 +638,11 @@ void BlsDkg::BroadcastVerfify() try {
         return;
     }
 
-    CreateContribution(member_count_, min_aggree_member_count_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto* verfiy_brd = bls_msg.mutable_verify_brd();
+    CreateContribution(member_count_, min_aggree_member_count_);
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
         assert(false);
