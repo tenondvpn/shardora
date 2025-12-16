@@ -948,6 +948,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
         return kBlsError;
     }
 
+    assert(ec_block.prev_members().bls_pubkey_size() == 0);
     auto pre_ec_members = ec_block.mutable_prev_members();
     for (size_t i = 0; i < members->size(); ++i) {
         auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
@@ -989,6 +990,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
     }
 
+    assert(ec_block.prev_members().bls_pubkey_size() == members->size());
     common_pk_iter->second.to_affine_coordinates();
     auto common_pk = pre_ec_members->mutable_common_pubkey();
     common_pk->set_x_c0(
