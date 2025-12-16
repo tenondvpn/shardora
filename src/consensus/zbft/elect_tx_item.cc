@@ -47,6 +47,7 @@ int ElectTxItem::HandleTx(
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
+    elect_block_ = elect::protobuf::ElectBlock();
     view_block_chain_ = zjc_host.view_block_chain_;
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
@@ -618,6 +619,7 @@ int ElectTxItem::CreateNewElect(
         uint64_t gas_for_root,
         block::protobuf::BlockTx &block_tx) {
     auto& elect_block = elect_block_;
+    assert(ec_block.prev_members().bls_pubkey_size() == 0);
     for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         if (elect_nodes[i] == nullptr) {
             if (i >= elect_members_->size()) {
@@ -660,6 +662,7 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_shard_network_id(elect_statistic_.sharding_id());
     elect_block.set_elect_height(block.height());
     elect_block.set_all_gas_amount(elect_statistic_.gas_amount());
+    assert(ec_block.prev_members().bls_pubkey_size() == 0);
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         SHARDORA_WARN("add prev elect bls consensus info failed sharding id: %u",
                  elect_statistic_.sharding_id());
