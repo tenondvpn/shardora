@@ -1156,6 +1156,7 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
     }
 
     std::cout << "send success." << std::endl;
+    return 0;
 }
 
 int oqs_tx(const std::string& to, uint64_t amount) {
