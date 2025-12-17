@@ -158,7 +158,7 @@ int Execution::execute(
             common::Encode::HexEncode(from_address).c_str(),
             common::Encode::HexEncode(to_address).c_str(),
             common::Encode::HexEncode(origin_address).c_str());
-        assert(false);
+        // assert(false);
         return kZjcvmError;
     }
 

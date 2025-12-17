@@ -122,7 +122,7 @@ protected:
                 return consensus::kConsensusAccountNotExists;
             }
 
-            acc_balance_map[id] = acc_info;
+            acc_balance_map[id] = std::make_shared<address::protobuf::AddressInfo>(*acc_info);
             *balance = acc_info->balance();
             *nonce = acc_info->nonce();
             SHARDORA_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
