@@ -417,14 +417,14 @@ static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void
     return EVHTP_RES_OK;
 }
 
-std::shared_ptr<nlohmann::json> GetAddressInfo(http::HttpClient& http_cli, const std::string& peer_ip, const std::string& addr) {
-    account_info_jsons[addr] = nullptr;
-    std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
-    http_cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
-    std::unique_lock<std::mutex> l(cli_mutex);
-    cli_con.wait_for(l, std::chrono::milliseconds(1000));
-    return account_info_jsons[addr];
-}
+// std::shared_ptr<nlohmann::json> GetAddressInfo(http::HttpClient& http_cli, const std::string& peer_ip, const std::string& addr) {
+//     account_info_jsons[addr] = nullptr;
+//     std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
+//     http_cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
+//     std::unique_lock<std::mutex> l(cli_mutex);
+//     cli_con.wait_for(l, std::chrono::milliseconds(1000));
+//     return account_info_jsons[addr];
+// }
 
 int tx_main(int argc, char** argv) {
     // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool
