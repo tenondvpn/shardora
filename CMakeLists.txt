@@ -45,9 +45,9 @@ set(LINK_UUID )
 set(LINK_YAML )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LIB_DIR 
-        ${DEP_DIR}/lib 
-        ${DEP_DIR}/lib64 
+    set(LIB_DIR
+        ${DEP_DIR}/lib
+        ${DEP_DIR}/lib64
         ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
     set(LINK_UUID uuid)
     include_directories(${OPENSSL_INCLUDE_DIR})
@@ -102,7 +102,7 @@ add_definitions(
     -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r
 #    -DTEST_TRANSPORT_PERFOMANCE
 #    -DSHARDORA_TRACE_MESSAGE
-    -DLEVELDB
+#-DLEVELDB
 #   -DCLIENT_USE_UV
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A

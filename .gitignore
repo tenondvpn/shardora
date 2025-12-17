@@ -1,3 +1,4 @@
+python/cpabe
 third_party/lib/
 third_party/lib64/
 third_party/share/
@@ -31,7 +32,6 @@ python/__pycache__/
 python/python3.10/
 src_o
 addrs
-third_party/rocksdb/
 data/
 metadata/
 perf/
@@ -65,7 +65,6 @@ cbuild_Release
 t1
 t2
 third_party/bls_sign
-third_party/depends/libs/linux/librocksdb.a
 third_party/libBLS
 third_party/aleth*
 third_party/bin/
