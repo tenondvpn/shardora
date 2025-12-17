@@ -12,7 +12,7 @@
 #include "common/string_utils.h"
 #include "db/db.h"
 #include "dht/dht_key.h"
-#include "http/http_client.h"
+// #include "http/http_client.h"
 #include "pools/tx_utils.h"
 #include "protos/address.pb.h"
 #include "security/ecdsa/ecdsa.h"
@@ -38,7 +38,7 @@ static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> n
          {12, "c2e8fb3673f82cadd860d7523c12e71a7279faec0814803e547286bb0363d0e8"}}}
 };
 
-http::HttpClient cli;
+// http::HttpClient cli;
 std::mutex cli_mutex;
 std::condition_variable cli_con;
 std::string global_chain_node_ip = "127.0.0.1";
@@ -1234,27 +1234,27 @@ int oqs_tx(const std::string& to, uint64_t amount) {
 }
 
 void UpdateAddressNonce() {
-    for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
-        // if (!prikey_with_nonce.empty()) {
-        //     if (src_prikey_with_nonce[*iter] + (batch_nonce_check_count / 2) >= prikey_with_nonce[*iter]) {
-        //         continue;
-        //     }
-        // }
+    // for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
+    //     // if (!prikey_with_nonce.empty()) {
+    //     //     if (src_prikey_with_nonce[*iter] + (batch_nonce_check_count / 2) >= prikey_with_nonce[*iter]) {
+    //     //         continue;
+    //     //     }
+    //     // }
 
-        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
-        security->SetPrivateKey(*iter);
-        auto addr_json = GetAddressInfo(cli, global_chain_node_ip, security->GetAddress());
-        if (addr_json) {
-            // printf("success get address info: %s\n", addr_json->dump().c_str());
-        } else {
-            printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
-            continue;
-        }
+    //     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    //     security->SetPrivateKey(*iter);
+    //     auto addr_json = GetAddressInfo(cli, global_chain_node_ip, security->GetAddress());
+    //     if (addr_json) {
+    //         // printf("success get address info: %s\n", addr_json->dump().c_str());
+    //     } else {
+    //         printf("failed get address info: %s\n", common::Encode::HexEncode(security->GetAddress()).c_str());
+    //         continue;
+    //     }
 
-        uint64_t nonce = 0;
-        common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
-        src_prikey_with_nonce[*iter] = nonce;
-    }
+    //     uint64_t nonce = 0;
+    //     common::StringUtil::ToUint64((*addr_json)["nonce"], &nonce);
+    //     src_prikey_with_nonce[*iter] = nonce;
+    // }
 }
 
 int main(int argc, char** argv) {
@@ -1304,7 +1304,7 @@ int main(int argc, char** argv) {
     }
 
     usleep(1000000);
-    cli.Destroy();
+    // cli.Destroy();
     transport::TcpTransport::Instance()->Stop();
     return 0;
 }
