@@ -16,7 +16,7 @@ apt install -y yasm
 apt install -y libgnutls28-dev zlib1g-dev libssh2-1-dev
 SRC_PATH=`pwd`
 cd $SRC_PATH
-cd third_party/rocksdb && git checkout . && git submodule update --init && cmake -S . -B build_release -DWITH_TESTS=OFF -DWITH_GFLAGS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+cd third_party/rocksdb && git checkout . && git submodule update --init && cmake -S . -B build_release -DWITH_TESTS=OFF -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" -DWITH_GFLAGS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 exit 0
 
 cd $SRC_PATH
