@@ -393,29 +393,29 @@ static void GetOqsKeys() {
     delete[]read_buf;
 }
 
-static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
-    if (req->status != 200) {
-        fprintf(stderr, "请求失败，状态码: %d\n", req->status);
-        cli_con.notify_one();
-        return EVHTP_RES_ERROR;
-    }
+// static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
+//     if (req->status != 200) {
+//         fprintf(stderr, "请求失败，状态码: %d\n", req->status);
+//         cli_con.notify_one();
+//         return EVHTP_RES_ERROR;
+//     }
     
-    struct evbuffer* input = buf;//req->buffer_in;
-    size_t len = evbuffer_get_length(input);
-    char* response_data = (char*)malloc(len + 1);
-    evbuffer_copyout(input, response_data, len);
-    response_data[len] = '\0';
-    auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
-    auto addr = common::Encode::Base64Decode((*json_ptr)["addr"]);
-    // printf("success get address %s info: %s\n", 
-    //     common::Encode::HexEncode(addr).c_str(), 
-    //     response_data);
-    account_info_jsons[addr] = json_ptr;
-    free(response_data);
-    std::unique_lock<std::mutex> l(cli_mutex);
-    cli_con.notify_one();
-    return EVHTP_RES_OK;
-}
+//     struct evbuffer* input = buf;//req->buffer_in;
+//     size_t len = evbuffer_get_length(input);
+//     char* response_data = (char*)malloc(len + 1);
+//     evbuffer_copyout(input, response_data, len);
+//     response_data[len] = '\0';
+//     auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
+//     auto addr = common::Encode::Base64Decode((*json_ptr)["addr"]);
+//     // printf("success get address %s info: %s\n", 
+//     //     common::Encode::HexEncode(addr).c_str(), 
+//     //     response_data);
+//     account_info_jsons[addr] = json_ptr;
+//     free(response_data);
+//     std::unique_lock<std::mutex> l(cli_mutex);
+//     cli_con.notify_one();
+//     return EVHTP_RES_OK;
+// }
 
 // std::shared_ptr<nlohmann::json> GetAddressInfo(http::HttpClient& http_cli, const std::string& peer_ip, const std::string& addr) {
 //     account_info_jsons[addr] = nullptr;
