@@ -124,18 +124,18 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_type(common::kPoolTimerMessage);
             SHARDORA_DEBUG("start kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
                 msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
+            // msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
-            auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 200000) {
-                std::string t;
-                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-                }
+            // auto etime = common::TimeUtils::TimestampUs();
+            // if (etime - btime > 200000) {
+            //     std::string t;
+            //     for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+            //         t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+            //     }
 
-                SHARDORA_INFO("kPoolTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
-                    msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
-            }
+            //     SHARDORA_INFO("kPoolTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", 
+            //         msg_ptr->header.type(), thread_idx, (etime - btime), t.c_str());
+            // }
             SHARDORA_DEBUG("end kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
                 msg_ptr->header.hash64(), thread_idx, maping_thread_idx);
         }
