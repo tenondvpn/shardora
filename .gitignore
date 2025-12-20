@@ -4,7 +4,6 @@ third_party/lib64/
 third_party/share/
 third_party/ssl/
 third_party/libdkgbls.a
-shards*
 1
 DHT_*
 HTTP_*
@@ -19,7 +18,6 @@ txcli*
 src/protos/__pycache__/
 pkg.tar.gz
 shardora.tar.gz
-shardora/
 ars/
 exchange/
 mm/
