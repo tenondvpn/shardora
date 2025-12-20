@@ -1,12 +1,12 @@
 # configure
 TARGET=Debug
 
-if test "$2" = "D"
+if test "$2" = "Debug"
 then
 	TARGET=Debug
 fi
 
-if test "$2" = "R"
+if test "$2" = "Release"
 then
         TARGET=Release
 fi

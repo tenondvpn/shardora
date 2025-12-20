@@ -61,7 +61,7 @@ init() {
         node_ips='127.0.0.1'
     fi  
 
-    sh cmd.sh $node_ips "tc qdisc del dev eth0 root"  > /dev/null 2>&1 &
+    bash cmd.sh $node_ips "tc qdisc del dev eth0 root"  > /dev/null 2>&1 &
     if [ "$end_shard" == "" ]; then
         end_shard=3
     fi  
@@ -77,18 +77,15 @@ init() {
     killall -9 shardora
     killall -9 txcli
 
-    sh build.sh a $TARGET
+    bash build.sh a $TARGET
     sudo rm -rf /root/nodes
-    sudo cp -rf ./zjnodes_local /root/nodes
+    sudo cp -rf ./nodes_local /root/nodes
     rm -rf /root/nodes/*/shardora /root/nodes/*/core* /root/nodes/*/log/* /root/nodes/*/*db*
 
-    cp -rf ./zjnodes_local/shardora/GeoLite2-City.mmdb /root/nodes/shardora
-    cp -rf ./zjnodes_local/shardora/conf/log4cpp.properties /root/nodes/shardora/conf
+    cp -rf ./nodes_local/shardora/conf/GeoLite2-City.mmdb /root/nodes/shardora
+    cp -rf ./nodes_local/shardora/conf/log4cpp.properties /root/nodes/shardora/conf
     mkdir -p /root/nodes/shardora/log
 
-
-    sudo cp -rf ./cbuild_$TARGET/shardora /root/nodes/shardora
-    sudo cp -f ./conf/genesis.yml /root/nodes/shardora/genesis.yml
 
     sudo cp -rf ./cbuild_$TARGET/shardora /root/nodes/shardora
     if [[ "$each_nodes_count" -eq "" ]]; then
@@ -112,11 +109,6 @@ init() {
     cd /root/nodes/shardora && ./shardora -U -N $nodes_count
     cd /root/nodes/shardora && ./shardora -S 3 -N $nodes_count
 
-    rm -rf /root/nodes/r*
-    rm -rf /root/nodes/s*
-    rm -rf /root/nodes/new*
-    rm -rf /root/nodes/node
-    rm -rf /root/nodes/param
 }
 
 make_package() {
@@ -225,7 +217,7 @@ run_command() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && bash temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi
@@ -253,7 +245,7 @@ start_all_nodes() {
             start_nodes_count=$FIRST_NODE_COUNT
         fi
 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root/pkg && sh start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard "  &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root/pkg && bash start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard "  &
         if ((start_pos==1)); then
             sleep 3
         fi
