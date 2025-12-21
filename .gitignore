@@ -1,3 +1,5 @@
+third_party/depends/
+*DS_Store*
 python/cpabe
 third_party/lib/
 third_party/lib64/

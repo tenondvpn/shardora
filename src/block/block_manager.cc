@@ -1156,7 +1156,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(
             account_mgr_->pools_address_info(pool_index);
         auto& tx = shard_statistic_tx->tx_ptr->tx_info;
         tx->set_to(shard_statistic_tx->tx_ptr->address_info->addr());
-        SHARDORA_DEBUG("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
+        SHARDORA_INFO("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
             "height: %lu, latest time block height: %lu, is leader: %d",
             common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
             prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,

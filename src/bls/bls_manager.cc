@@ -578,10 +578,11 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             bls_msg.elect_height());
     }
 
-    SHARDORA_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s",
+    SHARDORA_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s, common pk: %s",
         bls_msg.finish_req().network_id(),
         bls_msg.index(),
-        common::Encode::HexEncode(cpk_hash).c_str());
+        common::Encode::HexEncode(cpk_hash).c_str(),
+        common_pkey_str[0].c_str());
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
@@ -975,7 +976,9 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
             mem_bls_pk->set_x_c1("");
             mem_bls_pk->set_y_c0("");
             mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_common_public_keys: %d", i);
+            BLS_WARN("0 invalid all_common_public_keys: %d, %s, %s", i,
+            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0).c_str());
             continue;
         }
 

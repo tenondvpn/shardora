@@ -478,7 +478,6 @@ void HotstuffManager::PopPoolsMessage() {
                 SHARDORA_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
                 for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
                     auto* tx = &txs[i];
-                    protos::AddressInfoPtr address_info = nullptr;
                     std::string from_id;
                     if (!pools::IsUserTransaction(tx->step())) {
                         continue;
@@ -495,6 +494,7 @@ void HotstuffManager::PopPoolsMessage() {
                     }
 
                     uint32_t pool_index = common::kInvalidPoolIndex;
+                    protos::AddressInfoPtr tmp_address_info = nullptr;
                     if (tx->step() == pools::protobuf::kContractExcute) {
                         pool_index = common::GetAddressPoolIndex(tx->to());
                         address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
