@@ -46,6 +46,7 @@ void FilterBroadcast::Broadcasting(
     //     // SHARDORA_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
     //     LayerSend(dht_ptr, msg_ptr, nodes);
     // } else {
+    bloomfilter->clear();
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
         // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
         //     bloomfilter->insert((*iter)->id_hash);

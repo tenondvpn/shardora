@@ -908,7 +908,7 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
         "msg hash: %s, pk: %s, hash64: %lu",
         min_aggree_member_count_, member_count_,
         common::Encode::HexEncode(sign_hash).c_str(), 
-        pk.c_str(), msg_ptr->header.hash64());
+        common_pk->x_c0().c_str(), msg_ptr->header.hash64());
     network::Route::Instance()->Send(msg_ptr);
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bls_mgr_->HandleMessage(msg_ptr);
