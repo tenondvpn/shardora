@@ -494,7 +494,7 @@ void HotstuffManager::PopPoolsMessage() {
                     }
 
                     uint32_t pool_index = common::kInvalidPoolIndex;
-                    protos::AddressInfoPtr tmp_address_info = nullptr;
+                    protos::AddressInfoPtr address_info = nullptr;
                     if (tx->step() == pools::protobuf::kContractExcute) {
                         pool_index = common::GetAddressPoolIndex(tx->to());
                         address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
