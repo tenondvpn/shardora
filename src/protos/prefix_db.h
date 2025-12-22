@@ -150,6 +150,8 @@ public:
         key.append((char*)&height, sizeof(height));
         key.append((char*)&local_idx, sizeof(local_idx));
         key.append((char*)&peer_idx, sizeof(peer_idx));
+        SHARDORA_DEBUG("save ttttt swap key: %u, %lu, %u, %u",
+            local_member_idx, height, local_idx, peer_idx);
         auto st = db_->Put(key, seckey);
         if (!st.ok()) {
             SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
@@ -169,6 +171,8 @@ public:
         key.append((char*)&height, sizeof(height));
         key.append((char*)&local_idx, sizeof(local_idx));
         key.append((char*)&peer_idx, sizeof(peer_idx));
+        SHARDORA_DEBUG("get ttttt swap key: %u, %lu, %u, %u",
+            local_member_idx, height, local_idx, peer_idx);
         auto st = db_->Get(key, seckey);
         if (!st.ok()) {
             return false;
