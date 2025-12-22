@@ -60,10 +60,7 @@ void BlsDkg::TimerMessage() {
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
         SHARDORA_WARN("now call send verify g2.");
-        if (should_change_verfication_g2_) {
-            BroadcastVerfify();
-        }
-
+        BroadcastVerfify();
         has_broadcast_verify_ = true;
     }
 
@@ -664,6 +661,28 @@ void BlsDkg::BroadcastVerfify() try {
     if (members_ == nullptr || local_member_index_ >= member_count_) {
         SHARDORA_ERROR("member null or member index invalid!");
         assert(false);
+        return;
+    }
+
+    if (!should_change_verfication_g2_) {
+        std::string sec_key;
+        if (!prefix_db_->GetSwapKey(
+                local_member_index_,
+                prev_elect_height_,
+                local_member_index_,
+                local_member_index_,
+                &sec_key)) {
+            BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
+                local_member_index_, elect_hegiht_,
+                local_member_index_, local_member_index_, elect_hegiht_);
+            return;
+        }
+
+        prefix_db_->SaveSwapKey(
+            local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, sec_key);
+        valid_swapkey_set_.insert(local_member_index_);
+        ++valid_sec_key_count_;
+        has_swaped_keys_[local_member_index_] = true;
         return;
     }
 
