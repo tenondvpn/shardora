@@ -136,7 +136,7 @@ private:
     void PopFinishMessage();
     int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 
-    std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
+    std::atomic<std::shared_ptr<bls::BlsDkg>> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
     std::unordered_map<uint32_t, BlsFinishItemPtr> finish_networks_map_;
     std::shared_ptr<security::Security> security_ = nullptr;

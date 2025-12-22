@@ -47,7 +47,7 @@ private:
     void HandleMessage();
 
     std::shared_ptr<std::thread> thread_{ nullptr };
-    bool destroy_{ false };
+    std::atomic<bool> destroy_{ false };
     MultiThreadHandler* msg_handler_ = nullptr;
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;

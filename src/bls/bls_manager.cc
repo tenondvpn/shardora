@@ -56,9 +56,9 @@ void BlsManager::PoolTimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
         PopFinishMessage();
-        auto tmp_bls = waiting_bls_;
+        auto tmp_bls = waiting_bls_.load();
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
         if (tmp_bls != nullptr) {
             tmp_bls->TimerMessage();
         }
@@ -135,10 +135,6 @@ void BlsManager::OnNewElectBlock(
     }
 
     latest_elect_height_ = elect_height;
-    if (waiting_bls_ != nullptr) {
-        waiting_bls_ = nullptr;
-    }
-
     auto waiting_bls = std::make_shared<bls::BlsDkg>();
     waiting_bls->Init(
         this,
@@ -155,7 +151,7 @@ void BlsManager::OnNewElectBlock(
         elect_height,
         members,
         latest_timeblock_info_);
-    waiting_bls_ = waiting_bls;
+    waiting_bls_.store(waiting_bls);
     SHARDORA_WARN("success add new bls dkg, elect_height: %lu", elect_height);
 }
 
@@ -167,8 +163,9 @@ int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
             return transport::kFirewallCheckError;
         }
     } else {
-        if (waiting_bls_ != nullptr) {
-            if (!waiting_bls_->CheckBlsMessageValid(msg_ptr)) {
+        auto waiting_bls = waiting_bls_.load();
+        if (waiting_bls != nullptr) {
+            if (!waiting_bls->CheckBlsMessageValid(msg_ptr)) {
                 BLS_ERROR("check firewall failed!");
                 return transport::kFirewallCheckError;
             }
@@ -431,8 +428,9 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (waiting_bls_ != nullptr) {
-        waiting_bls_->HandleMessage(msg_ptr);
+    auto waiting_bls = waiting_bls_.load();
+    if (waiting_bls != nullptr) {
+        waiting_bls->HandleMessage(msg_ptr);
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
