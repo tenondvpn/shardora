@@ -113,7 +113,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t des_sharding_id_ = common::kInvalidUint32;
     uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
-    uint64_t latest_elect_height_ = 0;
+    uint64_t latest_valid_elect_height_ = 0;
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
