@@ -369,12 +369,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         }
 
         bls::protobuf::JoinElectInfo join_info;
-        if (!prefix_db_->GetNodeVerificationVector((*members_)[peer_index]->id, &join_info)) {
-            assert(false);
-            return;
-        }
-
-        if (join_info.g2_req().verify_vec_size() <= (int32_t)changed_idx) {
+        if (!prefix_db_->GetNodeVerificationVector((*members_)[bls_msg.index()]->id, &join_info)) {
             assert(false);
             return;
         }
