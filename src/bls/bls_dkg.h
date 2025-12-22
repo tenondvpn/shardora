@@ -51,6 +51,7 @@ public:
         std::shared_ptr<ck::ClickHouseClient> ck_client);
     void OnNewElectionBlock(
         uint64_t elect_height,
+        uint64_t prev_elect_height,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
@@ -185,6 +186,8 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     std::string valid_seck_keys_str_;
+    bool should_change_verfication_g2_ = false;
+    uint64_t prev_elect_height_ = 0;
 
 #ifdef SHARDORA_UNITTEST
     transport::MessagePtr ver_brd_msg_;

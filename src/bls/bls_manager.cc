@@ -75,6 +75,7 @@ void BlsManager::PoolTimerMessage() {
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
+        uint64_t prev_elect_height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
@@ -149,6 +150,7 @@ void BlsManager::OnNewElectBlock(
 //     SHARDORA_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls->OnNewElectionBlock(
         elect_height,
+        prev_elect_height,
         members,
         latest_timeblock_info_);
     waiting_bls_.store(waiting_bls);

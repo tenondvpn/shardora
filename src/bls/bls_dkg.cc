@@ -44,6 +44,7 @@ void BlsDkg::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     ck_client_ = ck_client;
+    should_change_verfication_g2_ = false;
 }
 
 void BlsDkg::Destroy() {
@@ -59,7 +60,10 @@ void BlsDkg::TimerMessage() {
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
         SHARDORA_WARN("now call send verify g2.");
-        BroadcastVerfify();
+        if (should_change_verfication_g2_) {
+            BroadcastVerfify();
+        }
+
         has_broadcast_verify_ = true;
     }
 
@@ -82,6 +86,7 @@ void BlsDkg::TimerMessage() {
 
 void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
+        uint64_t prev_elect_height,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
     if (elect_height <= elect_hegiht_) {
@@ -101,6 +106,7 @@ void BlsDkg::OnNewElectionBlock(
     for_common_pk_g2s_ = std::vector<libff::alt_bn128_G2>(member_count_, libff::alt_bn128_G2::zero());
     min_aggree_member_count_ = common::GetSignerCount(member_count_);
     elect_hegiht_ = elect_height;
+    prev_elect_height_ = prev_elect_height;
     for (uint32_t i = 0; i < member_count_; ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
             local_member_index_ = i;
@@ -347,6 +353,29 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
         //assert(false);
+        return;
+    }
+
+    if (bls_msg.swap_req().keys_size() == 0) {
+        // use prev swap keys
+        std::string seckey;
+        if (!prefix_db_->GetSwapKey(
+                local_member_index_,
+                prev_elect_height_,
+                local_member_index_,
+                bls_msg.index(),
+                &seckey)) {
+            BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
+                local_member_index_, elect_hegiht_,
+                local_member_index_, bls_msg.index(), elect_hegiht_);
+            return;
+        }
+
+        prefix_db_->SaveSwapKey(
+            local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
+        valid_swapkey_set_.insert(bls_msg.index());
+        ++valid_sec_key_count_;
+        has_swaped_keys_[bls_msg.index()] = true;
         return;
     }
 
@@ -675,28 +704,30 @@ void BlsDkg::SwapSecKey() try {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto swap_req = bls_msg.mutable_swap_req();
-    for (uint32_t i = 0; i < member_count_; ++i) {
-        auto swap_item = swap_req->add_keys();
-        swap_item->set_sec_key("");
-        swap_item->set_sec_key_len(0);
-        if (valid_swaped_keys_[i]) {
-            SHARDORA_WARN("valid_swaped_keys_: %d", i);
-            continue;
-        }
+    if (should_change_verfication_g2_) {
+        for (uint32_t i = 0; i < member_count_; ++i) {
+            auto swap_item = swap_req->add_keys();
+            swap_item->set_sec_key("");
+            swap_item->set_sec_key_len(0);
+            if (valid_swaped_keys_[i]) {
+                SHARDORA_WARN("valid_swaped_keys_: %d", i);
+                continue;
+            }
 
-        if (i == local_member_index_) {
-            continue;
-        }
+            if (i == local_member_index_) {
+                continue;
+            }
 
-        std::string seckey;
-        int32_t seckey_len = 0;
-        CreateSwapKey(i, &seckey, &seckey_len);
-        if (seckey_len == 0) {
-            continue;
-        }
+            std::string seckey;
+            int32_t seckey_len = 0;
+            CreateSwapKey(i, &seckey, &seckey_len);
+            if (seckey_len == 0) {
+                continue;
+            }
 
-        swap_item->set_sec_key(seckey);
-        swap_item->set_sec_key_len(seckey_len);
+            swap_item->set_sec_key(seckey);
+            swap_item->set_sec_key_len(seckey_len);
+        }
     }
 
     CreateDkgMessage(msg_ptr);
