@@ -358,13 +358,13 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 
     if (bls_msg.swap_req().keys_size() == 0) {
         // use prev swap keys
-        std::string seckey;
+        std::string sec_key;
         if (!prefix_db_->GetSwapKey(
                 local_member_index_,
                 prev_elect_height_,
                 local_member_index_,
                 bls_msg.index(),
-                &seckey)) {
+                &sec_key)) {
             BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
                 local_member_index_, elect_hegiht_,
                 local_member_index_, bls_msg.index(), elect_hegiht_);
