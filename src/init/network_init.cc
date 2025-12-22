@@ -1139,7 +1139,7 @@ void NetworkInit::HandleElectionBlock(
 
     if (block->has_prev_elect_block()) {
         *prev_elect_block = block->prev_elect_block();
-        latest_valid_elect_height_ = block->prev_elect_block().prev_members().prev_elect_height();
+        latest_valid_elect_height_ = elect_block.prev_members().prev_elect_height();
     }
 
     if (!elect_block->has_shard_network_id() ||
