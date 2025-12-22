@@ -363,8 +363,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
                 bls_msg.index(),
                 &sec_key)) {
             BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
-                local_member_index_, elect_hegiht_,
-                local_member_index_, bls_msg.index(), elect_hegiht_);
+                local_member_index_, prev_elect_height_,
+                local_member_index_, bls_msg.index(), prev_elect_height_);
             return;
         }
 
@@ -673,8 +673,8 @@ void BlsDkg::BroadcastVerfify() try {
                 local_member_index_,
                 &sec_key)) {
             BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
-                local_member_index_, elect_hegiht_,
-                local_member_index_, local_member_index_, elect_hegiht_);
+                local_member_index_, prev_elect_height_,
+                local_member_index_, local_member_index_, prev_elect_height_);
             return;
         }
 

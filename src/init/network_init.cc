@@ -1148,6 +1148,8 @@ void NetworkInit::HandleElectionBlock(
         return;
     }
 
+    auto prev_elect_height = latest_elect_height_;
+    latest_elect_height_ = block->height();
     auto members = elect_mgr_->OnNewElectBlock(
         block->height(),
         elect_block,
@@ -1180,7 +1182,7 @@ void NetworkInit::HandleElectionBlock(
     bls_mgr_->OnNewElectBlock(
         sharding_id, 
         block->height(), 
-        elect_block->prev_members().prev_elect_height(),
+        prev_elect_height,
         elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     kv_sync_->OnNewElectBlock(sharding_id, block->height());
