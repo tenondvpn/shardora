@@ -689,12 +689,13 @@ void BlsManager::CheckAggSignValid(
         all_signs[i] = finish_item->all_bls_signs[i];
         idx_vec[i] = i + 1;
         ++valid_count;
+        SHARDORA_DEBUG("select member index: %u for verify, valid_count: %u, sign: %s", i, valid_count, 
+            libBLS::ThresholdUtils::fieldElementToString(all_signs[i].X).c_str());
         if (valid_count >= t) {
             break;
         }
 
         ++i;
-        SHARDORA_DEBUG("select member index: %u for verify, valid_count: %u", i, valid_count);
         if (i == start_pos) {
             break;
         }
