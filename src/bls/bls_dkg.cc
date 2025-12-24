@@ -878,8 +878,8 @@ void BlsDkg::FinishBroadcast() try {
     DumpLocalPrivateKey(valid_seck_keys);
     BroadcastFinish(bitmap);
     finished_ = true;
-    SHARDORA_DEBUG("elect_height: %lu, finish bls dkg success. local_member_index_: %d, valid count: %u,  
-            local_sec_key_: %s, local_publick_key_: %s, common_public_key_: %s",
+    SHARDORA_DEBUG("elect_height: %lu, finish bls dkg success. local_member_index_: %d, valid count: %u, "
+            "local_sec_key_: %s, local_publick_key_: %s, common_public_key_: %s",
             elect_hegiht_, local_member_index_,
             bitmap.valid_count(),
             libBLS::ThresholdUtils::fieldElementToString(local_sec_key_).c_str(),
