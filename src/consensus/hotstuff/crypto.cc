@@ -56,7 +56,7 @@ Status Crypto::PartialSign(
         elect_item->t(),
         elect_item->n(),
         elect_item->LocalMember()->index,
-        common::Encode::HexEncode(elect_item->local_sk().c_str()).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
         member_bls_pk.c_str(),
         sign_x->c_str(),
         sign_y->c_str(),
