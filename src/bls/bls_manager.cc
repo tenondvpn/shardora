@@ -619,6 +619,11 @@ void BlsManager::CheckAggSignValid(
         const libff::alt_bn128_G2& common_pk,
         BlsFinishItemPtr& finish_item,
         uint32_t member_idx) {
+    SHARDORA_DEBUG("now check agg sign valid t: %u, n: %u, pk: %s, mem_idx: %u, finished: %d", 
+        t, n,
+        common::Encode::HexEncode(
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+        member_idx, finish_item->success_verified);
     if (finish_item->success_verified) {
         std::vector<libff::alt_bn128_G1> tmp_all_signs = finish_item->verified_valid_signs;
         std::vector<size_t> tmp_idx_vec = finish_item->verified_valid_index;
@@ -692,6 +697,8 @@ void BlsManager::CheckAggSignValid(
         if (i == start_pos) {
             break;
         }
+
+        SHARDORA_DEBUG("select member index: %u for verify, valid_count: %u", i, valid_count);
     }
 
     if (valid_count < t) {
@@ -758,6 +765,11 @@ bool BlsManager::CheckAndVerifyAll(
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec) {
+    SHARDORA_DEBUG("now check agg sign valid t: %u, n: %u, pk: %s, finished: %d", 
+        t, n,
+        common::Encode::HexEncode(
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+        finish_item->success_verified);
     if (VerifyAggSignValid(
             t,
             n,
@@ -808,9 +820,19 @@ bool BlsManager::CheckAndVerifyAll(
             }
         }
 
+        SHARDORA_DEBUG("success check agg sign valid t: %u, n: %u, pk: %s, finished: %d", 
+            t, n,
+            common::Encode::HexEncode(
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+            finish_item->success_verified);
         return true;
     }
 
+    SHARDORA_DEBUG("failed check agg sign valid t: %u, n: %u, pk: %s, finished: %d", 
+        t, n,
+        common::Encode::HexEncode(
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+        finish_item->success_verified);
     return false;
 }
 
