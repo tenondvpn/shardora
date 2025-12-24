@@ -138,6 +138,7 @@ public:
     }
 
     void SaveSwapKey(
+            uint32_t sharding_id,
             uint32_t local_member_idx,
             uint64_t height,
             uint32_t local_idx,
@@ -146,6 +147,7 @@ public:
         std::string key;
         key.reserve(32);
         key.append(kBlsSwapKeyPrefex);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
         key.append((char*)&height, sizeof(height));
         key.append((char*)&local_idx, sizeof(local_idx));
@@ -159,6 +161,7 @@ public:
     }
 
     bool GetSwapKey(
+            uint32_t sharding_id,
             uint32_t local_member_idx,
             uint64_t height,
             uint32_t local_idx,
@@ -167,6 +170,7 @@ public:
         std::string key;
         key.reserve(32);
         key.append(kBlsSwapKeyPrefex);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
         key.append((char*)&height, sizeof(height));
         key.append((char*)&local_idx, sizeof(local_idx));

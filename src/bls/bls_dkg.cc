@@ -361,6 +361,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         // use prev swap keys
         std::string sec_key;
         if (!prefix_db_->GetSwapKey(
+                common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
                 prev_elect_height_,
                 local_member_index_,
@@ -391,6 +392,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         auto tmp_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         for_common_pk_g2s_[bls_msg.index()] = tmp_val;
         prefix_db_->SaveSwapKey(
+            common::GlobalInfo::Instance()->network_id(),
             local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
         valid_swapkey_set_.insert(bls_msg.index());
         ++valid_sec_key_count_;
@@ -458,6 +460,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         min_aggree_member_count_);
     // swap
     prefix_db_->SaveSwapKey(
+        common::GlobalInfo::Instance()->network_id(),
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
     valid_swapkey_set_.insert(bls_msg.index());
     ++valid_sec_key_count_;
@@ -689,6 +692,7 @@ void BlsDkg::BroadcastVerfify() try {
     if (!should_change_verfication_g2_) {
         std::string sec_key;
         if (!prefix_db_->GetSwapKey(
+                common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
                 prev_elect_height_,
                 local_member_index_,
@@ -701,6 +705,7 @@ void BlsDkg::BroadcastVerfify() try {
         }
 
         prefix_db_->SaveSwapKey(
+            common::GlobalInfo::Instance()->network_id(),
             local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, sec_key);
         valid_swapkey_set_.insert(local_member_index_);
         ++valid_sec_key_count_;
@@ -848,6 +853,7 @@ void BlsDkg::FinishBroadcast() try {
 
         std::string seckey;
         if (!prefix_db_->GetSwapKey(
+                common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
                 elect_hegiht_,
                 local_member_index_,
@@ -1073,6 +1079,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
+        common::GlobalInfo::Instance()->network_id(),
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
 
 #ifdef SHARDORA_UNITEST
