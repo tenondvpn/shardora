@@ -39,6 +39,10 @@ void BlsDkg::Init(
     bls_mgr_ = bls_mgr;
     security_ = security;
     local_sec_key_ = local_sec_key;
+    SHARDORA_DEBUG("init local sec key: %s, local public key: %s, common public key: %s",
+        libBLS::ThresholdUtils::fieldElementToString(local_sec_key).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(local_publick_key_.X.c0).c_str(),
+        BlsDkg::serializeCommonPk(common_public_key.X.c0).c_str());
     local_publick_key_ = local_publick_key;
     common_public_key_ = common_public_key;
     db_ = db;
