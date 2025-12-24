@@ -369,20 +369,20 @@ int BlsManager::Verify(
         return kBlsError;
     }
 
-// #ifndef NDEBUG
-//     auto bn_sign = sign;
-//     bn_sign.to_affine_coordinates();
-//     auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
-//     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
-//     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-//     SHARDORA_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
-//         t, n,
-//         (sign_x).c_str(), (sign_y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str(),
-//         pk_str.c_str());
-// #endif
+#ifndef NDEBUG
+    auto bn_sign = sign;
+    bn_sign.to_affine_coordinates();
+    auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
+    auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+    auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+    SHARDORA_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
+        t, n,
+        (sign_x).c_str(), (sign_y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str(),
+        pk_str.c_str());
+#endif
     return BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
