@@ -13,6 +13,7 @@ Db::Db() {
 }
 
 Db::~Db() {
+    Destroy();
 }
 
 void Db::Destroy() {

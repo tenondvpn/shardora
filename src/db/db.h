@@ -280,7 +280,7 @@ private:
     Db(const Db&);
     Db(const Db&&);
     Db& operator=(const Db&);
-    bool inited_{ false };
+    std::atomic<bool> inited_{ false };
     std::mutex mutex;
 };
 

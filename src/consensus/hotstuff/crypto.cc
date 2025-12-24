@@ -52,10 +52,11 @@ Status Crypto::PartialSign(
     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
             elect_item->LocalMember()->bls_publick_key.X.c0);
     SHARDORA_DEBUG("bls parial sign t: %u, n: %u, member index: %u, "
-        "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+        "local seckey: %s, bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
         elect_item->t(),
         elect_item->n(),
         elect_item->LocalMember()->index,
+        common::Encode::HexEncode(elect_item->local_sk().c_str()).c_str(),
         member_bls_pk.c_str(),
         sign_x->c_str(),
         sign_y->c_str(),
