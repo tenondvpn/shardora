@@ -331,20 +331,20 @@ int BlsManager::Sign(
     bn_sign.to_affine_coordinates();
     *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-// #ifndef NDEBUG
-//     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
-//     BLSPublicKeyShare pkey(local_sec_key, t, n);
-//     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-//     SHARDORA_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-//         t, n, 
-//         (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
-//         (*sign_x).c_str(), (*sign_y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-//     std::string verify_hash;
-//     assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
-// #endif
+#ifndef NDEBUG
+    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
+    BLSPublicKeyShare pkey(local_sec_key, t, n);
+    std::shared_ptr<std::vector<std::string>> strs = pkey.toString();
+    SHARDORA_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n, 
+        (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
+        (*sign_x).c_str(), (*sign_y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+    std::string verify_hash;
+    assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
+#endif
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
