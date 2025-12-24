@@ -883,7 +883,7 @@ void BlsDkg::FinishBroadcast() try {
             elect_hegiht_, local_member_index_,
             bitmap.valid_count(),
             libBLS::ThresholdUtils::fieldElementToString(local_sec_key_).c_str(),
-            BlsDkg::serializeCommonPk(local_publick_key_).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(local_publick_key_.X.c0).c_str(),
             BlsDkg::serializeCommonPk(common_public_key_).c_str());
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
