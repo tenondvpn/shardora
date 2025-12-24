@@ -694,11 +694,10 @@ void BlsManager::CheckAggSignValid(
         }
 
         ++i;
+        SHARDORA_DEBUG("select member index: %u for verify, valid_count: %u", i, valid_count);
         if (i == start_pos) {
             break;
         }
-
-        SHARDORA_DEBUG("select member index: %u for verify, valid_count: %u", i, valid_count);
     }
 
     if (valid_count < t) {
@@ -746,6 +745,8 @@ void BlsManager::CheckAggSignValid(
 
         idx_vec[i] = i + 1;
         all_signs[i] = finish_item->all_bls_signs[i];
+        SHARDORA_DEBUG("weed member index: %u, bls sign: %s",
+            i, libBLS::ThresholdUtils::fieldElementToString(all_signs[i].X).c_str());
         if (CheckAndVerifyAll(
                 t,
                 n,
