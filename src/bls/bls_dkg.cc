@@ -980,8 +980,9 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     finish_msg->set_bls_sign_y(sign_y);
 #ifndef SHARDORA_UNITTEST
     SHARDORA_WARN("success broadcast finish message. t: %d, n: %d, "
-        "msg hash: %s, pk: %s, hash64: %lu",
+        "local seckey: %s, msg hash: %s, pk: %s, hash64: %lu",
         min_aggree_member_count_, member_count_,
+        libBLS::ThresholdUtils::fieldElementToString(local_sec_key_).c_str(),
         common::Encode::HexEncode(sign_hash).c_str(), 
         common_pk->x_c0().c_str(), msg_ptr->header.hash64());
     network::Route::Instance()->Send(msg_ptr);
