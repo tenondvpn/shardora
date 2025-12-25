@@ -264,6 +264,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
 
     if (!IsVerifyBrdPeriod()) {
 //         assert(false);
+        BLS_DEBUG("invalid verify brd period.");
         return;
     }
 

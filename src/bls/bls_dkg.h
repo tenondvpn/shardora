@@ -115,6 +115,18 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
+        SHARDORA_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+            "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u, "
+            "now_tm_us: %u, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4): %d",
+            common::TimeUtils::TimestampSeconds(),
+            begin_time_us_ / 1000000,
+            latest_timeblock_info->lastest_time_block_tm,
+            kDkgPeriodUs / 1000000,
+            ver_offset_ / 1000000,
+            swap_offset_ / 1000000,
+            finish_offset_ / 1000000,
+            now_tm_us / 1000000,
+            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)));
         if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)) {
             return true;
         }
@@ -127,6 +139,20 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
+        SHARDORA_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+            "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u, "
+            "now_tm_us: %u, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7): %d, "
+            "now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4): %d",
+            common::TimeUtils::TimestampSeconds(),
+            begin_time_us_ / 1000000,
+            latest_timeblock_info->lastest_time_block_tm,
+            kDkgPeriodUs / 1000000,
+            ver_offset_ / 1000000,
+            swap_offset_ / 1000000,
+            finish_offset_ / 1000000,
+            now_tm_us / 1000000,
+            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7)),
+            (now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)));
         if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
                 now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)) {
             return true;
