@@ -708,6 +708,21 @@ void BlsDkg::BroadcastVerfify() try {
             return;
         }
 
+        bls::protobuf::LocalPolynomial local_poly;
+        if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
+            SHARDORA_ERROR("failed GetLocalPolynomial: %s",
+                common::Encode::HexEncode(security_->GetAddress()).c_str());
+            // assert(false);
+            return;
+        }
+
+        if (local_poly.polynomial_size() < (int32_t)valid_t) {
+            assert(false);
+            return;
+        }
+
+        auto local_polynomial = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
+        for_common_pk_g2s_[local_member_index_] = local_polynomial * libff::alt_bn128_G2::one();
         prefix_db_->SaveSwapKey(
             common::GlobalInfo::Instance()->network_id(),
             local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, sec_key);
