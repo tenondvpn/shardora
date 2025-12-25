@@ -178,77 +178,6 @@ int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
     return transport::kFirewallCheckSuccess;
 }
 
-int BlsManager::VerifyFinishMessage(
-        const transport::MessagePtr& msg_ptr,
-        common::MembersPtr& members,
-        libff::alt_bn128_G1& out_sign,
-        BLSPublicKey& out_pkey,
-        BLSPublicKey& out_common_pkey,
-        std::string& out_cpk_hash,
-        std::string& out_common_pk_str) {
-    auto& header = msg_ptr->header;
-    auto& bls_msg = header.bls_proto();
-    if (members == nullptr || bls_msg.index() >= members->size()) {
-        BLS_ERROR("not get waiting network members network id: %u, index: %d",
-            bls_msg.finish_req().network_id(), bls_msg.index());
-        return transport::kFirewallCheckError;
-    }
-
-    std::string msg_hash;
-    protos::GetProtoHash(msg_ptr->header, &msg_hash);
-    if (security_->Verify(
-            msg_hash,
-            (*members)[bls_msg.index()]->pubkey,
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        BLS_ERROR("verify message failed network id: %u, index: %d",
-            bls_msg.finish_req().network_id(), bls_msg.index());
-        return transport::kFirewallCheckError;
-    }
-
-    std::vector<std::string> pkey_str = {
-            bls_msg.finish_req().pubkey().x_c0(),
-            bls_msg.finish_req().pubkey().x_c1(),
-            bls_msg.finish_req().pubkey().y_c0(),
-            bls_msg.finish_req().pubkey().y_c1()
-    };
-    out_pkey = BLSPublicKey(std::make_shared<std::vector<std::string>>(pkey_str));
-
-    std::vector<std::string> common_pkey_str_vec = {
-            bls_msg.finish_req().common_pubkey().x_c0(),
-            bls_msg.finish_req().common_pubkey().x_c1(),
-            bls_msg.finish_req().common_pubkey().y_c0(),
-            bls_msg.finish_req().common_pubkey().y_c1()
-    };
-    out_common_pkey = BLSPublicKey(std::make_shared<std::vector<std::string>>(common_pkey_str_vec));
-    out_common_pk_str = bls_msg.finish_req().common_pubkey().x_c0() +
-        bls_msg.finish_req().common_pubkey().x_c1() +
-        bls_msg.finish_req().common_pubkey().y_c0() +
-        bls_msg.finish_req().common_pubkey().y_c1();
-    out_cpk_hash = common::Hash::keccak256(out_common_pk_str);
-
-    out_sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
-    out_sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
-    out_sign.Z = libff::alt_bn128_Fq::one();
-
-    auto t = common::GetSignerCount(members->size());
-    std::string verify_hash;
-    libff::alt_bn128_G1 g1_hash;
-    GetLibffHash(out_cpk_hash, &g1_hash);
-    if (Verify(
-            t,
-            members->size(),
-            *out_pkey.getPublicKey(),
-            out_sign,
-            g1_hash,
-            &verify_hash) != bls::kBlsSuccess) {
-        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
-            t, members->size(), common::Encode::HexEncode(out_cpk_hash).c_str(), out_common_pk_str.c_str());
-        return transport::kFirewallCheckError;
-    }
-
-    return transport::kFirewallCheckSuccess;
-}
-
 int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
@@ -273,19 +202,63 @@ int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
     }
 
     common::MembersPtr members = elect_iter->second->members;
+    if (members == nullptr || bls_msg.index() >= members->size()) {
+        BLS_ERROR("not get waiting network members network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
+        return transport::kFirewallCheckError;
+    }
+
+    std::string msg_hash;
+    protos::GetProtoHash(msg_ptr->header, &msg_hash);
+    if (security_->Verify(
+            msg_hash,
+            (*members)[bls_msg.index()]->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        BLS_ERROR("verify message failed network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
+        return transport::kFirewallCheckError;
+    }
+
+    std::vector<std::string> pkey_str = {
+            bls_msg.finish_req().pubkey().x_c0(),
+            bls_msg.finish_req().pubkey().x_c1(),
+            bls_msg.finish_req().pubkey().y_c0(),
+            bls_msg.finish_req().pubkey().y_c1()
+    };
+    auto t = common::GetSignerCount(members->size());
+    BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+    std::vector<std::string> common_pkey_str = {
+            bls_msg.finish_req().common_pubkey().x_c0(),
+            bls_msg.finish_req().common_pubkey().x_c1(),
+            bls_msg.finish_req().common_pubkey().y_c0(),
+            bls_msg.finish_req().common_pubkey().y_c1()
+    };
+    BLSPublicKey common_pkey(std::make_shared<std::vector<std::string>>(common_pkey_str));
+    std::string common_pk_str = bls_msg.finish_req().common_pubkey().x_c0() +
+        bls_msg.finish_req().common_pubkey().x_c1() +
+        bls_msg.finish_req().common_pubkey().y_c0() +
+        bls_msg.finish_req().common_pubkey().y_c1();
+    std::string cpk_hash = common::Hash::keccak256(common_pk_str);
     libff::alt_bn128_G1 sign;
-    BLSPublicKey pkey;
-    BLSPublicKey common_pkey;
-    std::string cpk_hash;
-    std::string common_pk_str;
-    return VerifyFinishMessage(
-        msg_ptr,
-        members,
-        sign,
-        pkey,
-        common_pkey,
-        cpk_hash,
-        common_pk_str);
+    sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
+    sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
+    sign.Z = libff::alt_bn128_Fq::one();
+    std::string verify_hash;
+    libff::alt_bn128_G1 g1_hash;
+    GetLibffHash(cpk_hash, &g1_hash);
+    if (Verify(
+            t,
+            members->size(),
+            *pkey.getPublicKey(),
+            sign,
+            g1_hash,
+            &verify_hash) != bls::kBlsSuccess) {
+        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+            t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
+        return transport::kFirewallCheckError;
+    }
+
+    return transport::kFirewallCheckSuccess;
 }
 
 void BlsManager::OnTimeBlock(
@@ -504,19 +477,59 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     common::MembersPtr members = elect_iter->second->members;
+    if (members == nullptr || bls_msg.index() >= members->size()) {
+        BLS_ERROR("not get waiting network members network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
+        return;
+    }
+
+    std::string msg_hash;
+    protos::GetProtoHash(msg_ptr->header, &msg_hash);
+    if (security_->Verify(
+            msg_hash,
+            (*members)[bls_msg.index()]->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        BLS_ERROR("verify message failed network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
+        return;
+    }
+
+    std::vector<std::string> pkey_str = {
+            bls_msg.finish_req().pubkey().x_c0(),
+            bls_msg.finish_req().pubkey().x_c1(),
+            bls_msg.finish_req().pubkey().y_c0(),
+            bls_msg.finish_req().pubkey().y_c1()
+    };
+    auto t = common::GetSignerCount(members->size());
+    BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+    std::vector<std::string> common_pkey_str = {
+            bls_msg.finish_req().common_pubkey().x_c0(),
+            bls_msg.finish_req().common_pubkey().x_c1(),
+            bls_msg.finish_req().common_pubkey().y_c0(),
+            bls_msg.finish_req().common_pubkey().y_c1()
+    };
+    BLSPublicKey common_pkey(std::make_shared<std::vector<std::string>>(common_pkey_str));
+    std::string common_pk_str = bls_msg.finish_req().common_pubkey().x_c0() +
+        bls_msg.finish_req().common_pubkey().x_c1() +
+        bls_msg.finish_req().common_pubkey().y_c0() +
+        bls_msg.finish_req().common_pubkey().y_c1();
+    std::string cpk_hash = common::Hash::keccak256(common_pk_str);
     libff::alt_bn128_G1 sign;
-    BLSPublicKey pkey;
-    BLSPublicKey common_pkey;
-    std::string cpk_hash;
-    std::string common_pk_str;
-    if (VerifyFinishMessage(
-            msg_ptr,
-            members,
+    sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
+    sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
+    sign.Z = libff::alt_bn128_Fq::one();
+    std::string verify_hash;
+    libff::alt_bn128_G1 g1_hash;
+    GetLibffHash(cpk_hash, &g1_hash);
+    if (Verify(
+            t,
+            members->size(),
+            *pkey.getPublicKey(),
             sign,
-            pkey,
-            common_pkey,
-            cpk_hash,
-            common_pk_str) != transport::kFirewallCheckSuccess) {
+            g1_hash,
+            &verify_hash) != bls::kBlsSuccess) {
+        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+            t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return;
     }
 
