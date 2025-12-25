@@ -448,38 +448,38 @@ void ShardStatistic::HandleStatistic(
     //         view_block_ptr->qc().elect_height());
     // }
 
-    auto& node_info_map = elect_height_iter->second;
-    // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
-    auto node_iter = node_info_map.find(leader_id);
-    if (node_iter == node_info_map.end()) {
-        node_info_map[leader_id] = StatisticMemberInfoItem();
-        node_iter = node_info_map.find(leader_id);
-    }
-
-    auto& node_info = node_iter->second;
-    node_info.gas_sum += block.all_gas();
-    node_info.tx_count += block.tx_list_size();
-    // std::string debug_str = ", height_node_collect_info_map height: ";
-    // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-    //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-    //     for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
-    //         debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
-    //         ", block_gas: " + std::to_string(siter->second.gas_sum) + 
-    //         ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
-    //     }
+    // auto& node_info_map = elect_height_iter->second;
+    // // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
+    // auto node_iter = node_info_map.find(leader_id);
+    // if (node_iter == node_info_map.end()) {
+    //     node_info_map[leader_id] = StatisticMemberInfoItem();
+    //     node_iter = node_info_map.find(leader_id);
     // }
 
-    SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
-        "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
-        "debug_str: %s, statistic_pool_debug_str: %s",
-        pool_statistic_riter->first,
-        view_block_ptr->qc().pool_index(), block.height(), 
-        block.timeblock_height(), 
-        common::Encode::HexEncode(leader_id).c_str(),
-        node_info.tx_count,
-        block.tx_list_size(),
-        debug_str.c_str(),
-        statistic_pool_debug_str.c_str());
+    // auto& node_info = node_iter->second;
+    // node_info.gas_sum += block.all_gas();
+    // node_info.tx_count += block.tx_list_size();
+    // // std::string debug_str = ", height_node_collect_info_map height: ";
+    // // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+    // //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+    // //     for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
+    // //         debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
+    // //         ", block_gas: " + std::to_string(siter->second.gas_sum) + 
+    // //         ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
+    // //     }
+    // // }
+
+    // SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
+    //     "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
+    //     "debug_str: %s, statistic_pool_debug_str: %s",
+    //     pool_statistic_riter->first,
+    //     view_block_ptr->qc().pool_index(), block.height(), 
+    //     block.timeblock_height(), 
+    //     common::Encode::HexEncode(leader_id).c_str(),
+    //     node_info.tx_count,
+    //     block.tx_list_size(),
+    //     debug_str.c_str(),
+    //     statistic_pool_debug_str.c_str());
 
 }
 
