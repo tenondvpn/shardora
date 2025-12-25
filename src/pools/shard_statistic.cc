@@ -439,14 +439,14 @@ void ShardStatistic::HandleStatistic(
         return;
     }
 
-    auto elect_height_iter = height_node_collect_info_map.find(
-        view_block_ptr->qc().elect_height());
-    if (elect_height_iter == height_node_collect_info_map.end()) {
-        height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
-            std::unordered_map<std::string, StatisticMemberInfoItem>();
-        elect_height_iter = height_node_collect_info_map.find(
-            view_block_ptr->qc().elect_height());
-    }
+    // auto elect_height_iter = height_node_collect_info_map.find(
+    //     view_block_ptr->qc().elect_height());
+    // if (elect_height_iter == height_node_collect_info_map.end()) {
+    //     height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
+    //         std::unordered_map<std::string, StatisticMemberInfoItem>();
+    //     elect_height_iter = height_node_collect_info_map.find(
+    //         view_block_ptr->qc().elect_height());
+    // }
 
     auto& node_info_map = elect_height_iter->second;
     // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
@@ -459,15 +459,15 @@ void ShardStatistic::HandleStatistic(
     auto& node_info = node_iter->second;
     node_info.gas_sum += block.all_gas();
     node_info.tx_count += block.tx_list_size();
-    std::string debug_str = ", height_node_collect_info_map height: ";
-    for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-            titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-        for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
-            debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
-            ", block_gas: " + std::to_string(siter->second.gas_sum) + 
-            ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
-        }
-    }
+    // std::string debug_str = ", height_node_collect_info_map height: ";
+    // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+    //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+    //     for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
+    //         debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
+    //         ", block_gas: " + std::to_string(siter->second.gas_sum) + 
+    //         ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
+    //     }
+    // }
 
     SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
@@ -728,11 +728,11 @@ int ShardStatistic::StatisticWithHeights(
             debug_str += std::to_string(titer->first) + ",";
         }
 
-        debug_str += ", height_node_collect_info_map height: ";
-        for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-                titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-            debug_str += std::to_string(titer->first) + ",";
-        }
+        // debug_str += ", height_node_collect_info_map height: ";
+        // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+        //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+        //     debug_str += std::to_string(titer->first) + ",";
+        // }
 
         for (auto h_join_elect_stoke_iter = statistic_info_ptr->join_elect_stoke_map.begin();
                 h_join_elect_stoke_iter != statistic_info_ptr->join_elect_stoke_map.end(); 
@@ -783,29 +783,29 @@ int ShardStatistic::StatisticWithHeights(
         // join_elect_shard_map.insert(
         //     statistic_info_ptr->join_elect_shard_map.begin(), 
         //     statistic_info_ptr->join_elect_shard_map.end());
-        for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
-                h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
-                ++h_height_node_collect_info_iter) {
-            tx_count_debug_str += "height: " + std::to_string(h_height_node_collect_info_iter->first) + ", ";
-            auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
-            if (tmp_iter == height_node_collect_info_map.end()) {
-                height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
-            } else {
-                for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
-                        height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
-                        ++height_node_collect_info_iter) {
-                    tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + 
-                        ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
-                    auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
-                    if (stoke_iter == tmp_iter->second.end()) {
-                        tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
-                    } else {
-                        stoke_iter->second.tx_count += height_node_collect_info_iter->second.tx_count;
-                        stoke_iter->second.gas_sum += height_node_collect_info_iter->second.gas_sum;
-                    }
-                }
-            }
-        }
+        // for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
+        //         h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
+        //         ++h_height_node_collect_info_iter) {
+        //     tx_count_debug_str += "height: " + std::to_string(h_height_node_collect_info_iter->first) + ", ";
+        //     auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
+        //     if (tmp_iter == height_node_collect_info_map.end()) {
+        //         height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
+        //     } else {
+        //         for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
+        //                 height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
+        //                 ++height_node_collect_info_iter) {
+        //             tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + 
+        //                 ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
+        //             auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
+        //             if (stoke_iter == tmp_iter->second.end()) {
+        //                 tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
+        //             } else {
+        //                 stoke_iter->second.tx_count += height_node_collect_info_iter->second.tx_count;
+        //                 stoke_iter->second.gas_sum += height_node_collect_info_iter->second.gas_sum;
+        //             }
+        //         }
+        //     }
+        // }
         // height_node_collect_info_map.insert(
         //     statistic_info_ptr->height_node_collect_info_map.begin(), 
         //     statistic_info_ptr->height_node_collect_info_map.end());
