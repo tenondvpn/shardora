@@ -721,7 +721,7 @@ void BlsDkg::BroadcastVerfify() try {
             return;
         }
 
-        auto local_polynomial = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
+        auto local_polynomial = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(0)).c_str());
         for_common_pk_g2s_[local_member_index_] = local_polynomial * libff::alt_bn128_G2::one();
         prefix_db_->SaveSwapKey(
             common::GlobalInfo::Instance()->network_id(),
