@@ -716,7 +716,7 @@ void BlsDkg::BroadcastVerfify() try {
             return;
         }
 
-        if (local_poly.polynomial_size() < (int32_t)valid_t) {
+        if (local_poly.polynomial_size() == 0) {
             assert(false);
             return;
         }
