@@ -27,14 +27,14 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
     message.append(std::string((char*)&gas_used, sizeof(gas_used)));
     uint32_t status = tx_info.status();
     message.append(std::string((char*)&status, sizeof(status)));
-    for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        message.append(tx_info.storages(i).key());
-        message.append(tx_info.storages(i).value());
-        SHARDORA_DEBUG("add tx key: %s, %s, val: %s",
-            tx_info.storages(i).key().c_str(),
-            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
-            common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
-    }
+    // for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
+    //     message.append(tx_info.storages(i).key());
+    //     message.append(tx_info.storages(i).value());
+    //     SHARDORA_DEBUG("add tx key: %s, %s, val: %s",
+    //         tx_info.storages(i).key().c_str(),
+    //         common::Encode::HexEncode(tx_info.storages(i).key()).c_str(), 
+    //         common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
+    // }
 
     SHARDORA_DEBUG("phash: %s, nonce: %lu, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
         "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
