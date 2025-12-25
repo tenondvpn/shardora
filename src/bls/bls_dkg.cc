@@ -486,7 +486,6 @@ bool BlsDkg::VerifySekkeyValid(
             (*members_)[peer_index]->id,
             min_aggree_member_count_,
             &verfy_final_vals)) {
-            &verfy_final_vals)) { // This function should be moved to a common utility
         // compute verified g2s with new index
         SHARDORA_ERROR("failed get verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
             local_member_index_, 
@@ -494,12 +493,6 @@ bool BlsDkg::VerifySekkeyValid(
             min_aggree_member_count_, 
             (*members_)[0]->net_id);
         if (!CheckRecomputeG2s((*members_)[peer_index]->id, verfy_final_vals)) {
-        if (!bls::CheckRecomputeG2s(
-                local_member_index_,
-                min_aggree_member_count_,
-                (*members_)[peer_index]->id,
-                prefix_db_,
-                verfy_final_vals)) {
             SHARDORA_WARN("failed get verified g2: %u, %s",
                 local_member_index_,
                 common::Encode::HexEncode((*members_)[peer_index]->id).c_str());
