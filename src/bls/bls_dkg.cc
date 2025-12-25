@@ -206,8 +206,10 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.elect_height() == 0 || bls_msg.elect_height() != elect_hegiht_) {
-        SHARDORA_WARN("bls_msg.elect_height() != elect_height: %lu, %lu, hash64: %lu",
-            bls_msg.elect_height(), elect_hegiht_, msg_ptr->header.hash64());
+        SHARDORA_WARN("bls_msg.elect_height() != elect_height: %lu, %lu, hash64: %lu, "
+            "verify brd: %d, swap key: %d, member index: %d",
+            bls_msg.elect_height(), elect_hegiht_, msg_ptr->header.hash64(),
+            bls_msg.has_verify_brd(), bls_msg.has_swap_req(), bls_msg.index());
         return;
     }
 
