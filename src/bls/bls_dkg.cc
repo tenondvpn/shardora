@@ -154,7 +154,7 @@ void BlsDkg::OnNewElectionBlock(
 
 void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
     bls_msg_queue_.push(msg_ptr);
-    SHARDORA_WARN("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
+    SHARDORA_DEBUG("now add bls message: %lu", msg_ptr->header.hash64());
 }
 
 void BlsDkg::PopBlsMessage() {
@@ -164,6 +164,7 @@ void BlsDkg::PopBlsMessage() {
             break;
         }
 
+        SHARDORA_DEBUG("now handle bls message: %lu", msg_ptr->header.hash64());
         HandleBlsMessage(msg_ptr);
     }
 }
@@ -205,8 +206,8 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.elect_height() == 0 || bls_msg.elect_height() != elect_hegiht_) {
-        SHARDORA_WARN("bls_msg.elect_height() != elect_height: %lu, %lu",
-            bls_msg.elect_height(), elect_hegiht_);
+        SHARDORA_WARN("bls_msg.elect_height() != elect_height: %lu, %lu, hash64: %lu",
+            bls_msg.elect_height(), elect_hegiht_, msg_ptr->header.hash64());
         return;
     }
 

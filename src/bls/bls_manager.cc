@@ -113,9 +113,7 @@ void BlsManager::OnNewElectBlock(
     CHECK_MEMORY_SIZE(elect_members_);
     SHARDORA_WARN("sharding: %u, success add new bls dkg, elect_height: %lu, member count: %u",
         sharding_id, elect_height, members->size());
-    if (sharding_id != common::GlobalInfo::Instance()->network_id() &&
-            sharding_id + network::kConsensusWaitingShardOffset != 
-            common::GlobalInfo::Instance()->network_id()) {
+    if (!network::IsSameToLocalShard(sharding_id)) {
         return;
     }
 
@@ -154,7 +152,8 @@ void BlsManager::OnNewElectBlock(
         members,
         latest_timeblock_info_);
     waiting_bls_.store(waiting_bls);
-    SHARDORA_WARN("success add new bls dkg, elect_height: %lu", elect_height);
+    SHARDORA_WARN("success add new bls dkg, elect_height: %lu, prev valid elect height: %lu",
+        elect_height, prev_elect_height);
 }
 
 int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
