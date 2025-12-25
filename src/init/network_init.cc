@@ -1135,9 +1135,11 @@ void NetworkInit::HandleElectionBlock(
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     if (block->has_elect_block()) {
         *elect_block = block->elect_block();
-        if (elect_block->has_prev_members() &&
-                elect_block->prev_members().prev_elect_height() > latest_valid_elect_height_) {
-            latest_valid_elect_height_ = elect_block->prev_members().prev_elect_height();
+        if (network::IsSameToLocalShard(elect_block->shard_network_id())) {
+            if (elect_block->has_prev_members() &&
+                    elect_block->prev_members().prev_elect_height() > latest_valid_elect_height_) {
+                latest_valid_elect_height_ = elect_block->prev_members().prev_elect_height();
+            }
         }
     }
 
