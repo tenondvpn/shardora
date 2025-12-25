@@ -264,7 +264,8 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
 
     if (!IsVerifyBrdPeriod()) {
 //         assert(false);
-        BLS_DEBUG("invalid verify brd period.");
+        BLS_DEBUG("invalid verify brd period hash64: %lu, elect height: %lu, member index: %d", 
+            msg_ptr->header.hash64(), elect_hegiht_, bls_msg.index());
         return;
     }
 
@@ -358,6 +359,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
         //assert(false);
+        BLS_DEBUG("invalid swap key period hash64: %lu, elect height: %lu, member index: %d", 
+            msg_ptr->header.hash64(), elect_hegiht_, bls_msg.index());
         return;
     }
 
