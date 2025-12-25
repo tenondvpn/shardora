@@ -200,13 +200,10 @@ bool ElectManager::ProcessPrevElectMembers(
             prev_members_bls.size(),
             in.size(),
             elect_block.prev_members().prev_elect_height());
-        // The number of BLS public keys for previous members must match the number of members in the previous election block.
-        // This indicates a severe data inconsistency.
-        SHARDORA_FATAL("prev_members_bls.size() [%d] != in.size() [%d]", prev_members_bls.size(), in.size());
+        assert(false);
         return false;
     }
 
-    // Calculate the expected number of leaders. This is the largest power of 2 <= (member_count / 3).
     uint32_t expect_leader_count = (int32_t)pow(
         2.0,
         (double)((int32_t)log2(double(in.size() / 3))));
