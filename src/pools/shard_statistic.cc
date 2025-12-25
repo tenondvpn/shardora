@@ -554,10 +554,11 @@ int ShardStatistic::StatisticWithHeights(
             piter !=  statistic_pool_info_.rend() ? piter->first : 0lu, 
             piter !=  statistic_pool_info_.rend() ? piter->second.size() : 0lu, 
             latest_statisticed_height_);
-        piter = iter;
         ++iter;
     }
 
+    // piter 指向最新的时间块周期, iter 指向它之前的一个。
+    // 我们将为 iter 定义的周期生成统计信息，因为它现在已经是一个完整的、封闭的区间。
     if (piter == statistic_pool_info_.rend() || iter == statistic_pool_info_.rend()) {
         std::string piter_debug_str;
         if (piter != statistic_pool_info_.rend())
@@ -644,7 +645,7 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    auto exist_iter = statistic_height_map_.find(iter->first);
+    auto exist_iter = statistic_height_map_.find(piter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
         SHARDORA_INFO("success get exists statistic message iter->first: %lu, "
@@ -652,7 +653,7 @@ int ShardStatistic::StatisticWithHeights(
             "now tm height: %lu, statistic: %s",
             iter->first,
             prev_timeblock_height_,
-            statisticed_timeblock_height,
+            piter->first,
             latest_timeblock_height_,
             ProtobufToJson(elect_statistic).c_str());
         return kPoolsSuccess;
@@ -695,7 +696,7 @@ int ShardStatistic::StatisticWithHeights(
 
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
-    auto pool_iter = iter->second.begin();
+    auto pool_iter = piter->second.begin();
     auto* statistic_info_ptr = &pool_iter->second;
     all_gas_amount += statistic_info_ptr->all_gas_amount;
     root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
@@ -858,8 +859,8 @@ int ShardStatistic::StatisticWithHeights(
         iter->first, 
         debug_str.c_str(), 
         tx_count_debug_str.c_str());
-    assert(piter->first > iter->first);
-    statistic_height_map_[iter->first] = elect_statistic;
+    assert(piter->first >= iter->first);
+    statistic_height_map_[piter->first] = elect_statistic;
     CHECK_MEMORY_SIZE(statistic_height_map_);
     // auto handled_height = iter->first;
     // auto eiter = statistic_pool_info_.find(handled_height);
