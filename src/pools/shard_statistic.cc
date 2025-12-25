@@ -1056,12 +1056,12 @@ void ShardStatistic::setElectStatistics(
     //     auto &node_info_map = hiter->second;
         auto &statistic_item = *elect_statistic.add_statistics();
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
-            hiter->first,
+            now_elect_height_,
             common::GlobalInfo::Instance()->network_id(),
             nullptr,
             nullptr);
         if (members == nullptr) {
-            continue;
+            return;
         }
 
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
