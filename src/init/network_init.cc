@@ -1135,11 +1135,14 @@ void NetworkInit::HandleElectionBlock(
     auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     if (block->has_elect_block()) {
         *elect_block = block->elect_block();
+        if (elect_block->has_prev_members() &&
+                elect_block->prev_members().prev_elect_height() > latest_valid_elect_height_) {
+            latest_valid_elect_height_ = elect_block->prev_members().prev_elect_height();
+        }
     }
 
     if (block->has_prev_elect_block()) {
         *prev_elect_block = block->prev_elect_block();
-        latest_valid_elect_height_ = elect_block->prev_members().prev_elect_height();
     }
 
     if (!elect_block->has_shard_network_id() ||
@@ -1191,9 +1194,10 @@ void NetworkInit::HandleElectionBlock(
         members,
         elect_block);
     SHARDORA_DEBUG("1 success called election block. height: %lu, "
-        "elect height: %lu, used elect height: %lu, net: %u, "
+        "elect height: %lu, latest_valid_elect_height_: %lu, used elect height: %lu, net: %u, "
         "local net id: %u, prev elect height: %lu",
         block->height(), elect_height,
+        latest_valid_elect_height_,
         view_block->qc().elect_height(),
         elect_block->shard_network_id(),
         common::GlobalInfo::Instance()->network_id(),
