@@ -554,11 +554,10 @@ int ShardStatistic::StatisticWithHeights(
             piter !=  statistic_pool_info_.rend() ? piter->first : 0lu, 
             piter !=  statistic_pool_info_.rend() ? piter->second.size() : 0lu, 
             latest_statisticed_height_);
+        piter = iter;
         ++iter;
     }
 
-    // piter 指向最新的时间块周期, iter 指向它之前的一个。
-    // 我们将为 iter 定义的周期生成统计信息，因为它现在已经是一个完整的、封闭的区间。
     if (piter == statistic_pool_info_.rend() || iter == statistic_pool_info_.rend()) {
         std::string piter_debug_str;
         if (piter != statistic_pool_info_.rend())
@@ -645,7 +644,7 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    auto exist_iter = statistic_height_map_.find(piter->first);
+    auto exist_iter = statistic_height_map_.find(iter->first);
     if (exist_iter != statistic_height_map_.end()) {
         elect_statistic = exist_iter->second;
         SHARDORA_INFO("success get exists statistic message iter->first: %lu, "
@@ -653,7 +652,7 @@ int ShardStatistic::StatisticWithHeights(
             "now tm height: %lu, statistic: %s",
             iter->first,
             prev_timeblock_height_,
-            piter->first,
+            statisticed_timeblock_height,
             latest_timeblock_height_,
             ProtobufToJson(elect_statistic).c_str());
         return kPoolsSuccess;
@@ -696,7 +695,7 @@ int ShardStatistic::StatisticWithHeights(
 
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
-    auto pool_iter = piter->second.begin();
+    auto pool_iter = iter->second.begin();
     auto* statistic_info_ptr = &pool_iter->second;
     all_gas_amount += statistic_info_ptr->all_gas_amount;
     root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
@@ -859,8 +858,8 @@ int ShardStatistic::StatisticWithHeights(
         iter->first, 
         debug_str.c_str(), 
         tx_count_debug_str.c_str());
-    assert(piter->first >= iter->first);
-    statistic_height_map_[piter->first] = elect_statistic;
+    assert(piter->first > iter->first);
+    statistic_height_map_[iter->first] = elect_statistic;
     CHECK_MEMORY_SIZE(statistic_height_map_);
     // auto handled_height = iter->first;
     // auto eiter = statistic_pool_info_.find(handled_height);
@@ -1044,17 +1043,17 @@ void ShardStatistic::setElectStatistics(
         shardora::common::MembersPtr &now_elect_members,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root) {
-    if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
-        height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
-        auto &node_info_map = height_node_collect_info_map[now_elect_height_];
-        for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
-            node_info_map[(*now_elect_members)[i]->id] = StatisticMemberInfoItem();
-        }
-    }
+    // if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
+    //     height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
+    //     auto &node_info_map = height_node_collect_info_map[now_elect_height_];
+    //     for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
+    //         node_info_map[(*now_elect_members)[i]->id] = StatisticMemberInfoItem();
+    //     }
+    // }
 
-    for (auto hiter = height_node_collect_info_map.begin();
-            hiter != height_node_collect_info_map.end(); ++hiter) {
-        auto &node_info_map = hiter->second;
+    // for (auto hiter = height_node_collect_info_map.begin();
+    //         hiter != height_node_collect_info_map.end(); ++hiter) {
+    //     auto &node_info_map = hiter->second;
         auto &statistic_item = *elect_statistic.add_statistics();
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
             hiter->first,
@@ -1067,14 +1066,14 @@ void ShardStatistic::setElectStatistics(
 
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto &id = (*members)[midx]->id;
-            auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
-            auto node_poce_info = accout_poce_info_map_.try_emplace(
-                id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            // auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
+            // auto node_poce_info = accout_poce_info_map_.try_emplace(
+            //     id, std::make_shared<AccoutPoceInfoItem>()).first->second;
             CHECK_MEMORY_SIZE(accout_poce_info_map_);
             statistic_item.add_credit(0);  // (node_poce_info->credit);
             statistic_item.add_consensus_gap(0);  // (node_poce_info->consensus_gap);
-            statistic_item.add_tx_count(node_info.tx_count);
-            statistic_item.add_gas_sum(node_info.gas_sum);
+            statistic_item.add_tx_count(0);
+            statistic_item.add_gas_sum(0);
             uint64_t stoke = 0;
             if (!is_root) {
                 prefix_db_->GetElectNodeMinStoke(
@@ -1101,8 +1100,8 @@ void ShardStatistic::setElectStatistics(
             int32_t y1 = area_point->y();
         }
 
-        statistic_item.set_elect_height(hiter->first);
-    }
+        statistic_item.set_elect_height(now_elect_height_);
+    // }
 }
 
 }  // namespace pools
