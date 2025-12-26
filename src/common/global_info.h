@@ -157,14 +157,6 @@ public:
         return ck_pass_;
     }
 
-    const std::set<uint32_t>* thread_with_pools() const {
-        return thread_with_pools_;
-    }
-
-    const uint32_t* pools_with_thread() const {
-        return pools_with_thread_;
-    }
-
     void set_main_inited_success() {
         main_inited_success_ = true;
     }
@@ -182,48 +174,6 @@ public:
 
     bool global_stoped() const {
         return global_stoped_;
-    }
-
-    uint8_t get_consensus_thread_idx(uint8_t thread_idx) {
-        return consensus_thread_index_map_[thread_idx];
-    }
-
-    uint8_t SetConsensusRealThreadIdx(uint8_t thread_idx) {
-        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
-        auto bft_thread = message_handler_thread_count_;
-        for (uint8_t i = 0; i < bft_thread; ++i) {
-            if (consensus_thread_index_map_[i] == common::kInvalidUint8) {
-                consensus_thread_index_map_[i] = thread_idx;
-                if (i == message_handler_thread_count_ - 1) {
-                    uint32_t tmp_pools_with_thread[common::kInvalidPoolIndex] = { 0 };
-                    for (uint8_t src_thread_idx = 0; src_thread_idx < i; ++src_thread_idx) {
-                        std::string tmp_str;
-                        auto valid_thread_idx = consensus_thread_index_map_[src_thread_idx];
-                        thread_with_pools_[valid_thread_idx].clear();
-                        for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-                            if (pools_with_thread_[pool_idx] == src_thread_idx) {
-                                tmp_pools_with_thread[pool_idx] = valid_thread_idx;
-                                thread_with_pools_[valid_thread_idx].insert(pool_idx);
-                                tmp_str += std::to_string(pool_idx) + ", ";
-                            }
-                        }
-
-                        SHARDORA_DEBUG("thread: %d, src_thread_idx: %d, pools: %s", 
-                            valid_thread_idx, src_thread_idx, tmp_str.c_str());
-                    }
-
-                    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-                        pools_with_thread_[pool_idx] = tmp_pools_with_thread[pool_idx];
-                    }
-                }
-
-                SHARDORA_INFO("thread index %d set cosensus index: %d", thread_idx, i);
-                return i;
-            }
-        }
-
-        SHARDORA_FATAL("invalid thread idx: %d, bft_thread: %d", thread_idx, bft_thread);
-        return common::kInvalidUint8;
     }
 
     uint32_t each_tx_pool_max_txs() const {
@@ -266,6 +216,10 @@ public:
         global_latency_ = latency;
     }
 
+    uint8_t hotstuff_thread_count() const {
+        return hotstuff_thread_count_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -301,9 +255,6 @@ private:
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 2u;
     int32_t join_root_ = common::kJoinRoot;
-    std::set<uint32_t>* thread_with_pools_ = nullptr;
-    uint8_t consensus_thread_index_map_[common::kMaxThreadCount] = {common::kInvalidUint8};
-    uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
     uint8_t now_valid_thread_index_ = 0;
     std::mutex now_valid_thread_index_mutex_;
     uint64_t begin_run_timestamp_ms_ = 0;
@@ -321,6 +272,7 @@ private:
     int32_t test_pool_index_ = -1;
     uint32_t test_tx_tps_ = 1000;
     std::atomic<uint64_t> global_latency_ = 0;
+    uint8_t hotstuff_thread_count_ = 8;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

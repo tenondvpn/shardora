@@ -132,23 +132,7 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
 }
 
 void HotstuffSyncer::SyncAllPools() {
-    if (!running_) {
-        return;
-    }
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    auto now_us = common::TimeUtils::TimestampUs();
-    
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
-        if (now_us - last_timers_us_[pool_idx] >= SyncTimerCycleUs(pool_idx)) {
-            if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-                // SHARDORA_DEBUG("pool: %d, cur chain: %s, local: %d",
-                //     pool_idx, view_block_chain(pool_idx)->String().c_str(),
-                //     crypto(pool_idx)->GetLatestElectItem(common::GlobalInfo::Instance()->network_id())->LocalMember()->index);
-                SyncPool(pool_idx, 1);
-                last_timers_us_[pool_idx] = common::TimeUtils::TimestampUs();
-            }            
-        }
-    }
+    assert(fasle);
 }
 
 // No use, about to deprecate
@@ -567,23 +551,24 @@ Status HotstuffSyncer::processResponseQcTc(
 Status HotstuffSyncer::processResponseLatestCommittedBlock(
         const uint32_t& pool_idx,
         const view_block::protobuf::ViewBlockSyncResponse& view_block_res) {
-    if (!view_block_res.has_latest_committed_block()) {
-        return Status::kError;
-    }
+    assert(false);
+    // if (!view_block_res.has_latest_committed_block()) {
+    //     return Status::kError;
+    // }
     
-    auto& pb_latest_committed_block = view_block_res.latest_committed_block();
-    // 可能已经更新，无需同步
-    auto cur_latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
-    if (cur_latest_committed_block &&
-            cur_latest_committed_block->qc().view() >= pb_latest_committed_block.qc().view()) {
-        return Status::kSuccess;
-    }
+    // auto& pb_latest_committed_block = view_block_res.latest_committed_block();
+    // // 可能已经更新，无需同步
+    // auto cur_latest_committed_block = view_block_chain(pool_idx)->LatestCommittedBlock();
+    // if (cur_latest_committed_block &&
+    //         cur_latest_committed_block->qc().view() >= pb_latest_committed_block.qc().view()) {
+    //     return Status::kSuccess;
+    // }
 
-    SHARDORA_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, pb_latest_committed_block.qc().view());
-    // 执行 latest committed block
-    auto hf = hotstuff_mgr_->hotstuff(pb_latest_committed_block.qc().pool_index());
-    auto latest_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>(pb_latest_committed_block);
-    hf->HandleSyncedViewBlock(latest_vblock);
+    // SHARDORA_DEBUG("pool: %d sync latest committed block: %lu", pool_idx, pb_latest_committed_block.qc().view());
+    // // 执行 latest committed block
+    // auto hf = hotstuff_mgr_->hotstuff(pb_latest_committed_block.qc().pool_index());
+    // auto latest_vblock = std::make_shared<view_block::protobuf::ViewBlockItem>(pb_latest_committed_block);
+    // hf->HandleSyncedViewBlock(latest_vblock);
     return Status::kSuccess;
 }
 

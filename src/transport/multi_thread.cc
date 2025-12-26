@@ -42,7 +42,7 @@ void ThreadHandler::HandleMessage() {
     static const uint32_t kMaxHandleMessageCount = 1024u;
     thread_idx_ = common::GlobalInfo::Instance()->get_thread_index();
     uint8_t thread_idx = thread_idx_;
-    uint8_t maping_thread_idx = common::GlobalInfo::Instance()->SetConsensusRealThreadIdx(thread_idx);
+    uint8_t maping_thread_idx = -1;
     SHARDORA_DEBUG("thread handler thread index coming thread_idx: %d, "
         "maping_thread_idx: %d, message_handler_thread_count: %d", 
         thread_idx, maping_thread_idx, 
@@ -368,15 +368,18 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
             pool_idx = msg_ptr->header.view_block_proto().view_block_res().pool_idx();
         }
 
-        auto thread_idx = pool_idx % (all_thread_count_ - 1);
+        auto thread_idx = pool_idx % 
+            common::GlobalInfo::Instance()->hotstuff_thread_count();
         return thread_vec_[thread_idx]->thread_idx();
     }
     case common::kHotstuffMessage: {
-        auto thread_idx = msg_ptr->header.hotstuff().pool_index() % (all_thread_count_ - 1);
+        auto thread_idx = msg_ptr->header.hotstuff().pool_index() %
+            common::GlobalInfo::Instance()->hotstuff_thread_count();
         return thread_vec_[thread_idx]->thread_idx();
     }
     case common::kHotstuffTimeoutMessage: {
-        auto thread_idx = msg_ptr->header.hotstuff_timeout_proto().pool_idx() % (all_thread_count_ - 1);
+        auto thread_idx = msg_ptr->header.hotstuff_timeout_proto().pool_idx() %
+            common::GlobalInfo::Instance()->hotstuff_thread_count();
         return thread_vec_[thread_idx]->thread_idx();
     }
     default:
