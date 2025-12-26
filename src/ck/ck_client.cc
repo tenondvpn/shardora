@@ -887,7 +887,7 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
 }
 
 bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) try {
-    return;
+    return true;
     bls_elect_queue_.push(std::make_shared<BlsElectInfo>(info));
     SHARDORA_DEBUG("insert elect bls success: %d", bls_elect_queue_.size());
     return true;

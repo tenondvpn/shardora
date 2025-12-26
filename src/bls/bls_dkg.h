@@ -152,6 +152,7 @@ private:
 #ifdef SHARDORA_UNITTEST
         return true;
 #endif
+        auto now_tm_us = common::TimeUtils::TimestampUs();
         SHARDORA_DEBUG("IsFinishPeriod begin_time_us_: %lu, now_tm_us: %lu, "
             "kDkgPeriodUs: %lu, now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4): %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7): %d",
             begin_time_us_,
@@ -159,7 +160,6 @@ private:
             kDkgPeriodUs,
             (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7)),
             (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10)));
-        auto now_tm_us = common::TimeUtils::TimestampUs();
         if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 7)) {
             return true;
