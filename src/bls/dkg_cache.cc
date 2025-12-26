@@ -73,7 +73,7 @@ bool DkgCache::GetSwapKey(
 
     SHARDORA_DEBUG("init dkg cache miss swap key: local_index: %u, peer_index: %u, id: %s",
         local_index, peer_index,
-        common::Encode::HexEncode(id.c_str());
+        common::Encode::HexEncode(id.c_str()));
     std::string tmp_secret_key_str;
     if (!prefix_db_->GetSwapKey(
             network_id,
@@ -83,7 +83,7 @@ bool DkgCache::GetSwapKey(
             &tmp_secret_key_str)) {
         SHARDORA_DEBUG("init dkg cache miss swap key: local_index: %u, peer_index: %u, id: %s",
             local_index, peer_index,
-            common::Encode::HexEncode(id.c_str());
+            common::Encode::HexEncode(id.c_str()));
         return false;
     }
 
@@ -124,7 +124,6 @@ void DkgCache::SetBlsVerifyG2(
     prefix_db_->AddBlsVerifyG2(id, verfy_req);
     verify_g2_cache_[id] = verfy_req;
 }
-
 
 }  // namespace bls
 }  // namespace shardora
