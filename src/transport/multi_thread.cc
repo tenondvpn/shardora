@@ -352,7 +352,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kConsensusMessage:
         assert(false);
         return thread_vec_[all_thread_count_ - 1]->thread_idx();
-    case common::kHotstuffSyncMessage:
+    case common::kHotstuffSyncMessage: {
         uint32_t pool_idx = 0;
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
             pool_idx = msg_ptr->header.view_block_proto().view_block_req().pool_idx();
@@ -366,12 +366,15 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 
         auto thread_idx = pool_idx % (all_thread_count_ - 1);
         return thread_vec_[thread_idx]->thread_idx();
-    case common::kHotstuffMessage:
+    }
+    case common::kHotstuffMessage: {
         auto thread_idx = msg_ptr->header.hotstuff().pool_index() % (all_thread_count_ - 1);
         return thread_vec_[thread_idx]->thread_idx();
-    case common::kHotstuffTimeoutMessage:
+    }
+    case common::kHotstuffTimeoutMessage: {
         auto thread_idx = msg_ptr->header.hotstuff_timeout_proto().pool_idx() % (all_thread_count_ - 1);
         return thread_vec_[thread_idx]->thread_idx();
+    }
     default:
         return thread_vec_[all_thread_count_ - 1]->thread_idx();
     }
