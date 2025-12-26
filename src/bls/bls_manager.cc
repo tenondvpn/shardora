@@ -59,13 +59,14 @@ void BlsManager::PoolTimerMessage() {
         PopFinishMessage();
         auto tmp_bls = waiting_bls_.load();
         auto now_tm_ms = common::TimeUtils::TimestampMs();
+        SHARDORA_WARN("BlsManager handle message begin.");
         if (tmp_bls != nullptr) {
             tmp_bls->TimerMessage();
         }
 
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - now_tm_ms >= 10) {
-            SHARDORA_WARN("BlsManager handle message use time: %lu", (etime - now_tm_ms));
+            SHARDORA_WARN("BlsManager handle message end use time: %lu", (etime - now_tm_ms));
         }
     }
 

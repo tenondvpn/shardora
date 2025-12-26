@@ -380,24 +380,9 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             return;
         }
 
-        bls::protobuf::JoinElectInfo join_info;
-        if (!prefix_db_->GetNodeVerificationVector((*members_)[bls_msg.index()]->id, &join_info)) {
-            assert(false);
-            return;
-        }
-
-        auto& item = join_info.g2_req().verify_vec(0);
-        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-        auto tmp_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-        for_common_pk_g2s_[bls_msg.index()] = tmp_val;
+        uint32_t changed_idx = 0;
+        for_common_pk_g2s_[bls_msg.index()] = prefix_db_->GetVerifyG2FromDb(
+            bls_msg.index(), &changed_idx);
         prefix_db_->SaveSwapKey(
             common::GlobalInfo::Instance()->network_id(),
             local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
