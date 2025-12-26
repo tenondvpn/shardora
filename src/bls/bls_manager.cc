@@ -126,7 +126,7 @@ void BlsManager::OnNewElectBlock(
 
     uint32_t local_member_idx = common::kInvalidUint32;
     for (uint32_t i = 0; i < members->size(); ++i) {
-        if ((*iter)->id == security_->GetAddress()) {
+        if ((*members[i])->id == security_->GetAddress()) {
             local_member_idx = i;
             break;
         }
@@ -138,7 +138,7 @@ void BlsManager::OnNewElectBlock(
 
     latest_elect_height_ = elect_height;
     auto waiting_bls = std::make_shared<bls::BlsDkg>();
-    dkg_cache_->Init(local_member_idx, members, elect_block->shard_network_id());
+    dkg_cache_->Init(local_member_idx, *members, elect_block->shard_network_id());
     waiting_bls->Init(
         this,
         security_,

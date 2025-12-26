@@ -877,7 +877,7 @@ void BlsDkg::FinishBroadcast() try {
                 local_member_index_,
                 (*members_)[i]->id,
                 i,
-                seckey)) {
+                &seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
@@ -930,16 +930,15 @@ void BlsDkg::DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_s
     }
 
     auto& for_common_pk_g2s = dkg_cache_->verify_g2_cache();
-    std::vector<libff::alt_bn128_Fr> valid_seck_keys;
     auto tmp_g2 = libff::alt_bn128_G2::zero();
     for (size_t i = 0; i < member_count_; ++i) {
         auto& id = (*members_)[i]->id;
         auto g2_iter = for_common_pk_g2s.find(id);
-        libff::alt_bn128_G2* g2_ptr = &tmp_g2;
+        const libff::alt_bn128_G2* g2_ptr = &tmp_g2;
         if (g2_iter != for_common_pk_g2s.end()) {
             g2_ptr = &g2_iter->second;
         }
-        
+
         auto pk_item = local_bls_item.add_common_pubkey();
         pk_item->set_x_c0(libBLS::ThresholdUtils::fieldElementToString((*g2_ptr).X.c0));
         pk_item->set_x_c1(libBLS::ThresholdUtils::fieldElementToString((*g2_ptr).X.c1));
