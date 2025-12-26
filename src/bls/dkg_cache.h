@@ -4,8 +4,7 @@
 #include <vector>
 #include <mutex>
 #include <unordered_map>
-
-#include <libff/algebra/curves/alt_bn128/alt_bn128_fr.hpp>
+#include "bls/bls_utils.h"
 
 #include "common/utils.h"
 #include "protos/prefix_db.h"
