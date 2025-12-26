@@ -100,7 +100,7 @@ public:
 
     void Put(const std::string& key, const std::string& value) {
 #ifndef NDEBUG
-        if (thread_id_ == 0) {
+        if (thread_id_ == std::thread::id()) {
             thread_id_ = std::this_thread::get_id();
         } else if (thread_id_ != std::this_thread::get_id()) {
             assert(false);
@@ -117,7 +117,7 @@ public:
 
     void Delete(const std::string& key) {
 #ifndef NDEBUG
-        if (thread_id_ == 0) {
+        if (thread_id_ == std::thread::id()) {
             thread_id_ = std::this_thread::get_id();
         } else if (thread_id_ != std::this_thread::get_id()) {
             assert(false);
@@ -142,7 +142,7 @@ public:
 
     void Append(DbWriteBatch& other) {
 #ifndef NDEBUG
-        if (thread_id_ == 0) {
+        if (thread_id_ == std::thread::id()) {
             thread_id_ = std::this_thread::get_id();
         } else if (thread_id_ != std::this_thread::get_id()) {
             assert(false);
@@ -165,7 +165,7 @@ public:
     uint32_t count_ = 0;
 #ifndef NDEBUG
     std::unordered_map<std::string, std::string> data_map_;
-    std::thread::id thread_id_ = 0;
+    std::thread::id thread_id_;
 #endif
 };
 
