@@ -160,7 +160,7 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<securi
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     security_ = security;
-    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
+    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 2;
     TRANSPORT_INFO("MultiThreadHandler::Init() ...");
     if (inited_) {
@@ -191,7 +191,7 @@ void MultiThreadHandler::Start() {
         thread_vec_.push_back(thread_handler);
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
          thread_wait_con_.wait_for(lock, std::chrono::milliseconds(10000lu), [&] {
-            return thread_init_success_.load(); ;
+            return thread_init_success_.load();
         });
 
         if (!thread_init_success_) {
