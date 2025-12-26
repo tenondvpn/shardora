@@ -381,7 +381,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         }
 
         uint32_t changed_idx = 0;
-        for_common_pk_g2s_[bls_msg.index()] = prefix_db_->GetVerifyG2FromDb(
+        for_common_pk_g2s_[bls_msg.index()] = *prefix_db_->GetVerifyG2FromDb(
             bls_msg.index(), &changed_idx);
         prefix_db_->SaveSwapKey(
             common::GlobalInfo::Instance()->network_id(),
