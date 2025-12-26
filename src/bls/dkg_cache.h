@@ -26,13 +26,13 @@ public:
         std::string* secret_key_str);
     bool GetBlsVerifyG2(
         const std::string& id,
-        bls::protobuf::VerifyVecBrdReq* verfy_req);
-    void SetSwapKey(
-        uint32_t network_id,
-        uint32_t local_member_index,
-        const std::string& id,
-        uint32_t from_member_index,
-        const std::string& secret_key_str);
+        libff::alt_bn128_G2* verfy_req);
+    // void SetSwapKey(
+    //     uint32_t network_id,
+    //     uint32_t local_member_index,
+    //     const std::string& id,
+    //     uint32_t from_member_index,
+    //     const std::string& secret_key_str);
     const std::unordered_map<std::string, libff::alt_bn128_G2>& verify_g2_cache() const {
         return verify_g2_cache_;
     }
