@@ -100,6 +100,11 @@ public:
 
     void Put(const std::string& key, const std::string& value) {
 #ifndef NDEBUG
+        if (thread_id_ == 0) {
+            thread_id_ = std::this_thread::get_id();
+        } else if (thread_id_ != std::this_thread::get_id()) {
+            assert(false);
+        }
         if (data_map_.find(key) == data_map_.end()) {
             data_map_[key] = value;
             CHECK_MEMORY_SIZE(data_map_);
@@ -112,6 +117,12 @@ public:
 
     void Delete(const std::string& key) {
 #ifndef NDEBUG
+        if (thread_id_ == 0) {
+            thread_id_ = std::this_thread::get_id();
+        } else if (thread_id_ != std::this_thread::get_id()) {
+            assert(false);
+        }
+
         auto iter = data_map_.find(key);
         if (iter != data_map_.end()) {
             data_map_.erase(iter);
@@ -130,6 +141,13 @@ public:
     }
 
     void Append(DbWriteBatch& other) {
+#ifndef NDEBUG
+        if (thread_id_ == 0) {
+            thread_id_ = std::this_thread::get_id();
+        } else if (thread_id_ != std::this_thread::get_id()) {
+            assert(false);
+        }
+#endif
 #ifdef LEVELDB
         db_batch_.Append(other.db_batch_);
 #else
@@ -147,6 +165,7 @@ public:
     uint32_t count_ = 0;
 #ifndef NDEBUG
     std::unordered_map<std::string, std::string> data_map_;
+    uint64_t thread_id_ = 0;
 #endif
 };
 
