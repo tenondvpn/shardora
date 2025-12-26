@@ -29,8 +29,11 @@
 #include "protos/transport.pb.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
+#include "bls/dkg_cache.h"
 
 namespace shardora {
+
+class DkgCache;
 
 namespace bls {
 
@@ -48,6 +51,7 @@ public:
         const libff::alt_bn128_G2 local_publick_key,
         const libff::alt_bn128_G2 common_public_key,
         std::shared_ptr<db::Db>& db,
+        std::shared_ptr<DkgCache>& dkg_cache,
         std::shared_ptr<ck::ClickHouseClient> ck_client);
     void OnNewElectionBlock(
         uint64_t elect_height,
@@ -206,6 +210,7 @@ private:
     bool has_broadcast_swapkey_ = false;
     bool has_finished_ = false;
     std::vector<libff::alt_bn128_G2> for_common_pk_g2s_;
+    std::shared_ptr<DkgCache> dkg_cache_{ nullptr };
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     std::string valid_seck_keys_str_;

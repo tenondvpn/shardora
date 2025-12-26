@@ -8,6 +8,7 @@
 #include <nlohmann/json.hpp>
 
 #include "bls/bls_utils.h"
+#include "bls/dkg_cache.h"
 #include "bls/bls_manager.h"
 #include "common/global_info.h"
 #include "db/db.h"
@@ -35,6 +36,7 @@ void BlsDkg::Init(
         const libff::alt_bn128_G2 local_publick_key,
         const libff::alt_bn128_G2 common_public_key,
         std::shared_ptr<db::Db>& db,
+        std::shared_ptr<DkgCache>& dkg_cache,
         std::shared_ptr<ck::ClickHouseClient> ck_client) {
     bls_mgr_ = bls_mgr;
     security_ = security;
@@ -47,6 +49,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    dkg_cache_ = dkg_cache;
     ck_client_ = ck_client;
     should_change_verfication_g2_ = false;
 }
@@ -94,6 +97,7 @@ void BlsDkg::OnNewElectionBlock(
         return;
     }
 
+    dkg_cache_->OnNewElection(elect_height);
     memset(valid_swaped_keys_, 0, sizeof(valid_swaped_keys_));
     memset(has_swaped_keys_, 0, sizeof(has_swaped_keys_));
     finished_ = false;
@@ -367,11 +371,10 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     if (bls_msg.swap_req().keys_size() == 0) {
         // use prev swap keys
         std::string sec_key;
-        if (!prefix_db_->GetSwapKey(
+        if (!dkg_cache_->GetSwapKey(
                 common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
                 prev_elect_height_,
-                local_member_index_,
                 bls_msg.index(),
                 &sec_key)) {
             BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
@@ -381,10 +384,11 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         }
 
         uint32_t changed_idx = 0;
-        for_common_pk_g2s_[bls_msg.index()] = GetVerifyG2FromDb(bls_msg.index(), &changed_idx);
-        prefix_db_->SaveSwapKey(
+        for_common_pk_g2s_[bls_msg.index()] = GetVerifyG2FromDb(
+            bls_msg.index(), &changed_idx);
+        dkg_cache_->SetSwapKey(
             common::GlobalInfo::Instance()->network_id(),
-            local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
+            local_member_index_, elect_hegiht_, bls_msg.index(), sec_key);
         valid_swapkey_set_.insert(bls_msg.index());
         ++valid_sec_key_count_;
         has_swaped_keys_[bls_msg.index()] = true;
@@ -462,9 +466,9 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         common::Encode::HexEncode(sec_key).c_str(), 
         libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str());
     // swap
-    prefix_db_->SaveSwapKey(
+    dkg_cache_->SetSwapKey(
         common::GlobalInfo::Instance()->network_id(),
-        local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
+        local_member_index_, elect_hegiht_, bls_msg.index(), sec_key);
     valid_swapkey_set_.insert(bls_msg.index());
     ++valid_sec_key_count_;
     has_swaped_keys_[bls_msg.index()] = true;
@@ -664,7 +668,7 @@ bool BlsDkg::CheckRecomputeG2s(
 
 libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t* changed_idx) {
     bls::protobuf::VerifyVecBrdReq req;
-    auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
+    auto res = dkg_cache_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
     if (!res) {
         SHARDORA_WARN("get verify g2 failed local: %d, %lu, %u",
             local_member_index_, elect_hegiht_, peer_mem_index);
@@ -870,11 +874,10 @@ void BlsDkg::FinishBroadcast() try {
         }
 
         std::string seckey;
-        if (!prefix_db_->GetSwapKey(
+        if (!dkg_cache_->GetSwapKey(
                 common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
                 elect_hegiht_,
-                local_member_index_,
                 i,
                 &seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());

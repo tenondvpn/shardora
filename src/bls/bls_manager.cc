@@ -1,6 +1,7 @@
 #include "bls/bls_manager.h"
 
 #include <bls/bls_utils.h>
+#include "bls/dkg_cache.h"
 #include <dkg/dkg.h>
 #include <libbls/bls/BLSPrivateKey.h>
 #include <libbls/bls/BLSPrivateKeyShare.h>
@@ -44,6 +45,7 @@ BlsManager::BlsManager(
         : security_(security), db_(db), ck_client_(ck_client) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     initLibSnark();
+    dkg_cache_ = std::make_shared<DkgCache>(prefix_db_);
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
@@ -145,6 +147,7 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_,
+        dkg_cache_,
         ck_client_);
 //     SHARDORA_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls->OnNewElectionBlock(
