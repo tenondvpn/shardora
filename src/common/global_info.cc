@@ -116,7 +116,7 @@ uint8_t GlobalInfo::get_thread_index() {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
     uint8_t thread_idx = 0;
-    if (common::GlobalInfo::Instance()->is_client() || should_check_thread_all_valid_) {
+    if (should_check_thread_all_valid_) {
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
