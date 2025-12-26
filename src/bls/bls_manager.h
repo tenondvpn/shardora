@@ -12,6 +12,8 @@ namespace shardora {
 
 namespace bls {
 
+class DkgCache;
+
 class IBlsManager {
 public:
     IBlsManager() {};
@@ -149,6 +151,7 @@ private:
     common::Tick bls_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> finish_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
+    std::shared_ptr<DkgCache> dkg_cache_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };
