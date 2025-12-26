@@ -404,6 +404,14 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         valid_swapkey_set_.insert(bls_msg.index());
         ++valid_sec_key_count_;
         has_swaped_keys_[bls_msg.index()] = true;
+        SHARDORA_DEBUG("use prev swap key elect_hegiht_: %lu, peer elect height: %lu, "
+            "min_aggree_member_count_: %u, "
+            "success member: %d, index: %d, %s, for_common_pk_g2s_: %s",
+            elect_hegiht_, bls_msg.elect_height(),
+            min_aggree_member_count_,
+            local_member_index_, bls_msg.index(),
+            common::Encode::HexEncode(sec_key).c_str(), 
+            libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str());
         return;
     }
 
@@ -461,10 +469,14 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    SHARDORA_WARN("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
+    SHARDORA_DEBUG("use prev swap key elect_hegiht_: %lu, peer elect height: %lu, "
+        "min_aggree_member_count_: %u, "
+        "success member: %d, index: %d, %s, for_common_pk_g2s_: %s",
+        elect_hegiht_, bls_msg.elect_height(),
+        min_aggree_member_count_,
         local_member_index_, bls_msg.index(),
-        libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-        min_aggree_member_count_);
+        common::Encode::HexEncode(sec_key).c_str(), 
+        libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str());
     // swap
     prefix_db_->SaveSwapKey(
         common::GlobalInfo::Instance()->network_id(),
