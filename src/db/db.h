@@ -165,7 +165,7 @@ public:
     uint32_t count_ = 0;
 #ifndef NDEBUG
     std::unordered_map<std::string, std::string> data_map_;
-    uint64_t thread_id_ = 0;
+    std::thread::id thread_id_ = 0;
 #endif
 };
 
