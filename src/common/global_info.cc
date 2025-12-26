@@ -110,19 +110,19 @@ int GlobalInfo::Init(const common::Config& config) {
     return kCommonSuccess;
 }
 
-uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage> msg_ptr) {
+uint8_t GlobalInfo::get_thread_index() {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto now_thread_id_tmp = std::this_thread::get_id();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
     uint8_t thread_idx = 0;
-    if (should_check_thread_all_valid_) {
+    if (common::GlobalInfo::Instance()->is_client() || should_check_thread_all_valid_) {
         std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
             thread_idx = now_valid_thread_index_++;
             thread_with_index_[now_thread_id] = thread_idx;
-            SHARDORA_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
+            P2P_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         } else {
             thread_idx = iter->second;
         }
@@ -134,7 +134,7 @@ uint8_t GlobalInfo::get_thread_index(std::shared_ptr<transport::TransportMessage
     } else {
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
-            SHARDORA_FATAL("invalid get new thread index: %u", now_thread_id);
+            P2P_FATAL("invalid get new thread index: %u", now_thread_id);
         }
             
         thread_idx = iter->second;

@@ -174,7 +174,7 @@ public:
     }
 
     // After running for a period of time, ensure that all threads have been created successfully and cancel the lock.
-    uint8_t get_thread_index(std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr);
+    uint8_t get_thread_index();
 
     void set_global_stoped() {
         global_stoped_ = true;

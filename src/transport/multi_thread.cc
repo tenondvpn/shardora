@@ -348,43 +348,32 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kBlsMessage:
     case common::kInitMessage:
     case common::kPoolsMessage:
-        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
-    // case common::kPoolsMessage:
-    //     return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_ + 1);
+        return thread_vec_[all_thread_count_ - 1]->thread_idx();
     case common::kConsensusMessage:
-        if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
-        }
-
-        SHARDORA_FATAL("invalid message thread: %d", msg_ptr->header.zbft().pool_index());
-        return common::kMaxThreadCount;
+        assert(false);
+        return thread_vec_[all_thread_count_ - 1]->thread_idx();
     case common::kHotstuffSyncMessage:
+        uint32_t pool_idx = 0;
         if (msg_ptr->header.view_block_proto().has_view_block_req()) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[
-                    msg_ptr->header.view_block_proto().view_block_req().pool_idx()];
+            pool_idx = msg_ptr->header.view_block_proto().view_block_req().pool_idx();
         }
         if (msg_ptr->header.view_block_proto().has_single_req()) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[
-                    msg_ptr->header.view_block_proto().single_req().pool_idx()];
+            pool_idx = msg_ptr->header.view_block_proto().single_req().pool_idx();
         }        
         if (msg_ptr->header.view_block_proto().has_view_block_res()) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[
-                    msg_ptr->header.view_block_proto().view_block_res().pool_idx()];
+            pool_idx = msg_ptr->header.view_block_proto().view_block_res().pool_idx();
         }
-        return common::kMaxThreadCount;
+
+        auto thread_idx = pool_idx % (all_thread_count_ - 1);
+        return thread_vec_[thread_idx]->thread_idx();
     case common::kHotstuffMessage:
-        if (msg_ptr->header.hotstuff().pool_index() < common::kInvalidPoolIndex) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff().pool_index()];
-        }
-        assert(false);
-        return common::kMaxThreadCount;
+        auto thread_idx = msg_ptr->header.hotstuff().pool_index() % (all_thread_count_ - 1);
+        return thread_vec_[thread_idx]->thread_idx();
     case common::kHotstuffTimeoutMessage:
-        if (msg_ptr->header.hotstuff_timeout_proto().pool_idx() < common::kInvalidPoolIndex) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.hotstuff_timeout_proto().pool_idx()];
-        }
-        return common::kMaxThreadCount;
+        auto thread_idx = msg_ptr->header.hotstuff_timeout_proto().pool_idx() % (all_thread_count_ - 1);
+        return thread_vec_[thread_idx]->thread_idx();
     default:
-        return common::GlobalInfo::Instance()->get_consensus_thread_idx(consensus_thread_count_);
+        return thread_vec_[all_thread_count_ - 1]->thread_idx();
     }
 }
 
