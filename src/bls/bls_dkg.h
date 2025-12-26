@@ -115,7 +115,7 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        SHARDORA_DEBUG("begin_time_us_: %u, now_tm_us: %u, "
+        SHARDORA_DEBUG("IsVerifyBrdPeriod begin_time_us_: %lu, now_tm_us: %lu, "
             "kDkgPeriodUs: %lu, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4): %d",
             begin_time_us_,
             now_tm_us,
@@ -133,7 +133,7 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
-       SHARDORA_DEBUG("begin_time_us_: %u, now_tm_us: %u, "
+       SHARDORA_DEBUG("IsSwapKeyPeriod begin_time_us_: %lu, now_tm_us: %lu, "
             "kDkgPeriodUs: %lu, now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4): %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7): %d",
             begin_time_us_,
             now_tm_us,
@@ -152,6 +152,13 @@ private:
 #ifdef SHARDORA_UNITTEST
         return true;
 #endif
+        SHARDORA_DEBUG("IsFinishPeriod begin_time_us_: %lu, now_tm_us: %lu, "
+            "kDkgPeriodUs: %lu, now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4): %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7): %d",
+            begin_time_us_,
+            now_tm_us,
+            kDkgPeriodUs,
+            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7)),
+            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10)));
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 7)) {
