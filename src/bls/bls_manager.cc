@@ -1020,7 +1020,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
     }
 
-    assert(ec_block.prev_members().bls_pubkey_size() == members->size());
+    assert(static_cast<size_t>(ec_block.prev_members().bls_pubkey_size()) == members->size());
     common_pk_iter->second.to_affine_coordinates();
     auto common_pk = pre_ec_members->mutable_common_pubkey();
     common_pk->set_x_c0(

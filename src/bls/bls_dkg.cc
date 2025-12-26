@@ -376,7 +376,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
                 local_member_index_,
                 prev_elect_height_,
                 bls_msg.index(),
-                &sec_key)) {
+                sec_key)) {
             BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
                 local_member_index_, prev_elect_height_,
                 local_member_index_, bls_msg.index(), prev_elect_height_);
@@ -879,7 +879,7 @@ void BlsDkg::FinishBroadcast() try {
                 local_member_index_,
                 elect_hegiht_,
                 i,
-                &seckey)) {
+                seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
