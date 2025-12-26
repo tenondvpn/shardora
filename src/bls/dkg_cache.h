@@ -27,10 +27,13 @@ public:
     bool GetBlsVerifyG2(
         const std::string& id,
         bls::protobuf::VerifyVecBrdReq* verfy_req);
-    void SetBlsVerifyG2(
+    void SetSwapKey(
+        uint32_t network_id,
+        uint32_t local_member_index,
         const std::string& id,
-        const bls::protobuf::VerifyVecBrdReq& verfy_req);
-    const std::unordered_map<std::string, bls::protobuf::VerifyVecBrdReq>& verify_g2_cache() const {
+        uint32_t from_member_index,
+        const std::string& secret_key_str);
+    const std::unordered_map<std::string, libff::alt_bn128_G2>& verify_g2_cache() const {
         return verify_g2_cache_;
     }
 
@@ -60,7 +63,7 @@ private:
 
     using SwapKeyCache = std::unordered_map<SwapKeyCacheKey, std::string, SwapKeyCacheKeyHash>;
     SwapKeyCache swap_keys_cache_;
-    std::unordered_map<std::string, bls::protobuf::VerifyVecBrdReq> verify_g2_cache_;
+    std::unordered_map<std::string, libff::alt_bn128_G2> verify_g2_cache_;
     std::shared_ptr<protos::PrefixDb> prefix_db_;
 
     DISALLOW_COPY_AND_ASSIGN(DkgCache);
