@@ -85,6 +85,11 @@ public:
         thread_wait_con_.notify_one();
     }
 
+    uint8_t GetThreadIndexWithPool(uint32_t pool_index) {
+        auto thread_idx = pool_index % common::GlobalInfo::Instance()->hotstuff_thread_count();
+        return thread_vec_[thread_idx]->thread_idx();
+    }
+
     // void AddLocalBroadcastedMessages(uint64_t msg_hash) {
     //     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     //     local_broadcast_messages_[thread_idx].push(msg_hash);

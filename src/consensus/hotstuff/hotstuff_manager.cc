@@ -380,7 +380,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         msg_ptr->times_idx = 0;
-        if ((pool_idx % common::GlobalInfo::Instance()->hotstuff_thread_count()) == thread_index) {
+        if (transport::TcpTransport::Instance()->GetThreadIndexWithPool(pool_idx) == thread_index) {
             bool has_user_tx = false;
             bool has_system_tx = false;
             ADD_DEBUG_PROCESS_TIMESTAMP();

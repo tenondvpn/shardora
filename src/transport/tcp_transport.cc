@@ -124,6 +124,10 @@ void TcpTransport::Stop() {
     }
 }
 
+uint8_t TcpTransport::GetThreadIndexWithPool(uint32_t pool_index) {
+    return msg_handler_->GetThreadIndexWithPool(pool_index);
+}
+
 bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tnet::Packet& packet) {    
     // SHARDORA_DEBUG("message coming");
     if (conn->GetSocket() == nullptr) {

@@ -60,6 +60,7 @@ public:
         uint16_t port,
         const transport::protobuf::OldHeader& message);
     void AddLocalMessage(transport::MessagePtr msg_ptr);
+    uint8_t GetThreadIndexWithPool(uint32_t pool_index);
 
 private:
     TcpTransport();
