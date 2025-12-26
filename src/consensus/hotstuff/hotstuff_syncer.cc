@@ -132,7 +132,7 @@ void HotstuffSyncer::SyncPool(const uint32_t& pool_idx, const int32_t& node_num)
 }
 
 void HotstuffSyncer::SyncAllPools() {
-    assert(fasle);
+    assert(false);
 }
 
 // No use, about to deprecate
