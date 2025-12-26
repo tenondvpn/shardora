@@ -36,7 +36,8 @@ public:
     ThreadHandler(
         MultiThreadHandler* msg_handler,
         std::condition_variable& wait_con,
-        std::mutex& wait_mutex);
+        std::mutex& wait_mutex,
+        bool is_hotstuff_thread);
     ~ThreadHandler();
     void Join();
     uint8_t thread_idx() const {
@@ -52,6 +53,7 @@ private:
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;
     std::atomic<uint8_t> thread_idx_ = common::kInvalidUint8;
+    bool is_hotstuff_thread_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadHandler);
 };

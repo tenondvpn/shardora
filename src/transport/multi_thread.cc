@@ -19,10 +19,12 @@ namespace transport {
 ThreadHandler::ThreadHandler(
         MultiThreadHandler* msg_handler,
         std::condition_variable& wait_con,
-        std::mutex& wait_mutex)
+        std::mutex& wait_mutex,
+        bool is_hotstuff_thread)
         : msg_handler_(msg_handler),
         wait_con_(wait_con),
-        wait_mutex_(wait_mutex) {
+        wait_mutex_(wait_mutex),
+        is_hotstuff_thread_(is_hotstuff_thread) {
     thread_ = std::make_shared<std::thread>(&ThreadHandler::HandleMessage, this);
     thread_->detach();
 }
@@ -102,7 +104,7 @@ void ThreadHandler::HandleMessage() {
         }
 
         auto btime = common::TimeUtils::TimestampUs();
-        if (maping_thread_idx <= (common::GlobalInfo::Instance()->message_handler_thread_count() - 2)) {
+        if (is_hotstuff_thread_) {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
@@ -115,9 +117,7 @@ void ThreadHandler::HandleMessage() {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
-        }
-
-        if (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)) {
+        } else {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPoolTimerMessage);
@@ -183,7 +183,11 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db, std::shared_ptr<securi
 void MultiThreadHandler::Start() {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         thread_init_success_ = false;
-        auto thread_handler = std::make_shared<ThreadHandler>(this, wait_con_[i], wait_mutex_[i]);
+        auto thread_handler = std::make_shared<ThreadHandler>(
+            this, 
+            wait_con_[i], 
+            wait_mutex_[i], 
+            i < consensus_thread_count_);
         thread_vec_.push_back(thread_handler);
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
          thread_wait_con_.wait_for(lock, std::chrono::milliseconds(10000lu), [&] {
