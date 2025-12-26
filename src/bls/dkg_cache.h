@@ -17,7 +17,7 @@ class DkgCache {
 public:
     DkgCache(std::shared_ptr<protos::PrefixDb>& prefix_db);
     ~DkgCache();
-    void Init(uint32_t local_index, common::Members& members);
+    void Init(uint32_t local_index, common::Members& members, uint32_t network_id);
     bool GetSwapKey(
         uint32_t network_id,
         uint32_t local_member_index,

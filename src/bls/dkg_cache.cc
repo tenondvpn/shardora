@@ -41,14 +41,13 @@ void DkgCache::Init(uint32_t local_index, common::Members& members, uint32_t net
 void DkgCache::SetSwapKey(
         uint32_t network_id,
         uint32_t local_member_index,
-        uint64_t elect_height,
+        const std::string& id,
         uint32_t from_member_index,
         const std::string& secret_key_str) {
     prefix_db_->SaveSwapKey(
         network_id,
         local_member_index,
-        elect_height,
-        local_member_index,
+        id,
         from_member_index,
         secret_key_str);
 
@@ -60,7 +59,7 @@ bool DkgCache::GetSwapKey(
         uint32_t network_id,
         uint32_t local_member_index,
         const std::string& id,
-        uint32_t from_member_index,
+        uint32_t peer_index,
         std::string* secret_key_str) {
     SwapKeyCacheKey key{id, peer_index, local_index, network_id};
     auto iter = swap_keys_cache_.find(key);
@@ -74,17 +73,17 @@ bool DkgCache::GetSwapKey(
 
     SHARDORA_DEBUG("init dkg cache miss swap key: local_index: %u, peer_index: %u, id: %s",
         local_index, peer_index,
-        common::Encode::HexEncode((*members[peer_index])->id).c_str());
+        common::Encode::HexEncode(id.c_str());
     std::string tmp_secret_key_str;
     if (!prefix_db_->GetSwapKey(
             network_id,
             local_index,
-            (*members[peer_index])->id,
+            id,
             peer_index,
             &tmp_secret_key_str)) {
         SHARDORA_DEBUG("init dkg cache miss swap key: local_index: %u, peer_index: %u, id: %s",
             local_index, peer_index,
-            common::Encode::HexEncode((*members[peer_index])->id).c_str());
+            common::Encode::HexEncode(id.c_str());
         return false;
     }
 
@@ -106,7 +105,7 @@ bool DkgCache::GetBlsVerifyG2(
         return true;
     }
 
-    bls::protobuf::VerifyVecBrdReq tmp_verfy_req
+    bls::protobuf::VerifyVecBrdReq tmp_verfy_req;
     if (!prefix_db_->GetBlsVerifyG2(id, &tmp_verfy_req)) {
         return false;
     }
