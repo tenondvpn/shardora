@@ -126,7 +126,7 @@ void BlsManager::OnNewElectBlock(
 
     uint32_t local_member_idx = common::kInvalidUint32;
     for (uint32_t i = 0; i < members->size(); ++i) {
-        if ((*members[i])->id == security_->GetAddress()) {
+        if (((*members)[i])->id == security_->GetAddress()) {
             local_member_idx = i;
             break;
         }
