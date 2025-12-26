@@ -832,6 +832,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 }
 
 void BlsDkg::FinishBroadcast() try {
+    SHARDORA_DEBUG("test 0");
     if (members_ == nullptr ||
             local_member_index_ >= member_count_ ||
             valid_sec_key_count_ < min_aggree_member_count_) {
@@ -848,6 +849,7 @@ void BlsDkg::FinishBroadcast() try {
         bitmap_size += 64;
     }
 
+    SHARDORA_DEBUG("test 1");
     common::Bitmap bitmap(bitmap_size);
     common_public_key_ = libff::alt_bn128_G2::zero();
     auto& for_common_pk_g2s = dkg_cache_->verify_g2_cache();
@@ -891,6 +893,7 @@ void BlsDkg::FinishBroadcast() try {
         bitmap.Set(i);
     }
 
+    SHARDORA_DEBUG("test 2");
     uint32_t valid_count = static_cast<uint32_t>(
         (float)member_count_ * kBlsMaxExchangeMembersRatio);
     if (bitmap.valid_count() < valid_count) {
@@ -901,11 +904,15 @@ void BlsDkg::FinishBroadcast() try {
         return;
     }
 
+    SHARDORA_DEBUG("test 3");
     libBLS::Dkg dkg(min_aggree_member_count_, member_count_);
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
+    SHARDORA_DEBUG("test 4");
     DumpLocalPrivateKey(valid_seck_keys);
+    SHARDORA_DEBUG("test 5");
     BroadcastFinish(bitmap);
+    SHARDORA_DEBUG("test 6");
     finished_ = true;
     SHARDORA_DEBUG("elect_height: %lu, finish bls dkg success. local_member_index_: %d, valid count: %u, "
             "local_sec_key_: %s, local_publick_key_: %s, common_public_key_: %s",
@@ -966,6 +973,7 @@ void BlsDkg::DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_s
 }
 
 void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
+    SHARDORA_DEBUG("test 5 1");
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
@@ -1000,6 +1008,7 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     std::string sign_x;
     std::string sign_y;
     libff::alt_bn128_G1 g1_hash;
+    SHARDORA_DEBUG("test 5 2");
     CreateDkgMessage(msg_ptr);
     std::string sign_hash = common::Hash::keccak256(pk);
     bls_mgr_->GetLibffHash(sign_hash, &g1_hash);
@@ -1015,6 +1024,7 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     }
 
     finish_msg->set_bls_sign_x(sign_x);
+    SHARDORA_DEBUG("test 5 3");
     finish_msg->set_bls_sign_y(sign_y);
 #ifndef SHARDORA_UNITTEST
     SHARDORA_WARN("success broadcast finish message. t: %d, n: %d, "
@@ -1028,7 +1038,9 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
         bls_mgr_->HandleMessage(msg_ptr);
     }
 #endif
+    SHARDORA_DEBUG("test 5 4");
     FlushToCk(common_public_key_);
+    SHARDORA_DEBUG("test 5 5");
 }
 
 void BlsDkg::FlushToCk(const libff::alt_bn128_G2& common_public_key) {
