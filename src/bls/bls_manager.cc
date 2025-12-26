@@ -45,11 +45,11 @@ BlsManager::BlsManager(
         : security_(security), db_(db), ck_client_(ck_client) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     initLibSnark();
-    dkg_cache_ = std::make_shared<DkgCache>(prefix_db_);
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
     // bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
+    dkg_cache_ = std::make_shared<DkgCache>(members, prefix_db_);
 }
 
 BlsManager::~BlsManager() {}
@@ -124,20 +124,21 @@ void BlsManager::OnNewElectBlock(
         return;
     }
 
-    bool this_node_elected = false;
-    for (auto iter = members->begin(); iter != members->end(); ++iter) {
+    uint32_t local_member_idx = common::kInvalidUint32;
+    for (uint32_t i = 0; i < members->size(); ++i) {
         if ((*iter)->id == security_->GetAddress()) {
-            this_node_elected = true;
+            local_member_idx = i;
             break;
         }
     }
 
-    if (!this_node_elected) {
+    if (local_member_idx == common::kInvalidUint32) {
         return;
     }
 
     latest_elect_height_ = elect_height;
     auto waiting_bls = std::make_shared<bls::BlsDkg>();
+    dkg_cache_->Init(local_member_idx, members, elect_block->shard_network_id());
     waiting_bls->Init(
         this,
         security_,

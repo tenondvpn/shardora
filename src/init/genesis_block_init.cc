@@ -519,7 +519,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         for (size_t j = 0; j < genesis_nodes.size(); ++j) {
             auto val = libBLS::ThresholdUtils::fieldElementToString(
                 secret_key_contribution[i][j]);
-            prefix_db_->SaveSwapKey(sharding_id, i, elect_height, i, j, val);
+            prefix_db_->SaveSwapKey(sharding_id, i, genesis_nodes[j]->id, j, val);
         }
     }
 
