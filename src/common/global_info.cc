@@ -122,7 +122,7 @@ uint8_t GlobalInfo::get_thread_index() {
         if (iter == thread_with_index_.end()) {
             thread_idx = now_valid_thread_index_++;
             thread_with_index_[now_thread_id] = thread_idx;
-            P2P_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
+            SHARDORA_DEBUG("success add thread: %u, thread_index: %d", now_thread_id, thread_idx);
         } else {
             thread_idx = iter->second;
         }
@@ -134,7 +134,7 @@ uint8_t GlobalInfo::get_thread_index() {
     } else {
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
-            P2P_FATAL("invalid get new thread index: %u", now_thread_id);
+            SHARDORA_FATAL("invalid get new thread index: %u", now_thread_id);
         }
             
         thread_idx = iter->second;
