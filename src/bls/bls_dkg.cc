@@ -861,7 +861,9 @@ void BlsDkg::FinishBroadcast() try {
             continue;
         }
 
-        if (for_common_pk_g2s[i] == libff::alt_bn128_G2::zero()) {
+        auto& id = (*members_)[i]->id;
+        auto g2_iter = for_common_pk_g2s.find(id);
+        if (g2_iter == for_common_pk_g2s.end()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid all_verification_vector index: %d",
@@ -885,7 +887,7 @@ void BlsDkg::FinishBroadcast() try {
 
         valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
         valid_seck_keys_str_ += seckey + ",";
-        common_public_key_ = common_public_key_ + for_common_pk_g2s[i];
+        common_public_key_ = common_public_key_ + g2_iter->second;
         bitmap.Set(i);
     }
 
@@ -928,12 +930,21 @@ void BlsDkg::DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_s
     }
 
     auto& for_common_pk_g2s = dkg_cache_->verify_g2_cache();
-    for (auto iter = for_common_pk_g2s.begin(); iter != for_common_pk_g2s.end(); ++iter) {
+    std::vector<libff::alt_bn128_Fr> valid_seck_keys;
+    auto tmp_g2 = libff::alt_bn128_G2::zero();
+    for (size_t i = 0; i < member_count_; ++i) {
+        auto& id = (*members_)[i]->id;
+        auto g2_iter = for_common_pk_g2s.find(id);
+        libff::alt_bn128_G2* g2_ptr = &tmp_g2;
+        if (g2_iter != for_common_pk_g2s.end()) {
+            g2_ptr = &g2_iter->second;
+        }
+        
         auto pk_item = local_bls_item.add_common_pubkey();
-        pk_item->set_x_c0(libBLS::ThresholdUtils::fieldElementToString((*iter).X.c0));
-        pk_item->set_x_c1(libBLS::ThresholdUtils::fieldElementToString((*iter).X.c1));
-        pk_item->set_y_c0(libBLS::ThresholdUtils::fieldElementToString((*iter).Y.c0));
-        pk_item->set_y_c1(libBLS::ThresholdUtils::fieldElementToString((*iter).Y.c1));
+        pk_item->set_x_c0(libBLS::ThresholdUtils::fieldElementToString((*g2_ptr).X.c0));
+        pk_item->set_x_c1(libBLS::ThresholdUtils::fieldElementToString((*g2_ptr).X.c1));
+        pk_item->set_y_c0(libBLS::ThresholdUtils::fieldElementToString((*g2_ptr).Y.c0));
+        pk_item->set_y_c1(libBLS::ThresholdUtils::fieldElementToString((*g2_ptr).Y.c1));
     }
 
     auto local_bls_str = local_bls_item.SerializeAsString();

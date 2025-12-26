@@ -106,11 +106,9 @@ bool DkgCache::GetBlsVerifyG2(
     }
 
     bls::protobuf::VerifyVecBrdReq req;
-    auto res = dkg_cache_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
+    auto res = prefix_db_->GetBlsVerifyG2(id, &req);
     if (!res) {
-        SHARDORA_WARN("get verify g2 failed local: %d, %lu, %u",
-            local_member_index_, elect_hegiht_, peer_mem_index);
-        return libff::alt_bn128_G2::zero();
+        return false;
     }
 
     auto& item = req.verify_vec(0);
@@ -123,9 +121,8 @@ bool DkgCache::GetBlsVerifyG2(
     auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-    *changed_idx = req.change_idx();
     auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-    if (verfy_req != nullptr) {
+    if (verfy_req_g2 != nullptr) {
         *verfy_req_g2 = g2;
     }
 

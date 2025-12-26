@@ -49,7 +49,7 @@ BlsManager::BlsManager(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
     // bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
-    dkg_cache_ = std::make_shared<DkgCache>(members, prefix_db_);
+    dkg_cache_ = std::make_shared<DkgCache>(prefix_db_);
 }
 
 BlsManager::~BlsManager() {}
