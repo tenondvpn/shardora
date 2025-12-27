@@ -35,29 +35,29 @@
 // #define SHARDORA_DEBUG(fmt, ...)
 
 #define DEBUG(fmt, ...)  do {\
-    spdlog::debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::debug(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 // #define SHARDORA_DEBUG(fmt, ...)
 #define SHARDORA_DEBUG(fmt, ...)  do {\
-    spdlog::debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::debug(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 #endif
 
 #define SHARDORA_INFO(fmt, ...)  do {\
-    spdlog::info("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::info(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 
 #define SHARDORA_WARN(fmt, ...)  do {\
-    spdlog::warn("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::warn(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 
 #define SHARDORA_ERROR(fmt, ...)  do {\
-    spdlog::error("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::error(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 
 #define SHARDORA_FATAL(fmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    spdlog::critical("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::critical(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
     assert(false);\
     exit(0);\
 } while (0)
@@ -70,29 +70,29 @@
 // #define DEBUG(fmt, ...)
 // #define SHARDORA_DEBUG(fmt, ...)
 #define DEBUG(fmt, ...)  do {\
-    spdlog::debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::debug(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 #define SHARDORA_DEBUG(fmt, ...)  do {\
-    spdlog::debug("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::debug(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 #endif
 // #define SHARDORA_INFO(fmt, ...)
 // #define SHARDORA_WARN(fmt, ...)
 #define SHARDORA_INFO(fmt, ...)  do {\
-    spdlog::info("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::info(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 
 #define SHARDORA_WARN(fmt, ...)  do {\
-    spdlog::warn("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::warn(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 
 #define SHARDORA_ERROR(fmt, ...)  do {\
-    spdlog::error("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::error(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
 
 #define SHARDORA_FATAL(fmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    spdlog::critical("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    spdlog::critical(fmt::sprintf("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
     assert(false);\
     exit(0);\
 } while (0)
