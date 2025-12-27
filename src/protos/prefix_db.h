@@ -171,7 +171,7 @@ public:
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
         key.append(id);
         key.append((char*)&peer_idx, sizeof(peer_idx));
-        SHARDORA_DEBUG("get ttttt swap key: %u, %lu, %u",
+        SHARDORA_DEBUG("get ttttt swap key: %u, %s, %u",
             local_member_idx, common::Encode::HexEncode(id).c_str(), peer_idx);
         auto st = db_->Get(key, seckey);
         if (!st.ok()) {
