@@ -231,7 +231,7 @@ int Execution::execute(
     auto etime = common::TimeUtils::TimestampMs();
     SHARDORA_DEBUG("execute res: %d, from: %s, to: %s, gas_limit: %lu, "
         "src_gas_left: %lu, gas_left: %lu, gas_refund: %lu, use time: %lu, output: %s",
-        out_res->status_code, 
+        (int32_t)out_res->status_code, 
         common::Encode::HexEncode(from_address).c_str(),
         common::Encode::HexEncode(to_address).c_str(),
         gas, 
