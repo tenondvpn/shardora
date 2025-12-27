@@ -25,26 +25,6 @@
 #define SHARDORA_LOG_FILE_NAME strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__
 #endif
 
-static inline void GlobalInitSpdlog() {
-    // 1. Initialize the asynchronous thread pool first (must be called before create_async)
-    spdlog::init_thread_pool(8192, 1);  // 队列大小 8192，一个后台线程
-
-    // 2. Create asynchronous file logger
-    auto LOG_INS = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>(
-        "async_file", "log/shardora.log", true);  // true 表示自动 flush_on debug/error 等
-
-    // 3. [Key!] Set as the default logger, so that global macros (such as spdlog::debug) can be used
-    spdlog::set_default_logger(LOG_INS);
-
-    // 4. Set log level and format
-    spdlog::set_level(spdlog::level::debug);  // 或 trace，根据需要
-    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%l] [%s:%#] [%!] %v%$");
-
-    // Optional: Flush immediately on error
-    spdlog::flush_on(spdlog::level::err);
-    spdlog::debug("init spdlog success.");
-}
-
 #ifdef _WIN32
 
 #ifdef NDEBUG
