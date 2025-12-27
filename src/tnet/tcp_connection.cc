@@ -107,7 +107,7 @@ int TcpConnection::SendPacketWithoutLock(Packet& packet) {
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
         if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
             SHARDORA_ERROR("out_buffer_list_ out of size %d, %d, %lu", 
-                OUT_BUFFER_LIST_SIZE, out_buffer_list_.size(), msg_pkg->msg_id());
+                0, out_buffer_list_.size(), msg_pkg->msg_id());
             return 1;
         }
 

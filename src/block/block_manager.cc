@@ -747,7 +747,7 @@ void BlockManager::CreateStatisticTx() {
                 common::Encode::HexEncode(unique_hash).c_str(),
                 0,
                 "", tx_ptr->timeout,
-                kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
+                0, common::TimeUtils::TimestampMs(),
                 tx->nonce(),
                 timeblock_height);
             shard_statistics_map_[timeblock_height] = tx_ptr;
