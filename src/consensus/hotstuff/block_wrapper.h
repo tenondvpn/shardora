@@ -85,7 +85,7 @@ public:
                 SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
                     common::Encode::HexEncode(tx_info.to()).c_str(),
                     common::Encode::HexEncode(tx_info.key()).c_str(),
-                    tx_info.step());
+                    (int32_t)tx_info.step());
                 return 1;
             }
 
