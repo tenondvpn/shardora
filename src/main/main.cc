@@ -23,7 +23,7 @@ static void GlobalInitSpdlog() {
     spdlog::set_level(spdlog::level::debug);
     spdlog::flush_on(spdlog::level::err);
 
-    spdlog::debug("init spdlog success.");
+    spdlog::debug("init spdlog success: %d", 1);
 }
 
 int main(int argc, char** argv) {
