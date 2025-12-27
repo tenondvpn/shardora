@@ -509,6 +509,10 @@ void ShardStatistic::CallNewElectBlock(
         return;
     }
 
+    if (now_elect_height_ >= elect_mgr_->latest_height(sharding_id)) {
+        return;
+    }
+
     now_elect_height_ = elect_mgr_->latest_height(sharding_id);
     prepare_elect_height_ = prepare_elect_height;
     SHARDORA_INFO("new elect block: %lu, prepare_elect_height_: %lu",
@@ -644,19 +648,19 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    auto exist_iter = statistic_height_map_.find(iter->first);
-    if (exist_iter != statistic_height_map_.end()) {
-        elect_statistic = exist_iter->second;
-        SHARDORA_INFO("success get exists statistic message iter->first: %lu, "
-            "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
-            "now tm height: %lu, statistic: %s",
-            iter->first,
-            prev_timeblock_height_,
-            statisticed_timeblock_height,
-            latest_timeblock_height_,
-            ProtobufToJson(elect_statistic).c_str());
-        return kPoolsSuccess;
-    }
+    // auto exist_iter = statistic_height_map_.find(iter->first);
+    // if (exist_iter != statistic_height_map_.end()) {
+    //     elect_statistic = exist_iter->second;
+    //     SHARDORA_INFO("success get exists statistic message iter->first: %lu, "
+    //         "prev_timeblock_height_: %lu, statisticed_timeblock_height: %lu, "
+    //         "now tm height: %lu, statistic: %s",
+    //         iter->first,
+    //         prev_timeblock_height_,
+    //         statisticed_timeblock_height,
+    //         latest_timeblock_height_,
+    //         ProtobufToJson(elect_statistic).c_str());
+    //     return kPoolsSuccess;
+    // }
     
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
