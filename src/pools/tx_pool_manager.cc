@@ -490,7 +490,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
             common::Encode::HexEncode(tx_msg.to()).c_str(),
-            tx_msg.step(),
+            (int32_t)tx_msg.step(),
             tx_msg.nonce());
         switch (tx_msg.step()) {
         case pools::protobuf::kJoinElect:
@@ -1236,7 +1236,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     SHARDORA_DEBUG("trace tx success add local transfer to tx pool: %u, "
         "step: %d, addr: %s, nonce: %lu, from pk: %s, to: %s",
         pool_index,
-        msg_ptr->header.tx_proto().step(),
+        (int32_t)msg_ptr->header.tx_proto().step(),
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
         tx_ptr->tx_info->nonce(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),

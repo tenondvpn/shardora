@@ -34,7 +34,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 
                 view_block->qc().view(), 
-                block_tx.step(), 
+                (int32_t)block_tx.step(), 
                 block_tx.nonce(),
                 res);
             continue;
@@ -59,7 +59,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
                 view_block->qc().network_id(), 
                 view_block->qc().pool_index(), 
                 view_block->qc().view(), 
-                block_tx.step(), 
+                (int32_t)block_tx.step(), 
                 block_tx.nonce(),
                 do_tx_res);
             continue;

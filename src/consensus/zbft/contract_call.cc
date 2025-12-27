@@ -296,7 +296,7 @@ int ContractCall::HandleTx(
         gas_used,
         block_tx.gas_price(),
         block_tx.status(),
-        block_tx.step(),
+        (int32_t)block_tx.step(),
         block_tx.amount(),
         src_to_balance,
         contract_balance_add,

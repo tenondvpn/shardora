@@ -204,7 +204,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                         "step: %lu, nonce: %lu, consensus nonce: %lu, key: %s", 
                         common::Encode::HexEncode(addr).c_str(),
                         common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(),
-                        view_block.block_info().tx_list(i).step(),
+                        (int32_t)view_block.block_info().tx_list(i).step(),
                         view_block.block_info().tx_list(i).nonce(),
                         nonce_iter->second->tx_info->nonce(),
                         common::Encode::HexEncode(nonce_iter->second->tx_info->key()).c_str());
@@ -225,7 +225,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
                             common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
                             common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
                             view_block.block_info().tx_list(i).nonce(),
-                            view_block.block_info().tx_list(i).step(),
+                            (int32_t)view_block.block_info().tx_list(i).step(),
                             common::Encode::HexEncode(addr).c_str());
                     } else {
                         if (nonce_iter->first > view_block.block_info().tx_list(i).nonce()) {
@@ -265,7 +265,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         remove_tx_func(consensus_tx_map_);
         SHARDORA_DEBUG("trace tx pool: %d, step: %d, to: %s, unique hash: %s, over tx addr: %s, nonce: %lu", 
             pool_index_,
-            view_block.block_info().tx_list(i).step(),
+            (int32_t)view_block.block_info().tx_list(i).step(),
             common::Encode::HexEncode(view_block.block_info().tx_list(i).to()).c_str(), 
             common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
             common::Encode::HexEncode(addr).c_str(), 
