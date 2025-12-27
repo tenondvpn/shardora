@@ -60,7 +60,7 @@ void ThreadHandler::HandleMessage() {
             auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = msg_handler_->GetMessageFromQueue(
                 thread_idx, 
-                (maping_thread_idx == (common::GlobalInfo::Instance()->message_handler_thread_count() - 1)));
+                !is_hotstuff_thread_);
             if (!msg_ptr) {
                 break;
             }
