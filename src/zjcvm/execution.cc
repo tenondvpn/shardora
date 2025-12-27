@@ -200,7 +200,7 @@ int Execution::execute(
             const auto gas_used = msg.gas - out_res->gas_left;
             SHARDORA_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, EVMC_SUCCESS: %d, "
                 "gas_used: %lu, gas limit: %lu, codes: %s, from: %s, to: %s",
-                out_res->status_code, EVMC_SUCCESS, gas_used, create_gas,
+                (int32_t)out_res->status_code, (int32_t)EVMC_SUCCESS, gas_used, create_gas,
                 "common::Encode::HexEncode(bytes_code).c_str()",
                 common::Encode::HexEncode(from_address).c_str(),
                 common::Encode::HexEncode(to_address).c_str());
