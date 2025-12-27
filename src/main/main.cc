@@ -13,11 +13,11 @@ static void GlobalInitSpdlog() {
     spdlog::set_default_logger(logger);
 
     // 关键：强制设置全局 pattern
-    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%l] [%s:%#] [%!] %v%$");
+    spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e [thread %t] %-5l [%n] %v%$");
 
     // 额外保险：遍历所有 sink 重新设置（防止被覆盖）
     for (auto& sink : logger->sinks()) {
-        sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%l] [%s:%#] [%!] %v%$");
+        sink->set_pattern("%Y-%m-%d %H:%M:%S.%e [thread %t] %-5l [%n] %v%$");
     }
 
     spdlog::set_level(spdlog::level::debug);
