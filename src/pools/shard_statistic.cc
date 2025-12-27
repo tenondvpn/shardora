@@ -459,15 +459,15 @@ void ShardStatistic::HandleStatistic(
     auto& node_info = node_iter->second;
     node_info.gas_sum += block.all_gas();
     node_info.tx_count += block.tx_list_size();
-    // std::string debug_str = ", height_node_collect_info_map height: ";
-    // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-    //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-    //     for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
-    //         debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
-    //         ", block_gas: " + std::to_string(siter->second.gas_sum) + 
-    //         ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
-    //     }
-    // }
+    std::string debug_str = ", height_node_collect_info_map height: ";
+    for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+            titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+        for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
+            debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
+            ", block_gas: " + std::to_string(siter->second.gas_sum) + 
+            ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
+        }
+    }
 
     SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
@@ -1070,14 +1070,14 @@ void ShardStatistic::setElectStatistics(
 
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto &id = (*members)[midx]->id;
-            // auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
-            // auto node_poce_info = accout_poce_info_map_.try_emplace(
-            //     id, std::make_shared<AccoutPoceInfoItem>()).first->second;
+            auto node_info = node_info_map.emplace(id, StatisticMemberInfoItem()).first->second;
+            auto node_poce_info = accout_poce_info_map_.try_emplace(
+                id, std::make_shared<AccoutPoceInfoItem>()).first->second;
             CHECK_MEMORY_SIZE(accout_poce_info_map_);
-            statistic_item.add_credit(0);  // (node_poce_info->credit);
-            statistic_item.add_consensus_gap(0);  // (node_poce_info->consensus_gap);
-            statistic_item.add_tx_count(0);
-            statistic_item.add_gas_sum(0);
+            statistic_item.add_credit(node_poce_info->credit);
+            statistic_item.add_consensus_gap(node_poce_info->consensus_gap);
+            statistic_item.add_tx_count(node_info->tx_count);
+            statistic_item.add_gas_sum(node_info->gas_sum);
             uint64_t stoke = 0;
             if (!is_root) {
                 prefix_db_->GetElectNodeMinStoke(
@@ -1105,7 +1105,7 @@ void ShardStatistic::setElectStatistics(
         }
 
         statistic_item.set_elect_height(hiter->first);
-    // }
+    }
 }
 
 }  // namespace pools
