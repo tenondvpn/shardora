@@ -63,7 +63,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
             block_item->timeblock_height(),
             tx_list[i].nonce(),
             tx_list[i].status(),
-            tx_list[i].step());
+            static_cast<int32_t>(tx_list[i].step()));
     }
 #endif
         

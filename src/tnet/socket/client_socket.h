@@ -17,11 +17,9 @@ public:
             : TcpSocket(local_addr, local_port),
               peer_addr_(peer_addr),
               peer_port_(peer_port) {
-        SHARDORA_DEBUG("memory check client socket create: %p", this);
     }
 
     virtual ~ClientSocket() {
-        SHARDORA_DEBUG("memory check client socket destroy: %p", this);
     }
 
     int Connect() const {
