@@ -38,7 +38,7 @@ static inline void GlobalInitSpdlog() {
 
     // 4. Set log level and format
     spdlog::set_level(spdlog::level::debug);  // 或 trace，根据需要
-    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^%l%$] [thread %t] %v");
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%l] [%s:%#] [%!] %v%$");
 
     // Optional: Flush immediately on error
     spdlog::flush_on(spdlog::level::err);
