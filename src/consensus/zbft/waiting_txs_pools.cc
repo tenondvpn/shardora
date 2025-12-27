@@ -45,7 +45,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxsIdempotently(
                 "pool index: %d, tx count: %d, nonce: %lu, step: %d, unique hash: %s", 
                 thread_id, pool_index, txs_item->txs.size(), 
                 first_tx->tx_info->nonce(), 
-                first_tx->tx_info->step(),
+                (int32_t)first_tx->tx_info->step(),
                 common::Encode::HexEncode(first_tx->tx_info->key()).c_str());
         }
     } else {

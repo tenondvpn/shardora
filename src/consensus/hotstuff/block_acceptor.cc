@@ -356,7 +356,7 @@ Status BlockAcceptor::addTxsToPool(
             SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
                 common::Encode::HexEncode(tx_info.to()).c_str(),
                 common::Encode::HexEncode(tx_info.key()).c_str(),
-                tx_info.step());
+                (int32_t)tx_info.step());
             return 1;
         }
 
@@ -723,7 +723,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
         balance_map,
         zjc_host);
     if (add_txs_status != Status::kSuccess) {
-        SHARDORA_ERROR("invalid consensus, add_txs_status failed: %d.", add_txs_status);
+        SHARDORA_ERROR("invalid consensus, add_txs_status failed: %d.", (int32_t)add_txs_status);
         return add_txs_status;
     }
 

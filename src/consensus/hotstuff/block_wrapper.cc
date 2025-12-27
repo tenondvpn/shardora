@@ -75,7 +75,7 @@ Status BlockWrapper::Wrap(
             SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
                 common::Encode::HexEncode(tx_info.to()).c_str(),
                 common::Encode::HexEncode(tx_info.key()).c_str(),
-                tx_info.step());
+                (int32_t)tx_info.step());
             return 1;
         }
 
@@ -91,7 +91,7 @@ Status BlockWrapper::Wrap(
         // 允许 3 个连续的空交易块
         SHARDORA_DEBUG("leader get txs failed check is empty block allowd: %d, "
             "pool: %d, %u_%u_%lu size: %u, pool size: %u",
-            s, pool_idx_, 
+            (int32_t)s, pool_idx_, 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 

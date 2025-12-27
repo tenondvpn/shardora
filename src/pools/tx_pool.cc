@@ -144,7 +144,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     if (!IsUserTransaction(tx_ptr->tx_info->step()) && !tx_ptr->tx_info->key().empty()) {
         SHARDORA_DEBUG("success add system tx step: %d, nonce: %lu, unique hash: %s", 
-            tx_ptr->tx_info->step(), 
+            (int32_t)tx_ptr->tx_info->step(), 
             tx_ptr->tx_info->nonce(), 
             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
         if (over_unique_hash_set_.find(tx_ptr->tx_info->key()) != over_unique_hash_set_.end()) {
@@ -154,7 +154,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
                 tx_ptr->tx_info->nonce(),
-                tx_ptr->tx_info->step(),
+                (int32_t)tx_ptr->tx_info->step(),
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
             return kPoolsError;
         }
