@@ -470,10 +470,11 @@ void ShardStatistic::HandleStatistic(
         }
     }
 
-    SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
+    SHARDORA_INFO("statistic height: %lu, elect height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
         "debug_str: %s, statistic_pool_debug_str: %s",
         pool_statistic_riter->first,
+        view_block_ptr->qc().elect_height(),
         view_block_ptr->qc().pool_index(), block.height(), 
         block.timeblock_height(), 
         common::Encode::HexEncode(leader_id).c_str(),
@@ -733,11 +734,11 @@ int ShardStatistic::StatisticWithHeights(
             debug_str += std::to_string(titer->first) + ",";
         }
 
-        // debug_str += ", height_node_collect_info_map height: ";
-        // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-        //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-        //     debug_str += std::to_string(titer->first) + ",";
-        // }
+        debug_str += ", height_node_collect_info_map height: ";
+        for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+                titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+            debug_str += std::to_string(titer->first) + ",";
+        }
 
         for (auto h_join_elect_stoke_iter = statistic_info_ptr->join_elect_stoke_map.begin();
                 h_join_elect_stoke_iter != statistic_info_ptr->join_elect_stoke_map.end(); 
