@@ -220,7 +220,7 @@ Status Hotstuff::Propose(
     if (s != Status::kSuccess) {
         if (!tc) {
             SHARDORA_DEBUG("pool: %d construct propose msg failed, %d",
-                pool_idx_, s);
+                pool_idx_, (int32_t)s);
             return s;
         }
 
@@ -2052,7 +2052,7 @@ Status Hotstuff::SendMsgToLeader(
     SHARDORA_DEBUG("pool index: %u, send to leader %d message to leader net: %u, %s, "
         "hash64: %lu, %s:%d, leader->index: %d, local_idx: %d",
         pool_idx_,
-        msg_type,
+        (int32_t)msg_type,
         leader->net_id, 
         common::Encode::HexEncode(leader->id).c_str(), 
         header_msg.hash64(),

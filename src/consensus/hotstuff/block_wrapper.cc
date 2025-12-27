@@ -102,7 +102,7 @@ Status BlockWrapper::Wrap(
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SHARDORA_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
-        s, pool_idx_, 
+        (int32_t)s, pool_idx_, 
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
         view_block->qc().view(), 

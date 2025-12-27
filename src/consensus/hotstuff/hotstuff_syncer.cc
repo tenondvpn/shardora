@@ -621,7 +621,7 @@ Status HotstuffSyncer::MergeChain(
         Status s = onRecViewBlock(pool_idx, ori_chain, *sync_block);
         if (s != Status::kSuccess) {
             SHARDORA_ERROR("pool: %d, merge chain block: %lu failed, s: %d",
-                pool_idx, sync_block->qc().view(), s);
+                pool_idx, sync_block->qc().view(), (int32_t)s);
             continue;
         }
     }

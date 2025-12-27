@@ -644,7 +644,7 @@ Status BlockAcceptor::addTxsToPool(
         default:
             // TODO 没完！还需要支持其他交易的写入
             // break;
-            SHARDORA_FATAL("invalid tx step: %d", tx->step());
+            SHARDORA_FATAL("invalid tx step: %d", (int32_t)tx->step());
             return Status::kError;
         }
 
