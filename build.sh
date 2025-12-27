@@ -31,7 +31,7 @@ then
     ./transport_test/transport_test
     exit 0
 fi
-nproc=8
+nproc=16
 make -j${nproc} shardora
 echo $1
 if [[ $1 == "test" ]];
