@@ -138,7 +138,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     if (tx_ptr->tx_key.empty()) {
-        SHARDORA_DEBUG("add failed unique hash empty: %d", tx_ptr->tx_info->step());
+        SHARDORA_DEBUG("add failed unique hash empty: %d", (int32_t)tx_ptr->tx_info->step());
         tx_ptr->tx_key = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 

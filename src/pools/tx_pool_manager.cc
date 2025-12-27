@@ -548,14 +548,14 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
         default:
-            SHARDORA_DEBUG("invalid tx step: %d", tx_msg.step());
+            SHARDORA_DEBUG("invalid tx step: %d", (int32_t)tx_msg.step());
             assert(false);
             break;
         }
 
         if (pool_index == common::kInvalidPoolIndex) {
             if (!msg_ptr->address_info) {
-                SHARDORA_DEBUG("invalid tx step: %d", tx_msg.step());
+                SHARDORA_DEBUG("invalid tx step: %d", (int32_t)tx_msg.step());
                 return;
             }
 
