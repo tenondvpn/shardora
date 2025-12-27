@@ -2,15 +2,20 @@
 
 #include <string.h>
 
-#include "log4cpp/Category.hh"
-#include "log4cpp/Appender.hh"
-#include "log4cpp/FileAppender.hh"
-#include "log4cpp/OstreamAppender.hh"
-#include "log4cpp/Layout.hh"
-#include "log4cpp/BasicLayout.hh"
-#include "log4cpp/Priority.hh"
-#include "log4cpp/PropertyConfigurator.hh"
+// #include "log4cpp/Category.hh"
+// #include "log4cpp/Appender.hh"
+// #include "log4cpp/FileAppender.hh"
+// #include "log4cpp/OstreamAppender.hh"
+// #include "log4cpp/Layout.hh"
+// #include "log4cpp/BasicLayout.hh"
+// #include "log4cpp/Priority.hh"
+// #include "log4cpp/PropertyConfigurator.hh"
 #include <google/protobuf/util/json_util.h>
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/async.h"
 
 
 #define SHARDORA_DEBUG(fmt, ...)
@@ -20,7 +25,17 @@
 #define SHARDORA_LOG_FILE_NAME strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__
 #endif
 
-#define LOG_INS log4cpp::Category::getInstance(std::string("sub1"))
+// #define LOG_INS log4cpp::Category::getInstance(std::string("sub1"))
+static std::shared_ptr<spdlog::logger> LOG_INS_PTR = nullptr;
+static spdlog::logger LOG_INS;
+static inline GlobalInitSpdlog() {
+    spdlog::set_level(spdlog::level::debug);  // 显示 debug 及以上
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^%l%$] [thread %t] %v");
+    spdlog::init_thread_pool(8192, 1);  // 队列大小 8192，1 个后台线程
+    LOG_INS_PTR = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>("async_file", "log/shardora.log");
+    LOG_INS = *LOG_INS_PTR;
+}
+
 #ifdef _WIN32
 
 #ifdef NDEBUG

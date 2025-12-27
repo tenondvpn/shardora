@@ -5,7 +5,7 @@
 #include "init/network_init.h"
 
 int main(int argc, char** argv) {
-    log4cpp::PropertyConfigurator::configure("./conf/log4cpp.properties");
+    GlobalInitSpdlog();
     shardora::init::NetworkInit init;
     if (init.Init(argc, argv) != 0) {
         SHARDORA_ERROR("init network error!");
