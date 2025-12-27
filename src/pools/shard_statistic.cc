@@ -1076,8 +1076,8 @@ void ShardStatistic::setElectStatistics(
             CHECK_MEMORY_SIZE(accout_poce_info_map_);
             statistic_item.add_credit(node_poce_info->credit);
             statistic_item.add_consensus_gap(node_poce_info->consensus_gap);
-            statistic_item.add_tx_count(node_info->tx_count);
-            statistic_item.add_gas_sum(node_info->gas_sum);
+            statistic_item.add_tx_count(node_info.tx_count);
+            statistic_item.add_gas_sum(node_info.gas_sum);
             uint64_t stoke = 0;
             if (!is_root) {
                 prefix_db_->GetElectNodeMinStoke(
