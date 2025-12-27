@@ -1235,7 +1235,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.network_id(),
         qc_item.pool_index(),
         qc_item.view(),
-        ret);
+        (int32_t)ret);
     // assert(ret != Status::kInvalidOpposedCount); 有可能由于状态不一致临时出现
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
