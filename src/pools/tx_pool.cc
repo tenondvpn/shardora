@@ -166,7 +166,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
         common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
         tx_ptr->tx_info->nonce(),
-        tx_ptr->tx_info->step());
+        (int32_t)tx_ptr->tx_info->step());
     if (tx_ptr->tx_info->step() == pools::protobuf::kContractExcute) {
         assert(tx_ptr->address_info->addr().size() == common::kPreypamentAddressLength);
     }
@@ -366,7 +366,7 @@ void TxPool::GetTxSyncToLeader(
             if (!IsUserTransaction(tx_ptr->tx_info->step())) {
                 SHARDORA_DEBUG("nonce invalid: %lu, step is not user tx: %d", 
                     tx_ptr->tx_info->nonce(), 
-                    tx_ptr->tx_info->step());
+                    (int32_t)tx_ptr->tx_info->step());
             } else {
                 SHARDORA_DEBUG("trace tx pool: %d, to leader tx addr: %s, nonce: %lu", 
                     pool_index_,
@@ -682,7 +682,7 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
     }
 
     if (tx_ptr->tx_key.empty()) {
-        SHARDORA_WARN("add failed unique hash empty: %d", tx_ptr->tx_info->step());
+        SHARDORA_WARN("add failed unique hash empty: %d", (int32_t)tx_ptr->tx_info->step());
         tx_ptr->tx_key = pools::GetTxMessageHash(*tx_ptr->tx_info);
     }
 

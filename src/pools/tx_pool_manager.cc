@@ -1217,7 +1217,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     }
 
     if (item_functions_[msg_ptr->header.tx_proto().step()] == nullptr) {
-        SHARDORA_DEBUG("not registered step : %d", msg_ptr->header.tx_proto().step());
+        SHARDORA_DEBUG("not registered step : %d", (int32_t)msg_ptr->header.tx_proto().step());
         assert(false);
         return;
     }
