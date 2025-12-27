@@ -68,7 +68,7 @@ static inline GlobalInitSpdlog() {
 
 #define SHARDORA_FATAL(fmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    LOG_INS.fatal("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    LOG_INS.critical("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
 } while (0)
@@ -103,17 +103,17 @@ static inline GlobalInitSpdlog() {
 
 #define SHARDORA_FATAL(fmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    LOG_INS.fatal("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    LOG_INS.critical("[%s][%s][%d] " fmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
 } while (0)
 
 #endif // _WIN32
 
-#ifdef LOG
-#undef LOG
-#endif // LOG
-#define LOG(level) LOG_INS << level << "[" << SHARDORA_LOG_FILE_NAME << ": " << __LINE__ << "]" 
+// #ifdef LOG
+// #undef LOG
+// #endif // LOG
+// #define LOG(level) LOG_INS << level << "[" << SHARDORA_LOG_FILE_NAME << ": " << __LINE__ << "]" 
 
 #ifdef FOR_CONSOLE_DEBUG
 #undef DEBUG
