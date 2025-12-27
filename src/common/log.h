@@ -58,7 +58,7 @@
 } while (0)
 
 #define SHARDORA_FATAL(logfmt, ...)  do {\
-    printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    printf("[DEBUG][%s][%s][%d] " logfmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     spdlog::critical(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
     assert(false);\
     exit(0);\
@@ -93,7 +93,7 @@
 } while (0)
 
 #define SHARDORA_FATAL(logfmt, ...)  do {\
-    printf("[DEBUG][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+    printf("[DEBUG][%s][%s][%d] " logfmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     spdlog::critical(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
     assert(false);\
     exit(0);\
