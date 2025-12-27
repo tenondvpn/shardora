@@ -26,10 +26,10 @@
 #endif
 
 static std::shared_ptr<spdlog::logger> LOG_INS = nullptr;
-static inline GlobalInitSpdlog() {
-    spdlog::set_level(spdlog::level::debug);  // 显示 debug 及以上
+static inline void GlobalInitSpdlog() {
+    spdlog::set_level(spdlog::level::debug);
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^%l%$] [thread %t] %v");
-    spdlog::init_thread_pool(8192, 1);  // 队列大小 8192，1 个后台线程
+    spdlog::init_thread_pool(8192, 1);
     LOG_INS = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>("async_file", "log/shardora.log");
 }
 
