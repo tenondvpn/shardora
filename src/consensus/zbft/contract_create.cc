@@ -86,7 +86,7 @@ int ContractUserCreateCall::HandleTx(
                 "evmc res: %d, gas_used: %lu, gas price: %lu, from_balance: %lu",
                 common::Encode::HexEncode(block_tx.to()).c_str(),
                 call_res,
-                res.status_code,
+                (int32_t)res.status_code,
                 gas_used,
                 block_tx.gas_price(),
                 from_balance);
