@@ -994,7 +994,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
         pro_msg_wrap->view_block_ptr);
     if (s != Status::kSuccess) {
         SHARDORA_ERROR("pool: %d, ConstructVoteMsg error %d, hash64: %lu",
-            pool_idx_, s, pro_msg_wrap->msg_ptr->header.hash64());
+            pool_idx_, (int32_t)s, pro_msg_wrap->msg_ptr->header.hash64());
         return Status::kError;
     }
     // Construct HotstuffMessage and send
@@ -1720,7 +1720,7 @@ Status Hotstuff::ConstructProposeMsg(
     Status s = ConstructViewBlock(msg_ptr, new_view_block, tx_propose);
     if (s != Status::kSuccess) {
         SHARDORA_DEBUG("pool: %d construct view block failed, view: %lu, %d, member_index: %d",
-            pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), s, 
+            pool_idx_, view_block_chain()->HighViewBlock()->qc().view(), (int32_t)s, 
             elect_item->LocalMember()->index);        
         return s;
     }

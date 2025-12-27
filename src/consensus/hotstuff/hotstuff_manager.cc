@@ -204,7 +204,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
     if (s != Status::kSuccess) {
         SHARDORA_ERROR("qc verify failed, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
-            s, vblock.qc().view(), vblock.qc().view(),
+            (int32_t)s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),
             vblock.qc().pool_index(),
             vblock.block_info().height(),
@@ -217,7 +217,7 @@ Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::
 
     SHARDORA_DEBUG("qc verify success, s: %d, blockview: %lu, "
             "qcview: %lu, %u_%u_%lu, block elect height: %lu, elect height: %u_%u_%lu",
-            s, vblock.qc().view(), vblock.qc().view(),
+            (int32_t)s, vblock.qc().view(), vblock.qc().view(),
             vblock.qc().network_id(),
             vblock.qc().pool_index(),
             vblock.block_info().height(),
