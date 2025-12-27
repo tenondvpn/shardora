@@ -343,7 +343,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = msg.gas;
     SHARDORA_DEBUG("host called kind: %u, from: %s, to: %s, amount: %lu",
-        msg.kind, common::Encode::HexEncode(params.from).c_str(), 
+        (int32_t)msg.kind, common::Encode::HexEncode(params.from).c_str(), 
         common::Encode::HexEncode(params.to).c_str(), params.value);
     if (contract_mgr_->call(
             params,

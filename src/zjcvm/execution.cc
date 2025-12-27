@@ -208,7 +208,7 @@ int Execution::execute(
         } else {
             const auto gas_used = msg.gas - out_res->gas_left;
             SHARDORA_DEBUG("out_res->status_code == EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
-                out_res->status_code, gas_used, create_gas, "common::Encode::HexEncode(bytes_code).c_str()");
+                (int32_t)out_res->status_code, gas_used, create_gas, "common::Encode::HexEncode(bytes_code).c_str()");
         }
 
         host.create_bytes_code_ = std::string((char*)out_res->output_data, out_res->output_size);
