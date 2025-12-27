@@ -439,47 +439,47 @@ void ShardStatistic::HandleStatistic(
         return;
     }
 
-    // auto elect_height_iter = height_node_collect_info_map.find(
-    //     view_block_ptr->qc().elect_height());
-    // if (elect_height_iter == height_node_collect_info_map.end()) {
-    //     height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
-    //         std::unordered_map<std::string, StatisticMemberInfoItem>();
-    //     elect_height_iter = height_node_collect_info_map.find(
-    //         view_block_ptr->qc().elect_height());
+    auto elect_height_iter = height_node_collect_info_map.find(
+        view_block_ptr->qc().elect_height());
+    if (elect_height_iter == height_node_collect_info_map.end()) {
+        height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
+            std::unordered_map<std::string, StatisticMemberInfoItem>();
+        elect_height_iter = height_node_collect_info_map.find(
+            view_block_ptr->qc().elect_height());
+    }
+
+    auto& node_info_map = elect_height_iter->second;
+    // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
+    auto node_iter = node_info_map.find(leader_id);
+    if (node_iter == node_info_map.end()) {
+        node_info_map[leader_id] = StatisticMemberInfoItem();
+        node_iter = node_info_map.find(leader_id);
+    }
+
+    auto& node_info = node_iter->second;
+    node_info.gas_sum += block.all_gas();
+    node_info.tx_count += block.tx_list_size();
+    // std::string debug_str = ", height_node_collect_info_map height: ";
+    // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
+    //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
+    //     for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
+    //         debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
+    //         ", block_gas: " + std::to_string(siter->second.gas_sum) + 
+    //         ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
+    //     }
     // }
 
-    // auto& node_info_map = elect_height_iter->second;
-    // // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
-    // auto node_iter = node_info_map.find(leader_id);
-    // if (node_iter == node_info_map.end()) {
-    //     node_info_map[leader_id] = StatisticMemberInfoItem();
-    //     node_iter = node_info_map.find(leader_id);
-    // }
-
-    // auto& node_info = node_iter->second;
-    // node_info.gas_sum += block.all_gas();
-    // node_info.tx_count += block.tx_list_size();
-    // // std::string debug_str = ", height_node_collect_info_map height: ";
-    // // for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-    // //         titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-    // //     for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
-    // //         debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
-    // //         ", block_gas: " + std::to_string(siter->second.gas_sum) + 
-    // //         ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
-    // //     }
-    // // }
-
-    // SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
-    //     "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
-    //     "debug_str: %s, statistic_pool_debug_str: %s",
-    //     pool_statistic_riter->first,
-    //     view_block_ptr->qc().pool_index(), block.height(), 
-    //     block.timeblock_height(), 
-    //     common::Encode::HexEncode(leader_id).c_str(),
-    //     node_info.tx_count,
-    //     block.tx_list_size(),
-    //     debug_str.c_str(),
-    //     statistic_pool_debug_str.c_str());
+    SHARDORA_INFO("statistic height: %lu, success handle block pool: %u, height: %lu, "
+        "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
+        "debug_str: %s, statistic_pool_debug_str: %s",
+        pool_statistic_riter->first,
+        view_block_ptr->qc().pool_index(), block.height(), 
+        block.timeblock_height(), 
+        common::Encode::HexEncode(leader_id).c_str(),
+        node_info.tx_count,
+        block.tx_list_size(),
+        debug_str.c_str(),
+        statistic_pool_debug_str.c_str());
 
 }
 
@@ -784,35 +784,35 @@ int ShardStatistic::StatisticWithHeights(
             }
         }
 
-        // join_elect_shard_map.insert(
-        //     statistic_info_ptr->join_elect_shard_map.begin(), 
-        //     statistic_info_ptr->join_elect_shard_map.end());
-        // for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
-        //         h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
-        //         ++h_height_node_collect_info_iter) {
-        //     tx_count_debug_str += "height: " + std::to_string(h_height_node_collect_info_iter->first) + ", ";
-        //     auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
-        //     if (tmp_iter == height_node_collect_info_map.end()) {
-        //         height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
-        //     } else {
-        //         for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
-        //                 height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
-        //                 ++height_node_collect_info_iter) {
-        //             tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + 
-        //                 ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
-        //             auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
-        //             if (stoke_iter == tmp_iter->second.end()) {
-        //                 tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
-        //             } else {
-        //                 stoke_iter->second.tx_count += height_node_collect_info_iter->second.tx_count;
-        //                 stoke_iter->second.gas_sum += height_node_collect_info_iter->second.gas_sum;
-        //             }
-        //         }
-        //     }
-        // }
-        // height_node_collect_info_map.insert(
-        //     statistic_info_ptr->height_node_collect_info_map.begin(), 
-        //     statistic_info_ptr->height_node_collect_info_map.end());
+        join_elect_shard_map.insert(
+            statistic_info_ptr->join_elect_shard_map.begin(), 
+            statistic_info_ptr->join_elect_shard_map.end());
+        for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
+                h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
+                ++h_height_node_collect_info_iter) {
+            tx_count_debug_str += "height: " + std::to_string(h_height_node_collect_info_iter->first) + ", ";
+            auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
+            if (tmp_iter == height_node_collect_info_map.end()) {
+                height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
+            } else {
+                for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
+                        height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
+                        ++height_node_collect_info_iter) {
+                    tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + 
+                        ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
+                    auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
+                    if (stoke_iter == tmp_iter->second.end()) {
+                        tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
+                    } else {
+                        stoke_iter->second.tx_count += height_node_collect_info_iter->second.tx_count;
+                        stoke_iter->second.gas_sum += height_node_collect_info_iter->second.gas_sum;
+                    }
+                }
+            }
+        }
+        height_node_collect_info_map.insert(
+            statistic_info_ptr->height_node_collect_info_map.begin(), 
+            statistic_info_ptr->height_node_collect_info_map.end());
         id_pk_map.insert(
             statistic_info_ptr->id_pk_map.begin(), 
             statistic_info_ptr->id_pk_map.end());
@@ -1047,20 +1047,20 @@ void ShardStatistic::setElectStatistics(
         shardora::common::MembersPtr &now_elect_members,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root) {
-    // if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
-    //     height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
-    //     auto &node_info_map = height_node_collect_info_map[now_elect_height_];
-    //     for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
-    //         node_info_map[(*now_elect_members)[i]->id] = StatisticMemberInfoItem();
-    //     }
-    // }
+    if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
+        height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
+        auto &node_info_map = height_node_collect_info_map[now_elect_height_];
+        for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
+            node_info_map[(*now_elect_members)[i]->id] = StatisticMemberInfoItem();
+        }
+    }
 
-    // for (auto hiter = height_node_collect_info_map.begin();
-    //         hiter != height_node_collect_info_map.end(); ++hiter) {
-    //     auto &node_info_map = hiter->second;
+    for (auto hiter = height_node_collect_info_map.begin();
+            hiter != height_node_collect_info_map.end(); ++hiter) {
+        auto &node_info_map = hiter->second;
         auto &statistic_item = *elect_statistic.add_statistics();
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
-            now_elect_height_,
+            hiter->first,
             common::GlobalInfo::Instance()->network_id(),
             nullptr,
             nullptr);
@@ -1104,7 +1104,7 @@ void ShardStatistic::setElectStatistics(
             int32_t y1 = area_point->y();
         }
 
-        statistic_item.set_elect_height(now_elect_height_);
+        statistic_item.set_elect_height(hiter->first);
     // }
 }
 
