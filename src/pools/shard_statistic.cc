@@ -1059,6 +1059,7 @@ void ShardStatistic::setElectStatistics(
 
     for (auto hiter = height_node_collect_info_map.begin();
             hiter != height_node_collect_info_map.end(); ++hiter) {
+        SHARDORA_DEBUG("now get collect statistic height: %lu", hiter->first);
         auto &node_info_map = hiter->second;
         auto &statistic_item = *elect_statistic.add_statistics();
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
@@ -1067,6 +1068,7 @@ void ShardStatistic::setElectStatistics(
             nullptr,
             nullptr);
         if (members == nullptr) {
+            SHARDORA_DEBUG("now get collect statistic height: %lu, get member failed!", hiter->first);
             return;
         }
 
