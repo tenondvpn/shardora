@@ -423,7 +423,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.sign_y(),
         reconstructed_sign);
     SHARDORA_DEBUG("====4.0.1 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), (int32_t)s,
         msg_ptr->header.hash64());
     if (s != Status::kSuccess) {
         SHARDORA_DEBUG("====4.5 over 1 pool: %d, view: %d, member: %d, hash64: %lu, status: %d", 

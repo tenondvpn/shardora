@@ -824,7 +824,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
     SHARDORA_DEBUG("pool: %d, add view block hash: %s, status: %d, view: %u_%u_%lu, tx size: %u",
         pool_idx_, 
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
-        s,
+        (int32_t)s,
         pro_msg_wrap->view_block_ptr->qc().network_id(),
         pro_msg_wrap->view_block_ptr->qc().pool_index(),
         pro_msg_wrap->view_block_ptr->qc().view(),
