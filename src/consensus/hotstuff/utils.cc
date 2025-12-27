@@ -22,7 +22,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
     message.append(std::string((char*)&gas_price, sizeof(gas_price)));
     uint32_t step = tx_info.step();
     message.append(std::string((char*)&step, sizeof(step)));
-    // TODO 加上 gas_used 和 status 之后 100 节点共识发生卡顿，频繁超时
+    // TODO After adding gas_used and status, the 100-node consensus gets stuck and times out frequently
     uint64_t gas_used = tx_info.gas_used();
     message.append(std::string((char*)&gas_used, sizeof(gas_used)));
     uint32_t status = tx_info.status();
@@ -78,7 +78,7 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     // uint64_t timeblock_height = block.timeblock_height();
     // msg.append((char*)&timeblock_height, sizeof(timeblock_height));
     // uint64_t timestamp = 0;  // block.timestamp(); // TODO: fix(重试导致时间戳不一致)
-    // msg.append((char*)&timestamp, sizeof(timestamp));  
+    // msg.append((char*)&timestamp, sizeof(timestamp));
     // // msg.append(block.leader_ip());
     // // msg.append((char*)&leader_port, sizeof(leader_port));
     // if (block.change_leader_invalid_hashs_size() > 0) {
@@ -106,5 +106,3 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
 } // namespace consensus
 
 } // namespace shardora
-
-

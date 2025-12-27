@@ -64,7 +64,7 @@ void BlockAcceptor::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);    
 }
 
-// Accept 验证 Leader 新提案信息，并执行 txs，修改 block
+// Accept verifies the new proposal information of the Leader, executes txs, and modifies the block
 Status BlockAcceptor::Accept(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         bool no_tx_allowed,
@@ -157,7 +157,7 @@ Status BlockAcceptor::Accept(
     }
 #endif
 
-    // 3. Do txs and create block_tx
+    // 3. Do txs and create block_tx.
     ADD_DEBUG_PROCESS_TIMESTAMP();
     zjc_host.parent_hash_ = view_block.parent_hash();
     zjc_host.view_block_chain_ = view_block_chain_;
@@ -311,7 +311,7 @@ void BlockAcceptor::UpdateDesShardingId(
     }
 }
 
-// AcceptSync 验证同步来的 block 信息，并更新交易池
+// AcceptSync verifies the synchronized block information and updates the transaction pool
 Status BlockAcceptor::AcceptSync(const view_block::protobuf::ViewBlockItem& view_block) {
     if (view_block.qc().pool_index() != pool_idx()) {
         return Status::kError;
@@ -505,7 +505,7 @@ Status BlockAcceptor::addTxsToPool(
             break;
         }
         case pools::protobuf::kNormalTo: {
-            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            // TODO These Single Txs are still taken directly from the local transaction pool
             pools::protobuf::AllToTxMessage all_to_txs;
             if (!all_to_txs.ParseFromString(tx->value()) || all_to_txs.to_tx_arr_size() == 0) {
                 assert(false);
@@ -535,7 +535,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kStatistic:
         {
-            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            // TODO These Single Txs are still taken directly from the local transaction pool
             SHARDORA_WARN("add tx now get statistic tx: %u", pool_idx());
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
@@ -585,7 +585,7 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kConsensusRootTimeBlock:
         {
-            // TODO 这些 Single Tx 还是从本地交易池直接拿
+            // TODO These Single Txs are still taken directly from the local transaction pool
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::TimeBlockTx>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
@@ -642,7 +642,7 @@ Status BlockAcceptor::addTxsToPool(
             break;
         }
         default:
-            // TODO 没完！还需要支持其他交易的写入
+            // TODO Not finished! Need to support writing other transactions
             // break;
             SHARDORA_FATAL("invalid tx step: %d", (int32_t)tx->step());
             return Status::kError;
@@ -750,7 +750,7 @@ Status BlockAcceptor::GetAndAddTxsLocally(
 }
 
 bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view_block) {
-    // 校验 block prehash，latest height 等
+    // Verify block prehash, latest height, etc.
     auto* zjc_block = &view_block.block_info();
     uint64_t pool_height = pools_mgr_->latest_height(pool_idx());
     if (zjc_block->height() <= pool_height || pool_height == common::kInvalidUint64) {
@@ -759,7 +759,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     }
 
     auto cur_time = common::TimeUtils::TimestampMs();
-    // 新块的时间戳必须大于上一个块的时间戳
+    // The timestamp of the new block must be greater than the timestamp of the previous block
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
     if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
         SHARDORA_WARN("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);

@@ -22,7 +22,7 @@ BlockWrapper::BlockWrapper(
 
 BlockWrapper::~BlockWrapper(){};
 
-// 打包一个新的 block 和 txs
+// Package a new block and txs
 Status BlockWrapper::Wrap(
         const transport::MessagePtr& msg_ptr, 
         const std::shared_ptr<ViewBlock>& prev_view_block,
@@ -52,7 +52,7 @@ Status BlockWrapper::Wrap(
 
     uint64_t cur_time = common::TimeUtils::TimestampMs();
     block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
-    // 打包交易
+    // Package transactions
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
     // SHARDORA_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
@@ -88,7 +88,7 @@ Status BlockWrapper::Wrap(
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
-        // 允许 3 个连续的空交易块
+        // Allow 3 consecutive empty transaction blocks
         SHARDORA_DEBUG("leader get txs failed check is empty block allowd: %d, "
             "pool: %d, %u_%u_%lu size: %u, pool size: %u",
             (int32_t)s, pool_idx_, 

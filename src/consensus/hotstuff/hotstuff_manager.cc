@@ -131,7 +131,7 @@ int HotstuffManager::Init(
     return kConsensusSuccess;
 }
 
-// start chained hotstuff
+// start chained-hotstuff
 Status HotstuffManager::Start() {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
         Status s = hotstuff(pool_idx)->Start();
@@ -152,7 +152,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
         return -1;
     }
 
-    // 由于验签很占资源，再检查一下数据库，避免重复同步
+    // Since signature verification is resource-intensive, check the database again to avoid repeated synchronization
     if (prefix_db_->BlockExists(pb_vblock.qc().view_block_hash())) {
         SHARDORA_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
             pb_vblock.qc().network_id(),
@@ -169,7 +169,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
     return 0;
 }
 
-// 验证有 qc 的 view block
+// Verify view block with qc
 Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& vblock) {
     if (!vblock.has_qc() || !vblock.has_block_info()) {
         SHARDORA_ERROR("vblock is not valid, blockview: %lu, qcview: %lu");
@@ -446,7 +446,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             }
         }
 
-        if (tps >= 0.000001) {
+        if (tps >= 0.000001) { // Print total tps
             SHARDORA_WARN("tps: %.2f", tps);
         }
     }

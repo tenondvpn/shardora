@@ -42,11 +42,11 @@ TxPoolManager::TxPoolManager(
 
     SHARDORA_DEBUG("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    // 每 10ms 会共识一次时间块
+    // Time blocks are consensus every 10ms
     tools_tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this));
-    // 注册 kPoolsMessage 的回调函数
+    // Register the callback function of kPoolsMessage
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
@@ -88,7 +88,7 @@ TxPoolManager::~TxPoolManager() {
 }
 
 void TxPoolManager::InitCrossPools() {
-    cross_pools_ = new CrossPool[network::kConsensusShardEndNetworkId]; // shard 分片的个数
+    cross_pools_ = new CrossPool[network::kConsensusShardEndNetworkId]; // Number of shards
     for (uint32_t i = network::kConsensusShardBeginNetworkId;
             i < network::kConsensusShardEndNetworkId; ++i) {
         cross_pools_[i].Init(i, db_, kv_sync_);
@@ -944,7 +944,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    // 验证账户余额是否足够
+    // Verify that the account balance is sufficient
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
@@ -981,7 +981,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
             return;
         }
     } else {
-        // all shards will save the library
+        // all shards will save the library.
         default_gas = consensus::kCreateLibraryDefaultUseGas +
             network::kConsensusWaitingShardOffset *
             (tx_msg.value().size() + tx_msg.key().size()) *
@@ -1229,7 +1229,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         return;
     }
 
-    // 交易池增加 msg 中的交易
+    // The transaction pool adds transactions in msg
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();

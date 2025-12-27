@@ -48,7 +48,7 @@ public:
     BlockWrapper(const BlockWrapper&) = delete;
     BlockWrapper& operator=(const BlockWrapper&) = delete;
 
-    // 会改变交易的状态，标记已打包
+    // It will change the status of the transaction and mark it as packaged
     Status Wrap(
         const transport::MessagePtr& msg_ptr, 
         const std::shared_ptr<ViewBlock>& prev_block,
@@ -58,7 +58,7 @@ public:
         const bool& no_tx_allowed,
         std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
-    // 是否存在内置交易
+    // Whether there is a built-in transaction
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
         pools::CheckAddrNonceValidFunction tx_valid_func) override;
@@ -123,4 +123,3 @@ private:
 } // namespace hotstuff
 
 } // namespace shardora
-

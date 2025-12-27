@@ -27,22 +27,23 @@
 
 static std::shared_ptr<spdlog::logger> LOG_INS = nullptr;
 static inline void GlobalInitSpdlog() {
-    // 1. 先初始化异步线程池（必须在 create_async 前调用）
+    // 1. Initialize the asynchronous thread pool first (must be called before create_async)
     spdlog::init_thread_pool(8192, 1);  // 队列大小 8192，一个后台线程
 
-    // 2. 创建异步文件 logger
+    // 2. Create asynchronous file logger
     LOG_INS = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>(
         "async_file", "log/shardora.log", true);  // true 表示自动 flush_on debug/error 等
 
-    // 3. 【关键！】设置为默认 logger，让全局宏（如 spdlog::debug）能用
+    // 3. [Key!] Set as the default logger, so that global macros (such as spdlog::debug) can be used
     spdlog::set_default_logger(LOG_INS);
 
-    // 4. 设置日志级别和格式
+    // 4. Set log level and format
     spdlog::set_level(spdlog::level::debug);  // 或 trace，根据需要
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^%l%$] [thread %t] %v");
 
-    // 可选：出错时立即刷新
+    // Optional: Flush immediately on error
     spdlog::flush_on(spdlog::level::err);
+    LOG_INS->debug("init spdlog success.");
 }
 
 #ifdef _WIN32

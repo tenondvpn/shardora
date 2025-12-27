@@ -23,11 +23,11 @@ namespace shardora {
 
 namespace pools {
 
-static const uint64_t kBftStartDeltaTime = 10000000lu; // 预留交易生效时间，避免部分节点找不到交易（但会增大交易 latency）
+static const uint64_t kBftStartDeltaTime = 10000000lu; // Reserved transaction effective time to avoid some nodes not finding the transaction (but it will increase transaction latency)
 static const uint32_t kTxPoolTimeoutUs = 10u * 1000u * 1000u;
 static const uint32_t kTxStorageKeyMaxSize = 12u;
 static const uint32_t kMaxToTxsCount = 10000u;
-static const uint32_t kLeafMaxHeightCount = 1024u * 1024u;// 1024u * 1024u;  // each merkle block 1M
+static const uint32_t kLeafMaxHeightCount = 1024u * 1024u;// 1024u * 1024u;  // each merkle block 1M.
 static const uint32_t kEachHeightTreeMaxByteSize = kLeafMaxHeightCount * 2u;  // each merkle block 1M
 static const uint32_t kBranchMaxCount = kLeafMaxHeightCount / 64u;
 static const uint32_t kHeightLevelItemMaxCount = 2 * kBranchMaxCount - 1;

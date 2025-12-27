@@ -26,7 +26,7 @@ int FromTxItem::HandleTx(
 
     InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     do  {
-        gas_used = consensus::kTransferGas; // 转账交易费计算
+        gas_used = consensus::kTransferGas; // Transfer transaction fee calculation
         if (from_nonce + 1 != block_tx.nonce()) {
             block_tx.set_status(kConsensusNonceInvalid);
             // will never happen
@@ -41,14 +41,14 @@ int FromTxItem::HandleTx(
             block_tx.set_value(tx_info->value());
         }
 
-        // 余额不足
+        // Insufficient balance
         if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
             SHARDORA_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
             break;
         }
 
-        // gas limit 设置小了
+        // gas limit is set too small
         if (block_tx.gas_limit() < gas_used) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
             SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
@@ -57,7 +57,7 @@ int FromTxItem::HandleTx(
     } while (0);
 
     if (block_tx.status() == kConsensusSuccess) {
-        // 要转的金额 + 交易费
+        // Amount to be transferred + transaction fee
         uint64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
             if (from_balance >= dec_amount) {
@@ -102,7 +102,7 @@ int FromTxItem::HandleTx(
             block_tx.amount());
     }
 
-    // 剪掉来源账户的金额
+    // Deduct the amount from the source account
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
     SHARDORA_DEBUG("success add addr: %s, value: %s", 

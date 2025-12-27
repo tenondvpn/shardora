@@ -84,7 +84,7 @@ void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
             return;
         }
 
-        // update high_qc
+        // update high_qc.
         UpdateHighQC(*high_qc);
         NewQcView(high_qc->view());
     }
@@ -104,7 +104,7 @@ void Pacemaker::OnLocalTimeout() {
     return;
     // TODO(HT): test
     SHARDORA_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
-    // start a new timer for the timeout case
+    // start a new timer for the timeout case.
     StopTimeoutTimer();
     duration_->ViewTimeout();
     SHARDORA_DEBUG("local time set start duration is OnLocalTimeout called start timeout: %lu", pool_idx_);
@@ -113,8 +113,8 @@ void Pacemaker::OnLocalTimeout() {
         return;
     }
 
-    // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
-    // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
+    // After a timeout, a synchronization is triggered first, mainly to synchronize the latest HighQC as much as possible to reduce the probability of multiple timeouts due to inconsistent HighQC
+    // Since HotstuffSyncer synchronizes periodically, not triggering synchronization here has little effect
     if (sync_pool_fn_) {
         sync_pool_fn_(pool_idx_, 1);
     }
@@ -135,8 +135,8 @@ void Pacemaker::OnLocalTimeout() {
         0,
         &tc);
     auto tc_msg_hash = GetTCMsgHash(tc);
-    // if view is last one, deal directly.
-    // 更换 epoch 后重新打包
+    // if view is last one, deal directly
+    // Repackage after changing epoch
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
             last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
             last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_msg_hash) {
@@ -172,7 +172,7 @@ void Pacemaker::OnLocalTimeout() {
     std::string bls_sign_x;
     std::string bls_sign_y;
 
-    // 使用最新的 elect_height 签名
+    // Use the latest elect_height to sign
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
@@ -191,8 +191,8 @@ void Pacemaker::OnLocalTimeout() {
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
 #ifdef USE_AGG_BLS
-    timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());
-    // 对本节点的 high qc 签名
+    timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());    
+    // Sign the high qc of this node
     AggregateSignature high_qc_sig;
 #ifdef ENABLE_FAST_HOTSTUFF    
     auto high_qc_msg_hash = GetQCMsgHash(HighQC()); 
@@ -222,7 +222,7 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
-    // 停止对当前 view 的投票
+    // Stop voting for the current view
     // if (stop_voting_fn_) {
     //     stop_voting_fn_(CurView());
     // }
@@ -246,7 +246,7 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
-    // 停止对当前 view 的投票
+    // Stop voting for the current view
     // if (stop_voting_fn_) {
     //     stop_voting_fn_(CurView());
     // }
@@ -297,7 +297,7 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
     }
 }
 
-// OnRemoteTimeout 由 Consensus 调用
+// OnRemoteTimeout is called by Consensus
 void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     auto msg = msg_ptr->header;
     auto& timeout_proto = msg.hotstuff_timeout_proto();
@@ -316,7 +316,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    // 统计 bls 签名
+    // Statistics bls signature
     if (timeout_proto.member_id() >= leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
         assert(false);
         return;
@@ -330,7 +330,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     }
 
 #ifdef USE_AGG_BLS
-    // 统计 high_qc，用于生成 AggQC
+    // Statistics high_qc, used to generate AggQC
     if (timeout_proto.view() < high_qcs_view_) {
         return;
     }
@@ -351,7 +351,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     CHECK_MEMORY_SIZE(high_qcs_);
     high_qc_sigs_.push_back(high_qc_sig_of_node);
     
-    // 生成 TC
+    // Generate TC
     AggregateSignature partial_sig;
     if (!partial_sig.LoadFromProto(timeout_proto.view_sig())) {
         return;
@@ -394,19 +394,19 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 #endif
-    // view change
+    // view change.
     NewTc(new_tc);
     NewAggQc(agg_qc);
     // AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
 
-    // NewView msg broadcast
-    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
-    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
-    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
-    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
-    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    // NewView msg broadcast.
+    // TC is synchronized separately before Propose, otherwise if Propose is stuck, Replicas will be stuck in this view.
+    // When broadcasting TC, HighQC should also be broadcast to prevent only the Leader from having this HighQC, which will cause the following situation:
+    // Suppose the Leader is 1<-2, but HighQC is 3, and 4 is about to be packaged.
+    // But since 3 does not exist, it needs to be synchronized from other nodes, but since only the Leader has HighQC3, other nodes cannot synchronize 3 to the Leader, causing a deadlock.
+    // That is, the Leader has QC but no block, and the Replicas have blocks but no QC.
     auto propose_st = Status::kError;
-    // New Propose
+    // New Propose.
     if (new_proposal_fn_) {
         SHARDORA_DEBUG("now ontime called propose: %d", pool_idx_);
         propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
@@ -445,7 +445,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         &tc);
     tc.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
     tc.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->Y));
-    // 视图切换
+    // View switching
     SHARDORA_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
@@ -455,14 +455,14 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc.view(), CurView(), high_tc_->view());
-    // NewView msg broadcast
-    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
-    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
-    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
-    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
-    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    // NewView msg broadcast.
+    // TC is synchronized separately before Propose, otherwise if Propose is stuck, Replicas will be stuck in this view.
+    // When broadcasting TC, HighQC should also be broadcast to prevent only the Leader from having this HighQC, which will cause the following situation:
+    // Suppose the Leader is 1<-2, but HighQC is 3, and 4 is about to be packaged.
+    // But since 3 does not exist, it needs to be synchronized from other nodes, but since only the Leader has HighQC3, other nodes cannot synchronize 3 to the Leader, causing a deadlock.
+    // That is, the Leader has QC but no block, and the Replicas have blocks but no QC.
     auto propose_st = Status::kError;
-    // New Propose
+    // New Propose.
     if (new_proposal_fn_) {
         SHARDORA_DEBUG("now ontime called propose: %d", pool_idx_);
         propose_st = new_proposal_fn_(new_tc, nullptr, msg_ptr);
@@ -485,4 +485,3 @@ int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 } // namespace consensus
 
 } // namespace shardora
-
