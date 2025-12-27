@@ -1100,7 +1100,7 @@ void ShardStatistic::setElectStatistics(
             int32_t y1 = area_point->y();
         }
 
-        statistic_item.set_elect_height(0);
+        statistic_item.set_elect_height(now_elect_height_);
     // }
 }
 
