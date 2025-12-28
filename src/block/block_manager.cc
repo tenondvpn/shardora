@@ -596,7 +596,7 @@ void BlockManager::LoadLatestBlocks() {
                 common::kImmutablePoolSize,
                 tmblock.height(),
                 block) == kBlockSuccess) {
-            SHARDORA_DEBUG("load latest elect block called!");
+            SHARDORA_DEBUG("load latest time block called!");
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(tmblock_ptr);
             }
