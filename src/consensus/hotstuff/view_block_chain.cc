@@ -68,7 +68,7 @@ Status ViewBlockChain::Store(
         zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     }
 
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) || balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(

@@ -679,6 +679,7 @@ Status HotstuffSyncer::onRecViewBlock(
 
     // 4. Save view_block
     // TODO: check valid
+    assert(false);
     s = hotstuff->view_block_chain()->Store(view_block_ptr, true, nullptr, nullptr, false);
     if (s != Status::kSuccess) {
         SHARDORA_ERROR("pool: %d store view block failed, hash: %s, view: %lu, cur chain: %s", pool_idx,

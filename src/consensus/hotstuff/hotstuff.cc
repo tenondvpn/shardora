@@ -28,7 +28,8 @@ void Hotstuff::Init() {
     // 从 db 中获取最后一个有 QC 的 ViewBlock
     Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
     if (s == Status::kSuccess) {
-        view_block_chain_->Store(latest_view_block, false, nullptr, nullptr, true);
+        auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
+        view_block_chain_->Store(latest_view_block, false, balane_map_ptr, nullptr, true);
         auto temp_ptr = view_block_chain_->Get(latest_view_block->qc().view_block_hash());
         view_block_chain_->SetLatestCommittedBlock(temp_ptr);
         InitAddNewViewBlock(latest_view_block);
@@ -59,7 +60,8 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         latest_view_block->qc().view());
     // 初始状态，使用 db 中最后一个 view_block 初始化视图链
     // TODO: check valid
-    view_block_chain_->Store(latest_view_block, true, nullptr, nullptr, true);
+    auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
+    view_block_chain_->Store(latest_view_block, true, balane_map_ptr, nullptr, true);
     view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
     StopVoting(latest_view_block->qc().view());
     // 开启第一个视图
@@ -1309,6 +1311,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 Status Hotstuff::StoreVerifiedViewBlock(
         const std::shared_ptr<ViewBlock>& v_block, 
         const std::shared_ptr<QC>& qc) {
+    assert(false);
     if (view_block_chain()->Has(qc->view_block_hash())) {
         return Status::kSuccess;    
     }
