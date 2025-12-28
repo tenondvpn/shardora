@@ -600,6 +600,8 @@ void BlockManager::LoadLatestBlocks() {
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(tmblock_ptr);
             }
+
+            CallTimeBlock(tmblock.timestamp(), tmblock.height(), tmblock.vss_random());
         } else {
             SHARDORA_FATAL("load latest timeblock failed!");
         }
