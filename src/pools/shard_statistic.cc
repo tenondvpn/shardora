@@ -533,13 +533,13 @@ void ShardStatistic::CallTimeBlock(
 
     SHARDORA_INFO("new timeblcok coming and should statistic new tx %lu, %lu.", 
         latest_timeblock_height_, latest_time_block_height);
-    StatisticInfoItem statistic_item;
-    std::map<uint32_t, StatisticInfoItem> pool_map;
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        pool_map[i] = statistic_item;
-    }
+    // StatisticInfoItem statistic_item;
+    // std::map<uint32_t, StatisticInfoItem> pool_map;
+    // for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+    //     pool_map[i] = statistic_item;
+    // }
 
-    statistic_pool_info_[latest_time_block_height] = pool_map;
+    // statistic_pool_info_[latest_time_block_height] = pool_map;
     CHECK_MEMORY_SIZE(statistic_pool_info_);
     prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
