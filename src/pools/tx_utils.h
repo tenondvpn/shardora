@@ -67,7 +67,7 @@ struct StatisticElectItem {
 
     uint64_t elect_height{ 0 };
     uint32_t succ_tx_count[common::kEachShardMaxNodeCount];
-    std::unordered_map<int32_t, std::shared_ptr<common::Point>> leader_lof_map;
+    std::map<int32_t, std::shared_ptr<common::Point>> leader_lof_map;
     std::mutex leader_lof_map_mutex;
 };
 
@@ -221,12 +221,12 @@ struct StatisticInfoItem {
 
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
-    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
-    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
-    std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
-    std::unordered_map<std::string, std::string> id_pk_map;
-    std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> id_agg_bls_pk_map;
-    std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> id_agg_bls_pk_proof_map;
+    std::map<uint64_t, std::map<std::string, uint64_t>> join_elect_stoke_map;
+    std::map<uint64_t, std::map<std::string, uint32_t>> join_elect_shard_map;
+    std::map<uint64_t, std::map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
+    std::map<std::string, std::string> id_pk_map;
+    std::map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> id_agg_bls_pk_map;
+    std::map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> id_agg_bls_pk_proof_map;
     uint64_t statistic_min_height;
     uint64_t statistic_max_height;
 };
