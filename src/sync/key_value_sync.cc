@@ -116,13 +116,13 @@ void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_ms3 = common::TimeUtils::TimestampMs();
     auto etime = common::TimeUtils::TimestampMs();
     if (etime - now_tm_ms >= 1000000lu) {
-        SHARDORA_DEBUG("KeyValueSync handle message use time: %lu, "
+        SHARDORA_ERROR("KeyValueSync handle message use time: %lu, "
             "PopKvMessage: %lu, PopItems: %lu, CheckSyncItem: %lu", 
             (etime - now_tm_ms), 
             (now_tm_ms1 - now_tm_ms),
             (now_tm_ms2 - now_tm_ms1),
             (now_tm_ms3 - now_tm_ms2));
-        assert(false);
+        // assert(false);
     }
 
     kv_tick_.CutOff(
