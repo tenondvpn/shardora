@@ -66,14 +66,14 @@ public:
 
     void addPrepareMembers2JoinStastics(
         shardora::common::MembersPtr &prepare_members,
-        std::unordered_set<std::string> &added_id_set,
+        std::set<std::string> &added_id_set,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         shardora::common::MembersPtr &now_elect_members);
 
     void addNewNode2JoinStatics(
-        std::map<uint64_t, std::ma p<std::string, uint64_t>> &join_elect_stoke_map, 
+        std::map<uint64_t, std::map<std::string, uint64_t>> &join_elect_stoke_map, 
         std::map<uint64_t, std::map<std::string, uint32_t>> &join_elect_shard_map, 
-        std::unordered_set<std::string> &added_id_set, 
+        std::set<std::string> &added_id_set, 
         std::map<std::string, std::string> &id_pk_map, 
         std::map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> &id_agg_bls_pk_map,
         std::map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> &id_agg_bls_pk_proof_map,
@@ -104,7 +104,7 @@ public:
     uint64_t prev_timeblock_height_ = 0;
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     std::shared_ptr<PoolBlocksInfo> pools_consensus_blocks_[common::kInvalidPoolIndex];
-    std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
+    std::set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::atomic<uint64_t> now_elect_height_ = 0;

@@ -689,7 +689,7 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
-    std::unordered_set<std::string> added_id_set;
+    std::set<std::string> added_id_set;
     if (prepare_members != nullptr) {
         for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
             added_id_set.insert((*now_elect_members)[i]->id);
@@ -883,7 +883,7 @@ void ShardStatistic::addHeightInfo2Statics(
 
 void ShardStatistic::addPrepareMembers2JoinStastics(
         shardora::common::MembersPtr &prepare_members,
-        std::unordered_set<std::string> &added_id_set,
+        std::set<std::string> &added_id_set,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         shardora::common::MembersPtr &now_elect_members) {
     if (prepare_members != nullptr) {
@@ -936,7 +936,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
 void ShardStatistic::addNewNode2JoinStatics(
         std::map<uint64_t, std::map<std::string, uint64_t>> &join_elect_stoke_map,
         std::map<uint64_t, std::map<std::string, uint32_t>> &join_elect_shard_map,
-        std::unordered_set<std::string> &added_id_set,
+        std::set<std::string> &added_id_set,
         std::map<std::string, std::string> &id_pk_map,
         std::map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> &id_agg_bls_pk_map,
         std::map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> &id_agg_bls_pk_proof_map,
