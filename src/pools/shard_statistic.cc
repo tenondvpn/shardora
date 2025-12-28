@@ -244,9 +244,10 @@ void ShardStatistic::HandleStatistic(
             pool_iter->first, pool_idx, block.height(), 
             (pool_iter != pool_statistic_riter->second.end()));
         if (pool_iter != pool_statistic_riter->second.end()) {
-            SHARDORA_INFO("pool: %u, get block height and statistic height: %lu, max_height: %lu",
+            SHARDORA_INFO("pool: %u, get block height: %lu, and statistic height: %lu, max_height: %lu",
                 pool_idx,
                 block.height(),
+                pool_statistic_riter->first,
                 pool_iter->second.statistic_max_height);
             if (pool_iter->second.statistic_max_height <= block.height()) {
                 break;
@@ -307,7 +308,7 @@ void ShardStatistic::HandleStatistic(
             auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
             if (eiter == join_elect_stoke_map.end()) {
                 join_elect_stoke_map[view_block_ptr->qc().elect_height()] = 
-                    std::unordered_map<std::string, uint64_t>();
+                    std::map<std::string, uint64_t>();
             }
 
             auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
@@ -334,7 +335,7 @@ void ShardStatistic::HandleStatistic(
             auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
             if (shard_iter == join_elect_shard_map.end()) {
                 join_elect_shard_map[view_block_ptr->qc().elect_height()] =
-                    std::unordered_map<std::string, uint32_t>();
+                    std::map<std::string, uint32_t>();
             }
 
             auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
@@ -407,7 +408,7 @@ void ShardStatistic::HandleStatistic(
                 auto eiter = join_elect_stoke_map.find(view_block_ptr->qc().elect_height());
                 if (eiter == join_elect_stoke_map.end()) {
                     join_elect_stoke_map[view_block_ptr->qc().elect_height()] =
-                        std::unordered_map<std::string, uint64_t>();
+                        std::map<std::string, uint64_t>();
                 }
 
                 auto& elect_stoke_map = join_elect_stoke_map[view_block_ptr->qc().elect_height()];
@@ -416,7 +417,7 @@ void ShardStatistic::HandleStatistic(
                 auto shard_iter = join_elect_shard_map.find(view_block_ptr->qc().elect_height());
                 if (shard_iter == join_elect_shard_map.end()) {
                     join_elect_shard_map[view_block_ptr->qc().elect_height()] = 
-                        std::unordered_map<std::string, uint32_t>();
+                        std::map<std::string, uint32_t>();
                 }
 
                 auto& elect_shard_map = join_elect_shard_map[view_block_ptr->qc().elect_height()];
@@ -443,7 +444,7 @@ void ShardStatistic::HandleStatistic(
         view_block_ptr->qc().elect_height());
     if (elect_height_iter == height_node_collect_info_map.end()) {
         height_node_collect_info_map[view_block_ptr->qc().elect_height()] = 
-            std::unordered_map<std::string, StatisticMemberInfoItem>();
+            std::map<std::string, StatisticMemberInfoItem>();
         elect_height_iter = height_node_collect_info_map.find(
             view_block_ptr->qc().elect_height());
     }
@@ -760,9 +761,9 @@ int ShardStatistic::StatisticWithHeights(
             }
         }
 
-        // join_elect_stoke_map.insert(
-        //     statistic_info_ptr->join_elect_stoke_map.begin(), 
-        //     statistic_info_ptr->join_elect_stoke_map.end());
+        join_elect_stoke_map.insert(
+            statistic_info_ptr->join_elect_stoke_map.begin(), 
+            statistic_info_ptr->join_elect_stoke_map.end());
         for (auto h_join_elect_shard_iter = statistic_info_ptr->join_elect_shard_map.begin();
                 h_join_elect_shard_iter != statistic_info_ptr->join_elect_shard_map.end(); 
                 ++h_join_elect_shard_iter) {
@@ -933,12 +934,12 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
 }
 
 void ShardStatistic::addNewNode2JoinStatics(
-        std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map,
-        std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map,
+        std::map<uint64_t, std::map<std::string, uint64_t>> &join_elect_stoke_map,
+        std::map<uint64_t, std::map<std::string, uint32_t>> &join_elect_shard_map,
         std::unordered_set<std::string> &added_id_set,
-        std::unordered_map<std::string, std::string> &id_pk_map,
-        std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> &id_agg_bls_pk_map,
-        std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> &id_agg_bls_pk_proof_map,
+        std::map<std::string, std::string> &id_pk_map,
+        std::map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> &id_agg_bls_pk_map,
+        std::map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> &id_agg_bls_pk_proof_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic) {
 #ifndef NDEBUG
     for (auto iter = join_elect_stoke_map.begin(); iter != join_elect_stoke_map.end(); ++iter) {
@@ -959,7 +960,7 @@ void ShardStatistic::addNewNode2JoinStatics(
         }
     }
 #endif
-    std::vector<std::string> elect_nodes; // collect new ndoe
+    std::vector<std::string> elect_nodes; // collect new node
     auto r_eiter = join_elect_stoke_map.rbegin();
     auto r_siter = join_elect_shard_map.rbegin();
     if (r_eiter != join_elect_stoke_map.rend() &&
@@ -1045,12 +1046,12 @@ void ShardStatistic::addNewNode2JoinStatics(
 }
 
 void ShardStatistic::setElectStatistics(
-        std::map<uint64_t, std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
+        std::map<uint64_t, std::map<std::string, shardora::pools::StatisticMemberInfoItem>> &height_node_collect_info_map,
         shardora::common::MembersPtr &now_elect_members,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root) {
     if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height_) {
-        height_node_collect_info_map[now_elect_height_] = std::unordered_map<std::string, StatisticMemberInfoItem>();
+        height_node_collect_info_map[now_elect_height_] = std::map<std::string, StatisticMemberInfoItem>();
         auto &node_info_map = height_node_collect_info_map[now_elect_height_];
         for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
             node_info_map[(*now_elect_members)[i]->id] = StatisticMemberInfoItem();

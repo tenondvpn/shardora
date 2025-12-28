@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <atomic>
 #include <queue>
 #include <memory>
@@ -71,17 +71,17 @@ public:
         shardora::common::MembersPtr &now_elect_members);
 
     void addNewNode2JoinStatics(
-        std::map<uint64_t, std::unordered_map<std::string, uint64_t>> &join_elect_stoke_map, 
-        std::map<uint64_t, std::unordered_map<std::string, uint32_t>> &join_elect_shard_map, 
+        std::map<uint64_t, std::ma p<std::string, uint64_t>> &join_elect_stoke_map, 
+        std::map<uint64_t, std::map<std::string, uint32_t>> &join_elect_shard_map, 
         std::unordered_set<std::string> &added_id_set, 
-        std::unordered_map<std::string, std::string> &id_pk_map, 
-        std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> &id_agg_bls_pk_map,
-        std::unordered_map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> &id_agg_bls_pk_proof_map,
+        std::map<std::string, std::string> &id_pk_map, 
+        std::map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> &id_agg_bls_pk_map,
+        std::map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> &id_agg_bls_pk_proof_map,
         shardora::pools::protobuf::ElectStatistic &elect_statistic);
 
     void setElectStatistics(
         std::map<uint64_t, 
-        std::unordered_map<std::string, shardora::pools::StatisticMemberInfoItem>>&,
+        std::map<std::string, shardora::pools::StatisticMemberInfoItem>>&,
         shardora::common::MembersPtr &now_elect_members, 
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root);
@@ -111,7 +111,7 @@ public:
     std::atomic<uint64_t> prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
     common::Tick tick_to_statistic_;
-    std::unordered_map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
+    std::map<std::string, std::shared_ptr<AccoutPoceInfoItem>> accout_poce_info_map_;
     uint64_t least_elect_height_for_statistic_=0;
     std::shared_ptr<pools::protobuf::StatisticTxItem> latest_statistic_item_ = nullptr;
 
