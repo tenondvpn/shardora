@@ -1024,6 +1024,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
 
         if (i == 0 && mem_bls_pk->x_c0() == "") {
             // TODO: remove it
+            SHARDORA_ERROR("first member bls pk is empty!");
             return kBlsError;
         }
     }
