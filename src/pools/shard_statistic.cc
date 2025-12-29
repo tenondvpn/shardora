@@ -237,7 +237,7 @@ void ShardStatistic::HandleStatistic(
     // }
 
     std::string statistic_pool_debug_str;
-    auto pool_statistic_riter = statistic_pool_info_.find(block.elect_height());
+    auto pool_statistic_riter = statistic_pool_info_.find(block.timeblock_height());
     // while (pool_statistic_riter != statistic_pool_info_.rend()) {
     //     auto pool_iter = pool_statistic_riter->second.find(pool_idx);
     //     SHARDORA_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
