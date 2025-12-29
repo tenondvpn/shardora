@@ -981,44 +981,51 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
     auto pre_ec_members = ec_block.mutable_prev_members();
     for (size_t i = 0; i < members->size(); ++i) {
         auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
-        if (!item_iter->second->bitmap.Valid(i)) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid bitmap: %d", i);
-            continue;
-        }
+        do {
+            if (!item_iter->second->bitmap.Valid(i)) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid bitmap: %d", i);
+                break;
+            }
 
-        if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_public_keys: %d", i);
-            continue;
-        }
+            if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid all_public_keys: %d", i);
+                break;
+            }
 
-        if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_common_public_keys: %d, %s, %s", i,
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0).c_str());
-            continue;
-        }
+            if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid all_common_public_keys: %d, %s, %s", i,
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0).c_str(),
+                libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0).c_str());
+                break;
+            }
 
-        finish_item->all_public_keys[i].to_affine_coordinates();
-        mem_bls_pk->set_x_c0(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0));
-        mem_bls_pk->set_x_c1(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c1));
-        mem_bls_pk->set_y_c0(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
-        mem_bls_pk->set_y_c1(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
+            finish_item->all_public_keys[i].to_affine_coordinates();
+            mem_bls_pk->set_x_c0(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0));
+            mem_bls_pk->set_x_c1(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c1));
+            mem_bls_pk->set_y_c0(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
+            mem_bls_pk->set_y_c1(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
+        } while (0);
+
+        if (i == 0 && mem_bls_pk->x_c0() == "") {
+            // TODO: remove it
+            return kBlsError;
+        }
     }
 
     assert(static_cast<size_t>(ec_block.prev_members().bls_pubkey_size()) == members->size());

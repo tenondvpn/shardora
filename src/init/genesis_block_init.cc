@@ -1836,7 +1836,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             auto statistic_info = pool_st_info.add_pool_statisitcs();
             statistic_info->set_pool_index(i);
-            statistic_info->set_min_height(pool_with_heights[i] - 1);
+            statistic_info->set_min_height(0);
             statistic_info->set_max_height(pool_with_heights[i] - 1);
         }
 

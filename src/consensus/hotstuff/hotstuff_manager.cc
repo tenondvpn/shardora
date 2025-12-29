@@ -334,6 +334,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             SHARDORA_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
             return;
         }
+        
         switch (hotstuff_msg.type())
         {
             case PROPOSE: {
