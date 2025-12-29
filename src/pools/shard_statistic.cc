@@ -237,29 +237,29 @@ void ShardStatistic::HandleStatistic(
     // }
 
     std::string statistic_pool_debug_str;
-    auto pool_statistic_riter = statistic_pool_info_.rbegin();
-    while (pool_statistic_riter != statistic_pool_info_.rend()) {
-        auto pool_iter = pool_statistic_riter->second.find(pool_idx);
-        SHARDORA_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
-            pool_iter->first, pool_idx, block.height(), 
-            (pool_iter != pool_statistic_riter->second.end()));
-        if (pool_iter != pool_statistic_riter->second.end()) {
-            SHARDORA_INFO("pool: %u, get block height: %lu, and statistic height: %lu, max_height: %lu",
-                pool_idx,
-                block.height(),
-                pool_statistic_riter->first,
-                pool_iter->second.statistic_max_height);
-            if (pool_iter->second.statistic_max_height <= block.height()) {
-                break;
-            }
-        }
+    auto pool_statistic_riter = statistic_pool_info_.find(block.elect_height());
+    // while (pool_statistic_riter != statistic_pool_info_.rend()) {
+    //     auto pool_iter = pool_statistic_riter->second.find(pool_idx);
+    //     SHARDORA_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
+    //         pool_iter->first, pool_idx, block.height(), 
+    //         (pool_iter != pool_statistic_riter->second.end()));
+    //     if (pool_iter != pool_statistic_riter->second.end()) {
+    //         SHARDORA_INFO("pool: %u, get block height: %lu, and statistic height: %lu, max_height: %lu",
+    //             pool_idx,
+    //             block.height(),
+    //             pool_statistic_riter->first,
+    //             pool_iter->second.statistic_max_height);
+    //         if (pool_iter->second.statistic_max_height <= block.height()) {
+    //             break;
+    //         }
+    //     }
 
-        ++pool_statistic_riter;
-    }
+    //     ++pool_statistic_riter;
+    // }
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
         SHARDORA_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
-        // assert(false);
+        assert(false);
         return;
     }
 
@@ -471,6 +471,7 @@ void ShardStatistic::HandleStatistic(
         }
     }
 
+    assert(pool_statistic_riter->first == block.timeblock_height());
     SHARDORA_INFO("statistic height: %lu, elect height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
         "debug_str: %s, statistic_pool_debug_str: %s",
