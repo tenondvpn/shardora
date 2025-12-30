@@ -297,7 +297,7 @@ private:
 
 // from db
 Status GetLatestViewBlockFromDb(
-    uint32_t network_id
+    uint32_t network_id,
     const std::shared_ptr<db::Db>& db,
     const uint32_t& pool_index,
     std::shared_ptr<ViewBlock>& view_block);
