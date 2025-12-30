@@ -1622,7 +1622,7 @@ void Hotstuff::HandleSyncedViewBlock(
 
         root_view_block_chain_->Store(vblock, true, nullptr, nullptr, false);
         root_view_block_chain_->UpdateHighViewBlock(vblock->qc());
-        TryCommit(root_view_block_chain_, msg_ptr, root_view_block_chain_->HighViewBlock()->qc());
+        TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
         // root_view_block_chain_->CommitSynced(vblock);
     } else {
         if (vblock->qc().network_id() % common::kImmutablePoolSize != pool_idx_) {
@@ -1634,7 +1634,7 @@ void Hotstuff::HandleSyncedViewBlock(
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
         cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
         cross_view_block_chain->UpdateHighViewBlock(vblock->qc());
-        TryCommit(cross_view_block_chain, msg_ptr, cross_view_block_chain->HighViewBlock()->qc());
+        TryCommit(cross_view_block_chain, msg_ptr, vblock->qc());
         // cross_view_block_chain->CommitSynced(vblock);
     }
 }
