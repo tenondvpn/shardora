@@ -1602,7 +1602,7 @@ void Hotstuff::HandleSyncedViewBlock(
                 kv_sync_,
                 nullptr,
                 nullptr,
-                nullptr);
+                new_block_cache_callback_);
             cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
         }
 

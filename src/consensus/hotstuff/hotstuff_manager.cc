@@ -122,7 +122,8 @@ int HotstuffManager::Init(
             block_mgr_,
             *this,
             kv_sync, pool_idx, leader_rotation, chain,
-            acceptor, wrapper, pacemaker, crypto, elect_info_, db_, tm_block_mgr);
+            acceptor, wrapper, pacemaker, crypto, elect_info_, db_, tm_block_mgr,
+            new_block_cache_callback);
         pool_hotstuff_[pool_idx]->Init();
     }
 
