@@ -640,7 +640,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         auto& qc = pro_msg.tc();
         pacemaker()->NewQcView(qc.view());
         view_block_chain()->UpdateHighViewBlock(qc);
-        TryCommit(view_block_chain(), pro_msg_wrap->msg_ptr, qc, 99999999lu);
+        TryCommit(view_block_chain(), pro_msg_wrap->msg_ptr, qc);
 
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
@@ -694,7 +694,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         ADD_DEBUG_PROCESS_TIMESTAMP();
         view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        TryCommit(view_block_chain(), msg_ptr, pro_msg.tc(), 99999999lu);
+        TryCommit(view_block_chain(), msg_ptr, pro_msg.tc());
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(pro_msg.tc()));
@@ -1556,8 +1556,8 @@ void Hotstuff::HandleSyncedViewBlock(
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
         }
-        TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_, 99999999lu);
-        TryCommit(view_block_chain(), msg_ptr, vblock->qc(), 99999999lu);
+        TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_);
+        TryCommit(view_block_chain(), msg_ptr, vblock->qc());
     } else if (network::IsSameShardOrSameWaitingPool(vblock->qc().network_id(), network::kRootCongressNetworkId)) {
         if (vblock->qc().pool_index() != pool_idx_) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u, src pool: %d",
@@ -1580,7 +1580,7 @@ void Hotstuff::HandleSyncedViewBlock(
         }
 
         root_view_block_chain_->Store(vblock, true, nullptr, nullptr, false);
-        TryCommit(root_view_block_chain_, msg_ptr, vblock->qc(), 99999999lu);
+        TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
         // root_view_block_chain_->CommitSynced(vblock);
     } else {
         if (vblock->qc().network_id() % pool_idx_ != 0) {
@@ -1606,7 +1606,7 @@ void Hotstuff::HandleSyncedViewBlock(
 
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
         cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
-        TryCommit(cross_view_block_chain, msg_ptr, vblock->qc(), 99999999lu);
+        TryCommit(cross_view_block_chain, msg_ptr, vblock->qc());
         // cross_view_block_chain->CommitSynced(vblock);
     }
 }
