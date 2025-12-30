@@ -16,7 +16,6 @@ namespace hotstuff {
 ViewBlockChain::ViewBlockChain() {}
 
 void ViewBlockChain::Init(
-        ChainType chain_type,
         uint32_t pool_index, 
         std::shared_ptr<db::Db>& db, 
         std::shared_ptr<block::BlockManager>& block_mgr,
@@ -25,7 +24,6 @@ void ViewBlockChain::Init(
         std::shared_ptr<IBlockAcceptor> block_acceptor,
         std::shared_ptr<pools::TxPoolManager> pools_mgr,
         consensus::BlockCacheCallback new_block_cache_callback) {
-    chain_type_ = chain_type;
     db_ = db;
     pool_index_ = pool_index;
     block_mgr_ = block_mgr;
@@ -45,7 +43,7 @@ Status ViewBlockChain::Store(
         BalanceAndNonceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
         bool init) {
-    if (chain_type_ == kLocalChain && !network::IsSameToLocalShard(view_block->qc().network_id())) {
+    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
         return Status::kSuccess;
     }
 
@@ -70,7 +68,7 @@ Status ViewBlockChain::Store(
         zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     }
 
-    if (chain_type_ == kLocalChain && balane_map_ptr == nullptr) {
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
@@ -82,7 +80,6 @@ Status ViewBlockChain::Store(
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
         }
-
 
         for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
             auto key = view_block->block_info().key_value_array(i).addr() + 
@@ -149,10 +146,6 @@ Status ViewBlockChain::Store(
         view_block->qc().view(), ProtobufToJson(cons_debug).c_str());
 #endif
     return Status::kSuccess;
-}
-
-void ViewBlockChain::TrySyncDiscontinuous() {
-
 }
 
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
@@ -367,9 +360,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
-        auto tmp_block = tmp_block_info->view_block;
-        SHARDORA_DEBUG("pool: %d, prepare commit view block %u_%u_%lu, hash: %s, "
-            "parent hash: %s, step: %d, statistic_height: %lu, commited: %d, sign empty: %d", 
+        SHARDORA_DEBUG("pool: %d, prepare commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
             pool_index_,
             tmp_block_info->view_block->qc().network_id(), 
             tmp_block_info->view_block->qc().pool_index(), 
@@ -377,11 +368,8 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str(),
             tmp_block_info->view_block->block_info().tx_list_size() > 0 ? tmp_block_info->view_block->block_info().tx_list(0).step(): -1,
-            0,
-            view_commited(
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().view()),
-            tmp_block->qc().sign_x().empty());
+            0);
+        auto tmp_block = tmp_block_info->view_block;
         if (!view_commited(
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().view()) &&
@@ -503,10 +491,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 #endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        if (block_acceptor_) {
-            block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
-        }
-
+        block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
         commited_view_.insert(tmp_block->qc().view());
         if (commited_view_.size() >= 102400u) {
             commited_view_.erase(commited_view_.begin());
@@ -534,10 +519,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             SHARDORA_FATAL("write to db failed!");
         }
 
-        if (pools_mgr_) {
-            pools_mgr_->TxOver(pool_index_, *tmp_block);
-        }
-
+        pools_mgr_->TxOver(pool_index_, *tmp_block);
         block_mgr_->ConsensusAddBlock(*iter);
         stored_to_db_view_ = tmp_block->qc().view();
         latest_commited_block = *iter;
@@ -548,20 +530,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         SetLatestCommittedBlock(latest_commited_block);
     }
 
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_check_timeout_blocks_ms_ + 30000u < now_tm_ms) {
-        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-            if (view_commited(
-                    common::GlobalInfo::Instance()->network_id(), 
-                    iter->second->view_block->qc().view() + 1)) {
-                iter = view_blocks_info_.erase(iter);
-            } else {
-                ++iter;
-            }
-        }
-
-        prev_check_timeout_blocks_ms_ = now_tm_ms;
-    }
+    
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
@@ -579,6 +548,28 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 //         ProtobufToJson(cons_debug3).c_str());
 // #endif
 }
+
+void ViewBlockChain::HandleTimerMessage() {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {
+        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+            if (ViewBlockIsCheckedParentHash(iter->second->view_block->view_block_hash())) {
+                Commit(iter->second->view_block);
+            }
+
+            if (view_commited(
+                    common::GlobalInfo::Instance()->network_id(), 
+                    iter->second->view_block->qc().view() + 1)) {
+                iter = view_blocks_info_.erase(iter);
+            } else {
+                ++iter;
+            }
+        }
+
+        prev_check_timeout_blocks_ms_ = now_tm_ms;
+    }
+}
+
 
 void ViewBlockChain::AddNewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
@@ -690,11 +681,11 @@ std::string ViewBlockChain::String() const {
 
 // 获取 db 中最新块的信息和它的 QC
 Status GetLatestViewBlockFromDb(
-    uint32_t sharding_id,
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
+    uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
     if (!prefix_db->GetLatestPoolInfo(
             sharding_id,
@@ -948,7 +939,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     }
 
     auto view_block_ptr = view_block_ptr_info->view_block;
-    if (chain_type_ == kLocalChain && !IsQcTcValid(view_block_ptr->qc())) {
+    if (!IsQcTcValid(view_block_ptr->qc())) {
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
         cached_block_queue_.push(view_block_ptr_info);
