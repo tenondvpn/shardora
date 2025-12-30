@@ -86,7 +86,6 @@ int HotstuffManager::Init(
         auto pcrypto = std::make_shared<Crypto>(pool_idx, elect_info_, bls_mgr);
 #endif
         auto chain = std::make_shared<ViewBlockChain>();
-        auto root_chain = std::make_shared<ViewBlockChain>();
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         pools::protobuf::PoolLatestInfo pool_latest_info;
         InitLatestInfo(pool_latest_info, pool_idx);
@@ -106,10 +105,6 @@ int HotstuffManager::Init(
         auto acceptor = std::make_shared<BlockAcceptor>();
         chain->Init(
             kLocalChain,
-            pool_idx, db_, block_mgr_, account_mgr_, 
-            kv_sync, acceptor, pool_mgr, new_block_cache_callback);
-        root_chain->Init(
-            kCrossRootChian,
             pool_idx, db_, block_mgr_, account_mgr_, 
             kv_sync, acceptor, pool_mgr, new_block_cache_callback);
         acceptor->Init(
