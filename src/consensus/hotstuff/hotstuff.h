@@ -256,7 +256,6 @@ private:
         const MsgType msg_type);
     // 是否允许空交易
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
-    Status StoreVerifiedViewBlock(const std::shared_ptr<ViewBlock>& v_block, const std::shared_ptr<QC>& qc);
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
 

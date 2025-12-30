@@ -639,7 +639,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
         auto& qc = pro_msg.tc();
         pacemaker()->NewQcView(qc.view());
         view_block_chain()->UpdateHighViewBlock(qc);
-        TryCommit(pro_msg_wrap->msg_ptr, qc, 99999999lu);
+        TryCommit(view_block_chain(), pro_msg_wrap->msg_ptr, qc, 99999999lu);
 
         if (latest_qc_item_ptr_ == nullptr ||
                 tc_ptr->view() >= latest_qc_item_ptr_->view()) {
@@ -693,7 +693,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
         ADD_DEBUG_PROCESS_TIMESTAMP();
         view_block_chain()->UpdateHighViewBlock(pro_msg.tc());
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        TryCommit(msg_ptr, pro_msg.tc(), 99999999lu);
+        TryCommit(view_block_chain(), msg_ptr, pro_msg.tc(), 99999999lu);
         if (latest_qc_item_ptr_ == nullptr ||
                 pro_msg.tc().view() >= latest_qc_item_ptr_->view()) {
             assert(IsQcTcValid(pro_msg.tc()));
@@ -1308,33 +1308,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
-Status Hotstuff::StoreVerifiedViewBlock(
-        const std::shared_ptr<ViewBlock>& v_block, 
-        const std::shared_ptr<QC>& qc) {
-    assert(false);
-    if (view_block_chain()->Has(qc->view_block_hash())) {
-        return Status::kSuccess;    
-    }
-
-    if (v_block->qc().view_block_hash() != qc->view_block_hash() || v_block->qc().view() != qc->view()) {
-        return Status::kError;
-    }
-
-    Status s = acceptor()->AcceptSync(*v_block);
-    if (s != Status::kSuccess) {
-        return s;
-    }
-
-    transport::MessagePtr msg_ptr;
-    TryCommit(msg_ptr, *qc, 99999999lu);
-    SHARDORA_DEBUG("success store v block pool: %u, hash: %s, prehash: %s",
-        pool_idx_,
-        common::Encode::HexEncode(v_block->qc().view_block_hash()).c_str(),
-        common::Encode::HexEncode(v_block->parent_hash()).c_str());
-    // TODO: check valid
-    return view_block_chain()->Store(v_block, true, nullptr, nullptr, false);
-}
-
 void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& pre_rst_timer_msg = msg_ptr->header.hotstuff().pre_reset_timer_msg();
@@ -1584,8 +1557,8 @@ void Hotstuff::HandleSyncedViewBlock(
                 latest_qc_item_ptr_ = std::make_shared<view_block::protobuf::QcItem>(vblock->qc());
             }
         }
-        TryCommit(msg_ptr, *latest_qc_item_ptr_, 99999999lu);
-        TryCommit(msg_ptr, vblock->qc(), 99999999lu);
+        TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_, 99999999lu);
+        TryCommit(view_block_chain(), msg_ptr, vblock->qc(), 99999999lu);
     } else if (network::IsSameShardOrSameWaitingPool(vblock->qc().network_id(), network::kRootCongressNetworkId)) {
         if (vblock->qc().pool_index() != pool_idx_) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u, src pool: %d",
