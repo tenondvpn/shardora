@@ -65,7 +65,7 @@ public:
             const std::shared_ptr<ViewBlockChain>& chain,
             const std::shared_ptr<IBlockAcceptor>& acceptor,
             const std::shared_ptr<IBlockWrapper>& wrapper,
-            const std::shared_ptr<Pacemaker>& pm,
+            // const std::shared_ptr<Pacemaker>& pm,
 #ifdef USE_AGG_BLS
             const std::shared_ptr<AggCrypto>& crypto,
 #else
@@ -80,7 +80,7 @@ public:
         kv_sync_(kv_sync),
         pool_idx_(pool_idx),
         crypto_(crypto),
-        pacemaker_(pm),
+        // pacemaker_(pm),
         block_acceptor_(acceptor),
         block_wrapper_(wrapper),
         view_block_chain_(chain),
@@ -90,8 +90,8 @@ public:
         tm_block_mgr_(tm_block_mgr),
         new_block_cache_callback_(new_block_cache_callback) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-        pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
+        // pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        // pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
     }
     ~Hotstuff() {};
@@ -158,9 +158,9 @@ public:
         return view_block_chain_;
     }
 
-    inline std::shared_ptr<Pacemaker> pacemaker() const {
-        return pacemaker_;
-    }
+    // inline std::shared_ptr<Pacemaker> pacemaker() const {
+    //     return pacemaker_;
+    // }
 
     inline std::shared_ptr<LeaderRotation> leader_rotation() const {
         return leader_rotation_;
@@ -268,7 +268,7 @@ private:
 #else
     std::shared_ptr<Crypto> crypto_;
 #endif
-    std::shared_ptr<Pacemaker> pacemaker_;
+    // std::shared_ptr<Pacemaker> pacemaker_;
     std::shared_ptr<IBlockAcceptor> block_acceptor_;
     std::shared_ptr<IBlockWrapper> block_wrapper_;
     std::shared_ptr<ViewBlockChain> view_block_chain_;

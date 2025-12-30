@@ -89,19 +89,6 @@ int HotstuffManager::Init(
         auto leader_rotation = std::make_shared<LeaderRotation>(pool_idx, chain, elect_info_);
         pools::protobuf::PoolLatestInfo pool_latest_info;
         InitLatestInfo(pool_latest_info, pool_idx);
-        auto pacemaker = std::make_shared<Pacemaker>(
-            pool_idx,
-            pcrypto,
-            leader_rotation,
-            std::make_shared<ViewDuration>(
-                pool_idx,
-                ViewDurationSampleSize,
-                ViewDurationStartTimeoutMs,
-                ViewDurationMaxTimeoutMs,
-                ViewDurationMultiplier),
-            std::bind(&ViewBlockChain::HighQC, chain),
-            std::bind(&ViewBlockChain::UpdateHighViewBlock, chain, std::placeholders::_1),
-            pool_latest_info);
         auto acceptor = std::make_shared<BlockAcceptor>();
         chain->Init(
             kLocalChain,
@@ -117,7 +104,7 @@ int HotstuffManager::Init(
             block_mgr_,
             *this,
             kv_sync, pool_idx, leader_rotation, chain,
-            acceptor, wrapper, pacemaker, crypto, elect_info_, db_, tm_block_mgr,
+            acceptor, wrapper, crypto, elect_info_, db_, tm_block_mgr,
             new_block_cache_callback);
         pool_hotstuff_[pool_idx]->Init();
     }
@@ -369,12 +356,12 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (header.has_hotstuff_timeout_proto()) {
-        auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
-        pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
-    }
-    ADD_DEBUG_PROCESS_TIMESTAMP();
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
+    // if (header.has_hotstuff_timeout_proto()) {
+    //     auto pool_idx = header.hotstuff_timeout_proto().pool_idx();
+    //     pacemaker(pool_idx)->OnRemoteTimeout(msg_ptr);
+    // }
+    // ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -388,7 +375,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             bool has_user_tx = false;
             bool has_system_tx = false;
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
+            // pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto tx_valid_func = [&](
                     const address::protobuf::AddressInfo& addr_info, 
