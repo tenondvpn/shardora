@@ -90,6 +90,10 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
+<<<<<<< HEAD
+=======
+    void TrySyncDiscontinuous();
+>>>>>>> 3a2daa36a584be2c4178db49197b4398c2e93a3d
     void HandleTimerMessage();
     bool view_commited(uint32_t network_id, View view) const {
         if (network_id == common::GlobalInfo::Instance()->network_id()) {

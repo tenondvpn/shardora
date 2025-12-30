@@ -2127,6 +2127,11 @@ void Hotstuff::TryRecoverFromStuck(
     //     SHARDORA_WARN("latest_qc_item_ptr_ null, pool: %u", pool_idx_);
     //     return;
     // }
+    view_block_chain()->HandleTimerMessage();
+    root_view_block_chain_->HandleTimerMessage();
+    for (auto& cross_view_block_chain : cross_shard_view_block_chain_) {
+        cross_view_block_chain->HandleTimerMessage();
+    }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (has_user_tx) {
