@@ -74,7 +74,7 @@ public:
             const std::shared_ptr<ElectInfo>& elect_info,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr,
-            BlockCacheCallback new_block_cache_callback) :
+            consensus::BlockCacheCallback new_block_cache_callback) :
         block_mgr_(block_mgr),
         hotstuff_mgr_(hotstuff_mgr),
         kv_sync_(kv_sync),
@@ -287,7 +287,7 @@ private:
     std::atomic<View> db_stored_view_ = 0llu;
     uint64_t prev_sync_latest_view_tm_ms_ = 0;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
-    BlockCacheCallback new_block_cache_callback_ = nullptr;
+    consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     
 // #ifndef NDEBUG
     static std::atomic<uint32_t> sendout_bft_message_count_;
