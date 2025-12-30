@@ -177,7 +177,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     SHARDORA_DEBUG("0 now tx size: %u", all_tx_size());
-    for (uint32_t i = 0; i < view_block.block_info().tx_list_size(); ++i) {
+    for (uint32_t i = 0; i < (uint32_t)view_block.block_info().tx_list_size(); ++i) {
         auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
             view_block.block_info().tx_list(i).to();
@@ -374,13 +374,13 @@ void TxPool::GetTxSyncToLeader(
                     tx_ptr->tx_info->nonce());
                 auto* tx = txs->Add();
                 *tx = *tx_ptr->tx_info;
-                if (txs->size() >= count) {
+                if ((uint32_t)txs->size() >= count) {
                     break;
                 }
             }
         }
 
-        if (txs->size() >= count) {
+        if ((uint32_t)txs->size() >= count) {
             break;
         }
     }

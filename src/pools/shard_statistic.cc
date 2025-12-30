@@ -351,7 +351,7 @@ void ShardStatistic::HandleStatistic(
         }
     };
 
-    for (uint32_t i = 0; i < block.joins_size(); ++i) {
+    for (uint32_t i = 0; i < (uint32_t)block.joins_size(); ++i) {
         handle_joins_func(block.joins(i));
     }
 

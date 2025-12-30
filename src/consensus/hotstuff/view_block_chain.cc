@@ -86,7 +86,7 @@ Status ViewBlockChain::Store(
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
         }
-        
+
 
         for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
             auto key = view_block->block_info().key_value_array(i).addr() + 
