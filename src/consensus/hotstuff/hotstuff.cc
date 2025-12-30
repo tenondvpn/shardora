@@ -1596,15 +1596,12 @@ void Hotstuff::HandleSyncedViewBlock(
             chain->Init(
                 kCrossShardingChain,
                 vblock->qc().network_id(),
-                pool_idx_,
-                prefix_db_,
-                nullptr,
-                elect_info_,
-                nullptr,
-                nullptr,
-                crypto_,
+                db_,
+                block_mgr_,
+                account_mgr_,
                 kv_sync_,
-                hotstuff_mgr_,
+                nullptr,
+                pool_mgr_,
                 nullptr);
             cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
         }
