@@ -12,6 +12,7 @@
 #else
 #include "consensus/hotstuff/crypto.h"
 #endif
+#include "consensus/hotstuff/pacemaker.h"
 #include "consensus/hotstuff/block_acceptor.h"
 #include "consensus/hotstuff/block_wrapper.h"
 #include <consensus/hotstuff/hotstuff.h>
@@ -102,6 +103,7 @@ public:
     
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
+            pacemaker(pool_idx)->SetSyncPoolFn(sync_fn);
             hotstuff(pool_idx)->SetSyncPoolFn(sync_fn);
         }        
     }
@@ -115,6 +117,14 @@ public:
         }
         return it->second;
     }    
+    
+    inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
+        auto hf = hotstuff(pool_idx);
+        if (!hf) {
+            return nullptr;
+        }
+        return hf->pacemaker();
+    }
 
     inline std::shared_ptr<ViewBlockChain> chain(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);

@@ -71,7 +71,7 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         latest_view_block->qc().pool_index(),
         latest_view_block->qc().view(),
         common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
-    // pacemaker_->NewQcView(latest_view_block->qc().view());
+    pacemaker_->NewQcView(latest_view_block->qc().view());
 }
 
 Status Hotstuff::Start() {
@@ -1540,7 +1540,7 @@ void Hotstuff::HandleSyncedViewBlock(
             elect_item->consensus_stat(pool_idx_)->Commit(vblock);
         }
         
-        // pacemaker_->NewQcView(vblock->qc().view());
+        pacemaker_->NewQcView(vblock->qc().view());
         // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
         // if (!latest_committed_block ||
         //         latest_committed_block->qc().view() < vblock->qc().view()) {
