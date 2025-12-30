@@ -1355,8 +1355,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 Status Hotstuff::TryCommit(
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr, 
-        const QC& commit_qc, 
-        uint64_t test_index) {
+        const QC& commit_qc) {
     assert(commit_qc.has_view_block_hash());
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto v_block_to_commit_info = CheckCommit(view_block_chain, commit_qc);
@@ -1370,7 +1369,7 @@ Status Hotstuff::TryCommit(
 //             ProtobufToJson(cons_debug).c_str());
 // #endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        Status s = Commit(view_block_chain, msg_ptr, v_block_to_commit_info, commit_qc, test_index);
+        Status s = Commit(view_block_chain, msg_ptr, v_block_to_commit_info, commit_qc);
         if (s != Status::kSuccess) {
             SHARDORA_ERROR("commit view_block failed, view: %lu hash: %s",
                 v_block_to_commit->qc().view(),
@@ -1502,8 +1501,7 @@ Status Hotstuff::Commit(
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlockInfo>& v_block_info,
-        const QC& commit_qc,
-        uint64_t test_index) {
+        const QC& commit_qc) {
     view_block_chain->Commit(v_block_info);
     return Status::kSuccess;
 }
@@ -1580,7 +1578,10 @@ void Hotstuff::HandleSyncedViewBlock(
                 nullptr,
                 new_block_cache_callback_);
         }
-        root_view_block_chain_->CommitSynced(vblock);
+
+        root_view_block_chain_->Store(vblock, true, nullptr, nullptr, false);
+        TryCommit(root_view_block_chain_, msg_ptr, vblock->qc(), 99999999lu);
+        // root_view_block_chain_->CommitSynced(vblock);
     } else {
         if (vblock->qc().network_id() % pool_idx_ != 0) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u", vblock->qc().network_id(), pool_idx_);
@@ -1604,7 +1605,9 @@ void Hotstuff::HandleSyncedViewBlock(
         }
 
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
-        cross_view_block_chain->CommitSynced(vblock);
+        cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
+        TryCommit(cross_view_block_chain, msg_ptr, vblock->qc(), 99999999lu);
+        // cross_view_block_chain->CommitSynced(vblock);
     }
 }
 

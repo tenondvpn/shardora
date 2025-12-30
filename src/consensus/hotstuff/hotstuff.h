@@ -219,8 +219,7 @@ private:
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlockInfo>& v_block,
-        const QC& commit_qc,
-        uint64_t test_index);
+        const QC& commit_qc);
     std::shared_ptr<ViewBlockInfo> CheckCommit(
         const std::shared_ptr<ViewBlockChain>& view_block_chain, 
         const QC& qc);
