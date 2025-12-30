@@ -15,7 +15,6 @@ enum ChainType : int32_t {
     kCrossShardingChain = 2,
 };
 
-using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
 std::string GetTxMessageHash(
     const block::protobuf::BlockTx& tx_info, 
     const std::string& phash);
