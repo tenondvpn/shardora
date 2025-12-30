@@ -28,6 +28,7 @@ public:
     ViewBlockChain();
     ~ViewBlockChain();
     void Init(
+        ChainType chain_type,
         uint32_t pool_index, 
         std::shared_ptr<db::Db>& db, 
         std::shared_ptr<block::BlockManager>& block_mgr,
@@ -287,6 +288,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::set<uint64_t> commited_view_;
     uint64_t prev_check_timeout_blocks_ms_ = 0;
+    ChainType chain_type_ = kInvalidChain;
 #ifdef TEST_FORKING_ATTACK
     std::map<uint64_t, std::vector<std::shared_ptr<ViewBlockInfo>>> view_with_blocks_;
 #endif

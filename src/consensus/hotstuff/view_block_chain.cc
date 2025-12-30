@@ -16,6 +16,7 @@ namespace hotstuff {
 ViewBlockChain::ViewBlockChain() {}
 
 void ViewBlockChain::Init(
+        ChainType chain_type,
         uint32_t pool_index, 
         std::shared_ptr<db::Db>& db, 
         std::shared_ptr<block::BlockManager>& block_mgr,
@@ -24,6 +25,7 @@ void ViewBlockChain::Init(
         std::shared_ptr<IBlockAcceptor> block_acceptor,
         std::shared_ptr<pools::TxPoolManager> pools_mgr,
         consensus::BlockCacheCallback new_block_cache_callback) {
+    chain_type_ = chain_type;
     db_ = db;
     pool_index_ = pool_index;
     block_mgr_ = block_mgr;

@@ -1582,8 +1582,35 @@ void Hotstuff::HandleSyncedViewBlock(
         }
         TryCommit(msg_ptr, *latest_qc_item_ptr_, 99999999lu);
         TryCommit(msg_ptr, vblock->qc(), 99999999lu);
+    } else if (network::IsSameShardOrSameWaitingPool(vblock->qc().network_id(), network::kRootCongressNetworkId)) {
+        root_view_block_chain_->CommitSynced(vblock);
     } else {
-        view_block_chain()->CommitSynced(vblock);
+        if (vblock->qc().network_id() % pool_idx_ != 0) {
+            SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u", vblock->qc().network_id(), pool_idx_);
+            return;
+        }
+
+        auto iter = cross_shard_view_block_chain_.find(vblock->qc().network_id());
+        if (iter == cross_shard_view_block_chain_.end()) {
+            auto chain = std::make_shared<ViewBlockChain>();
+            chain->Init(
+                kCrossShardingChain,
+                vblock->qc().network_id(),
+                pool_idx_,
+                prefix_db_,
+                acceptor_,
+                elect_info_,
+                leader_rotation_,
+                pacemaker_,
+                crypto_,
+                kv_sync_,
+                hotstuff_mgr_,
+                nullptr);
+            cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
+        }
+
+        auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
+        cross_view_block_chain->CommitSynced(vblock);
     }
 }
 
