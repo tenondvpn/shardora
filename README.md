@@ -8,14 +8,13 @@ Scaling Blockchain Sharding via 2D Parallelism
 
 # Quick Start
 ## Requirements
-      centos7
-      g++8.3.0
-      python3.10+
+      g++13.0 + 
       cmake3.25.1+
 
 ## Run local shardora network
       git clone git@github.com:tenondvpn/shardora.git
-      sh simple_dep.sh $node_count  
+	  bash build_third.sh
+      bash simple_dep.sh $node_count  
       # node_count like 4, mean create 4 nodes shardora network on local machine
 	  
 ## Run customized network
@@ -30,6 +29,7 @@ Scaling Blockchain Sharding via 2D Parallelism
       cd ./cbuild_Release && make txcli
       ./txcli
 ```
+
 
 
 
