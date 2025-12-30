@@ -494,7 +494,10 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 #endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
+        if (block_acceptor_) {
+            block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
+        }
+
         commited_view_.insert(tmp_block->qc().view());
         if (commited_view_.size() >= 102400u) {
             commited_view_.erase(commited_view_.begin());
@@ -522,7 +525,10 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             SHARDORA_FATAL("write to db failed!");
         }
 
-        pools_mgr_->TxOver(pool_index_, *tmp_block);
+        if (pools_mgr_) {
+            pools_mgr_->TxOver(pool_index_, *tmp_block);
+        }
+        
         block_mgr_->ConsensusAddBlock(*iter);
         stored_to_db_view_ = tmp_block->qc().view();
         latest_commited_block = *iter;
