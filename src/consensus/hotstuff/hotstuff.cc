@@ -32,7 +32,7 @@ void Hotstuff::Init() {
         root_view_block_chain_ = std::make_shared<ViewBlockChain>();
         root_view_block_chain_->Init(
             kCrossRootChian,
-            vblock->qc().network_id(),
+            network::kRootCongressNetworkId,
             db_,
             block_mgr_,
             nullptr,
@@ -69,7 +69,7 @@ void Hotstuff::Init() {
             nullptr,
             nullptr,
             new_block_cache_callback_);
-        cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
+        cross_shard_view_block_chain_[network_id] = chain;
         InitLoadLatestBlock(
             chain,
             network_id, 
