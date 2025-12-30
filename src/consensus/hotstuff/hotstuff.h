@@ -56,6 +56,7 @@ class Hotstuff {
 public:
     Hotstuff() = default;
     Hotstuff(
+            std::shared_ptr<block::BlockManager>& block_mgr,
             consensus::HotstuffManager& hotstuff_mgr,
             std::shared_ptr<sync::KeyValueSync>& kv_sync,
             const uint32_t& pool_idx,
@@ -72,6 +73,7 @@ public:
             const std::shared_ptr<ElectInfo>& elect_info,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr) :
+        block_mgr_(block_mgr),
         hotstuff_mgr_(hotstuff_mgr),
         kv_sync_(kv_sync),
         pool_idx_(pool_idx),
@@ -250,6 +252,7 @@ private:
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 15000lu;
 
+    std::shared_ptr<block::BlockManager> block_mgr_;
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS
     std::shared_ptr<AggCrypto> crypto_;

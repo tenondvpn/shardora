@@ -1598,10 +1598,10 @@ void Hotstuff::HandleSyncedViewBlock(
                 vblock->qc().network_id(),
                 db_,
                 block_mgr_,
-                account_mgr_,
+                nullptr,
                 kv_sync_,
                 nullptr,
-                pool_mgr_,
+                nullptr,
                 nullptr);
             cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
         }

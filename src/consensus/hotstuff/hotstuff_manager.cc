@@ -119,9 +119,10 @@ int HotstuffManager::Init(
         auto wrapper = std::make_shared<BlockWrapper>(
                 pool_idx, pool_mgr, tm_block_mgr, block_mgr, elect_info_);
         pool_hotstuff_[pool_idx] = std::make_shared<Hotstuff>(
-                *this,
-                kv_sync, pool_idx, leader_rotation, chain,
-                acceptor, wrapper, pacemaker, crypto, elect_info_, db_, tm_block_mgr);
+            block_mgr_,
+            *this,
+            kv_sync, pool_idx, leader_rotation, chain,
+            acceptor, wrapper, pacemaker, crypto, elect_info_, db_, tm_block_mgr);
         pool_hotstuff_[pool_idx]->Init();
     }
 
