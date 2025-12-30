@@ -1379,12 +1379,13 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 }
 
 Status Hotstuff::TryCommit(
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr, 
         const QC& commit_qc, 
         uint64_t test_index) {
     assert(commit_qc.has_view_block_hash());
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto v_block_to_commit_info = CheckCommit(commit_qc);
+    auto v_block_to_commit_info = CheckCommit(view_block_chain, commit_qc);
     if (v_block_to_commit_info) {
         auto v_block_to_commit = v_block_to_commit_info->view_block;
 // #ifndef NDEBUG
@@ -1395,7 +1396,7 @@ Status Hotstuff::TryCommit(
 //             ProtobufToJson(cons_debug).c_str());
 // #endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
-        Status s = Commit(msg_ptr, v_block_to_commit_info, commit_qc, test_index);
+        Status s = Commit(view_block_chain, msg_ptr, v_block_to_commit_info, commit_qc, test_index);
         if (s != Status::kSuccess) {
             SHARDORA_ERROR("commit view_block failed, view: %lu hash: %s",
                 v_block_to_commit->qc().view(),
@@ -1407,23 +1408,25 @@ Status Hotstuff::TryCommit(
     return Status::kSuccess;
 }
 
-std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
+std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
+        const QC& qc) {
     // fast hotstuff
     assert(!qc.view_block_hash().empty());
-    auto v_block1_info = view_block_chain()->Get(qc.view_block_hash());
+    auto v_block1_info = view_block_chain->Get(qc.view_block_hash());
     if (!v_block1_info) {
         SHARDORA_DEBUG("pool: %d, Failed get v block 1: %s, %u_%u_%lu",
             pool_idx_,
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
-        if (!view_block_chain()->view_commited(qc.network_id(), qc.view())) {
+        if (!view_block_chain->view_commited(qc.network_id(), qc.view())) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
         }
         // assert(false);
         return nullptr;
     }
 
-    if (view_block_chain_->ViewBlockIsCheckedParentHash(qc.view_block_hash())) {
+    if (view_block_chain->ViewBlockIsCheckedParentHash(qc.view_block_hash())) {
         return v_block1_info;
     }
 
@@ -1437,7 +1440,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
 #endif
     assert(v_block1->parent_hash() != qc.view_block_hash());
-    auto v_block2_info = view_block_chain()->Get(v_block1->parent_hash());
+    auto v_block2_info = view_block_chain->Get(v_block1->parent_hash());
     if (!v_block2_info) {
         SHARDORA_DEBUG("pool: %d, Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
             pool_idx_,
@@ -1446,7 +1449,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.pool_index(), 
             v_block1->qc().view() - 1,
             view_block_chain_->String().c_str());
-        if (v_block1->qc().view() > 0 && !view_block_chain()->view_commited(
+        if (v_block1->qc().view() > 0 && !view_block_chain->view_commited(
                 v_block1->qc().network_id(), v_block1->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
         }
@@ -1474,7 +1477,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
         v_block2->qc().view(), ProtobufToJson(cons_debug2).c_str());
 #endif
 
-    auto v_block3_info = view_block_chain()->Get(v_block2->parent_hash());
+    auto v_block3_info = view_block_chain->Get(v_block2->parent_hash());
     if (!v_block3_info) {
         SHARDORA_DEBUG("pool: %d, Failed get v block 3 block hash: %s, %u_%u_%lu, now chain: %s", 
             pool_idx_,
@@ -1483,7 +1486,7 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
             qc.pool_index(), 
             v_block2->qc().view() - 1,
             view_block_chain_->String().c_str());
-        if (v_block2->qc().view() > 0 && !view_block_chain()->view_commited(
+        if (v_block2->qc().view() > 0 && !view_block_chain->view_commited(
                 v_block2->qc().network_id(), v_block2->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
         }
@@ -1522,25 +1525,17 @@ std::shared_ptr<ViewBlockInfo> Hotstuff::CheckCommit(const QC& qc) {
 }
 
 Status Hotstuff::Commit(
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlockInfo>& v_block_info,
         const QC& commit_qc,
         uint64_t test_index) {
-    view_block_chain_->Commit(v_block_info);
+    view_block_chain->Commit(v_block_info);
     return Status::kSuccess;
 }
 
 void Hotstuff::HandleSyncedViewBlock(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
-    if (!view_block_chain_->ReplaceWithSyncedBlock(vblock)) {
-        SHARDORA_DEBUG("block hash exists %u_%u_%lu, height: %lu",
-            vblock->qc().network_id(), 
-            vblock->qc().pool_index(), 
-            vblock->qc().view(), 
-            vblock->block_info().height());
-        // return;
-    }
-
     if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
         SHARDORA_DEBUG("block db exists %u_%u_%lu, height: %lu",
             vblock->qc().network_id(), 
@@ -1556,6 +1551,15 @@ void Hotstuff::HandleSyncedViewBlock(
         vblock->qc().view(),
         vblock->block_info().height());
     if (network::IsSameToLocalShard(vblock->qc().network_id())) {
+        if (!view_block_chain()->ReplaceWithSyncedBlock(vblock)) {
+            SHARDORA_DEBUG("block hash exists %u_%u_%lu, height: %lu",
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view(), 
+                vblock->block_info().height());
+            // return;
+        }
+        
         auto elect_item = elect_info()->GetElectItem(
                 vblock->qc().network_id(),
                 vblock->qc().elect_height());

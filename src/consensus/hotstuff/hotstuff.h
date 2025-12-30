@@ -114,7 +114,11 @@ public:
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr);
-    Status TryCommit(const transport::MessagePtr& msg_ptr, const QC& commit_qc, uint64_t t_idx = 9999999lu);
+    Status TryCommit(
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
+        const transport::MessagePtr& msg_ptr, 
+        const QC& commit_qc, 
+        uint64_t t_idx = 9999999lu);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
 
     void StopVoting(const View& view) {
@@ -212,11 +216,14 @@ private:
 
     Status HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status Commit(
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr,
         const std::shared_ptr<ViewBlockInfo>& v_block,
         const QC& commit_qc,
         uint64_t test_index);
-    std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
+    std::shared_ptr<ViewBlockInfo> CheckCommit(
+        const std::shared_ptr<ViewBlockChain>& view_block_chain, 
+        const QC& qc);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
     Status VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);

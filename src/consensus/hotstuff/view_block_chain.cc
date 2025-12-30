@@ -45,11 +45,15 @@ Status ViewBlockChain::Store(
         BalanceAndNonceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
         bool init) {
-    if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
+    if (chain_type_ == kLocalChain && !network::IsSameToLocalShard(view_block->qc().network_id())) {
         return Status::kSuccess;
     }
 
-    if (!init && view_commited(view_block->qc().network_id(), view_block->qc().view())) {
+    if (!init) {
+        return Status::kSuccess;
+    }
+
+    if (view_commited(view_block->qc().network_id(), view_block->qc().view())) {
         return Status::kSuccess;
     }
 
@@ -70,7 +74,7 @@ Status ViewBlockChain::Store(
         zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
     }
 
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
+    if (chain_type_ == kLocalChain && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
@@ -82,6 +86,7 @@ Status ViewBlockChain::Store(
                 common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
                 ProtobufToJson(*new_addr_info).c_str());
         }
+        
 
         for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
             auto key = view_block->block_info().key_value_array(i).addr() + 
