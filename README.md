@@ -1,4 +1,9 @@
 
+# Shardora/SETH/Akaverse
+Scaling Blockchain Sharding via 2D Parallelism
+
+<img width="3156" height="1671" alt="image" src="https://github.com/user-attachments/assets/62383f1f-0f19-43d5-8d14-0e8bdea51a7e" />
+
 # Quick Start
 ## Requirements
       centos7
@@ -23,4 +28,5 @@
       cd ./cbuild_Release && make txcli
       ./txcli
 ```
+
 
