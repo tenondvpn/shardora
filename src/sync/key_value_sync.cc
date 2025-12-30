@@ -485,6 +485,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     auto& res_arr = sync_msg.sync_value_res().res();
     auto now_tm_us = common::TimeUtils::TimestampUs();
     SHARDORA_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
+    std::map<uint32_t, std::map<uint64_t, std::shared_ptr<view_block::protobuf::ViewBlockItem>>> res_map;
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
         if (iter->tag() == kBlockHeight) {
@@ -511,42 +512,31 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 break;
             }
     
-            // if (!view_block_synced_callback_) {
-            //     SHARDORA_ERROR("no view block synced callback inited");
-            //     assert(false);
-            //     break;
-            // }
-    
-            // int res = view_block_synced_callback_(*pb_vblock);
-            // SHARDORA_DEBUG("now handle kv response hash64: %lu, key: %s, tag: %d, sign x: %s, res: %d",
-            //     msg_ptr->header.hash64(), 
-            //     (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()), 
-            //     iter->tag(),
-            //     pb_vblock->qc().sign_x().c_str(),
-            //     res);
+         
             assert(!pb_vblock->qc().sign_x().empty());
-            // if (res == 1) {
-            //     assert(false);
-            //     break;
-            // }
-                
-            // if (res == 0) {
-                SHARDORA_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
-                    pb_vblock->qc().network_id(),
-                    pb_vblock->qc().pool_index(),
-                    pb_vblock->qc().view(),
-                    pb_vblock->block_info().height(),
-                    (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
-                auto thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(
-                    pb_vblock->qc().pool_index());
-                vblock_queues_[thread_idx].push(pb_vblock);
-            // }  
+            SHARDORA_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
+                pb_vblock->qc().network_id(),
+                pb_vblock->qc().pool_index(),
+                pb_vblock->qc().view(),
+                pb_vblock->block_info().height(),
+                (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
+            res_map[pb_vblock->qc().network_id()][pb_vblock->qc().view()] = pb_vblock;
         } while (0);
 
         responsed_keys_.add(key);
         synced_map_.erase(key);
         SHARDORA_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
             key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
+    }
+
+    for (auto iter = res_map.begin(); iter != res_map.end(); ++iter) {
+        auto network_id = iter->first;
+        for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2) {
+            auto pb_vblock = iter2->second;
+            auto thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(
+                pb_vblock->qc().pool_index());
+            vblock_queues_[thread_idx].push(pb_vblock);
+        }
     }
 }
 

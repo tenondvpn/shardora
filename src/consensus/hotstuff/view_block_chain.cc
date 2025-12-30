@@ -151,10 +151,6 @@ Status ViewBlockChain::Store(
     return Status::kSuccess;
 }
 
-void ViewBlockChain::TrySyncDiscontinuous() {
-
-}
-
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
     while (commited_block_queue_.pop(&view_block_info_ptr)) {
@@ -548,20 +544,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         SetLatestCommittedBlock(latest_commited_block);
     }
 
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_check_timeout_blocks_ms_ + 30000u < now_tm_ms) {
-        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-            if (view_commited(
-                    common::GlobalInfo::Instance()->network_id(), 
-                    iter->second->view_block->qc().view() + 1)) {
-                iter = view_blocks_info_.erase(iter);
-            } else {
-                ++iter;
-            }
-        }
-
-        prev_check_timeout_blocks_ms_ = now_tm_ms;
-    }
+    
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
@@ -578,6 +561,29 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 //         String().c_str(),
 //         ProtobufToJson(cons_debug3).c_str());
 // #endif
+}
+
+void ViewBlockChain::HandleTimerMessage() {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {
+        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
+            if (ViewBlockIsCheckedParentHash(iter->second->view_block->qc().view_block_hash())) {
+                Commit(iter->second);
+                // next turn
+                return;
+            }
+
+            if (view_commited(
+                    common::GlobalInfo::Instance()->network_id(), 
+                    iter->second->view_block->qc().view() + 1)) {
+                iter = view_blocks_info_.erase(iter);
+            } else {
+                ++iter;
+            }
+        }
+
+        prev_check_timeout_blocks_ms_ = now_tm_ms;
+    }
 }
 
 void ViewBlockChain::AddNewBlock(
