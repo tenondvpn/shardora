@@ -363,7 +363,9 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
-        SHARDORA_DEBUG("pool: %d, prepare commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
+        auto tmp_block = tmp_block_info->view_block;
+        SHARDORA_DEBUG("pool: %d, prepare commit view block %u_%u_%lu, hash: %s, "
+            "parent hash: %s, step: %d, statistic_height: %lu, commited: %d, sign empty: %d", 
             pool_index_,
             tmp_block_info->view_block->qc().network_id(), 
             tmp_block_info->view_block->qc().pool_index(), 
@@ -371,8 +373,11 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
             common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str(),
             tmp_block_info->view_block->block_info().tx_list_size() > 0 ? tmp_block_info->view_block->block_info().tx_list(0).step(): -1,
-            0);
-        auto tmp_block = tmp_block_info->view_block;
+            0,
+            view_commited(
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().view()),
+            tmp_block->qc().sign_x().empty());
         if (!view_commited(
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().view()) &&
@@ -528,7 +533,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         if (pools_mgr_) {
             pools_mgr_->TxOver(pool_index_, *tmp_block);
         }
-        
+
         block_mgr_->ConsensusAddBlock(*iter);
         stored_to_db_view_ = tmp_block->qc().view();
         latest_commited_block = *iter;
