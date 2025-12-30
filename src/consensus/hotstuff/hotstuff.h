@@ -117,8 +117,7 @@ public:
     Status TryCommit(
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const transport::MessagePtr& msg_ptr, 
-        const QC& commit_qc, 
-        uint64_t t_idx = 9999999lu);
+        const QC& commit_qc);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
 
     void StopVoting(const View& view) {
