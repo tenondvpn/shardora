@@ -31,6 +31,7 @@ void Hotstuff::Init() {
         auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
         view_block_chain_->Store(latest_view_block, false, balane_map_ptr, nullptr, true);
         auto temp_ptr = view_block_chain_->Get(latest_view_block->qc().view_block_hash());
+        assert(temp_ptr);
         view_block_chain_->SetLatestCommittedBlock(temp_ptr);
         InitAddNewViewBlock(latest_view_block);
         auto parent_hash = latest_view_block->parent_hash();
