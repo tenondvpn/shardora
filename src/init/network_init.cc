@@ -267,11 +267,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
     SHARDORA_WARN("init shard_statistic_ success.");
     block_mgr_->LoadLatestBlocks();
-    // 启动共识和同步
-    hotstuff_syncer_ = std::make_shared<hotstuff::HotstuffSyncer>(
-        hotstuff_mgr_, db_, kv_sync_, account_mgr_);
     RegisterFirewallCheck();
-    hotstuff_syncer_->Start();
     hotstuff_mgr_->Start();
     // 以上应该放入 hotstuff 实例初始化中，并接收创世块
     SHARDORA_WARN("init hotstuff_mgr_ start success.");
@@ -389,9 +385,6 @@ void NetworkInit::RegisterFirewallCheck() {
     net_handler_.AddFirewallCheckCallback(
         common::kHotstuffMessage,
         std::bind(&consensus::HotstuffManager::FirewallCheckMessage, hotstuff_mgr_.get(), std::placeholders::_1));
-    net_handler_.AddFirewallCheckCallback(
-        common::kHotstuffSyncMessage,
-        std::bind(&hotstuff::HotstuffSyncer::FirewallCheckMessage, hotstuff_syncer_.get(), std::placeholders::_1));
     net_handler_.AddFirewallCheckCallback(
         common::kBlockMessage,
         std::bind(&block::BlockManager::FirewallCheckMessage, block_mgr_.get(), std::placeholders::_1));

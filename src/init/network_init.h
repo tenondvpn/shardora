@@ -11,7 +11,6 @@
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/pacemaker.h>
-#include <consensus/hotstuff/hotstuff_syncer.h>
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
@@ -102,7 +101,6 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
-    std::shared_ptr<hotstuff::HotstuffSyncer> hotstuff_syncer_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
