@@ -9,7 +9,6 @@
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/leader_rotation.h>
-#include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/hotstuff/hotstuff_utils.h>
