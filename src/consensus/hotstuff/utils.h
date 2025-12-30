@@ -13,7 +13,7 @@ enum ChainType : int32_t {
     kLocalChain = 0,
     kCrossRootChian = 1,
     kCrossShardingChain = 2,
-}
+};
 
 std::string GetTxMessageHash(
     const block::protobuf::BlockTx& tx_info, 
