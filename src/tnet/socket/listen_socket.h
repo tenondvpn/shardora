@@ -11,7 +11,7 @@ class ServerSocket;
 class ListenSocket : public TcpSocket {
 public:
     bool Listen(int backlog) const;
-    bool Accept(ServerSocket** socket) const;
+    std::shared_ptr<Socket> Accept() const;
 
     ListenSocket(in_addr_t local_addr, uint16_t local_port)
             : TcpSocket(local_addr, local_port) {}

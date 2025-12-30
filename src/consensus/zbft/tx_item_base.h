@@ -1,6 +1,8 @@
 #pragma once
 
 #include "block/account_manager.h"
+#include "consensus/hotstuff/hotstuff_utils.h"
+#include "consensus/hotstuff/view_block_chain.h"
 #include "pools/tx_pool.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -23,9 +25,9 @@ protected:
     virtual ~TxItemBase() {}
 
     virtual int HandleTx(
-            const view_block::protobuf::ViewBlockItem& view_block,
+            view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
-            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         return consensus::kConsensusSuccess;
     }
@@ -33,32 +35,49 @@ protected:
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        DefaultTxItem(tx_info, block_tx);
-        // change
-        if (tx_info.key().empty()) {
-            return consensus::kConsensusSuccess;
+        if (!DefaultTxItem(tx_info, block_tx)) {
+            return consensus::kConsensusError;
         }
 
-        auto storage = block_tx->add_storages();
-        storage->set_key(tx_info.key());
-        storage->set_value(tx_info.value());
         return consensus::kConsensusSuccess;
     }
 
-    void DefaultTxItem(
+    virtual void InitHost(
+            zjcvm::ZjchainHost& zjc_host, 
+            const block::protobuf::BlockTx& tx, 
+            uint64_t gas_limit, 
+            uint64_t gas_price, 
+            view_block::protobuf::ViewBlockItem& view_block) {
+        zjcvm::Uint64ToEvmcBytes32(
+            zjc_host.tx_context_.tx_gas_price,
+            gas_price);
+        zjc_host.contract_mgr_ = contract_mgr_;
+        zjc_host.my_address_ = tx.to();
+        zjc_host.recorded_selfdestructs_ = nullptr;
+        zjc_host.gas_more_ = 0lu;
+        zjc_host.create_bytes_code_ = "";
+        zjc_host.contract_to_call_dirty_ = false;
+        zjc_host.recorded_logs_.clear();
+        zjc_host.to_account_value_.clear();
+        zjc_host.view_ = view_block.qc().view();
+        zjc_host.tx_context_.block_gas_limit = gas_limit;
+        zjc_host.tx_context_.block_number = view_block.block_info().height();
+        zjc_host.tx_context_.block_timestamp= view_block.block_info().timestamp();
+    }
+
+    bool DefaultTxItem(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
-        block_tx->set_gid(tx_info.gid());
+        block_tx->set_nonce(tx_info.nonce());
         block_tx->set_gas_limit(tx_info.gas_limit());
         block_tx->set_gas_price(tx_info.gas_price());
         block_tx->set_step(tx_info.step());
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
+        block_tx->set_unique_hash("");
         if (tx_info.step() == pools::protobuf::kContractCreate ||
             tx_info.step() == pools::protobuf::kCreateLibrary||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||
-            tx_info.step() == pools::protobuf::kContractCreateByRootFrom ||
-            // tx_info.step() == pools::protobuf::kContractCreateByRootTo ||
             tx_info.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());
@@ -81,43 +100,45 @@ protected:
             *tx_debug_info = tx_info.tx_debug(i);
         }
 #endif
+        return true;
     }
 
     int GetTempAccountBalance(
+            zjcvm::ZjchainHost& zjc_host,
             const std::string& id,
-            std::unordered_map<std::string, int64_t>& acc_balance_map,
-            uint64_t* balance) {
+            hotstuff::BalanceAndNonceMap& acc_balance_map,
+            uint64_t* balance,
+            uint64_t* nonce) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            protos::AddressInfoPtr acc_info = account_mgr_->GetAccountInfo(id);
+            protos::AddressInfoPtr acc_info = zjc_host.view_block_chain_->ChainGetAccountInfo(id);
             if (acc_info == nullptr) {
-                ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
+                SHARDORA_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
             }
 
             if (acc_info->destructed()) {
-                ZJC_DEBUG("contract destructed: %s", common::Encode::HexEncode(id).c_str());
+                SHARDORA_DEBUG("contract destructed: %s", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
             }
 
-            acc_balance_map[id] = acc_info->balance();
+            acc_balance_map[id] = std::make_shared<address::protobuf::AddressInfo>(*acc_info);
             *balance = acc_info->balance();
-            // ZJC_DEBUG("success get temp account balance from account_mgr: %s, %lu",
-            //     common::Encode::HexEncode(id).c_str(), *balance);
+            *nonce = acc_info->nonce();
+            SHARDORA_DEBUG("success get temp account balance from lru map: %s, balance: %lu, nonce: %lu",
+                common::Encode::HexEncode(id).c_str(), *balance, *nonce);
         } else {
-            if (iter->second == -1) {
-                return consensus::kConsensusAccountNotExists;
-            }
-
-            *balance = iter->second;
-            // ZJC_DEBUG("success get temp account balance from tmp balance map: %s, %lu",
-            //     common::Encode::HexEncode(id).c_str(), *balance);
+            *balance = iter->second->balance();
+            *nonce = iter->second->nonce();
+            SHARDORA_DEBUG("success get temp account balance from temp map: %s, balance: %lu, nonce: %lu",
+                common::Encode::HexEncode(id).c_str(), *balance, *nonce);
         }
 
         return kConsensusSuccess;
     }
 
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<security::Security> sec_ptr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 };

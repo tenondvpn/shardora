@@ -126,7 +126,7 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
         protos::AddressInfoPtr account_info = acc_mgr_->GetAccountInfo(node->id);
         if (account_info == nullptr) {
-            ZJC_INFO("get address: %s failed!", common::Encode::HexEncode(node->id).c_str());
+            SHARDORA_INFO("get address: %s failed!", common::Encode::HexEncode(node->id).c_str());
             return dht::kDhtError;
         }
 
@@ -138,7 +138,7 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
                 }
             }
 
-            ZJC_DEBUG("JoinNewNodeValid valid node sharding_id_: %u, id: %s",
+            SHARDORA_DEBUG("JoinNewNodeValid valid node sharding_id_: %u, id: %s",
                 sharding_id_, common::Encode::HexEncode(node->id).c_str());
             return dht::kDhtSuccess;
         }
@@ -152,17 +152,18 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
         return dht::kDhtError;
     }
 
-    ZJC_DEBUG("JoinNewNodeValid valid node sharding_id_: %u, id: %s",
+    SHARDORA_DEBUG("JoinNewNodeValid valid node sharding_id_: %u, id: %s",
         sharding_id_, common::Encode::HexEncode(node->id).c_str());
     return dht::kDhtSuccess;
 }
 
 template<class DhtType>
 int ShardNetwork<DhtType>::JoinShard() {
+    SHARDORA_DEBUG("now get universal dht 6");
     auto unversal_dht = network::UniversalManager::Instance()->GetUniversal(
         network::kUniversalNetworkId);
     if (unversal_dht == nullptr) {
-        ZJC_DEBUG("get universal dht failed!");
+        SHARDORA_DEBUG("get universal dht failed!");
         return kNetworkError;
     }
 
@@ -200,6 +201,7 @@ int ShardNetwork<DhtType>::JoinShard() {
         NETWORK_ERROR("join shard network [%u] failed!", sharding_id_);
     }
 
+    SHARDORA_DEBUG("now get universal dht 7");
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     std::vector<dht::NodePtr> nodes;
     auto dht_ptr = uni_net->readonly_hash_sort_dht();
@@ -212,7 +214,7 @@ int ShardNetwork<DhtType>::JoinShard() {
             nodes[i]->pubkey_str,
             nodes[i]->id);
         elect_dht_->Join(new_node);
-        ZJC_DEBUG("join network %u add new node: %s:%u, %s",
+        SHARDORA_DEBUG("join network %u add new node: %s:%u, %s",
             sharding_id_,
             nodes[i]->public_ip.c_str(),
             nodes[i]->public_port,

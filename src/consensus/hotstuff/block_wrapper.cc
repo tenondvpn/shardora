@@ -4,6 +4,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/view_block_chain.h>
+#include "zjcvm/zjc_host.h"
 
 namespace shardora {
 namespace hotstuff {
@@ -21,7 +22,7 @@ BlockWrapper::BlockWrapper(
 
 BlockWrapper::~BlockWrapper(){};
 
-// 打包一个新的 block 和 txs
+// Package a new block and txs
 Status BlockWrapper::Wrap(
         const transport::MessagePtr& msg_ptr, 
         const std::shared_ptr<ViewBlock>& prev_view_block,
@@ -33,7 +34,7 @@ Status BlockWrapper::Wrap(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto* prev_block = &prev_view_block->block_info();
     if (!prev_block) {
-        ZJC_WARN("get prev block failed, pool index: %d", pool_idx_);
+        SHARDORA_WARN("get prev block failed, pool index: %d", pool_idx_);
         return Status::kInvalidArgument;
     }
 
@@ -41,31 +42,56 @@ Status BlockWrapper::Wrap(
     block->set_version(common::kTransactionVersion);
     block->set_consistency_random(0);
     block->set_height(prev_block->height()+1);
-    ZJC_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
+    SHARDORA_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
         block->height(), prev_block->height());
     if (block->height() <= 0) {
-        ZJC_WARN("block->height() <= 0, pool index: %d", pool_idx_);
+        SHARDORA_WARN("block->height() <= 0, pool index: %d", pool_idx_);
         return Status::kInvalidArgument;
     }
 
     uint64_t cur_time = common::TimeUtils::TimestampMs();
     block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
-
-    // 打包交易
+    // Package transactions
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    // ZJC_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
+    // SHARDORA_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
-    auto gid_valid_func = [&](const std::string& gid) -> bool {
-        return view_block_chain->CheckTxGidValid(gid, prev_view_block->qc().view_block_hash());
+    auto tx_valid_func = [&](
+            const address::protobuf::AddressInfo& addr_info, 
+            pools::protobuf::TxMessage& tx_info) -> int {
+        if (pools::IsUserTransaction(tx_info.step())) {
+            return view_block_chain->CheckTxNonceValid(
+                addr_info.addr(), 
+                tx_info.nonce(), 
+                prev_view_block->qc().view_block_hash());
+        }
+        
+        zjcvm::ZjchainHost zjc_host;
+        zjc_host.parent_hash_ = prev_view_block->qc().view_block_hash();
+        zjc_host.view_block_chain_ = view_block_chain;
+        std::string val;
+        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+            SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
+                common::Encode::HexEncode(tx_info.to()).c_str(),
+                common::Encode::HexEncode(tx_info.key()).c_str(),
+                (int32_t)tx_info.step());
+            return 1;
+        }
+
+        SHARDORA_INFO("not user tx unique hash success to: %s, unique hash: %s, parent_hash: %s",
+            common::Encode::HexEncode(tx_info.to()).c_str(),
+            common::Encode::HexEncode(tx_info.key()).c_str(),
+            common::Encode::HexEncode(zjc_host.parent_hash_).c_str());
+        return 0;
     };
 
-    Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, gid_valid_func);
+    Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);
     if (s != Status::kSuccess && !no_tx_allowed) {
-        // 允许 3 个连续的空交易块
-        ZJC_DEBUG("leader get txs failed check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u, pool size: %u",
-            s, pool_idx_, 
+        // Allow 3 consecutive empty transaction blocks
+        SHARDORA_DEBUG("leader get txs failed check is empty block allowd: %d, "
+            "pool: %d, %u_%u_%lu size: %u, pool size: %u",
+            (int32_t)s, pool_idx_, 
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
             view_block->qc().view(), 
@@ -75,8 +101,8 @@ Status BlockWrapper::Wrap(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
-        s, pool_idx_, 
+    SHARDORA_DEBUG("leader get txs success check is empty block allowd: %d, pool: %d, %u_%u_%lu size: %u",
+        (int32_t)s, pool_idx_, 
         view_block->qc().network_id(), 
         view_block->qc().pool_index(), 
         view_block->qc().view(), 
@@ -85,19 +111,19 @@ Status BlockWrapper::Wrap(
     if (txs_ptr) {
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
             auto* tx_info = tx_propose->add_txs();
-            *tx_info = *it->second->tx_info;
-            assert(tx_info->gid().size() == 32);
+            *tx_info = *((*it)->tx_info);
             // ADD_TX_DEBUG_INFO(tx_info);
-            // ZJC_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-            //     "step: %d, to: %s, gid: %s, tx info: %s",
+            // SHARDORA_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
+            //     "step: %d, to: %s, nonce: %lu, tx info: %s",
             //     view_block->qc().pool_index(),
             //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
             //     block->height(),
             //     tx_info->step(),
             //     common::Encode::HexEncode(tx_info->to()).c_str(),
-            //     common::Encode::HexEncode(tx_info->gid()).c_str(),
+            //     tx_info->nonce(),
             //     "ProtobufToJson(*tx_info).c_str()");
         }
+
         tx_propose->set_tx_type(txs_ptr->tx_type);
     }
 
@@ -110,10 +136,11 @@ Status BlockWrapper::Wrap(
     view_block->mutable_qc()->set_elect_height(elect_item->ElectHeight());
     view_block->mutable_qc()->set_leader_idx(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
-    ZJC_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
-        "elect height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
+    SHARDORA_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
+        "elect height: %lu, timeblock height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
         view_block->qc().network_id(), view_block->qc().pool_index(),
         block->height(), prev_block->height(), elect_item->ElectHeight(),
+        block->timeblock_height(),
         common::Encode::HexEncode(GetQCMsgHash(view_block->qc())).c_str(),
         common::Encode::HexEncode(view_block->parent_hash()).c_str(),
         view_block->qc().network_id(),
@@ -125,8 +152,8 @@ Status BlockWrapper::Wrap(
 
 bool BlockWrapper::HasSingleTx(
         const transport::MessagePtr& msg_ptr, 
-        pools::CheckGidValidFunction gid_valid_fn) {
-    return txs_pools_->HasSingleTx(msg_ptr, pool_idx_, gid_valid_fn);
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
+    return txs_pools_->HasSingleTx(msg_ptr, pool_idx_, tx_valid_func);
 }
         
 }

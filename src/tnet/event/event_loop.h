@@ -31,7 +31,7 @@ private:
     EpollManager* epoll_manager_{ nullptr };
     mutable common::SpinMutex mutex_;
     std::deque<Task> task_list_;
-    volatile bool shutdown_{ false };
+    std::atomic<bool> shutdown_{ false };
 
     DISALLOW_COPY_AND_ASSIGN(EventLoop);
 };

@@ -32,7 +32,7 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
         return Status::kError;
     }
 
-    // 旧的 Commit 过滤掉
+    // Filter out old Commits
     auto last_view = leader_last_commit_views_[v_block->qc().leader_idx()];
     if (last_view >= v_block->qc().view()) {
         return Status::kSuccess;
@@ -50,7 +50,7 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     // for (uint32_t idx = 0; idx < all_consen_stats.size(); idx++) {
     //     ret += std::to_string(idx) + ": " + std::to_string(all_consen_stats[idx]->succ_num) + ", ";
     // }
-    // ZJC_DEBUG("pool: %d get all stat: %s", ret.c_str());
+    // SHARDORA_DEBUG("pool: %d get all stat: %s", ret.c_str());
     
     
     return Status::kSuccess;
@@ -59,4 +59,3 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
 } // namespace hotstuff
 
 } // namespace shardora
-

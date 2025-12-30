@@ -19,6 +19,8 @@ Ripemd160::Ripemd160(const std::string& create_address)
 
 Ripemd160::~Ripemd160() {}
 
+const size_t EXPECTED_COMBINED_DATA_LENGTH = 37; // 32 字节哈希 + 5 字节 "kexin"
+
 #define DEFAULT_CALL_RESULT() { \
     res->output_data = new uint8_t[32]; \
     memset((void*)res->output_data, 0, 32); \
@@ -27,7 +29,7 @@ Ripemd160::~Ripemd160() {}
         create_address_.c_str(), \
         sizeof(res->create_address.bytes)); \
     res->gas_left -= 1000; \
-    ZJC_WARN("contract_reencryption TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
+    SHARDORA_WARN("contract_reencryption TestProxyReEncryption: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str()); \
     return kContractSuccess; \
 }
 
@@ -47,6 +49,16 @@ Ripemd160::~Ripemd160() {}
       \
     std::string val = param.data.substr(val_start, param.data.size() - val_start);
 
+bool isValidKexinString(const std::string& dataToCheck) {
+    // 检查输入数据（dataToCheck）的长度是否等于期望的长度
+    if (dataToCheck.size() == EXPECTED_COMBINED_DATA_LENGTH) {
+        // 如果长度正确，则校验通过
+        return true;
+    } else {
+        // 如果长度不正确，则校验失败
+        return false;
+    }
+}
 
 int Ripemd160::call(
         const CallParameters& param,
@@ -241,6 +253,59 @@ int Ripemd160::call(
         DEFAULT_CALL_RESULT();
     }
 
+    // rabpre
+    if (param.data.substr(0, 6) == "rabini") {
+        GET_KEY_VALUE_FROM_PARAM();
+        RabpreInit(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "rabenc") {
+        GET_KEY_VALUE_FROM_PARAM();
+        RabpreEnc(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "rabdec") {
+        GET_KEY_VALUE_FROM_PARAM();
+        RabpreDec(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "rabren") {
+        GET_KEY_VALUE_FROM_PARAM();
+        RabpreReEnc(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "rabrde") {
+        GET_KEY_VALUE_FROM_PARAM();
+        RabpreReDec(param, key, val);
+        DEFAULT_CALL_RESULT();
+    }
+
+    if (param.data.substr(0, 6) == "tkexin") {
+        // 校验字符串
+        GET_KEY_VALUE_FROM_PARAM();
+        if (!isValidKexinString(val)) {
+            res->output_data = new uint8_t[32];
+            memset((void*)res->output_data, 0, 32);
+            res->output_size = 32;
+            res->gas_left -= 1000;
+            SHARDORA_WARN("contract_reencryption TestProxyReEncryption: %s", 
+                common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+            return kContractSuccess;
+        }
+
+        res->output_data = new uint8_t[32];
+        memset((void*)res->output_data, 1, 32);
+        res->output_size = 32;
+        res->gas_left -= 1000;
+        SHARDORA_WARN("contract_reencryption TestProxyReEncryption: %s", 
+            common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+        return kContractSuccess;
+    }
+
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
     if (res->gas_left < gas_used) {
         return kContractError;
@@ -255,11 +320,444 @@ int Ripemd160::call(
         create_address_.c_str(),
         sizeof(res->create_address.bytes));
     res->gas_left -= gas_used;
-    ZJC_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
+    SHARDORA_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
     return kContractSuccess;
 } catch(std::exception& e) {
-    ZJC_ERROR("catch error: %s", e.what());
+    SHARDORA_ERROR("catch error: %s", e.what());
     DEFAULT_CALL_RESULT();
+}
+
+void Ripemd160::SaveCrs(const CRS& crs, std::string* val) {
+    char data[10240] = {0};
+    long long* ldata = (long long*)data;
+    uint32_t idx = 0;
+    ldata[idx++] = crs.p;
+    ldata[idx++] = crs.g;
+    ldata[idx++] = crs.h;
+    ldata[idx++] = crs.Z;
+    for (uint32_t i = 0; i < crs.A0B0.size(); ++i) {
+        ldata[idx++] = crs.A0B0[i];
+    }
+
+    for (uint32_t i = 0; i < crs.A1B1.size(); ++i) {
+        ldata[idx++] = crs.A1B1[i];
+    }
+
+    for (uint32_t i = 0; i < crs.U0W01.size(); ++i) {
+        ldata[idx++] = crs.U0W01[i];
+    }
+
+    for (uint32_t i = 0; i < crs.U1W10.size(); ++i) {
+        ldata[idx++] = crs.U1W10[i];
+    }
+
+    *val = std::string(data, idx * sizeof(ldata[0]));
+}
+
+void Ripemd160::LoadCrs(const std::string& val, CRS& crs) {
+    long long* ldata = (long long*)val.c_str();
+    uint32_t idx = 0;
+    crs.p = ldata[idx++];
+    crs.g = ldata[idx++];
+    crs.h = ldata[idx++];
+    crs.Z = ldata[idx++];
+    crs.A0B0.push_back(ldata[idx++]);
+    crs.A0B0.push_back(ldata[idx++]);
+    crs.A1B1.push_back(ldata[idx++]);
+    crs.A1B1.push_back(ldata[idx++]);
+    crs.U0W01.push_back(ldata[idx++]);
+    crs.U0W01.push_back(ldata[idx++]);
+    crs.U1W10.push_back(ldata[idx++]);
+    crs.U1W10.push_back(ldata[idx++]);
+}
+
+void Ripemd160::SaveSkPk(
+        long long sk, 
+        const std::tuple<long long, long long>& pk, 
+        std::string* val) {
+    char data[10240] = {0};
+    long long* ldata = (long long*)data;
+    uint32_t idx = 0;
+    ldata[idx++] = sk;
+    ldata[idx++] = std::get<0>(pk);
+    ldata[idx++] = std::get<1>(pk);
+    *val = std::string(data, idx * sizeof(ldata[0]));
+}
+
+void Ripemd160::LoadSkPk(
+        const std::string& val, 
+        long long* sk, 
+        std::tuple<long long, long long>* pk) {
+    long long* ldata = (long long*)val.c_str();
+    *sk = ldata[0];
+    *pk = std::make_tuple(ldata[1], ldata[2]);
+}
+
+void Ripemd160::SaveAgg(
+        const std::tuple<long long, long long, long long, long long, long long, long long>& mpk,
+        const std::tuple<long long, long long, long long, long long, long long>& hsk0,
+        const std::tuple<long long, long long, long long, long long, long long>& hsk1,
+        std::string* val) {
+    char data[10240] = {0};
+    long long* ldata = (long long*)data;
+    uint32_t idx = 0;
+    ldata[idx++] = std::get<0>(mpk);
+    ldata[idx++] = std::get<1>(mpk);
+    ldata[idx++] = std::get<2>(mpk);
+    ldata[idx++] = std::get<3>(mpk);
+    ldata[idx++] = std::get<4>(mpk);
+    ldata[idx++] = std::get<5>(mpk);
+
+    ldata[idx++] = std::get<0>(hsk0);
+    ldata[idx++] = std::get<1>(hsk0);
+    ldata[idx++] = std::get<2>(hsk0);
+    ldata[idx++] = std::get<3>(hsk0);
+    ldata[idx++] = std::get<4>(hsk0);
+
+    ldata[idx++] = std::get<0>(hsk1);
+    ldata[idx++] = std::get<1>(hsk1);
+    ldata[idx++] = std::get<2>(hsk1);
+    ldata[idx++] = std::get<3>(hsk1);
+    ldata[idx++] = std::get<4>(hsk1);
+
+    *val = std::string(data, idx * sizeof(ldata[0]));
+}
+
+void Ripemd160::LoadAgg(
+        const std::string& val, 
+        std::tuple<long long, long long, long long, long long, long long, long long>* mpk,
+        std::tuple<long long, long long, long long, long long, long long>* hsk0,
+        std::tuple<long long, long long, long long, long long, long long>* hsk1) {
+    long long* ldata = (long long*)val.c_str();
+    *mpk = std::make_tuple(ldata[0], ldata[1], ldata[2], ldata[3], ldata[4], ldata[5]);
+    *hsk0 = std::make_tuple(ldata[6], ldata[7], ldata[8], ldata[9], ldata[10]);
+    *hsk1 = std::make_tuple(ldata[11], ldata[12], ldata[13], ldata[14], ldata[15]);
+}
+
+int Ripemd160::RabpreInit(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+        ContractArs ars;
+    auto line_splits = common::Split<>(value.c_str(), '-');
+    if (line_splits.Count() < 2) {
+        SHARDORA_DEBUG("line_splits.Count() < 2");
+        return kContractError;
+    }
+
+    auto lambda_count = 32;
+    if (!common::StringUtil::ToInt32(line_splits[1], &lambda_count)) {
+        SHARDORA_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
+        return kContractError;
+    }
+
+    auto id = common::Encode::HexDecode(line_splits[0]);
+    try {
+        // 参数初始化
+        auto crs = Rabpre::SETUP(32);
+        std::string val;
+        SaveCrs(crs, &val);
+        auto tmp_key = std::string("rabpre_crs_") + id;
+        param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
+        // 密钥生成
+        auto [sk0, pk0] = Rabpre::KEYGEN(crs, 0);
+        std::string sk0_pk0;
+        SaveSkPk(sk0, pk0, &sk0_pk0);
+        tmp_key = std::string("rabpre_sk0_pk0_") + id;
+        param.zjc_host->SaveKeyValue(param.from, tmp_key, sk0_pk0);
+        auto [sk1, pk1] = Rabpre::KEYGEN(crs, 1);
+        std::string sk1_pk1;
+        SaveSkPk(sk1, pk1, &sk1_pk1);
+        tmp_key = std::string("rabpre_sk1_pk1_") + id;
+        param.zjc_host->SaveKeyValue(param.from, tmp_key, sk1_pk1);
+        // 聚合密钥
+        auto [mpk, hsk0, hsk1] = Rabpre::AGGREGATE(crs, {pk0, pk1});
+        std::string agg;
+        SaveAgg(mpk, hsk0, hsk1, &agg);
+        tmp_key = std::string("rabpre_agg_") + id;
+        param.zjc_host->SaveKeyValue(param.from, tmp_key, agg);
+
+        // // 加密测试
+        // long long plaintext = 199; //修改消息
+        // auto ct = Rabpre::ENCRYPT(mpk, plaintext, 1);
+
+        // // 解密测试
+        // long long decrypted = Rabpre::DEC(ct, sk0, hsk0, mpk);
+        // cout << "原始明文: " << plaintext<<endl;
+        // cout<<"第一层密文: " <<get<1>(ct)<<endl;
+        // cout<< "解密结果: " << decrypted << endl;
+
+        // // 重加密测试
+        // auto rk = Rabpre::RKGEN({0,0}, sk1, hsk1, 1,mpk);
+        // auto ct_new = Rabpre::REENC(rk, ct);
+        // cout<<"重加密密文: "<<get<0>(get<1>(ct_new))<<endl;
+        // long long m2 = Rabpre::DECRE(ct_new, sk1, hsk1, mpk);
+        // cout << "重加密解密结果: " << m2 << endl;
+        SHARDORA_DEBUG("init RabpreInit success id: %s, lambda_count: %u",
+            common::Encode::HexEncode(id).c_str(), lambda_count);
+    } catch (const exception& e) {
+        cerr << "错误: " << e.what() << endl;
+        return 1;
+    }
+    return kContractSuccess;
+}
+
+void Ripemd160::SaveEncVal(
+        const std::tuple<int, long long, long long, long long,
+        long long, long long, long long, long long,
+        long long, long long>& enc,
+        std::string* val) {
+    char data[10240] = {0};
+    long long* ldata = (long long*)data;
+    uint32_t idx = 0;
+    ldata[idx++] = std::get<0>(enc);
+    ldata[idx++] = std::get<1>(enc);
+    ldata[idx++] = std::get<2>(enc);
+    ldata[idx++] = std::get<3>(enc);
+    ldata[idx++] = std::get<4>(enc);
+    ldata[idx++] = std::get<5>(enc);
+    ldata[idx++] = std::get<6>(enc);
+    ldata[idx++] = std::get<7>(enc);
+    ldata[idx++] = std::get<8>(enc);
+    ldata[idx++] = std::get<9>(enc);
+    *val = std::string(data, idx * sizeof(ldata[0]));
+}
+
+void Ripemd160::LoadEncVal(
+        const std::string& val, 
+        std::tuple<int, long long, long long, long long,
+        long long, long long, long long, long long,
+        long long, long long>* enc) {
+    long long* ldata = (long long*)val.c_str();
+    *enc = std::make_tuple(static_cast<int>(ldata[0]), ldata[1], ldata[2], ldata[3], 
+        ldata[4], ldata[5], ldata[6], ldata[7], 
+        ldata[8], ldata[9]);
+}
+
+int Ripemd160::RabpreEnc(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto line_splits = common::Split<>(value.c_str(), '-');
+    if (line_splits.Count() < 2) {
+        SHARDORA_DEBUG("line_splits.Count() < 2");
+        return kContractError;
+    }
+
+    int64_t plaintext = 0;
+    if (!common::StringUtil::ToInt64(line_splits[1], &plaintext)) {
+        SHARDORA_DEBUG("common::StringUtil::ToInt32(line_splits[0], &lambda_count) failed");
+        return kContractError;
+    }
+
+    SHARDORA_DEBUG("rabpre enc 0");
+    auto id = common::Encode::HexDecode(line_splits[0]);
+    std::tuple<long long, long long, long long, long long, long long, long long> mpk;
+    std::tuple<long long, long long, long long, long long, long long> hsk0;
+    std::tuple<long long, long long, long long, long long, long long> hsk1;
+    auto tmp_key = std::string("rabpre_agg_") + id;
+    std::string val;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    SHARDORA_DEBUG("rabpre enc 1");
+    LoadAgg(val, &mpk, &hsk0, &hsk1);
+    SHARDORA_DEBUG("rabpre enc 2");
+    auto ct = Rabpre::ENCRYPT(mpk, plaintext, 1);
+    std::string enc_val;
+    SHARDORA_DEBUG("rabpre enc 3");
+    SaveEncVal(ct, &enc_val);
+    tmp_key = std::string("rabpre_enc_") + id;
+    SHARDORA_DEBUG("rabpre enc 4");
+    param.zjc_host->SaveKeyValue(param.from, tmp_key, enc_val);
+    SHARDORA_DEBUG("Rabpre enc success id: %s, plaintext: %ld",
+        common::Encode::HexEncode(id).c_str(), plaintext);
+    return kContractSuccess;
+}
+
+int Ripemd160::RabpreDec(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto id = common::Encode::HexDecode(value);
+    auto tmp_key = std::string("rabpre_crs_") + id;
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
+        return kContractError;
+    }
+
+    CRS crs;
+    LoadCrs(val, crs);
+    tmp_key = std::string("rabpre_sk0_pk0_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    long long sk0;
+    std::tuple<long long, long long> pk0;
+    LoadSkPk(val, &sk0, &pk0);
+    tmp_key = std::string("rabpre_sk1_pk1_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    long long sk1;
+    std::tuple<long long, long long> pk1;
+    LoadSkPk(val, &sk1, &pk1);
+    std::tuple<long long, long long, long long, long long, long long, long long> mpk;
+    std::tuple<long long, long long, long long, long long, long long> hsk0;
+    std::tuple<long long, long long, long long, long long, long long> hsk1;
+    tmp_key = std::string("rabpre_agg_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    LoadAgg(val, &mpk, &hsk0, &hsk1);
+
+    std::tuple<int, long long, long long, long long,
+                long long, long long, long long, long long,
+                long long, long long> ct;
+    tmp_key = std::string("rabpre_enc_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    LoadEncVal(val, &ct);
+    long long decrypted = Rabpre::DEC(ct, sk0, hsk0, mpk);
+    SHARDORA_DEBUG("Rabpre enc success id: %s, decrypted: %ld",
+        common::Encode::HexEncode(id).c_str(), decrypted);
+    return kContractSuccess;
+}
+
+void Ripemd160::SaveReenc(
+        const std::tuple<
+            int, 
+            std::tuple<long long, long long>,
+            std::tuple<int, long long, long long, long long,
+                long long, long long, long long, long long,
+                long long, long long>, 
+            long long>& reenc,
+        std::string* val) {
+    char data[10240] = {0};
+    long long* ldata = (long long*)data;
+    uint32_t idx = 0;
+    ldata[idx++] = std::get<0>(reenc);
+    ldata[idx++] = std::get<0>(std::get<1>(reenc));
+    ldata[idx++] = std::get<1>(std::get<1>(reenc));
+    auto third_val = std::get<2>(reenc);
+    ldata[idx++] = std::get<0>(third_val);
+    ldata[idx++] = std::get<1>(third_val);
+    ldata[idx++] = std::get<2>(third_val);
+    ldata[idx++] = std::get<3>(third_val);
+    ldata[idx++] = std::get<4>(third_val);
+    ldata[idx++] = std::get<5>(third_val);
+    ldata[idx++] = std::get<6>(third_val);
+    ldata[idx++] = std::get<7>(third_val);
+    ldata[idx++] = std::get<8>(third_val);
+    ldata[idx++] = std::get<9>(third_val);
+    ldata[idx++] = std::get<3>(reenc);
+    *val = std::string(data, idx * sizeof(ldata[0]));
+}
+
+void Ripemd160::LoadReenc(
+    const std::string& val, 
+    std::tuple<int, std::tuple<long long, long long>,
+        std::tuple<int, long long, long long, long long,
+            long long, long long, long long, long long,
+            long long, long long>, long long>* reenc) {
+    long long* ldata = (long long*)val.c_str();
+    *reenc = std::make_tuple(
+        static_cast<int>(ldata[0]), 
+        std::make_tuple(ldata[1], ldata[2]), 
+        std::make_tuple(static_cast<int>(ldata[3]), ldata[4], ldata[5], ldata[6], 
+            ldata[7], ldata[8], ldata[9], ldata[10], ldata[11], ldata[12]),
+        ldata[13]);
+}
+
+int Ripemd160::RabpreReEnc(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto id = common::Encode::HexDecode(value);
+    auto tmp_key = std::string("rabpre_crs_") + id;
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
+        return kContractError;
+    }
+
+    CRS crs;
+    LoadCrs(val, crs);
+    tmp_key = std::string("rabpre_sk0_pk0_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    long long sk0;
+    std::tuple<long long, long long> pk0;
+    LoadSkPk(val, &sk0, &pk0);
+    tmp_key = std::string("rabpre_sk1_pk1_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    long long sk1;
+    std::tuple<long long, long long> pk1;
+    LoadSkPk(val, &sk1, &pk1);
+    std::tuple<long long, long long, long long, long long, long long, long long> mpk;
+    std::tuple<long long, long long, long long, long long, long long> hsk0;
+    std::tuple<long long, long long, long long, long long, long long> hsk1;
+    tmp_key = std::string("rabpre_agg_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    LoadAgg(val, &mpk, &hsk0, &hsk1);
+
+    std::tuple<int, long long, long long, long long,
+                long long, long long, long long, long long,
+                long long, long long> ct;
+    tmp_key = std::string("rabpre_enc_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    LoadEncVal(val, &ct);
+
+    auto rk = Rabpre::RKGEN({0,0}, sk1, hsk1, 1, mpk);
+    auto ct_new = Rabpre::REENC(rk, ct);
+    std::string reenc_val;
+    SaveReenc(ct_new, &reenc_val);
+    tmp_key = std::string("rabpre_reenc_") + id;
+    param.zjc_host->SaveKeyValue(param.from, tmp_key, reenc_val);
+    SHARDORA_DEBUG("Rabpre reenc success id: %s",
+        common::Encode::HexEncode(id).c_str());
+    return kContractSuccess;
+}
+
+int Ripemd160::RabpreReDec(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value) {
+    auto id = common::Encode::HexDecode(value);
+    auto tmp_key = std::string("rabpre_crs_") + id;
+    std::string val;
+    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+        CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
+        return kContractError;
+    }
+
+    CRS crs;
+    LoadCrs(val, crs);
+    tmp_key = std::string("rabpre_sk0_pk0_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    long long sk0;
+    std::tuple<long long, long long> pk0;
+    LoadSkPk(val, &sk0, &pk0);
+    tmp_key = std::string("rabpre_sk1_pk1_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    long long sk1;
+    std::tuple<long long, long long> pk1;
+    LoadSkPk(val, &sk1, &pk1);
+    std::tuple<long long, long long, long long, long long, long long, long long> mpk;
+    std::tuple<long long, long long, long long, long long, long long> hsk0;
+    std::tuple<long long, long long, long long, long long, long long> hsk1;
+    tmp_key = std::string("rabpre_agg_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    LoadAgg(val, &mpk, &hsk0, &hsk1);
+    std::tuple<int, long long, long long, long long,
+                long long, long long, long long, long long,
+                long long, long long> ct;
+    tmp_key = std::string("rabpre_enc_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+    LoadEncVal(val, &ct);
+    tmp_key = std::string("rabpre_reenc_") + id;
+    param.zjc_host->GetKeyValue(param.from, tmp_key, &val);
+
+    std::tuple<int, std::tuple<long long, long long>,
+            std::tuple<int, long long, long long, long long,
+                long long, long long, long long, long long,
+                long long, long long>, long long> ct_new;
+    LoadReenc(val, &ct_new);
+    long long m2 = Rabpre::DECRE(ct_new, sk1, hsk1, mpk);
+    SHARDORA_DEBUG("Rabpre redec success id: %s, m2: %ld",
+        common::Encode::HexEncode(id).c_str(), m2);
+    return kContractSuccess;
 }
 
 int Ripemd160::CreateArsKeys(
@@ -270,7 +768,7 @@ int Ripemd160::CreateArsKeys(
     // 初始化公私钥对
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
-        ZJC_DEBUG("line_splits.Count() < 2");
+        SHARDORA_DEBUG("line_splits.Count() < 2");
         return kContractError;
     }
 
@@ -278,19 +776,19 @@ int Ripemd160::CreateArsKeys(
     ars.set_ring_size(keys_splits.Count());
     auto ex_splits = common::Split<>(line_splits[1], ',');
     if (ex_splits.Count() < 2) {
-        ZJC_DEBUG("ex_splits.Count() < 2");
+        SHARDORA_DEBUG("ex_splits.Count() < 2");
         return kContractError;
     }
 
     auto signer_count = 0;
     if (!common::StringUtil::ToInt32(ex_splits[0], &signer_count)) {
-        ZJC_DEBUG("common::StringUtil::ToInt32(ex_splits[0], &signer_count) failed");
+        SHARDORA_DEBUG("common::StringUtil::ToInt32(ex_splits[0], &signer_count) failed");
         return kContractError;
     }
 
     ars.set_signer_count(signer_count);
     if (signer_count <= 0 || signer_count >= ars.ring_size()) {
-        ZJC_DEBUG("signer_count <= 0 || signer_count >= ars.ring_size(): %u, %u", signer_count, ars.ring_size());
+        SHARDORA_DEBUG("signer_count <= 0 || signer_count >= ars.ring_size(): %u, %u", signer_count, ars.ring_size());
         return kContractError;
     }
 
@@ -316,7 +814,7 @@ int Ripemd160::CreateArsKeys(
     auto tmp_key = std::string("ars_create_") + id;
     auto val = common::StringUtil::Format("%u,%u", ars.ring_size(), ars.signer_count());
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_DEBUG("init sign success: %s, from: %s, key: %s, ring size: %d, signer_count: %d",
+    SHARDORA_DEBUG("init sign success: %s, from: %s, key: %s, ring size: %d, signer_count: %d",
         ex_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), 
         common::Encode::HexEncode(tmp_key).c_str(),
@@ -351,7 +849,7 @@ int Ripemd160::SingleSign(
         const std::string& value) {
     auto line_splits = common::Split<>(value.c_str(), '-');
     if (line_splits.Count() < 2) {
-        ZJC_WARN("line_splits.Count() < 2 failed");
+        SHARDORA_WARN("line_splits.Count() < 2 failed");
         return kContractError;
     }
 
@@ -366,13 +864,13 @@ int Ripemd160::SingleSign(
     auto ring_and_signer_count_splits = common::Split<>(val.c_str(), ',');
     int32_t ring_size = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[0], &ring_size)) {
-        ZJC_WARN("ring_size failed key: %s, val: %s", common::Encode::HexEncode(tmp_key).c_str(), val.c_str());
+        SHARDORA_WARN("ring_size failed key: %s, val: %s", common::Encode::HexEncode(tmp_key).c_str(), val.c_str());
         return kContractError;
     }
 
     int32_t signer_count = 0;
     if (!common::StringUtil::ToInt32(ring_and_signer_count_splits[1], &signer_count)) {
-        ZJC_WARN("signer_count failed: %s", val.c_str());
+        SHARDORA_WARN("signer_count failed: %s", val.c_str());
         return kContractError;
     }
 
@@ -382,24 +880,24 @@ int Ripemd160::SingleSign(
     // 设置环的大小和签名者数量
     std::vector<element_t> ring(ars.ring_size());
     if (GetRing(id, param, ars, ring) != kContractSuccess) {
-        ZJC_WARN("GetRing failed");
+        SHARDORA_WARN("GetRing failed");
         return kContractError;
     }
 
     auto splits = common::Split<>(line_splits[0], ',');
     if (splits.Count() < 3) {
-        ZJC_WARN("invalid splits count: %s", value.c_str());
+        SHARDORA_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     int signer_idx = 0;
     if (!common::StringUtil::ToInt32(splits[0], &signer_idx)) {
-        ZJC_WARN("invalid splits count: %s", value.c_str());
+        SHARDORA_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
     if (signer_idx < 0 || signer_idx > ars.ring_size()) {
-        ZJC_WARN("invalid splits count: %s", value.c_str());
+        SHARDORA_WARN("invalid splits count: %s", value.c_str());
         return kContractError;
     }
 
@@ -432,7 +930,7 @@ int Ripemd160::SingleSign(
     }
 
     param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-    ZJC_WARN("single sign success: %d, %s, from: %s, key: %s",
+    SHARDORA_WARN("single sign success: %d, %s, from: %s, key: %s",
         signer_idx, line_splits[1], 
         common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
     element_clear(delta_prime);
@@ -449,7 +947,7 @@ int Ripemd160::AggSignAndVerify(
         // 聚合签名生成
     auto id = common::Encode::HexDecode(value);
     auto tmp_key = std::string("ars_create_") + id;
-    ZJC_DEBUG("get create ars key: %s", common::Encode::HexEncode(tmp_key).c_str());
+    SHARDORA_DEBUG("get create ars key: %s", common::Encode::HexEncode(tmp_key).c_str());
     std::string val;
     if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         CONTRACT_ERROR("get key value failed: %s", tmp_key.c_str());
@@ -470,7 +968,7 @@ int Ripemd160::AggSignAndVerify(
     ContractArs ars;
     ars.set_ring_size(ring_size);
     ars.set_signer_count(signer_count);
-    ZJC_DEBUG("success get signer_count: %d, ring_size: %d", signer_count, ring_size);
+    SHARDORA_DEBUG("success get signer_count: %d, ring_size: %d", signer_count, ring_size);
     element_t agg_signature;
     element_init_G1(agg_signature, ars.get_pairing());
     std::vector<std::string> messages;
@@ -492,11 +990,11 @@ int Ripemd160::AggSignAndVerify(
             continue;
         }
 
-        ZJC_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
+        SHARDORA_DEBUG("success get single sign key: %s, val: %s, real val: %s", 
             tmp_key.c_str(), common::Encode::HexEncode(val).c_str(), val.c_str());
         auto items = common::Split<1024>(val.c_str(), ',');
         if (items.Count() < 4) {
-            ZJC_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
+            SHARDORA_DEBUG("items.Count() < 4 failed get ars single key: %s", tmp_key.c_str());
             continue;
         }
 
@@ -538,14 +1036,14 @@ int Ripemd160::AggSignAndVerify(
         auto len = element_to_bytes_compressed(data, agg_signature);
         auto val = common::Encode::HexEncode(std::string((char*)data, len)) + ",";
         param.zjc_host->SaveKeyValue(param.from, tmp_key, val);
-        ZJC_WARN("agg sign success: %s", val.c_str());
+        SHARDORA_WARN("agg sign success: %s", val.c_str());
 
         // 聚合签名验证
         bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
         if (is_aggregate_valid) {
-            ZJC_WARN("Aggregate signature verification passed: %s", value.c_str());
+            SHARDORA_WARN("Aggregate signature verification passed: %s", value.c_str());
         } else {
-            ZJC_WARN("Aggregate signature verification failed!");
+            SHARDORA_WARN("Aggregate signature verification failed!");
         }
 
         element_clear(agg_signature);
@@ -637,11 +1135,11 @@ void Ripemd160::TestArs(
     bool is_aggregate_valid = ars.AggreVerify(messages, agg_signature, y_primes);
     if (is_aggregate_valid)
     {
-        ZJC_DEBUG("Aggregate signature verification passed!");
+        SHARDORA_DEBUG("Aggregate signature verification passed!");
     }
     else
     {
-        ZJC_DEBUG("Aggregate signature verification failed!");
+        SHARDORA_DEBUG("Aggregate signature verification failed!");
     }
 
     // 清理资源

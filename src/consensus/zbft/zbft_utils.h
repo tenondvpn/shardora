@@ -128,7 +128,7 @@ struct ElectItem {
     uint64_t time_valid;
     uint64_t change_leader_time_valid;
     uint64_t invalid_time;
-    volatile int32_t mod_with_leader_index[256];
+    std::atomic<int32_t> mod_with_leader_index[256];
 };
 
 struct BftMessageInfo {

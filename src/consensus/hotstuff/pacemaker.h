@@ -27,10 +27,6 @@ using NewProposalFn = std::function<Status(
         const transport::MessagePtr msg_ptr)>;
 using StopVotingFn = std::function<void(const View &view)>;
 using SyncPoolFn = std::function<void(const uint32_t &, const int32_t&)>;
-using NewViewFn = std::function<void(
-    const std::shared_ptr<tnet::TcpInterface> conn, 
-    std::shared_ptr<TC> tc,
-    std::shared_ptr<AggregateQC> agg_qc)>;
 using GetHighQCFn = std::function<QC()>;
 using UpdateHighQCFn = std::function<void(const QC&)>;
 
@@ -46,7 +42,8 @@ public:
             std::shared_ptr<LeaderRotation>& leader_rotation,
             const std::shared_ptr<ViewDuration>& duration,
             GetHighQCFn get_high_qc_fn,
-            UpdateHighQCFn update_high_qc_fn);
+            UpdateHighQCFn update_high_qc_fn,
+            const pools::protobuf::PoolLatestInfo& pool_latest_info);
     ~Pacemaker();
 
     Pacemaker(const Pacemaker&) = delete;
@@ -55,10 +52,6 @@ public:
     void SetNewProposalFn(NewProposalFn fn) {
         new_proposal_fn_ = fn;
     }
-
-    void SetNewViewFn(NewViewFn fn) {
-        new_view_fn_ = fn;
-    }    
 
     void SetStopVotingFn(StopVotingFn fn) {
         stop_voting_fn_ = fn;
@@ -100,7 +93,7 @@ public:
         duration_ = dur;
         
         StopTimeoutTimer();
-        ZJC_DEBUG("local time set start duration is reset view duration called start timeout: %lu", pool_idx_);
+        SHARDORA_DEBUG("local time set start duration is reset view duration called start timeout: %lu", pool_idx_);
         StartTimeoutTimer();
     }
 
@@ -114,20 +107,20 @@ private:
     inline void StartTimeoutTimer() {
         last_time_us_ = common::TimeUtils::TimestampUs();
         duration_us_ = duration_->Duration();
-        ZJC_DEBUG("pool: %d local time set start duration is %lu ms", pool_idx_, duration_us_/1000);
+        SHARDORA_DEBUG("pool: %d local time set start duration is %lu ms", pool_idx_, duration_us_/1000);
     }
 
     inline void StopTimeoutTimer() {
         last_time_us_ = 0;
         duration_us_ = 0;
-        ZJC_DEBUG("pool: %d local time set stop timer called!", pool_idx_);
+        SHARDORA_DEBUG("pool: %d local time set stop timer called!", pool_idx_);
     }
 
     inline bool IsTimeout() {
         // duration_us_ = 0;
         bool timeout = (last_time_us_ != 0 && 
             (common::TimeUtils::TimestampUs() - last_time_us_) > (duration_us_ + 10000000lu));
-        // ZJC_DEBUG("pool: %u, local time last_time_us_: %lu, duration_us_: %lu, now time: %lu, dec: %lu, timeout: %d",
+        // SHARDORA_DEBUG("pool: %u, local time last_time_us_: %lu, duration_us_: %lu, now time: %lu, dec: %lu, timeout: %d",
         //     pool_idx_, last_time_us_, duration_us_, 
         //     common::TimeUtils::TimestampUs(), 
         //     (common::TimeUtils::TimestampUs() - last_time_us_),
@@ -156,7 +149,6 @@ private:
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
     SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC
-    NewViewFn new_view_fn_ = nullptr;
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
     std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;

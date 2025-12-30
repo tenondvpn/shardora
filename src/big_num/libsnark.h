@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <algorithm>
 #include <random>
@@ -70,7 +71,7 @@ public:
     /// @note adapted from OpenSSL's implementation.
     void cleanse()
     {
-        static std::atomic<unsigned char> s_cleanseCounter{ 0u };
+        static std::atomic<unsigned char> s_cleanseCounter{ (unsigned char)0u };
         uint8_t* p = (uint8_t*)begin();
         size_t const len = (uint8_t*)end() - p;
         size_t loop = len;
@@ -83,7 +84,7 @@ public:
         p = (uint8_t*)memchr((uint8_t*)begin(), (uint8_t)count, len);
         if (p)
             count += (63 + (size_t)p);
-        s_cleanseCounter = (uint8_t)count;
+        s_cleanseCounter.store((uint8_t)count);
         memset((uint8_t*)begin(), 0, len);
     }
 

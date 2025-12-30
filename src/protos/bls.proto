@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 package shardora.bls.protobuf;
+import "protos/elect.proto";
 
 message VerifyVecItem {
     optional bytes x_c0 = 1;
@@ -32,6 +33,11 @@ message JoinElectInfo {
     optional uint32 member_idx = 2;
     optional uint32 change_idx = 3;
     optional VerifyVecBrdReq g2_req = 4;
+    optional bytes addr = 5;
+    optional uint64 stoke = 6;
+    optional bytes public_key = 7;
+    optional elect.protobuf.BlsPublicKey bls_pk = 8;
+    optional elect.protobuf.BlsPopProof bls_proof = 9;
 }
 
 message LocalPolynomial {
@@ -41,9 +47,12 @@ message LocalPolynomial {
 
 message LocalBlsItem {
     repeated bytes polynomial = 1;
-    repeated VerifyVecItem verify_vec = 2;
-    optional uint32 valid_t = 3;
-    optional uint32 valid_n = 4;
+    optional bytes local_private_key = 2;
+    repeated VerifyVecItem verify_vec = 3;
+    repeated bytes local_secrity_keys = 4;
+    repeated BlsPublicKey common_pubkey = 5;
+    optional uint32 valid_t = 6;
+    optional uint32 valid_n = 7;
 }
 
 message BlsVerifyValue {

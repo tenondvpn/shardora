@@ -7,7 +7,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #endif
-#include <errno.h>
+#define _GNU_SOURCE
+//#include <errno.h>
 
 #include "common/utils.h"
 #include "tnet/tnet_utils.h"
@@ -18,6 +19,9 @@ namespace tnet {
 
 class Socket {
 public:
+    Socket();
+    virtual ~Socket();
+
     int GetFd() const { return fd_; }
     void SetFd(int32_t fd) {
         fd_ = fd;
@@ -41,10 +45,10 @@ public:
     int GetIpPort(std::string* ip, uint16_t* port);
 
 protected:
-    Socket();
-    virtual ~Socket();
 
     int32_t fd_{ -1 };
+    std::string ip_;
+    uint16_t port_;
 
 private:
 

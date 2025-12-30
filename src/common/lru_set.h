@@ -51,7 +51,7 @@ private:
     std::list<Type> item_list_;
     std::unordered_map<Type, typename std::list<Type>::iterator> item_map_;
 
-    DISALLOW_COPY_AND_ASSIGN(LRUSet<Type>);
+    // DISALLOW_COPY_AND_ASSIGN(LRUSet<Type>);
 };
 
 };  // namespace common

@@ -20,8 +20,6 @@ enum StepType {
     kCreateLibrary = 14; // 创建合约公共库的交易
     kCross = 15;  // 避免跨分片块缺失的交易
     kRootCross = 16;  // root避免跨分片块缺失的交易
-    // kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
-    kContractCreateByRootFrom = 17;  // ContractCreate 交易的 from 部分
     kPoolStatisticTag = 18;  // 此轮交易池统计结束标记块
 }
 
@@ -36,15 +34,15 @@ message ToTxHeights {
 }
 
 message ToTxMessageItem {
-    optional bytes des = 1;
-    optional uint64 amount = 2;
-    optional uint32 sharding_id = 3;  // for root to diplacement shard and pool
-    optional uint32 pool_index = 4;
-    optional int32 step = 5;
-    optional bytes library_bytes = 6;
-    repeated bls.protobuf.JoinElectInfo join_infos = 7;
-    optional bytes contract_from = 8;
-    optional uint64 prepayment = 9; // for contract create prepayment
+    optional uint64 amount = 1;
+    optional int32 pool_index = 2;
+    optional uint32 sharding_id = 3;
+    optional bytes des = 4;
+    optional bytes elect_join_g2_value = 6;
+    optional bytes library_bytes = 8;
+    optional bytes from = 9;
+    optional uint64 prepayment = 10;
+    optional uint32 des_sharding_id = 11;
 }
 
 message ShardToTxItem {
@@ -94,20 +92,22 @@ message CrossShardStatistic {
 message ToTxMessage {
     optional bytes heights_hash = 1;
     repeated ToTxMessageItem tos = 2;
-    optional ShardToTxItem to_heights = 3;
     optional uint64 elect_height = 4;
     repeated CrossShardStatisticItem crosses = 5;
+    optional uint32 des_shard = 6;
 }
 
 message AllToTxMessage {
     repeated ToTxMessage to_tx_arr = 1;
+    optional ShardToTxItem to_heights = 2;
 }
 
 message PoolLatestInfo {
-    optional uint64 height = 1;
+    optional uint64 height = 1 [default=0];
     optional bytes hash = 2;
-    optional uint64 synced_height = 3;
-    optional uint64 timestamp = 4;
+    optional uint64 synced_height = 3 [default=0];
+    optional uint64 timestamp = 4 [default=0];
+    optional uint64 view = 5 [default=0];
 }
 
 message AreaInfo {
@@ -160,7 +160,7 @@ message TxDelayTestInfo {
 
 message TxMessage {
     optional uint32 version = 1;
-    optional bytes gid = 2;
+    optional uint64 nonce = 2;
     optional bytes pubkey = 3;
     optional uint64 gas_limit = 4;
     optional uint64 gas_price = 5;
@@ -174,4 +174,5 @@ message TxMessage {
     optional bytes contract_input = 13;
     optional bytes sign = 14;
     repeated TxDelayTestInfo tx_debug = 15;
+    optional uint64 tx_debug_timeout_seconds = 16;
 }

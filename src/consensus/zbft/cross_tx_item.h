@@ -17,7 +17,7 @@ public:
             std::shared_ptr<security::Security>& sec_ptr,
             protos::AddressInfoPtr& addr_info)
             : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {
-        ZJC_DEBUG("cross tx item coming.");   
+        SHARDORA_DEBUG("cross tx item coming.");   
     }
     
     virtual ~CrossTxItem() {}

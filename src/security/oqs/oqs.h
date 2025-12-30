@@ -43,7 +43,7 @@ public:
     virtual int Decrypt(const std::string& msg, const std::string& key, std::string* out);
 
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key) {
-        ZJC_FATAL("invalid!");
+        SHARDORA_FATAL("invalid!");
         return -1;
     }
 

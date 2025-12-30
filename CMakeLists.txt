@@ -1,10 +1,10 @@
 # option
 option(BUILD_SHARED_LIBS "build shared library(.so/.a)" OFF)
-option(BUILD_CLIENT "build zjchain client" OFF)
+option(BUILD_CLIENT "build shardora client" OFF)
 
 # version required
 cmake_minimum_required(VERSION 3.24.0)
-project(zjchain)
+project(shardora)
 
 if(NOT BUILD_CLIENT)
     if(MSVC)
@@ -16,12 +16,12 @@ if(NOT BUILD_CLIENT)
 endif()
 
 # 打开内存检测
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
-# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
-# set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+#set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -31,10 +31,10 @@ else()
     set(shared_str "static")
 endif()
 
-message("build info: ${PROJECT_NAME}|${CMAKE_SYSTEM_NAME}|${CMAKE_BUILD_TYPE}|${shared_str}|zjchain")
+message("build info: ${PROJECT_NAME}|${CMAKE_SYSTEM_NAME}|${CMAKE_BUILD_TYPE}|${shared_str}|shardora")
 
 # path definitions
-set(DEP_DIR ${PROJECT_SOURCE_DIR}/third_party/depends)
+set(DEP_DIR ${PROJECT_SOURCE_DIR}/third_party)
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 set(MAIN_DIR ${PROJECT_SOURCE_DIR}/src/main)
 
@@ -45,10 +45,11 @@ set(LINK_UUID )
 set(LINK_YAML )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LIB_DIR ${DEP_DIR}/libs/linux)
+    set(LIB_DIR
+        ${DEP_DIR}/lib
+        ${DEP_DIR}/lib64
+        ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
     set(LINK_UUID uuid)
-    set(LINK_YAML yaml-cpp)
-    find_package(OpenSSL REQUIRED)
     include_directories(${OPENSSL_INCLUDE_DIR})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(LIB_DIR ${DEP_DIR}/libs/android)
@@ -84,26 +85,31 @@ if(MSVC)
 endif()
 include_directories(SYSTEM
     ${DEP_DIR}/include
+    ${DEP_DIR}/include/orocos
+    ${DEP_DIR}/include/maxmind
     ${DEP_DIR}/include/libbls
     ${DEP_DIR}/include/geoip
     ${DEP_DIR}/include/uv
     ${DEP_DIR}/include/sslib
+    ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/include/
     ${CURL_INCLUDE_DIRS} # for curl
 )
 
 # compile definitions
 add_definitions(
-    #-DZJC_UNITTEST # for testing
+#    -DSHARDORA_UNITTEST # for testing
     #-DFOR_CONSOLE_DEBUG
     -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r
 #    -DTEST_TRANSPORT_PERFOMANCE
-#    -DZJC_TRACE_MESSAGE
-    -DLEVELDB
+#    -DSHARDORA_TRACE_MESSAGE
+#-DLEVELDB
 #   -DCLIENT_USE_UV
 #    -DMAKE_CLIENT_LIB
     #-DARMEABI_V7A
     #-DLATENCY
     #-DHOTSTUFF_TEST
+    #-DUSE_SERVER_TEST_TRANSACTION
+    #-DTEST_FORKING_ATTACK
     #-DMOCK_VERIFY
     #-DMOCK_SIGN
     -DENABLE_HOTSTUFF
@@ -126,7 +132,7 @@ if(MSVC)
 else()
     add_compile_options(-Wall -pthread)
     add_compile_options(-Wno-unused-variable)
-    add_compile_options(-std=c++17) # cmake 2.8(default in centos 7) can't recognize 'CMAKE_CXX_STANDARD'
+    add_compile_options(-std=c++20) # cmake 2.8(default in centos 7) can't recognize 'CMAKE_CXX_STANDARD'
     set(LINK_DL dl)
 endif()
 
@@ -138,7 +144,7 @@ link_directories(
 
 # bin/lib
 add_executable(pkicli ${MAIN_DIR}/pki.cc)
-add_executable(zjchain ${MAIN_DIR}/main.cc)
+add_executable(shardora ${MAIN_DIR}/main.cc)
 add_executable(https ${MAIN_DIR}/http_svr.cc)
 add_executable(httpc ${MAIN_DIR}/http_cli.cc)
 add_executable(wss ${MAIN_DIR}/ws_svr.cc)
@@ -165,8 +171,7 @@ set(LINK_ARGS
     broadcast
     dht
     transport
-    websocket
-    http
+    # websocket
     contract
     pki
     big_num
@@ -183,15 +188,14 @@ set(LINK_ARGS
     ${LINK_YAML}
     pthread
     gmp
+    -static-libstdc++
 )
 
 target_link_libraries(pkicli ${LINK_ARGS})
 target_link_libraries(blsmain ${LINK_ARGS})
-target_link_libraries(zjchain ${LINK_ARGS})
-target_link_libraries(httpc http common tcmalloc pthread gmp)
-target_link_libraries(https http common tcmalloc pthread gmp)
-target_link_libraries(wsc websocket common tcmalloc pthread gmp)
-target_link_libraries(wss websocket common tcmalloc pthread gmp)
+target_link_libraries(shardora ${LINK_ARGS})
+# target_link_libraries(wsc websocket common tcmalloc pthread gmp)
+# target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
 target_link_libraries(txcli security transport common tcmalloc pthread gmp)
@@ -200,9 +204,8 @@ target_link_libraries(hotstuff security transport common tcmalloc pthread gmp)
 include_directories(SYSTEM ${SRC_DIR})
 
 add_subdirectory(${SRC_DIR}/common common)
-add_subdirectory(${SRC_DIR}/http http)
 add_subdirectory(${SRC_DIR}/transport transport)
-add_subdirectory(${SRC_DIR}/websocket websocket)
+# add_subdirectory(${SRC_DIR}/websocket websocket)
 add_subdirectory(${SRC_DIR}/dht dht)
 add_subdirectory(${SRC_DIR}/broadcast broadcast)
 add_subdirectory(${SRC_DIR}/network network)
@@ -227,8 +230,7 @@ add_subdirectory(${SRC_DIR}/pki pki)
 
 
 add_subdirectory(${SRC_DIR}/common/tests common_test)
-add_subdirectory(${SRC_DIR}/http/tests http_test)
-add_subdirectory(${SRC_DIR}/websocket/tests websocket_test)
+# add_subdirectory(${SRC_DIR}/websocket/tests websocket_test)
 add_subdirectory(${SRC_DIR}/broadcast/tests broadcast_test)
 add_subdirectory(${SRC_DIR}/security/tests security_test)
 add_subdirectory(${SRC_DIR}/transport/tests transport_test)

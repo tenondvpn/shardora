@@ -31,7 +31,7 @@ public:
     }
 
 private:
-    uint64_t epoch_random_{ 0 };
+    std::atomic<uint64_t> epoch_random_{ 0 };
 
     DISALLOW_COPY_AND_ASSIGN(VssManager);
 };

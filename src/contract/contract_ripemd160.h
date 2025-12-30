@@ -3,6 +3,7 @@
 #include "contract/contract_ars.h"
 #include "contract/contract_interface.h"
 #include "common/tick.h"
+#include "pki/rabpre.h"
 
 namespace shardora {
 
@@ -69,6 +70,68 @@ private:
         const std::string& key, 
         const std::string& value);
     void TestArs(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+
+    int RabpreInit(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    void SaveCrs(const CRS& crs, std::string* val);
+    void LoadCrs(const std::string& val, CRS& crs);
+    void SaveSkPk(
+        long long sk, 
+        const std::tuple<long long, long long>& pk, 
+        std::string* val);
+    void LoadSkPk(
+        const std::string& val, 
+        long long* sk, 
+        std::tuple<long long, long long>* pk);
+    void SaveAgg(
+        const std::tuple<long long, long long, long long, long long, long long, long long>& mpk,
+        const std::tuple<long long, long long, long long, long long, long long>& hsk0,
+        const std::tuple<long long, long long, long long, long long, long long>& hsk1,
+        std::string* val);
+    void LoadAgg(
+        const std::string& val, 
+        std::tuple<long long, long long, long long, long long, long long, long long>* mpk,
+        std::tuple<long long, long long, long long, long long, long long>* hsk0,
+        std::tuple<long long, long long, long long, long long, long long>* hsk1);
+    int RabpreEnc(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    void SaveEncVal(
+        const std::tuple<int, long long, long long, long long,
+        long long, long long, long long, long long,
+        long long, long long>& enc,
+        std::string* val);
+    void LoadEncVal(
+        const std::string& val, 
+        std::tuple<int, long long, long long, long long,
+        long long, long long, long long, long long,
+        long long, long long>* enc);
+    int RabpreDec(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    int RabpreReEnc(
+        const CallParameters& param, 
+        const std::string& key, 
+        const std::string& value);
+    void SaveReenc(const std::tuple<int, std::tuple<long long, long long>,
+        std::tuple<int, long long, long long, long long,
+              long long, long long, long long, long long,
+              long long, long long>, long long>& reenc,
+            std::string* val);
+    void LoadReenc(
+        const std::string& val, 
+        std::tuple<int, std::tuple<long long, long long>,
+            std::tuple<int, long long, long long, long long,
+                long long, long long, long long, long long,
+                long long, long long>, long long>* reenc);
+    int RabpreReDec(
         const CallParameters& param, 
         const std::string& key, 
         const std::string& value);

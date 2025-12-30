@@ -3,92 +3,124 @@
 #
 ###############################################################################
 
+import configparser
 import json
 import shardora_api
 import sys
 import time
-from eth_utils import decode_hex, encode_hex
-from eth_abi import encode
-
 import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='process args')
-    parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从./init_accounts3 获取第一个')
-    parser.add_argument('--to', '-t', type=str, help='目标地址，默认默认从./init_accounts3 获取第二个')
-    parser.add_argument('--amount', '-a', type=int, help='默认99999')
+    parser.add_argument('--private_key', '-p', type=str, help='私钥')
+    parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
+    parser.add_argument('--address_count', '-n', type=int, help='转账目标地址数')
+    parser.add_argument('--to', '-t', type=str, help='转账目标地址')
+    parser.add_argument('--chain_ip', '-i', type=str, help='转账目标机器')
+    parser.add_argument('--prikey_base', '-b', type=str, help='转账目标基础地址')
+    parser.add_argument('--address_start', '-s', type=int, help='转账目标地址起始索引')
     args = parser.parse_args()
-    private_key = None
-    to = None
-    from_address = None
-    amount = 99999
-    with open("./init_accounts3", "r") as f:
-        private_key = f.readline().strip().split("\t")[0]
-        tmp_to_pk = f.readline().strip().split("\t")[0]
-        to = shardora_api.get_keypair(bytes.fromhex(tmp_to_pk)).account_id
-        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
-        
-    if args.private_key:
-        private_key = args.private_key
-        from_address = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
+    from_private_key = args.private_key
+    from_address = shardora_api.get_keypair(bytes.fromhex(from_private_key)).account_id
+    amount = args.amount
+    prikey_base = "19997691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848000000000"
+    ids = dict()
+    addr_info = shardora_api.get_account_info(from_address)
+    if addr_info is None:
+        print(f"invalid private key {from_private_key} and get addr info failed: {from_address} ")
+        sys.exit(1)
+
+    nonce = int(addr_info["nonce"]) + 1
+    print(f"get from address: {from_address}, new nonce: {nonce}")
+    if args.chain_ip:
+        shardora_api.http_ip = args.chain_ip
+
+    nonce = int(addr_info["nonce"]) + 1
+    check_accounts_str = ""
+
+    base_account_count = 0
+    if args.address_count:
+        base_account_count = args.address_count
+
+    address_index_start = 0
+    if args.address_start:
+        address_index_start = args.address_start
+
+    if args.prikey_base:
+        prikey_base = args.prikey_base
 
     if args.to:
         to = args.to
-
-    if args.amount:
-        amount = args.amount
-
-    # 获取转账前from和to的账户余额
-    res = shardora_api.get_account_info(from_address)
-    if res.status_code != 200:
-        print(f"get from info failed: {from_address}")
-    else:
-        json_res = json.loads(res.text)
-        balance = json_res['balance']
-        print(f"before transfer get {from_address} balance: {balance}")
-
-    res = shardora_api.get_account_info(to)
-    if res.status_code != 200:
-        print(f"get to info failed: {to}")
-    else:
-        json_res = json.loads(res.text)
-        balance = json_res['balance']
-        print(f"before transfer get {to} balance: {balance}")
-
-    res = shardora_api.transfer(
-        private_key,
-        to,
-        amount,
-        0,
-        "",
-        "",
-        "",
-        "",
-        "",
-        0,
-        check_gid_valid=True)
-            
-    if not res:
-        print(f"transfer failed: {res}")
-        sys.exit(1)
-
-    time.sleep(10)
-    # 获取转账后from和to的账户余额
-    res = shardora_api.get_account_info(from_address)
-    if res.status_code != 200:
-        print(f"get from info failed: {from_address}")
-    else:
-        json_res = json.loads(res.text)
-        balance = json_res['balance']
-        print(f"after transfer get {from_address} balance: {balance}")
-
-    res = shardora_api.get_account_info(to)
-    if res.status_code != 200:
-        print(f"get to info failed: {to}")
-    else:
-        json_res = json.loads(res.text)
-        balance = json_res['balance']
-        print(f"after transfer get {to} balance: {balance}")
-
-    print(f"transfer success from {private_key} to {to} amount {amount}")
+        check_accounts_str += to + "_"
+        res = shardora_api.transfer(
+            from_private_key,
+            to,
+            amount,
+            nonce,
+            0,
+            "",
+            "",
+            "",
+            "",
+            0,
+            check_tx_valid=False)
         
+        nonce += 1
+        ids[to] = False
+        if not res:
+            sys.exit(1)
+
+    for i in range(address_index_start, address_index_start + base_account_count):
+        tmp_key = str(i)
+        private_key = prikey_base[0:(len(prikey_base) - len(tmp_key))] + tmp_key
+        to = shardora_api.get_keypair(bytes.fromhex(private_key)).account_id
+        check_accounts_str += to + "_"
+        res = shardora_api.transfer(
+            from_private_key,
+            to,
+            amount,
+            nonce,
+            0,
+            "",
+            "",
+            "",
+            "",
+            0,
+            check_tx_valid=False)
+        
+        nonce += 1
+        ids[to] = False
+        if not res:
+            sys.exit(1)
+
+        if i % 5000 == 0:
+            time.sleep(4)
+
+    time.sleep(20)
+    for i in range(0, 30):
+        res = shardora_api.check_accounts_valid({"addrs": check_accounts_str, "balance": amount})
+        # print(f"res status: {res.status_code}, text: {res.text}")
+        if res.status_code != 200:
+            print(f"post check gids failed status: {res.status_code}, error: {res.text}")
+        else:
+            json_res = json.loads(res.text)
+            if json_res["addrs"] is not None:
+                for addr in json_res["addrs"]:
+                    ids[addr] = True
+
+        check_accounts_str = ""
+        for id in ids:
+            if not ids[id]:
+                check_accounts_str += id + "_"
+
+        if check_accounts_str == "":
+            print("create all accounts success!")
+            sys.exit(0)
+
+        time.sleep(6)
+
+    for id in ids:
+        if not ids[id]:
+            print(f"create address failed: {id}")
+
+    sys.exit(1)

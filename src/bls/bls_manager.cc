@@ -1,6 +1,7 @@
 #include "bls/bls_manager.h"
 
 #include <bls/bls_utils.h>
+#include "bls/dkg_cache.h"
 #include <dkg/dkg.h>
 #include <libbls/bls/BLSPrivateKey.h>
 #include <libbls/bls/BLSPrivateKeyShare.h>
@@ -47,34 +48,37 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
+    // bls_tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this));
+    dkg_cache_ = std::make_shared<DkgCache>(prefix_db_);
 }
 
 BlsManager::~BlsManager() {}
 
-void BlsManager::TimerMessage() {
+void BlsManager::PoolTimerMessage() {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
         PopFinishMessage();
-        auto tmp_bls = waiting_bls_;
+        auto tmp_bls = waiting_bls_.load();
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        SHARDORA_WARN("BlsManager handle message begin.");
         if (tmp_bls != nullptr) {
             tmp_bls->TimerMessage();
         }
 
         auto etime = common::TimeUtils::TimestampMs();
         if (etime - now_tm_ms >= 10) {
-            ZJC_WARN("BlsManager handle message use time: %lu", (etime - now_tm_ms));
+            SHARDORA_WARN("BlsManager handle message end use time: %lu", (etime - now_tm_ms));
         }
     }
 
-    bls_tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
+    // bls_tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this));
 }
 
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
+        uint64_t prev_elect_height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
@@ -110,10 +114,9 @@ void BlsManager::OnNewElectBlock(
     elect_item->members = members;
     elect_members_[sharding_id] = elect_item;
     CHECK_MEMORY_SIZE(elect_members_);
-//     ZJC_WARN("sharding: %u, success add new bls dkg, elect_height: %lu",
-//         sharding_id, elect_height);
-    if (sharding_id != common::GlobalInfo::Instance()->network_id() &&
-            sharding_id + network::kConsensusWaitingShardOffset != common::GlobalInfo::Instance()->network_id()) {
+    SHARDORA_WARN("sharding: %u, success add new bls dkg, elect_height: %lu, member count: %u",
+        sharding_id, elect_height, members->size());
+    if (!network::IsSameToLocalShard(sharding_id)) {
         return;
     }
 
@@ -121,24 +124,21 @@ void BlsManager::OnNewElectBlock(
         return;
     }
 
-    bool this_node_elected = false;
-    for (auto iter = members->begin(); iter != members->end(); ++iter) {
-        if ((*iter)->id == security_->GetAddress()) {
-            this_node_elected = true;
+    uint32_t local_member_idx = common::kInvalidUint32;
+    for (uint32_t i = 0; i < members->size(); ++i) {
+        if (((*members)[i])->id == security_->GetAddress()) {
+            local_member_idx = i;
             break;
         }
     }
 
-    if (!this_node_elected) {
+    if (local_member_idx == common::kInvalidUint32) {
         return;
     }
 
     latest_elect_height_ = elect_height;
-    if (waiting_bls_ != nullptr) {
-        waiting_bls_ = nullptr;
-    }
-
     auto waiting_bls = std::make_shared<bls::BlsDkg>();
+    dkg_cache_->Init(local_member_idx, *members, elect_block->shard_network_id());
     waiting_bls->Init(
         this,
         security_,
@@ -148,14 +148,17 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_,
+        dkg_cache_,
         ck_client_);
-//     ZJC_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
+//     SHARDORA_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls->OnNewElectionBlock(
         elect_height,
+        prev_elect_height,
         members,
         latest_timeblock_info_);
-    waiting_bls_ = waiting_bls;
-    ZJC_WARN("success add new bls dkg, elect_height: %lu", elect_height);
+    waiting_bls_.store(waiting_bls);
+    SHARDORA_WARN("success add new bls dkg, elect_height: %lu, prev valid elect height: %lu",
+        elect_height, prev_elect_height);
 }
 
 int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
@@ -166,15 +169,16 @@ int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
             return transport::kFirewallCheckError;
         }
     } else {
-        if (waiting_bls_ != nullptr) {
-            if (!waiting_bls_->CheckBlsMessageValid(msg_ptr)) {
+        auto waiting_bls = waiting_bls_.load();
+        if (waiting_bls != nullptr) {
+            if (!waiting_bls->CheckBlsMessageValid(msg_ptr)) {
                 BLS_ERROR("check firewall failed!");
                 return transport::kFirewallCheckError;
             }
         }
     }
 
-    ZJC_WARN("check firewall success!");
+    SHARDORA_WARN("check firewall success!");
     return transport::kFirewallCheckSuccess;
 }
 
@@ -183,18 +187,18 @@ int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
             bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return transport::kFirewallCheckError;
     }
 
     auto elect_iter = elect_members_.find(bls_msg.finish_req().network_id());
     if (elect_iter == elect_members_.end()) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return transport::kFirewallCheckError;
     }
 
     if (elect_iter->second->height != bls_msg.elect_height()) {
-        ZJC_WARN("finish network error: %d, elect height now: %lu, req: %lu",
+        SHARDORA_WARN("finish network error: %d, elect height now: %lu, req: %lu",
             bls_msg.finish_req().network_id(),
             elect_iter->second->height,
             bls_msg.elect_height());
@@ -253,7 +257,7 @@ int BlsManager::CheckFinishMessageValid(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
             t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return transport::kFirewallCheckError;
     }
@@ -306,7 +310,7 @@ int BlsManager::Sign(
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    ZJC_WARN("sign t: %u, n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+    SHARDORA_WARN("sign t: %u, n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n,
         (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
         (sign_x).c_str(), (sign_y).c_str(),
@@ -331,20 +335,20 @@ int BlsManager::Sign(
     bn_sign.to_affine_coordinates();
     *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-// #ifndef NDEBUG
-//     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
-//     BLSPublicKeyShare pkey(local_sec_key, t, n);
-//     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-//     ZJC_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-//         t, n, 
-//         (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
-//         (*sign_x).c_str(), (*sign_y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-//     std::string verify_hash;
-//     assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
-// #endif
+#ifndef NDEBUG
+    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
+    BLSPublicKeyShare pkey(local_sec_key, t, n);
+    std::shared_ptr<std::vector<std::string>> strs = pkey.toString();
+    SHARDORA_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n, 
+        (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
+        (*sign_x).c_str(), (*sign_y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+    std::string verify_hash;
+    assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
+#endif
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -369,20 +373,20 @@ int BlsManager::Verify(
         return kBlsError;
     }
 
-// #ifndef NDEBUG
-//     auto bn_sign = sign;
-//     bn_sign.to_affine_coordinates();
-//     auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
-//     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
-//     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-//     ZJC_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
-//         t, n,
-//         (sign_x).c_str(), (sign_y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str(),
-//         pk_str.c_str());
-// #endif
+#ifndef NDEBUG
+    auto bn_sign = sign;
+    bn_sign.to_affine_coordinates();
+    auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
+    auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+    auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+    SHARDORA_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
+        t, n,
+        (sign_x).c_str(), (sign_y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str(),
+        pk_str.c_str());
+#endif
     return BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -425,13 +429,14 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
         finish_msg_queue_.push(msg_ptr);
-        ZJC_WARN("queue size finish_msg_queue_: %d, hash64: %lu",
+        SHARDORA_WARN("queue size finish_msg_queue_: %d, hash64: %lu",
             finish_msg_queue_.size(), msg_ptr->header.hash64());
         return;
     }
 
-    if (waiting_bls_ != nullptr) {
-        waiting_bls_->HandleMessage(msg_ptr);
+    auto waiting_bls = waiting_bls_.load();
+    if (waiting_bls != nullptr) {
+        waiting_bls->HandleMessage(msg_ptr);
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
@@ -452,23 +457,23 @@ void BlsManager::PopFinishMessage() {
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
-    ZJC_WARN("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
+    SHARDORA_WARN("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
             bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return;
     }
 
     auto elect_iter = elect_members_.find(bls_msg.finish_req().network_id());
     if (elect_iter == elect_members_.end()) {
-        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        SHARDORA_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return;
     }
 
     if (elect_iter->second->height != bls_msg.elect_height()) {
-        ZJC_WARN("finish network error: %d, elect height now: %lu, req: %lu",
+        SHARDORA_WARN("finish network error: %d, elect height now: %lu, req: %lu",
             bls_msg.finish_req().network_id(),
             elect_iter->second->height,
             bls_msg.elect_height());
@@ -527,7 +532,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+        SHARDORA_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
             t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return;
     }
@@ -543,7 +548,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->verified[bls_msg.index()]) {
-        ZJC_WARN("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
+        SHARDORA_WARN("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -573,18 +578,19 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->success_verified) {
-        ZJC_WARN("success check all members agg signature, elect_height: %lu",
+        SHARDORA_WARN("success check all members agg signature, elect_height: %lu",
             bls_msg.elect_height());
     }
 
-    ZJC_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s",
+    SHARDORA_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s, common pk: %s",
         bls_msg.finish_req().network_id(),
         bls_msg.index(),
-        common::Encode::HexEncode(cpk_hash).c_str());
+        common::Encode::HexEncode(cpk_hash).c_str(),
+        common_pkey_str[0].c_str());
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
-        ZJC_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
+        SHARDORA_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
             max_iter->second->count,
             bls_msg.finish_req().network_id(),
             bls_msg.index(),
@@ -617,6 +623,11 @@ void BlsManager::CheckAggSignValid(
         const libff::alt_bn128_G2& common_pk,
         BlsFinishItemPtr& finish_item,
         uint32_t member_idx) {
+    SHARDORA_DEBUG("now check agg sign valid t: %u, n: %u, pk: %s, mem_idx: %u, finished: %d", 
+        t, n,
+        common::Encode::HexEncode(
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+        member_idx, finish_item->success_verified);
     if (finish_item->success_verified) {
         std::vector<libff::alt_bn128_G1> tmp_all_signs = finish_item->verified_valid_signs;
         std::vector<size_t> tmp_idx_vec = finish_item->verified_valid_index;
@@ -647,7 +658,7 @@ void BlsManager::CheckAggSignValid(
             finish_item->all_common_public_keys[member_idx] = libff::alt_bn128_G2::zero();
             BLS_ERROR("invalid bls item index: %d", member_idx);
         } else {
-            ZJC_WARN("valid bls item index: %d", member_idx);
+            SHARDORA_WARN("valid bls item index: %d", member_idx);
         }
 
         return;
@@ -682,6 +693,8 @@ void BlsManager::CheckAggSignValid(
         all_signs[i] = finish_item->all_bls_signs[i];
         idx_vec[i] = i + 1;
         ++valid_count;
+        SHARDORA_DEBUG("select member index: %u for verify, valid_count: %u, sign: %s", i, valid_count, 
+            libBLS::ThresholdUtils::fieldElementToString(all_signs[i].X).c_str());
         if (valid_count >= t) {
             break;
         }
@@ -737,6 +750,8 @@ void BlsManager::CheckAggSignValid(
 
         idx_vec[i] = i + 1;
         all_signs[i] = finish_item->all_bls_signs[i];
+        SHARDORA_DEBUG("weed member index: %u, bls sign: %s",
+            i, libBLS::ThresholdUtils::fieldElementToString(all_signs[i].X).c_str());
         if (CheckAndVerifyAll(
                 t,
                 n,
@@ -756,6 +771,11 @@ bool BlsManager::CheckAndVerifyAll(
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec) {
+    SHARDORA_DEBUG("now check agg sign valid t: %u, n: %u, pk: %s, finished: %d", 
+        t, n,
+        common::Encode::HexEncode(
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+        finish_item->success_verified);
     if (VerifyAggSignValid(
             t,
             n,
@@ -806,9 +826,19 @@ bool BlsManager::CheckAndVerifyAll(
             }
         }
 
+        SHARDORA_DEBUG("success check agg sign valid t: %u, n: %u, pk: %s, finished: %d", 
+            t, n,
+            common::Encode::HexEncode(
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+            finish_item->success_verified);
         return true;
     }
 
+    SHARDORA_DEBUG("failed check agg sign valid t: %u, n: %u, pk: %s, finished: %d", 
+        t, n,
+        common::Encode::HexEncode(
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0)).c_str(),
+        finish_item->success_verified);
     return false;
 }
 
@@ -860,7 +890,7 @@ bool BlsManager::VerifyAggSignValid(
                 *bls_agg_sign,
                 g1_hash,
                 &verify_hash) != bls::kBlsSuccess) {
-            ZJC_ERROR("verify agg sign failed t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+            SHARDORA_ERROR("verify agg sign failed t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
                 t, n,
                 common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
                 libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
@@ -868,14 +898,14 @@ bool BlsManager::VerifyAggSignValid(
             return false;
         }
 
-        ZJC_WARN("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+        SHARDORA_WARN("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
             t, n,
             common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
             sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());
         return true;
     } catch (...) {
-        ZJC_ERROR("verify agg sign failed");
+        SHARDORA_ERROR("verify agg sign failed");
     }
 
     return false;
@@ -947,47 +977,59 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
         return kBlsError;
     }
 
+    assert(ec_block.prev_members().bls_pubkey_size() == 0);
     auto pre_ec_members = ec_block.mutable_prev_members();
     for (size_t i = 0; i < members->size(); ++i) {
         auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
-        if (!item_iter->second->bitmap.Valid(i)) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid bitmap: %d", i);
-            continue;
-        }
+        do {
+            if (!item_iter->second->bitmap.Valid(i)) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid bitmap: %d", i);
+                break;
+            }
 
-        if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_public_keys: %d", i);
-            continue;
-        }
+            if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid all_public_keys: %d", i);
+                break;
+            }
 
-        if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
-            mem_bls_pk->set_x_c0("");
-            mem_bls_pk->set_x_c1("");
-            mem_bls_pk->set_y_c0("");
-            mem_bls_pk->set_y_c1("");
-            BLS_WARN("0 invalid all_common_public_keys: %d", i);
-            continue;
-        }
+            if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
+                mem_bls_pk->set_x_c0("");
+                mem_bls_pk->set_x_c1("");
+                mem_bls_pk->set_y_c0("");
+                mem_bls_pk->set_y_c1("");
+                BLS_WARN("0 invalid all_common_public_keys: %d, %s, %s", i,
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0).c_str(),
+                libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0).c_str());
+                break;
+            }
 
-        finish_item->all_public_keys[i].to_affine_coordinates();
-        mem_bls_pk->set_x_c0(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0));
-        mem_bls_pk->set_x_c1(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c1));
-        mem_bls_pk->set_y_c0(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
-        mem_bls_pk->set_y_c1(
-            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
+            finish_item->all_public_keys[i].to_affine_coordinates();
+            mem_bls_pk->set_x_c0(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0));
+            mem_bls_pk->set_x_c1(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c1));
+            mem_bls_pk->set_y_c0(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
+            mem_bls_pk->set_y_c1(
+                libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
+        } while (0);
+
+        if (i == 0 && mem_bls_pk->x_c0() == "") {
+            // TODO: remove it
+            SHARDORA_ERROR("first member bls pk is empty!");
+            return kBlsError;
+        }
     }
 
+    assert(static_cast<size_t>(ec_block.prev_members().bls_pubkey_size()) == members->size());
     common_pk_iter->second.to_affine_coordinates();
     auto common_pk = pre_ec_members->mutable_common_pubkey();
     common_pk->set_x_c0(
@@ -1000,7 +1042,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
     pre_ec_members->set_prev_elect_height(elect_iter->second->height);
     ResetLeaders(members, ec_block.mutable_prev_members());
-//     ZJC_WARN("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
+//     SHARDORA_WARN("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
 //         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
 //         ec_block.shard_network_id(),
 //         elect_iter->second->height,
@@ -1019,7 +1061,7 @@ void BlsManager::ResetLeaders(
             if (bls_pk->x_c0().empty()) {
                 for (uint32_t mem_idx = 0; mem_idx < members->size(); ++mem_idx) {
                     if ((*members)[mem_idx]->pool_index_mod_num < 0) {
-                        (*members)[mem_idx]->pool_index_mod_num = (*members)[i]->pool_index_mod_num;
+                        (*members)[mem_idx]->pool_index_mod_num.store((*members)[i]->pool_index_mod_num);
                         auto prev_bls_pk = prev_members->mutable_bls_pubkey(mem_idx);
                         prev_bls_pk->set_pool_idx_mod_num((*members)[i]->pool_index_mod_num);
                         break;

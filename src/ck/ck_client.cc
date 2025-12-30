@@ -2,7 +2,7 @@
 #include <ck/ck_utils.h>
 
 #include <google/protobuf/util/json_util.h>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "common/encode.h"
 #include "common/global_info.h"
@@ -37,25 +37,35 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<hotstuff::ViewBlock>& v
     return true;
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     block_queues_[thread_idx].push(view_block_item);
-// #ifndef NDEBUG
-//     auto* block_item = &view_block_item->block_info();
-//     const auto& tx_list = block_item->tx_list();
-//     for (int32_t i = 0; i < tx_list.size(); ++i) {
-//         ZJC_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
-//             "tx size: %u, hash: %s, elect height: %lu, "
-//             "tm height: %lu, gid: %s, status: %d, step: %d",
-//             view_block_item->qc().network_id(),
-//             view_block_item->qc().pool_index(),
-//             block_item->height(),
-//             block_item->tx_list_size(),
-//             common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
-//             view_block_item->qc().elect_height(),
-//             block_item->timeblock_height(),
-//             common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-//             tx_list[i].status(),
-//             tx_list[i].step());
-//     }
-// #endif
+#ifndef NDEBUG
+    auto* block_item = &view_block_item->block_info();
+    SHARDORA_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height());
+    const auto& tx_list = block_item->tx_list();
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        SHARDORA_DEBUG("ck new block coming sharding id: %u_%d_%lu, "
+            "tx size: %u, hash: %s, elect height: %lu, "
+            "tm height: %lu, nonce: %lu, status: %d, step: %d",
+            view_block_item->qc().network_id(),
+            view_block_item->qc().pool_index(),
+            block_item->height(),
+            block_item->tx_list_size(),
+            common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+            view_block_item->qc().elect_height(),
+            block_item->timeblock_height(),
+            tx_list[i].nonce(),
+            tx_list[i].status(),
+            static_cast<int32_t>(tx_list[i].step()));
+    }
+#endif
         
     std::unique_lock<std::mutex> lock(wait_mutex_);
     wait_con_.notify_one();
@@ -130,8 +140,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         bls_agg_sign_x->Append(common::Encode::HexEncode(view_block_item->qc().sign_x()));
         bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
         date->Append(common::MicTimestampToDate(block_item->timestamp()));
-        gid->Append(common::Encode::HexEncode(tx.gid()));
-        ZJC_DEBUG("success add gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
+        gid->Append(std::to_string(tx.nonce()));
         from->Append(common::Encode::HexEncode(tx.from()));
         from_pubkey->Append("");
         from_sign->Append("");
@@ -152,23 +161,23 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         to_add->Append(false);
         attrs->Append("");
         status->Append(tx.status());
-        tx_hash->Append(common::Encode::HexEncode(tx.gid()));
+        tx_hash->Append(std::to_string(tx.nonce()));
         call_contract_step->Append(tx.step());
         std::string storage_str;
-        if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
-            storage_str = tx.storages(0).value();
-        }
+        // if (tx.storages_size() > 0 && tx.storages(0).value().size() < 2048) {
+        //     storage_str = tx.storages(0).value();
+        // }
 
-        if (tx.step() == pools::protobuf::kContractExcute) {
-            for (int32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
-                if (tx.storages(st_idx).key().find(std::string("ars_create_agg_sign")) != std::string::npos && tx.storages(st_idx).value().size() < 2048) {
-                    storage_str += "," + tx.storages(st_idx).value();
-                    ZJC_DEBUG("success get key: %s, value: %s",
-                        tx.storages(st_idx).key().c_str(), 
-                        tx.storages(st_idx).value().c_str());
-                }
-            }
-        }
+        // if (tx.step() == pools::protobuf::kContractExcute) {
+        //     for (int32_t st_idx = 0; st_idx < tx.storages_size(); ++st_idx) {
+        //         if (tx.storages(st_idx).key().find(std::string("ars_create_agg_sign")) != std::string::npos && tx.storages(st_idx).value().size() < 2048) {
+        //             storage_str += "," + tx.storages(st_idx).value();
+        //             SHARDORA_DEBUG("success get key: %s, value: %s",
+        //                 tx.storages(st_idx).key().c_str(), 
+        //                 tx.storages(st_idx).value().c_str());
+        //         }
+        //     }
+        // }
       
         storages->Append(common::Encode::HexEncode(storage_str));
         transfers->Append("");
@@ -184,18 +193,18 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             acc_balance->Append(tx.balance());
         }
 
-        for (int32_t j = 0; j < tx.storages_size(); ++j) {
-            attr_account->Append(common::Encode::HexEncode(tx.from()));
-            attr_tx_type->Append(tx.step());
-            attr_to->Append(common::Encode::HexEncode(tx.to()));
-            attr_shard_id->Append(view_block_item->qc().network_id());
-            std::string val;
-            attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
-            attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
-            ZJC_DEBUG("hash to ck add key: %s, val: %s", 
-                tx.storages(j).key().c_str(), 
-                "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
-        }
+        // for (int32_t j = 0; j < tx.storages_size(); ++j) {
+        //     attr_account->Append(common::Encode::HexEncode(tx.from()));
+        //     attr_tx_type->Append(tx.step());
+        //     attr_to->Append(common::Encode::HexEncode(tx.to()));
+        //     attr_shard_id->Append(view_block_item->qc().network_id());
+        //     std::string val;
+        //     attr_key->Append(common::Encode::HexEncode(tx.storages(j).key()));
+        //     attr_value->Append(common::Encode::HexEncode(tx.storages(j).value()));
+        //     SHARDORA_DEBUG("hash to ck add key: %s, val: %s", 
+        //         tx.storages(j).key().c_str(), 
+        //         "common::Encode::HexEncode(tx.storages(j).value()).c_str()");
+        // }
 
         if (tx.step() == pools::protobuf::kContractExcute /*&& tx.to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             {
@@ -205,15 +214,15 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 prepay_user->Append(common::Encode::HexEncode(user));
                 prepay_height->Append(block_item->height());
                 prepay_amount->Append(tx.balance());
-                ZJC_DEBUG("success add prepayment contract: %s, address: %s, gid: %s, balance: %lu",
+                SHARDORA_DEBUG("success add prepayment contract: %s, address: %s, nonce: %lu, balance: %lu",
                     common::Encode::HexEncode(contract).c_str(), 
                     common::Encode::HexEncode(user).c_str(), 
-                    common::Encode::HexEncode(tx.gid()).c_str(), 
+                    tx.nonce(), 
                     tx.balance());
             }
             
             nlohmann::json res;
-            ZJC_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
+            SHARDORA_DEBUG("now handle contract: %s", ProtobufToJson(tx).c_str());
             bool ret = false;//QueryContract(tx.from(), tx.to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
@@ -254,98 +263,80 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
         }
 
         while (tx.step() == pools::protobuf::kConsensusLocalTos) {
-            ZJC_DEBUG("now handle local to txs.");
-            const std::string* to_txs_str = nullptr;
-            for (int32_t storage_idx = 0; storage_idx < tx.storages_size(); ++storage_idx) {
-                if (tx.storages(storage_idx).key() == protos::kConsensusLocalNormalTos) {
-                    to_txs_str = &tx.storages(storage_idx).value();
-                    break;
-                }
-            }
-
-            if (to_txs_str == nullptr) {
-                ZJC_WARN("get local tos info failed!");
-                break;
-            }
-
-            block::protobuf::ConsensusToTxs to_txs;
-            if (!to_txs.ParseFromString(*to_txs_str)) {
-                assert(false);
-                break;
-            }
-
-            ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
+            SHARDORA_DEBUG("now handle local to txs.");
+            auto& to_txs = block_item->local_to();
+            SHARDORA_DEBUG("now handle local to txs: %d", to_txs.tos_size());
             for (int32_t to_tx_idx = 0; to_tx_idx < to_txs.tos_size(); ++to_tx_idx) {
-                ZJC_DEBUG("0 now handle local to idx: %d", to_tx_idx);
-                if (to_txs.tos(to_tx_idx).to().size() == security::kUnicastAddressLength * 2) {
-                    auto contract = to_txs.tos(to_tx_idx).to().substr(0, 20);
-                    auto user = to_txs.tos(to_tx_idx).to().substr(20, 20);
+                SHARDORA_DEBUG("0 now handle local to idx: %d", to_tx_idx);
+                if (to_txs.tos(to_tx_idx).to().size() == common::kUnicastAddressLength * 2) {
+                    auto contract = to_txs.tos(to_tx_idx).to().substr(0, common::kUnicastAddressLength);
+                    auto user = to_txs.tos(to_tx_idx).to().substr(common::kUnicastAddressLength, common::kUnicastAddressLength);
                     prepay_contract->Append(common::Encode::HexEncode(contract));
                     prepay_user->Append(common::Encode::HexEncode(user));
                     prepay_height->Append(block_item->height());
                     prepay_amount->Append(to_txs.tos(to_tx_idx).balance());
-                    ZJC_DEBUG("success add prepayment contract: %s, address: %s, gid: %s, balance: %lu",
+                    SHARDORA_DEBUG("success add prepayment contract: %s, address: %s, nonce: %lu, balance: %lu",
                         common::Encode::HexEncode(contract).c_str(), 
                         common::Encode::HexEncode(user).c_str(), 
-                        common::Encode::HexEncode(tx.gid()).c_str(), 
+                        tx.nonce(), 
                         to_txs.tos(to_tx_idx).balance());
                 }
 
-                if (to_txs.tos(to_tx_idx).to().size() != security::kUnicastAddressLength) {
+                if (to_txs.tos(to_tx_idx).to().size() != common::kUnicastAddressLength) {
                     //assert(false);
                     continue;
                 }
                 
-                ZJC_DEBUG("1 now handle local to idx: %d", i);
-                ZJC_DEBUG("now handle local to txs: %s", common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()).c_str());
+                SHARDORA_DEBUG("1 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("now handle local to txs: %s", common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()).c_str());
                 shard_id->Append(view_block_item->qc().network_id());
                 pool_index->Append(view_block_item->qc().pool_index());
                 height->Append(block_item->height());
                 prehash->Append(common::Encode::HexEncode(view_block_item->parent_hash()));
                 hash->Append(common::Encode::HexEncode(view_block_item->qc().view_block_hash()));
                 version->Append(block_item->version());
-                ZJC_DEBUG("1 0 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 0 now handle local to idx: %d", i);
                 vss->Append(block_item->consistency_random());
                 elect_height->Append(view_block_item->qc().elect_height());
                 bitmap->Append(common::Encode::HexEncode(bitmap_str));
                 commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
                 timestamp->Append(block_item->timestamp());
                 timeblock_height->Append(block_item->timeblock_height());
-                ZJC_DEBUG("1 1 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 1 now handle local to idx: %d", i);
                 bls_agg_sign_x->Append(common::Encode::HexEncode(view_block_item->qc().sign_x()));
                 bls_agg_sign_y->Append(common::Encode::HexEncode(view_block_item->qc().sign_y()));
-                ZJC_DEBUG("1 2 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 2 now handle local to idx: %d", i);
                 date->Append(common::MicTimestampToDate(block_item->timestamp()));
-                ZJC_DEBUG("1 2 0 now handle local to idx: %d", i);
-                gid->Append(common::Encode::HexEncode(tx.gid()));
-                ZJC_DEBUG("1 2 1 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 2 0 now handle local to idx: %d", i);
+                gid->Append(std::to_string(tx.nonce()));
+                SHARDORA_DEBUG("1 2 1 now handle local to idx: %d", i);
                 from->Append("");
                 from_pubkey->Append("");
                 from_sign->Append("");
-                ZJC_DEBUG("1 2 2 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 2 2 now handle local to idx: %d", i);
                 to->Append(common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()));
-                ZJC_DEBUG("1 3 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 3 now handle local to idx: %d", i);
                 amount->Append(0);
                 gas_limit->Append(0);
                 gas_used->Append(0);
                 gas_price->Append(0);
                 type->Append(tx.step());
                 balance->Append(to_txs.tos(to_tx_idx).balance());
-                ZJC_DEBUG("1 4 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("1 4 now handle local to idx: %d", i);
                 to_add->Append(true);
                 attrs->Append("");
                 status->Append(tx.status());
-                tx_hash->Append(common::Encode::HexEncode(tx.gid()));
+                tx_hash->Append(std::to_string(tx.nonce()));
                 call_contract_step->Append(tx.step());
                 storages->Append("");
                 transfers->Append("");
 
-                ZJC_DEBUG("2 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("2 now handle local to idx: %d", i);
                 acc_account->Append(common::Encode::HexEncode(to_txs.tos(to_tx_idx).to()));
                 acc_shard_id->Append(view_block_item->qc().network_id());
                 acc_pool_index->Append(view_block_item->qc().pool_index());
                 acc_balance->Append(to_txs.tos(to_tx_idx).balance());
-                ZJC_DEBUG("3 now handle local to idx: %d", i);
+                SHARDORA_DEBUG("3 now handle local to idx: %d", i);
             }
 
             break;
@@ -353,9 +344,9 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     }
 
     ++batch_count_;
-    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // SHARDORA_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
-    // ZJC_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // SHARDORA_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
@@ -363,9 +354,9 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        ZJC_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
+        SHARDORA_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
             "tx size: %u, hash: %s, elect height: %lu, "
-            "tm height: %lu, gid: %s, status: %d, step: %d",
+            "tm height: %lu, nonce: %lu, status: %d, step: %d",
             view_block_item->qc().network_id(),
             view_block_item->qc().pool_index(),
             block_item->height(),
@@ -373,15 +364,15 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
             view_block_item->qc().elect_height(),
             block_item->timeblock_height(),
-            common::Encode::HexEncode(tx_list[i].gid()).c_str(),
+            tx_list[i].nonce(),
             tx_list[i].status(),
-            tx_list[i].step());
+            static_cast<int32_t>(tx_list[i].step()));
     }
 #endif
     return true;
 }
 // catch (std::exception& e) {
-//     ZJC_ERROR("add new block failed[%s]", e.what());
+//     SHARDORA_ERROR("add new block failed[%s]", e.what());
 //     return false;
 // }
 
@@ -427,12 +418,6 @@ void ClickHouseClient::FlushToCkWithData() try {
             trans.AppendColumn("bls_agg_sign_y", bls_agg_sign_y);
             trans.AppendColumn("commit_bitmap", commit_bitmap);
             trans.AppendColumn("gid", gid);
-
-// #ifndef NDEBUG
-//             for (int32_t test_i = 0; test_i < gid->Size(); ++test_i) {
-//                 ZJC_DEBUG("success flush gid to db: %s", gid->At(test_i).data());
-//             }
-// #endif
 
             trans.AppendColumn("from", from);
             trans.AppendColumn("from_pubkey", from_pubkey);
@@ -498,13 +483,13 @@ void ClickHouseClient::FlushToCkWithData() try {
         }
 
         HandleBlsMessage();
-        ZJC_DEBUG("success flush to db: %u", batch_count_);
+        SHARDORA_DEBUG("success flush to db: %u", batch_count_);
         batch_count_ = 0;
         pre_time_out_ = now_tm_ms;
         ResetColumns();
     }
 } catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
+    SHARDORA_ERROR("add new block failed[%s]", e.what());
 }
 
 bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
@@ -518,14 +503,13 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
         zjc_host.tx_context_.chain_id,
         chanin_id);
     zjc_host.contract_mgr_ = contract_mgr_;
-    zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = 10000000000lu;
     // user caller prepayment 's gas
     uint64_t from_balance = 10000000000lu;
     auto contract_addr_info = prefix_db_->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
-        ZJC_DEBUG("failed get contract.");
+        SHARDORA_DEBUG("failed get contract.");
         return false;
     }
     uint64_t to_balance = contract_addr_info->balance();
@@ -551,7 +535,7 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
         &result);
     if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + std::to_string(result.status_code);
-        ZJC_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_INFO("query contract error: %s.", res.c_str());
         return false;
     }
 
@@ -561,7 +545,7 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res(qdata.c_str() + 64, len);
     *res = nlohmann::json::parse(http_res);
-    ZJC_DEBUG("success query contract: %s", res->dump().c_str());
+    SHARDORA_DEBUG("success query contract: %s", res->dump().c_str());
     return true;
 }
 
@@ -606,7 +590,7 @@ bool ClickHouseClient::CreateTransactionTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height,type,from,to) "
         "SETTINGS index_granularity = 8192;";
-    ZJC_DEBUG("create table now [%s][%u][%s][%s]\n",
+    SHARDORA_DEBUG("create table now [%s][%u][%s][%s]\n",
         common::GlobalInfo::Instance()->ck_host().c_str(),
         common::GlobalInfo::Instance()->ck_port(),
         common::GlobalInfo::Instance()->ck_user().c_str(),
@@ -903,11 +887,12 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
 }
 
 bool ClickHouseClient::InsertBlsElectInfo(const BlsElectInfo& info) try {
+    return true;
     bls_elect_queue_.push(std::make_shared<BlsElectInfo>(info));
-    ZJC_DEBUG("insert elect bls success: %d", bls_elect_queue_.size());
+    SHARDORA_DEBUG("insert elect bls success: %d", bls_elect_queue_.size());
     return true;
 } catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
+    SHARDORA_ERROR("add new block failed[%s]", e.what());
     return false;
 }
 
@@ -939,16 +924,16 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
 }
 
 void ClickHouseClient::HandleBlsMessage() {
-    ZJC_DEBUG("call elect bls success.");
+    SHARDORA_DEBUG("call elect bls success.");
     std::shared_ptr<BlsBlockInfo> bls_block;
     while (bls_block_queue_.pop(&bls_block)) {
         HandleBlsBlockMessage(*bls_block);
     }
 
-    ZJC_DEBUG("call elect bls success: %d", bls_elect_queue_.size());
+    SHARDORA_DEBUG("call elect bls success: %d", bls_elect_queue_.size());
     std::shared_ptr<BlsElectInfo> elect_block;
     while (bls_elect_queue_.pop(&elect_block)) {
-        ZJC_DEBUG("success pop elect bls success.");
+        SHARDORA_DEBUG("success pop elect bls success.");
         HandleBlsElectMessage(*elect_block);
     }
 }
@@ -994,7 +979,7 @@ void ClickHouseClient::HandleBlsBlockMessage(const BlsBlockInfo& info) {
 }
 
 void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) try {
-    ZJC_DEBUG("success handle elect bls success.");
+    SHARDORA_DEBUG("success handle elect bls success.");
     auto elect_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto member_idx = std::make_shared<clickhouse::ColumnUInt32>();
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
@@ -1023,7 +1008,7 @@ void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) try {
     item.AppendColumn("local_sk", local_sk);
     item.AppendColumn("common_pk", common_pk);
 
-    ZJC_DEBUG("success insert bls elect info elect_hegiht_: %lu, "
+    SHARDORA_DEBUG("success insert bls elect info elect_hegiht_: %lu, "
         "local_member_index_: %u, shard_id: %u, local_pri_keys: %s, "
         "local_pub_keys: %s, local_sk: %s, common_pk: %s, swaped_sec_keys: %s", 
         info.elect_height, info.member_idx, info.shard_id, 
@@ -1037,14 +1022,15 @@ void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) try {
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseBlsElectInfo, item);
 } catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
+    SHARDORA_ERROR("add new block failed[%s]", e.what());
 }
 
 bool ClickHouseClient::InsertBlsBlockInfo(const BlsBlockInfo& info) try {
+    return true;
     bls_block_queue_.push(std::make_shared<BlsBlockInfo>(info));
     return true;
 } catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
+    SHARDORA_ERROR("add new block failed[%s]", e.what());
     return false;
 }
 
@@ -1065,7 +1051,7 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     }
     return true;
 } catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
+    SHARDORA_ERROR("add new block failed[%s]", e.what());
     printf("add new block failed[%s]", e.what());
     return false;
 }
@@ -1160,7 +1146,7 @@ void ClickHouseClient::Statistic() try {
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client4.Insert(kClickhouseStatisticTableName, statistics);
 } catch (std::exception& e) {
-    ZJC_ERROR("add new block failed[%s]", e.what());
+    SHARDORA_ERROR("add new block failed[%s]", e.what());
 }
 
 };  // namespace ck

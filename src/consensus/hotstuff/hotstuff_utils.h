@@ -6,11 +6,12 @@
 #include <common/hash.h>
 #include <common/log.h>
 #include "common/node_members.h"
-#include <consensus/hotstuff/types.h>
-#include <protos/block.pb.h>
-#include <protos/hotstuff.pb.h>
-#include <protos/prefix_db.h>
-#include <protos/transport.pb.h>
+#include "consensus/hotstuff/types.h"
+#include "protos/address.pb.h"
+#include "protos/block.pb.h"
+#include "protos/hotstuff.pb.h"
+#include "protos/prefix_db.h"
+#include "protos/transport.pb.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/zjc_host.h"
 
@@ -19,8 +20,8 @@ namespace shardora {
 namespace hotstuff {
 
 using Breakpoint = int;
-using BalanceMap = std::unordered_map<std::string, int64_t>;
-using BalanceMapPtr = std::shared_ptr<BalanceMap>;
+using BalanceAndNonceMap = std::unordered_map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>;
+using BalanceAndNonceMapPtr = std::shared_ptr<BalanceAndNonceMap>;
 
 class ProposeMsgWrapper {
 public:
@@ -35,7 +36,7 @@ public:
     // Context
     transport::MessagePtr msg_ptr;
     std::shared_ptr<ViewBlock> view_block_ptr;
-    BalanceMapPtr acc_balance_map_ptr;
+    BalanceAndNonceMapPtr acc_balance_and_nonce_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     Breakpoint breakpoint; // 断点位置
     int tried_times;
@@ -90,8 +91,7 @@ public:
     std::shared_ptr<ViewBlock> view_block;
     ViewBlockStatus status;
     std::shared_ptr<QC> qc;
-    std::unordered_set<std::string> added_txs;
-    BalanceMapPtr acc_balance_map_ptr;
+    BalanceAndNonceMapPtr acc_balance_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
     bool valid;
 

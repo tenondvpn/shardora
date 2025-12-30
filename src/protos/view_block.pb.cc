@@ -20,7 +20,7 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2fblock_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<12> scc_info_Block;
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fview_5fblock_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_AggregateSig;
@@ -1575,6 +1575,9 @@ void ViewBlockItem::CopyFrom(const ViewBlockItem& from) {
 }
 
 bool ViewBlockItem::IsInitialized() const {
+  if (has_block_info()) {
+    if (!this->block_info_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -2753,6 +2756,7 @@ void ViewBlockSyncRequest::CopyFrom(const ViewBlockSyncRequest& from) {
 }
 
 bool ViewBlockSyncRequest::IsInitialized() const {
+  if (!::google::protobuf::internal::AllAreInitialized(this->view_blocks())) return false;
   return true;
 }
 
@@ -3275,6 +3279,13 @@ void ViewBlockSyncResponse::CopyFrom(const ViewBlockSyncResponse& from) {
 }
 
 bool ViewBlockSyncResponse::IsInitialized() const {
+  if (!::google::protobuf::internal::AllAreInitialized(this->view_block_items())) return false;
+  if (has_high_view_block()) {
+    if (!this->high_view_block_->IsInitialized()) return false;
+  }
+  if (has_latest_committed_block()) {
+    if (!this->latest_committed_block_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -4079,6 +4090,12 @@ void ViewBlockSyncMessage::CopyFrom(const ViewBlockSyncMessage& from) {
 }
 
 bool ViewBlockSyncMessage::IsInitialized() const {
+  if (has_view_block_req()) {
+    if (!this->view_block_req_->IsInitialized()) return false;
+  }
+  if (has_view_block_res()) {
+    if (!this->view_block_res_->IsInitialized()) return false;
+  }
   return true;
 }
 

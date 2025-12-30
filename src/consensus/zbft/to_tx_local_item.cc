@@ -7,91 +7,129 @@ namespace shardora {
 namespace consensus {
 
 int ToTxLocalItem::HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    // gas just consume by from
-    if (block_tx.storages_size() != 1) {
+    pools::protobuf::ToTxMessageItem to_tx_item;
+    if (!to_tx_item.ParseFromString(tx_info->value())) {
         block_tx.set_status(kConsensusError);
+        SHARDORA_WARN("local get to txs info failed: %s",
+            common::Encode::HexEncode(tx_info->value()).c_str());
         return consensus::kConsensusSuccess;
     }
 
-    pools::protobuf::ToTxMessage to_txs;
-    if (!to_txs.ParseFromString(block_tx.storages(0).value())) {
-        block_tx.set_status(kConsensusError);
-        ZJC_WARN("local get to txs info failed: %s",
-            common::Encode::HexEncode(block_tx.storages(0).value()).c_str());
-        return consensus::kConsensusSuccess;
+    uint64_t src_to_balance = 0;
+    uint64_t src_to_nonce = 0;
+    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
+    auto& unique_hash = tx_info->key();
+    std::string val;
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+        SHARDORA_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        return consensus::kConsensusError;
     }
 
-    block::protobuf::ConsensusToTxs block_to_txs;
-    std::string str_for_hash;
-    str_for_hash.reserve(to_txs.tos_size() * 48);
-    for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        // dispatch to txs to tx pool
-        uint64_t to_balance = 0;
-        // if (to_txs.tos(i).des().size() == security::kUnicastAddressLength) { // only to, for normal to tx
-            int balance_status = GetTempAccountBalance(to_txs.tos(i).des(), acc_balance_map, &to_balance);
-            if (balance_status != kConsensusSuccess) {
-                ZJC_DEBUG("create new address: %s, balance: %lu",
-                    common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-                    to_txs.tos(i).amount());
-                to_balance = 0;
-            } else {
-                ZJC_DEBUG("success get to balance: %s, %lu",
-                    common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
-                    to_balance);
-            }
-        // } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) { // to + from, for gas prepayment tx
-        //     to_balance = gas_prepayment_->GetAddressPrepayment(
-        //         view_block.qc().pool_index(),
-        //         to_txs.tos(i).des().substr(0, security::kUnicastAddressLength),
-        //         to_txs.tos(i).des().substr(security::kUnicastAddressLength, security::kUnicastAddressLength));
-        //     ZJC_DEBUG("success add contract prepayment: %s, %lu, gid: %s",
-        //         common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), 
-        //         to_balance, 
-        //         common::Encode::HexEncode(block_tx.gid()).c_str());
-        // } else {
-        //     ZJC_ERROR("local to des invalid: %s, %u",
-        //         common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-        //         to_txs.tos(i).des().size());
-        //     assert(false);
-        //     continue;
-        // }
-
-        auto to_tx = block_to_txs.add_tos();
-        to_balance += to_txs.tos(i).amount();
-        to_tx->set_to(to_txs.tos(i).des());
-        to_tx->set_balance(to_balance);
-        str_for_hash.append(to_txs.tos(i).des());
-        str_for_hash.append((char*)&to_balance, sizeof(to_balance));
-        acc_balance_map[to_txs.tos(i).des()] = to_balance;
-        ZJC_DEBUG("add local to: %s, balance: %lu, amount: %lu",
-            common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-            to_balance,
-            to_txs.tos(i).amount());
-    }
-
-    auto storage = block_tx.add_storages();
-    storage->set_key(protos::kConsensusLocalNormalTos);
-    storage->set_value(block_to_txs.SerializeAsString());
-    ZJC_DEBUG("success consensus local transfer to");
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
+    block_tx.set_unique_hash(unique_hash);
+    block_tx.set_nonce(src_to_nonce + 1);
+    auto& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
+    CreateLocalToTx(view_block, zjc_host, acc_balance_map, to_tx_item, block_to_txs);
+    SHARDORA_WARN("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu", 
+        view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
+    acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
+    acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+    SHARDORA_DEBUG("success add addr: %s, value: %s", 
+        common::Encode::HexEncode(block_tx.to()).c_str(), 
+        ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
+    SHARDORA_DEBUG("success consensus local transfer to unique hash: %s, %s",
+        common::Encode::HexEncode(unique_hash).c_str(), 
+        ProtobufToJson(block_to_txs).c_str());
     return consensus::kConsensusSuccess;
+}
+
+void ToTxLocalItem::CreateLocalToTx(
+        view_block::protobuf::ViewBlockItem& view_block,
+        zjcvm::ZjchainHost& zjc_host,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        const pools::protobuf::ToTxMessageItem& to_tx_item, 
+        block::protobuf::ConsensusToTxs& block_to_txs) {
+    if (to_tx_item.des().size() != common::kUnicastAddressLength && 
+            to_tx_item.des().size() != common::kPreypamentAddressLength) {
+        SHARDORA_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
+        assert(false);
+        return;
+    }
+
+    auto new_addr_func = [&](const std::string& addr, uint64_t amount) {
+        uint64_t to_balance = 0;
+        uint64_t nonce = 0;
+        int balance_status = GetTempAccountBalance(
+            zjc_host,
+            addr, 
+            acc_balance_map, 
+            &to_balance, 
+            &nonce);
+        if (balance_status != kConsensusSuccess) {
+            SHARDORA_DEBUG("create new address: %s, balance: %lu",
+                common::Encode::HexEncode(addr).c_str(),
+                amount);
+            to_balance = 0;
+            auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
+            addr_info->set_addr(addr);
+            addr_info->set_sharding_id(view_block.qc().network_id());
+            addr_info->set_pool_index(view_block.qc().pool_index());
+            addr_info->set_type(address::protobuf::kNormal);
+            addr_info->set_latest_height(view_block.block_info().height());
+            acc_balance_map[addr] = addr_info;
+        } else {
+            SHARDORA_DEBUG("success get to balance: %s, %lu",
+                common::Encode::HexEncode(addr).c_str(), 
+                to_balance);
+        }
+
+        if (amount <= 0 && 
+                to_tx_item.library_bytes().empty()) {
+            SHARDORA_DEBUG("failed just contract set prepayment add addr: %s, value: %s, to item: %s", 
+                common::Encode::HexEncode(addr).c_str(), 
+                ProtobufToJson(*(acc_balance_map[addr])).c_str(),
+                ProtobufToJson(to_tx_item).c_str());
+            return;
+        }
+
+        to_balance += amount;
+        acc_balance_map[addr]->set_balance(to_balance);
+        acc_balance_map[addr]->set_nonce(nonce);
+        if (!to_tx_item.library_bytes().empty()) {
+            acc_balance_map[addr]->set_bytes_code(to_tx_item.library_bytes());
+        }
+
+        SHARDORA_DEBUG("success add addr: %s, value: %s, to item: %s", 
+            common::Encode::HexEncode(addr).c_str(), 
+            ProtobufToJson(*(acc_balance_map[addr])).c_str(),
+            ProtobufToJson(to_tx_item).c_str());
+        SHARDORA_DEBUG("add local to: %s, balance: %lu, amount: %lu",
+            common::Encode::HexEncode(addr).c_str(),
+            to_balance,
+            amount);
+    };
+
+    auto addr = to_tx_item.des();
+    if (to_tx_item.des().size() == common::kPreypamentAddressLength) {
+        addr = addr.substr(0, common::kUnicastAddressLength);
+        new_addr_func(to_tx_item.des(), to_tx_item.prepayment());
+    }
+    
+    new_addr_func(addr, to_tx_item.amount());
 }
 
 int ToTxLocalItem::TxToBlockTx(
         const pools::protobuf::TxMessage& tx_info,
         block::protobuf::BlockTx* block_tx) {
-    DefaultTxItem(tx_info, block_tx);
-    // change
-    if (tx_info.key().empty()) {
+    if (!DefaultTxItem(tx_info, block_tx)) {
         return consensus::kConsensusError;
     }
 
-    auto storage = block_tx->add_storages();
-    storage->set_key(tx_info.key());
-    storage->set_value(tx_info.value());
     return consensus::kConsensusSuccess;
 }
 

@@ -99,48 +99,55 @@ public:
     }
 
     void Put(const std::string& key, const std::string& value) {
-        // if (data_map_.find(key) == data_map_.end()) {
-        //     data_map_[key] = value;
-        //     CHECK_MEMORY_SIZE(data_map_);
-        // }
+#ifndef NDEBUG
+        if (thread_id_ == std::thread::id()) {
+            thread_id_ = std::this_thread::get_id();
+        } else if (thread_id_ != std::this_thread::get_id()) {
+            assert(false);
+        }
+        if (data_map_.find(key) == data_map_.end()) {
+            data_map_[key] = value;
+            CHECK_MEMORY_SIZE(data_map_);
+        }
+#endif
 
         db_batch_.Put(key, value);
-        ++count_;
-    }
-
-    bool Exist(const std::string& key) {
-        assert(false);
-        return false;
-        // return data_map_.find(key) != data_map_.end();
-    }
-
-    bool Get(const std::string& key, std::string* value) {
-        // auto iter = data_map_.find(key);
-        // if (iter == data_map_.end()) {
-        //     return false;
-        // }
-        
-        // *value = iter->second;
-        assert(false);
-        return false;
+        count_ += key.size() + value.size();
     }
 
     void Delete(const std::string& key) {
-        // auto iter = data_map_.find(key);
-        // if (iter != data_map_.end()) {
-        //     data_map_.erase(iter);
-        //     CHECK_MEMORY_SIZE(data_map_);
-            db_batch_.Delete(key);
-        // }
+#ifndef NDEBUG
+        if (thread_id_ == std::thread::id()) {
+            thread_id_ = std::this_thread::get_id();
+        } else if (thread_id_ != std::this_thread::get_id()) {
+            assert(false);
+        }
+
+        auto iter = data_map_.find(key);
+        if (iter != data_map_.end()) {
+            data_map_.erase(iter);
+            CHECK_MEMORY_SIZE(data_map_);
+        }
+#endif
+        db_batch_.Delete(key);
     }
 
     void Clear() {
-        // data_map_.clear();
+#ifndef NDEBUG
+        data_map_.clear();
+#endif
         db_batch_.Clear();
         count_ = 0;
     }
 
     void Append(DbWriteBatch& other) {
+#ifndef NDEBUG
+        if (thread_id_ == std::thread::id()) {
+            thread_id_ = std::this_thread::get_id();
+        } else if (thread_id_ != std::this_thread::get_id()) {
+            assert(false);
+        }
+#endif
 #ifdef LEVELDB
         db_batch_.Append(other.db_batch_);
 #else
@@ -150,17 +157,16 @@ public:
     }
 
     size_t ApproximateSize() const {
-#ifdef LEVELDB
-        return db_batch_.ApproximateSize();
-#else
-        return count_ > 0 ? 100 : 0;
-#endif
+        return count_;
     }
 
     
     TmpDbWriteBatch db_batch_;
     uint32_t count_ = 0;
-    // std::unordered_map<std::string, std::string> data_map_;
+#ifndef NDEBUG
+    std::unordered_map<std::string, std::string> data_map_;
+    std::thread::id thread_id_;
+#endif
 };
 
 class Db {
@@ -173,6 +179,7 @@ public:
         DbReadOptions read_opt;
         std::string val;
         read_opt.fill_cache = false;
+        read_opt.verify_checksums = false;
         auto status = db_->Get(read_opt, key, &val);
         return status.ok(); 
         // DbIterator* it = db_->NewIterator(DbReadOptions());
@@ -192,24 +199,35 @@ public:
             return db::DbStatus();
         }
 
-        ZJC_DEBUG("write to db datasize: %u", db_batch.ApproximateSize());
+        SHARDORA_DEBUG("write to db datasize: %u", db_batch.ApproximateSize());
         DbWriteOptions write_opt;
 #ifndef LEVELDB
         // write_opt.disableWAL = true;
 #endif
         auto st = db_->Write(write_opt, &db_batch.db_batch_);
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
         db_batch.Clear();
         return st;
     }
 
     DbStatus Put(const std::string& key, const std::string& value) {
         DbWriteOptions write_opt;
-        return db_->Put(write_opt, DbSlice(key), DbSlice(value));
+        auto st = db_->Put(write_opt, DbSlice(key), DbSlice(value));
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
+        return st;
     }
 
     DbStatus Put(const std::string& key, const char* value, size_t len) {
         DbWriteOptions write_opt;
-        return db_->Put(write_opt, DbSlice(key), DbSlice(value, len));
+        auto st = db_->Put(write_opt, DbSlice(key), DbSlice(value, len));
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
+        return st;
     }
 
     DbStatus Get(const std::string& key, std::string* value) {
@@ -225,7 +243,11 @@ public:
 
     DbStatus Delete(const std::string& key) {
         DbWriteOptions write_opt;
-        return db_->Delete(write_opt, DbSlice(key));
+        auto st = db_->Delete(write_opt, DbSlice(key));
+        if (!st.ok()) {
+            SHARDORA_ERROR("write to db failed: %s", st.ToString().c_str());
+        }
+        return st;
     }
 
     // void CompactRange(const std::string& start_key, const std::string& end_key) {
@@ -277,10 +299,10 @@ private:
     Db(const Db&);
     Db(const Db&&);
     Db& operator=(const Db&);
-    bool inited_{ false };
+    std::atomic<bool> inited_{ false };
     std::mutex mutex;
 };
 
 }  // db
 
-}  // zjchain
+}  // shardora

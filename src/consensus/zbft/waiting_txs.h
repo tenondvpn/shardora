@@ -22,23 +22,23 @@ public:
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
             transport::MessagePtr msg_ptr,
-            pools::CheckGidValidFunction gid_vlid_func) {
-        return LeaderGetTxsIdempotently(msg_ptr, gid_vlid_func);
+            pools::CheckAddrNonceValidFunction tx_valid_func) {
+        return LeaderGetTxsIdempotently(msg_ptr, tx_valid_func);
     }
 
 private:
     std::shared_ptr<WaitingTxsItem> LeaderGetTxsIdempotently(
             transport::MessagePtr msg_ptr, 
-            pools::CheckGidValidFunction gid_vlid_func) {
+            pools::CheckAddrNonceValidFunction tx_valid_func) {
         transport::protobuf::Header header;
         auto txs_items = std::make_shared<WaitingTxsItem>();
         auto& tx_vec = txs_items->txs;
         std::map<std::string, pools::TxItemPtr> invalid_txs;
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, 1, tx_vec, gid_vlid_func);
+            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, 1, tx_vec, tx_valid_func);
         } else {
-            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, common::kMaxTxCount, tx_vec, gid_vlid_func);
+            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, common::kMaxTxCount, tx_vec, tx_valid_func);
         }
 
         ADD_DEBUG_PROCESS_TIMESTAMP();

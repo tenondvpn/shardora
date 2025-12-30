@@ -7,18 +7,28 @@ namespace shardora {
 namespace consensus {
 
 int ContractCall::HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
     auto btime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("contract called now.");
+    SHARDORA_DEBUG("contract called now.");
     uint64_t from_balance = 0;
+    uint64_t from_nonce = 0;
     auto preppayment_id = block_tx.to() + block_tx.from();
-    GetTempAccountBalance(preppayment_id, acc_balance_map, &from_balance);
+    auto res = GetTempAccountBalance(zjc_host, preppayment_id, acc_balance_map, &from_balance, &from_nonce);
+    if (res != kConsensusSuccess) {
+        return kConsensusError;
+    }
+
     uint64_t src_to_balance = 0;
-    GetTempAccountBalance(block_tx.to(), acc_balance_map, &src_to_balance);
+    uint64_t src_to_nonce = 0;
+    res = GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
+    if (res != kConsensusSuccess) {
+        return kConsensusError;
+    }
+    
     int64_t new_contract_balance = static_cast<int64_t>(src_to_balance);
     uint64_t test_from_balance = from_balance;
     bool check_valid = false;
@@ -32,9 +42,15 @@ int ContractCall::HandleTx(
             break;
         }
 
+        if (from_nonce + 1 != block_tx.nonce()) {
+            block_tx.set_status(kConsensusNonceInvalid);
+            // assert(false);
+            break;
+        }
+
         if (block_tx.amount() >= from_balance) {
             block_tx.set_status(kConsensusOutOfPrepayment);
-            ZJC_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
+            SHARDORA_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
                 "amount: %lu, gas limit: %lu, gas price: %lu",
                 common::Encode::HexEncode(block_tx.from()).c_str(),
                 from_balance,
@@ -51,8 +67,6 @@ int ContractCall::HandleTx(
             block_tx.set_status(kConsensusOutOfPrepayment);
             break;
         }
-    
-        
 
         gas_limit -= kCallContractDefaultUseGas;
         check_valid = true;
@@ -66,16 +80,7 @@ int ContractCall::HandleTx(
         }
     } else {
         new_contract_balance += block_tx.amount();
-        block::protobuf::BlockTx contract_tx;
-        zjcvm::Uint64ToEvmcBytes32(
-            zjc_host.tx_context_.tx_gas_price,
-            block_tx.gas_price());
-        zjc_host.contract_mgr_ = contract_mgr_;
-        zjc_host.acc_mgr_ = account_mgr_;
-        zjc_host.my_address_ = block_tx.to();
-        zjc_host.tx_context_.block_gas_limit = gas_limit;
-        zjc_host.tx_context_.block_number = view_block.block_info().height();
-        zjc_host.tx_context_.block_timestamp= view_block.block_info().timestamp();
+        InitHost(zjc_host, block_tx, gas_limit, block_tx.gas_price(), view_block);
         // user caller prepayment 's gas
         zjc_host.AddTmpAccountBalance(
             block_tx.from(),
@@ -86,14 +91,14 @@ int ContractCall::HandleTx(
         if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
             evmc_result evmc_res = {};
             evmc::Result res{ evmc_res };
-            ZJC_DEBUG("now call contract address: %s, bytes: %s", 
+            SHARDORA_DEBUG("now call contract address: %s, bytes: %s", 
                 common::Encode::HexEncode(address_info->addr()).c_str(), 
                 common::Encode::HexEncode(address_info->bytes_code()).c_str());
             int call_res = ContractExcute(address_info, new_contract_balance, zjc_host, block_tx, gas_limit, &res);
             if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
                 block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
-                ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, gas_limit: %lu, bytes: %s, input: %s!",
-                    call_res, res.status_code, gas_limit, "common::Encode::HexEncode(address_info->bytes_code()).c_str()",
+                SHARDORA_DEBUG("call contract failed, call_res: %d, evmc res: %d, gas_limit: %lu, bytes: %s, input: %s!",
+                    call_res, (int32_t)res.status_code, gas_limit, "common::Encode::HexEncode(address_info->bytes_code()).c_str()",
                     common::Encode::HexEncode(block_tx.contract_input()).c_str());
             }
 
@@ -106,20 +111,16 @@ int ContractCall::HandleTx(
 
         if (from_balance > gas_used * block_tx.gas_price()) {
             from_balance -= gas_used * block_tx.gas_price();
-            for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                // TODO(): check key exists and reserve gas
-                gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                    consensus::kKeyValueStorageEachBytes;
-            }
-
+            gas_used += (tx_info->key().size() + tx_info->value().size()) *
+                consensus::kKeyValueStorageEachBytes;
             if (gas_limit < gas_used) {
                 block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-                ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
+                SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
                     from_balance, gas_limit, gas_used);
             }
         } else {
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
-            ZJC_ERROR("leader balance error: %llu, %llu",
+            SHARDORA_ERROR("leader balance error: %llu, %llu",
                 from_balance, gas_used * block_tx.gas_price());
             from_balance = 0;
         }
@@ -130,12 +131,12 @@ int ContractCall::HandleTx(
             if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
                 if (tmp_from_balance < dec_amount) {
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                    ZJC_ERROR("leader balance error: %llu, %llu", tmp_from_balance, dec_amount);
+                    SHARDORA_ERROR("leader balance error: %llu, %llu", tmp_from_balance, dec_amount);
                 }
             } else {
                 tmp_from_balance = 0;
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu",
+                SHARDORA_ERROR("leader balance error: %llu, %llu",
                     tmp_from_balance, gas_used * block_tx.gas_price());
             }
         } else {
@@ -148,13 +149,12 @@ int ContractCall::HandleTx(
 
         if (block_tx.status() == kConsensusSuccess) {
             int64_t caller_balance_add = 0;
-            int64_t gas_more = 0;
+            contract_balance_add = 0;
+            int64_t gas_more = zjc_host.gas_more_;
             int res = SaveContractCreateInfo(
                 zjc_host,
                 block_tx,
-                contract_balance_add,
-                caller_balance_add,
-                gas_more);
+                contract_balance_add);
             gas_used += gas_more;
             do {
                 if (res != kConsensusSuccess) {
@@ -164,14 +164,14 @@ int ContractCall::HandleTx(
 
                 if (gas_used > gas_limit) {
                     block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-                    ZJC_DEBUG("1 balance error: %lu, %lu, %lu",
+                    SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu",
                         tmp_from_balance, gas_limit, gas_more);
                     break;
                 }
 
                 if (tmp_from_balance < int64_t(gas_used * block_tx.gas_price())) {
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                    ZJC_ERROR("balance error: %llu, %llu",
+                    SHARDORA_ERROR("balance error: %llu, %llu",
                         tmp_from_balance, gas_more * block_tx.gas_price());
                     break;
                 }
@@ -183,7 +183,7 @@ int ContractCall::HandleTx(
                     static_cast<int64_t>(gas_used * block_tx.gas_price());
                 if ((int64_t)tmp_from_balance < dec_amount) {
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                    ZJC_ERROR("leader balance error: %llu, %llu",
+                    SHARDORA_ERROR("leader balance error: %llu, %llu",
                         tmp_from_balance, caller_balance_add);
                     break;
                 }
@@ -191,7 +191,7 @@ int ContractCall::HandleTx(
                 tmp_from_balance -= dec_amount;
                 if (new_contract_balance < -contract_balance_add) {
                     block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                    ZJC_ERROR("to balance error: %llu, %llu",
+                    SHARDORA_ERROR("to balance error: %llu, %llu",
                         new_contract_balance, contract_balance_add);
                     break;
                 }
@@ -199,7 +199,6 @@ int ContractCall::HandleTx(
                 // change contract 's amount, now is contract 's new balance
                 new_contract_balance += contract_balance_add;
                 if (zjc_host.recorded_selfdestructs_ != nullptr && new_contract_balance > 0) {
-                    auto trans_item = block_tx.add_contract_txs();
                     std::string destruct_from = std::string(
                         (char*)zjc_host.recorded_selfdestructs_->selfdestructed.bytes,
                         sizeof(zjc_host.recorded_selfdestructs_->selfdestructed.bytes));
@@ -208,31 +207,37 @@ int ContractCall::HandleTx(
                         sizeof(zjc_host.recorded_selfdestructs_->beneficiary.bytes));
                     if (destruct_from != block_tx.to() || destruct_from == destruct_to) {
                         block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                        ZJC_ERROR("self destruct error not equal: %s, %s, beneficiary: %s",
+                        SHARDORA_ERROR("self destruct error not equal: %s, %s, beneficiary: %s",
                             common::Encode::HexEncode(destruct_from).c_str(),
                             common::Encode::HexEncode(block_tx.to()).c_str(),
                             common::Encode::HexEncode(destruct_to).c_str());
                         break;
                     }
-                    
-                    trans_item->set_from(destruct_from);
-                    trans_item->set_to(destruct_to);
-                    trans_item->set_amount(new_contract_balance);
-                    new_contract_balance = 0;
-                    ZJC_ERROR("self destruct success gid: %s, %s, %s, "
+
+                    auto iter = cross_to_map_.find(destruct_to);
+                    std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+                    if (iter == cross_to_map_.end()) {
+                        to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
+                        to_item_ptr->set_from(destruct_from);
+                        to_item_ptr->set_des(destruct_to);
+                        to_item_ptr->set_amount(new_contract_balance);
+                        cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+                    } else {
+                        to_item_ptr = iter->second;
+                        to_item_ptr->set_amount(new_contract_balance + to_item_ptr->amount());
+                    }
+
+                    SHARDORA_ERROR("self destruct success nonce: %lu, %s, %s, "
                         "beneficiary: %s, amount: %lu, status: %d",
-                        common::Encode::HexEncode(block_tx.gid()).c_str(),
+                        block_tx.nonce(),
                         common::Encode::HexEncode(destruct_from).c_str(),
                         common::Encode::HexEncode(block_tx.to()).c_str(),
                         common::Encode::HexEncode(destruct_to).c_str(),
-                        trans_item->amount(),
+                        new_contract_balance,
                         block_tx.status());
-                    auto destruct_kv = block_tx.add_storages();
-                    destruct_kv->set_key(protos::kContractDestruct);
-                    ZJC_DEBUG("2 save storage to block tx prev storage key: %s",
-                        common::Encode::HexEncode(protos::kContractDestruct).c_str());
-                    acc_balance_map[block_tx.to()] = -1;
-                    // zjc_host.SavePrevStorages(protos::kContractDestruct, "", true);
+                    new_contract_balance = 0;
+                    acc_balance_map[block_tx.to()]->set_balance(0);
+                    acc_balance_map[block_tx.to()]->set_destructed(true);
                 }
 
             } while (0);
@@ -240,17 +245,27 @@ int ContractCall::HandleTx(
 
         if (block_tx.status() == kConsensusSuccess) {
             from_balance = tmp_from_balance;
-            if (acc_balance_map[block_tx.to()] != -1) {
-                acc_balance_map[block_tx.to()] = block_tx.amount();
+            if (!acc_balance_map[block_tx.to()]->destructed()) {
+                acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
+                acc_balance_map[block_tx.to()]->set_nonce(0);
             }
         }
 
         if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
             if (from_balance > 0) {
-                auto trans_item = block_tx.add_contract_txs();
-                trans_item->set_from(block_tx.to());
-                trans_item->set_to(block_tx.from());
-                trans_item->set_amount(from_balance);
+                auto iter = cross_to_map_.find(block_tx.from());
+                std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+                if (iter == cross_to_map_.end()) {
+                    to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
+                    to_item_ptr->set_from(block_tx.to());
+                    to_item_ptr->set_des(block_tx.from());
+                    to_item_ptr->set_amount(from_balance);
+                    cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+                } else {
+                    to_item_ptr = iter->second;
+                    to_item_ptr->set_amount(from_balance + to_item_ptr->amount());
+                }
+                
                 from_balance = 0;
             }
         }
@@ -262,16 +277,18 @@ int ContractCall::HandleTx(
         block_tx.set_amount(src_to_balance);
     }
     
-    acc_balance_map[preppayment_id] = from_balance;
+    // must prepayment's nonce, not caller or contract
+    acc_balance_map[preppayment_id]->set_balance(from_balance);
+    acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("contract gid %s, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
+    SHARDORA_DEBUG("contract nonce %lu, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
         "amount: %ld, to_balance: %ld, contract_balance_add: %ld, "
         "contract new balance: %lu, use time: %lu",
-        common::Encode::HexEncode(block_tx.gid()).c_str(),
+        block_tx.nonce(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         test_from_balance,
@@ -279,67 +296,32 @@ int ContractCall::HandleTx(
         gas_used,
         block_tx.gas_price(),
         block_tx.status(),
-        block_tx.step(),
+        (int32_t)block_tx.step(),
         block_tx.amount(),
         src_to_balance,
         contract_balance_add,
         new_contract_balance,
         (etime - btime));
+    if (block_tx.status() == kConsensusSuccess) {
+        for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
+            auto iter = zjc_host.cross_to_map_.find(exists_iter->first);
+            std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+            if (iter == zjc_host.cross_to_map_.end()) {
+                zjc_host.cross_to_map_[exists_iter->first] = exists_iter->second;
+            } else {
+                to_item_ptr = iter->second;
+                to_item_ptr->set_amount(exists_iter->second->amount() + to_item_ptr->amount());
+            }
+        }
+    }
+
     return kConsensusSuccess;
 }
 
 int ContractCall::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx,
-        int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more) {
-    // ZJC_DEBUG("now save contrat call storage acc size: %u", zjc_host.accounts_.size());
-    for (auto account_iter = zjc_host.accounts_.begin();
-            account_iter != zjc_host.accounts_.end(); ++account_iter) {
-        // ZJC_DEBUG("now save contrat call storage acc: %s storage size: %u",
-        //     common::Encode::HexEncode(std::string((char*)account_iter->first.bytes, 20)).c_str(), 
-        //     account_iter->second.storage.size());
-        for (auto storage_iter = account_iter->second.storage.begin();
-                storage_iter != account_iter->second.storage.end(); ++storage_iter) {
-            auto kv = block_tx.add_storages();
-            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
-                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
-            kv->set_key(str_key);
-            kv->set_value(std::string(
-                (char*)storage_iter->second.value.bytes,
-                sizeof(storage_iter->second.value.bytes)));
-            // if (str_key.size() > 40)
-            // ZJC_DEBUG("0 save storage to block tx prev storage key: %s, value: %s",
-            //     common::Encode::HexEncode(str_key).c_str(),
-            //     common::Encode::HexEncode(kv->value()).c_str());
-            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
-            gas_more += (sizeof(account_iter->first.bytes) +
-                sizeof(storage_iter->first.bytes) +
-                sizeof(storage_iter->second.value.bytes)) *
-                consensus::kKeyValueStorageEachBytes;
-        }
-
-        for (auto storage_iter = account_iter->second.str_storage.begin();
-                storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-            auto kv = block_tx.add_storages();
-            auto str_key = std::string(
-                (char*)account_iter->first.bytes,
-                sizeof(account_iter->first.bytes)) + storage_iter->first;
-            kv->set_key(str_key);
-            kv->set_value(storage_iter->second.str_val);
-            // if (str_key.size() > 40)
-            // ZJC_WARN("1 save storage to block tx prev storage key: %s, value: %s",
-            //     common::Encode::HexEncode(str_key).c_str(),
-            //     common::Encode::HexEncode(kv->value()).c_str());
-            // zjc_host.SavePrevStorages(str_key, kv->value(), true);
-            gas_more += (sizeof(account_iter->first.bytes) +
-                storage_iter->first.size() +
-                storage_iter->second.str_val.size()) *
-                consensus::kKeyValueStorageEachBytes;
-        }
-    }
-
+        int64_t& contract_balance_add) {
     int64_t other_add = 0;
     for (auto transfer_iter = zjc_host.to_account_value_.begin();
             transfer_iter != zjc_host.to_account_value_.end(); ++transfer_iter) {
@@ -362,15 +344,22 @@ int ContractCall::SaveContractCreateInfo(
             }
 
             contract_balance_add -= to_iter->second;
-            // from and contract itself transfers direct
-            // transfer to other address by cross sharding transfer
-            auto trans_item = block_tx.add_contract_txs();
-            trans_item->set_from(transfer_iter->first);
-            trans_item->set_to(to_iter->first);
-            trans_item->set_amount(to_iter->second);
+            auto iter = cross_to_map_.find(to_iter->first);
+            std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+            if (iter == cross_to_map_.end()) {
+                to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
+                to_item_ptr->set_from(transfer_iter->first);
+                to_item_ptr->set_des(to_iter->first);
+                to_item_ptr->set_amount(to_iter->second);
+                cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+            } else {
+                to_item_ptr = iter->second;
+                to_item_ptr->set_amount(to_iter->second + to_item_ptr->amount());
+            }
+            
             other_add += to_iter->second;
-            ZJC_DEBUG("contract call transfer gid: %s, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
-                common::Encode::HexEncode(block_tx.gid()).c_str(),
+            SHARDORA_DEBUG("contract call transfer nonce: %lu, from: %s, to: %s, amount: %lu, contract_balance_add: %ld",
+                block_tx.nonce(),
                 common::Encode::HexEncode(transfer_iter->first).c_str(),
                 common::Encode::HexEncode(to_iter->first).c_str(),
                 to_iter->second,
@@ -388,7 +377,7 @@ int ContractCall::SaveContractCreateInfo(
         return kConsensusError;
     }
 
-    ZJC_DEBUG("user success call contract.");
+    SHARDORA_DEBUG("user success call contract.");
     return kConsensusSuccess;
 }
 
@@ -412,7 +401,7 @@ int ContractCall::ContractExcute(
         zjc_host,
         out_res);
     if (exec_res != zjcvm::kZjcvmSuccess) {
-        ZJC_ERROR("ContractExcute failed: %d, bytes: %s, input: %s",
+        SHARDORA_ERROR("ContractExcute failed: %d, bytes: %s, input: %s",
             exec_res, common::Encode::HexEncode(contract_info->bytes_code()).c_str(),
             common::Encode::HexEncode(tx.contract_input()).c_str());
         assert(false);

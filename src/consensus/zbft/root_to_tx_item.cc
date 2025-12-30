@@ -1,5 +1,6 @@
 #include "consensus/zbft/root_to_tx_item.h"
 
+#include "consensus/hotstuff/view_block_chain.h"
 #include "network/network_utils.h"
 #include "protos/tx_storage_key.h"
 #include "vss/vss_manager.h"
@@ -27,54 +28,94 @@ RootToTxItem::RootToTxItem(
 RootToTxItem::~RootToTxItem() {}
 
 int RootToTxItem::HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    protos::AddressInfoPtr account_info = nullptr;
-    if (block_tx.to().size() == security::kUnicastAddressLength * 2) {
-        // gas prepayment
-        account_info = account_mgr_->GetAccountInfo(
-            block_tx.to().substr(0, security::kUnicastAddressLength));
-        // if (account_info == nullptr) {
-        //     block_tx.set_status(kConsensusAccountNotExists);
-        //     return kConsensusSuccess;
-        // }
-    } else {
-        account_info = account_mgr_->GetAccountInfo(block_tx.to());
+    uint64_t to_balance = 0;
+    uint64_t to_nonce = 0;
+    GetTempAccountBalance(zjc_host, block_tx.to(), acc_balance_map, &to_balance, &to_nonce);
+    auto& unique_hash = tx_info->key();
+    std::string val;
+    if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
+        SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        return consensus::kConsensusError;
+    }
+    
+    pools::protobuf::ToTxMessageItem to_item;
+    if (!to_item.ParseFromString(tx_info->value())) {
+        SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        assert(false);
+        return consensus::kConsensusError;
     }
 
-    char des_sharding_and_pool[8];
-    uint32_t* des_info = (uint32_t*)des_sharding_and_pool;
-    if (account_info != nullptr) {
-        des_info[0] = account_info->sharding_id();
-        des_info[1] = account_info->pool_index();
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
+    zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
+    block_tx.set_unique_hash(unique_hash);
+    block_tx.set_nonce(to_nonce + 1);
+    protos::AddressInfoPtr to_account_info = nullptr;
+    auto to_addr = to_item.des().substr(0, common::kUnicastAddressLength);
+    to_account_info = zjc_host.view_block_chain_->ChainGetAccountInfo(to_addr);
+    uint32_t sharding_id = 0;
+    if (to_account_info != nullptr) {
+        sharding_id = to_account_info->sharding_id();
     } else {
-        uint32_t sharding_id = 0;
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-            // 合约创建，用户指定 sharding
-            if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
-                uint32_t* data = (uint32_t*)block_tx.storages(i).value().c_str();
-                des_info[0] = data[0];
-                des_info[1] = data[1];
-                break;
+        if (to_item.has_sharding_id() && 
+                to_item.sharding_id() >= network::kConsensusShardBeginNetworkId && 
+                to_item.sharding_id() < network::kConsensusShardEndNetworkId) {
+            sharding_id = to_item.sharding_id();
+        }
+
+        if (sharding_id == 0) {
+            std::mt19937_64 g2(view_block.block_info().height() ^ vss_mgr_->EpochRandom());
+            sharding_id = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
+                network::kConsensusShardBeginNetworkId;
+        }
+
+        auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
+        addr_info->set_addr(to_addr);
+        addr_info->set_sharding_id(sharding_id);
+        addr_info->set_pool_index(common::GetAddressPoolIndex(to_addr));
+        addr_info->set_type(address::protobuf::kNormal);
+        addr_info->set_latest_height(view_block.block_info().height());
+        addr_info->set_balance(0);
+        addr_info->set_nonce(0);
+        if (to_item.has_library_bytes()) {
+            addr_info->set_bytes_code(to_item.library_bytes());
+        }
+
+        acc_balance_map[to_addr] = addr_info;
+    }
+
+    acc_balance_map[block_tx.to()]->set_balance(to_balance);
+    acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
+    if (block_tx.status() == kConsensusSuccess) {
+        auto iter = zjc_host.cross_to_map_.find(to_item.des());
+        std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+        if (iter == zjc_host.cross_to_map_.end()) {
+            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>(to_item);
+            to_item_ptr->set_des_sharding_id(sharding_id);
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+        } else {
+            to_item_ptr = iter->second;
+            to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
+            if (block_tx.has_contract_code() && !block_tx.contract_code().empty()) {
+                to_item_ptr->set_library_bytes(block_tx.contract_code());
+            }
+
+            if (block_tx.contract_prepayment() > 0) {
+                to_item_ptr->set_prepayment(block_tx.contract_prepayment() + to_item_ptr->prepayment());
             }
         }
 
-        std::mt19937_64 g2(view_block.block_info().height() ^ vss_mgr_->EpochRandom());
-        if (sharding_id == 0) {
-            des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
-                network::kConsensusShardBeginNetworkId;
-            // pool index just binding with address
-            des_info[1] = common::GetAddressPoolIndex(block_tx.to());
-        }
+        SHARDORA_DEBUG("success add addr cross to: %s, to info: %s", 
+            common::Encode::HexEncode(to_item.des()).c_str(), 
+            ProtobufToJson(*to_item_ptr).c_str());
     }
 
-    auto& storage = *block_tx.add_storages();
-    storage.set_key(protos::kRootCreateAddressKey);
-    storage.set_value(std::string((char*)&des_sharding_and_pool, sizeof(des_sharding_and_pool)));
-    ZJC_DEBUG("adress: %s, set sharding id: %u, pool index: %d",
-        common::Encode::HexEncode(block_tx.to()).c_str(), des_info[0], des_info[1]);
+    SHARDORA_DEBUG("success add addr to: %s, value: %s", 
+        common::Encode::HexEncode(block_tx.to()).c_str(), 
+        ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
     return kConsensusSuccess;
 }
 

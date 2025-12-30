@@ -24,11 +24,13 @@ Status Crypto::PartialSign(
     
     if (elect_item->local_sk() == libff::alt_bn128_Fr::zero()) {
         // assert(false);
+        SHARDORA_DEBUG("local sk is invalid.");
         return Status::kError;
     }
 
     if (elect_item->LocalMember()->bls_publick_key == libff::alt_bn128_G2::zero()) {
         // assert(false);
+        SHARDORA_DEBUG("local public key is invalid.");
         return Status::kError;
     }
 
@@ -46,20 +48,21 @@ Status Crypto::PartialSign(
         return Status::kError;
     }
 
-// #ifndef NDEBUG
-//     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-//             elect_item->LocalMember()->bls_publick_key.X.c0);
-//     ZJC_DEBUG("bls parial sign t: %u, n: %u, member index: %u"
-//         "bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
-//         elect_item->t(),
-//         elect_item->n(),
-//         elect_item->LocalMember()->index,
-//         member_bls_pk.c_str(),
-//         sign_x->c_str(),
-//         sign_y->c_str(),
-//         common::Encode::HexEncode(msg_hash).c_str(),
-//         elect_height);
-// #endif
+#ifndef NDEBUG
+    auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
+            elect_item->LocalMember()->bls_publick_key.X.c0);
+    SHARDORA_DEBUG("bls parial sign t: %u, n: %u, member index: %u, "
+        "local seckey: %s, bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+        elect_item->t(),
+        elect_item->n(),
+        elect_item->LocalMember()->index,
+        libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
+        member_bls_pk.c_str(),
+        sign_x->c_str(),
+        sign_y->c_str(),
+        common::Encode::HexEncode(msg_hash).c_str(),
+        elect_height);
+#endif
     return Status::kSuccess;
 }
 
@@ -75,17 +78,17 @@ Status Crypto::ReconstructAndVerifyThresSign(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto elect_item = GetElectItem(common::GlobalInfo::Instance()->network_id(), elect_height);
     if (!elect_item) {
-        ZJC_DEBUG("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        SHARDORA_DEBUG("get elect item failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             vote_view_, view, index, pool_idx_);
         return Status::kError;
     }
 
     if ((*elect_item->Members())[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_DEBUG("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
+        SHARDORA_DEBUG("bls public key failed bls_collection_ && bls_collection_->view > view: %lu, %lu, "
             "index: %u, pool_idx_: %d", 
             vote_view_, view, index, pool_idx_);
-        assert(false);
+        // assert(false);
         return Status::kError;
     }
 
@@ -122,7 +125,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     // Reconstruct sign
     // TODO(HT): 先判断是否已经处理过的index
     map_iter->second[index] = partial_sign;
-    ZJC_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
+    SHARDORA_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
         map_iter->second.size(), 
         elect_item->t(),
@@ -162,8 +165,8 @@ Status Crypto::ReconstructAndVerifyThresSign(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (s != Status::kSuccess) {
         // TODO: check each partial sign
-        ZJC_ERROR("verify thresh sign failed!");
-        assert(false);
+        SHARDORA_ERROR("verify thresh sign failed!");
+        // assert(false);
         return s;
     }
 
@@ -172,7 +175,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
 //         elect_item->common_pk().X.c0);
 //     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
 //         reconstructed_sign->X);
-//     ZJC_DEBUG("success construct agg msg_hash: %s, net: %u, pool: %u, "
+//     SHARDORA_DEBUG("success construct agg msg_hash: %s, net: %u, pool: %u, "
 //             "elect height: %lu, common PK: %s, agg sign: %s", 
 //             common::Encode::HexEncode(msg_hash).c_str(),
 //             common::GlobalInfo::Instance()->network_id(), 
@@ -184,7 +187,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     ADD_DEBUG_PROCESS_TIMESTAMP();
     return s;
 } catch (std::exception& e) {
-    ZJC_ERROR("crypto verify exception %s", e.what());
+    SHARDORA_ERROR("crypto verify exception %s", e.what());
     return Status::kBlsVerifyWaiting;
 };
 
@@ -196,31 +199,31 @@ Status Crypto::VerifyThresSign(
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
-        ZJC_DEBUG("sharding_id: %d VerifyThresSign duration: %lu ms", sharding_id, e-b);
+        SHARDORA_DEBUG("sharding_id: %d VerifyThresSign duration: %lu ms", sharding_id, e-b);
     });
 
 #ifdef HOTSTUFF_TEST
     return Status::kSuccess;
 #endif
     if (reconstructed_sign == libff::alt_bn128_G1::zero()) {
-        ZJC_DEBUG("reconstructed_sign == nullptr");
+        SHARDORA_DEBUG("reconstructed_sign == nullptr");
         assert(false);
         return Status::kBlsVerifyFailed;
     }    
     std::string verify_hash_a;
-    std::string verify_hash_b;
     Status s = GetVerifyHashA(sharding_id, elect_height, msg_hash, &verify_hash_a);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("GetVerifyHashA faile net: %u, pool: %u, height: %lu, hash: %s",
+        SHARDORA_DEBUG("GetVerifyHashA faile net: %u, pool: %u, height: %lu, hash: %s",
             sharding_id, sharding_id, elect_height,
             common::Encode::HexEncode(msg_hash).c_str());
         // assert(false);
         return s;
     }
 
+    std::string verify_hash_b;
     s = GetVerifyHashB(sharding_id, elect_height, reconstructed_sign, &verify_hash_b);
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("GetVerifyHashB failed!");
+        SHARDORA_DEBUG("GetVerifyHashB failed!");
         assert(false);
         return s;
     }
@@ -231,7 +234,7 @@ Status Crypto::VerifyThresSign(
             elect_item->common_pk().X.c0);
         auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
             reconstructed_sign.X);
-        ZJC_DEBUG("verify_hash_a != verify_hash_b %s, %s, msg_hash: %s, "
+        SHARDORA_DEBUG("verify_hash_a != verify_hash_b %s, %s, msg_hash: %s, "
             "net: %u, pool: %u, elect height: %lu, common PK: %s, agg sign: %s", 
             common::Encode::HexEncode(verify_hash_a).c_str(),
             common::Encode::HexEncode(verify_hash_b).c_str(),
@@ -245,23 +248,23 @@ Status Crypto::VerifyThresSign(
         return Status::kBlsVerifyFailed;
     }
 
-// #ifndef NDEBUG
-//     auto elect_item = GetElectItem(sharding_id, elect_height);
-//     auto val = libBLS::ThresholdUtils::fieldElementToString(
-//         elect_item->common_pk().X.c0);
-//     auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
-//         reconstructed_sign.X);
-//     ZJC_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
-//             "elect height: %lu, common PK: %s, agg sign: %s", 
-//             common::Encode::HexEncode(verify_hash_a).c_str(),
-//             common::Encode::HexEncode(verify_hash_b).c_str(),
-//             common::Encode::HexEncode(msg_hash).c_str(),
-//             sharding_id, 
-//             pool_idx_,
-//             elect_height,
-//             val.c_str(),
-//             agg_sign_str.c_str());
-// #endif
+#ifndef NDEBUG
+    auto elect_item = GetElectItem(sharding_id, elect_height);
+    auto val = libBLS::ThresholdUtils::fieldElementToString(
+        elect_item->common_pk().X.c0);
+    auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
+        reconstructed_sign.X);
+    SHARDORA_DEBUG("success verify agg sign %s, %s, msg_hash: %s, net: %u, pool: %u, "
+            "elect height: %lu, common PK: %s, agg sign: %s", 
+            common::Encode::HexEncode(verify_hash_a).c_str(),
+            common::Encode::HexEncode(verify_hash_b).c_str(),
+            common::Encode::HexEncode(msg_hash).c_str(),
+            sharding_id, 
+            pool_idx_,
+            elect_height,
+            val.c_str(),
+            agg_sign_str.c_str());
+#endif
     return Status::kSuccess;
 }
 
@@ -285,11 +288,17 @@ Status Crypto::VerifyQC(
         msg_hash, 
         bls_sign);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error sharding id: %u, elect height: %lu, msg hash: %s",
-            sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str());
+        SHARDORA_ERROR("verify qc failed, sharding id: %u, elect height: %lu, hash: %s, sign: %s, qc: %s",
+            sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str(),
+            qc.sign_x().c_str(),
+            ProtobufToJson(qc).c_str());
         return s;
     }
     
+    SHARDORA_DEBUG("verify qc success, sharding id: %u, elect height: %lu, hash: %s, sign: %s, qc: %s",
+        sharding_id, qc.elect_height(), common::Encode::HexEncode(msg_hash).c_str(),
+        qc.sign_x().c_str(),
+        ProtobufToJson(qc).c_str());
     return Status::kSuccess;
 }
 
@@ -313,7 +322,7 @@ Status Crypto::VerifyTC(
         msg_hash, 
         bls_sign);
     if (s != Status::kSuccess) {
-        ZJC_ERROR("Verify qc is error sharding id: %u, elect height: %lu, msg hash: %s",
+        SHARDORA_ERROR("Verify qc is error sharding id: %u, elect height: %lu, msg hash: %s",
             sharding_id, tc.elect_height(), common::Encode::HexEncode(msg_hash).c_str());
         return s;
     }
@@ -343,15 +352,14 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (!msg_ptr->header.has_hotstuff() ||
-            !msg_ptr->header.hotstuff().has_pro_msg() ||
-            !msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+            !msg_ptr->header.hotstuff().has_pro_msg()) {
         return Status::kInvalidArgument;
     }
 
     auto mem_ptr = elect_item->GetMemberByIdx(
         msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
+        SHARDORA_DEBUG("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());
         return Status::kError;
     }
@@ -361,7 +369,7 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+        SHARDORA_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
         return Status::kError;
     }
 

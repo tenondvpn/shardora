@@ -41,7 +41,7 @@ private:
     virtual void ImplResourceDestroy();
     std::shared_ptr<TcpConnection> CreateTcpServerConnection(
             EventLoop& evnetLoop,
-            ServerSocket& socket);
+            std::shared_ptr<Socket> socket);
     void ReleaseByIOThread();
     virtual bool OnRead();
     virtual void OnWrite();
@@ -51,7 +51,7 @@ private:
 
     mutable common::SpinMutex mutex_;
     Socket* socket_{ nullptr };
-    volatile bool stop_{ true };
+    std::atomic<bool> stop_{ true };
     mutable uint32_t round_robin_index_{ 0 };
     uint32_t recv_buff_size_{ 0 };
     uint32_t send_buff_size_{ 0 };
@@ -60,10 +60,10 @@ private:
     PacketFactory* packet_factory_{ nullptr };
     EventLoop& event_loop_;
     std::vector<EventLoop*> event_loops_;
-    volatile bool destroy_ = false;
+    std::atomic<bool> destroy_ = false;
     std::unordered_map<std::string, std::shared_ptr<TcpConnection>> conn_map_;
-    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>> in_check_queue_;
-    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>> out_check_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>>* in_check_queue_ = nullptr;
+    common::ThreadSafeQueue<std::shared_ptr<TcpConnection>>* out_check_queue_ = nullptr;
     std::deque<std::shared_ptr<TcpConnection>> waiting_check_queue_;
     common::Tick check_conn_tick_;
 

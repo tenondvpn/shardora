@@ -3,12 +3,14 @@
 #include <deque>
 #include <protos/elect.pb.h>
 
+#include "common/bitmap.h"
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/lof.h"
 #include "common/node_members.h"
 #include "common/time_utils.h"
 #include "common/utils.h"
+#include "consensus/hotstuff/hotstuff_utils.h"
 #include "db/db.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -21,11 +23,11 @@ namespace shardora {
 
 namespace pools {
 
-static const uint64_t kBftStartDeltaTime = 10000000lu; // 预留交易生效时间，避免部分节点找不到交易（但会增大交易 latency）
+static const uint64_t kBftStartDeltaTime = 10000000lu; // Reserved transaction effective time to avoid some nodes not finding the transaction (but it will increase transaction latency)
 static const uint32_t kTxPoolTimeoutUs = 10u * 1000u * 1000u;
 static const uint32_t kTxStorageKeyMaxSize = 12u;
 static const uint32_t kMaxToTxsCount = 10000u;
-static const uint32_t kLeafMaxHeightCount = 1024u * 1024u;// 1024u * 1024u;  // each merkle block 1M
+static const uint32_t kLeafMaxHeightCount = 1024u * 1024u;// 1024u * 1024u;  // each merkle block 1M.
 static const uint32_t kEachHeightTreeMaxByteSize = kLeafMaxHeightCount * 2u;  // each merkle block 1M
 static const uint32_t kBranchMaxCount = kLeafMaxHeightCount / 64u;
 static const uint32_t kHeightLevelItemMaxCount = 2 * kBranchMaxCount - 1;
@@ -42,77 +44,15 @@ enum PoolsErrorCode {
     kPoolsTxAdded = 2,
 };
 
-class TxItem {
-public:
-    virtual ~TxItem() {}
-    TxItem(const transport::MessagePtr& msgp, int32_t tx_info_idx, protos::AddressInfoPtr& addr_info)
-            : prev_consensus_tm_us(0),
-            address_info(addr_info),
-            is_consensus_add_tx(false),
-            tx_info_index(tx_info_idx) {
-        msg_ptr = msgp;
-        tx_info = nullptr;
-        if (tx_info_index < 0) {
-            tx_info = msg_ptr->header.mutable_tx_proto();
-        } else {
-            if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg() &&
-                    tx_info_idx < msg_ptr->header.hotstuff().pre_reset_timer_msg().txs_size()) {
-                tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pre_reset_timer_msg()->mutable_txs(tx_info_idx);
-            } else if (msg_ptr->header.hotstuff().pro_msg().has_tx_propose()) {
-                auto& propose_msg = msg_ptr->header.hotstuff().pro_msg().tx_propose();
-                if (tx_info_idx < propose_msg.txs_size()) {
-                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_tx_propose()->mutable_txs(tx_info_idx);
-                }
-            } else if (msg_ptr->header.hotstuff().has_vote_msg()) {
-                auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
-                if (tx_info_idx < vote_msg.txs_size()) {
-                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
-                }
-            } else {
-                assert(false)
-;            }
-        }
-
-        if (tx_info == nullptr) {
-            assert(false);
-            return;
-        }
-
-        uint64_t now_tm = common::TimeUtils::TimestampUs();
-        time_valid = now_tm + kBftStartDeltaTime;
-#ifdef ZJC_UNITTEST
-        time_valid = 0;
-#endif // ZJC_UNITTEST
-        remove_timeout = now_tm + kTxPoolTimeoutUs;
-        auto prio = common::ShiftUint64(tx_info->gas_price());
-        prio_key = std::string((char*)&prio, sizeof(prio)) + tx_info->gid();
-    }
-
-    virtual int HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        block::protobuf::BlockTx& block_tx) = 0;
-    virtual int TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx) = 0;
-
-    uint64_t prev_consensus_tm_us;
-    uint64_t remove_timeout;
-    uint64_t pop_timeout;
-    uint64_t time_valid{ 0 };
-    std::string unique_tx_hash;
-    std::string prio_key;
-    pools::protobuf::TxMessage* tx_info;
-    transport::MessagePtr msg_ptr;
-    protos::AddressInfoPtr address_info;
-    bool is_consensus_add_tx;
-    int32_t tx_info_index;
-};
-
-typedef std::shared_ptr<TxItem> TxItemPtr;
-typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<bool(const std::string& gid)> CheckGidValidFunction;
+static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
+    assert(addr.size() == common::kUnicastAddressLength || addr.size() == common::kPreypamentAddressLength);
+    std::string data;
+    data.resize(addr.size() + 8);
+    memcpy(data.data(), addr.c_str(), addr.size());
+    uint64_t* nonce_data = (uint64_t*)(data.data() + addr.size());
+    *nonce_data = nonce;
+    return data;
+}
 
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {
@@ -127,7 +67,7 @@ struct StatisticElectItem {
 
     uint64_t elect_height{ 0 };
     uint32_t succ_tx_count[common::kEachShardMaxNodeCount];
-    std::unordered_map<int32_t, std::shared_ptr<common::Point>> leader_lof_map;
+    std::map<int32_t, std::shared_ptr<common::Point>> leader_lof_map;
     std::mutex leader_lof_map_mutex;
 };
 
@@ -281,12 +221,12 @@ struct StatisticInfoItem {
 
     uint64_t all_gas_amount;
     uint64_t root_all_gas_amount;
-    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
-    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
-    std::map<uint64_t, std::unordered_map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
-    std::unordered_map<std::string, std::string> id_pk_map;
-    std::unordered_map<std::string, elect::protobuf::BlsPublicKey*> id_agg_bls_pk_map;
-    std::unordered_map<std::string, elect::protobuf::BlsPopProof*> id_agg_bls_pk_proof_map;
+    std::map<uint64_t, std::map<std::string, uint64_t>> join_elect_stoke_map;
+    std::map<uint64_t, std::map<std::string, uint32_t>> join_elect_shard_map;
+    std::map<uint64_t, std::map<std::string, StatisticMemberInfoItem>> height_node_collect_info_map;
+    std::map<std::string, std::string> id_pk_map;
+    std::map<std::string, std::shared_ptr<elect::protobuf::BlsPublicKey>> id_agg_bls_pk_map;
+    std::map<std::string, std::shared_ptr<elect::protobuf::BlsPopProof>> id_agg_bls_pk_proof_map;
     uint64_t statistic_min_height;
     uint64_t statistic_max_height;
 };
@@ -294,7 +234,8 @@ struct StatisticInfoItem {
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
-    message.append(tx_info.gid());
+    uint64_t nonce = tx_info.nonce();
+    message.append(std::string((char*)&nonce, sizeof(nonce)));
     message.append(tx_info.pubkey());
     message.append(tx_info.to());
     uint64_t amount = tx_info.amount();
@@ -328,7 +269,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    // ZJC_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
+    // SHARDORA_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
     //     "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
     //     common::Encode::HexEncode(tx_info.gid()).c_str(),
     //     common::Encode::HexEncode(tx_info.pubkey()).c_str(),
@@ -343,34 +284,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
     //     common::Encode::HexEncode(tx_info.key()).c_str(),
     //     common::Encode::HexEncode(tx_info.value()).c_str());
 
-    // ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
-    return common::Hash::keccak256(message);
-}
-
-static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_info) {
-    std::string message;
-    message.reserve(tx_info.GetCachedSize() * 2);
-    message.append(common::Encode::HexEncode(tx_info.gid()));
-    message.append(1, '-');
-    message.append(common::Encode::HexEncode(tx_info.pubkey()));
-    message.append(1, '-');
-    message.append(common::Encode::HexEncode(tx_info.to()));
-    message.append(1, '-');
-    if (tx_info.has_key()) {
-        message.append(common::Encode::HexEncode(tx_info.key()));
-        message.append(1, '-');
-        if (tx_info.has_value()) {
-            message.append(common::Encode::HexEncode(tx_info.value()));
-            message.append(1, '-');
-        }
-    }
-
-    message.append(std::to_string(tx_info.amount()));
-    message.append(1, '-');
-    message.append(std::to_string(tx_info.gas_limit()));
-    message.append(1, '-');
-    message.append(std::to_string(tx_info.gas_price()));
-    ZJC_DEBUG("src message: %s", message.c_str());
+    // SHARDORA_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 
@@ -401,7 +315,6 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
     switch (step) {
         case pools::protobuf::kNormalTo:
         case pools::protobuf::kRootCreateAddress:
-        // case pools::protobuf::kContractCreateByRootTo:
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kConsensusRootElectShard:
         case pools::protobuf::kConsensusRootTimeBlock:
@@ -410,12 +323,11 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
         case pools::protobuf::kStatistic:
         case pools::protobuf::kContractCreate:
         case pools::protobuf::kCreateLibrary:
+        case pools::protobuf::kPoolStatisticTag:
             return false;
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kNormalFrom:
-        case pools::protobuf::kContractCreateByRootFrom:
         case pools::protobuf::kContractGasPrepayment:
-        case pools::protobuf::kPoolStatisticTag:
             return true;
         default:
             assert(false);
@@ -423,6 +335,78 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
     }
 }
 
+class TxItem {
+public:
+    virtual ~TxItem() {}
+    TxItem(const transport::MessagePtr& msgp, int32_t tx_info_idx, protos::AddressInfoPtr& addr_info)
+            : prev_consensus_tm_us(0),
+            address_info(addr_info),
+            is_consensus_add_tx(false),
+            tx_info_index(tx_info_idx),
+            synced_leaders_(common::kEachShardMaxNodeCount) {
+        msg_ptr = msgp;
+        tx_info = nullptr;
+        if (tx_info_index < 0) {
+            tx_info = msg_ptr->header.mutable_tx_proto();
+        } else {
+            if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg() &&
+                    tx_info_idx < msg_ptr->header.hotstuff().pre_reset_timer_msg().txs_size()) {
+                tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pre_reset_timer_msg()->mutable_txs(tx_info_idx);
+            } else if (msg_ptr->header.hotstuff().pro_msg().has_tx_propose()) {
+                auto& propose_msg = msg_ptr->header.hotstuff().pro_msg().tx_propose();
+                if (tx_info_idx < propose_msg.txs_size()) {
+                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_pro_msg()->mutable_tx_propose()->mutable_txs(tx_info_idx);
+                }
+            } else if (msg_ptr->header.hotstuff().has_vote_msg()) {
+                auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+                if (tx_info_idx < vote_msg.txs_size()) {
+                    tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
+                }
+            } else {
+                assert(false)
+;            }
+        }
+
+        if (tx_info == nullptr) {
+            assert(false);
+            return;
+        }
+
+        uint64_t now_tm = common::TimeUtils::TimestampUs();
+        receive_tm_us = now_tm;
+        time_valid = now_tm + kBftStartDeltaTime;
+#ifdef SHARDORA_UNITTEST
+        time_valid = 0;
+#endif // SHARDORA_UNITTEST
+        remove_timeout = now_tm + kTxPoolTimeoutUs;
+        tx_key = GetTxKey(addr_info->addr(), tx_info->nonce());
+    }
+
+    virtual int HandleTx(
+        view_block::protobuf::ViewBlockItem& view_block,
+        zjcvm::ZjchainHost& zjc_host,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        block::protobuf::BlockTx& block_tx) = 0;
+    virtual int TxToBlockTx(
+        const pools::protobuf::TxMessage& tx_info,
+        block::protobuf::BlockTx* block_tx) = 0;
+
+    uint64_t receive_tm_us;
+    uint64_t prev_consensus_tm_us;
+    uint64_t remove_timeout;
+    uint64_t time_valid{ 0 };
+    std::string tx_key;
+    pools::protobuf::TxMessage* tx_info;
+    transport::MessagePtr msg_ptr;
+    protos::AddressInfoPtr address_info;
+    bool is_consensus_add_tx;
+    int32_t tx_info_index;
+    common::Bitmap synced_leaders_;
+};
+
+typedef std::shared_ptr<TxItem> TxItemPtr;
+typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
+typedef std::function<int(const address::protobuf::AddressInfo& addr, pools::protobuf::TxMessage&)> CheckAddrNonceValidFunction;
 
 };  // namespace pools
 

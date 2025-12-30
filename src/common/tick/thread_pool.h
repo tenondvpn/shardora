@@ -50,7 +50,7 @@ private:
     void Ticking();
     TickItemPtr Get(uint32_t& idx);
 
-    bool destroy_{ false };
+    std::atomic<bool> destroy_{ false };
     common::SpinMutex destroy_mutex_;
     std::vector<std::shared_ptr<std::thread>> thread_pool_;
     std::vector<TickItemPtr> tick_items_;

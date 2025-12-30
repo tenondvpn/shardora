@@ -1,11 +1,14 @@
 # configure
-export CC=/usr/local/gcc-8.3.0/bin/gcc
-export CXX=/usr/local/gcc-8.3.0/bin/g++
-TARGET=Release
+TARGET=Debug
 
 if test "$2" = "Debug"
 then
 	TARGET=Debug
+fi
+
+if test "$2" = "Release"
+then
+        TARGET=Release
 fi
 
 mkdir -p cbuild_$TARGET
@@ -16,7 +19,7 @@ cd cbuild_$TARGET
 #   Release:            -O3 -DNDEBUG
 #   RelWithDebInfo:     -O2 -g -DNDEBUG
 #   MinSizeRel:         -Os -DNDEBUG
-cmake .. -DCMAKE_BUILD_TYPE=$TARGET -DOPENSSL_ROOT_DIR=./third_party/depends/include/ -DCMAKE_INSTALL_PREFIX=~/zjchain -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+cmake .. -DCMAKE_BUILD_TYPE=$TARGET -DOPENSSL_ROOT_DIR=./third_party/depends/include/ -DCMAKE_INSTALL_PREFIX=~/shardora -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 if [[ $1 == "" ]];
 then
     make -j3
@@ -28,8 +31,8 @@ then
     ./transport_test/transport_test
     exit 0
 fi
-
-make -j5 zjchain
+nproc=16
+make -j${nproc} shardora
 echo $1
 if [[ $1 == "test" ]];
 then

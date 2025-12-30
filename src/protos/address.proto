@@ -5,26 +5,25 @@ package shardora.address.protobuf;
 
 enum AddressType {
     kNormal = 0;
-    kContract = 1;
     kRootElect = 2;
     kRootTimer = 3;
     kStatistic = 4;
-    kToTxAddress = 5;
+    kImmutablePoolAddress = 5;
     kLocalToTxAddress = 6;
     kElectAddress = 7;
     kContractPrepayment = 8;
-    kWaitingRootConfirm = 9;
+    kPoolAddress = 10;
 }
 
 message AddressInfo {
     optional bytes pubkey = 1;
-    optional uint64 balance = 2;
-    optional uint32 sharding_id = 3;
-    optional uint32 pool_index = 4;
-    optional bytes addr = 5;
-    optional AddressType type = 6;
+    required uint64 balance = 2;
+    required uint32 sharding_id = 3;
+    required uint32 pool_index = 4;
+    required bytes addr = 5;
+    required AddressType type = 6;
     optional bytes bytes_code = 7;
-    optional uint64 latest_height = 8;
+    required uint64 latest_height = 8;
     optional int32 credit = 9 [default=0];
     repeated bls.protobuf.BlsPublicKey g2s = 10;
     optional uint32 elect_pos = 11 [default=4294967295];
@@ -35,5 +34,5 @@ message AddressInfo {
     // 识节点了，处于边缘化状态。Shardora 希望长期没有被选为共识节点的节点有更高一些的概率在之后的选
     // 举中被选中。
     optional uint64 consensus_gap = 13; // 边缘化程度 P
-
+    required uint64 nonce = 14;
 }

@@ -19,7 +19,9 @@
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
 #include "network/network_utils.h"
+#include "pools/account_qps_lru_map.h"
 #include "pools/tx_utils.h"
+#include "pools/unique_hash_lru_set.h"
 #include "protos/pools.pb.h"
 #include "pools/height_tree_level.h"
 #include "sync/key_value_sync.h"
@@ -65,13 +67,14 @@ public:
     int AddTx(TxItemPtr& tx_ptr);
     void GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
-        std::map<std::string, TxItemPtr>& res_map, 
+        std::vector<pools::TxItemPtr>& res_map, 
         uint32_t count, 
-        pools::CheckGidValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_valid_func);
     void GetTxSyncToLeader(
+        uint32_t leader_idx, 
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckGidValidFunction gid_vlid_func);
+        pools::CheckAddrNonceValidFunction tx_valid_func);
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
     void ConsensusAddTxs(const pools::TxItemPtr& tx);
     uint64_t UpdateLatestInfo(
@@ -80,17 +83,19 @@ public:
             const std::string& prehash,
             const uint64_t timestamp);
     void SyncBlock();
-    void CheckPopedTxs();
+    void TxOver(view_block::protobuf::ViewBlockItem& view_block);
 
     uint32_t all_tx_size() const {
-        return added_txs_.size() + consensus_added_txs_.size();
-        // return gid_map_.size();
-    }
+        uint32_t cons_map_size = 0;
+        for (auto iter = consensus_tx_map_.begin(); iter != consensus_tx_map_.end(); ++iter) {
+            cons_map_size = iter->second.size();
+        }
 
-    uint32_t tx_size() const {        
-        return added_txs_.size();
+        return added_txs_.size() + 
+            consensus_added_txs_.size() + 
+            cons_map_size;
     }
-
+    
     uint64_t oldest_timestamp() const {
         return oldest_timestamp_;
     }
@@ -123,6 +128,7 @@ public:
 //         assert(!latest_hash_.empty());
         return latest_hash_;
     }
+    
     uint64_t latest_timestamp() {
         if (latest_timestamp_ == 0) {
             InitLatestInfo();
@@ -137,7 +143,8 @@ private:
     void UpdateSyncedHeight();
 
     static const uint64_t kSyncBlockPeriodMs = 1000lu;
-    static const uint64_t kPopedTxTimeoutMs = 30000lu;
+    static const uint64_t kUserPopedTxTimeoutSec = 10lu;
+    static const uint64_t kSystemPopedTxTimeoutSec = 3lu;
 
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::unordered_map<std::string, uint64_t> gid_start_time_map_;
@@ -159,9 +166,9 @@ private:
     uint32_t all_finish_tx_count_ = 0;
     uint32_t all_tx_count_ = 0;
     uint32_t checked_count_ = 0;
-    volatile uint32_t finish_tx_count_ = 0;
+    std::atomic<uint32_t> finish_tx_count_ = 0;
     std::map<uint64_t, std::string> checked_height_with_prehash_;
-    volatile uint64_t oldest_timestamp_ = 0;
+    std::atomic<uint64_t> oldest_timestamp_ = 0;
     uint64_t prev_tx_count_tm_us_ = 0;
     TxPoolManager* pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
@@ -170,16 +177,18 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
-
-    common::ThreadSafeQueue<TxItemPtr, 1024 * 256> local_poped_tx_queue_;
-    // common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_poped_tx_queue_;
-
-    // TODO: check it
-    common::SpinMutex tx_pool_mutex_;
+    std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
+    std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
+    std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;
+    std::unordered_set<std::string> over_unique_hash_set_;
+    uint32_t consensus_tx_map_count_ = 0;
 
 // TODO: just test
     std::unordered_set<std::string> added_gids_;
     db::DbWriteBatch added_gids_batch_;
+    uint64_t all_delay_tm_us_ = 0;
+    uint64_t all_delay_tx_count_ = 0;
+    uint64_t prev_delay_tm_timeout_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

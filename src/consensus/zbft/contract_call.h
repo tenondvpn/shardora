@@ -1,7 +1,6 @@
 #pragma once
 
 #include "block/account_manager.h"
-#include "consensus/zbft/contract_gas_prepayment.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
@@ -20,7 +19,6 @@ class ContractCall : public TxItemBase {
 public:
     ContractCall(
             std::shared_ptr<contract::ContractManager>& contract_mgr,
-            std::shared_ptr<ContractGasPrepayment>& prepayment,
             std::shared_ptr<db::Db>& db,
             const transport::MessagePtr& msg_ptr,
             int32_t tx_index,
@@ -29,15 +27,14 @@ public:
             protos::AddressInfoPtr& addr_info)
             : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info) {
         contract_mgr_ = contract_mgr;
-        prepayment_ = prepayment;
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
     virtual ~ContractCall() {}
     virtual int HandleTx(
-        const view_block::protobuf::ViewBlockItem& block,
+        view_block::protobuf::ViewBlockItem& block,
         zjcvm::ZjchainHost& zjchost,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
 
 private:
@@ -51,18 +48,15 @@ private:
     int SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
-        int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more);
+        int64_t& contract_balance_add);
     void GetTempPerpaymentBalance(
         const view_block::protobuf::ViewBlockItem& block,
         const block::protobuf::BlockTx& block_tx,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         uint64_t* balance);
 
-    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<ContractGasPrepayment> prepayment_ = nullptr;
+    std::map<std::string, std::shared_ptr<pools::protobuf::ToTxMessageItem>> cross_to_map_;
     DISALLOW_COPY_AND_ASSIGN(ContractCall);
 };
 

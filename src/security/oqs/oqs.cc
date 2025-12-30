@@ -18,7 +18,7 @@ int Oqs::SetPrivateKey(const std::string& prikey) {
     sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
     auto rc = OQS_SIG_keypair(sig_ptr_, public_key_, secret_key_);
     if (rc != OQS_SUCCESS) {
-        ZJC_ERROR("Keypair generation failed");
+        SHARDORA_ERROR("Keypair generation failed");
         return kSecurityError;
     }
 
@@ -50,7 +50,7 @@ int Oqs::Sign(const std::string &hash, std::string *sign) {
     uint8_t signature[OQS_SIG_dilithium_2_length_signature];
     auto rc = OQS_SIG_sign(sig_ptr_, signature, &sig_len, (uint8_t*)hash.c_str(), hash.size(), secret_key_);
     if (rc != OQS_SUCCESS) {
-        ZJC_ERROR("Signing failed");
+        SHARDORA_ERROR("Signing failed");
         return kSecurityError;
     }
 
@@ -68,7 +68,7 @@ int Oqs::Verify(const std::string& hash, const std::string& str_pk, const std::s
         sign.size(), 
         (uint8_t*)str_pk.c_str());
     if (rc != OQS_SUCCESS) {
-        ZJC_ERROR("Signature verification failed!");
+        SHARDORA_ERROR("Signature verification failed!");
         return kSecurityError;
     }
 
@@ -76,14 +76,14 @@ int Oqs::Verify(const std::string& hash, const std::string& str_pk, const std::s
 }
 
 std::string Oqs::GetSign(const std::string& r, const std::string& s, uint8_t v) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return "";
 }
 
 std::string Oqs::Recover(
         const std::string& sign,
         const std::string& hash) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return "";
 }
 
@@ -104,22 +104,22 @@ const std::string& Oqs::GetPublicKeyUnCompressed() const {
 }
 
 int Oqs::Encrypt(const std::string& msg, const std::string& key, std::string* out) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return -1;
 }
 
 int Oqs::Decrypt(const std::string& msg, const std::string& key, std::string* out) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return -1;
 }
 
 bool Oqs::IsValidPublicKey(const std::string& pubkey) {
-    ZJC_FATAL("invalid!");
+    SHARDORA_FATAL("invalid!");
     return false;
 }
 
 std::string Oqs::UnicastAddress(const std::string& src_address) {
-    ZJC_FATAL("invalid");
+    SHARDORA_FATAL("invalid");
     return "";
 }
 

@@ -12,10 +12,10 @@
 #include "common/log.h"
 #include "protos/dht.pb.h"
 
-#define DHT_DEBUG(fmt, ...) ZJC_DEBUG("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_INFO(fmt, ...) ZJC_INFO("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_WARN(fmt, ...) ZJC_WARN("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_ERROR(fmt, ...) ZJC_ERROR("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_DEBUG(fmt, ...) SHARDORA_DEBUG("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_INFO(fmt, ...) SHARDORA_INFO("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_WARN(fmt, ...) SHARDORA_WARN("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_ERROR(fmt, ...) SHARDORA_ERROR("[dht]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 
@@ -70,7 +70,7 @@ enum NodeJoinWay : int32_t {
 static const uint32_t kDhtNearestNodesCount = 16u;
 static const uint32_t kDhtMinReserveNodes = 4u;
 static const uint32_t kDhtKeySize = 32u;
-static const uint32_t kDhtMaxNeighbors = kDhtKeySize * 8 + kDhtNearestNodesCount;
+static const uint32_t kDhtMaxNeighbors = 1024u;//kDhtKeySize * 8 + kDhtNearestNodesCount;
 static const uint32_t kRefreshNeighborsCount = 32u;
 static const uint32_t kRefreshNeighborsDefaultCount = 32u;
 static const uint32_t kRefreshNeighborsBloomfilterBitCount = 4096u;

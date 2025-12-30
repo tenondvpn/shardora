@@ -28,7 +28,7 @@ Universal::Universal(
 }
 
 Universal::~Universal() {
-    Destroy();
+    // Destroy();
 }
 
 int Universal::Init(
@@ -67,7 +67,7 @@ int Universal::Join(dht::NodePtr& node) {
 
     AddNodeToUniversal(node);
     // add to subnetworks
-//     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
+//     SHARDORA_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
     DhtManager::Instance()->Join(node);
     UniversalManager::Instance()->Join(node);
     return res;
@@ -124,18 +124,18 @@ void Universal::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (msg_ptr->header.network_proto().has_get_net_nodes_req()) {
         ProcessGetNetworkNodesRequest(msg_ptr);
-        ZJC_DEBUG("handle get net nodes req.");
+        SHARDORA_DEBUG("handle get net nodes req.");
         return;
     }
 
     if (msg_ptr->header.network_proto().has_get_net_nodes_res()) {
         ProcessGetNetworkNodesResponse(msg_ptr);
-        ZJC_DEBUG("handle get net nodes res.");
+        SHARDORA_DEBUG("handle get net nodes res.");
         return;
     }
 
     if (msg_ptr->header.network_proto().has_drop_node()) {
-        ZJC_DEBUG("drop node for all network: %s:%d",
+        SHARDORA_DEBUG("drop node for all network: %s:%d",
             msg_ptr->header.network_proto().drop_node().ip().c_str(),
             msg_ptr->header.network_proto().drop_node().port());
         DhtManager::Instance()->DropNode(
@@ -261,7 +261,7 @@ void Universal::OnNewElectBlock(
         if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
             if (des_dht != nullptr) {
                 des_dht->UniversalJoin(*iter);
-                ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
+                SHARDORA_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
                     (*iter)->public_port,
@@ -274,7 +274,7 @@ void Universal::OnNewElectBlock(
                     tmp_shard_id != network::kNodeNetworkId) {
                 auto node_ptr = *iter;
                 uni_net->Drop(node_ptr);
-                ZJC_DEBUG("drop universal nodes network %u node: %s:%u, %s",
+                SHARDORA_DEBUG("drop universal nodes network %u node: %s:%u, %s",
                     tmp_shard_id,
                     (*iter)->public_ip.c_str(),
                     (*iter)->public_port,
@@ -288,7 +288,7 @@ void Universal::OnNewElectBlock(
             auto fiter = new_item->id_set.find(*iter);
             if (fiter == new_item->id_set.end()) {
                 des_dht->Drop(*iter);
-                ZJC_DEBUG("drop nodes network %u node: %s",
+                SHARDORA_DEBUG("drop nodes network %u node: %s",
                     sharding_id,
                     common::Encode::HexEncode((*iter)).c_str());
             }
@@ -302,7 +302,7 @@ void Universal::OnNewElectBlock(
             auto node = *iter;
             if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
                 wait_dht->Drop((*iter)->id);
-                ZJC_DEBUG("drop nodes network %u node: %s:%u, %s",
+                SHARDORA_DEBUG("drop nodes network %u node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
                     (*iter)->public_port,
@@ -326,7 +326,7 @@ int Universal::AddNodeToUniversal(dht::NodePtr& node) {
                 node->id);
             BaseDht::Join(new_node);
             elected = true;
-            ZJC_DEBUG("universal add node: %s, sharding id: %u",
+            SHARDORA_DEBUG("universal add node: %s, sharding id: %u",
                 common::Encode::HexEncode(node->id).c_str(), sharding_iter->first);
         }
     }

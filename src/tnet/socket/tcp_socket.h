@@ -10,7 +10,7 @@ class TcpSocket : public Socket {
 public:
     bool Bind() const {
         if (fd_ < 0) {
-            ZJC_ERROR("bind on bad fd [%d]", fd_);
+            SHARDORA_ERROR("bind on bad fd [%d]", fd_);
             return false;
         }
 #ifndef _WIN32
@@ -21,7 +21,7 @@ public:
         int optval = 1;
         SetOption(SO_REUSEPORT, &optval, sizeof(optval));
         if (bind(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
-            ZJC_ERROR("bind on fd [%d] failed [%s]", fd_, strerror(errno));
+            SHARDORA_ERROR("bind on fd [%d] failed [%s]", fd_, strerror(errno));
             return false;
         }
 #endif

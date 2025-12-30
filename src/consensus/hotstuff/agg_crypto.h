@@ -135,7 +135,7 @@ public:
                 return Status::kSuccess;
             }
             auto sig_x_str = libBLS::ThresholdUtils::fieldElementToString(sig.signature().X);
-            ZJC_WARN("agg sig verify failed, sig.x is %s, msg_hash: %s, member: %d", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str(), member_idx);
+            SHARDORA_WARN("agg sig verify failed, sig.x is %s, msg_hash: %s, member: %d", sig_x_str.c_str(), common::Encode::HexEncode(msg_hash).c_str(), member_idx);
             assert(false);
             return Status::kBlsVerifyFailed;
         }
@@ -191,7 +191,7 @@ private:
             auto str_hash = iter->second;
             auto pk = elect_item->agg_bls_pk(member_idx);
             if (!pk) {
-                ZJC_ERROR("pool: %d, batch verify failed, pk not found, member_idx: %d",
+                SHARDORA_ERROR("pool: %d, batch verify failed, pk not found, member_idx: %d",
                     pool_idx_, member_idx);
                 return Status::kError;
             }

@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "common/node_members.h"
+#include "common/thread_safe_queue.h"
 #include "common/unique_map.h"
 #include "protos/address.pb.h"
 #include "protos/prefix_db.h"
@@ -32,6 +33,7 @@ public:
     int CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
+        pools::protobuf::ShardToTxItem* prev_to_heights,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::ToTxMessage& to_tx);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
@@ -56,12 +58,6 @@ private:
     void HandleRootCreateAddress(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
-    void HandleContractExecute(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx);
-    void HandleJoinElect(
-        const view_block::protobuf::ViewBlockItem& view_block,
-        const block::protobuf::BlockTx& tx);
     void AddTxToMap(
         const view_block::protobuf::ViewBlockItem& view_block,
         const std::string& to,
@@ -83,23 +79,11 @@ private:
         std::unordered_map<uint32_t, std::unordered_set<CrossItem, CrossItemRecordHash>>& cross_map);
     void StatisticToInfo(
         const view_block::protobuf::ViewBlockItem& view_block);
-
-    struct ToAddressItemInfo {
-        uint64_t amount;
-        int32_t pool_index;
-        uint32_t sharding_id;
-        pools::protobuf::StepType type;
-        int32_t src_step;
-        std::string elect_join_g2_value;
-        std::vector<bls::protobuf::JoinElectInfo> verify_reqs;
-         // for kContractCreate
-        std::string library_bytes;
-        std::string from;
-		uint64_t prepayment;
-    };
+    void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
+    void ThreadCallback();
 
     // destination shard -> pool -> height -> items
-    typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
+    typedef std::unordered_map<std::string, pools::protobuf::ToTxMessageItem> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     HeightMap network_txs_pools_[common::kInvalidPoolIndex];
     common::SpinMutex network_txs_pools_mutex_;
@@ -108,7 +92,7 @@ private:
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::unordered_map<uint64_t, uint64_t> added_heights_[common::kInvalidPoolIndex];
+    std::map<uint64_t, uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::unordered_set<uint64_t> valided_heights_[common::kInvalidPoolIndex];
     uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
@@ -116,12 +100,7 @@ private:
     common::SpinMutex prev_to_heights_mutex_;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::unordered_map<
-        uint64_t, 
-        std::unordered_map<
-            uint32_t, 
-            std::unordered_set<CrossItem, CrossItemRecordHash>>> cross_sharding_map_[common::kInvalidPoolIndex];
-
+    
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };
 

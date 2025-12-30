@@ -26,17 +26,18 @@ Pacemaker::Pacemaker(
         std::shared_ptr<LeaderRotation>& lr,
         const std::shared_ptr<ViewDuration>& d,
         GetHighQCFn get_high_qc_fn,
-        UpdateHighQCFn update_high_qc_fn) :
+        UpdateHighQCFn update_high_qc_fn,
+        const pools::protobuf::PoolLatestInfo& pool_latest_info) :
     pool_idx_(pool_idx), crypto_(c), leader_rotation_(lr), duration_(d), get_high_qc_fn_(get_high_qc_fn), update_high_qc_fn_(update_high_qc_fn) {
     high_tc_ = std::make_shared<QC>();
     auto& qc_item = *high_tc_;
     qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
     qc_item.set_pool_index(pool_idx_);
-    qc_item.set_view(BeforeGenesisView);
+    qc_item.set_view(pool_latest_info.view());
     qc_item.set_view_block_hash("");
     qc_item.set_elect_height(1);
     qc_item.set_leader_idx(0);
-    cur_view_ = GenesisView;
+    cur_view_ = pool_latest_info.view() + 1;
     StartTimeoutTimer();
 }
 
@@ -44,7 +45,7 @@ Pacemaker::~Pacemaker() {}
 
 void Pacemaker::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     // if (IsTimeout()) {
-    //     ZJC_DEBUG("pool: %d timeout", pool_idx_);
+    //     SHARDORA_DEBUG("pool: %d timeout", pool_idx_);
     //     OnLocalTimeout();
     // }
 }
@@ -54,7 +55,7 @@ void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
     if (IsQcTcValid(*tc)) {
         if (cur_view_ < tc->view() + 1) {
             cur_view_ = tc->view() + 1;
-            ZJC_DEBUG("success new tc view: %lu, %u_%u_%lu, pool index: %u",
+            SHARDORA_DEBUG("success new tc view: %lu, %u_%u_%lu, pool index: %u",
                 cur_view_, tc->network_id(), tc->pool_index(), tc->view(), pool_idx_);
         }
 
@@ -66,7 +67,7 @@ void Pacemaker::NewTc(const std::shared_ptr<view_block::protobuf::QcItem>& tc) {
         duration_->ViewStarted();
     }
    
-    ZJC_DEBUG("local time set start duration is new tc called start timeout: %lu", pool_idx_);
+    SHARDORA_DEBUG("local time set start duration is new tc called start timeout: %lu", pool_idx_);
     StartTimeoutTimer();
 }
 
@@ -79,11 +80,11 @@ void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
                 agg_qc,
                 high_qc);
         if (s != Status::kSuccess) {
-            ZJC_ERROR("new agg qc failed, pool: %d, s: %d, view: %lu", pool_idx_, s, agg_qc->GetView());
+            SHARDORA_ERROR("new agg qc failed, pool: %d, s: %d, view: %lu", pool_idx_, (int32_t)s, agg_qc->GetView());
             return;
         }
 
-        // update high_qc
+        // update high_qc.
         UpdateHighQC(*high_qc);
         NewQcView(high_qc->view());
     }
@@ -93,7 +94,7 @@ void Pacemaker::NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc) {
 void Pacemaker::NewQcView(uint64_t qc_view) {
     if (cur_view_ < qc_view + 1) {
         cur_view_ = qc_view + 1;
-        ZJC_DEBUG("success new qc view: %lu, %u_%u_%lu, pool index: %u",
+        SHARDORA_DEBUG("success new qc view: %lu, %u_%u_%lu, pool index: %u",
             qc_view, common::GlobalInfo::Instance()->network_id(), pool_idx_, qc_view, pool_idx_);
     }
 }
@@ -102,18 +103,18 @@ void Pacemaker::OnLocalTimeout() {
     // TODO: check it
     return;
     // TODO(HT): test
-    ZJC_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
-    // start a new timer for the timeout case
+    SHARDORA_DEBUG("OnLocalTimeout pool: %d, view: %d", pool_idx_, CurView());
+    // start a new timer for the timeout case.
     StopTimeoutTimer();
     duration_->ViewTimeout();
-    ZJC_DEBUG("local time set start duration is OnLocalTimeout called start timeout: %lu", pool_idx_);
+    SHARDORA_DEBUG("local time set start duration is OnLocalTimeout called start timeout: %lu", pool_idx_);
     defer(StartTimeoutTimer());
     if (leader_rotation_->GetLocalMemberIdx() == common::kInvalidUint32) {
         return;
     }
 
-    // 超时后先触发一次同步，主要是尽量同步最新的 HighQC，降低因 HighQC 不一致造成多次超时的概率
-    // 由于 HotstuffSyncer 周期性同步，这里不触发同步影响也不大
+    // After a timeout, a synchronization is triggered first, mainly to synchronize the latest HighQC as much as possible to reduce the probability of multiple timeouts due to inconsistent HighQC
+    // Since HotstuffSyncer synchronizes periodically, not triggering synchronization here has little effect
     if (sync_pool_fn_) {
         sync_pool_fn_(pool_idx_, 1);
     }
@@ -134,15 +135,15 @@ void Pacemaker::OnLocalTimeout() {
         0,
         &tc);
     auto tc_msg_hash = GetTCMsgHash(tc);
-    // if view is last one, deal directly.
-    // 更换 epoch 后重新打包
+    // if view is last one, deal directly
+    // Repackage after changing epoch
     if (last_timeout_ && last_timeout_->header.has_hotstuff_timeout_proto() &&
             last_timeout_->header.hotstuff_timeout_proto().view() >= CurView() &&
             last_timeout_->header.hotstuff_timeout_proto().view_hash() == tc_msg_hash) {
         last_timeout_->times_idx = 0;
         auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
         tmp_msg_ptr->header.CopyFrom(last_timeout_->header);
-        ZJC_DEBUG("use exist local timeout message pool: %u, "
+        SHARDORA_DEBUG("use exist local timeout message pool: %u, "
             "last_timeout_->header.hotstuff_timeout_proto().view(): %lu, cur view: %lu",
             pool_idx_, 
             tmp_msg_ptr->header.hotstuff_timeout_proto().view(), 
@@ -161,7 +162,7 @@ void Pacemaker::OnLocalTimeout() {
             elect_item->ElectHeight(),
             tc_msg_hash,
             &partial_sig) != Status::kSuccess) {
-        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+        SHARDORA_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             common::Encode::HexEncode(tc_msg_hash).c_str());
@@ -171,14 +172,14 @@ void Pacemaker::OnLocalTimeout() {
     std::string bls_sign_x;
     std::string bls_sign_y;
 
-    // 使用最新的 elect_height 签名
+    // Use the latest elect_height to sign
     if (crypto_->PartialSign(
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             tc_msg_hash,
             &bls_sign_x,
             &bls_sign_y) != Status::kSuccess) {
-        ZJC_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
+        SHARDORA_ERROR("sign message failed: %u, elect height: %lu, hash: %s",
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             common::Encode::HexEncode(tc_msg_hash).c_str());
@@ -190,8 +191,8 @@ void Pacemaker::OnLocalTimeout() {
     view_block::protobuf::TimeoutMessage& timeout_msg = *msg.mutable_hotstuff_timeout_proto();
     timeout_msg.set_member_id(leader_rotation_->GetLocalMemberIdx());
 #ifdef USE_AGG_BLS
-    timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());
-    // 对本节点的 high qc 签名
+    timeout_msg.mutable_view_sig()->CopyFrom(partial_sig.DumpToProto());    
+    // Sign the high qc of this node
     AggregateSignature high_qc_sig;
 #ifdef ENABLE_FAST_HOTSTUFF    
     auto high_qc_msg_hash = GetQCMsgHash(HighQC()); 
@@ -200,7 +201,7 @@ void Pacemaker::OnLocalTimeout() {
             elect_item->ElectHeight(),
             high_qc_msg_hash,
             &high_qc_sig) != Status::kSuccess) {
-        ZJC_ERROR("sign high qc failed: %u, elect height: %lu, hash: %s",
+        SHARDORA_ERROR("sign high qc failed: %u, elect height: %lu, hash: %s",
             common::GlobalInfo::Instance()->network_id(),
             elect_item->ElectHeight(),
             common::Encode::HexEncode(high_qc_msg_hash).c_str());
@@ -221,12 +222,12 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
-    // 停止对当前 view 的投票
+    // Stop voting for the current view
     // if (stop_voting_fn_) {
     //     stop_voting_fn_(CurView());
     // }
 
-    ZJC_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
+    SHARDORA_DEBUG("now send local timeout msg hash: %s, view: %u, pool: %u, "
         "elect height: %lu, member index: %u, member size: %u, "
         "bls_sign_x: %s, bls_sign_y: %s, hash64: %lu",
         common::Encode::HexEncode(tc_msg_hash).c_str(),
@@ -245,7 +246,7 @@ void Pacemaker::OnLocalTimeout() {
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kHotstuffTimeoutMessage);
     last_timeout_ = msg_ptr;
-    // 停止对当前 view 的投票
+    // Stop voting for the current view
     // if (stop_voting_fn_) {
     //     stop_voting_fn_(CurView());
     // }
@@ -271,7 +272,7 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
         dht::DhtKeyManager dht_key(leader->net_id, leader->id);
         msg.set_des_dht_key(dht_key.StrKey());
         transport::TcpTransport::Instance()->SetMessageHash(msg);
-        ZJC_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
+        SHARDORA_DEBUG("Send TimeoutMsg pool: %d, to ip: %s, port: %d, "
             "local_idx: %d, leader idx: %d, id: %s, local id: %s, hash64: %lu, view: %lu, hightc: %lu",
             pool_idx_,
             common::Uint32ToIp(leader->public_ip).c_str(),
@@ -296,11 +297,11 @@ void Pacemaker::SendTimeout(const std::shared_ptr<transport::TransportMessage>& 
     }
 }
 
-// OnRemoteTimeout 由 Consensus 调用
+// OnRemoteTimeout is called by Consensus
 void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     auto msg = msg_ptr->header;
     auto& timeout_proto = msg.hotstuff_timeout_proto();
-    ZJC_DEBUG("====4.0 start pool: %d, view: %d, member: %d, hash64: %lu", 
+    SHARDORA_DEBUG("====4.0 start pool: %d, view: %d, member: %d, hash64: %lu", 
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         msg_ptr->header.hash64());
     // TODO ecdh decrypt
@@ -315,22 +316,21 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    // 统计 bls 签名
+    // Statistics bls signature
     if (timeout_proto.member_id() >= leader_rotation_->MemberSize(common::GlobalInfo::Instance()->network_id())) {
         assert(false);
         return;
     }
 
     if (timeout_proto.view() < CurView()) {
-        ZJC_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
+        SHARDORA_DEBUG("====4.5 over 0 pool: %d, view: %d, curview: %lu, member: %d, hash64: %lu", 
             pool_idx_, timeout_proto.view(), CurView(), timeout_proto.member_id(),
             msg_ptr->header.hash64());
-        new_view_fn_(msg_ptr->conn, high_tc_, nullptr);
         return;
     }
 
 #ifdef USE_AGG_BLS
-    // 统计 high_qc，用于生成 AggQC
+    // Statistics high_qc, used to generate AggQC
     if (timeout_proto.view() < high_qcs_view_) {
         return;
     }
@@ -351,7 +351,7 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
     CHECK_MEMORY_SIZE(high_qcs_);
     high_qc_sigs_.push_back(high_qc_sig_of_node);
     
-    // 生成 TC
+    // Generate TC
     AggregateSignature partial_sig;
     if (!partial_sig.LoadFromProto(timeout_proto.view_sig())) {
         return;
@@ -364,8 +364,8 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
             timeout_proto.view_hash(),
             partial_sig,
             agg_sig);
-    ZJC_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+    SHARDORA_DEBUG("====4.0 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), (int32_t)s,
         msg_ptr->header.hash64());    
     if (s != Status::kSuccess || !agg_sig.IsValid()) {
         return;
@@ -394,29 +394,23 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         return;
     }
 #endif
-    // view change
+    // view change.
     NewTc(new_tc);
     NewAggQc(agg_qc);
     // AdvanceView(new_sync_info()->WithTC(tc)->WithAggQC(agg_qc));
 
-    // NewView msg broadcast
-    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
-    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
-    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
-    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
-    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    // NewView msg broadcast.
+    // TC is synchronized separately before Propose, otherwise if Propose is stuck, Replicas will be stuck in this view.
+    // When broadcasting TC, HighQC should also be broadcast to prevent only the Leader from having this HighQC, which will cause the following situation:
+    // Suppose the Leader is 1<-2, but HighQC is 3, and 4 is about to be packaged.
+    // But since 3 does not exist, it needs to be synchronized from other nodes, but since only the Leader has HighQC3, other nodes cannot synchronize 3 to the Leader, causing a deadlock.
+    // That is, the Leader has QC but no block, and the Replicas have blocks but no QC.
     auto propose_st = Status::kError;
-    // New Propose
+    // New Propose.
     if (new_proposal_fn_) {
-        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        SHARDORA_DEBUG("now ontime called propose: %d", pool_idx_);
         propose_st = new_proposal_fn_(new_tc, agg_qc, msg_ptr);
     }
-
-    if (propose_st != Status::kSuccess && new_view_fn_) {
-        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
-        new_view_fn_(nullptr, new_tc, agg_qc);
-    }    
 #else
     std::shared_ptr<libff::alt_bn128_G1> reconstructed_sign = nullptr;
     Status s = crypto_->ReconstructAndVerifyThresSign(
@@ -428,14 +422,14 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         timeout_proto.sign_x(),
         timeout_proto.sign_y(),
         reconstructed_sign);
-    ZJC_DEBUG("====4.0.1 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
-        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), s,
+    SHARDORA_DEBUG("====4.0.1 pool: %d, view: %d, member: %d, status: %d, hash64: %lu", 
+        pool_idx_, timeout_proto.view(), timeout_proto.member_id(), (int32_t)s,
         msg_ptr->header.hash64());
     if (s != Status::kSuccess) {
-        ZJC_DEBUG("====4.5 over 1 pool: %d, view: %d, member: %d, hash64: %lu, status: %d", 
+        SHARDORA_DEBUG("====4.5 over 1 pool: %d, view: %d, member: %d, hash64: %lu, status: %d", 
             pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
             msg_ptr->header.hash64(),
-            s);
+            (int32_t)s);
         return;
     }
     
@@ -451,41 +445,34 @@ void Pacemaker::OnRemoteTimeout(const transport::MessagePtr& msg_ptr) {
         &tc);
     tc.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
     tc.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->Y));
-    // 视图切换
-    ZJC_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
+    // View switching
+    SHARDORA_DEBUG("====4.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc.view(), CurView(), high_tc_->view());
     // NewTc(new_tc);
-    ZJC_DEBUG("====4.1.0 pool: %d, create tc, view: %lu, member: %d, "
+    SHARDORA_DEBUG("====4.1.0 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc.view(), CurView(), high_tc_->view());
-    // NewView msg broadcast
-    // TC 在 Propose 之前单独同步，不然假设 Propose 卡死，Replicas 就会一直卡死在这个视图
-    // 广播 TC 的同时也应该广播 HighQC，防止只有 Leader 拥有该 HighQC，这会出现如下情况：
-    // 假如 Leader 是 1<-2，但 HighQC 是 3，即将打包 4
-    // 但由于 3 不存在需要从其他节点处同步，但又由于 HighQC3 只有 Leader 拥有，其他节点无法同步 3 给 Leader，造成卡死
-    // 即 Leader 有 QC 无块，Replicas 有块无 QC
+    // NewView msg broadcast.
+    // TC is synchronized separately before Propose, otherwise if Propose is stuck, Replicas will be stuck in this view.
+    // When broadcasting TC, HighQC should also be broadcast to prevent only the Leader from having this HighQC, which will cause the following situation:
+    // Suppose the Leader is 1<-2, but HighQC is 3, and 4 is about to be packaged.
+    // But since 3 does not exist, it needs to be synchronized from other nodes, but since only the Leader has HighQC3, other nodes cannot synchronize 3 to the Leader, causing a deadlock.
+    // That is, the Leader has QC but no block, and the Replicas have blocks but no QC.
     auto propose_st = Status::kError;
-    // New Propose
+    // New Propose.
     if (new_proposal_fn_) {
-        ZJC_DEBUG("now ontime called propose: %d", pool_idx_);
+        SHARDORA_DEBUG("now ontime called propose: %d", pool_idx_);
         propose_st = new_proposal_fn_(new_tc, nullptr, msg_ptr);
     }
 
-    ZJC_DEBUG("====4.1.1 pool: %d, create tc, view: %lu, member: %d, "
+    SHARDORA_DEBUG("====4.1.1 pool: %d, create tc, view: %lu, member: %d, "
         "tc view: %lu, cur view: %lu, high_tc_: %lu",
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         tc.view(), CurView(), high_tc_->view());
-    if (propose_st != Status::kSuccess && new_view_fn_) {
-        ZJC_DEBUG("====4.2 pool: %d, broadcast tc, view: %d, member: %d, view: %d",
-
-            pool_idx_, timeout_proto.view(), timeout_proto.member_id(), tc.view());
-        new_view_fn_(nullptr, new_tc, nullptr);
-    }
-
-    ZJC_DEBUG("====4.5 over 2 pool: %d, view: %d, member: %d, hash64: %lu", 
+    SHARDORA_DEBUG("====4.5 over 2 pool: %d, view: %d, member: %d, hash64: %lu", 
         pool_idx_, timeout_proto.view(), timeout_proto.member_id(),
         msg_ptr->header.hash64());
 #endif
@@ -498,4 +485,3 @@ int Pacemaker::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 } // namespace consensus
 
 } // namespace shardora
-

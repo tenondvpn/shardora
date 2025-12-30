@@ -62,9 +62,9 @@ private:
     std::condition_variable broadcast_con_;
     std::mutex broadcast_mu_;
     std::shared_ptr<std::thread> broadcast_thread_ = nullptr;
-    bool destroy_ = false;
-    uint64_t latest_elect_height_[network::kConsensusShardEndNetworkId + 1] = {0};
-    common::MembersPtr all_shard_members_[network::kConsensusShardEndNetworkId + 1] = {nullptr};
+    std::atomic<bool> destroy_ = false;
+    std::atomic<uint64_t> latest_elect_height_[network::kConsensusShardEndNetworkId + 1] = {0};
+    std::atomic<common::MembersPtr> all_shard_members_[network::kConsensusShardEndNetworkId + 1] = {nullptr};
 
     DISALLOW_COPY_AND_ASSIGN(Route);
 };

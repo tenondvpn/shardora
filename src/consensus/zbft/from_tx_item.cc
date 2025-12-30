@@ -5,16 +5,17 @@ namespace shardora {
 namespace consensus {
 
 int FromTxItem::HandleTx(
-        const view_block::protobuf::ViewBlockItem& view_block,
+        view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;
+    uint64_t from_nonce = 0;
     uint64_t to_balance = 0;
     auto& from = address_info->addr();
-    int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
+    int balance_status = GetTempAccountBalance(zjc_host, from, acc_balance_map, &from_balance, &from_nonce);
     auto src_banalce = from_balance;
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
@@ -23,31 +24,40 @@ int FromTxItem::HandleTx(
         return kConsensusSuccess;
     }
 
+    InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
     do  {
-        gas_used = consensus::kTransferGas; // 转账交易费计算
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-            // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + tx_info->value().size()) *
-                consensus::kKeyValueStorageEachBytes;
-        }
-
-        // 余额不足
-        if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
-            block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
+        gas_used = consensus::kTransferGas; // Transfer transaction fee calculation
+        if (from_nonce + 1 != block_tx.nonce()) {
+            block_tx.set_status(kConsensusNonceInvalid);
+            // will never happen
             break;
         }
 
-        // gas limit 设置小了
+        if (tx_info->has_key()) {
+            // TODO(): check key exists and reserve gas
+            gas_used += (tx_info->key().size() + tx_info->value().size()) * consensus::kKeyValueStorageEachBytes;
+            zjc_host.SaveKeyValue(block_tx.from(), tx_info->key(), tx_info->value());
+            block_tx.set_key(tx_info->key());
+            block_tx.set_value(tx_info->value());
+        }
+
+        // Insufficient balance
+        if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
+            block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
+            SHARDORA_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
+            break;
+        }
+
+        // gas limit is set too small
         if (block_tx.gas_limit() < gas_used) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
+            SHARDORA_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
             break;
         }
     } while (0);
 
     if (block_tx.status() == kConsensusSuccess) {
-        // 要转的金额 + 交易费
+        // Amount to be transferred + transaction fee
         uint64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
             if (from_balance >= dec_amount) {
@@ -55,12 +65,12 @@ int FromTxItem::HandleTx(
             } else {
                 from_balance -= gas_used * block_tx.gas_price();
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
+                SHARDORA_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
             }
         } else {
             from_balance = 0;
             block_tx.set_status(consensus::kConsensusAccountBalanceError);
-            ZJC_ERROR("leader balance error: %llu, %llu",
+            SHARDORA_ERROR("leader balance error: %llu, %llu",
                 from_balance, gas_used * block_tx.gas_price());
         }
     } else {
@@ -71,11 +81,36 @@ int FromTxItem::HandleTx(
         }
     }
 
-    // 剪掉来源账户的金额
-    acc_balance_map[from] = from_balance;
+    if (block_tx.status() == kConsensusSuccess) {
+        auto iter = zjc_host.cross_to_map_.find(block_tx.to());
+        std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+        if (iter == zjc_host.cross_to_map_.end()) {
+            to_item_ptr = std::make_shared<pools::protobuf::ToTxMessageItem>();
+            to_item_ptr->set_des(block_tx.to());
+            to_item_ptr->set_amount(block_tx.amount());
+            zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
+            SHARDORA_DEBUG("success add cross to shard array: %s, %lu",
+                common::Encode::HexEncode(block_tx.to()).c_str(),
+                block_tx.amount());
+        } else {
+            to_item_ptr = iter->second;
+            to_item_ptr->set_amount(block_tx.amount() + to_item_ptr->amount());
+        }
+    } else {
+        SHARDORA_DEBUG("failed add cross to shard array: %s, %lu",
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            block_tx.amount());
+    }
+
+    // Deduct the amount from the source account
+    acc_balance_map[from]->set_balance(from_balance);
+    acc_balance_map[from]->set_nonce(block_tx.nonce());
+    SHARDORA_DEBUG("success add addr: %s, value: %s", 
+        common::Encode::HexEncode(from).c_str(), 
+        ProtobufToJson(*(acc_balance_map[from])).c_str());
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    // ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",
+    // SHARDORA_DEBUG("handle tx success: %s, %lu, %lu, status: %d, from: %s, to: %s, amount: %lu, src_banalce: %lu, %u_%u_%lu, height: %lu",
     //     common::Encode::HexEncode(block_tx.gid()).c_str(),
     //     block_tx.balance(),
     //     block_tx.gas_used(),

@@ -36,6 +36,7 @@ public:
     }
 
     uint64_t LatestTimestampHeight() {
+        SHARDORA_INFO("latest_time_block_height_ get: %lu", static_cast<int>(latest_time_block_height_));
         return latest_time_block_height_;
     }
 
@@ -43,10 +44,13 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    pools::TxItemPtr tmblock_tx_ptr(bool leader, uint32_t pool_index);
+    pools::TxItemPtr tmblock_tx_ptr(
+        bool leader, 
+        uint32_t pool_index, 
+        pools::CheckAddrNonceValidFunction tx_valid_func);
     bool HasTimeblockTx(
         uint32_t pool_index, 
-        pools::CheckGidValidFunction gid_valid_fn);
+        pools::CheckAddrNonceValidFunction tx_valid_func);
 
     void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
         create_tm_tx_cb_ = func;
@@ -57,7 +61,7 @@ private:
 
     bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
-        // ZJC_DEBUG("tmblock_tx_ptr CanCallTimeBlockTx now_sec: %lu "
+        // SHARDORA_DEBUG("tmblock_tx_ptr CanCallTimeBlockTx now_sec: %lu "
         //     "latest_time_block_tm_: %lu, latest_tm_block_local_sec_: %lu, %lu, valid0: %d, valid1: %d",
         //     now_sec, 
         //     latest_time_block_tm_, 
@@ -77,17 +81,17 @@ private:
     }
 
 
-    volatile uint64_t latest_time_block_height_ = common::kInvalidUint64;
-    volatile uint64_t latest_time_block_tm_{ 0 };
+    std::atomic<uint64_t> latest_time_block_height_ = common::kInvalidUint64;
+    std::atomic<uint64_t> latest_time_block_tm_{ 0 };
+    std::atomic<uint64_t> latest_tm_block_local_sec_{ 0 };
 
     common::Tick check_bft_tick_;
     common::Tick broadcast_tm_tick_;
-    uint64_t latest_tm_block_local_sec_{ 0 };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<timeblock::protobuf::TimeBlock> timeblock_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    pools::TxItemPtr tmblock_tx_ptr_ = nullptr;
+    std::atomic<pools::TxItemPtr> tmblock_tx_ptr_ = nullptr;
     pools::CreateConsensusItemFunction create_tm_tx_cb_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;

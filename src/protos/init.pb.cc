@@ -21,7 +21,7 @@
 
 namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LocalPolynomial;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectInfo;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_JoinElectInfo;
 }  // namespace protobuf_protos_2fbls_2eproto
 namespace protobuf_protos_2finit_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAddressInfoRequest;
@@ -757,6 +757,9 @@ void GetAddressInfoResponse::CopyFrom(const GetAddressInfoResponse& from) {
 }
 
 bool GetAddressInfoResponse::IsInitialized() const {
+  if (has_view_block()) {
+    if (!this->view_block_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -2111,6 +2114,9 @@ void InitMessage::CopyFrom(const InitMessage& from) {
 }
 
 bool InitMessage::IsInitialized() const {
+  if (has_addr_res()) {
+    if (!this->addr_res_->IsInitialized()) return false;
+  }
   return true;
 }
 

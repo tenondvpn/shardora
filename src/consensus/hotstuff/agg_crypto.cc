@@ -26,7 +26,7 @@ Status AggCrypto::PartialSign(
             msg_hash,
             &g1_sig);
 
-    ZJC_DEBUG("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
+    SHARDORA_DEBUG("partial sign sk: %s, real sk: %s, msg_hash: %s, sig: %s",
         libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(bls::AggBls::Instance()->agg_sk()).c_str(),
         common::Encode::HexEncode(msg_hash).c_str(),
@@ -85,7 +85,7 @@ Status AggCrypto::VerifyAndAggregateSig(
     collection_item->ok_bitmap.Set(member_idx);
     collection_item->partial_sigs[member_idx] = partial_sig;
 
-    // ZJC_WARN("====7.0 msg_hash: %s, member_idx: %d", common::Encode::HexEncode(msg_hash).c_str(), member_idx);
+    // SHARDORA_WARN("====7.0 msg_hash: %s, member_idx: %d", common::Encode::HexEncode(msg_hash).c_str(), member_idx);
     
     if (collection_item->OkCount() < elect_item->t()) {
         return Status::kBlsVerifyWaiting;
@@ -236,7 +236,7 @@ Status AggCrypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     }
     auto mem_ptr = elect_item->GetMemberByIdx(msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx());
     if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
-        ZJC_WARN("verify sign failed, backup invalid bls pk: %s",
+        SHARDORA_WARN("verify sign failed, backup invalid bls pk: %s",
             common::Encode::HexEncode(mem_ptr->id).c_str());
         return Status::kError;
     }
@@ -246,7 +246,7 @@ Status AggCrypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        ZJC_WARN("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+        SHARDORA_WARN("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
         return Status::kError;
     }
 

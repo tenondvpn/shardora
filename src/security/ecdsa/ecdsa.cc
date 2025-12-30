@@ -27,6 +27,12 @@ int Ecdsa::SetPrivateKey(const std::string& prikey) {
 }
 
 int Ecdsa::Sign(const std::string &hash, std::string *sign) {
+#ifdef USE_SERVER_TEST_TRANSACTION
+    *sign = "1";
+    // std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
+    return kSecuritySuccess;
+#endif
+
 #ifdef MOCK_SIGN 
     *sign = "c05978e58801362bb985a7b868f60e530f5bc6a309613738bf14b92b80635de508f27f3665db5f31a782fe2d1f27e9fd703dc7bf4e73afffab1ec8bae129e62f01";
     // std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
@@ -36,14 +42,18 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
         return kSecurityError;
     }
     
-    // CRYPTO_DEBUG("signed hash: %s, sign: %s",
-    //     common::Encode::HexEncode(hash).c_str(),
-    //     common::Encode::HexEncode(*sign).c_str());
+    CRYPTO_DEBUG("signed hash: %s, sign: %s",
+        common::Encode::HexEncode(hash).c_str(),
+        common::Encode::HexEncode(*sign).c_str());
     return kSecuritySuccess;
 #endif
 }
 
 int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std::string& sign) {
+#ifdef USE_SERVER_TEST_TRANSACTION
+    return kSecuritySuccess;
+#endif
+
 #ifdef MOCK_VERIFY
     // std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
     return kSecuritySuccess;

@@ -4,6 +4,7 @@
 #else
 #include <consensus/hotstuff/crypto.h>
 #endif
+#include "consensus/consensus_utils.h"
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/elect_info.h>
@@ -56,6 +57,7 @@ class Hotstuff {
 public:
     Hotstuff() = default;
     Hotstuff(
+            std::shared_ptr<block::BlockManager>& block_mgr,
             consensus::HotstuffManager& hotstuff_mgr,
             std::shared_ptr<sync::KeyValueSync>& kv_sync,
             const uint32_t& pool_idx,
@@ -70,7 +72,10 @@ public:
             const std::shared_ptr<Crypto>& crypto,
 #endif
             const std::shared_ptr<ElectInfo>& elect_info,
-            std::shared_ptr<db::Db>& db) :
+            std::shared_ptr<db::Db>& db,
+            std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr,
+            consensus::BlockCacheCallback new_block_cache_callback) :
+        block_mgr_(block_mgr),
         hotstuff_mgr_(hotstuff_mgr),
         kv_sync_(kv_sync),
         pool_idx_(pool_idx),
@@ -81,10 +86,11 @@ public:
         view_block_chain_(chain),
         leader_rotation_(lr),
         elect_info_(elect_info),
-        db_(db) {
+        db_(db),
+        tm_block_mgr_(tm_block_mgr),
+        new_block_cache_callback_(new_block_cache_callback) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        pacemaker_->SetNewViewFn(std::bind(&Hotstuff::NewView, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
 
     }
@@ -101,23 +107,9 @@ public:
     }    
     
     Status Start();
-
-    void UpdateStoredToDbView(View view) {
-        if (view > db_stored_view_) {
-            db_stored_view_ = view;
-        }
-
-        view_block_chain_->UpdateStoredToDbView(view);
-    }
-    
     void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
-    void HandleNewViewMsg(const transport::MessagePtr& msg_ptr);
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
     void HandleVoteMsg(const transport::MessagePtr& msg_ptr);
-    void NewView(
-        std::shared_ptr<tnet::TcpInterface> conn,
-        std::shared_ptr<TC> tc,
-        std::shared_ptr<AggregateQC> qc);
     Status Propose(
         std::shared_ptr<TC> tc,
         std::shared_ptr<AggregateQC> agg_qc,
@@ -128,7 +120,7 @@ public:
     void StopVoting(const View& view) {
         if (last_vote_view_ < view) {
             last_vote_view_ = view;
-            ZJC_DEBUG("pool: %u, set last vote view: %lu", pool_idx_, view);
+            SHARDORA_DEBUG("pool: %u, set last vote view: %lu", pool_idx_, view);
         }
     }
 
@@ -183,31 +175,6 @@ public:
 
         recover_from_stuck_timeout_ = now_tm_us + STUCK_PACEMAKER_DURATION_MIN_US;
         return 0;
-        // highqc 之前连续三个块都是空交易，则认为 stuck
-        // auto v_block1 = view_block_chain()->HighViewBlock();
-        // if (!v_block1) {
-        //     return 0;
-        // }
-
-        // if (v_block1->block_info().tx_list_size() > 0) {
-        //     return 2;
-        // }
-
-        // auto v_block2 = view_block_chain()->ParentBlock(*v_block1);
-        // if (!v_block2) {
-        //     return 0;
-        // }
-
-        // if (v_block2->block_info().tx_list_size() > 0) {
-        //     return 3;
-        // }
-
-        // auto v_block3 = view_block_chain()->ParentBlock(*v_block2);
-        // if (v_block3 && v_block3->block_info().tx_list_size() > 0) {
-        //     return 4;
-        // }
-
-        // return 0;   
     }
 
     inline uint64_t max_view() {
@@ -255,7 +222,6 @@ private:
     Status VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status VerifyFollower(const transport::MessagePtr& msg_ptr);
     Status VerifyQC(const QC& qc);
-    Status VerifyTC(const TC& tc);
     Status VerifyViewBlock(
             const ViewBlock& v_block, 
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
@@ -287,8 +253,9 @@ private:
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 300lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 15000lu;
 
+    std::shared_ptr<block::BlockManager> block_mgr_;
     uint32_t pool_idx_;
 #ifdef USE_AGG_BLS
     std::shared_ptr<AggCrypto> crypto_;
@@ -299,6 +266,8 @@ private:
     std::shared_ptr<IBlockAcceptor> block_acceptor_;
     std::shared_ptr<IBlockWrapper> block_wrapper_;
     std::shared_ptr<ViewBlockChain> view_block_chain_;
+    std::shared_ptr<ViewBlockChain> root_view_block_chain_;
+    std::unordered_map<uint32_t, std::shared_ptr<ViewBlockChain>> cross_shard_view_block_chain_;
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -312,12 +281,18 @@ private:
     uint64_t propose_debug_index_ = 0;
     uint64_t recover_from_stuck_timeout_ = 0;
     bool has_user_tx_tag_ = false;
-    // std::map<View, std::shared_ptr<ProposeMsgWrapper>> leader_view_with_propose_msgs_;
     std::shared_ptr<transport::TransportMessage> latest_leader_propose_message_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     consensus::HotstuffManager& hotstuff_mgr_;
-    volatile View db_stored_view_ = 0llu;
+    std::atomic<View> db_stored_view_ = 0llu;
+    uint64_t prev_sync_latest_view_tm_ms_ = 0;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     
+// #ifndef NDEBUG
+    static std::atomic<uint32_t> sendout_bft_message_count_;
+    uint32_t gTestChangeViewCount = 0;
+// #endif
 };
 
 } // namespace consensus

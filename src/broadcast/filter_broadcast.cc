@@ -20,10 +20,15 @@ void FilterBroadcast::Broadcasting(
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr) {
     assert(dht_ptr);
-//     assert(!dht_ptr->readonly_hash_sort_dht()->empty());
+    if (dht_ptr->readonly_hash_sort_dht()->size() < 2u) {
+        SHARDORA_DEBUG("random Broadcasting: %lu, size: %u, dht net: %d",
+            msg_ptr->header.hash64(), dht_ptr->readonly_hash_sort_dht()->size(), dht_ptr->local_node()->sharding_id);
+        // assert(false);
+        return;
+    }
     auto& message = msg_ptr->header;
     if (message.broadcast().hop_limit() <= message.hop_count()) {
-        BROAD_DEBUG("message.broadcast().hop_limit() <= message.hop_count()[%d, %d] hash: %lu",
+        SHARDORA_DEBUG("message.broadcast().hop_limit() <= message.hop_count()[%d, %d] hash: %lu",
             message.broadcast().hop_limit(), message.hop_count(), message.hash64());
         return;
     }
@@ -38,16 +43,17 @@ void FilterBroadcast::Broadcasting(
     //         bloomfilter->insert((*iter)->id_hash);
     //     }
 
-    //     // ZJC_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
+    //     // SHARDORA_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
     //     LayerSend(dht_ptr, msg_ptr, nodes);
     // } else {
+    bloomfilter->clear();
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
         // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
         //     bloomfilter->insert((*iter)->id_hash);
         // }
 
-        // ZJC_DEBUG("random Broadcasting: %lu, size: %u",
-        //     msg_ptr->header.hash64(), nodes.size());
+        SHARDORA_DEBUG("random Broadcasting: %lu, size: %u",
+            msg_ptr->header.hash64(), nodes.size());
         if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
             return;
         }
@@ -102,7 +108,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->find((*hash_order_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            // ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+            // SHARDORA_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
             //     (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
             //     (*hash_order_dht)[pos_vec[i]]->public_port,
             //     (*hash_order_dht)[pos_vec[i]]->id_hash,
@@ -151,7 +157,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->find((*readobly_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            // ZJC_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+            // SHARDORA_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
             //     (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
             //     (*readobly_dht)[pos_vec[i]]->public_port,
             //     (*readobly_dht)[pos_vec[i]]->id_hash,
@@ -169,10 +175,10 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         }
     }
 
-//     ZJC_DEBUG("data size: %u, pos_vec size: %u, readobly_dht->size: %u",
+//     SHARDORA_DEBUG("data size: %u, pos_vec size: %u, readobly_dht->size: %u",
 //         bloomfilter->data().size(), pos_vec.size(), readobly_dht->size());
 //     for (uint32_t i = 0; i < bloomfilter->data().size(); ++i) {
-//         ZJC_DEBUG("data i: %d, data: %lu", i, bloomfilter->data()[i]);
+//         SHARDORA_DEBUG("data i: %d, data: %lu", i, bloomfilter->data()[i]);
 //     }
 
     auto cast_msg = const_cast<transport::protobuf::Header*>(&message);
@@ -216,7 +222,7 @@ void FilterBroadcast::Send(
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);
-        BROAD_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
+        SHARDORA_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
             nodes[i]->public_ip.c_str(),
             nodes[i]->public_port,
             msg_ptr->header.hash64(),
@@ -253,7 +259,7 @@ void FilterBroadcast::LayerSend(
             broad_param->set_layer_right(GetLayerRight(src_right, message));
         }
 
-        BROAD_DEBUG("broadcast layer send to: %s:%d, txhash: %lu",
+        SHARDORA_DEBUG("broadcast layer send to: %s:%d, txhash: %lu",
             nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64());
         transport::TcpTransport::Instance()->Send(
             nodes[i]->public_ip,

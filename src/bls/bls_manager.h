@@ -12,6 +12,8 @@ namespace shardora {
 
 namespace bls {
 
+class DkgCache;
+
 class IBlsManager {
 public:
     IBlsManager() {};
@@ -58,6 +60,7 @@ public:
     void OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
+        uint64_t prev_elect_height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
@@ -106,6 +109,7 @@ public:
     std::shared_ptr<security::Security> security() {
         return security_;
     }
+    void PoolTimerMessage();
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);
@@ -129,14 +133,13 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void TimerMessage();
     void ResetLeaders(
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
     void PopFinishMessage();
     int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
 
-    std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
+    std::atomic<std::shared_ptr<bls::BlsDkg>> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
     std::unordered_map<uint32_t, BlsFinishItemPtr> finish_networks_map_;
     std::shared_ptr<security::Security> security_ = nullptr;
@@ -148,6 +151,7 @@ private:
     common::Tick bls_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> finish_msg_queue_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
+    std::shared_ptr<DkgCache> dkg_cache_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };

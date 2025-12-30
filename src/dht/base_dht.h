@@ -25,6 +25,21 @@ typedef std::vector<NodePtr> Dht;
 typedef std::shared_ptr<Dht> DhtPtr;
 typedef std::shared_ptr<const Dht> ConstDhtPtr;
 
+#ifndef NDEBUG
+#define CheckThreadIdValid() { \
+    auto now_thread_id = std::this_thread::get_id(); \
+     \
+    if (local_thread_id_count_ >= 1) { \
+        assert(local_thread_id_ == now_thread_id); \
+    } else { \
+        local_thread_id_ = now_thread_id; \
+    } \
+    if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; } \
+}
+#else
+#define CheckThreadIdValid()
+#endif
+
 class BaseDht : public std::enable_shared_from_this<BaseDht> {
 public:
     BaseDht(NodePtr& local_node);
@@ -115,7 +130,7 @@ protected:
     DhtPtr readonly_dht_ = nullptr;
     NodePtr local_node_{ nullptr };
     std::unordered_map<uint64_t, NodePtr> node_map_;
-    volatile bool joined_{ false };
+    std::atomic<bool> joined_{ false };
     bool wait_vpn_res_{ false };
     std::atomic<uint32_t> boot_res_count_{ 0 };
     common::Tick refresh_neighbors_tick_;
@@ -128,6 +143,12 @@ protected:
     uint32_t valid_count_ = 0;
     common::Tick dht_tick_;
     std::unordered_map<std::string, std::vector<NodePtr>> waiting_refresh_nodes_map_;
+    common::SpinMutex join_mutex_;
+
+#ifndef NDEBUG
+    std::thread::id local_thread_id_;
+    std::atomic<uint64_t> local_thread_id_count_ = 0;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(BaseDht);
 };

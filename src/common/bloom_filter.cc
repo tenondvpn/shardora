@@ -76,7 +76,7 @@ bool BloomFilter::Contain(uint64_t hash) const{
 
 uint32_t BloomFilter::DiffCount(const BloomFilter& other) {
     if (data_.size() != other.data_.size()) {
-        ZJC_ERROR("data_.size()[%u] != other.data_.size()[%u]",
+        SHARDORA_ERROR("data_.size()[%u] != other.data_.size()[%u]",
             data_.size(), other.data_.size());
         return (std::numeric_limits<uint32_t>::max)();
     }

@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.0;
-pragma solidity >= 0.8.17 < 0.9.0;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.7.0 <0.9.0;
 
 contract DataComplianceManager {
     // 管理员地址，用于管理预言机节点列表
@@ -15,12 +14,18 @@ contract DataComplianceManager {
     // 存储数据哈希与上链时间戳的键值对
     mapping(bytes32 => uint256) public complianceTimestamps;
 
+    // 存储用户合约地址与回调函数选择器的键值对
+    mapping(address => bytes4) public userCallbacks;
+
     // 事件：用于记录预言机节点的添加和删除
     event OracleNodeAdded(address indexed oracleAddress);
     event OracleNodeRemoved(address indexed oracleAddress);
 
     // 事件：用于记录合规检测结果的存储以及合规检测结果上链的时间
     event ComplianceResultStored(bytes32 indexed dataHash, uint256 timestamp, string result);
+
+    // 事件：有用户合约请求了合规检测
+    event ComplianceCheckRequested(address indexed userContract, bytes32 indexed dataHash);
 
     // 构造函数，设置管理员地址
     constructor() {
@@ -69,6 +74,39 @@ contract DataComplianceManager {
             oracleNodes[oracleAddresses[i]] = false;
             emit OracleNodeRemoved(oracleAddresses[i]);
         }
+    }
+
+    // 用户合约发起合规检测请求，同时注册回调函数选择器
+    function requestComplianceCheck(bytes32 dataHash, bytes4 callbackSelector) external {
+        require(dataHash != bytes32(0), "Invalid data hash");
+        require(callbackSelector != 0x0, "Invalid selector");
+
+        userCallbacks[msg.sender] = callbackSelector;
+
+        emit ComplianceCheckRequested(msg.sender, dataHash);
+    }
+
+    // 预言机节点利用此函数写入合规检测的结果并且回调用户合约
+    function fulfillComplianceCheck(
+        address userContract,
+        bytes32 dataHash,
+        string memory result
+    ) external onlyOracle {
+        require(userContract != address(0), "Invalid user contract");
+        require(dataHash != bytes32(0), "Invalid data hash");
+        require(bytes(result).length > 0, "Empty result");
+
+        complianceResults[dataHash] = result;
+        complianceTimestamps[dataHash] = block.timestamp;
+        emit ComplianceResultStored(dataHash, block.timestamp, result);
+
+        bytes4 selector = userCallbacks[userContract];
+        require(selector != 0x0, "Callback not registered");
+
+        (bool success, ) = userContract.call(
+            abi.encodeWithSelector(selector, dataHash, result)
+        );
+        require(success, "Callback to user contract failed");
     }
 
     // 接收预言机节点发送的数据哈希和合规检测结果

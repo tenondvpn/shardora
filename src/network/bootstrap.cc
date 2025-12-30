@@ -18,13 +18,13 @@ Bootstrap* Bootstrap::Instance() {
 
 int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>& security) {
     std::string bootstrap;
-    if (!config.Get("zjchain", "bootstrap", bootstrap) || bootstrap.empty()) {
-        NETWORK_ERROR("config has no zjchain bootstrap info.");
+    if (!config.Get("shardora", "bootstrap", bootstrap) || bootstrap.empty()) {
+        NETWORK_ERROR("config has no shardora bootstrap info.");
         return kNetworkError;
     }
 
     std::string bootstrap_net;
-    config.Get("zjchain", "bootstrap_net", bootstrap_net) ;
+    config.Get("shardora", "bootstrap_net", bootstrap_net) ;
     bootstrap += ',' + bootstrap_net;
 
     common::Split<2048> boot_spliter(bootstrap.c_str(), ',');
@@ -52,6 +52,11 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
 
         std::string pubkey = common::Encode::HexDecode(
             std::string(field_split[0], field_split.SubLen(0)));
+        if (pubkey.size() != security::kPublicCompressKeySize) {
+            SHARDORA_INFO("invalid public key: %s", split[i]);
+            continue;
+        }
+
         uint16_t port = 0;
         if (!shardora::common::StringUtil::ToUint16(field_split[2], &port)) {
             return kNetworkError;
@@ -84,6 +89,7 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
 std::vector<dht::NodePtr> Bootstrap::GetNetworkBootstrap(
         uint32_t network_id,
         uint32_t count) {
+    SHARDORA_DEBUG("now get universal dht 1");
     auto tmp_dht = UniversalManager::Instance()->GetUniversal(kUniversalNetworkId);
     std::shared_ptr<Universal> universal_dht = std::dynamic_pointer_cast<Universal>(tmp_dht);
     if (!universal_dht) {

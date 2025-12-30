@@ -86,7 +86,6 @@ public:
 
         auto etime = common::TimeUtils::TimestampUs();
         std::cout << "finished: " << 0 << ", use time us: " << (etime - btime) << std::endl;
-
         return kBlsSuccess;
     }
 

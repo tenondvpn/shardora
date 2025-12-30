@@ -75,6 +75,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, elect_pos_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, destructed_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, consensus_gap_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::address::protobuf::AddressInfo, nonce_),
   0,
   3,
   4,
@@ -85,12 +86,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   8,
   7,
   ~0u,
+  12,
   11,
-  10,
   9,
+  10,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 18, sizeof(::shardora::address::protobuf::AddressInfo)},
+  { 0, 19, sizeof(::shardora::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -119,24 +121,25 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\024protos/address.proto\022\031shardora.address"
-      ".protobuf\032\020protos/bls.proto\"\325\002\n\013AddressI"
-      "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013"
-      "sharding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n"
-      "\004addr\030\005 \001(\014\0224\n\004type\030\006 \001(\0162&.shardora.add"
+      ".protobuf\032\020protos/bls.proto\"\344\002\n\013AddressI"
+      "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \002(\004\022\023\n\013"
+      "sharding_id\030\003 \002(\r\022\022\n\npool_index\030\004 \002(\r\022\014\n"
+      "\004addr\030\005 \002(\014\0224\n\004type\030\006 \002(\0162&.shardora.add"
       "ress.protobuf.AddressType\022\022\n\nbytes_code\030"
-      "\007 \001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t"
+      "\007 \001(\014\022\025\n\rlatest_height\030\010 \002(\004\022\021\n\006credit\030\t"
       " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
       "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
       "94967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rconsensu"
-      "s_gap\030\r \001(\004*\307\001\n\013AddressType\022\013\n\007kNormal\020\000"
-      "\022\r\n\tkContract\020\001\022\016\n\nkRootElect\020\002\022\016\n\nkRoot"
-      "Timer\020\003\022\016\n\nkStatistic\020\004\022\020\n\014kToTxAddress\020"
-      "\005\022\025\n\021kLocalToTxAddress\020\006\022\021\n\rkElectAddres"
-      "s\020\007\022\027\n\023kContractPrepayment\020\010\022\027\n\023kWaiting"
-      "RootConfirm\020\t"
+      "s_gap\030\r \001(\004\022\r\n\005nonce\030\016 \002(\004*\342\001\n\013AddressTy"
+      "pe\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootE"
+      "lect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\031"
+      "\n\025kImmutablePoolAddress\020\005\022\025\n\021kLocalToTxA"
+      "ddress\020\006\022\021\n\rkElectAddress\020\007\022\027\n\023kContract"
+      "Prepayment\020\010\022\027\n\023kWaitingRootConfirm\020\t\022\020\n"
+      "\014kPoolAddress\020\n"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 613);
+      descriptor, 655);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -172,6 +175,7 @@ bool AddressType_IsValid(int value) {
     case 7:
     case 8:
     case 9:
+    case 10:
       return true;
     default:
       return false;
@@ -200,6 +204,7 @@ const int AddressInfo::kG2SFieldNumber;
 const int AddressInfo::kElectPosFieldNumber;
 const int AddressInfo::kDestructedFieldNumber;
 const int AddressInfo::kConsensusGapFieldNumber;
+const int AddressInfo::kNonceFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 AddressInfo::AddressInfo()
@@ -292,7 +297,7 @@ void AddressInfo::Clear() {
         reinterpret_cast<char*>(&credit_) -
         reinterpret_cast<char*>(&balance_)) + sizeof(credit_));
   }
-  if (cached_has_bits & 3840u) {
+  if (cached_has_bits & 7936u) {
     ::memset(&latest_height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&destructed_) -
         reinterpret_cast<char*>(&latest_height_)) + sizeof(destructed_));
@@ -324,7 +329,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 balance = 2;
+      // required uint64 balance = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
@@ -338,7 +343,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 sharding_id = 3;
+      // required uint32 sharding_id = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
@@ -352,7 +357,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 pool_index = 4;
+      // required uint32 pool_index = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
@@ -366,7 +371,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes addr = 5;
+      // required bytes addr = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
@@ -378,7 +383,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .shardora.address.protobuf.AddressType type = 6;
+      // required .shardora.address.protobuf.AddressType type = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
@@ -410,7 +415,7 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint64 latest_height = 8;
+      // required uint64 latest_height = 8;
       case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
@@ -492,6 +497,20 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // required uint64 nonce = 14;
+      case 14: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(112u /* 112 & 0xFF */)) {
+          set_has_nonce();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &nonce_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -525,28 +544,28 @@ void AddressInfo::SerializeWithCachedSizes(
       1, this->pubkey(), output);
   }
 
-  // optional uint64 balance = 2;
+  // required uint64 balance = 2;
   if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->balance(), output);
   }
 
-  // optional uint32 sharding_id = 3;
+  // required uint32 sharding_id = 3;
   if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->sharding_id(), output);
   }
 
-  // optional uint32 pool_index = 4;
+  // required uint32 pool_index = 4;
   if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->pool_index(), output);
   }
 
-  // optional bytes addr = 5;
+  // required bytes addr = 5;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       5, this->addr(), output);
   }
 
-  // optional .shardora.address.protobuf.AddressType type = 6;
+  // required .shardora.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       6, this->type(), output);
@@ -558,7 +577,7 @@ void AddressInfo::SerializeWithCachedSizes(
       7, this->bytes_code(), output);
   }
 
-  // optional uint64 latest_height = 8;
+  // required uint64 latest_height = 8;
   if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->latest_height(), output);
   }
@@ -578,18 +597,23 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->elect_pos(), output);
   }
 
   // optional bool destructed = 12;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(12, this->destructed(), output);
   }
 
   // optional uint64 consensus_gap = 13;
   if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(13, this->consensus_gap(), output);
+  }
+
+  // required uint64 nonce = 14;
+  if (cached_has_bits & 0x00000400u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(14, this->nonce(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -614,29 +638,29 @@ void AddressInfo::SerializeWithCachedSizes(
         1, this->pubkey(), target);
   }
 
-  // optional uint64 balance = 2;
+  // required uint64 balance = 2;
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->balance(), target);
   }
 
-  // optional uint32 sharding_id = 3;
+  // required uint32 sharding_id = 3;
   if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->sharding_id(), target);
   }
 
-  // optional uint32 pool_index = 4;
+  // required uint32 pool_index = 4;
   if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->pool_index(), target);
   }
 
-  // optional bytes addr = 5;
+  // required bytes addr = 5;
   if (cached_has_bits & 0x00000002u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         5, this->addr(), target);
   }
 
-  // optional .shardora.address.protobuf.AddressType type = 6;
+  // required .shardora.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       6, this->type(), target);
@@ -649,7 +673,7 @@ void AddressInfo::SerializeWithCachedSizes(
         7, this->bytes_code(), target);
   }
 
-  // optional uint64 latest_height = 8;
+  // required uint64 latest_height = 8;
   if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(8, this->latest_height(), target);
   }
@@ -668,18 +692,23 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->elect_pos(), target);
   }
 
   // optional bool destructed = 12;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(12, this->destructed(), target);
   }
 
   // optional uint64 consensus_gap = 13;
   if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(13, this->consensus_gap(), target);
+  }
+
+  // required uint64 nonce = 14;
+  if (cached_has_bits & 0x00000400u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(14, this->nonce(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -690,6 +719,60 @@ void AddressInfo::SerializeWithCachedSizes(
   return target;
 }
 
+size_t AddressInfo::RequiredFieldsByteSizeFallback() const {
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:shardora.address.protobuf.AddressInfo)
+  size_t total_size = 0;
+
+  if (has_addr()) {
+    // required bytes addr = 5;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->addr());
+  }
+
+  if (has_balance()) {
+    // required uint64 balance = 2;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->balance());
+  }
+
+  if (has_sharding_id()) {
+    // required uint32 sharding_id = 3;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->sharding_id());
+  }
+
+  if (has_pool_index()) {
+    // required uint32 pool_index = 4;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->pool_index());
+  }
+
+  if (has_type()) {
+    // required .shardora.address.protobuf.AddressType type = 6;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+  }
+
+  if (has_latest_height()) {
+    // required uint64 latest_height = 8;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->latest_height());
+  }
+
+  if (has_nonce()) {
+    // required uint64 nonce = 14;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->nonce());
+  }
+
+  return total_size;
+}
 size_t AddressInfo::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:shardora.address.protobuf.AddressInfo)
   size_t total_size = 0;
@@ -698,6 +781,44 @@ size_t AddressInfo::ByteSizeLong() const {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
+  }
+  if (((_has_bits_[0] & 0x0000057a) ^ 0x0000057a) == 0) {  // All required fields are present.
+    // required bytes addr = 5;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->addr());
+
+    // required uint64 balance = 2;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->balance());
+
+    // required uint32 sharding_id = 3;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->sharding_id());
+
+    // required uint32 pool_index = 4;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->pool_index());
+
+    // required .shardora.address.protobuf.AddressType type = 6;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+
+    // required uint64 latest_height = 8;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->latest_height());
+
+    // required uint64 nonce = 14;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->nonce());
+
+  } else {
+    total_size += RequiredFieldsByteSizeFallback();
   }
   // repeated .shardora.bls.protobuf.BlsPublicKey g2s = 10;
   {
@@ -710,78 +831,35 @@ size_t AddressInfo::ByteSizeLong() const {
     }
   }
 
-  if (_has_bits_[0 / 32] & 255u) {
-    // optional bytes pubkey = 1;
-    if (has_pubkey()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->pubkey());
-    }
-
-    // optional bytes addr = 5;
-    if (has_addr()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->addr());
-    }
-
-    // optional bytes bytes_code = 7;
-    if (has_bytes_code()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->bytes_code());
-    }
-
-    // optional uint64 balance = 2;
-    if (has_balance()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->balance());
-    }
-
-    // optional uint32 sharding_id = 3;
-    if (has_sharding_id()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->sharding_id());
-    }
-
-    // optional uint32 pool_index = 4;
-    if (has_pool_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->pool_index());
-    }
-
-    // optional .shardora.address.protobuf.AddressType type = 6;
-    if (has_type()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
-    }
-
-    // optional int32 credit = 9 [default = 0];
-    if (has_credit()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->credit());
-    }
-
+  // optional bytes pubkey = 1;
+  if (has_pubkey()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->pubkey());
   }
-  if (_has_bits_[8 / 32] & 3840u) {
-    // optional uint64 latest_height = 8;
-    if (has_latest_height()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->latest_height());
-    }
 
-    // optional uint64 consensus_gap = 13;
-    if (has_consensus_gap()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->consensus_gap());
-    }
+  // optional bytes bytes_code = 7;
+  if (has_bytes_code()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->bytes_code());
+  }
 
+  // optional int32 credit = 9 [default = 0];
+  if (has_credit()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int32Size(
+        this->credit());
+  }
+
+  // optional uint64 consensus_gap = 13;
+  if (has_consensus_gap()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->consensus_gap());
+  }
+
+  if (_has_bits_[8 / 32] & 6144u) {
     // optional bool destructed = 12;
     if (has_destructed()) {
       total_size += 1 + 1;
@@ -854,7 +932,7 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 3840u) {
+  if (cached_has_bits & 7936u) {
     if (cached_has_bits & 0x00000100u) {
       latest_height_ = from.latest_height_;
     }
@@ -862,9 +940,12 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
       consensus_gap_ = from.consensus_gap_;
     }
     if (cached_has_bits & 0x00000400u) {
-      destructed_ = from.destructed_;
+      nonce_ = from.nonce_;
     }
     if (cached_has_bits & 0x00000800u) {
+      destructed_ = from.destructed_;
+    }
+    if (cached_has_bits & 0x00001000u) {
       elect_pos_ = from.elect_pos_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -886,6 +967,7 @@ void AddressInfo::CopyFrom(const AddressInfo& from) {
 }
 
 bool AddressInfo::IsInitialized() const {
+  if ((_has_bits_[0] & 0x0000057a) != 0x0000057a) return false;
   return true;
 }
 
@@ -909,6 +991,7 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
   swap(credit_, other->credit_);
   swap(latest_height_, other->latest_height_);
   swap(consensus_gap_, other->consensus_gap_);
+  swap(nonce_, other->nonce_);
   swap(destructed_, other->destructed_);
   swap(elect_pos_, other->elect_pos_);
   swap(_has_bits_[0], other->_has_bits_[0]);

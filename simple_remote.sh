@@ -2,38 +2,92 @@ each_nodes_count=$1
 node_ips=$2
 bootstrap=""
 end_shard=$3
-PASSWORD="Xf4aGbTaf!"
+PASSWORD=$4
+TARGET=$5
+FIRST_NODE_COUNT=$1
 
 init() {
+    tmp_ips=(${node_ips//-/ })
+    tmp_ips_len=(${#tmp_ips[*]})
+    ip_max_idx=0
+    if (($tmp_ips_len > 1)); then
+        for tmp_ip_nodes in "${tmp_ips[@]}"; do 
+            ips_array=(${tmp_ip_nodes//,/ })
+            first_ip=(${ips_array[0]})
+            second_ip=(${ips_array[1]})
+
+            start=$(($first_ip + 0))
+            end=$(($second_ip + 0))
+            for ((i=start; i<=end; i++)); do
+                if ((i==end));then
+                    new_ips+="192.168.$ip_max_idx.$i"
+                else
+                    new_ips+="192.168.$ip_max_idx.$i,"
+                fi
+            done
+
+            new_ips+=","
+            ip_max_idx=$(($ip_max_idx+1))
+        done
+
+        node_ips=$new_ips
+        echo $node_ips
+    else
+        ips_array=(${node_ips//,/ })
+        ips_len=(${#ips_array[*]})
+        if (($ips_len == 2)); then
+            first_ip=(${ips_array[0]})
+            second_ip=(${ips_array[1]})
+            first_ip_len=(${#first_ip})
+            new_ips=""
+            if (($first_ip_len<=6)); then
+                start=$(($first_ip + 0))
+                end=$(($second_ip + 0))
+                for ((i=start; i<=end; i++)); do
+                    if ((i==end));then
+                        new_ips+="192.168.0.$i"
+                    else
+                        new_ips+="192.168.0.$i,"
+                    fi
+                done
+                node_ips=$new_ips
+                echo $node_ips
+            fi
+        fi
+    fi
+
     if [ "$node_ips" == "" ]; then
         echo "just use local single node."
         node_ips='127.0.0.1'
     fi  
 
+    bash cmd.sh $node_ips "tc qdisc del dev eth0 root"  > /dev/null 2>&1 &
     if [ "$end_shard" == "" ]; then
         end_shard=3
     fi  
 
-    killall -9 zjchain
+    if [ "$PASSWORD" == "" ]; then
+        PASSWORD="Xf4aGbTaf!"
+    fi
+
+    if [ "$TARGET" == "" ]; then
+        TARGET=Debug
+    fi
+
+    killall -9 shardora
     killall -9 txcli
 
-    TARGET=Release
-    sh build.sh a $TARGET
-    sudo rm -rf /root/zjnodes
-    sudo cp -rf ./zjnodes_local /root/zjnodes
-    sudo cp -rf ./deploy /root
-    sudo cp ./fetch.sh /root
-    rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
+    bash build.sh a $TARGET
+    sudo rm -rf /root/nodes
+    sudo cp -rf ./nodes_local /root/nodes
+    rm -rf /root/nodes/*/shardora /root/nodes/*/core* /root/nodes/*/log/* /root/nodes/*/*db*
 
-    cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/zjchain
-    cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/conf
-    mkdir -p /root/zjnodes/zjchain/log
+    cp -rf ./nodes_local/shardora/conf/GeoLite2-City.mmdb /root/nodes/shardora
+    cp -rf ./nodes_local/shardora/conf/log4cpp.properties /root/nodes/shardora/conf
+    mkdir -p /root/nodes/shardora/log
 
 
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-    sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-
-    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+    sudo cp -rf ./cbuild_$TARGET/shardora /root/nodes/shardora
     if [[ "$each_nodes_count" -eq "" ]]; then
         each_nodes_count=4 
     fi
@@ -44,6 +98,7 @@ init() {
         nodes_count=$(($nodes_count + $each_nodes_count))
     done
 
+    nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
     shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
@@ -51,41 +106,34 @@ init() {
     fi  
 
     echo "node count: " $nodes_count
-    cd /root/zjnodes/zjchain && ./zjchain -U -N $nodes_count
-    cd /root/zjnodes/zjchain && ./zjchain -S 3 -N $nodes_count
+    cd /root/nodes/shardora && ./shardora -U -N $nodes_count
+    cd /root/nodes/shardora && ./shardora -S 3 -N $nodes_count
 
-    rm -rf /root/zjnodes/r*
-    rm -rf /root/zjnodes/s*
-    rm -rf /root/zjnodes/new*
-    rm -rf /root/zjnodes/node
-    rm -rf /root/zjnodes/param
 }
 
 make_package() {
-    rm -rf /root/zjnodes/zjchain/pkg
-    mkdir /root/zjnodes/zjchain/pkg
-    cp /root/zjnodes/zjchain/zjchain /root/zjnodes/zjchain/pkg
-    cp /root/zjnodes/zjchain/conf/GeoLite2-City.mmdb /root/zjnodes/zjchain/pkg
-    cp /root/zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/zjchain/pkg
-    cp /root/shardora/shards3 /root/zjnodes/zjchain/pkg
-    cp /root/shardora/root_nodes /root/zjnodes/zjchain/pkg/shards2
-    cp /root/shardora/temp_cmd.sh /root/zjnodes/zjchain/pkg
-    cp /root/shardora/start_cmd.sh /root/zjnodes/zjchain/pkg
-    cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/zjchain/pkg/shard_db_2
-    cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/zjchain/pkg
-    cp -rf /root/zjnodes/temp /root/zjnodes/zjchain/pkg
-    cd /root/zjnodes/zjchain/ && tar -zcvf pkg.tar.gz ./pkg
+    rm -rf /root/nodes/shardora/pkg
+    mkdir /root/nodes/shardora/pkg
+    cp /root/nodes/shardora/shardora /root/nodes/shardora/pkg
+    cp /root/nodes/shardora/conf/GeoLite2-City.mmdb /root/nodes/shardora/pkg
+    cp /root/nodes/shardora/conf/log4cpp.properties /root/nodes/shardora/pkg
+    cp /root/shardora/shards3 /root/nodes/shardora/pkg
+    cp /root/shardora/root_nodes /root/nodes/shardora/pkg/shards2
+    cp /root/shardora/temp_cmd.sh /root/nodes/shardora/pkg
+    cp /root/shardora/start_cmd.sh /root/nodes/shardora/pkg
+    cp /root/shardora/wondershaper /root/nodes/shardora/pkg
+    cp -rf /root/nodes/shardora/root_db /root/nodes/shardora/pkg/shard_db_2
+    cp -rf /root/nodes/shardora/shard_db_3 /root/nodes/shardora/pkg
+    cp -rf /root/nodes/temp /root/nodes/shardora/pkg
+    cp -rf /root/shardora/gdb/* /root/nodes/shardora/pkg
+    cd /root/nodes/shardora/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1
 }
 
 get_bootstrap() {
+    rm -rf /root/shardora/shards2
+    cp -rf /root/shardora/root_nodes /root/shardora/shards2
     node_ips_array=(${node_ips//,/ })
-    for ((i=1; i<=3;i++)); do
-        tmppubkey=`sed -n "$i""p" /root/shardora/root_nodes | awk -F'\t' '{print $2}'`
-        node_info=$tmppubkey":127.0.0.1:1200"$i
-        bootstrap=$node_info","$bootstrap
-    done
-
-    for ((shard_id=3; shard_id<=$end_shard; shard_id++)); do
+    for ((shard_id=2; shard_id<=$end_shard; shard_id++)); do
         i=1
         for ip in "${node_ips_array[@]}"; do 
             tmppubkey=`sed -n "$i""p" /root/shardora/shards$shard_id| awk -F'\t' '{print $2}'`
@@ -112,7 +160,7 @@ check_cmd_finished() {
         sleep 1
     done
 
-    ps -ef | grep sshpass | grep ConnectTimeout
+    ps -ef | grep sshpass
     echo "waiting ok"
 }
 
@@ -123,13 +171,13 @@ clear_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg*" &
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && rm -rf pkg* && killall -9 shardora" &
         run_cmd_count=$((run_cmd_count + 1))
         if ((start_pos==1)); then
             sleep 3
         fi
 
-        if (($run_cmd_count >= 1)); then
+        if (($run_cmd_count >= 250)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -145,9 +193,9 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o StrictHostKeyChecking=no /root/zjnodes/zjchain/pkg.tar.gz root@$ip:/root &
-        run_cmd_count=$((run_cmd_count + i))
-        if [ $run_cmd_count -ge 10 ]; then
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/nodes/shardora/pkg.tar.gz root@$ip:/root &
+        run_cmd_count=$((run_cmd_count + 1))
+        if (($run_cmd_count >= 100)); then
             check_cmd_finished
             run_cmd_count=0
         fi
@@ -163,17 +211,23 @@ run_command() {
     run_cmd_count=0
     start_pos=1
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh temp_cmd.sh $ip $start_pos $each_nodes_count $bootstrap 2 $end_shard" &
-        run_cmd_count=$((run_cmd_count + 1))
+        echo "start node: " $ip $each_nodes_count
+        start_nodes_count=$(($each_nodes_count + 0))
+        if ((start_pos==1)); then
+            start_nodes_count=$FIRST_NODE_COUNT
+        fi
+
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && bash temp_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard"  > /dev/null 2>&1 &
         if ((start_pos==1)); then
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
+        run_cmd_count=$(($run_cmd_count + 1))
+        if (($run_cmd_count >= 250)); then
             check_cmd_finished
             run_cmd_count=0
         fi
-        start_pos=$(($start_pos+$each_nodes_count))
+        start_pos=$(($start_pos+$start_nodes_count))
     done
 
     check_cmd_finished
@@ -183,28 +237,29 @@ run_command() {
 start_all_nodes() {
     echo 'start_all_nodes start'
     node_ips_array=(${node_ips//,/ })
-    run_cmd_count=0
     start_pos=1
-    for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root && tar -zxvf pkg.tar.gz && cd ./pkg && sh start_cmd.sh $ip $start_pos $each_nodes_count $bootstrap 2 $end_shard &"  &
-        run_cmd_count=$((run_cmd_count + 1))
+    for ip in "${node_ips_array[@]}"; do
+        echo "start node: " $ip $each_nodes_count
+        start_nodes_count=$(($each_nodes_count + 0))
+        if ((start_pos==1)); then
+            start_nodes_count=$FIRST_NODE_COUNT
+        fi
+
+        sshpass -p $PASSWORD ssh -o ConnectTimeout=3 -o "StrictHostKeyChecking no" -o ServerAliveInterval=5  root@$ip "cd /root/pkg && bash start_cmd.sh $ip $start_pos $start_nodes_count $bootstrap 2 $end_shard "  &
         if ((start_pos==1)); then
             sleep 3
         fi
 
-        if (($run_cmd_count >= 10)); then
-            check_cmd_finished
-            run_cmd_count=0
-        fi
-        start_pos=$(($start_pos+$each_nodes_count))
+        sleep 0.1
+        start_pos=$(($start_pos+$start_nodes_count))
     done
 
     check_cmd_finished
     echo 'start_all_nodes over'
 }
 
-killall -9 sspass
-init
+killall -9 sshpass
+init 
 make_package
 clear_command
 scp_package

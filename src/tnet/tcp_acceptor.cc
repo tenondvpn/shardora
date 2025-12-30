@@ -14,13 +14,13 @@ void NewConnectionHandler(
         TcpConnection& conn,
         ConnectionHandler& handler) {
     if (handler && !handler(conn)) {
-        ZJC_ERROR("new connection handler failed, destroy connection");
+        SHARDORA_ERROR("new connection handler failed, destroy connection");
         conn.Destroy(true);
     } else {
         EventLoop& event_loop = conn.GetEventLoop();
         int fd = conn.GetSocket()->GetFd();
         if (!event_loop.EnableIoEvent(fd, kEventRead | kEventWrite, conn)) {
-            ZJC_ERROR("enable read event on new socket[%d] failed", fd);
+            SHARDORA_ERROR("enable read event on new socket[%d] failed", fd);
             conn.Destroy(true);
         }
     }
@@ -42,7 +42,10 @@ TcpAcceptor::TcpAcceptor(
           conn_handler_(conn_handler),
           packet_factory_(packet_factory),
           event_loop_(event_loop),
-          event_loops_(event_loops) {}
+          event_loops_(event_loops) {
+    in_check_queue_ = new common::ThreadSafeQueue<std::shared_ptr<TcpConnection>>();
+    out_check_queue_ = new common::ThreadSafeQueue<std::shared_ptr<TcpConnection>>();
+}
 
 TcpAcceptor::~TcpAcceptor() {
     if (socket_ != NULL) {
@@ -53,26 +56,26 @@ TcpAcceptor::~TcpAcceptor() {
 bool TcpAcceptor::Start() {
     common::AutoSpinLock gaurd(mutex_);
     if (socket_ == NULL) {
-        ZJC_ERROR("socket must be set");
+        SHARDORA_ERROR("socket must be set");
         return false;
     }
 
     if (!stop_) {
-        ZJC_ERROR("already start");
+        SHARDORA_ERROR("already start");
         return false;
     }
 
     if (!ImplResourceInit()) {
-        ZJC_ERROR("impl resouce init failed");
+        SHARDORA_ERROR("impl resouce init failed");
         return false;
     }
 
     bool rc = event_loop_.EnableIoEvent(socket_->GetFd(), kEventRead, *this);
     if (rc) {
         stop_ = false;
-        ZJC_INFO("enable accept event success");
+        SHARDORA_INFO("enable accept event success");
     } else {
-        ZJC_ERROR("enable accept event failed");
+        SHARDORA_ERROR("enable accept event failed");
     }
 
     check_conn_tick_.CutOff(
@@ -84,12 +87,12 @@ bool TcpAcceptor::Start() {
 bool TcpAcceptor::Stop() {
     common::AutoSpinLock gaurd(mutex_);
     if (socket_ == NULL) {
-        ZJC_ERROR("socket must be set");
+        SHARDORA_ERROR("socket must be set");
         return false;
     }
 
     if (stop_) {
-        ZJC_ERROR("already stop");
+        SHARDORA_ERROR("already stop");
         return false;
     }
 
@@ -97,23 +100,36 @@ bool TcpAcceptor::Stop() {
     bool rc = event_loop_.DisableIoEvent(socket_->GetFd(), kEventRead, *this);
     if (rc) {
         stop_ = true;
-        ZJC_ERROR("disable accept event success");
+        SHARDORA_ERROR("disable accept event success");
     } else {
-        ZJC_ERROR("disable accept event failed");
+        SHARDORA_ERROR("disable accept event failed");
     }
 
     return rc;
 }
 
 void TcpAcceptor::Destroy() {
+    if (destroy_) {
+        return;
+    }
+
     destroy_ = true;
     event_loop_.PostTask(std::bind(&TcpAcceptor::ReleaseByIOThread, this));
+    if (in_check_queue_) {
+        delete in_check_queue_;
+        in_check_queue_ = nullptr;
+    }
+
+    if (out_check_queue_) {
+        delete out_check_queue_;
+        out_check_queue_ = nullptr;
+    }
 }
 
 bool TcpAcceptor::SetListenSocket(Socket& socket) {
     common::AutoSpinLock gaurd(mutex_);
     if (socket_ != NULL) {
-        ZJC_ERROR("listen socket already set");
+        SHARDORA_ERROR("listen socket already set");
         return false;
     }
 
@@ -131,37 +147,37 @@ void TcpAcceptor::ReleaseByIOThread() {}
 bool TcpAcceptor::OnRead() {
     ListenSocket* listenSocket = dynamic_cast<ListenSocket*>(socket_);
     if (listenSocket == NULL) {
-        ZJC_ERROR("cast to TcpListenSocket failed");
+        SHARDORA_ERROR("cast to TcpListenSocket failed");
         return false;
     }
 
     while (!stop_) {
-        ServerSocket* socket = NULL;
-        if (!listenSocket->Accept(&socket)) {
+        auto socket = listenSocket->Accept();
+        if (!socket) {
             break;
         }
 
         if (!socket->SetNonBlocking(true)) {
-            ZJC_ERROR("set nonblocking failed, close socket");
+            SHARDORA_ERROR("set nonblocking failed, close socket");
             socket->Free();
             continue;
         }
 
         if (!socket->SetCloseExec(true)) {
-            ZJC_ERROR("set close exec failed");
+            SHARDORA_ERROR("set close exec failed");
         }
 
         if (recv_buff_size_ != 0 && !socket->SetSoRcvBuf(recv_buff_size_)) {
-            ZJC_ERROR("set recv buffer size failed");
+            SHARDORA_ERROR("set recv buffer size failed");
         }
 
         if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
-            ZJC_ERROR("set send buffer size failed");
+            SHARDORA_ERROR("set send buffer size failed");
         }
         EventLoop& event_loop = GetNextEventLoop();
-        auto conn = CreateTcpServerConnection(event_loop, *socket);
+        auto conn = CreateTcpServerConnection(event_loop, socket);
         if (conn == nullptr) {
-            ZJC_ERROR("create connection failed, close socket[%d]",
+            SHARDORA_ERROR("create connection failed, close socket[%d]",
                 socket->GetFd());
             socket->Free();
             continue;
@@ -181,13 +197,19 @@ bool TcpAcceptor::OnRead() {
         event_loop.Wakeup();
         std::string from_ip;
         uint16_t from_port;
-        socket->GetIpPort(&from_ip, &from_port);
+        if (socket->GetIpPort(&from_ip, &from_port) != 0) {
+            SHARDORA_ERROR("accept failed %s:%d", from_ip.c_str(), from_port);
+            socket->Free();
+            continue;
+        }
+
+        SHARDORA_INFO("accept success %s:%d", from_ip.c_str(), from_port);
         conn_map_[from_ip + std::to_string(from_port)] = conn;
         CHECK_MEMORY_SIZE(conn_map_);
-        in_check_queue_.push(conn);
+        in_check_queue_->push(conn);
         while (!destroy_) {
             std::shared_ptr<TcpConnection> out_conn = nullptr;
-            if (!out_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+            if (!out_check_queue_->pop(&out_conn) || out_conn == nullptr) {
                 break;
             }
 
@@ -196,7 +218,7 @@ bool TcpAcceptor::OnRead() {
             if (iter != conn_map_.end()) {
                 conn_map_.erase(iter);
                 CHECK_MEMORY_SIZE(conn_map_);
-                ZJC_INFO("remove accept connection: %s", key.c_str());
+                SHARDORA_INFO("remove accept connection: %s", key.c_str());
             }
         }
     }
@@ -207,7 +229,7 @@ bool TcpAcceptor::OnRead() {
 void TcpAcceptor::CheckConnectionValid() {
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
-        if (!in_check_queue_.pop(&out_conn) || out_conn == nullptr) {
+        if (!in_check_queue_->pop(&out_conn) || out_conn == nullptr) {
             break;
         }
 
@@ -221,10 +243,10 @@ void TcpAcceptor::CheckConnectionValid() {
         auto conn = waiting_check_queue_.front();
         waiting_check_queue_.pop_front();
         conn->ShouldReconnect();
-        ZJC_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", waiting_check_queue_.size());
+        SHARDORA_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", waiting_check_queue_.size());
         if (conn->CheckStoped()) {
-            ZJC_DEBUG("checked stopted conn.");
-            out_check_queue_.push(conn);
+            SHARDORA_DEBUG("checked stopted conn.");
+            out_check_queue_->push(conn);
         } else {
             waiting_check_queue_.push_back(conn);
         }
@@ -250,9 +272,10 @@ void TcpAcceptor::ImplResourceDestroy()
 
 std::shared_ptr<TcpConnection> TcpAcceptor::CreateTcpServerConnection(
         EventLoop& event_loop,
-        ServerSocket& socket) {
+        std::shared_ptr<Socket> socket) {
     auto conn = std::make_shared<TcpConnection>(event_loop);
     conn->SetSocket(socket);
+    common::GlobalInfo::Instance()->AddSharedObj(17);
     return conn;
 }
 

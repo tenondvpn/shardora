@@ -11,7 +11,7 @@ namespace shardora {
 
 namespace hotstuff {
 
-static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 30; // 单位 s, 时间边界时会造成 Leader 不一致而卡顿，不过活性可以保证
+static const uint32_t TIME_EPOCH_TO_CHANGE_LEADER_S = 30; // Unit: s. At the time boundary, it will cause the Leader to be inconsistent and stuck, but the activity can be guaranteed.
 
 class LeaderRotation {
 public:
@@ -33,7 +33,7 @@ public:
         }
 
         auto now_tm_skip = 0;//common::TimeUtils::TimestampSeconds() / 30lu;
-        auto index = (now_tm_skip + pool_idx_) % members->size();
+        auto index = 0;//(now_tm_skip + pool_idx_) % members->size();
         return (*members)[index];
     }
 
@@ -101,7 +101,7 @@ private:
     std::shared_ptr<ViewBlockChain> chain_ = nullptr;
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::string extra_nonce_ = "";
-    // 由于 Leader 的选择会受时间戳影响，需要记录一个 expected_leader 解决跨时间戳边界时 leader 不一致的问题
+    // Since the choice of Leader is affected by the timestamp, it is necessary to record an expected_leader to solve the problem of inconsistent leaders across timestamp boundaries.
     common::BftMemberPtr expected_leader_; 
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
 };
@@ -109,4 +109,3 @@ private:
 } // namespace consensus
 
 } // namespace shardora
-

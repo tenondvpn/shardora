@@ -33,7 +33,7 @@ public:
     virtual void TearDown() {
     }
 
-    void SetTreeWithInvalidHeight(uint64_t max_height, uint64_t invalid_height) {
+    void SetTreeWithInvalidHeight(uint64_t max_height, const std::set<uint64_t>& test_invalid_heidhts) {
         static int32_t i = 0;
         std::string db_path = std::string("./test_height_tree_level_db_") + std::to_string(i++);
         system((std::string("rm -rf ") + db_path).c_str());
@@ -41,7 +41,7 @@ public:
         db_ptr->Init(db_path);
         HeightTreeLevel height_tree_level(0, 0, 0, db_ptr);
         for (uint64_t i = 0; i < max_height; ++i) {
-            if (i == invalid_height) {
+            if (test_invalid_heidhts.find(i) != test_invalid_heidhts.end()) {
                 continue;
             }
 
@@ -49,10 +49,23 @@ public:
         }
 
 //         height_tree_level.PrintTree();
+        std::cout << "max height: " << max_height << std::endl;
         std::vector<uint64_t> invalid_heights;
         height_tree_level.GetMissingHeights(&invalid_heights, max_height - 1);
-        ASSERT_TRUE(!invalid_heights.empty());
-        ASSERT_EQ(invalid_heights[0], invalid_height);
+        for (auto iter = invalid_heights.begin(); iter != invalid_heights.end(); ++iter) {
+            std::cout << *iter << " ";
+        }
+
+        std::cout << std::endl;
+        for (auto iter = test_invalid_heidhts.begin(); iter != test_invalid_heidhts.end(); ++iter) {
+            std::cout << *iter << " ";
+        }
+
+        std::cout << std::endl;
+        ASSERT_TRUE(invalid_heights.size() == test_invalid_heidhts.size());
+        for (auto iter = invalid_heights.begin(); iter != invalid_heights.end(); ++iter) {
+            ASSERT_TRUE(test_invalid_heidhts.find(*iter) != test_invalid_heidhts.end());
+        }
     }
 
 private:
@@ -77,7 +90,9 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
         }
 
 //         height_tree_level.PrintTree();
-        height_tree_level.FlushToDb();
+        db::DbWriteBatch db_batch;
+        height_tree_level.FlushToDb(db_batch);
+        db_ptr->Put(db_batch);
         height_tree_level.GetTreeData(&old_data);
     }
 
@@ -92,41 +107,40 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
 
 TEST_F(TestHeightTreeLevel, GetInvalidHeights) {
     {
-        std::vector<uint64_t> test_invalid_heidhts;
+        std::set<uint64_t> test_invalid_heidhts;
         uint64_t test_max_height = 4 * kLeafMaxHeightCount;
         for (uint64_t i = 0; i < 10; ++i) {
             srand(time(NULL));
-            test_invalid_heidhts.push_back(rand() % test_max_height);
+            test_invalid_heidhts.insert(rand() % test_max_height);
+            test_invalid_heidhts.insert((uint64_t)pow(2, i));
         }
 
-        for (uint64_t i = 0; i < test_invalid_heidhts.size(); ++i) {
-            SetTreeWithInvalidHeight(test_max_height, test_invalid_heidhts[i]);
-        }
+            SetTreeWithInvalidHeight(test_max_height, test_invalid_heidhts);
     }
 
     {
-        std::vector<uint64_t> test_invalid_heidhts;
+        std::set<uint64_t> test_invalid_heidhts;
         uint64_t test_max_height = 2 * kLeafMaxHeightCount;
         for (uint64_t i = 0; i < 10; ++i) {
             srand(time(NULL));
-            test_invalid_heidhts.push_back(rand() % test_max_height);
+            test_invalid_heidhts.insert(rand() % test_max_height);
+            test_invalid_heidhts.insert((uint64_t)pow(2, i));
         }
 
-        for (uint64_t i = 0; i < test_invalid_heidhts.size(); ++i) {
-            SetTreeWithInvalidHeight(test_max_height, test_invalid_heidhts[i]);
-        }
+        SetTreeWithInvalidHeight(test_max_height, test_invalid_heidhts);
     }
 
     {
-        std::vector<uint64_t> test_invalid_heidhts;
+        std::set<uint64_t> test_invalid_heidhts;
         uint64_t test_max_height = 1 * kLeafMaxHeightCount;
         for (uint64_t i = 0; i < 10; ++i) {
             srand(time(NULL));
-            test_invalid_heidhts.push_back(rand() % test_max_height);
+            test_invalid_heidhts.insert(rand() % test_max_height);
+            test_invalid_heidhts.insert((uint64_t)pow(2, i));
         }
 
         for (uint64_t i = 0; i < test_invalid_heidhts.size(); ++i) {
-            SetTreeWithInvalidHeight(test_max_height, test_invalid_heidhts[i]);
+            SetTreeWithInvalidHeight(test_max_height, test_invalid_heidhts);
         }
     }
 }

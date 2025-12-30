@@ -1,7 +1,81 @@
-[submodule "libs/protobuf"]
-	path = libs/protobuf
-	url = git@github.com:protocolbuffers/protobuf.git
-	branch = commit/48cb18e5c419ddd23d9badcfe4e9df7bde1979b2
-[submodule "libs/evhtp"]
-	path = libs/evhtp
-	url = git@github.com:ellzey/libevhtp.git
+[submodule "third_party/log4cpp"]
+	path = third_party/log4cpp
+	url = https://github.com/orocos-toolchain/log4cpp.git
+[submodule "third_party/maxmind"]
+	path = third_party/maxmind
+	url = https://github.com/maxmind/libmaxminddb.git
+[submodule "third_party/geolite2pp"]
+	path = third_party/geolite2pp
+	url = https://github.com/nm17/geolite2pp.git
+[submodule "third_party/protobuf"]
+	path = third_party/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "third_party/openssl"]
+	path = third_party/openssl
+	url = https://github.com/openssl/openssl.git
+[submodule "third_party/xxHash"]
+	path = third_party/xxHash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "third_party/ethash"]
+	path = third_party/ethash
+	url = https://github.com/chfast/ethash.git
+[submodule "third_party/gmssl"]
+	path = third_party/gmssl
+	url = https://github.com/guanzhi/GmSSL.git
+[submodule "third_party/gperftools"]
+	path = third_party/gperftools
+	url = https://github.com/gperftools/gperftools.git
+[submodule "third_party/readerwriterqueue"]
+	path = third_party/readerwriterqueue
+	url = https://github.com/cameron314/readerwriterqueue.git
+[submodule "third_party/secp256k1"]
+	path = third_party/secp256k1
+	url = https://github.com/bitcoin-core/secp256k1.git
+[submodule "third_party/boost/multiprecision"]
+	path = third_party/boost/multiprecision
+	url = git@github.com:boostorg/multiprecision.git
+[submodule "third_party/oqs"]
+	path = third_party/oqs
+	url = https://github.com/open-quantum-safe/liboqs.git
+[submodule "third_party/libsodium"]
+	path = third_party/libsodium
+	url = https://github.com/jedisct1/libsodium.git
+[submodule "third_party/libbls"]
+	path = third_party/libbls
+	url = https://github.com/tenondvpn/bls_sign.git
+[submodule "third_party/leveldb"]
+	path = third_party/leveldb
+	url = https://github.com/google/leveldb.git
+[submodule "third_party/httplib"]
+	path = third_party/httplib
+	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "third_party/evmone"]
+	path = third_party/evmone
+	url = https://github.com/ipsilon/evmone.git
+[submodule "third_party/clickhouse"]
+	path = third_party/clickhouse
+	url = https://github.com/ClickHouse/clickhouse-cpp.git
+[submodule "third_party/cpppbc"]
+	path = third_party/cpppbc
+	url = https://github.com/Arman001/pbcwrapper.git
+[submodule "third_party/json"]
+	path = third_party/json
+	url = https://github.com/nlohmann/json.git
+[submodule "third_party/pbc"]
+	path = third_party/pbc
+	url = git@github.com:blynn/pbc.git
+[submodule "third_party/fmt"]
+	path = third_party/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "third_party/zstd"]
+	path = third_party/zstd
+	url = https://github.com/facebook/zstd.git
+[submodule "third_party/gtest"]
+	path = third_party/gtest
+	url = https://github.com/google/googletest.git
+[submodule "third_party/rocksdb"]
+	path = third_party/rocksdb
+	url = https://github.com/facebook/rocksdb.git
+[submodule "third_party/spdlog"]
+	path = third_party/spdlog
+	url = https://github.com/gabime/spdlog

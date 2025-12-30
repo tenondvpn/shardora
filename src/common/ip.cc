@@ -14,7 +14,7 @@ Ip* Ip::Instance() {
 
 Ip::Ip() {
     db_ = std::make_shared<GeoLite2PP::DB>(common::GlobalInfo::Instance()->ip_db_path());
-    ZJC_INFO("MMDB version: %s, GeoLite2PP ver: %s",
+    SHARDORA_INFO("MMDB version: %s, GeoLite2PP ver: %s",
         db_->get_lib_version_mmdb().c_str(),
         db_->get_lib_version_geolite2pp().c_str());
 }

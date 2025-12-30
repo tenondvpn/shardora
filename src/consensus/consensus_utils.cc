@@ -31,7 +31,7 @@ namespace consensus {
 //     }
 
 //     auto tmp_hash = common::Hash::keccak256(msg);
-//     ZJC_DEBUG("block.prehash(): %s, height: %lu, vss_random: %lu, "
+//     SHARDORA_DEBUG("block.prehash(): %s, height: %lu, vss_random: %lu, "
 //         "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, ",
 //         common::Encode::HexEncode(view_block.parent_hash()).c_str(),
 //         height,
@@ -62,14 +62,14 @@ namespace consensus {
 //     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
 //         message.append(tx_info.storages(i).key());
 //         message.append(tx_info.storages(i).value());
-//         ZJC_DEBUG("add tx key: %s, %s, value: %s",
+//         SHARDORA_DEBUG("add tx key: %s, %s, value: %s",
 //             tx_info.storages(i).key().c_str(),
 //             common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
 //             common::Encode::HexEncode(tx_info.storages(i).value()).c_str());
 //     }
 
 //     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-//         ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
+//         SHARDORA_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, %s, val: %s, block tx hash: %s, message: %s",
 //             amount, gas_limit, gas_price, step,
 //             common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
 //             tx_info.storages(i).key().c_str(),

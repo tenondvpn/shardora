@@ -12,6 +12,8 @@
 #include "common/encode.h"
 #include "common/log.h"
 #include "common/utils.h"
+#include "db/db.h"
+#include "protos/block.pb.h"
 
 namespace shardora {
 
@@ -43,7 +45,7 @@ struct storage_value {
 
 struct MockedAccount {
     int nonce = 0;
-    bytes code;
+    evmc::bytes code;
     evmc::bytes32 codehash;
     evmc::uint256be balance;
     std::map<evmc::bytes32, storage_value> storage;
@@ -109,6 +111,21 @@ public:
     virtual evmc_access_status access_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) noexcept;
+    /// @copydoc evmc_host_interface::get_transient_storage
+    virtual evmc::bytes32 get_transient_storage(
+            const evmc::address& addr,
+            const evmc::bytes32& key) const noexcept {
+        assert(false);
+        return {};
+    }
+
+    /// @copydoc evmc_host_interface::set_transient_storage
+    virtual void set_transient_storage(
+            const evmc::address& addr,
+            const evmc::bytes32& key,
+            const evmc::bytes32& value) noexcept {
+        assert(false);
+    }
 
     // tmp item
     void AddTmpAccountBalance(const std::string& address, uint64_t balance);
@@ -127,32 +144,37 @@ public:
         //     }
         // }
         // // if (key.size() > 40)
-        // // ZJC_DEBUG("success add prev storage key: %s, value: %s",
+        // // SHARDORA_DEBUG("success add prev storage key: %s, value: %s",
         // //     common::Encode::HexEncode(key).c_str(), 
         // //     common::Encode::HexEncode(val).c_str());
         // prev_storages_map_[key] = val;
         // CHECK_MEMORY_SIZE(prev_storages_map_);
     // }
 
-    std::map<evmc::address, MockedAccount> accounts_;
     evmc_tx_context tx_context_ = {};
     std::string parent_hash_;
+
+    // each tx must reset
     std::vector<log_record> recorded_logs_;
     std::shared_ptr<selfdestuct_record> recorded_selfdestructs_ = nullptr;
-
     std::string my_address_;
     uint64_t gas_price_{ 0 };
     std::string origin_address_;
     uint32_t depth_{ 0 };
-    std::map<std::string, std::map<std::string, uint64_t>> to_account_value_;
-    std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
+    uint64_t gas_more_ = 0lu;
     std::string create_bytes_code_;
-    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
-    std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     uint64_t view_ = 0;
     bool contract_to_call_dirty_ = false;
+    std::map<std::string, std::map<std::string, uint64_t>> to_account_value_;
 
+    // block's all tx shared
+    std::map<evmc::address, MockedAccount> accounts_;
+    std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
+    std::map<std::string, std::shared_ptr<pools::protobuf::ToTxMessageItem>> cross_to_map_;
+
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
+    db::DbWriteBatch db_batch_;
 };
 
 }  // namespace zjcvm

@@ -104,7 +104,6 @@ message OldHeader {
     optional init.protobuf.InitMessage init_proto = 25;
     optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
     optional block.protobuf.Block block = 27;
-    repeated pools.protobuf.ShardToTxItem invalid_bfts = 28;
     optional uint32 from_public_port = 29;
     optional c2c.protobuf.C2cMessage c2c = 30;
 }

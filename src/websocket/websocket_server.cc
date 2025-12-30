@@ -33,7 +33,7 @@ int32_t WebSocketServer::Init(const char* ip, uint16_t port, WebsocketCloseCallb
         websocketpp::lib::placeholders::_2));
     return 0;
 } catch (std::exception& e) {
-    ZJC_ERROR("catch error: %s", e.what());
+    SHARDORA_ERROR("catch error: %s", e.what());
     return 1;
 }
 
@@ -62,7 +62,7 @@ void WebSocketServer::Run() {
         server_.start_accept();
         server_.run();
     } catch (const std::exception & e) {
-        ZJC_ERROR("start websocket server failed: %s, ip port: %s:%d", e.what(), ws_ip_.c_str(), ws_port_);
+        SHARDORA_ERROR("start websocket server failed: %s, ip port: %s:%d", e.what(), ws_ip_.c_str(), ws_port_);
         assert(false);
         exit(1);
     }

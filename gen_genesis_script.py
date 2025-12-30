@@ -132,14 +132,14 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
 
     for node in server_conf['nodes']:
         sk = gen_node_sk(node['name'], server_conf)
-        zjchain_conf = {
+        shardora_conf = {
             'db': {
                 'path': './db',
             },
             'log': {
-                'path': 'log/zjchain.log',
+                'path': 'log/shardora.log',
             },
-            'zjchain': {
+            'shardora': {
                 'bootstrap': root_boostrap_str,
                 'ck_ip': '127.0.0.1',
                 'ck_passworkd': '',
@@ -166,8 +166,8 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
             if not os.path.exists(sub_conf_folder):
                 os.makedirs(sub_conf_folder)
 
-        with open(f'{sub_conf_folder}/zjchain.conf', 'w') as f:
-            toml.dump(zjchain_conf, f)
+        with open(f'{sub_conf_folder}/shardora.conf', 'w') as f:
+            toml.dump(shardora_conf, f)
 
 def gen_genesis_sh_file(server_conf: dict, file_path, datadir='/root'):
     net_names_map = {}
@@ -216,21 +216,21 @@ then
 elif test $NO_BUILD = "noblock"
 then
 	sh build.sh a $TARGET
-	sudo mv -f {datadir}/zjnodes/zjchain /mnt/
+	sudo mv -f {datadir}/zjnodes/shardora /mnt/
 else
-	sudo mv -f {datadir}/zjnodes/zjchain /mnt/
+	sudo mv -f {datadir}/zjnodes/shardora /mnt/
 fi
 
 sudo rm -rf {datadir}/zjnodes
 sudo cp -rf ./zjnodes {datadir}
 sudo cp -rf ./deploy {datadir}
 sudo cp ./fetch.sh {datadir}
-rm -rf {datadir}/zjnodes/*/zjchain {datadir}/zjnodes/*/core* {datadir}/zjnodes/*/log/* {datadir}/zjnodes/*/*db*
+rm -rf {datadir}/zjnodes/*/shardora {datadir}/zjnodes/*/core* {datadir}/zjnodes/*/log/* {datadir}/zjnodes/*/*db*
 
 if [ $NO_BUILD = "nobuild" -o $NO_BUILD = "noblock" ]
 then
-	sudo rm -rf {datadir}/zjnodes/zjchain
-	sudo mv -f /mnt/zjchain {datadir}/zjnodes/
+	sudo rm -rf {datadir}/zjnodes/shardora
+	sudo mv -f /mnt/shardora {datadir}/zjnodes/
 fi
 """
 
@@ -245,33 +245,33 @@ fi
     code_str += f"""
 for node in "${{nodes[@]}}"; do
     mkdir -p "{datadir}/zjnodes/${{node}}/log"
-    # cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{node}}/conf
-    # cp -rf ./zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{node}}/conf
+    # cp -rf ./zjnodes/shardora/GeoLite2-City.mmdb {datadir}/zjnodes/${{node}}/conf
+    # cp -rf ./zjnodes/shardora/conf/log4cpp.properties {datadir}/zjnodes/${{node}}/conf
 done
-cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/zjchain
-cp -rf ./zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/zjchain/conf
-mkdir -p {datadir}/zjnodes/zjchain/log
+cp -rf ./zjnodes/shardora/GeoLite2-City.mmdb {datadir}/zjnodes/shardora
+cp -rf ./zjnodes/shardora/conf/log4cpp.properties {datadir}/zjnodes/shardora/conf
+mkdir -p {datadir}/zjnodes/shardora/log
 
 
-sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain
-sudo cp -f ./conf/genesis.yml {datadir}/zjnodes/zjchain/genesis.yml
+sudo cp -rf ./cbuild_$TARGET/shardora {datadir}/zjnodes/shardora
+sudo cp -f ./conf/genesis.yml {datadir}/zjnodes/shardora/genesis.yml
 
 # for node in "${{nodes[@]}}"; do
-    # sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/${{node}}
+    # sudo cp -rf ./cbuild_$TARGET/shardora {datadir}/zjnodes/${{node}}
 # done
-sudo cp -rf ./cbuild_$TARGET/zjchain {datadir}/zjnodes/zjchain
+sudo cp -rf ./cbuild_$TARGET/shardora {datadir}/zjnodes/shardora
 
 """
     code_str += """
 if test $NO_BUILD = 0
 then
 """
-    code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain -U\n"
+    code_str += f"    cd {datadir}/zjnodes/shardora && ./shardora -U\n"
     for net_id in net_ids:
         if net_id == 2:
             continue
         arg_str = '-S ' + str(net_id)
-        code_str += f"    cd {datadir}/zjnodes/zjchain && ./zjchain {arg_str}\n"
+        code_str += f"    cd {datadir}/zjnodes/shardora && ./shardora {arg_str}\n"
 
     code_str += "    \nfi\n"
 
@@ -280,13 +280,13 @@ then
         db_str = 'root_db' if net_id == 2 else 'shard_db_' + str(net_id)
         code_str += f"""
 #for node in "${{{net_key}[@]}}"; do
-#	cp -rf {datadir}/zjnodes/zjchain/{db_str} {datadir}/zjnodes/${{node}}/db
+#	cp -rf {datadir}/zjnodes/shardora/{db_str} {datadir}/zjnodes/${{node}}/db
 #done
 
 """
         
     code_str += f"""
-# 压缩 zjnodes/zjchain，便于网络传输
+# 压缩 zjnodes/shardora，便于网络传输
 """
 
     code_str += """
@@ -343,7 +343,7 @@ echo "==== STEP1: START DEPLOY ===="
 
     code_str += f"""
 echo "==== STEP0: KILL OLDS ===="
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep shardora | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -353,7 +353,7 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         code_str += f"""
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep shardora | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
 
@@ -436,9 +436,9 @@ EOF
 (
 echo "[$server0]"
 for n in {server0_node_names_str}; do
-    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/${{n}}
+    ln -s {datadir}/zjnodes/shardora/GeoLite2-City.mmdb {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/shardora/conf/log4cpp.properties {datadir}/zjnodes/${{n}}/conf
+    ln -s {datadir}/zjnodes/shardora/shardora {datadir}/zjnodes/${{n}}
 done
 ) &
 
@@ -464,9 +464,9 @@ done
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
 for n in {server_node_names_str}; do
-    ln -s {datadir}/zjnodes/zjchain/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
-    ln -s {datadir}/zjnodes/zjchain/zjchain {datadir}/zjnodes/\${{n}}
+    ln -s {datadir}/zjnodes/shardora/GeoLite2-City.mmdb {datadir}/zjnodes/\${{n}}/conf
+    ln -s {datadir}/zjnodes/shardora/conf/log4cpp.properties {datadir}/zjnodes/\${{n}}/conf
+    ln -s {datadir}/zjnodes/shardora/shardora {datadir}/zjnodes/\${{n}}
 done
 """
 
@@ -475,7 +475,7 @@ done
             dbname = get_dbname_by_shard(s)
             code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/\${{n}}/db
+    cp -rf {datadir}/zjnodes/shardora/{dbname} {datadir}/zjnodes/\${{n}}/db
 done
 """
 
@@ -498,7 +498,7 @@ EOF
         dbname = get_dbname_by_shard(s)
         code_str += f"""
 for n in {nodes_name_str}; do
-    cp -rf {datadir}/zjnodes/zjchain/{dbname} {datadir}/zjnodes/${{n}}/db
+    cp -rf {datadir}/zjnodes/shardora/{dbname} {datadir}/zjnodes/${{n}}/db
 done
 """    
         
@@ -511,7 +511,7 @@ echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# ps -ef | grep shardora | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -521,7 +521,7 @@ echo "==== STEP2: CLEAR OLDS ===="
         code_str += f"""
 echo "[${server_name}]"
 # sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-# ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+# ps -ef | grep shardora | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 # EOF
 """
       
@@ -533,7 +533,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd {datadir}/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd {datadir}/zjnodes/r1/ && nohup ./shardora -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
 
 sleep 3
 """
@@ -551,7 +551,7 @@ echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
-    cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
+    cd {datadir}/zjnodes/\$node/ && nohup ./shardora -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
 """
@@ -563,7 +563,7 @@ done \\
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
 for node in {server_nodes_str}; do
-cd {datadir}/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
+cd {datadir}/zjnodes/$node/ && nohup ./shardora -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
 done
 
 """  

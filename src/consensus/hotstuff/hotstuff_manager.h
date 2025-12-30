@@ -20,10 +20,8 @@
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
-#include <consensus/zbft/contract_create_by_root_from_tx_item.h>
-#include <consensus/zbft/contract_create_by_root_to_tx_item.h>
-#include <consensus/zbft/contract_user_call.h>
-#include <consensus/zbft/contract_user_create_call.h>
+#include <consensus/zbft/contract_prepayment.h>
+#include <consensus/zbft/contract_create.h>
 #include <consensus/zbft/create_library.h>
 #include <consensus/zbft/cross_tx_item.h>
 #include <consensus/zbft/elect_tx_item.h>
@@ -39,7 +37,6 @@
 #include "common/utils.h"
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
-#include "consensus/zbft/contract_gas_prepayment.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
@@ -50,8 +47,6 @@
 #include "security/security.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
-
-
 
 namespace shardora {
 
@@ -72,7 +67,6 @@ public:
     int Init(
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
-        std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
@@ -84,20 +78,22 @@ public:
         std::shared_ptr<db::Db>& db,
         BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
-        uint64_t block_tm_ms,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& sec_key);
+    void OnTimeBlock(
+            uint64_t lastest_time_block_tm,
+            uint64_t latest_time_block_height,
+            uint64_t vss_random) {
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            chain(i)->OnTimeBlock(lastest_time_block_tm, latest_time_block_height, vss_random);
+        }
+    }
     
     HotstuffManager();
     virtual ~HotstuffManager();
-    
-    void UpdateStoredToDbView(uint32_t pool_index, View view) {
-        pool_hotstuff_[pool_index]->UpdateStoredToDbView(view);
-    }
-
     Status Start();
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
@@ -188,6 +184,8 @@ private:
     void RegisterCreateTxCallbacks();
     Status VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& pb_vblock);
     void PopPoolsMessage();
+    void InitLatestInfo(pools::protobuf::PoolLatestInfo& pool_info, uint32_t pool_index);
+
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(
                 msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
@@ -205,7 +203,7 @@ private:
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxLocalItem>(
-                msg_ptr, -1, db_, gas_prepayment_, 
+                msg_ptr, -1, db_, 
                 account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
@@ -231,8 +229,9 @@ private:
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
         if (first_timeblock_timestamp_ == 0) {
-            uint64_t height = 0;
-            prefix_db_->GetGenesisTimeblock(&height, &first_timeblock_timestamp_);
+            timeblock::protobuf::TimeBlock tmblock;
+            prefix_db_->GetLatestTimeBlock(&tmblock);
+            first_timeblock_timestamp_ = tmblock.timestamp();
         }
 
         return std::make_shared<ElectTxItem>(
@@ -287,35 +286,14 @@ private:
                 msg_ptr->address_info);
     }
 
-	pools::TxItemPtr CreateContractByRootFromTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractCreateByRootFromTxItem>(
-                contract_mgr_, 
-                db_, 
-                msg_ptr, -1, 
-                account_mgr_, 
-                security_ptr_, 
-                msg_ptr->address_info);
-    }
-
-	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractCreateByRootToTxItem>(
-                contract_mgr_, 
-                db_, 
-                msg_ptr, -1, 
-                account_mgr_, 
-                security_ptr_, 
-                msg_ptr->address_info);
-    }
-
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractUserCall>(
+        return std::make_shared<ContractPrepayment>(
                 db_, msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
     pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractCall>(
                 contract_mgr_, 
-                gas_prepayment_, 
                 db_, 
                 msg_ptr, -1, 
                 account_mgr_, 
@@ -335,7 +313,6 @@ private:
     
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
-    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
@@ -354,7 +331,7 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     common::ThreadSafeQueue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
-    volatile bool destroy_ = false;
+    std::atomic<bool> destroy_ = false;
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
 

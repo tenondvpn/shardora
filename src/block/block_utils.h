@@ -22,10 +22,10 @@
 #include "protos/block.pb.h"
 #include "protos/view_block.pb.h"
 
-#define BLOCK_DEBUG(fmt, ...) ZJC_DEBUG("[block]" fmt, ## __VA_ARGS__)
-#define BLOCK_INFO(fmt, ...) ZJC_INFO("[block]" fmt, ## __VA_ARGS__)
-#define BLOCK_WARN(fmt, ...) ZJC_WARN("[block]" fmt, ## __VA_ARGS__)
-#define BLOCK_ERROR(fmt, ...) ZJC_ERROR("[block]" fmt, ## __VA_ARGS__)
+#define BLOCK_DEBUG(fmt, ...) SHARDORA_DEBUG("[block]" fmt, ## __VA_ARGS__)
+#define BLOCK_INFO(fmt, ...) SHARDORA_INFO("[block]" fmt, ## __VA_ARGS__)
+#define BLOCK_WARN(fmt, ...) SHARDORA_WARN("[block]" fmt, ## __VA_ARGS__)
+#define BLOCK_ERROR(fmt, ...) SHARDORA_ERROR("[block]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 
@@ -140,9 +140,7 @@ inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageIt
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
-typedef std::function<bool(
-    const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
-    db::DbWriteBatch& db_batch)> DbBlockCallback;
+typedef std::function<bool(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block)> DbBlockCallback;
 
 }  // namespace block
 

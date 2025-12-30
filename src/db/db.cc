@@ -13,6 +13,7 @@ Db::Db() {
 }
 
 Db::~Db() {
+    Destroy();
 }
 
 void Db::Destroy() {
@@ -29,13 +30,13 @@ void Db::Destroy() {
 #ifdef LEVELDB
 bool Db::Init(const std::string& db_path) {
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
     std::unique_lock<std::mutex> lock(mutex);
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
@@ -60,7 +61,7 @@ bool Db::Init(const std::string& db_path) {
     // options.compression = leveldb::kSnappyCompression;
     DbStatus status = leveldb::DB::Open(options, db_path, &db_);
     if (!status.ok()) {
-        ZJC_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
+        SHARDORA_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
         return false;
     }
 
@@ -72,65 +73,41 @@ bool Db::Init(const std::string& db_path) {
 
 bool Db::Init(const std::string& db_path) {
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
     std::unique_lock<std::mutex> lock(mutex);
     if (inited_) {
-        ZJC_ERROR("storage db is inited![%s]", db_path.c_str());
+        SHARDORA_ERROR("storage db is inited![%s]", db_path.c_str());
         return false;
     }
 
     rocksdb::Options options;
     // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.create_if_missing = true;
     options.IncreaseParallelism();
     options.OptimizeLevelStyleCompaction();
-    // create the DB if it's not already present
-    options.create_if_missing = true;
     options.max_bytes_for_level_multiplier = 5;
     options.level_compaction_dynamic_level_bytes = true;
     rocksdb::BlockBasedTableOptions table_option;
     table_option.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
+    table_option.block_cache = rocksdb::NewLRUCache(512 * 1024 * 1024);
     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_option));
     options.compression = rocksdb::kSnappyCompression;
     options.bottommost_compression = rocksdb::kZlibCompression;
     options.compaction_style = rocksdb::kCompactionStyleUniversal;
     options.compaction_options_universal.size_ratio = 20;
-    options.level0_file_num_compaction_trigger = 4;
-    options.max_bytes_for_level_base = 64 * 1024 * 1024;
-    options.write_buffer_size = 128 * 1024 * 1024;
+    options.level0_file_num_compaction_trigger = 8;
+    options.max_bytes_for_level_base = 512 * 1024 * 1024;
+    options.write_buffer_size = 512 * 1024 * 1024;
     options.max_write_buffer_number = 4;
-    // options.compaction_style = rocksdb::kCompactionStyleUniversal;
-    // options.write_buffer_size = 67108864 / 64; // 64MB
-    // options.max_write_buffer_number = 3 / 3;
-    // options.target_file_size_base = 67108864 / 64; // 64MB
-    // options.max_background_compactions = 2;
-    // options.level0_file_num_compaction_trigger = 8;
-    // options.level0_slowdown_writes_trigger = 17;
-    // options.level0_stop_writes_trigger = 24;
-    // options.num_levels = 4;
-    // options.max_bytes_for_level_base = 536870912 / 64; // 512MB
-    // options.max_bytes_for_level_multiplier = 8 / 2;
-    // options.create_if_missing = true;
-    // options.keep_log_file_num = 1;
-    // options.max_open_files = 10 / 5;
-    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
-    options.IncreaseParallelism();
-    options.OptimizeLevelStyleCompaction();
-
-//     options.prefix_extractor.reset(rocksdb::NewFixedPrefixTransform(3));
-//     options.memtable_prefix_bloom_bits = 100000000;
-//     options.memtable_prefix_bloom_probes = 6;
-// 
-//     // Enable prefix bloom for SST files
-//     rocksdb::BlockBasedTableOptions table_options;
-//     table_options.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, true));
-//     options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options)
+    options.max_background_compactions  = 8;
+    options.optimize_filters_for_hits = false;
 
     rocksdb::Status status = rocksdb::DB::Open(options, db_path, &db_);
     if (!status.ok()) {
-        ZJC_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
+        SHARDORA_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
         return false;
     }
 
@@ -142,4 +119,4 @@ bool Db::Init(const std::string& db_path) {
 
 }  // db
 
-}  // zjchain
+}  // shardora

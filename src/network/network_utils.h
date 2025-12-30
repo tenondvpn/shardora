@@ -6,9 +6,9 @@
 #include "common/global_info.h"
 
 #define NETWORK_DEBUG(fmt, ...) DEBUG("[network]" fmt, ## __VA_ARGS__)
-#define NETWORK_INFO(fmt, ...) ZJC_INFO("[network]" fmt, ## __VA_ARGS__)
-#define NETWORK_WARN(fmt, ...) ZJC_WARN("[network]" fmt, ## __VA_ARGS__)
-#define NETWORK_ERROR(fmt, ...) ZJC_ERROR("[network]" fmt, ## __VA_ARGS__)
+#define NETWORK_INFO(fmt, ...) SHARDORA_INFO("[network]" fmt, ## __VA_ARGS__)
+#define NETWORK_WARN(fmt, ...) SHARDORA_WARN("[network]" fmt, ## __VA_ARGS__)
+#define NETWORK_ERROR(fmt, ...) SHARDORA_ERROR("[network]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 
@@ -78,6 +78,14 @@ inline static bool IsSameToLocalShard(uint32_t net_id) {
     }
 
     return false;
+}
+
+inline static uint16_t GetLocalConsensusNetworkId() {
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+        return common::GlobalInfo::Instance()->network_id();
+    }
+
+    return common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset;
 }
 
 }  // namespace network

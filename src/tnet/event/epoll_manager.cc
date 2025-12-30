@@ -18,19 +18,19 @@ EpollManager::~EpollManager() {
 
 bool EpollManager::Init() {
     if (inited_) {
-        ZJC_ERROR("event manager has been inited");
+        SHARDORA_ERROR("event manager has been inited");
         return false;
     }
 
     epoll_fd_ = epoll_create(10240);
     if (epoll_fd_ >= 0) {
         if (pipe(wakeup_pipe_)) {
-            ZJC_ERROR("pipe failed [%s]", strerror(errno));
+            SHARDORA_ERROR("pipe failed [%s]", strerror(errno));
         } else {
             inited_ = true;
         }
     } else {
-        ZJC_ERROR("epoll_create failed [%s]", strerror(errno));
+        SHARDORA_ERROR("epoll_create failed [%s]", strerror(errno));
     }
 
     return inited_;
@@ -38,7 +38,7 @@ bool EpollManager::Init() {
 
 bool EpollManager::Enable(int sockfd, int type, EventHandler& handler) {
     if (!inited_) {
-        ZJC_ERROR("event manager has not been inited");
+        SHARDORA_ERROR("event manager has not been inited");
         return false;
     }
 
@@ -63,13 +63,13 @@ bool EpollManager::Enable(int sockfd, int type, EventHandler& handler) {
     }
 
     if ((new_events & old_events) == new_events) {
-        ZJC_ERROR("already enabled");
+        SHARDORA_ERROR("already enabled");
         return true;
     }
 
     int events = old_events | new_events;
     if (events == 0) {
-        ZJC_ERROR("no events exist");
+        SHARDORA_ERROR("no events exist");
         return false;
     }
 
@@ -77,7 +77,7 @@ bool EpollManager::Enable(int sockfd, int type, EventHandler& handler) {
     ev.data.ptr = &handler;
     ev.events = events | EPOLLET;
     if (epoll_ctl(epoll_fd_, op, sockfd, &ev) < 0) {
-        ZJC_ERROR("epoll_ctl failed on sock [%d] [%s]", sockfd, strerror(errno));
+        SHARDORA_ERROR("epoll_ctl failed on sock [%d] [%s]", sockfd, strerror(errno));
         return false;
     }
 
@@ -87,7 +87,7 @@ bool EpollManager::Enable(int sockfd, int type, EventHandler& handler) {
 
 bool EpollManager::Disable(int sockfd, int type, EventHandler& handler) {
     if (!inited_) {
-        ZJC_ERROR("event manager has not been inited");
+        SHARDORA_ERROR("event manager has not been inited");
         return false;
     }
 
@@ -120,7 +120,7 @@ bool EpollManager::Disable(int sockfd, int type, EventHandler& handler) {
     ev.data.ptr = &handler;
     ev.events = events | EPOLLET;
     if (epoll_ctl(epoll_fd_, op, sockfd, &ev) < 0) {
-        ZJC_ERROR("epoll_ctl failed on sock[%d] [%s]", sockfd, strerror(errno));
+        SHARDORA_ERROR("epoll_ctl failed on sock[%d] [%s]", sockfd, strerror(errno));
         return false;
     }
 
@@ -130,7 +130,7 @@ bool EpollManager::Disable(int sockfd, int type, EventHandler& handler) {
 
 int EpollManager::GetEvents(IoEvent* events, int expire) {
     if (!inited_) {
-        ZJC_ERROR("event manager has not been inited");
+        SHARDORA_ERROR("event manager has not been inited");
         return false;
     }
 
@@ -138,7 +138,7 @@ int EpollManager::GetEvents(IoEvent* events, int expire) {
     int n = epoll_wait(epoll_fd_, epoll_events, kDvMaxEvents, expire);
     if (n < 0) {
         if (errno != EINTR) {
-            ZJC_ERROR("epoll_wait failed [%s]", strerror(errno));
+            SHARDORA_ERROR("epoll_wait failed [%s]", strerror(errno));
         }
 
         return 0;
@@ -182,7 +182,7 @@ int EpollManager::GetEvents(IoEvent* events, int expire) {
 
 bool EpollManager::Wakeup() {
     if (!inited_) {
-        ZJC_ERROR("event manager has not been inited");
+        SHARDORA_ERROR("event manager has not been inited");
         return false;
     }
 
@@ -195,7 +195,7 @@ bool EpollManager::Wakeup() {
     ev.data.ptr = this;
     ev.events = EPOLLOUT;
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, wakeup_pipe_[1], &ev) != 0) {
-        ZJC_ERROR("epoll_ctl failed [%s]", strerror(errno));
+        SHARDORA_ERROR("epoll_ctl failed [%s]", strerror(errno));
         return false;
     }
 
@@ -206,7 +206,7 @@ bool EpollManager::Wakeup() {
 void EpollManager::Destroy() {
     if (wakeup_pipe_[0] >= 0) {
         if (close(wakeup_pipe_[0])) {
-            ZJC_ERROR("close pipe fd failed [%s]", strerror(errno));
+            SHARDORA_ERROR("close pipe fd failed [%s]", strerror(errno));
         }
 
         wakeup_pipe_[0] = -1;
@@ -214,7 +214,7 @@ void EpollManager::Destroy() {
 
     if (wakeup_pipe_[1] >= 0) {
         if (close(wakeup_pipe_[1])) {
-            ZJC_ERROR("close pipe fd failed [%s]", strerror(errno));
+            SHARDORA_ERROR("close pipe fd failed [%s]", strerror(errno));
         }
 
         wakeup_pipe_[1] = -1;
@@ -222,7 +222,7 @@ void EpollManager::Destroy() {
 
     if (epoll_fd_ >= 0) {
         if (close(epoll_fd_)) {
-            ZJC_ERROR("close epoll fd failed [%s]", strerror(errno));
+            SHARDORA_ERROR("close epoll fd failed [%s]", strerror(errno));
         }
 
         epoll_fd_ = -1;
@@ -237,7 +237,7 @@ void EpollManager::HandleWakeup() {
     memset(&ev, 0, sizeof(ev));
     wakeup_event_is_set_ = false;
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, wakeup_pipe_[1], &ev) < 0) {
-        ZJC_ERROR("epoll_ctl failed [%s]", strerror(errno));
+        SHARDORA_ERROR("epoll_ctl failed [%s]", strerror(errno));
     }
 }
 

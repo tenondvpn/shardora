@@ -133,11 +133,11 @@ uint8_t RandomCountry() {
 }
 
 uint32_t GetAddressPoolIndex(const std::string& addr) {
-    if (addr == kRootPoolsAddress) {
+    if (memcmp(addr.c_str(), kRootPoolsAddressPrefix.c_str(), kRootPoolsAddressPrefix.size()) == 0) {
         return common::kImmutablePoolSize;
     }
 
-    return common::Hash::Hash32(addr) % common::kImmutablePoolSize;
+    return common::Hash::Hash32(addr.substr(0, kUnicastAddressLength)) % common::kImmutablePoolSize;
 }
 
 uint32_t GetAddressMemberIndex(const std::string& addr) {

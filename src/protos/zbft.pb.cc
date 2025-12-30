@@ -20,7 +20,7 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2fblock_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<12> scc_info_Block;
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fpools_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_TxMessage;
@@ -1053,6 +1053,9 @@ void TxBft::CopyFrom(const TxBft& from) {
 }
 
 bool TxBft::IsInitialized() const {
+  if (has_block()) {
+    if (!this->block_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -2219,6 +2222,12 @@ void ZbftMessage::CopyFrom(const ZbftMessage& from) {
 }
 
 bool ZbftMessage::IsInitialized() const {
+  if (has_tx_bft()) {
+    if (!this->tx_bft_->IsInitialized()) return false;
+  }
+  if (has_block()) {
+    if (!this->block_->IsInitialized()) return false;
+  }
   return true;
 }
 

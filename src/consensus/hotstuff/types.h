@@ -25,13 +25,11 @@ static const uint64_t ORPHAN_BLOCK_TIMEOUT_US = 10000000lu;
 typedef uint64_t View;
 typedef std::string HashStr;
 
-static const View GenesisView = 1;
-static const View BeforeGenesisView = 0;
-// ViewDuration Init Params
+// ViewDuration Init Params.
 static const uint64_t ViewDurationSampleSize = 10;
 static const double ViewDurationStartTimeoutMs = 300;
 static const double ViewDurationMaxTimeoutMs = 60000;
-static const double ViewDurationMultiplier = 1.3; // 选过大会造成卡住的成本很高，一旦卡住则恢复时间很长（如 leader 不一致），过小会导致没有交易时 CPU 长时间降不下来
+static const double ViewDurationMultiplier = 1.3; // The cost of causing a freeze after a large election is high. Once it gets stuck, the recovery time is long (e.g., inconsistent leaders). If it is too small, the CPU will not be able to come down for a long time when there are no transactions.
 
 
 enum class Status : int {
@@ -65,11 +63,11 @@ bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item);
 // HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem&
 // view_block_item);
 
-// Both aggregated and unaggregated signatures share the same structure
+// Both aggregated and unaggregated signatures share the same structure.
 struct AggregateSignature {
     libff::alt_bn128_G1 sig_;
-    // 因为要使用聚合签名，需要聚合公钥，因此必须知道参与者都有谁
-    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures
+    // Because aggregate signatures are used, public keys need to be aggregated, so it is necessary to know who the participants are
+    std::unordered_set<uint32_t> participants_; // member indexes who submit signatures.
 
     AggregateSignature() : sig_(libff::alt_bn128_G1::zero()) {}
     
@@ -94,7 +92,7 @@ struct AggregateSignature {
     }
 
     inline bool IsValid() const {
-        // minimum participants size is 1
+        // minimum participants size is 1.
         return !sig_.is_zero() && participants_.size() > 0;
     }
 
@@ -112,10 +110,10 @@ struct AggregateSignature {
                 sig_.Z = libff::alt_bn128_Fq(agg_sig_proto.sign_z().c_str());
             }
         } catch (const std::exception& e) {   
-            ZJC_ERROR("load from proto failed, err: %s", e.what());
+            SHARDORA_ERROR("load from proto failed, err: %s", e.what());
             return false;
         } catch (...) {
-            ZJC_ERROR("load from proto failed, unknown err");
+            SHARDORA_ERROR("load from proto failed, unknown err");
             return false;
         }
 
@@ -142,10 +140,10 @@ struct AggregateSignature {
 };
 
 
-// 本 elect height 中共识情况统计
+// Consensus statistics in this elect height
 struct MemberConsensusStat {
-    uint32_t succ_num; // 共识成功的次数
-    uint32_t fail_num; // 共识失败的次数
+    uint32_t succ_num; // Number of successful consensuses
+    uint32_t fail_num; // Number of failed consensuses
 
     MemberConsensusStat() {
         succ_num = 0;
@@ -179,7 +177,7 @@ inline static void CreateTc(
     tc->set_leader_idx(leader_idx);
 }
 
-// For Fast HotStuff
+// For Fast HotStuff.
 struct AggregateQC {
     std::unordered_map<uint32_t, std::shared_ptr<QC>> qcs_;
     std::shared_ptr<AggregateSignature> sig_;
@@ -236,4 +234,3 @@ std::shared_ptr<SyncInfo> new_sync_info();
 } // namespace hotstuff
 
 } // namespace shardora
-

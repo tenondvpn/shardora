@@ -54,18 +54,18 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     }
 
     if (kv_sync_ == nullptr) {
-        ZJC_DEBUG("kv_sync_ == nullptr");
+        SHARDORA_DEBUG("kv_sync_ == nullptr");
         return 0;
     }
 
     if (height_tree_ptr_ == nullptr) {
-        ZJC_DEBUG("height_tree_ptr_ == nullptr");
+        SHARDORA_DEBUG("height_tree_ptr_ == nullptr");
         return 0;
     }
 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
-        ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+        SHARDORA_DEBUG("now add sync height 1, %u_%u_%lu", 
             des_sharding_id_,
             pool_index_,
             0);
@@ -83,14 +83,14 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
         for (uint32_t i = 0; i < invalid_heights.size(); ++i) {
             if (prefix_db_->BlockExists(des_sharding_id_, pool_index_, invalid_heights[i])) {
                 height_tree_ptr_->Set(invalid_heights[i]);
-                ZJC_DEBUG("exists des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
+                SHARDORA_DEBUG("exists des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
                     "invaid heights size: %u, height: %lu",
                     des_sharding_id_, pool_index_, latest_height_,
                     invalid_heights.size(), invalid_heights[i]);
                 continue;
             }
 
-            ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+            SHARDORA_DEBUG("now add sync height 1, %u_%u_%lu", 
                 des_sharding_id_,
                 pool_index_,
                 invalid_heights[i]);

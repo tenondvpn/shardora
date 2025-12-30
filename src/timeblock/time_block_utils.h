@@ -4,10 +4,10 @@
 #include "common/log.h"
 #include "common/encode.h"
 
-#define TMBLOCK_DEBUG(fmt, ...) ZJC_DEBUG("[tmblock]" fmt, ## __VA_ARGS__)
-#define TMBLOCK_INFO(fmt, ...) ZJC_INFO("[tmblock]" fmt, ## __VA_ARGS__)
-#define TMBLOCK_WARN(fmt, ...) ZJC_WARN("[tmblock]" fmt, ## __VA_ARGS__)
-#define TMBLOCK_ERROR(fmt, ...) ZJC_ERROR("[tmblock]" fmt, ## __VA_ARGS__)
+#define TMBLOCK_DEBUG(fmt, ...) SHARDORA_DEBUG("[tmblock]" fmt, ## __VA_ARGS__)
+#define TMBLOCK_INFO(fmt, ...) SHARDORA_INFO("[tmblock]" fmt, ## __VA_ARGS__)
+#define TMBLOCK_WARN(fmt, ...) SHARDORA_WARN("[tmblock]" fmt, ## __VA_ARGS__)
+#define TMBLOCK_ERROR(fmt, ...) SHARDORA_ERROR("[tmblock]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 

@@ -5,7 +5,7 @@
 #include <thread>
 
 #include <clickhouse/client.h>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "ck/ck_utils.h"
 #include "common/thread_safe_queue.h"
@@ -63,7 +63,7 @@ private:
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<hotstuff::ViewBlock>> block_queues_[common::kMaxThreadCount];
     std::shared_ptr<std::thread> flush_to_ck_thread_;
-    volatile bool stop_ = false;
+    std::atomic<bool> stop_ = false;
     std::mutex wait_mutex_;
     std::condition_variable wait_con_;
 

@@ -12,8 +12,6 @@
 #include <condition_variable>
 #include <queue>
 
-#include <parallel_hashmap/phmap.h>
-
 #include "common/limit_hash_set.h"
 #include "common/spin_mutex.h"
 #include "common/thread_safe_queue.h"
@@ -38,18 +36,24 @@ public:
     ThreadHandler(
         MultiThreadHandler* msg_handler,
         std::condition_variable& wait_con,
-        std::mutex& wait_mutex);
+        std::mutex& wait_mutex,
+        bool is_hotstuff_thread);
     ~ThreadHandler();
     void Join();
+    uint8_t thread_idx() const {
+        return thread_idx_;
+    }
 
 private:
     void HandleMessage();
 
     std::shared_ptr<std::thread> thread_{ nullptr };
-    bool destroy_{ false };
+    std::atomic<bool> destroy_{ false };
     MultiThreadHandler* msg_handler_ = nullptr;
     std::condition_variable& wait_con_;
     std::mutex& wait_mutex_;
+    std::atomic<uint8_t> thread_idx_ = common::kInvalidUint8;
+    bool is_hotstuff_thread_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadHandler);
 };
@@ -76,8 +80,14 @@ public:
     }
 
     void ThreadWaitNotify() {
+        thread_init_success_ = true;
         std::unique_lock<std::mutex> lock(thread_wait_mutex_);
         thread_wait_con_.notify_one();
+    }
+
+    uint8_t GetThreadIndexWithPool(uint32_t pool_index) {
+        auto thread_idx = pool_index % common::GlobalInfo::Instance()->hotstuff_thread_count();
+        return thread_vec_[thread_idx]->thread_idx();
     }
 
     // void AddLocalBroadcastedMessages(uint64_t msg_hash) {
@@ -129,6 +139,7 @@ private:
     FirewallCheckCallback firewall_checks_[common::kMaxMessageTypeCount] = { nullptr };
     common::LimitHashSet<uint64_t> from_unique_message_sets_{10240};
     std::condition_variable thread_wait_con_;
+    std::atomic<bool> thread_init_success_ = false;
     std::mutex thread_wait_mutex_;
     // common::ThreadSafeQueue<uint64_t> local_broadcast_messages_[common::kMaxThreadCount];
 

@@ -19,8 +19,8 @@ namespace common {
 
 static long long LongLong(const char* s) {  // NOLINT
     if (!s) {
-        ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
-        throw ConvertException("ZJC_ERROR: not end of str.");
+        SHARDORA_DEBUG("SHARDORA_ERROR: not end of str., %s", s);
+        throw ConvertException("SHARDORA_ERROR: not end of str.");
     }
 
     while (*s != '\0' && *(s + 1) != '\0') {
@@ -37,56 +37,56 @@ static long long LongLong(const char* s) {  // NOLINT
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
-            ZJC_DEBUG("ZJC_ERROR: not end of str., %s", s);
-            throw ConvertException("ZJC_ERROR: not end of str.");
+            SHARDORA_DEBUG("SHARDORA_ERROR: not end of str., %s", s);
+            throw ConvertException("SHARDORA_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == LONG_MIN) {
-            ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            SHARDORA_DEBUG("SHARDORA_ERROR: invalid num., %s", s);
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         } else {
-            ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            SHARDORA_DEBUG("SHARDORA_ERROR: invalid num., %s", s);
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         }
     default:
-        ZJC_DEBUG("ZJC_ERROR: invalid num., %s", s);
-        throw ConvertException("ZJC_ERROR: invalid num.");
+        SHARDORA_DEBUG("SHARDORA_ERROR: invalid num., %s", s);
+        throw ConvertException("SHARDORA_ERROR: invalid num.");
     }
 }
 
 static unsigned long long UnsignedLongLong(const char* s) {  // NOLINT
     if (!s) {
-        throw ConvertException("ZJC_ERROR: not end of str.");
+        throw ConvertException("SHARDORA_ERROR: not end of str.");
     }
     errno = 0;
     char* end_ptr;
     unsigned long long res = strtoull(s, &end_ptr, 0);  // NOLINT
 
     if (memchr(s, '-', end_ptr - s) != NULL) {
-        throw ConvertException("ZJC_ERROR: not end of str.");
+        throw ConvertException("SHARDORA_ERROR: not end of str.");
     }
 
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
-            throw ConvertException("ZJC_ERROR: not end of str.");
+            throw ConvertException("SHARDORA_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == static_cast<uint64_t>(LONG_MIN)) {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         } else {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         }
     default:
-        throw ConvertException("ZJC_ERROR: invalid num.");
+        throw ConvertException("SHARDORA_ERROR: invalid num.");
     }
 }
 
 static float Float(const char* s) {
     if (!s) {
-        throw ConvertException("ZJC_ERROR: not end of str.");
+        throw ConvertException("SHARDORA_ERROR: not end of str.");
     }
     errno = 0;
     char* end_ptr;
@@ -98,23 +98,23 @@ static float Float(const char* s) {
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
-            throw ConvertException("ZJC_ERROR: not end of str.");
+            throw ConvertException("SHARDORA_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == LONG_MIN) {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         } else {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         }
     default:
-        throw ConvertException("ZJC_ERROR: invalid num.");
+        throw ConvertException("SHARDORA_ERROR: invalid num.");
     }
 }
 
 static double Double(const char* s) {
     if (!s) {
-        throw ConvertException("ZJC_ERROR: not end of str.");
+        throw ConvertException("SHARDORA_ERROR: not end of str.");
     }
     errno = 0;
     char* end_ptr;
@@ -123,23 +123,23 @@ static double Double(const char* s) {
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
-            throw ConvertException("ZJC_ERROR: not end of str.");
+            throw ConvertException("SHARDORA_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == LONG_MIN) {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         } else {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         }
     default:
-        throw ConvertException("ZJC_ERROR: invalid num.");
+        throw ConvertException("SHARDORA_ERROR: invalid num.");
     }
 }
 
 static long double LongDouble(const char* s) {  // NOLINT
     if (!s) {
-        throw ConvertException("ZJC_ERROR: not end of str.");
+        throw ConvertException("SHARDORA_ERROR: not end of str.");
     }
     errno = 0;
     char* end_ptr;
@@ -152,17 +152,17 @@ static long double LongDouble(const char* s) {  // NOLINT
     switch (errno) {
     case 0:
         if (end_ptr == s || *end_ptr != '\0') {
-            throw ConvertException("ZJC_ERROR: not end of str.");
+            throw ConvertException("SHARDORA_ERROR: not end of str.");
         }
         return res;
     case ERANGE:
         if (res == LONG_MIN) {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         } else {
-            throw ConvertException("ZJC_ERROR: invalid num.");
+            throw ConvertException("SHARDORA_ERROR: invalid num.");
         }
     default:
-        throw ConvertException("ZJC_ERROR: invalid num.");
+        throw ConvertException("SHARDORA_ERROR: invalid num.");
     }
 }
 
@@ -170,12 +170,12 @@ template<typename T>
 T SignedCheckCastValue(const std::string& str) {
     auto val = LongLong(str.c_str());
     if (val < (std::numeric_limits<T>::min)()) {
-        ZJC_DEBUG("value bound error[type min]: %lu, %s", val, str.c_str());
+        SHARDORA_DEBUG("value bound error[type min]: %lu, %s", val, str.c_str());
         throw ConvertException("value bound error[type min]");
     }
 
     if (val > (std::numeric_limits<T>::max)()) {
-        ZJC_DEBUG("value bound error[type max]: %lu, %s", val, str.c_str());
+        SHARDORA_DEBUG("value bound error[type max]: %lu, %s", val, str.c_str());
         throw ConvertException("value bound error[type max]");
     }
     return static_cast<T>(val);

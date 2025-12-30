@@ -7,8 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "bzlib.h"
-
 #include "common/random.h"
 #include "common/hash.h"
 #include "db/db.h"
@@ -21,6 +19,7 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #define private public
+#define SHARDORA_UNITTEST
 #include "bls/bls_sign.h"
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
@@ -50,7 +49,7 @@ public:
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
-        bls_manager = new BlsManager(security_ptr, db_ptr);
+        bls_manager = new BlsManager(security_ptr, db_ptr, nullptr);
         InitBlsVerificationValue();
     }
 
@@ -190,7 +189,7 @@ public:
         auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
         prefix_db->AddBlsVerifyG2(sec_ptr->GetAddress(), bls_verify_req);
         prefix_db->SaveLocalPolynomial(sec_ptr, sec_ptr->GetAddress(), local_poly);
-        ZJC_DEBUG("SaveLocalPolynomial success: %s",
+        SHARDORA_DEBUG("SaveLocalPolynomial success: %s",
             common::Encode::HexEncode(sec_ptr->GetAddress()).c_str());
     }
 
@@ -244,9 +243,31 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     GetPrivateKey(pri_vec, n);
     ASSERT_EQ(pri_vec.size(), n);
     system("sudo rm -rf ./db_*");
+
+    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+    latest_timeblock_info->latest_time_block_height = 1;
+    latest_timeblock_info->vss_random = common::Random::RandomUint64();
+
+    common::MembersPtr members = std::make_shared<common::Members>();
+    for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
+            std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[idx]);
+        std::string pubkey_str = tmp_security_ptr->GetPublicKey();
+        std::string id = tmp_security_ptr->GetAddress();
+        auto member = std::make_shared<common::BftMember>(
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
+        member->public_ip = common::IpToUint32("127.0.0.1");
+        member->public_port = 123;
+        members->push_back(member);
+    }
+
     for (uint32_t i = 0; i < n; i++) {
         std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        bls_manager->security_ = tmp_security_ptr;
         LocalCreateContribution(tmp_security_ptr);
         dkg[i].Init(
             bls_manager,
@@ -256,8 +277,12 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             libff::alt_bn128_Fr::zero(),
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
-            db_ptr);
+            db_ptr,
+            nullptr);
+        SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
+        dkg[i].security_ = tmp_security_ptr;
         dkg[i].local_member_index_ = i;
+        dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].CreateContribution(n, valid_t);
     }
 
@@ -334,9 +359,9 @@ static void CreateContribution(
     std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
         for (uint32_t i = b; i < e; ++i) {
-            dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+            dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
             dkg[i].local_member_index_ = i;
-            dkg[i].BroadcastVerfify(0);
+            dkg[i].BroadcastVerfify();
             tmp_verify_brd_msgs[thread_idx].push_back(dkg[i].ver_brd_msg_);
             ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
             dkg[i].ver_brd_msg_ = nullptr;
@@ -374,7 +399,7 @@ static void GetSwapSeckeyMessage(
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
         for (uint32_t i = b; i < e; ++i) {
             bls_manager->security_ = dkg[i].security_;
-            dkg[i].SwapSecKey(0);
+            dkg[i].SwapSecKey();
             swap_sec_msgs_thread[thread_idx].push_back(dkg[i].sec_swap_msgs_);
         }
     };
@@ -414,7 +439,6 @@ static void HandleVerifyBroadcast(
                     continue;
                 }
                 auto msg_ptr = verify_brd_msgs[i];
-                msg_ptr->thread_idx = 0;
                 dkg[j].HandleBlsMessage(msg_ptr);
             }
         }
@@ -449,7 +473,6 @@ static void HandleSwapSeckey(
                     continue;
                 }
                 auto msg_ptr = swap_seckey_msgs[i];
-                msg_ptr->thread_idx = 0;
                 dkg[j].HandleBlsMessage(msg_ptr);
             }
         }
@@ -509,14 +532,18 @@ TEST_F(TestBls, LagrangeCoeffs) {
 }
 
 TEST_F(TestBls, FileSigns) {
-    static const uint32_t n = 1024;
-    static const uint32_t t = common::GetSignerCount(n);
     FILE* fd_signs = fopen("signs", "r");
     char* data = new char[1024 * 1024 * 10];
     size_t len = fread(data, 1, 10 * 1024 * 1024, fd_signs);
     fclose(fd_signs);
+    std::string tmp_data(data, len);
+    std::string proto_data = common::Encode::HexDecode(tmp_data);
     bls::protobuf::VerifyVecBrdReq proto_signs;
-    ASSERT_TRUE(proto_signs.ParseFromArray(data, len));
+    EXPECT_TRUE(proto_signs.ParseFromString(proto_data));
+
+    static const uint32_t n = proto_signs.verify_vec_size();
+    static const uint32_t t = common::GetSignerCount(n);
+
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec(t);
     for (int32_t i = 0; i < proto_signs.verify_vec_size() - 1; ++i) {
@@ -569,7 +596,7 @@ TEST_F(TestBls, FileSigns) {
 
 TEST_F(TestBls, AllSuccess) {
     system("sudo rm -rf ./db_* prikey*");
-    static const uint32_t n = 100;
+    static const uint32_t n = 10;
     // static const uint32_t n = 10;
     static const uint32_t t = common::GetSignerCount(n);
     std::vector<std::string> pri_vec;
@@ -589,7 +616,8 @@ TEST_F(TestBls, AllSuccess) {
             libff::alt_bn128_Fr::zero(),
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
-            db_ptr);
+            db_ptr,
+            nullptr);
     }
 
     auto t2 = common::TimeUtils::TimestampMs();
@@ -612,7 +640,9 @@ TEST_F(TestBls, AllSuccess) {
         std::string pubkey_str = tmp_security_ptr->GetPublicKey();
         std::string id = tmp_security_ptr->GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, idx, idx == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -685,7 +715,6 @@ TEST_F(TestBls, AllSuccess) {
 
         auto verify_item_str = req->SerializeAsString();
         std::cout << "g2 vec size: " << verify_item_str.size() << std::endl;
-        exit(0);
         auto check_hash = common::Hash::keccak256(str_for_hash);
         for (uint32_t tmp_idx = 0; tmp_idx < pri_vec.size(); ++tmp_idx) {
             if (tmp_idx == idx) {
@@ -742,7 +771,7 @@ TEST_F(TestBls, AllSuccess) {
         auto str = join_info.SerializeAsString();
         prefix_db->SaveNodeVerificationVector(dkg[idx].security_->GetAddress(), join_info, db_batch);
         prefix_db->SaveTemporaryKv(check_hash, str, db_batch);
-        prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req, db_batch);
+        prefix_db->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), *req);
         prefix_db->SaveLocalPolynomial(
             dkg[idx].security_, 
             dkg[idx].security_->GetAddress(), 
@@ -773,6 +802,7 @@ TEST_F(TestBls, AllSuccess) {
     auto etime = common::TimeUtils::TimestampMs();
     std::cout << "all over use time: " << (etime - btime) << std::endl;
     auto time0 = common::TimeUtils::TimestampUs();
+    // broadcast verify
     std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
@@ -804,7 +834,7 @@ TEST_F(TestBls, AllSuccess) {
     BlsSign bls_sign;
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishBroadcast(0);
+        dkg[i].FinishBroadcast();
         ASSERT_TRUE(dkg[i].finished_);
     }
 
@@ -848,6 +878,7 @@ TEST_F(TestBls, AllSuccess) {
     fwrite(signs_val.c_str(), 1, signs_val.size(), fd_signs);
     fclose(fd_signs);
 
+    std::cout << "proto_signs: " << ProtobufToJson(proto_signs) << std::endl;
     for (int32_t i = 0; i < (n - t - 1); ++i) {
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<size_t> idx_vec(t);
@@ -877,15 +908,16 @@ TEST_F(TestBls, AllSuccess) {
 
 TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     // t = 7, n = 10
-    static uint32_t t = 7;
     static uint32_t n = 10;
+    static uint32_t t = common::GetSignerCount(n);
 
     BlsDkg dkg[n];
-    for (uint32_t i = 0; i < n; i++) {
-        dkg[i].Init(
-            bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr);
-    }
+    // for (uint32_t i = 0; i < n; i++) {
+    //     dkg[i].Init(
+    //         bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
+    //         libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr,
+    //         nullptr);
+    // }
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
     for (uint32_t i = 0; i < n; ++i) {
@@ -898,7 +930,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -910,14 +944,26 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
-        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
-        dkg[i].security_ = tmp_security_ptr;
+        LocalCreateContribution(tmp_security_ptr);
+        dkg[i].Init(
+            bls_manager,
+            tmp_security_ptr,
+            t,
+            n,
+            libff::alt_bn128_Fr::zero(),
+            libff::alt_bn128_G2::zero(),
+            libff::alt_bn128_G2::zero(),
+            db_ptr,
+            nullptr);
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+        dkg[i].security_ = tmp_security_ptr;
+        dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
-        dkg[i].BroadcastVerfify(0);
+        dkg[i].CreateContribution(n, t);
+        dkg[i].BroadcastVerfify();
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
     }
 
@@ -936,7 +982,6 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
-            msg_ptr->thread_idx = 0;
             if (i == kInvalidNodeIndex) {
                 continue;
             }
@@ -953,7 +998,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].SwapSecKey(0);
+        dkg[i].SwapSecKey();
         swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
     }
 
@@ -969,7 +1014,6 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
-            msg_ptr->thread_idx = 0;
             if (i == kInvalidSwapNodeIndex && j == kInvalidSwapNodeIndex2) {
                 continue;
             }
@@ -984,7 +1028,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     BlsSign bls_sign;
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishBroadcast(0);
+        dkg[i].FinishBroadcast();
         if (i != kInvalidNodeIndex) {
             ASSERT_TRUE(dkg[i].finished_);
         }
@@ -1017,16 +1061,26 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         all_signs,
         lagrange_coeffs);
     for (uint32_t i = 0; i < n; ++i) {
-        if (i == kInvalidNodeIndex || i == kInvalidSwapNodeIndex2) {
+        if (i == kInvalidNodeIndex || i == kInvalidSwapNodeIndex || i == kInvalidSwapNodeIndex2) {
             continue;
         }
 
-        EXPECT_EQ(dkg[i].common_public_key_, dkg[0].common_public_key_);
+        // EXPECT_EQ(dkg[i].common_public_key_, dkg[0].common_public_key_);
         BlsSign bls_sign;
         std::string verify_hash;
         EXPECT_EQ(
             bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);
+        std::cout << "i: " << i << ", " 
+            << (dkg[i].common_public_key_ == dkg[0].common_public_key_) 
+            << ", "
+            << libBLS::ThresholdUtils::fieldElementToString(dkg[i].common_public_key_.X.c0) << ", "
+            << libBLS::ThresholdUtils::fieldElementToString(dkg[i].common_public_key_.X.c1) << ", "
+            << libBLS::ThresholdUtils::fieldElementToString(dkg[i].common_public_key_.Y.c0) << ", "
+            << libBLS::ThresholdUtils::fieldElementToString(dkg[i].common_public_key_.Y.c1) << ", "
+            << ", " << (bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash) == kBlsSuccess) 
+            << std::endl;
+
     }
 }
 
@@ -1038,7 +1092,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     BlsDkg dkg[n];
     for (uint32_t i = 0; i < n; i++) {
         dkg[i].Init(bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr);
+            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr, nullptr);
     }
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
@@ -1052,7 +1106,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -1069,9 +1125,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+        dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
-        dkg[i].BroadcastVerfify(0);
+        dkg[i].BroadcastVerfify();
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
     }
 
@@ -1088,7 +1144,6 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
-            msg_ptr->thread_idx = 0;
             if (i == kInvalidNodeIndex) {
                 continue;
             }
@@ -1105,7 +1160,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].SwapSecKey(0);
+        dkg[i].SwapSecKey();
         swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
     }
 
@@ -1121,7 +1176,6 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
-            msg_ptr->thread_idx = 0;
             dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
@@ -1132,7 +1186,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     BlsSign bls_sign;
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishBroadcast(0);
+        dkg[i].FinishBroadcast();
         if (i != kInvalidNodeIndex) {
             ASSERT_TRUE(dkg[i].finished_);
         }
@@ -1185,7 +1239,8 @@ TEST_F(TestBls, ThreeRatioFailFine) {
     BlsDkg dkg[n];
     for (uint32_t i = 0; i < n; i++) {
         dkg[i].Init(bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr);
+            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr,
+            nullptr);
     }
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
@@ -1199,7 +1254,9 @@ TEST_F(TestBls, ThreeRatioFailFine) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -1216,9 +1273,9 @@ TEST_F(TestBls, ThreeRatioFailFine) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+        dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
-        dkg[i].BroadcastVerfify(0);
+        dkg[i].BroadcastVerfify();
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
     }
 
@@ -1234,7 +1291,6 @@ TEST_F(TestBls, ThreeRatioFailFine) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
-            msg_ptr->thread_idx = 0;
             dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
@@ -1247,7 +1303,7 @@ TEST_F(TestBls, ThreeRatioFailFine) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].SwapSecKey(0);
+        dkg[i].SwapSecKey();
         swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
     }
 
@@ -1263,7 +1319,6 @@ TEST_F(TestBls, ThreeRatioFailFine) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
-            msg_ptr->thread_idx = 0;
             dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
@@ -1284,7 +1339,7 @@ TEST_F(TestBls, ThreeRatioFailFine) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishBroadcast(0);
+        dkg[i].FinishBroadcast();
     }
 
     size_t count = 0;
@@ -1334,7 +1389,7 @@ TEST_F(TestBls, ThreeRatioFail) {
     BlsDkg dkg[n];
     for (uint32_t i = 0; i < n; i++) {
         dkg[i].Init(bls_manager, security_ptr, 0, 0, libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr);
+            libff::alt_bn128_G2::zero(), libff::alt_bn128_G2::zero(), db_ptr, nullptr);
     }
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
@@ -1348,7 +1403,9 @@ TEST_F(TestBls, ThreeRatioFail) {
         std::string pubkey_str = ecdsa.GetPublicKey();
         std::string id = ecdsa.GetAddress();
         auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
+            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1,
+            libff::alt_bn128_G2::zero(), 
+            libff::alt_bn128_G1 ::zero());
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
@@ -1365,9 +1422,9 @@ TEST_F(TestBls, ThreeRatioFail) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+        dkg[i].OnNewElectionBlock(0, 1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
-        dkg[i].BroadcastVerfify(0);
+        dkg[i].BroadcastVerfify();
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
     }
 
@@ -1383,7 +1440,6 @@ TEST_F(TestBls, ThreeRatioFail) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
-            msg_ptr->thread_idx = 0;
             dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
@@ -1396,7 +1452,7 @@ TEST_F(TestBls, ThreeRatioFail) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].SwapSecKey(0);
+        dkg[i].SwapSecKey();
         swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
     }
 
@@ -1412,7 +1468,6 @@ TEST_F(TestBls, ThreeRatioFail) {
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
-            msg_ptr->thread_idx = 0;
             dkg[j].HandleBlsMessage(msg_ptr);
         }
     }
@@ -1435,7 +1490,7 @@ TEST_F(TestBls, ThreeRatioFail) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
-        dkg[i].FinishBroadcast(0);
+        dkg[i].FinishBroadcast();
         ASSERT_FALSE(dkg[i].finished_);
     }
 

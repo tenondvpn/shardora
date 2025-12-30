@@ -433,7 +433,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, version_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, gid_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, nonce_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, pubkey_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, gas_limit_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, gas_price_),
@@ -449,21 +449,21 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, signs_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::TxMessage, signv_),
   12,
+  9,
   0,
-  1,
   10,
   11,
+  1,
   2,
   3,
-  4,
   14,
   13,
   15,
+  4,
   5,
   6,
   7,
   8,
-  9,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::OrderInfo, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::ws::protobuf::OrderInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -794,119 +794,119 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\017protos/ws.proto\022\024shardora.ws.protobuf\""
-      "\313\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 "
-      "\001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021"
-      "\n\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030"
-      "\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\0229\n\004ste"
-      "p\030\n \001(\0162\036.shardora.ws.protobuf.StepType:"
-      "\013kNormalFrom\022\033\n\023contract_prepayment\030\013 \001("
-      "\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contract_inp"
-      "ut\030\r \001(\014\022\r\n\005signr\030\016 \001(\014\022\r\n\005signs\030\017 \001(\014\022\r"
-      "\n\005signv\030\020 \001(\014\"~\n\tOrderInfo\022\r\n\005buyer\030\001 \001("
-      "\014\022,\n\006status\030\002 \001(\0162\034.shardora.ws.protobuf"
-      ".Status\022\016\n\006amount\030\003 \001(\004\022\016\n\006seller\030\004 \001(\014\022"
-      "\024\n\014create_tm_ms\030\005 \001(\004\"\215\001\n\016ReceivableInfo"
-      "\022/\n\004type\030\001 \001(\0162!.shardora.ws.protobuf.Re"
-      "ceiveType\022\014\n\004name\030\002 \001(\014\022\n\n\002id\030\003 \001(\014\022\021\n\tu"
-      "ser_name\030\004 \001(\014\022\r\n\005other\030\005 \001(\014\022\016\n\006qrcode\030"
-      "\006 \001(\014\"K\n\017ReceivableArray\0228\n\nreceivable\030\001"
-      " \003(\0132$.shardora.ws.protobuf.ReceivableIn"
-      "fo\"\231\004\n\010SellInfo\022\016\n\006seller\030\001 \001(\014\022\r\n\005buyer"
-      "\030\002 \001(\014\022\020\n\010contract\030\003 \001(\014\022\016\n\006amount\030\004 \001(\004"
-      "\0229\n\nreceivable\030\005 \001(\0132%.shardora.ws.proto"
-      "buf.ReceivableArray\022\013\n\003all\030\006 \001(\004\022\r\n\005pric"
-      "e\030\007 \001(\004\022\020\n\010mchecked\030\010 \001(\r\022\020\n\010schecked\030\t "
-      "\001(\r\022\020\n\010reported\030\n \001(\r\022\017\n\007orderId\030\013 \001(\004\022\016"
-      "\n\006height\030\014 \001(\004\022\021\n\ttimestamp\030\r \001(\004\022\020\n\010use"
-      "rname\030\016 \001(\014\022\016\n\006status\030\017 \001(\005\022\027\n\017purchase_"
-      "amount\030\020 \001(\004\022\030\n\020create_timestamp\030\021 \001(\004\022\022"
-      "\n\nmin_amount\030\022 \001(\004\022\022\n\nmax_amount\030\023 \001(\004\022\013"
-      "\n\003now\030\024 \001(\004\022\020\n\010is_order\030\025 \001(\010\022,\n\006appeal\030"
-      "\026 \001(\0132\034.shardora.ws.protobuf.Appeal\022\016\n\006c"
-      "redit\030\027 \001(\005\0221\n\013peer_appeal\030\030 \001(\0132\034.shard"
-      "ora.ws.protobuf.Appeal\"9\n\010NewOrder\022\016\n\006se"
-      "ller\030\001 \001(\014\022\016\n\006amount\030\002 \001(\004\022\r\n\005buyer\030\003 \001("
-      "\014\"S\n\006Appeal\022\016\n\006seller\030\001 \001(\014\022\r\n\005buyer\030\002 \001"
-      "(\014\022\014\n\004type\030\003 \001(\005\022\017\n\007content\030\004 \001(\014\022\013\n\003pic"
-      "\030\005 \001(\014\"\211\001\n\007NewSell\022\025\n\rprotocol_addr\030\001 \001("
-      "\014\022\016\n\006seller\030\002 \001(\014\022\016\n\006amount\030\003 \001(\004\022\r\n\005pri"
-      "ce\030\004 \001(\004\0228\n\nreceivable\030\005 \003(\0132$.shardora."
-      "ws.protobuf.ReceivableInfo\"3\n\013BuyerRepor"
-      "t\022\016\n\006seller\030\001 \001(\014\022\024\n\014reports_info\030\002 \001(\014\""
-      "\031\n\007GetSell\022\016\n\006seller\030\001 \001(\014\"\210\003\n\nC2cMessag"
-      "e\022+\n\004sell\030\001 \001(\0132\035.shardora.ws.protobuf.N"
-      "ewSell\022-\n\005order\030\002 \001(\0132\036.shardora.ws.prot"
-      "obuf.NewOrder\0221\n\006report\030\003 \001(\0132!.shardora"
-      ".ws.protobuf.BuyerReport\022-\n\005sells\030\004 \003(\0132"
-      "\036.shardora.ws.protobuf.SellInfo\022/\n\010get_s"
-      "ell\030\005 \001(\0132\035.shardora.ws.protobuf.GetSell"
-      "\022\022\n\nprepayment\030\006 \001(\004\022\020\n\010c2c_addr\030\007 \001(\014\0227"
-      "\n\017user_order_info\030\010 \001(\0132\036.shardora.ws.pr"
-      "otobuf.SellInfo\022,\n\006appeal\030\t \001(\0132\034.shardo"
-      "ra.ws.protobuf.Appeal\"=\n\nStatusInfo\022\016\n\006s"
-      "tatus\030\001 \001(\005\022\017\n\007message\030\002 \001(\014\022\016\n\006msg_id\030\003"
-      " \001(\004\"\263\002\n\010InitInfo\022\016\n\006pubkey\030\001 \001(\014\022\020\n\010pla"
-      "tform\030\002 \001(\014\022\017\n\007version\030\003 \001(\014\022\017\n\007pk_hash\030"
-      "\004 \001(\014\0222\n\003tag\030\005 \001(\0162%.shardora.ws.protobu"
-      "f.InitInfoTagType\022+\n\002tx\030\006 \001(\0132\037.shardora"
-      ".ws.protobuf.TxMessage\022\021\n\ttx_height\030\007 \001("
-      "\004\022-\n\003c2c\030\010 \001(\0132 .shardora.ws.protobuf.C2"
-      "cMessage\0220\n\006status\030\t \001(\0132 .shardora.ws.p"
-      "rotobuf.StatusInfo\022\016\n\006msg_id\030\n \001(\004\"\210\001\n\010W"
-      "sTxItem\022\014\n\004from\030\001 \001(\014\022\n\n\002to\030\002 \001(\014\022\016\n\006amo"
-      "unt\030\003 \001(\004\022\017\n\007balance\030\004 \001(\004\022\016\n\006height\030\005 \001"
-      "(\004\022\016\n\006to_add\030\006 \001(\r\022\021\n\ttimestamp\030\007 \001(\004\022\016\n"
-      "\006status\030\010 \001(\005\"\?\n\020WsTxItemResponse\022+\n\003txs"
-      "\030\001 \003(\0132\036.shardora.ws.protobuf.WsTxItem\"A"
-      "\n\rBandwidthItem\022\n\n\002id\030\001 \001(\014\022\021\n\tbandwidth"
-      "\030\002 \001(\004\022\021\n\ttimestamp\030\003 \001(\004\"A\n\rBandwidthIn"
-      "fo\0220\n\003bws\030\001 \003(\0132#.shardora.ws.protobuf.B"
-      "andwidthItem\"\235\001\n\tWsMessage\022+\n\003txs\030\001 \003(\0132"
-      "\036.shardora.ws.protobuf.WsTxItem\0220\n\003bws\030\002"
-      " \003(\0132#.shardora.ws.protobuf.BandwidthIte"
-      "m\0221\n\tinit_info\030\003 \001(\0132\036.shardora.ws.proto"
-      "buf.InitInfo*\363\002\n\010StepType\022\017\n\013kNormalFrom"
-      "\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootElect"
-      "Shard\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!\n\035"
-      "kConsensusCreateGenesisAcount\020\004\022\026\n\022kCons"
-      "ensusLocalTos\020\005\022\023\n\017kContractCreate\020\006\022\032\n\026"
-      "kContractGasPrepayment\020\007\022\023\n\017kContractExc"
-      "ute\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kRootCr"
-      "eateAddressCrossSharding\020\013\022\016\n\nkStatistic"
-      "\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrary\020\016\022\n"
-      "\n\006kCross\020\017\022\016\n\nkRootCross\020\020*\362\002\n\017InitInfoT"
-      "agType\022\021\n\rkNoneResponse\020\000\022\022\n\016kResponseNo"
-      "des\020\001\022\024\n\020kResponseBalance\020\002\022\023\n\017kResponse"
-      "TxList\020\003\022\033\n\027kResponseOutOfBindwidth\020\004\022\020\n"
-      "\014kTransaction\020\005\022\016\n\nkC2cTxList\020\006\022\024\n\020kC2cU"
-      "serSellInfo\020\007\022\017\n\013kC2cNewSell\020\010\022\020\n\014kC2cNe"
-      "wOrder\020\t\022\017\n\013kC2cConfirm\020\n\022\022\n\016kC2cPrepaym"
-      "ent\020\013\022\024\n\020kC2cRefreshLocal\020\014\022\023\n\017kC2cCance"
-      "lOrder\020\r\022\022\n\016kC2cCancelSell\020\016\022\026\n\022kC2cMana"
-      "gerRecover\020\017\022\031\n\025kC2cManagerCancelSell\020\020*"
-      "\222\001\n\013ReceiveType\022\013\n\007kAlipay\020\000\022\016\n\nkWeChatP"
-      "ay\020\001\022\013\n\007kPaypal\020\002\022\r\n\tkBandCard\020\003\022\017\n\013kCre"
-      "ditCard\020\004\022\014\n\010kBitcoin\020\005\022\010\n\004kEth\020\006\022\t\n\005kUs"
-      "dt\020\007\022\t\n\005kUsdc\020\010\022\013\n\007kUnkown\020\t*\204\005\n\006Status\022"
-      "\014\n\010kDefault\020\000\022\016\n\nkConfirmed\020\001\022\r\n\tkReport"
-      "ed\020\002\022\020\n\014kSellWaiting\020\003\022\021\n\rkSellReleased\020"
-      "\004\022\026\n\022kSellWaitingCreate\020\005\022\020\n\014kSellCreate"
-      "d\020\006\022\027\n\023kSellWaitingConfirm\020\007\022\020\n\014kSellTim"
-      "eout\020\010\022\022\n\016kOrderCanceled\020\t\022\033\n\027kSellUserW"
-      "aitingRelease\020\n\022\025\n\021kSellUserReleased\020\013\022\036"
-      "\n\032kSellManagerWaitingRelease\020\014\022\030\n\024kSellM"
-      "anagerReleased\020\r\022\023\n\017kSellPrepayment\020\016\022\032\n"
-      "\026kSellWaitingPrepayment\020\017\022\031\n\025kSellWaitin"
-      "gConfirmTx\020\020\022\036\n\032kSellForceReleaseWaiting"
-      "Tx\020\021\022\026\n\022kSellForceReleased\020\022\022\024\n\020kReporte"
-      "dByOrder\020\023\022\032\n\026kSellTxPrepaymentError\020}\022\026"
-      "\n\022kSellTxCreateError\020~\022\033\n\027kSellTxUserRel"
-      "easeError\020\177\022\037\n\032kSellTxManagerReleaseErro"
-      "r\020\200\001\022\037\n\032kSellWaitingConfirmTxError\020\201\001\022$\n"
-      "\037kSellForceReleaseWaitingTxError\020\202\001"
+      "\315\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\r\n\005nonce\030"
+      "\002 \001(\004\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004"
+      "\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005valu"
+      "e\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\0229\n\004s"
+      "tep\030\n \001(\0162\036.shardora.ws.protobuf.StepTyp"
+      "e:\013kNormalFrom\022\033\n\023contract_prepayment\030\013 "
+      "\001(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contract_i"
+      "nput\030\r \001(\014\022\r\n\005signr\030\016 \001(\014\022\r\n\005signs\030\017 \001(\014"
+      "\022\r\n\005signv\030\020 \001(\014\"~\n\tOrderInfo\022\r\n\005buyer\030\001 "
+      "\001(\014\022,\n\006status\030\002 \001(\0162\034.shardora.ws.protob"
+      "uf.Status\022\016\n\006amount\030\003 \001(\004\022\016\n\006seller\030\004 \001("
+      "\014\022\024\n\014create_tm_ms\030\005 \001(\004\"\215\001\n\016ReceivableIn"
+      "fo\022/\n\004type\030\001 \001(\0162!.shardora.ws.protobuf."
+      "ReceiveType\022\014\n\004name\030\002 \001(\014\022\n\n\002id\030\003 \001(\014\022\021\n"
+      "\tuser_name\030\004 \001(\014\022\r\n\005other\030\005 \001(\014\022\016\n\006qrcod"
+      "e\030\006 \001(\014\"K\n\017ReceivableArray\0228\n\nreceivable"
+      "\030\001 \003(\0132$.shardora.ws.protobuf.Receivable"
+      "Info\"\231\004\n\010SellInfo\022\016\n\006seller\030\001 \001(\014\022\r\n\005buy"
+      "er\030\002 \001(\014\022\020\n\010contract\030\003 \001(\014\022\016\n\006amount\030\004 \001"
+      "(\004\0229\n\nreceivable\030\005 \001(\0132%.shardora.ws.pro"
+      "tobuf.ReceivableArray\022\013\n\003all\030\006 \001(\004\022\r\n\005pr"
+      "ice\030\007 \001(\004\022\020\n\010mchecked\030\010 \001(\r\022\020\n\010schecked\030"
+      "\t \001(\r\022\020\n\010reported\030\n \001(\r\022\017\n\007orderId\030\013 \001(\004"
+      "\022\016\n\006height\030\014 \001(\004\022\021\n\ttimestamp\030\r \001(\004\022\020\n\010u"
+      "sername\030\016 \001(\014\022\016\n\006status\030\017 \001(\005\022\027\n\017purchas"
+      "e_amount\030\020 \001(\004\022\030\n\020create_timestamp\030\021 \001(\004"
+      "\022\022\n\nmin_amount\030\022 \001(\004\022\022\n\nmax_amount\030\023 \001(\004"
+      "\022\013\n\003now\030\024 \001(\004\022\020\n\010is_order\030\025 \001(\010\022,\n\006appea"
+      "l\030\026 \001(\0132\034.shardora.ws.protobuf.Appeal\022\016\n"
+      "\006credit\030\027 \001(\005\0221\n\013peer_appeal\030\030 \001(\0132\034.sha"
+      "rdora.ws.protobuf.Appeal\"9\n\010NewOrder\022\016\n\006"
+      "seller\030\001 \001(\014\022\016\n\006amount\030\002 \001(\004\022\r\n\005buyer\030\003 "
+      "\001(\014\"S\n\006Appeal\022\016\n\006seller\030\001 \001(\014\022\r\n\005buyer\030\002"
+      " \001(\014\022\014\n\004type\030\003 \001(\005\022\017\n\007content\030\004 \001(\014\022\013\n\003p"
+      "ic\030\005 \001(\014\"\211\001\n\007NewSell\022\025\n\rprotocol_addr\030\001 "
+      "\001(\014\022\016\n\006seller\030\002 \001(\014\022\016\n\006amount\030\003 \001(\004\022\r\n\005p"
+      "rice\030\004 \001(\004\0228\n\nreceivable\030\005 \003(\0132$.shardor"
+      "a.ws.protobuf.ReceivableInfo\"3\n\013BuyerRep"
+      "ort\022\016\n\006seller\030\001 \001(\014\022\024\n\014reports_info\030\002 \001("
+      "\014\"\031\n\007GetSell\022\016\n\006seller\030\001 \001(\014\"\210\003\n\nC2cMess"
+      "age\022+\n\004sell\030\001 \001(\0132\035.shardora.ws.protobuf"
+      ".NewSell\022-\n\005order\030\002 \001(\0132\036.shardora.ws.pr"
+      "otobuf.NewOrder\0221\n\006report\030\003 \001(\0132!.shardo"
+      "ra.ws.protobuf.BuyerReport\022-\n\005sells\030\004 \003("
+      "\0132\036.shardora.ws.protobuf.SellInfo\022/\n\010get"
+      "_sell\030\005 \001(\0132\035.shardora.ws.protobuf.GetSe"
+      "ll\022\022\n\nprepayment\030\006 \001(\004\022\020\n\010c2c_addr\030\007 \001(\014"
+      "\0227\n\017user_order_info\030\010 \001(\0132\036.shardora.ws."
+      "protobuf.SellInfo\022,\n\006appeal\030\t \001(\0132\034.shar"
+      "dora.ws.protobuf.Appeal\"=\n\nStatusInfo\022\016\n"
+      "\006status\030\001 \001(\005\022\017\n\007message\030\002 \001(\014\022\016\n\006msg_id"
+      "\030\003 \001(\004\"\263\002\n\010InitInfo\022\016\n\006pubkey\030\001 \001(\014\022\020\n\010p"
+      "latform\030\002 \001(\014\022\017\n\007version\030\003 \001(\014\022\017\n\007pk_has"
+      "h\030\004 \001(\014\0222\n\003tag\030\005 \001(\0162%.shardora.ws.proto"
+      "buf.InitInfoTagType\022+\n\002tx\030\006 \001(\0132\037.shardo"
+      "ra.ws.protobuf.TxMessage\022\021\n\ttx_height\030\007 "
+      "\001(\004\022-\n\003c2c\030\010 \001(\0132 .shardora.ws.protobuf."
+      "C2cMessage\0220\n\006status\030\t \001(\0132 .shardora.ws"
+      ".protobuf.StatusInfo\022\016\n\006msg_id\030\n \001(\004\"\210\001\n"
+      "\010WsTxItem\022\014\n\004from\030\001 \001(\014\022\n\n\002to\030\002 \001(\014\022\016\n\006a"
+      "mount\030\003 \001(\004\022\017\n\007balance\030\004 \001(\004\022\016\n\006height\030\005"
+      " \001(\004\022\016\n\006to_add\030\006 \001(\r\022\021\n\ttimestamp\030\007 \001(\004\022"
+      "\016\n\006status\030\010 \001(\005\"\?\n\020WsTxItemResponse\022+\n\003t"
+      "xs\030\001 \003(\0132\036.shardora.ws.protobuf.WsTxItem"
+      "\"A\n\rBandwidthItem\022\n\n\002id\030\001 \001(\014\022\021\n\tbandwid"
+      "th\030\002 \001(\004\022\021\n\ttimestamp\030\003 \001(\004\"A\n\rBandwidth"
+      "Info\0220\n\003bws\030\001 \003(\0132#.shardora.ws.protobuf"
+      ".BandwidthItem\"\235\001\n\tWsMessage\022+\n\003txs\030\001 \003("
+      "\0132\036.shardora.ws.protobuf.WsTxItem\0220\n\003bws"
+      "\030\002 \003(\0132#.shardora.ws.protobuf.BandwidthI"
+      "tem\0221\n\tinit_info\030\003 \001(\0132\036.shardora.ws.pro"
+      "tobuf.InitInfo*\363\002\n\010StepType\022\017\n\013kNormalFr"
+      "om\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootEle"
+      "ctShard\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!"
+      "\n\035kConsensusCreateGenesisAcount\020\004\022\026\n\022kCo"
+      "nsensusLocalTos\020\005\022\023\n\017kContractCreate\020\006\022\032"
+      "\n\026kContractGasPrepayment\020\007\022\023\n\017kContractE"
+      "xcute\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kRoot"
+      "CreateAddressCrossSharding\020\013\022\016\n\nkStatist"
+      "ic\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrary\020\016"
+      "\022\n\n\006kCross\020\017\022\016\n\nkRootCross\020\020*\362\002\n\017InitInf"
+      "oTagType\022\021\n\rkNoneResponse\020\000\022\022\n\016kResponse"
+      "Nodes\020\001\022\024\n\020kResponseBalance\020\002\022\023\n\017kRespon"
+      "seTxList\020\003\022\033\n\027kResponseOutOfBindwidth\020\004\022"
+      "\020\n\014kTransaction\020\005\022\016\n\nkC2cTxList\020\006\022\024\n\020kC2"
+      "cUserSellInfo\020\007\022\017\n\013kC2cNewSell\020\010\022\020\n\014kC2c"
+      "NewOrder\020\t\022\017\n\013kC2cConfirm\020\n\022\022\n\016kC2cPrepa"
+      "yment\020\013\022\024\n\020kC2cRefreshLocal\020\014\022\023\n\017kC2cCan"
+      "celOrder\020\r\022\022\n\016kC2cCancelSell\020\016\022\026\n\022kC2cMa"
+      "nagerRecover\020\017\022\031\n\025kC2cManagerCancelSell\020"
+      "\020*\222\001\n\013ReceiveType\022\013\n\007kAlipay\020\000\022\016\n\nkWeCha"
+      "tPay\020\001\022\013\n\007kPaypal\020\002\022\r\n\tkBandCard\020\003\022\017\n\013kC"
+      "reditCard\020\004\022\014\n\010kBitcoin\020\005\022\010\n\004kEth\020\006\022\t\n\005k"
+      "Usdt\020\007\022\t\n\005kUsdc\020\010\022\013\n\007kUnkown\020\t*\204\005\n\006Statu"
+      "s\022\014\n\010kDefault\020\000\022\016\n\nkConfirmed\020\001\022\r\n\tkRepo"
+      "rted\020\002\022\020\n\014kSellWaiting\020\003\022\021\n\rkSellRelease"
+      "d\020\004\022\026\n\022kSellWaitingCreate\020\005\022\020\n\014kSellCrea"
+      "ted\020\006\022\027\n\023kSellWaitingConfirm\020\007\022\020\n\014kSellT"
+      "imeout\020\010\022\022\n\016kOrderCanceled\020\t\022\033\n\027kSellUse"
+      "rWaitingRelease\020\n\022\025\n\021kSellUserReleased\020\013"
+      "\022\036\n\032kSellManagerWaitingRelease\020\014\022\030\n\024kSel"
+      "lManagerReleased\020\r\022\023\n\017kSellPrepayment\020\016\022"
+      "\032\n\026kSellWaitingPrepayment\020\017\022\031\n\025kSellWait"
+      "ingConfirmTx\020\020\022\036\n\032kSellForceReleaseWaiti"
+      "ngTx\020\021\022\026\n\022kSellForceReleased\020\022\022\024\n\020kRepor"
+      "tedByOrder\020\023\022\032\n\026kSellTxPrepaymentError\020}"
+      "\022\026\n\022kSellTxCreateError\020~\022\033\n\027kSellTxUserR"
+      "eleaseError\020\177\022\037\n\032kSellTxManagerReleaseEr"
+      "ror\020\200\001\022\037\n\032kSellWaitingConfirmTxError\020\201\001\022"
+      "$\n\037kSellForceReleaseWaitingTxError\020\202\001"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 4435);
+      descriptor, 4437);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/ws.proto", &protobuf_RegisterTypes);
 }
@@ -1049,7 +1049,7 @@ void TxMessage::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int TxMessage::kVersionFieldNumber;
-const int TxMessage::kGidFieldNumber;
+const int TxMessage::kNonceFieldNumber;
 const int TxMessage::kPubkeyFieldNumber;
 const int TxMessage::kGasLimitFieldNumber;
 const int TxMessage::kGasPriceFieldNumber;
@@ -1078,10 +1078,6 @@ TxMessage::TxMessage(const TxMessage& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_gid()) {
-    gid_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.gid_);
-  }
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_pubkey()) {
     pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
@@ -1118,14 +1114,13 @@ TxMessage::TxMessage(const TxMessage& from)
   if (from.has_signv()) {
     signv_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.signv_);
   }
-  ::memcpy(&gas_limit_, &from.gas_limit_,
+  ::memcpy(&nonce_, &from.nonce_,
     static_cast<size_t>(reinterpret_cast<char*>(&contract_prepayment_) -
-    reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
+    reinterpret_cast<char*>(&nonce_)) + sizeof(contract_prepayment_));
   // @@protoc_insertion_point(copy_constructor:shardora.ws.protobuf.TxMessage)
 }
 
 void TxMessage::SharedCtor() {
-  gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1135,9 +1130,9 @@ void TxMessage::SharedCtor() {
   signr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   signs_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   signv_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&gas_limit_, 0, static_cast<size_t>(
+  ::memset(&nonce_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&contract_prepayment_) -
-      reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
+      reinterpret_cast<char*>(&nonce_)) + sizeof(contract_prepayment_));
 }
 
 TxMessage::~TxMessage() {
@@ -1146,7 +1141,6 @@ TxMessage::~TxMessage() {
 }
 
 void TxMessage::SharedDtor() {
-  gid_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1181,42 +1175,37 @@ void TxMessage::Clear() {
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
-      gid_.ClearNonDefaultToEmptyNoArena();
-    }
-    if (cached_has_bits & 0x00000002u) {
       pubkey_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000002u) {
       key_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000004u) {
       value_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000008u) {
       to_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000010u) {
       contract_code_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000040u) {
+    if (cached_has_bits & 0x00000020u) {
       contract_input_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000080u) {
+    if (cached_has_bits & 0x00000040u) {
       signr_.ClearNonDefaultToEmptyNoArena();
     }
-  }
-  if (cached_has_bits & 768u) {
-    if (cached_has_bits & 0x00000100u) {
+    if (cached_has_bits & 0x00000080u) {
       signs_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000200u) {
-      signv_.ClearNonDefaultToEmptyNoArena();
-    }
   }
-  if (cached_has_bits & 64512u) {
-    ::memset(&gas_limit_, 0, static_cast<size_t>(
+  if (cached_has_bits & 0x00000100u) {
+    signv_.ClearNonDefaultToEmptyNoArena();
+  }
+  if (cached_has_bits & 65024u) {
+    ::memset(&nonce_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&contract_prepayment_) -
-        reinterpret_cast<char*>(&gas_limit_)) + sizeof(contract_prepayment_));
+        reinterpret_cast<char*>(&nonce_)) + sizeof(contract_prepayment_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1246,12 +1235,14 @@ bool TxMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes gid = 2;
+      // optional uint64 nonce = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_gid()));
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_nonce();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &nonce_)));
         } else {
           goto handle_unusual;
         }
@@ -1474,14 +1465,13 @@ void TxMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->version(), output);
   }
 
-  // optional bytes gid = 2;
-  if (cached_has_bits & 0x00000001u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      2, this->gid(), output);
+  // optional uint64 nonce = 2;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->nonce(), output);
   }
 
   // optional bytes pubkey = 3;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       3, this->pubkey(), output);
   }
@@ -1497,19 +1487,19 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional bytes key = 6;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       6, this->key(), output);
   }
 
   // optional bytes value = 7;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       7, this->value(), output);
   }
 
   // optional bytes to = 8;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       8, this->to(), output);
   }
@@ -1531,31 +1521,31 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional bytes contract_code = 12;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       12, this->contract_code(), output);
   }
 
   // optional bytes contract_input = 13;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       13, this->contract_input(), output);
   }
 
   // optional bytes signr = 14;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       14, this->signr(), output);
   }
 
   // optional bytes signs = 15;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       15, this->signs(), output);
   }
 
   // optional bytes signv = 16;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       16, this->signv(), output);
   }
@@ -1580,15 +1570,13 @@ void TxMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->version(), target);
   }
 
-  // optional bytes gid = 2;
-  if (cached_has_bits & 0x00000001u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        2, this->gid(), target);
+  // optional uint64 nonce = 2;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->nonce(), target);
   }
 
   // optional bytes pubkey = 3;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000001u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         3, this->pubkey(), target);
@@ -1605,21 +1593,21 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional bytes key = 6;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000002u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         6, this->key(), target);
   }
 
   // optional bytes value = 7;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000004u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         7, this->value(), target);
   }
 
   // optional bytes to = 8;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000008u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         8, this->to(), target);
@@ -1642,35 +1630,35 @@ void TxMessage::SerializeWithCachedSizes(
   }
 
   // optional bytes contract_code = 12;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000010u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         12, this->contract_code(), target);
   }
 
   // optional bytes contract_input = 13;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         13, this->contract_input(), target);
   }
 
   // optional bytes signr = 14;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         14, this->signr(), target);
   }
 
   // optional bytes signs = 15;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000080u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         15, this->signs(), target);
   }
 
   // optional bytes signv = 16;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000100u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         16, this->signv(), target);
@@ -1694,13 +1682,6 @@ size_t TxMessage::ByteSizeLong() const {
         _internal_metadata_.unknown_fields());
   }
   if (_has_bits_[0 / 32] & 255u) {
-    // optional bytes gid = 2;
-    if (has_gid()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->gid());
-    }
-
     // optional bytes pubkey = 3;
     if (has_pubkey()) {
       total_size += 1 +
@@ -1750,8 +1731,6 @@ size_t TxMessage::ByteSizeLong() const {
           this->signr());
     }
 
-  }
-  if (_has_bits_[8 / 32] & 65280u) {
     // optional bytes signs = 15;
     if (has_signs()) {
       total_size += 1 +
@@ -1759,11 +1738,20 @@ size_t TxMessage::ByteSizeLong() const {
           this->signs());
     }
 
+  }
+  if (_has_bits_[8 / 32] & 65280u) {
     // optional bytes signv = 16;
     if (has_signv()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->signv());
+    }
+
+    // optional uint64 nonce = 2;
+    if (has_nonce()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->nonce());
     }
 
     // optional uint64 gas_limit = 4;
@@ -1838,46 +1826,45 @@ void TxMessage::MergeFrom(const TxMessage& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
-      set_has_gid();
-      gid_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.gid_);
-    }
-    if (cached_has_bits & 0x00000002u) {
       set_has_pubkey();
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
     }
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_key();
       key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
     }
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000004u) {
       set_has_value();
       value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
     }
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000008u) {
       set_has_to();
       to_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.to_);
     }
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000010u) {
       set_has_contract_code();
       contract_code_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_code_);
     }
-    if (cached_has_bits & 0x00000040u) {
+    if (cached_has_bits & 0x00000020u) {
       set_has_contract_input();
       contract_input_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_input_);
     }
-    if (cached_has_bits & 0x00000080u) {
+    if (cached_has_bits & 0x00000040u) {
       set_has_signr();
       signr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.signr_);
+    }
+    if (cached_has_bits & 0x00000080u) {
+      set_has_signs();
+      signs_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.signs_);
     }
   }
   if (cached_has_bits & 65280u) {
     if (cached_has_bits & 0x00000100u) {
-      set_has_signs();
-      signs_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.signs_);
-    }
-    if (cached_has_bits & 0x00000200u) {
       set_has_signv();
       signv_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.signv_);
+    }
+    if (cached_has_bits & 0x00000200u) {
+      nonce_ = from.nonce_;
     }
     if (cached_has_bits & 0x00000400u) {
       gas_limit_ = from.gas_limit_;
@@ -1925,8 +1912,6 @@ void TxMessage::Swap(TxMessage* other) {
 }
 void TxMessage::InternalSwap(TxMessage* other) {
   using std::swap;
-  gid_.Swap(&other->gid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   key_.Swap(&other->key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -1945,6 +1930,7 @@ void TxMessage::InternalSwap(TxMessage* other) {
     GetArenaNoVirtual());
   signv_.Swap(&other->signv_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  swap(nonce_, other->nonce_);
   swap(gas_limit_, other->gas_limit_);
   swap(gas_price_, other->gas_price_);
   swap(version_, other->version_);

@@ -32,34 +32,33 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         const std::string& peer_spec,
         const std::string& local_spec,
         uint32_t timeout) {
-    ClientSocket* socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
+    auto socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
     if (socket == NULL) {
-        ZJC_ERROR("create tcp client socket failed");
+        SHARDORA_ERROR("create tcp client socket failed");
         return NULL;
     }
 
     if (!socket->SetNonBlocking(true)) {
-        ZJC_ERROR("set non-blocking failed");
+        SHARDORA_ERROR("set non-blocking failed");
         socket->Free();
         return NULL;
     }
 
     if (!socket->SetCloseExec(true)) {
-        ZJC_ERROR("set close-exec failed");
+        SHARDORA_ERROR("set close-exec failed");
     }
 
     if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
-        ZJC_ERROR("set recv buf failed");
+        SHARDORA_ERROR("set recv buf failed");
     }
 
     if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
-        ZJC_ERROR("set recv buf failed");
+        SHARDORA_ERROR("set recv buf failed");
     }
 
-    auto conn = CreateTcpConnection(GetNextEventLoop(), *socket);
+    auto conn = CreateTcpConnection(GetNextEventLoop(), socket);
     if (conn == nullptr) {
-        ZJC_ERROR("create tcp connection failed");
-        socket->Free();
+        SHARDORA_ERROR("create tcp connection failed");
         return nullptr;
     }
 
@@ -67,7 +66,7 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     conn->SetPacketEncoder(packet_factory_->CreateEncoder());
     conn->SetPacketDecoder(packet_factory_->CreateDecoder());
     if (!conn->Connect(timeout)) {
-        ZJC_ERROR("connect peer [%s] failed[%d][%s]",
+        SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
                 peer_spec.c_str(), errno, strerror(errno));
         conn->Destroy(true);
         return nullptr;
@@ -91,7 +90,7 @@ bool TnetTransport::Init() {
     if (acceptor_isolate_thread_) {
         EventLoop* acceptor_event_loop = new EventLoop;
         if (!acceptor_event_loop->Init()) {
-            ZJC_ERROR("init acceptor event loop failed");
+            SHARDORA_ERROR("init acceptor event loop failed");
             delete acceptor_event_loop;
             acceptor_event_loop = nullptr;
             return false;
@@ -104,14 +103,14 @@ bool TnetTransport::Init() {
     for (i = 0; i < thread_count_; ++i) {
         EventLoop* event_loop = new EventLoop;
         if (!event_loop->Init()) {
-            ZJC_ERROR("init event loop failed");
+            SHARDORA_ERROR("init event loop failed");
             delete event_loop;
             event_loop = nullptr;
             break;
         }
 
         event_loop_vec_.push_back(event_loop);
-        ZJC_DEBUG("success add event loop: %d", i);
+        SHARDORA_DEBUG("success add event loop: %d", i);
     }
 
     if (i == thread_count_) {
@@ -167,33 +166,53 @@ void TnetTransport::Dispatch() {
 
 bool TnetTransport::Start() {
     if (!stoped_) {
-        ZJC_ERROR("already start");
+        SHARDORA_ERROR("already start");
         return false;
     }
 
+    SHARDORA_DEBUG("waiting for work_thread.");
     for (size_t i = 0; i < event_loop_vec_.size(); i++) {
+        waiting_success_ = false;
         std::thread* tmp_thread = new std::thread(std::bind(
                 &TnetTransport::ThreadProc,
                 this,
                 event_loop_vec_[i]));
+        SHARDORA_DEBUG("waiting for work_thread now.");
         std::unique_lock<std::mutex> lock(mutex_);
-        con_.wait_for(lock, std::chrono::milliseconds(1000));
-//         tmp_thread->detach();
+        con_.wait_for(lock, std::chrono::milliseconds(3000), [&] { 
+            return waiting_success_.load();
+        });
+
+        if (!waiting_success_) {
+            SHARDORA_DEBUG("waiting for work_thread failed.");
+            return false;
+        }
         thread_vec_.push_back(tmp_thread);
     }
 
+    SHARDORA_DEBUG("waiting for work_thread success.");
     stoped_ = false;
     if (acceptor_event_loop_ == NULL) {
         return true;
     }
 
+    SHARDORA_DEBUG("waiting for accept_thread.");
+    waiting_success_ = false;
     acceptor_thread_ = new std::thread(std::bind(
             &TnetTransport::ThreadProc,
             this,
             acceptor_event_loop_));
+    SHARDORA_DEBUG("waiting for work_thread now.");
     std::unique_lock<std::mutex> lock(mutex_);
-    con_.wait(lock);
+    con_.wait_for(lock, std::chrono::milliseconds(3000), [&] { 
+        return waiting_success_.load(); 
+    });
 
+    if (!waiting_success_) {
+        SHARDORA_DEBUG("waiting for work_thread failed.");
+        return false;
+    }
+    SHARDORA_DEBUG("waiting for accept_thread success.");
 //     acceptor_thread_->detach();
     return true;
 }
@@ -205,7 +224,7 @@ bool TnetTransport::Stop() {
 
     if (acceptor_event_loop_ != NULL) {
         if (!acceptor_event_loop_->Shutdown()) {
-            ZJC_ERROR("accept event loop shutdown failed");
+            SHARDORA_ERROR("accept event loop shutdown failed");
             return false;
         }
     }
@@ -213,7 +232,7 @@ bool TnetTransport::Stop() {
     for (size_t i = 0; i < event_loop_vec_.size(); i++) {
         EventLoop* event_loop = event_loop_vec_[i];
         if (!event_loop->Shutdown()) {
-            ZJC_ERROR("event loop shutdown failed");
+            SHARDORA_ERROR("event loop shutdown failed");
             return false;
         }
     }
@@ -262,9 +281,10 @@ void TnetTransport::ImplResourceDestroy() {
 
 std::shared_ptr<TcpConnection> TnetTransport::CreateTcpConnection(
         EventLoop& event_loop,
-        ClientSocket& socket) {
+        std::shared_ptr<Socket> socket) {
     auto conn = std::make_shared<TcpConnection>(event_loop);
     conn->SetSocket(socket);
+    common::GlobalInfo::Instance()->AddSharedObj(16);
     return conn;
 }
 
@@ -272,6 +292,7 @@ void TnetTransport::ThreadProc(EventLoop* event_loop) {
     {
         auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
         std::unique_lock<std::mutex> lock(mutex_);
+        waiting_success_ = true;
         con_.notify_one();
     }
     

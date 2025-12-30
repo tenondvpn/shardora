@@ -15,15 +15,15 @@ if __name__ == '__main__':
     
     ret = {'node_sks': {}}
     for node_name in node_names:
-        with open(f'{folder}/{node_name}/conf/zjchain.conf', 'r') as f:
-            if node_name == 'zjchain':
+        with open(f'{folder}/{node_name}/conf/shardora.conf', 'r') as f:
+            if node_name == 'shardora':
                 continue
             data = toml.load(f)
-            if not data.get('zjchain'):
+            if not data.get('shardora'):
                 continue
-            if not data['zjchain'].get('prikey'):
+            if not data['shardora'].get('prikey'):
                 continue
-            ret['node_sks'][node_name] = data['zjchain']['prikey']
+            ret['node_sks'][node_name] = data['shardora']['prikey']
             
     with open('node_sks.yml', 'w') as f:
         yaml.dump(ret, f)

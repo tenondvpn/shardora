@@ -1,22 +1,39 @@
 #include <algorithm>
 #include <iostream>
 
-#include <common/encode.h>
-#include <common/global_info.h>
-#include <common/log.h>
-#include <consensus/hotstuff/view_block_chain.h>
-#include <consensus/hotstuff/types.h>
-#include <protos/block.pb.h>
+#include "common/encode.h"
+#include "common/global_info.h"
+#include "common/log.h"
+#include "consensus/hotstuff/block_acceptor.h"
+#include "consensus/hotstuff/view_block_chain.h"
+#include "consensus/hotstuff/types.h"
+#include "protos/block.pb.h"
 
 namespace shardora {
 
 namespace hotstuff {
 
-ViewBlockChain::ViewBlockChain(
-        uint32_t pool_idx, 
+ViewBlockChain::ViewBlockChain() {}
+
+void ViewBlockChain::Init(
+        ChainType chain_type,
+        uint32_t pool_index, 
         std::shared_ptr<db::Db>& db, 
-        std::shared_ptr<block::AccountManager> account_mgr) : 
-        db_(db), pool_index_(pool_idx), account_mgr_(account_mgr) {
+        std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<block::AccountManager> account_mgr, 
+        std::shared_ptr<sync::KeyValueSync> kv_sync,
+        std::shared_ptr<IBlockAcceptor> block_acceptor,
+        std::shared_ptr<pools::TxPoolManager> pools_mgr,
+        consensus::BlockCacheCallback new_block_cache_callback) {
+    chain_type_ = chain_type;
+    db_ = db;
+    pool_index_ = pool_index;
+    block_mgr_ = block_mgr;
+    account_mgr_ = account_mgr;
+    kv_sync_ = kv_sync;
+    block_acceptor_ = block_acceptor;
+    pools_mgr_ = pools_mgr;
+    new_block_cache_callback_ = new_block_cache_callback;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
 }
 
@@ -25,7 +42,7 @@ ViewBlockChain::~ViewBlockChain(){}
 Status ViewBlockChain::Store(
         const std::shared_ptr<ViewBlock>& view_block, 
         bool directly_store, 
-        BalanceMapPtr balane_map_ptr,
+        BalanceAndNonceMapPtr balane_map_ptr,
         std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr,
         bool init) {
     if (!network::IsSameToLocalShard(view_block->qc().network_id())) {
@@ -42,29 +59,42 @@ Status ViewBlockChain::Store(
 #endif
     if (Has(view_block->qc().view_block_hash())) {
 #ifndef NDEBUG
-        ZJC_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
+        SHARDORA_DEBUG("view block already stored, hash: %s, view: %lu, propose_debug: %s",
             common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view(),
             ProtobufToJson(cons_debug).c_str());        
 #endif
         return Status::kSuccess;
     }
 
-    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
-        balane_map_ptr = std::make_shared<BalanceMap>();
-        for (int32_t i = 0; i < view_block->block_info().tx_list_size(); ++i) {
-            auto& tx = view_block->block_info().tx_list(i);
-            if (tx.balance() == 0) {
-                continue;
-            }
+    if (zjc_host_ptr == nullptr) {
+        zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    }
 
-            auto& addr = account_mgr_->GetTxValidAddress(tx);
-            (*balane_map_ptr)[addr] = tx.balance();
-            
+    if (!network::IsSameToLocalShard(network::kRootCongressNetworkId) && balane_map_ptr == nullptr) {
+        balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
+        for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
+            auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
+                view_block->block_info().address_array(i));
+            prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
+            (*balane_map_ptr)[new_addr_info->addr()] = new_addr_info;
+            SHARDORA_DEBUG("step: %d, success add addr: %s, value: %s", 
+                0,
+                common::Encode::HexEncode(new_addr_info->addr()).c_str(), 
+                ProtobufToJson(*new_addr_info).c_str());
+        }
+
+        for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
+            auto key = view_block->block_info().key_value_array(i).addr() + 
+                view_block->block_info().key_value_array(i).key();
+            prefix_db_->SaveTemporaryKv(
+                key, 
+                view_block->block_info().key_value_array(i).value(), 
+                zjc_host_ptr->db_batch_);
         }
     }
 
 #ifndef NDEBUG
-    ZJC_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
+    SHARDORA_DEBUG("merge prev all balance store size: %u, propose_debug: %s, "
         "%u_%u_%lu, %lu, hash: %s, prehash: %s",
         balane_map_ptr ? balane_map_ptr->size() : 0, ProtobufToJson(cons_debug).c_str(),
         view_block->qc().network_id(), view_block->qc().pool_index(), 
@@ -93,7 +123,7 @@ Status ViewBlockChain::Store(
         if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
             if (latest_committed_block_ == nullptr ||
                     latest_committed_block_->qc().view_block_hash() != view_block->parent_hash()) {
-                ZJC_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
+                SHARDORA_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
                     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
                     view_block->qc().view(), pool_index_);
@@ -105,13 +135,13 @@ Status ViewBlockChain::Store(
 
     // 如果有 qc，则 qc 指向的块必须存在
     // if (view_block->has_qc() && !view_block->qc().view_block_hash().empty() && !QCRef(*view_block)) {
-    //     ZJC_ERROR("view block qc error, hash: %s, view: %lu",
+    //     SHARDORA_ERROR("view block qc error, hash: %s, view: %lu",
     //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());        
     //     return Status::kError;
     // }
     SetViewBlockToMap(block_info_ptr);
 #ifndef NDEBUG
-    ZJC_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
+    SHARDORA_DEBUG("success add block info hash: %s, parent hash: %s, %u_%u_%lu, propose_debug: %s", 
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         view_block->qc().network_id(), view_block->qc().pool_index(), 
@@ -119,11 +149,13 @@ Status ViewBlockChain::Store(
 #endif
     return Status::kSuccess;
 }
+
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
     while (commited_block_queue_.pop(&view_block_info_ptr)) {
         commited_block_map_[view_block_info_ptr->view_block->block_info().height()] = view_block_info_ptr;
         commited_pri_queue_.push(view_block_info_ptr->view_block->block_info().height());
+        CHECK_MEMORY_SIZE(commited_block_map_);
     }
 
     std::shared_ptr<ViewBlock> view_block_ptr;
@@ -150,7 +182,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t netwo
         return view_block_ptr;
     }
 
-    ZJC_DEBUG("now get block with height from db.");
+    SHARDORA_DEBUG("now get block with height from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
@@ -165,6 +197,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
     while (cached_block_queue_.pop(&view_block_info_ptr)) {
         cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;
         cached_pri_queue_.push(view_block_info_ptr);
+        CHECK_MEMORY_SIZE(cached_block_map_);
     }
 
     std::shared_ptr<ViewBlock> view_block_ptr;
@@ -191,7 +224,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
         return view_block_ptr;
     }
 
-    ZJC_DEBUG("now get block with hash from db.");
+    SHARDORA_DEBUG("now get block with hash from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlock(hash, &view_block)) {
@@ -204,10 +237,10 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
     auto it = view_blocks_info_.find(hash);
     if (it != view_blocks_info_.end()) {
-        // ZJC_DEBUG("get view block from store propose_debug: %s",
+        // SHARDORA_DEBUG("get view block from store propose_debug: %s",
         //     it->second->view_block->debug().c_str());
         if (it->second->view_block) {
-            ZJC_DEBUG("get block hash: %s, view block hash: %s, %u_%u_%lu, sign x: %s, parent hash: %s",
+            SHARDORA_DEBUG("get block hash: %s, view block hash: %s, %u_%u_%lu, sign x: %s, parent hash: %s",
                 common::Encode::HexEncode(hash).c_str(), 
                 common::Encode::HexEncode(it->second->view_block->qc().view_block_hash()).c_str(),
                 it->second->view_block->qc().network_id(),
@@ -220,7 +253,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::Get(const HashStr &hash) {
         }
     }
 
-    return nullptr;    
+    return nullptr;
 }
 
 bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_block) {
@@ -228,7 +261,11 @@ bool ViewBlockChain::ReplaceWithSyncedBlock(std::shared_ptr<ViewBlock>& view_blo
     if (it != view_blocks_info_.end() && 
             it->second->view_block != nullptr && 
             !it->second->view_block->qc().sign_x().empty()) {
-        ZJC_DEBUG("");
+        SHARDORA_DEBUG("block hash exists %u_%u_%lu, height: %lu",
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->qc().view(), 
+            view_block->block_info().height());
         return false;
     }
 
@@ -304,48 +341,272 @@ Status ViewBlockChain::GetOrderedAll(std::vector<std::shared_ptr<ViewBlock>>& vi
 
 
 bool ViewBlockChain::ViewBlockIsCheckedParentHash(const std::string& hash) {
-    auto iter = valid_parent_block_hash_.find(hash);
-    if (iter != valid_parent_block_hash_.end()) {
-        return true;
-    }
-
     return prefix_db_->ParentHashExists(hash);
 }
 
-void ViewBlockChain::SaveBlockCheckedParentHash(const std::string& hash, uint64_t view) {
-    valid_parent_block_hash_[hash] = view;
-    View tmp_view;
-    while (stored_view_queue_.pop(&tmp_view)) {
-        commited_view_.insert(tmp_view);
-        if (commited_view_.size() > kCachedViewBlockCount * 10) {
-            commited_view_.erase(commited_view_.begin());
-        }
+void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
+    // not this sharding
+    auto zjc_host_ptr = std::make_shared<zjcvm::ZjchainHost>();
+    new_block_cache_callback_(view_block, zjc_host_ptr->db_batch_);
+    auto block_info_ptr = GetViewBlockInfo(view_block, nullptr, zjc_host_ptr);
+    AddNewBlock(view_block, zjc_host_ptr->db_batch_);
+    if (!db_->Put(zjc_host_ptr->db_batch_).ok()) {
+        SHARDORA_FATAL("write to db failed!");
     }
+
+    block_mgr_->ConsensusAddBlock(block_info_ptr);
 }
 
-// 剪掉从上次 prune_height 到 height 之间，latest_committed 之前的所有分叉，并返回这些分叉上的 blocks
-Status ViewBlockChain::PruneTo(std::vector<std::shared_ptr<ViewBlock>>& forked_blockes) {
-    View tmp_view = 0;
-    ZJC_DEBUG("pool: %u, now PruneTo: %lu, view_blocks_info_ size: %u", 
-        pool_index_, stored_to_db_view_, view_blocks_info_.size());
-    for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-        if (iter->second->view_block &&
-                iter->second->view_block->qc().view() < stored_to_db_view_) {
+void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {
+    std::list<std::shared_ptr<ViewBlockInfo>> to_commit_blocks;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
+    while (tmp_block_info != nullptr) {
+        SHARDORA_DEBUG("pool: %d, prepare commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
+            pool_index_,
+            tmp_block_info->view_block->qc().network_id(), 
+            tmp_block_info->view_block->qc().pool_index(), 
+            tmp_block_info->view_block->qc().view(),
+            common::Encode::HexEncode(tmp_block_info->view_block->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str(),
+            tmp_block_info->view_block->block_info().tx_list_size() > 0 ? tmp_block_info->view_block->block_info().tx_list(0).step(): -1,
+            0);
+        auto tmp_block = tmp_block_info->view_block;
+        if (!view_commited(
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().view()) &&
+                !tmp_block->qc().sign_x().empty()) {
+            SHARDORA_DEBUG("add to commit list view block %u_%u_%lu, hash: %s",
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str());
+            to_commit_blocks.push_front(tmp_block_info);
+        } else {
+            SHARDORA_DEBUG("view block already commited %u_%u_%lu, hash: %s",
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str());
+        }
+
+        if (tmp_block->qc().sign_x().empty()) {
+            if (tmp_block->qc().view() > 0 && !view_commited(
+                    tmp_block->qc().network_id(), tmp_block->qc().view())) {
+                SHARDORA_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu",
+                    common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                    tmp_block->qc().network_id(), 
+                    tmp_block->qc().pool_index(), 
+                    tmp_block->qc().view());
+                kv_sync_->AddSyncViewHash(
+                    tmp_block->qc().network_id(), 
+                    tmp_block->qc().pool_index(), 
+                    tmp_block->qc().view_block_hash(), 
+                    0);
+            }
+        }
+
+        auto parent_block_info = Get(tmp_block->parent_hash());
+        if (parent_block_info == nullptr) {
+            auto latest_committed_block = LatestCommittedBlock();
+            if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
+                if (tmp_block->qc().view() > 0 && !view_commited(
+                        tmp_block->qc().network_id(), tmp_block->qc().view() - 1)) {
+                    SHARDORA_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu",
+                        common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                        tmp_block->qc().network_id(), 
+                        tmp_block->qc().pool_index(), 
+                        tmp_block->qc().view());
+                    kv_sync_->AddSyncViewHash(
+                        tmp_block->qc().network_id(), 
+                        tmp_block->qc().pool_index(), 
+                        tmp_block->parent_hash(), 
+                        0);
+                }
+            }
+
+            break;
+        }
+
+        tmp_block_info = parent_block_info;
+    }
+
+    std::shared_ptr<ViewBlockInfo> latest_commited_block = nullptr; 
+    for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
+        auto tmp_block = (*iter)->view_block;
+        if (tmp_block->block_info().tx_list_size() > 0 && tmp_block->block_info().tx_list(0).step() == 18) {
+            SHARDORA_INFO("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
+                tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
+                0);
+        } else {
+            SHARDORA_INFO("now commit view block %u_%u_%lu, hash: %s, "
+                "parent hash: %s, step: %d, statistic_height: %lu, tx size: %u", 
+                tmp_block->qc().network_id(), 
+                tmp_block->qc().pool_index(), 
+                tmp_block->qc().view(),
+                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+                common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
+                tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
+                0,
+                tmp_block->block_info().tx_list_size());
+        }
+        
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        assert((*iter)->zjc_host_ptr);
+        auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
+        new_block_cache_callback_(tmp_block, db_batch);
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        // SaveBlockCheckedParentHash(
+        //     tmp_block->parent_hash(), 
+        //     tmp_block->qc().view());
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        if (tmp_block->qc().view() > commited_max_view_) {
+            commited_max_view_ = tmp_block->qc().view();
+        }
+
+        AddNewBlock(tmp_block, db_batch);
+        if ((*iter)->acc_balance_map_ptr) {
+            for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
+                    acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {
+                account_lru_map_.insert(acc_iter->second);
+                SHARDORA_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
+                    common::Encode::HexEncode(acc_iter->second->addr()).c_str(),
+                    acc_iter->second->balance(),
+                    acc_iter->second->nonce());
+            }
+        }
+
+        view_blocks_info_.erase(tmp_block->parent_hash());
+#ifdef TEST_FORKING_ATTACK
+        auto test_iter = view_with_blocks_.begin();
+        while (test_iter != view_with_blocks_.end()) {
+            if (test_iter->first > tmp_block->qc().view()) {
+                break;
+            }
+
+            test_iter = view_with_blocks_.erase(test_iter);
+        }
+#endif
+        ADD_DEBUG_PROCESS_TIMESTAMP();
+        block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
+        commited_view_.insert(tmp_block->qc().view());
+        if (commited_view_.size() >= 102400u) {
+            commited_view_.erase(commited_view_.begin());
+        }
+
+// #ifndef NDEBUG
+//         for (auto iter = db_batch.data_map_.begin(); iter != db_batch.data_map_.end(); ++iter) {
+//             if (memcmp(iter->first.c_str(), protos::kAddressPrefix.c_str(), protos::kAddressPrefix.size()) == 0) {
+//                 address::protobuf::AddressInfo addr_info;
+//                 if (!addr_info.ParseFromString(iter->second)) {
+//                     assert(false);
+//                 }
+
+//                 SHARDORA_DEBUG("new addr commit %u_%u_%lu, success update addr: %s, balance: %lu, nonce: %lu",
+//                     tmp_block->qc().network_id(), 
+//                     tmp_block->qc().pool_index(), 
+//                     tmp_block->qc().view(),
+//                     common::Encode::HexEncode(addr_info.addr()).c_str(),
+//                     addr_info.balance(),
+//                     addr_info.nonce());
+//             }
+//         }
+// #endif
+        if (!db_->Put(db_batch).ok()) {
+            SHARDORA_FATAL("write to db failed!");
+        }
+
+        pools_mgr_->TxOver(pool_index_, *tmp_block);
+        block_mgr_->ConsensusAddBlock(*iter);
+        stored_to_db_view_ = tmp_block->qc().view();
+        latest_commited_block = *iter;
+    }
+    
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    if (latest_commited_block) {
+        SetLatestCommittedBlock(latest_commited_block);
+    }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_check_timeout_blocks_ms_ + 30000u < now_tm_ms) {
+        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
             if (view_commited(
-                    iter->second->view_block->qc().network_id(),
-                    iter->second->view_block->qc().view()) || 
-                    iter->second->view_block->qc().sign_x().empty()) {
+                    common::GlobalInfo::Instance()->network_id(), 
+                    iter->second->view_block->qc().view() + 1)) {
                 iter = view_blocks_info_.erase(iter);
-                CHECK_MEMORY_SIZE(view_blocks_info_);
             } else {
                 ++iter;
             }
-        } else {
-            ++iter;
         }
+
+        prev_check_timeout_blocks_ms_ = now_tm_ms;
     }
 
-    return Status::kSuccess;
+    ADD_DEBUG_PROCESS_TIMESTAMP();
+    // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
+    // auto v_block = v_block_info->view_block;
+// #ifndef NDEBUG
+//     transport::protobuf::ConsensusDebug cons_debug3;
+//     cons_debug3.ParseFromString(v_block->debug());
+//     SHARDORA_DEBUG("success commit view block %u_%u_%lu, "
+//         "height: %lu, now chain: %s, propose_debug: %s",
+//         v_block->qc().network_id(), 
+//         v_block->qc().pool_index(), 
+//         v_block->qc().view(), 
+//         v_block->block_info().height(),
+//         String().c_str(),
+//         ProtobufToJson(cons_debug3).c_str());
+// #endif
+}
+
+void ViewBlockChain::AddNewBlock(
+        const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_item,
+        db::DbWriteBatch& db_batch) {
+    assert(!view_block_item->qc().sign_x().empty());
+    auto* block_item = &view_block_item->block_info();
+    // TODO: check all block saved success
+    auto btime = common::TimeUtils::TimestampMs();
+    SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+        "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        block_item->height(),
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        block_item->tx_list_size(),
+        common::Encode::HexEncode(view_block_item->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(view_block_item->parent_hash()).c_str(),
+        view_block_item->qc().elect_height(),
+        block_item->timeblock_height(),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
+        (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
+    assert(view_block_item->qc().elect_height() >= 1);
+    // block 两条信息持久化
+    if (!prefix_db_->SaveBlock(*view_block_item, db_batch)) {
+        SHARDORA_DEBUG("block saved: %lu", block_item->height());
+        return;
+    }
+
+    prefix_db_->SaveValidViewBlockParentHash(
+        view_block_item->parent_hash(), 
+        view_block_item->qc().network_id(),
+        view_block_item->qc().pool_index(),
+        view_block_item->qc().view(),
+        db_batch);
+
+    if (block_item->has_prev_elect_block()) {
+        prefix_db_->SaveElectHeightWithBlock(
+            block_item->prev_elect_block().shard_network_id(), 
+            block_item->prev_elect_block().elect_height(), 
+            view_block_item->qc().view_block_hash(), 
+            db_batch);
+    }
 }
 
 bool ViewBlockChain::IsValid() {
@@ -378,7 +639,7 @@ std::string ViewBlockChain::String() const {
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         if (it->second->view_block) {
             view_blocks.push_back(it->second->view_block);
-            ZJC_DEBUG("view block view: %lu, height: %lu, hash: %s, phash: %s, has sign: %d", 
+            SHARDORA_DEBUG("view block view: %lu, height: %lu, hash: %s, phash: %s, has sign: %d", 
                 it->second->view_block->qc().view(),
                 it->second->view_block->block_info().height(),
                 common::Encode::HexEncode(it->second->view_block->qc().view_block_hash()).c_str(),
@@ -405,7 +666,7 @@ std::string ViewBlockChain::String() const {
         view_set.insert(vb->qc().view());
     }
 
-    ZJC_DEBUG("get chain pool: %u, views: %s, all size: %u, block_height_str: %s",
+    SHARDORA_INFO("get chain pool: %u, views: %s, all size: %u, block_height_str: %s",
         pool_index_, ret.c_str(), view_blocks_info_.size(), block_height_str.c_str());
     assert(height_set.size() < 256);
     return ret;
@@ -423,12 +684,12 @@ Status GetLatestViewBlockFromDb(
             sharding_id,
             pool_index,
             &pool_info)) {
-        ZJC_DEBUG("failed get genesis block net: %u, pool: %u", sharding_id, pool_index);
+        SHARDORA_DEBUG("failed get genesis block net: %u, pool: %u", sharding_id, pool_index);
         return Status::kError;
     }
 
     // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
-    View view = GenesisView;
+    View view = pool_info.view();
     uint32_t leader_idx = 0;
     HashStr parent_hash = "";
     auto& pb_view_block = *view_block;
@@ -438,13 +699,13 @@ Status GetLatestViewBlockFromDb(
         pool_info.height(), 
         &pb_view_block);
     if (!r) {
-        ZJC_DEBUG("failed get genesis block net: %u, pool: %u, height: %lu",
+        SHARDORA_DEBUG("failed get genesis block net: %u, pool: %u, height: %lu",
             sharding_id, pool_index, pool_info.height());
         assert(false);
         return Status::kError;
     }
 
-    ZJC_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
+    SHARDORA_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
         "leader: %d, parent_hash: %s, sign x: %s, sign y: %s",
         pool_index,
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
@@ -452,23 +713,7 @@ Status GetLatestViewBlockFromDb(
         common::Encode::HexEncode(pb_view_block.parent_hash()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_x()).c_str(),
         common::Encode::HexEncode(view_block->qc().sign_y()).c_str());    
-    
     return Status::kSuccess;
-}
-
-void GetQCWrappedByGenesis(uint32_t pool_index, QC* qc) {
-    auto net_id = common::GlobalInfo::Instance()->network_id();
-    if (net_id > network::kConsensusShardEndNetworkId) {
-        net_id -= network::kConsensusWaitingShardOffset;
-    }
-
-    QC& qc_item = *qc;
-    qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
-    qc_item.set_pool_index(pool_index);
-    qc_item.set_view(BeforeGenesisView);
-    qc_item.set_view_block_hash("");
-    qc_item.set_elect_height(1);
-    qc_item.set_leader_idx(0);
 }
 
 bool ViewBlockChain::GetPrevStorageKeyValue(
@@ -483,16 +728,16 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
             break;
         }
 
-        // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+        // SHARDORA_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
         auto it = view_blocks_info_.find(phash);
         if (it == view_blocks_info_.end()) {
             break;
         }
 
-        ZJC_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
+        SHARDORA_DEBUG("get cached key value UpdateStoredToDbView %u_%u_%lu, "
             "stored_to_db_view_: %lu, %s%s", 
             3, pool_index_, it->second->view_block->qc().view(), 
-            stored_to_db_view_, common::Encode::HexEncode(id).c_str(), 
+            static_cast<uint64_t>(stored_to_db_view_), common::Encode::HexEncode(id).c_str(), 
             common::Encode::HexEncode(key).c_str());
         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
             break;
@@ -511,6 +756,7 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
         
         phash = it->second->view_block->parent_hash();
     }
+
     return false;
 }
 
@@ -525,7 +771,7 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
             break;
         }
 
-        // ZJC_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
+        // SHARDORA_DEBUG("now merge prev storage map: %s", common::Encode::HexEncode(phash).c_str());
         auto it = view_blocks_info_.find(phash);
         if (it == view_blocks_info_.end()) {
             break;
@@ -553,13 +799,9 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
     return tmp_val;
 }
 
-bool ViewBlockChain::GetPrevAddressBalance(const std::string& phash, const std::string& address, int64_t* balance) {
-    return false;
-}
-
 void ViewBlockChain::MergeAllPrevBalanceMap(
         const std::string& parent_hash, 
-        BalanceMap& acc_balance_map) {
+        BalanceAndNonceMap& acc_balance_map) {
     std::string phash = parent_hash;
     // TODO: check valid
     uint32_t count = 0;
@@ -582,13 +824,16 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
             for (auto iter = prev_acc_balance_map.begin(); iter != prev_acc_balance_map.end(); ++iter) {
                 auto fiter = acc_balance_map.find(iter->first);
                 if (fiter == acc_balance_map.end()) {
-                    acc_balance_map[iter->first] = iter->second;
-                    // ZJC_DEBUG("merge prev all balance merge prev account balance %s: %lu, %u_%u_%lu, block height: %lu",
-                    //     common::Encode::HexEncode(iter->first).c_str(), iter->second, 
-                    //     it->second->view_block->qc().network_id(), 
-                    //     it->second->view_block->qc().pool_index(),
-                    //     it->second->view_block->qc().view(),
-                    //     it->second->view_block->block_info().height());
+                    acc_balance_map[iter->first] = std::make_shared<address::protobuf::AddressInfo>(*iter->second);
+                    SHARDORA_DEBUG("merge prev all balance merge prev account balance %s, "
+                        "balance: %lu, nonce: %lu, %u_%u_%lu, block height: %lu",
+                        common::Encode::HexEncode(iter->first).c_str(), 
+                        iter->second->balance(), 
+                        iter->second->nonce(), 
+                        it->second->view_block->qc().network_id(), 
+                        it->second->view_block->qc().pool_index(),
+                        it->second->view_block->qc().view(),
+                        it->second->view_block->block_info().height());
                 }
             }
         }
@@ -601,65 +846,88 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
     }
 }
 
-bool ViewBlockChain::CheckTxGidValid(const std::string& gid, const std::string& parent_hash) {
+int ViewBlockChain::CheckTxNonceValid(
+        const std::string& addr, 
+        uint64_t nonce, 
+        const std::string& parent_hash) {
     std::string phash = parent_hash;
     while (true) {
         if (phash.empty()) {
-            ZJC_DEBUG("gid phash empty: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(phash).c_str());
             break;
         }
 
         auto it = view_blocks_info_.find(phash);
         if (it == view_blocks_info_.end()) {
-            ZJC_DEBUG("gid phash not exist: %s, phash: %s", common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(phash).c_str());
             break;
         }
 
         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
-            ZJC_DEBUG("gid phash view invalid: %lu, %lu, %s, phash: %s", it->second->view_block->qc().view(),
-                stored_to_db_view_, common::Encode::HexEncode(gid).c_str(), common::Encode::HexEncode(phash).c_str());
             break;
         }
 
-        auto iter = it->second->added_txs.find(gid);
-        if (iter != it->second->added_txs.end()) {
-            ZJC_DEBUG("failed check tx gid: %s, phash: %s",
-                common::Encode::HexEncode(gid).c_str(),
-                common::Encode::HexEncode(phash).c_str());
-            return false;
+        if (it->second->acc_balance_map_ptr) {
+            auto& tmp_map = *it->second->acc_balance_map_ptr;
+            auto iter = tmp_map.find(addr);
+            if (iter != tmp_map.end()) {
+                if (iter->second->nonce() + 1 != nonce) {
+                    SHARDORA_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+                        common::Encode::HexEncode(addr).c_str(), 
+                        nonce,
+                        iter->second->nonce(),
+                        common::Encode::HexEncode(parent_hash).c_str());
+                    return iter->second->nonce() + 1 > nonce ? 1 : -1;
+                }
+
+                return 0;
+            }
         }
 
         if (!it->second->view_block) {
             return false;
         }
         
-        ZJC_DEBUG("gid phash empty: %s, phash: %s, pphash: %s", 
-            common::Encode::HexEncode(gid).c_str(),
-            common::Encode::HexEncode(phash).c_str(),
-            common::Encode::HexEncode(it->second->view_block->parent_hash()).c_str());
         phash = it->second->view_block->parent_hash();
     }
 
-    if (prefix_db_->JustCheckCommitedGidExists(gid)) {
-        ZJC_DEBUG("failed check tx gid exists in db: %s", 
-            common::Encode::HexEncode(gid).c_str());
-        return false;
+    auto addr_info = ChainGetAccountInfo(addr);
+    if (addr_info == nullptr) {
+        SHARDORA_DEBUG("failed check tx nonce not exists in db: %s, %lu, phash: %s", 
+            common::Encode::HexEncode(addr).c_str(), 
+            nonce,
+            common::Encode::HexEncode(parent_hash).c_str());
+        return -1;
     }
 
-    ZJC_DEBUG("success check tx gid not exists in db: %s, phash: %s", 
-        common::Encode::HexEncode(gid).c_str(), 
+    if (addr_info->nonce() + 1 != nonce) {
+        SHARDORA_DEBUG("failed check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+            common::Encode::HexEncode(addr).c_str(), 
+            nonce,
+            addr_info->nonce(),
+            common::Encode::HexEncode(parent_hash).c_str());
+        return addr_info->nonce() + 1 > nonce ? 1 : -1;
+    }
+
+    SHARDORA_DEBUG("success check tx nonce not exists in db: %s, %lu, db nonce: %lu, phash: %s", 
+        common::Encode::HexEncode(addr).c_str(), 
+        nonce,
+        addr_info->nonce(),
         common::Encode::HexEncode(parent_hash).c_str());
-    return true;
+    return 0;
 }
 
 void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item) {
     auto view_block_ptr_info = Get(qc_item.view_block_hash());
     if (!view_block_ptr_info) {
-        ZJC_DEBUG("failed get view block %u_%u_%lu, hash: %s",
+        SHARDORA_WARN("failed get view block %u_%u_%lu, hash: %s",
             qc_item.network_id(), 
             qc_item.pool_index(), 
             qc_item.view(), 
             common::Encode::HexEncode(qc_item.view_block_hash()).c_str());
+        kv_sync_->AddSyncViewHash(
+            qc_item.network_id(), 
+            qc_item.pool_index(), 
+            qc_item.view_block_hash(), 
+            0);
         return;
     }
 
@@ -674,7 +942,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             high_view_block_->qc().view() < view_block_ptr->qc().view()) {
 #ifndef NDEBUG
         if (high_view_block_ != nullptr) {
-            ZJC_DEBUG("success add update old high view: %lu, high hash: %s, "
+            SHARDORA_DEBUG("success add update old high view: %lu, high hash: %s, "
                 "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
                 high_view_block_->qc().view(),
                 common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
@@ -689,7 +957,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
 #endif
         
         high_view_block_ = view_block_ptr;
-        ZJC_DEBUG("final success add update high hash: %s, "
+        SHARDORA_DEBUG("final success add update high hash: %s, "
             "new view: %lu, block: %s, %u_%u_%lu, parent hash: %s, tx size: %u ",
             common::Encode::HexEncode(high_view_block_->qc().view_block_hash()).c_str(),
             high_view_block_->qc().view(),
@@ -700,6 +968,83 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             common::Encode::HexEncode(high_view_block_->parent_hash()).c_str(),
             high_view_block_->block_info().tx_list_size());
     }
+}
+
+protos::AddressInfoPtr ViewBlockChain::ChainGetAccountInfo(const std::string& addr) {
+    protos::AddressInfoPtr addr_info = account_lru_map_.get(addr);
+    if (addr_info != nullptr) {
+        return addr_info;
+    }
+
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    addr_info = account_mgr_->GetAcountInfoFromDb(addr);
+    if (!addr_info) {
+        BLOCK_DEBUG(
+            "get account failed[%s] in thread_idx:%d", 
+            common::Encode::HexEncode(addr).c_str(), thread_idx);
+    } else {
+        account_lru_map_.insert(addr_info);
+        SHARDORA_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
+            common::Encode::HexEncode(addr_info->addr()).c_str(),
+            addr_info->balance(),
+            addr_info->nonce());
+    }
+
+    return addr_info;
+}
+
+protos::AddressInfoPtr ViewBlockChain::ChainGetPoolAccountInfo(uint32_t pool_index) {
+    auto& addr = account_mgr_->pool_base_addrs(pool_index);
+    return ChainGetAccountInfo(addr);
+}
+
+// same thread: common::kPoolsMessage common::kPoolTimerMessage
+void ViewBlockChain::AddPoolStatisticTag(uint64_t height) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->address_info = ChainGetPoolAccountInfo(pool_index_);
+    assert(msg_ptr->address_info != nullptr);
+    auto tx = msg_ptr->header.mutable_tx_proto();
+    auto unique_hash = common::Hash::keccak256("pool_statistic_tag_" + 
+        std::to_string(pool_index_) + "_" + 
+        std::to_string(height));
+    tx->set_key(unique_hash);
+    char data[8] = {0};
+    uint64_t* udata = (uint64_t*)data;
+    udata[0] = height;
+    tx->set_value(std::string(data, sizeof(data)));
+    tx->set_pubkey("");
+    tx->set_to(msg_ptr->address_info->addr());
+    tx->set_step(pools::protobuf::kPoolStatisticTag);
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_nonce(height);
+    pools_mgr_->HandleMessage(msg_ptr);
+    SHARDORA_INFO("success create kPoolStatisticTag nonce: %lu, pool idx: %u, "
+        "pool addr: %s, addr get pool: %u, height: %lu, unique_hash: %s",
+        tx->nonce(), 
+        pool_index_,
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+        common::GetAddressPoolIndex(msg_ptr->address_info->addr()),
+        height,
+        common::Encode::HexEncode(unique_hash).c_str());
+}
+
+void ViewBlockChain::OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random) {
+    SHARDORA_INFO("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
+        static_cast<uint64_t>(latest_timeblock_height_), latest_time_block_height, lastest_time_block_tm);
+    if (latest_timeblock_height_ >= latest_time_block_height) {
+        return;
+    }
+
+    if (latest_time_block_height > 1) {
+        AddPoolStatisticTag(latest_time_block_height);
+    }
+
+    latest_timeblock_height_ = latest_time_block_height;
 }
 
 } // namespace hotstuff

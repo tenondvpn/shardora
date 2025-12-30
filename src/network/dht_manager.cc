@@ -43,12 +43,12 @@ void DhtManager::Destroy() {
 
 void DhtManager::RegisterDht(uint32_t net_id, dht::BaseDhtPtr& dht) {
     if (net_id >= kConsensusWaitingShardEndNetworkId) {
-        ZJC_ERROR("invalid network id: %u", net_id);
+        SHARDORA_ERROR("invalid network id: %u", net_id);
         return;
     }
 
     if (dhts_[net_id] != nullptr) {
-        ZJC_ERROR("dht has registered: %u", net_id);
+        SHARDORA_ERROR("dht has registered: %u", net_id);
         return;
     }
 

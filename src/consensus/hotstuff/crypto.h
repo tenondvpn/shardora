@@ -126,7 +126,7 @@ private:
             std::string* verify_hash) {
         auto elect_item = GetElectItem(sharding_id, elect_height);
         if (!elect_item || elect_item->common_pk() == libff::alt_bn128_G2::zero()) {
-            ZJC_ERROR("elect_item not found, elect_height: %lu", elect_height);
+            SHARDORA_ERROR("elect_item not found, elect_height: %lu", elect_height);
             return Status::kElectItemNotFound;
         }
 
@@ -138,7 +138,7 @@ private:
                     g1_hash,
                     elect_item->common_pk(),
                     verify_hash) != bls::kBlsSuccess) {
-            ZJC_ERROR("get verify hash a failed!");
+            SHARDORA_ERROR("get verify hash a failed!");
             return Status::kError;
         }
 
@@ -165,7 +165,7 @@ private:
             auto cpk_strs = cpk->toString();
             auto agg_sign_str = libBLS::ThresholdUtils::fieldElementToString(
                 reconstructed_sign.X);
-            ZJC_ERROR("failed leader verify leader precommit agg sign! t: %u, n: %u,"
+            SHARDORA_ERROR("failed leader verify leader precommit agg sign! t: %u, n: %u,"
                 "common public key: %s, %s, %s, %s, elect height: %lu, sign x: %s",
                 elect_item->t(), elect_item->n(), cpk_strs->at(0).c_str(), cpk_strs->at(1).c_str(),
                 cpk_strs->at(2).c_str(), cpk_strs->at(3).c_str(),
@@ -204,7 +204,7 @@ private:
             BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
             genesis_elect_items_[shard_id] = std::make_shared<ElectItem>(
                 shard_id, item["prev_height"], item["n"], *pkey.getPublicKey());
-            ZJC_DEBUG("success load genesis item: %s", item.dump().c_str());
+            SHARDORA_DEBUG("success load genesis item: %s", item.dump().c_str());
         }
     }
 

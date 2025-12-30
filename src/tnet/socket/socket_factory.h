@@ -17,24 +17,27 @@ public:
         uint16_t port = 0;
 
         if (!ParseSpec(spec, &addr, &port)) {
-            ZJC_ERROR("parse spec [%s] failed", spec.c_str());
+            SHARDORA_ERROR("parse spec [%s] failed", spec.c_str());
             return NULL;
         }
 
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) {
-            ZJC_ERROR("create socket failed [%s], spec [%s]",
+            SHARDORA_ERROR("create socket failed [%s], spec [%s]",
                     strerror(errno), spec.c_str());
             return NULL;
         }
 
         ListenSocket* socket = new ListenSocket(addr, port);
         socket->SetFd(fd);
-
         if (!socket->Bind()) {
-            ZJC_ERROR("bind failed, spec [%s]", spec.c_str());
+            SHARDORA_ERROR("bind failed, spec [%s]", spec.c_str());
             socket->Free();
-            return NULL;
+            socket = new ListenSocket(addr, 0);
+            socket->SetFd(fd);
+            if (!socket->Bind()) {
+                return NULL;
+            }
         }
 
         return socket;
@@ -42,7 +45,7 @@ public:
         return NULL;
     }
 
-    static ClientSocket* CreateTcpClientSocket(
+    static std::shared_ptr<Socket> CreateTcpClientSocket(
             const std::string& peer,
             const std::string& local) {
 #ifndef _WIN32
@@ -51,22 +54,22 @@ public:
         in_addr_t local_addr = 0;
         uint16_t local_port = 0;
         if (!ParseSpec(peer, &peer_addr, &peer_port)) {
-            ZJC_ERROR("parse spec [%s] failed", peer.c_str());
+            SHARDORA_ERROR("parse spec [%s] failed", peer.c_str());
             return NULL;
         }
 
         if (!local.empty() && !ParseSpec(local, &local_addr, &local_port)) {
-            ZJC_ERROR("parse spec [%s] failed", local.c_str());
+            SHARDORA_ERROR("parse spec [%s] failed", local.c_str());
             return NULL;
         }
 
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) {
-            ZJC_ERROR("create socket failed [%s]", strerror(errno));
+            SHARDORA_ERROR("create socket failed [%s]", strerror(errno));
             return NULL;
         }
 
-        ClientSocket* client_socket = new ClientSocket(
+        auto client_socket = std::make_shared<ClientSocket>(
                 peer_addr,
                 peer_port,
                 local_addr,
@@ -74,7 +77,7 @@ public:
         client_socket->SetFd(fd);
 
         if (!local.empty() && !client_socket->Bind()) {
-            ZJC_ERROR("bind failed, spec [%s]", local.c_str());
+            SHARDORA_ERROR("bind failed, spec [%s]", local.c_str());
             client_socket->Free();
             return NULL;
         }
@@ -84,13 +87,13 @@ public:
         return NULL;
     }
 
-    static ServerSocket* CreateTcpServerSocket(
+    static std::shared_ptr<Socket> CreateTcpServerSocket(
             int fd,
             in_addr_t peer_addr,
             uint16_t peer_port,
             in_addr_t local_addr,
             uint16_t local_port) {
-        return new ServerSocket(fd, peer_addr, peer_port, local_addr, local_port);
+        return std::make_shared<ServerSocket>(fd, peer_addr, peer_port, local_addr, local_port);
     }
 };
 

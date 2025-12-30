@@ -7,16 +7,25 @@ RUN curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Ce
     yum makecache
 
 # 安装开发工具和依赖包
-RUN yum groupinstall -y "Development Tools" && \
-    yum install -y glibc-devel glibc-headers && \
-    yum install -y openssl-devel && \
-    yum install -y sshpass && \
-    yum clean all
+RUN yum install -y net-tools
+RUN yum install -y gdb
+RUN yum install -y iproute
+RUN yum install -y psmisc
 
+RUN mkdir -p /root/shardora/cbuild_Debug
+RUN mkdir -p /root/shardora/cbuild_Release
+RUN mkdir -p /root/shardora/zjnodes_local
 # 设置工作目录
-COPY . /root
-ENV LD_LIBRARY_PATH=/root/lib64/:$LD_LIBRARY_PATH
-WORKDIR /root/node
+COPY ./cbuild_Release/shardora /root/shardora/cbuild_Release/shardora
+COPY ./cbuild_Debug/shardora /root/shardora/cbuild_Debug/shardora
+COPY ./zjnodes_local /root/shardora/zjnodes_local
+COPY ./docker_simple_dep.sh /root/shardora/
+COPY ./init_accounts3 /root/shardora/
+COPY ./shards3 /root/shardora/
+COPY ./root_nodes /root/shardora/
+COPY ./python3.10 /root/shardora/
+COPY ./python /root/shardora/
+WORKDIR /root/shardora
 
 # 创建一个默认的命令来查看系统状态
-CMD ["sh", "run_container_node.sh"]
+# CMD ["sh", "docker_simple_dep.sh 4 Debug"]

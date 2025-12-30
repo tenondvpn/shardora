@@ -23,13 +23,13 @@ Config::~Config() {}
 bool Config::Get(const std::string& field, const std::string& key, std::string& value)  const {
     auto iter = config_map_.find(field);
     if (iter == config_map_.end()) {
-        ZJC_ERROR("invalid field[%s]", field.c_str());
+        SHARDORA_ERROR("invalid field[%s]", field.c_str());
         return false;
     }
 
     auto kv_iter = iter->second.find(key);
     if (kv_iter == iter->second.end()) {
-        ZJC_ERROR("invalid field[%s] key[%s]", field.c_str(), key.c_str());
+        SHARDORA_ERROR("invalid field[%s] key[%s]", field.c_str(), key.c_str());
         return false;
     }
 
@@ -219,7 +219,7 @@ bool Config::Set(const std::string& field, const std::string& key, double value)
 bool Config::DumpConfig(const std::string& conf) {
     FILE* fd = fopen(conf.c_str(), "w");
     if (fd == NULL) {
-        ZJC_ERROR("open config file[%s] failed!", conf.c_str());
+        SHARDORA_ERROR("open config file[%s] failed!", conf.c_str());
         return false;
     }
 
@@ -228,7 +228,7 @@ bool Config::DumpConfig(const std::string& conf) {
         std::string filed = std::string("[") + iter->first + "]\n";
         size_t ws = fwrite(filed.c_str(), 1, filed.size(), fd);
         if (ws != filed.size()) {
-            ZJC_ERROR("write file failed!");
+            SHARDORA_ERROR("write file failed!");
             res = false;
             break;
         }
@@ -237,7 +237,7 @@ bool Config::DumpConfig(const std::string& conf) {
             std::string kv = key_iter->first + "=" + key_iter->second + "\n";
             size_t tm_ws = fwrite(kv.c_str(), 1, kv.size(), fd);
             if (tm_ws != kv.size()) {
-                ZJC_ERROR("write file failed!");
+                SHARDORA_ERROR("write file failed!");
                 res = false;
                 break;
             }
@@ -258,7 +258,7 @@ bool Config::InitWithContent(const std::string& content) {
     for (uint32_t i = 0; i < spliter.Count(); ++i) {
         std::string line(spliter[i], spliter.SubLen(i));
         if (line.size() >= kConfigMaxLen) {
-            ZJC_ERROR("line size exceeded %d", kConfigMaxLen);
+            SHARDORA_ERROR("line size exceeded %d", kConfigMaxLen);
             printf("line size exceeded %d\n", kConfigMaxLen);
             res = false;
             break;
@@ -270,7 +270,7 @@ bool Config::InitWithContent(const std::string& content) {
 
         if (line.find(']') != std::string::npos) {
             if (!HandleFiled(line, filed)) {
-                ZJC_ERROR("handle field failed[%s][%s]", line.c_str(), filed.c_str());
+                SHARDORA_ERROR("handle field failed[%s][%s]", line.c_str(), filed.c_str());
                 res = false;
                 break;
             }
@@ -279,7 +279,7 @@ bool Config::InitWithContent(const std::string& content) {
 
         if (line.find('=') != std::string::npos) {
             if (!HandleKeyValue(filed, line)) {
-                ZJC_ERROR("handle key value failed[%s]", line.c_str());
+                SHARDORA_ERROR("handle key value failed[%s]", line.c_str());
                 printf("handle key value failed[%s]\n", line.c_str());
                 res = false;
                 break;
@@ -289,7 +289,7 @@ bool Config::InitWithContent(const std::string& content) {
 
         for (uint32_t j = 0; j < line.size(); ++j) {
             if (line[j] != ' ' && line[j] != ' ' && line[j] != '\n') {
-                ZJC_ERROR("line illegal[%s]", line.c_str());
+                SHARDORA_ERROR("line illegal[%s]", line.c_str());
                 printf("line illegal[%s]\n", line.c_str());
                 res = false;
                 break;
@@ -307,7 +307,7 @@ bool Config::InitWithContent(const std::string& content) {
 bool Config::Init(const std::string& conf) {
     FILE* fd = fopen(conf.c_str(), "r");
     if (fd == NULL) {
-        ZJC_ERROR("open config file[%s] failed!", conf.c_str());
+        SHARDORA_ERROR("open config file[%s] failed!", conf.c_str());
         printf("open config file[%s] failed!\n", conf.c_str());
         return false;
     }
@@ -315,7 +315,7 @@ bool Config::Init(const std::string& conf) {
     fseek(fd, 0, SEEK_END);
     auto file_size = ftell(fd);
     if (file_size > 1024 * 1024) {
-        ZJC_ERROR("read config file[%s] failed!", conf.c_str());
+        SHARDORA_ERROR("read config file[%s] failed!", conf.c_str());
         printf("read config file[%s] failed! size error.[%ld]\n",
                 conf.c_str(), file_size);
         return false;
@@ -328,7 +328,7 @@ bool Config::Init(const std::string& conf) {
     if (result != file_size) {
         delete[]buffer;
         fclose(fd);
-        ZJC_ERROR("read config file[%s] failed!", conf.c_str());
+        SHARDORA_ERROR("read config file[%s] failed!", conf.c_str());
         printf("read config file[%s] failed! size error.[%ld][%ld]\n",
                 conf.c_str(), result, file_size);
         return false;
@@ -364,7 +364,7 @@ bool Config::Init(const std::string& conf) {
 
         std::string line(read_buf);
         if (line.size() >= kConfigMaxLen) {
-            ZJC_ERROR("line size exceeded %d", kConfigMaxLen);
+            SHARDORA_ERROR("line size exceeded %d", kConfigMaxLen);
             printf("open config file[%s] failed!\n", conf.c_str());
             res = false;
             break;
@@ -376,7 +376,7 @@ bool Config::Init(const std::string& conf) {
 
         if (line.find(']') != std::string::npos) {
             if (!HandleFiled(line, filed)) {
-                ZJC_ERROR("handle field failed[%s][%d]", line.c_str(), line.find(']'));
+                SHARDORA_ERROR("handle field failed[%s][%d]", line.c_str(), line.find(']'));
                 res = false;
                 break;
             }
@@ -385,7 +385,7 @@ bool Config::Init(const std::string& conf) {
 
         if (line.find('=') != std::string::npos) {
             if (!HandleKeyValue(filed, line)) {
-                ZJC_ERROR("handle key value failed[%s]", line.c_str());
+                SHARDORA_ERROR("handle key value failed[%s]", line.c_str());
                 res = false;
                 break;
             }
@@ -394,7 +394,7 @@ bool Config::Init(const std::string& conf) {
 
         for (uint32_t i = 0; i < line.size(); ++i) {
             if (line[i] != ' ' && line[i] != ' ' && line[i] != '\n') {
-                ZJC_ERROR("line illegal[%s]", line.c_str());
+                SHARDORA_ERROR("line illegal[%s]", line.c_str());
                 res = false;
                 break;
             }
@@ -421,7 +421,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
 
         if (key_value[i] == '=' || key_value[i] == '+' || key_value[i] == '-' ||
                 key_value[i] == '*' || key_value[i] == '/') {
-            ZJC_ERROR("invalid char[%c]", key_value[i]);
+            SHARDORA_ERROR("invalid char[%c]", key_value[i]);
             printf("invalid char[%c]\n", key_value[i]);
             return false;
         }
@@ -433,7 +433,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
 
             for (size_t j = i; j < eq_pos; ++j) {
                 if (key_value[j] != ' ' && key_value[j] != '\t' && key_value[j] != '\n') {
-                    ZJC_ERROR("invalid char[ ][\\t][\\n]");
+                    SHARDORA_ERROR("invalid char[ ][\\t][\\n]");
                     printf("invalid char[ ][\\t][\\n]\n");
                     return false;
                 }
@@ -448,7 +448,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
         }
     }
     if (key_start_pos == -1 || static_cast<int>(eq_pos) <= key_start_pos) {
-        ZJC_ERROR("invalid key_start_pos[%d]", key_start_pos);
+        SHARDORA_ERROR("invalid key_start_pos[%d]", key_start_pos);
         printf("invalid key_start_pos[%d]\n", key_start_pos);
         return false;
     }
@@ -456,7 +456,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
         key = std::string(key_value.begin() + key_start_pos, key_value.begin() + eq_pos);
     }
     if (key.empty()) {
-        ZJC_ERROR("invalid key_start_pos[%d]", key_start_pos);
+        SHARDORA_ERROR("invalid key_start_pos[%d]", key_start_pos);
         printf("invalid key_start_pos[%d]\n", key_start_pos);
         return false;
     }
@@ -472,7 +472,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
         }
 
         if (key_value[i] == '=') {
-            ZJC_ERROR("invalid char[%c]", key_value[i]);
+            SHARDORA_ERROR("invalid char[%c]", key_value[i]);
             printf("invalid char[%c]\n", key_value[i]);
             return false;
         }
@@ -492,7 +492,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
                 }
 
                 if (key_value[j] != ' ' && key_value[j] != '\t' && key_value[j] != '\n') {
-                    ZJC_ERROR("invalid char[ ][\\t][\\n]");
+                    SHARDORA_ERROR("invalid char[ ][\\t][\\n]");
                     printf("invalid char[ ][\\t][\\n]\n");
                     return false;
                 }
@@ -507,7 +507,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
         }
     }
     if (value_start_pos == -1 || static_cast<int>(key_value.size()) <= value_start_pos) {
-        ZJC_ERROR("invalid value_start_pos[%d]", value_start_pos);
+        SHARDORA_ERROR("invalid value_start_pos[%d]", value_start_pos);
         printf("invalid value_start_pos[%d]\n", value_start_pos);
         return false;
     }
@@ -539,7 +539,7 @@ bool Config::HandleFiled(const std::string& field, std::string& field_val) {
 
         if (field[i] == '=' || field[i] == '+' || field[i] == '-' ||
                 field[i] == '*' || field[i] == '/') {
-            ZJC_ERROR("unvalid char[%c]", field[i]);
+            SHARDORA_ERROR("unvalid char[%c]", field[i]);
             return false;
         }
 
@@ -555,7 +555,7 @@ bool Config::HandleFiled(const std::string& field, std::string& field_val) {
                 }
 
                 if (field[j] != ' ' && field[j] != '\t' && field[j] != '\n') {
-                    ZJC_ERROR("unvalid char[ ][\\n]");
+                    SHARDORA_ERROR("unvalid char[ ][\\n]");
                     return false;
                 }
             }
@@ -571,12 +571,12 @@ bool Config::HandleFiled(const std::string& field, std::string& field_val) {
                 continue;
             }
 
-            ZJC_ERROR("unvalid char[ ][\\n]");
+            SHARDORA_ERROR("unvalid char[ ][\\n]");
             return false;
         }
 
         if (start_pos == -1) {
-            ZJC_ERROR("unvalid start_pos");
+            SHARDORA_ERROR("unvalid start_pos");
             return false;
         }
     }

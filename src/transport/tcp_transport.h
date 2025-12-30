@@ -60,6 +60,7 @@ public:
         uint16_t port,
         const transport::protobuf::OldHeader& message);
     void AddLocalMessage(transport::MessagePtr msg_ptr);
+    uint8_t GetThreadIndexWithPool(uint32_t pool_index);
 
 private:
     TcpTransport();
@@ -84,7 +85,7 @@ private:
     MultiThreadHandler* msg_handler_ = nullptr;
     uint64_t thread_msg_count_[common::kMaxThreadCount] = { 0 };
     std::string msg_random_;
-    volatile bool destroy_ = false;
+    std::atomic<bool> destroy_ = false;
     std::shared_ptr<std::thread> output_thread_ = nullptr;
     common::ThreadSafeQueue<std::shared_ptr<ClientItem>> output_queues_[common::kMaxThreadCount];
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> from_client_conn_queues_;
@@ -93,12 +94,13 @@ private:
     std::condition_variable output_con_;
     std::mutex output_mutex_;
     std::mutex send_output_mutex_;
-    uint64_t prev_erase_timestamp_ms_ = 0;
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> in_check_queue_;
     common::ThreadSafeQueue<std::shared_ptr<tnet::TcpConnection>> out_check_queue_;
     common::ThreadSafeQueue<transport::MessagePtr> local_messages_[common::kMaxThreadCount];
     std::deque<std::shared_ptr<tnet::TcpConnection>> waiting_check_queue_;
     common::Tick check_conn_tick_;
+    uint32_t in_message_type_count_[common::kMaxMessageTypeCount] = { 0 };
+    std::atomic<uint32_t> out_message_type_count_[common::kMaxMessageTypeCount] = { 0 };
 };
 
 }  // namespace transport

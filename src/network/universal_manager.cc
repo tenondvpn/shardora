@@ -35,46 +35,50 @@ void UniversalManager::Init(
 
 void UniversalManager::Destroy() {
     for (uint32_t i = 0; i < kUniversalNetworkCount; ++i) {
-        if (dhts_[i] != nullptr) {
-            dhts_[i]->Destroy();
+        auto dht_ptr = dhts_[i].load();
+        if (dht_ptr != nullptr) {
+            dht_ptr->Destroy();
+            dhts_[i].store(nullptr);
         }
     }
 }
 
 void UniversalManager::RegisterUniversal(uint32_t network_id, dht::BaseDhtPtr& dht) {
     if (network_id >= kUniversalNetworkCount) {
-        ZJC_ERROR("invalid network id: %u", network_id);
+        SHARDORA_ERROR("invalid network id: %u", network_id);
         return;
     }
 
-    if (dhts_[network_id] != nullptr) {
-        // ZJC_ERROR("regiestered network id: %u", network_id);
+    auto dht_ptr = dhts_[network_id].load();
+    if (dht_ptr != nullptr) {
+        // SHARDORA_ERROR("regiestered network id: %u", network_id);
         return;
     }
 
-    dhts_[network_id] = dht;
-    // ZJC_DEBUG("add universal network: %d", network_id);
+    dhts_[network_id].store(dht);
+    // SHARDORA_DEBUG("add universal network: %d", network_id);
 }
 
 void UniversalManager::UnRegisterUniversal(uint32_t network_id) {
     if (network_id >= kUniversalNetworkCount) {
-        ZJC_ERROR("invalid network id: %u", network_id);
+        SHARDORA_ERROR("invalid network id: %u", network_id);
         return;
     }
 
-    if (dhts_[network_id] != nullptr) {
-        dhts_[network_id]->Destroy();
-        dhts_[network_id] = nullptr;
+    auto dht_ptr = dhts_[network_id].load();
+    if (dht_ptr != nullptr) {
+        dht_ptr->Destroy();
+        dhts_[network_id].store(nullptr);
     }
 }
 
 dht::BaseDhtPtr UniversalManager::GetUniversal(uint32_t network_id) {
     if (network_id >= kUniversalNetworkCount) {
-//         ZJC_ERROR("invalid network id: %u", network_id);
+//         SHARDORA_ERROR("invalid network id: %u", network_id);
         return nullptr;
     }
 
-    return dhts_[network_id];
+    return dhts_[network_id].load();
 }
 
 void UniversalManager::DhtBootstrapResponseCallback(
@@ -113,7 +117,7 @@ int UniversalManager::CreateNetwork(
         const common::Config& config) {
     dht::NodePtr local_node = std::make_shared<dht::Node>(
         network_id,
-        common::GlobalInfo::Instance()->config_local_ip(),
+        common::GlobalInfo::Instance()->config_public_ip(),
         common::GlobalInfo::Instance()->config_local_port(),
         security_->GetPublicKey(),
         security_->GetAddress());
@@ -163,6 +167,7 @@ int UniversalManager::CreateUniversalNetwork(const common::Config& config) {
         return res;
     }
 
+    SHARDORA_DEBUG("now get universal dht 8");
     auto universal_dht = GetUniversal(kUniversalNetworkId);
     if (universal_dht == nullptr) {
         return kNetworkError;
@@ -180,8 +185,9 @@ void UniversalManager::OnNewElectBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
-    if (dhts_[kUniversalNetworkId] != nullptr) {
-        Universal* unidht = static_cast<Universal*>(dhts_[kUniversalNetworkId].get());
+    auto dht_ptr = dhts_[kUniversalNetworkId].load();
+    if (dht_ptr != nullptr) {
+        Universal* unidht = static_cast<Universal*>(dht_ptr.get());
         unidht->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     }
 }
@@ -194,15 +200,17 @@ UniversalManager::~UniversalManager() {
 
 void UniversalManager::DropNode(const std::string& ip, uint16_t port) {
     for (uint32_t i = 0; i < kUniversalNetworkCount; ++i) {
-        if (dhts_[i] != nullptr) {
-            dhts_[i]->Drop(ip, port);
+        auto dht_ptr = dhts_[i].load();
+        if (dht_ptr != nullptr) {
+            dht_ptr->Drop(ip, port);
         }
     }
 }
 
 void UniversalManager::Join(const dht::NodePtr& node) {
-    if (dhts_[kNodeNetworkId] != nullptr) {
-        dhts_[kNodeNetworkId]->UniversalJoin(node);
+    auto dht_ptr = dhts_[kNodeNetworkId].load();
+    if (dht_ptr != nullptr) {
+        dht_ptr->UniversalJoin(node);
     }
 }
 

@@ -4,6 +4,8 @@ node_count=$3
 bootstrap=$4
 start_shard=$5
 end_shard=$6
+TEST_TX_TPS=5000
+TEST_TX_MAX_POOL_INDEX=1
 
 echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
 rm -rf /root/zjnodes/
@@ -38,10 +40,36 @@ init_config() {
     echo "session required pam_limits.so" >> /etc/pam.d/common-session
 
     echo "ulimit -SHn 1024000" >> /etc/profile
+    # yum install -y wondershaper
+    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+
+#    cd /root/pkg && rpm -ivh gdb-7.6.1-120.el7.x86_64.rpm
 }
 
 init_firewall() {
     iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    grubby --update-kernel=ALL --args="tcp_bbr2=1"
+
+    DEV=eth0
+    RATE="1000mbit"
+    DELAY="50ms 10ms loss 0.01%"
+    #DELAY="25ms"
+
+    # 清除旧规则
+    tc qdisc del dev $DEV root 2>/dev/null
+
+    # 设置HTB根队列
+    #tc qdisc add dev $DEV root handle 1: htb default 12
+    #tc class add dev $DEV parent 1: classid 1:1 htb rate 1000mbit
+
+    # 创建子类并添加延迟
+    #tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE
+    #tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY 
+
+    # tc qdisc del dev eth0 root
+    # tc qdisc add dev eth0 root netem delay 25ms
+    # /root/pkg/wondershaper eth0 500000 500000
 }
 
 deploy_nodes() {
@@ -58,22 +86,30 @@ deploy_nodes() {
             prikey=`sed -n "$i""p" /root/pkg/shards$shard_id | awk -F'\t' '{print $1}'`
             pubkey=`sed -n "$i""p" /root/pkg/shards$shard_id | awk -F'\t' '{print $2}'`
             cp -rf /root/pkg/temp /root/zjnodes/s$shard_id'_'$i
-            sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-            sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-            sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-            if ((i>=100)); then
-                sed -i 's/HTTP_PORT/2'$shard_id''$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-                sed -i 's/LOCAL_PORT/1'$shard_id''$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-            elif ((i>=10)); then
-                sed -i 's/HTTP_PORT/2'$shard_id'0'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-                sed -i 's/LOCAL_PORT/1'$shard_id'0'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf 
+            sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+            sed -i 's/LOCAL_IP/'$local_ip'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+            sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+            if ((i<=TEST_TX_MAX_POOL_INDEX)); then
+                sed -i 's/TEST_POOL_INDEX/'$(($i-1))'/g' /root/zjnodes/s3_$i/conf/shardora.conf
             else
-                sed -i 's/HTTP_PORT/2'$shard_id'00'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf
-                sed -i 's/LOCAL_PORT/1'$shard_id'00'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/zjchain.conf 
+                sed -i 's/TEST_POOL_INDEX/-1/g' /root/zjnodes/s3_$i/conf/shardora.conf
             fi
 
-            echo /root/zjnodes/s$shard_id'_'$i/zjchain
-            ln /root/pkg/zjchain /root/zjnodes/s$shard_id'_'$i/zjchain
+            sed -i 's/TEST_TX_TPS/'$TEST_TX_TPS'/g' /root/zjnodes/s3_$i/conf/shardora.conf
+
+            if ((i>=100)); then
+                sed -i 's/HTTP_PORT/2'$shard_id''$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+                sed -i 's/LOCAL_PORT/1'$shard_id''$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+            elif ((i>=10)); then
+                sed -i 's/HTTP_PORT/2'$shard_id'0'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+                sed -i 's/LOCAL_PORT/1'$shard_id'0'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf 
+            else
+                sed -i 's/HTTP_PORT/2'$shard_id'00'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf
+                sed -i 's/LOCAL_PORT/1'$shard_id'00'$i'/g' /root/zjnodes/s$shard_id'_'$i/conf/shardora.conf 
+            fi
+
+            echo /root/zjnodes/s$shard_id'_'$i/shardora
+            ln /root/pkg/shardora /root/zjnodes/s$shard_id'_'$i/shardora
             ln /root/pkg/GeoLite2-City.mmdb /root/zjnodes/s$shard_id'_'$i/conf/GeoLite2-City.mmdb
             ln /root/pkg/log4cpp.properties /root/zjnodes/s$shard_id'_'$i/conf/log4cpp.properties
             mkdir -p /root/zjnodes/s$shard_id'_'$i/log
@@ -82,30 +118,11 @@ deploy_nodes() {
     done
 }
 
-start_nodes() {
-    end_pos=$(($start_pos + $node_count - 1))
-    for ((shard_id=$start_shard; shard_id<=$end_shard; shard_id++)); do
-        shard_node_count=`wc -l /root/pkg/shards$shard_id | awk -F' ' '{print $1}'`
-        echo /root/pkg/shards$shard_id $shard_node_count
-        for ((i=$start_pos; i<=$end_pos;i++)); do
-            if (($i > $shard_node_count));then
-                break
-            fi
 
-            cd /root/zjnodes/s$shard_id'_'$i/ && nohup ./zjchain -f 0 -g 0 s$shard_id'_'$i &
-            if ((shard_id==2 && i==start_pos)); then
-                sleep 3
-            fi
-            sleep 0.5
-        done
-    done
-}
-
-killall -9 zjchain
+killall -9 shardora
 
 init_config
 sudo sysctl -p
 ulimit -c unlimited
 init_firewall
 deploy_nodes
-# start_nodes

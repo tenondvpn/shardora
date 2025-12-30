@@ -8,6 +8,13 @@ namespace shardora {
 
 namespace hotstuff {
 
+enum ChainType : int32_t {
+    kInvalidChain = -1,
+    kLocalChain = 0,
+    kCrossRootChian = 1,
+    kCrossShardingChain = 2,
+};
+
 std::string GetTxMessageHash(
     const block::protobuf::BlockTx& tx_info, 
     const std::string& phash);

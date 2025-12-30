@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include <secp256k1/secp256k1.h>
-#include <secp256k1/secp256k1_ecdh.h>
-#include <secp256k1/secp256k1_recovery.h>
+#include <secp256k1.h>
+#include <secp256k1_ecdh.h>
+#include <secp256k1_recovery.h>
 
 #include "common/utils.h"
 #include "security/ecdsa/crypto_utils.h"
@@ -47,10 +47,10 @@ public:
     std::string ToPublicFromCompressed(const std::string& in_pubkey);
     std::string ToAddressWithPublicKey(const Curve& curve, const std::string& pub_key);
     std::string UnicastAddress(const std::string& src_address) {
-        assert(src_address.size() >= kUnicastAddressLength);
+        assert(src_address.size() >= common::kUnicastAddressLength);
         return src_address.substr(
-            src_address.size() - kUnicastAddressLength,
-            kUnicastAddressLength);
+            src_address.size() - common::kUnicastAddressLength,
+            common::kUnicastAddressLength);
     }
 
 private:

@@ -44,26 +44,19 @@ static const std::string kBlsVerifyPrefex = "b\x01";
 static const std::string kBlsSwapKeyPrefex = "c\x01";
 static const std::string kAddressStorageKeyPrefex = "d\x01";
 static const std::string kBlsSecKeyPrefex = "e\x01";
-static const std::string kAddressPubkeyPrefex = "f\x01";
 static const std::string kBlsPrivateKeyPrefix = "g\x01";
 static const std::string kLatestElectBlockPrefix = "h\x01";
 static const std::string kLatestTimeBlockPrefix = "i\x01";
 static const std::string kBlockHeightPrefix = "j\x01";
 static const std::string kBlockPrefix = "k\x01";
-static const std::string kToTxsHeightsPrefix = "l\x01";
 static const std::string kLatestToTxsHeightsPrefix = "m\x01";
 static const std::string kLatestPoolPrefix = "n\x01";
 static const std::string kHeightTreePrefix = "o\x01";
 static const std::string kGidPrefix = "p\x01";
-static const std::string kContractGasPrepaymentPrefix = "q\x01";
 static const std::string kBlsInfoPrefix = "r\x01";
-static const std::string kBlsVerifyValuePrefix = "s\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
-static const std::string kPresetPolynomialPrefix = "u\x01";
 static const std::string kPresetVerifyValuePrefix = "v\x01";
 static const std::string kStatisticHeightsPrefix = "w\x01";
-static const std::string kConsensusedStatisticPrefix = "x\x01";
-static const std::string kRootStatisticedPrefix = "y\x01";
 static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
@@ -75,9 +68,6 @@ static const std::string kLocalTempCommonPublicKeyPrefix = "ag\x01";
 static const std::string kNodeVerificationVectorPrefix = "ah\x01";
 static const std::string kNodeLocalElectPosPrefix = "ai\x01";
 static const std::string kCrossCheckHeightPrefix = "aj\x01";
-static const std::string kElectHeightWithBlsCommonPkPrefix = "ak\x01";
-static const std::string kBftInvalidHeightHashs = "al\x01";
-static const std::string kTempBftInvalidHeightHashs = "am\x01";
 static const std::string kViewBlockInfoPrefix = "an\x01";
 
 static const std::string kBandwidthPrefix = "ao\x01";
@@ -88,12 +78,13 @@ static const std::string kLatestToTxBlock = "as\x01";
 static const std::string kLatestPoolStatisticTagPrefix = "at\x01";
 static const std::string kViewBlockHashKeyPrefix = "au\x01";
 static const std::string kViewBlockParentHashKeyPrefix = "av\x01";
-static const std::string kLatestLeaderProposeMessage = "aw\x01";
 static const std::string kAggBlsPrivateKeyPrefix = "ax\x01";
 static const std::string kCommitedGidPrefix = "ay\x01";
-static const std::string kGidWithBlockHash = "az\x01";
 static const std::string kViewBlockVaildParentHash = "ba\x01";
 static const std::string kViewBlockVaildView = "bb\x01";
+static const std::string kUserTxPrefix = "bc\x01";
+static const std::string kUserTxGidPrefix = "bd\x01";
+static const std::string kElectHeightWithElectBlock = "bd\x02";
 
 class PrefixDb {
 public:
@@ -115,30 +106,9 @@ public:
 
     void AddAddressInfo(
             const std::string& addr,
-            const address::protobuf::AddressInfo& addr_info) {
-        AddAddressInfo(addr, addr_info.SerializeAsString());
-    }
-
-    void AddAddressInfo(
-            const std::string& addr,
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-        ZJC_DEBUG("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
-    }
-
-    void AddAddressInfo(const std::string& addr, const std::string& val) {
-        auto st = db_->Put(kAddressPrefix + addr, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    void AddAddressInfo(
-            const std::string& addr,
-            const std::string& val,
-            db::DbWriteBatch& write_batch) {
-        write_batch.Put(kAddressPrefix + addr, val);
     }
 
     void AddNowElectHeight2Plege(const std::string& addr , const uint64_t height , db::DbWriteBatch& db_batch) {
@@ -154,13 +124,13 @@ public:
         std::string val;
         auto st = db_->Get(kAddressPrefix + addr, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+            SHARDORA_DEBUG("failed get addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
         if (!addr_info->ParseFromString(val)) {
-            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+            SHARDORA_DEBUG("failed parse addr: %s", common::Encode::HexEncode(addr).c_str());
             return nullptr;
         }
 
@@ -168,37 +138,41 @@ public:
     }
 
     void SaveSwapKey(
+            uint32_t sharding_id,
             uint32_t local_member_idx,
-            uint64_t height,
-            uint32_t local_idx,
+            const std::string& id,
             uint32_t peer_idx,
             const std::string& seckey) {
         std::string key;
         key.reserve(32);
         key.append(kBlsSwapKeyPrefex);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
-        key.append((char*)&height, sizeof(height));
-        key.append((char*)&local_idx, sizeof(local_idx));
+        key.append(id);
         key.append((char*)&peer_idx, sizeof(peer_idx));
+        SHARDORA_DEBUG("save ttttt swap key: %u, id: %s, %u",
+            local_member_idx, common::Encode::HexEncode(id).c_str(), peer_idx);
         auto st = db_->Put(key, seckey);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
     bool GetSwapKey(
+            uint32_t sharding_id,
             uint32_t local_member_idx,
-            uint64_t height,
-            uint32_t local_idx,
+            const std::string& id,
             uint32_t peer_idx,
             std::string* seckey) {
         std::string key;
         key.reserve(32);
         key.append(kBlsSwapKeyPrefex);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
-        key.append((char*)&height, sizeof(height));
-        key.append((char*)&local_idx, sizeof(local_idx));
+        key.append(id);
         key.append((char*)&peer_idx, sizeof(peer_idx));
+        SHARDORA_DEBUG("get ttttt swap key: %u, %s, %u",
+            local_member_idx, common::Encode::HexEncode(id).c_str(), peer_idx);
         auto st = db_->Get(key, seckey);
         if (!st.ok()) {
             return false;
@@ -257,7 +231,7 @@ public:
             db_batch.Put(key, elect_block.SerializeAsString());
         }
 
-        ZJC_DEBUG("save elect block sharding id: %u, height: %lu",
+        SHARDORA_DEBUG("save elect block sharding id: %u, height: %lu",
             sharding_id, elect_block.elect_height());
     }
 
@@ -269,7 +243,7 @@ public:
         key.append(kSaveHavePrevLatestElectHeightPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
         std::string val;
-        ZJC_DEBUG("get elect block sharding id: %u",
+        SHARDORA_DEBUG("get elect block sharding id: %u",
             sharding_id);
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
@@ -280,7 +254,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("success get elect block sharding id: %u, height: %lu",
+        SHARDORA_DEBUG("success get elect block sharding id: %u, height: %lu",
             sharding_id, elect_block->elect_height());
         return true;
     }
@@ -292,7 +266,7 @@ public:
         key.append(kLatestElectBlockPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
         std::string val;
-        ZJC_DEBUG("get elect block sharding id: %u",
+        SHARDORA_DEBUG("get elect block sharding id: %u",
             sharding_id);
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
@@ -303,23 +277,15 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("success get elect block sharding id: %u, height: %lu",
+        SHARDORA_DEBUG("success get elect block sharding id: %u, height: %lu",
             sharding_id, elect_block->elect_height());
         return true;
     }
 
-    void SaveLatestTimeBlock(uint64_t block_height, db::DbWriteBatch& db_batch) {
+    void SaveLatestTimeBlock(const timeblock::protobuf::TimeBlock& tmblock, db::DbWriteBatch& db_batch) {
         std::string key(kLatestTimeBlockPrefix);
-        timeblock::protobuf::TimeBlock tmblock;
-        if (GetLatestTimeBlock(&tmblock)) {
-            if (tmblock.height() >= block_height) {
-                return;
-            }
-        }
-
-        tmblock.set_height(block_height);
         db_batch.Put(key, tmblock.SerializeAsString());
-        ZJC_DEBUG("dddddd success latest time block: %lu", block_height);
+        SHARDORA_DEBUG("dddddd success latest time block: %lu", tmblock.height());
     }
 
     bool GetLatestTimeBlock(timeblock::protobuf::TimeBlock* tmblock) {
@@ -334,7 +300,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("dddddd success get latest time block: %lu", tmblock->height());
+        SHARDORA_DEBUG("dddddd success get latest time block: %lu", tmblock->height());
         return true;
     }
 
@@ -351,7 +317,7 @@ public:
         key.append((char*)&pool_index, sizeof(pool_index));
         key.append((char*)&height, sizeof(height));
         batch.Put(key, block_hash);
-        ZJC_DEBUG("save sync key value %u_%u_%lu, success save block with height: %u, %u, %lu",
+        SHARDORA_DEBUG("save sync key value %u_%u_%lu, success save block with height: %u, %u, %lu",
             sharding_id, pool_index, height, sharding_id, pool_index, height);
     }
 
@@ -368,42 +334,42 @@ public:
         key.append((char*)&height, sizeof(height));
         auto st = db_->Get(key, block_hash);
         if (!st.ok()) {
-            ZJC_DEBUG("failed get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
+            SHARDORA_DEBUG("failed get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
                 sharding_id, pool_index, height, sharding_id, pool_index, height);
             return false;
         }
 
-        ZJC_DEBUG("get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
+        SHARDORA_DEBUG("get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
             sharding_id, pool_index, height, sharding_id, pool_index, height);
         return true;
     }
 
     bool SaveBlock(const view_block::protobuf::ViewBlockItem& view_block, db::DbWriteBatch& batch) {
         assert(!view_block.qc().view_block_hash().empty());
-        if (BlockExists(view_block.qc().view_block_hash())) {
-            auto* block_item = &view_block.block_info();
-            ZJC_DEBUG("view_block.qc().view_block_hash() exists: %s, "
-                "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
-                "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                block_item->height(),
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                view_block.qc().view(),
-                block_item->tx_list_size(),
-                common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
-                view_block.qc().elect_height(),
-                block_item->timeblock_height());
-            std::string block_hash;
-            assert(GetBlockHashWithBlockHeight(
-                view_block.qc().network_id(),
-                view_block.qc().pool_index(),
-                block_item->height(),
-                &block_hash));
-            return false;
-        }
+        // if (BlockExists(view_block.qc().view_block_hash())) {
+        //     auto* block_item = &view_block.block_info();
+        //     SHARDORA_DEBUG("view_block.qc().view_block_hash() exists: %s, "
+        //         "new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+        //         "tx size: %u, hash: %s, elect height: %lu, tm height: %lu",
+        //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+        //         view_block.qc().network_id(),
+        //         view_block.qc().pool_index(),
+        //         block_item->height(),
+        //         view_block.qc().network_id(),
+        //         view_block.qc().pool_index(),
+        //         view_block.qc().view(),
+        //         block_item->tx_list_size(),
+        //         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
+        //         view_block.qc().elect_height(),
+        //         block_item->timeblock_height());
+        //     std::string block_hash;
+        //     assert(GetBlockHashWithBlockHeight(
+        //         view_block.qc().network_id(),
+        //         view_block.qc().pool_index(),
+        //         block_item->height(),
+        //         &block_hash));
+        //     return false;
+        // }
 
         std::string key;
         key.reserve(48);
@@ -416,7 +382,15 @@ public:
             block.height(),
             view_block.qc().view_block_hash(),
             batch);
-        batch.Put(key, view_block.SerializeAsString());
+        std::string block_str;
+        view_block.SerializeToString(&block_str);
+        if (view_block.block_info().tx_list_size() >= 500) {
+            SHARDORA_WARN("block tx size: %u, block size: %u",
+                view_block.block_info().tx_list_size(), 
+                block_str.size());
+        }
+
+        batch.Put(key, block_str);
         std::string view_key;
         view_key.reserve(48);
         view_key.append(kViewBlockVaildView);
@@ -445,31 +419,6 @@ public:
         return db_->Exist(view_key);
     }
 
-    void SaveGidWithBlockHash(
-            const std::string& gid, 
-            const std::string& hash, 
-            db::DbWriteBatch& batch) {
-        std::string key;
-        key.reserve(48);
-        key.append(kGidWithBlockHash);
-        key.append(gid);
-        batch.Put(key, hash);
-    }
-
-    bool GetBlockWithGid(const std::string& gid, view_block::protobuf::ViewBlockItem* block) {
-        std::string key;
-        key.reserve(48);
-        key.append(kGidWithBlockHash);
-        key.append(gid);
-        std::string hash;
-        auto st = db_->Get(key, &hash);
-        if (!st.ok()) {
-            return false;
-        }
-
-        return GetBlock(hash, block);
-    }
-
     bool GetBlock(const std::string& block_hash, view_block::protobuf::ViewBlockItem* block) {
         std::string key;
         key.reserve(48);
@@ -478,7 +427,7 @@ public:
         std::string block_str;
         auto st = db_->Get(key, &block_str);
         if (!st.ok()) {
-            ZJC_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
+            SHARDORA_DEBUG("failed get view block: %s", common::Encode::HexEncode(block_hash).c_str());
             return false;
         }
 
@@ -529,7 +478,7 @@ public:
             uint64_t height,
             view_block::protobuf::ViewBlockItem* block) {
         std::string block_hash;
-        ZJC_DEBUG("GetBlockWithHeight.");
+        SHARDORA_DEBUG("GetBlockWithHeight.");
         if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
             return false;
         }
@@ -543,7 +492,7 @@ public:
             uint64_t height,
             std::string* block_str) {
         std::string block_hash;
-        ZJC_DEBUG("GetBlockStringWithHeight.");
+        SHARDORA_DEBUG("GetBlockStringWithHeight.");
         if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
             return false;
         }
@@ -551,61 +500,18 @@ public:
         return GetBlockString(block_hash, block_str);
     }
 
-    void SaveToTxsHeights(const pools::protobuf::ToTxHeights& heights) {
-        std::string key;
-        key.reserve(48);
-        key.append(kToTxsHeightsPrefix);
-        auto val = heights.SerializeAsString();
-        auto hash = common::Hash::keccak256(val);
-        key.append(hash);
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    bool GetToTxsHeights(const std::string& hash, pools::protobuf::ToTxHeights* heights) {
-        std::string key;
-        key.reserve(48);
-        key.append(kToTxsHeightsPrefix);
-        key.append(hash);
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return false;
-        }
-
-        if (!heights->ParseFromString(val)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    void SaveLatestToTxsHeights(const pools::protobuf::ShardToTxItem& heights) {
-        std::string key;
-        key.reserve(48);
-        key.append(kLatestToTxsHeightsPrefix);
-        uint32_t sharding_id = heights.sharding_id();
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        auto st = db_->Put(key, heights.SerializeAsString());
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
     void SaveLatestToTxsHeights(
-            const pools::protobuf::ShardToTxItem& heights,
+            const pools::protobuf::ShardToTxItem& to_heights,
             db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
         key.append(kLatestToTxsHeightsPrefix);
-        uint32_t sharding_id = heights.sharding_id();
+        uint32_t sharding_id = to_heights.sharding_id();
         key.append((char*)&sharding_id, sizeof(sharding_id));
-        batch.Put(key, heights.SerializeAsString());
+        batch.Put(key, to_heights.SerializeAsString());
     }
 
-    bool GetLatestToTxsHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem* heights) {
+    bool GetLatestToTxsHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem* to_heights) {
         std::string key;
         key.reserve(48);
         key.append(kLatestToTxsHeightsPrefix);
@@ -616,7 +522,7 @@ public:
             return false;
         }
 
-        if (!heights->ParseFromString(val)) {
+        if (!to_heights->ParseFromString(val)) {
             return false;
         }
 
@@ -629,7 +535,7 @@ public:
         std::string key = kTemporaryKeyPrefix + tmp_key;
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -660,7 +566,7 @@ public:
         key.append((char*)&sharding_id, sizeof(sharding_id));
         key.append((char*)&pool_index, sizeof(pool_index));
         batch.Put(key, pool_info.SerializeAsString());
-        ZJC_DEBUG("save latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
+        SHARDORA_DEBUG("save latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
             ProtobufToJson(pool_info).c_str(), 
             sharding_id, 
             pool_index, 
@@ -688,7 +594,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("get latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
+        SHARDORA_DEBUG("get latest pool info: %s, %u_%u_%lu, synced_height: %lu, hash: %s",
             ProtobufToJson(*pool_info).c_str(), 
             sharding_id, 
             pool_index, 
@@ -741,81 +647,6 @@ public:
         return true;
     }
 
-    bool JustCheckCommitedGidExists(const std::string& gid) {
-        // TODO: perf test
-        std::string key = kCommitedGidPrefix + gid;
-        if (db_->Exist(key)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    bool CheckAndSaveGidExists(const std::string& gid) {
-        // TODO: perf test
-        std::string key = kGidPrefix + gid;
-        if (db_->Exist(key)) {
-            return true;
-        }
-        
-        // db_->Put(key, "1");
-        // ZJC_DEBUG("success save tx gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), false);
-        return false;
-    }
-
-    void SaveCommittedGid(
-            const block::protobuf::BlockTx& tx, 
-            db::DbWriteBatch& db_batch) {
-        std::string key = kCommitedGidPrefix + tx.gid();
-        db_batch.Put(key, "1");
-        ZJC_DEBUG("success save tx gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
-    }
-
-    void SaveContractUserPrepayment(
-            const std::string& contract_addr,
-            const std::string& user_addr,
-            uint64_t height,
-            uint64_t prepayment,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(128);
-        key.append(kContractGasPrepaymentPrefix);
-        key.append(contract_addr);
-        key.append(user_addr);
-        char data[16];
-        uint64_t* tmp = (uint64_t*)data;
-        tmp[0] = height;
-        tmp[1] = prepayment;
-        std::string val(data, sizeof(data));
-        db_batch.Put(key, val);
-        ZJC_DEBUG("success save contract user prepayment: %s, %lu, %lu",
-            common::Encode::HexEncode(key).c_str(), height, prepayment);
-    }
-
-    bool GetContractUserPrepayment(
-            const std::string& contract_addr,
-            const std::string& user_addr,
-            uint64_t* height,
-            uint64_t* prepayment) {
-        std::string key;
-        key.reserve(128);
-        key.append(kContractGasPrepaymentPrefix);
-        key.append(contract_addr);
-        key.append(user_addr);
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_DEBUG("get contract user prepayment failed: %s, %lu, %lu",
-                common::Encode::HexEncode(key).c_str(), *height, *prepayment);
-            return false;
-        }
-
-        uint64_t* data = (uint64_t*)val.c_str();
-        *height = data[0];
-        *prepayment = data[1];
-        return true;
-    }
-
     bool ExistsBlsVerifyG2(const std::string& id) {
         std::string key = kBlsVerifyPrefex + id;
         return db_->Exist(key);
@@ -828,17 +659,11 @@ public:
         std::string val = verfy_req.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
-    }
 
-    void AddBlsVerifyG2(
-            const std::string& id,
-            const bls::protobuf::VerifyVecBrdReq& verfy_req,
-            db::DbWriteBatch& db_batch) {
-        std::string key = kBlsVerifyPrefex + id;
-        std::string val = verfy_req.SerializeAsString();
-        db_batch.Put(key, val);
+        SHARDORA_DEBUG("%s add bls verify g2: %s", 
+            common::Encode::HexEncode(id).c_str(), ProtobufToJson(verfy_req).c_str());
     }
 
     bool GetBlsVerifyG2(
@@ -848,14 +673,17 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
+            SHARDORA_DEBUG("%s get bls verify g2 failed", common::Encode::HexEncode(id).c_str());
             return false;
         }
 
         if (!verfy_req->ParseFromString(val)) {
             assert(false);
+            SHARDORA_DEBUG("%s get bls verify g2 failed", common::Encode::HexEncode(id).c_str());
             return false;
         }
 
+        SHARDORA_DEBUG("%s get bls verify g2 success", common::Encode::HexEncode(id).c_str());
         return true;
     }
 
@@ -872,12 +700,13 @@ public:
         key.append(node_addr);
         auto st = db_->Put(key, bls_prikey);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
+        SHARDORA_DEBUG("save bls success: %lu, %u, %s, bls_prikey: %s", elect_height,
             sharding_id,
-            common::Encode::HexEncode(node_addr).c_str());
+            common::Encode::HexEncode(node_addr).c_str(),
+            common::Encode::HexEncode(bls_prikey).c_str());
     }
 
     bool GetBlsPrikey(
@@ -894,120 +723,33 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("get bls failed: %lu, %u, %s",
+            SHARDORA_DEBUG("get bls failed: %lu, %u, %s",
                 elect_height,
                 sharding_id,
                 common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
             return false;
         }
 
+        std::string tmp_data;
         if (security_ptr->Decrypt(
-                val,
+                val.substr(4, val.size() - 4),
                 security_ptr->GetPrikey(),
-                bls_prikey) != security::kSecuritySuccess) {
+                &tmp_data) != security::kSecuritySuccess) {
             return false;
         }
 
-        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
+        uint32_t* int_data = (uint32_t*)val.c_str();
+        if (tmp_data.size() < int_data[0]) {
+            assert(false);
+            return false;
+        }
+
+        *bls_prikey = tmp_data.substr(0, int_data[0]);
+        SHARDORA_DEBUG("get bls success: %lu, %u, %s, enc bls_item: %s, dec bls item: %s", elect_height,
             sharding_id,
-            common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
-        return true;
-    }
-
-    void SaveBlsVerifyValue(
-            const std::string& id,
-            uint32_t idx,
-            uint32_t valid_t,
-            const libff::alt_bn128_G2& verfiy) {
-        std::string key;
-        key.reserve(128);
-        key.append(kBlsVerifyValuePrefix);
-        key.append(id);
-        key.append((char*)&idx, sizeof(idx));
-        key.append((char*)&valid_t, sizeof(valid_t));
-        elect::protobuf::VerifyVecValue verfiy_value;
-        verfiy_value.set_x_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c0));
-        verfiy_value.set_x_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c1));
-        verfiy_value.set_y_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c0));
-        verfiy_value.set_y_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c1));
-        verfiy_value.set_z_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c0));
-        verfiy_value.set_z_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c1));
-        verfiy_value.set_valid_t(valid_t);
-        std::string val = verfiy_value.SerializeAsString();
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    bool GetBlsVerifyValue(
-            const std::string& id,
-            uint32_t idx,
-            uint32_t max_t,
-            uint32_t* valid_t,
-            libff::alt_bn128_G2* verfiy) {
-        for (int32_t i = (int32_t)max_t; i > 0; --i) {
-            std::string key;
-            key.reserve(128);
-            key.append(kBlsVerifyValuePrefix);
-            key.append(id);
-            key.append((char*)&idx, sizeof(idx));
-            key.append((char*)&i, sizeof(i));
-            if (!db_->Exist(key)) {
-                continue;
-            }
-
-            std::string val;
-            auto st = db_->Get(key, &val);
-            if (!st.ok()) {
-                ZJC_ERROR("write db failed!");
-                return false;
-            }
-
-            elect::protobuf::VerifyVecValue item;
-            if (!item.ParseFromString(val)) {
-                return false;
-            }
-
-            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-            *verfiy = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            *valid_t = i;
-            return true;
-        }
-        
-        return false;
-    }
-
-    void SavePresetPolynomial(const bls::protobuf::LocalBlsItem& bls_polynomial) {
-        std::string key = kPresetPolynomialPrefix;
-        std::string val = bls_polynomial.SerializeAsString();
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    bool GetPresetPolynomial(bls::protobuf::LocalBlsItem* bls_polynomial) {
-        std::string key = kPresetPolynomialPrefix;
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
-            return false;
-        }
-
-        if (!bls_polynomial->ParseFromString(val)) {
-            return false;
-        }
-
+            common::Encode::HexEncode(security_ptr->GetAddress()).c_str(),
+            common::Encode::HexEncode(val).c_str(),
+            common::Encode::HexEncode(*bls_prikey).c_str());
         return true;
     }
 
@@ -1021,7 +763,7 @@ public:
         std::string val = verify_val.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -1046,7 +788,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
+            SHARDORA_ERROR("write db failed!");
             return false;
         }
 
@@ -1055,87 +797,6 @@ public:
         }
 
         return true;
-    }
-
-    void SaveConsensusedStatisticTimeBlockHeight(
-            uint32_t sharding_id,
-            uint64_t timeblock_height,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kConsensusedStatisticPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val((char*)&timeblock_height, sizeof(timeblock_height));
-        db_batch.Put(key, val);
-    }
-
-    bool GetConsensusedStatisticTimeBlockHeight(uint32_t sharding_id, uint64_t* timeblock_height) {
-        std::string key;
-        key.reserve(64);
-        key.append(kConsensusedStatisticPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
-            return false;
-        }
-
-        if (val.size() != sizeof(*timeblock_height)) {
-            return false;
-        }
-
-        uint64_t* tm_height = (uint64_t*)val.c_str();
-        *timeblock_height = tm_height[0];
-        return true;
-    }
-
-    void SaveStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height,
-            const pools::protobuf::ElectStatistic& elect_statistic,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        std::string val = elect_statistic.SerializeAsString();
-        db_batch.Put(key, val);
-    }
-
-    bool GetStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height,
-            pools::protobuf::ElectStatistic* elect_statistic) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_WARN("get data from db failed!");
-            return false;
-        }
-
-        if (!elect_statistic->ParseFromString(val)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool ExistsStatisticedShardingHeight(
-            uint32_t sharding_id,
-            uint64_t tm_height) {
-        std::string key;
-        key.reserve(64);
-        key.append(kRootStatisticedPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append((char*)&tm_height, sizeof(tm_height));
-        return db_->Exist(key);
     }
 
     void SaveElectNodeStoke(
@@ -1191,31 +852,6 @@ public:
         }
     }
 
-    void SaveAddressPubkey(const std::string& id, const std::string& pubkey) {
-        std::string key;
-        key.reserve(64);
-        key.append(kAddressPubkeyPrefex);
-        key.append(id);
-        auto st = db_->Put(key, pubkey);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    bool GetAddressPubkey(const std::string& id, std::string* pubkey) {
-        std::string key;
-        key.reserve(64);
-        key.append(kAddressPubkeyPrefex);
-        key.append(id);
-        auto st = db_->Get(key, pubkey);
-        if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
-            return false;
-        }
-
-        return true;
-    }
-
     void SaveJoinShard(uint32_t sharding_id, uint32_t des_sharding_id) {
         std::string key;
         key.reserve(64);
@@ -1227,7 +863,7 @@ public:
         std::string val(data, sizeof(data));
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -1244,39 +880,6 @@ public:
         uint32_t* tmp = (uint32_t*)val.c_str();
         *sharding_id = tmp[0];
         *des_sharding_id = tmp[1];
-        return true;
-    }
-
-    void SaveGenesisTimeblock(uint64_t block_height, uint64_t genesis_tm, db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(64);
-        key.append(kGenesisTimeblockPrefix);
-        char data[8];
-        uint32_t* tmp = (uint32_t*)data;
-        tmp[0] = block_height;
-        tmp[1] = genesis_tm;
-        std::string val(data, sizeof(data));
-        db_batch.Put(key, val);
-    }
-
-    bool GetGenesisTimeblock(uint64_t* block_height, uint64_t* genesis_tm) {
-        std::string key;
-        key.reserve(64);
-        key.append(kGenesisTimeblockPrefix);
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_ERROR("get db failed!");
-            return false;
-        }
-
-        if (val.size() != 16) {
-            return false;
-        }
-
-        uint32_t* tmp = (uint32_t*)val.c_str();
-        *block_height = tmp[0];
-        *genesis_tm = tmp[1];
         return true;
     }
 
@@ -1302,13 +905,13 @@ public:
                 val,
                 security_ptr->GetPrikey(),
                 &enc_data) != security::kSecuritySuccess) {
-            ZJC_FATAL("encrypt data failed!");
+            SHARDORA_FATAL("encrypt data failed!");
             return;
         }
 
         auto st = db_->Put(key, enc_data);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -1335,7 +938,7 @@ public:
                 val,
                 security_ptr->GetPrikey(),
                 &enc_data) != security::kSecuritySuccess) {
-            ZJC_FATAL("encrypt data failed!");
+            SHARDORA_FATAL("encrypt data failed!");
             return;
         }
 
@@ -1359,7 +962,7 @@ public:
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
 //             assert(false);
-            ZJC_ERROR("get db failed!");
+            SHARDORA_ERROR("get db failed!");
             return false;
         }
 
@@ -1369,14 +972,14 @@ public:
                 security_ptr->GetPrikey(),
                 &dec_data) != security::kSecuritySuccess) {
             assert(false);
-            ZJC_ERROR("decrypt db failed!");
+            SHARDORA_ERROR("decrypt db failed!");
             return false;
         }
 
         uint32_t* tmp = (uint32_t*)dec_data.c_str();
         if (!local_poly->ParseFromArray(dec_data.c_str() + 4, tmp[0])) {
             assert(false);
-            ZJC_ERROR("parse db failed!");
+            SHARDORA_ERROR("parse db failed!");
             return false;
         }
 
@@ -1413,21 +1016,8 @@ public:
         std::string val = verfy_final_vals.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
-    }
-
-    void DeleteVerifiedG2s(
-            uint32_t local_member_idx,
-            const std::string& id,
-            uint32_t valid_t) {
-        std::string key;
-        key.reserve(128);
-        key.append(kLocalVerifiedG2Prefix);
-        key.append((char*)&local_member_idx, sizeof(local_member_idx));
-        key.append((char*)&valid_t, sizeof(valid_t));
-        key.append(id);
-        db_->Delete(key);
     }
 
     bool GetVerifiedG2s(
@@ -1444,7 +1034,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("get data from db failed local_member_idx: %u, valid_t: %u, id: %s",
+            SHARDORA_DEBUG("get data from db failed local_member_idx: %u, valid_t: %u, id: %s",
                 local_member_idx, valid_t, common::Encode::HexEncode(id).c_str());
             return false;
         }
@@ -1478,7 +1068,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_ERROR("get data from db failed!");
+            SHARDORA_ERROR("get data from db failed!");
             return false;
         }
 
@@ -1512,7 +1102,7 @@ public:
         std::string val(data, sizeof(data));
         auto st = db_->Put(key, val);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -1524,7 +1114,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_INFO("get db failed!");
+            SHARDORA_DEBUG("get db failed!");
             return false;
         }
 
@@ -1562,188 +1152,12 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_INFO("get db failed!");
+            SHARDORA_DEBUG("get db failed!");
             return false;
         }
 
         uint64_t* tmp = (uint64_t*)val.c_str();
         *height = tmp[0];
-        return true;
-    }
-
-    void SaveElectHeightCommonPk(
-            uint32_t des_shard,
-            uint64_t height,
-            const elect::protobuf::PrevMembers& prv_info,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(128);
-        key.append(kElectHeightWithBlsCommonPkPrefix);
-        key.append((char*)&des_shard, sizeof(des_shard));
-        key.append((char*)&height, sizeof(height));
-        std::string val = prv_info.SerializeAsString();
-        db_batch.Put(key, val);
-        ZJC_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
-        assert(prv_info.has_common_pubkey());
-        assert(!prv_info.common_pubkey().x_c0().empty());
-    }
-
-    bool GetElectHeightCommonPk(
-            uint32_t des_shard,
-            uint64_t height,
-            elect::protobuf::PrevMembers* prv_info) {
-        std::string key;
-        key.reserve(128);
-        key.append(kElectHeightWithBlsCommonPkPrefix);
-        key.append((char*)&des_shard, sizeof(des_shard));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
-            return false;
-        }
-
-        if (!prv_info->ParseFromString(val)) {
-            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
-            return false;
-        }
-
-        ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
-        assert(prv_info->has_common_pubkey());
-        assert(!prv_info->common_pubkey().x_c0().empty());
-        return true;
-    }
-
-    void SaveHeightInvalidHashs(
-            uint32_t shard_id,
-            uint32_t pool_index,
-            uint64_t height,
-            const std::set<std::string>& hashs) {
-        std::string key;
-        key.reserve(128);
-        key.append(kBftInvalidHeightHashs);
-        key.append((char*)&shard_id, sizeof(shard_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        for (auto iter = hashs.begin(); iter != hashs.end(); ++iter) {
-            val += *iter;
-        }
-
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-
-        ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
-            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
-    }
-
-    void SaveHeightInvalidHashs(
-            uint32_t shard_id,
-            uint32_t pool_index,
-            uint64_t height,
-            const std::set<std::string>& hashs,
-            db::DbWriteBatch& db_batch) {
-        std::string key;
-        key.reserve(128);
-        key.append(kBftInvalidHeightHashs);
-        key.append((char*)&shard_id, sizeof(shard_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        for (auto iter = hashs.begin(); iter != hashs.end(); ++iter) {
-            val += *iter;
-        }
-
-        db_batch.Put(key, val);
-        ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
-            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
-    }
-
-    bool GetHeightInvalidHashs(
-            uint32_t shard_id,
-            uint32_t pool_index,
-            uint64_t height,
-            std::set<std::string>* hashs) {
-        std::string key;
-        key.reserve(128);
-        key.append(kBftInvalidHeightHashs);
-        key.append((char*)&shard_id, sizeof(shard_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_DEBUG("get height invalid hashs failed: %u, %u, %lu, %s",
-                shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
-            return false;
-        }
-
-        auto count = val.size() / 32;
-        for (uint32_t i = 0; i < count; ++i) {
-            std::string tmp_hash(val.c_str() + i * 32, 32);
-            hashs->insert(tmp_hash);
-        }
-
-        ZJC_DEBUG("get height invalid hashs success: %u, %u, %lu, %s",
-            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
-        return true;
-    }
-
-    void SaveTempHeightInvalidHashs(
-            uint32_t shard_id,
-            uint32_t pool_index,
-            uint64_t height,
-            const std::set<std::string>& hashs) {
-        std::string key;
-        key.reserve(128);
-        key.append(kTempBftInvalidHeightHashs);
-        key.append((char*)&shard_id, sizeof(shard_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        for (auto iter = hashs.begin(); iter != hashs.end(); ++iter) {
-            val += *iter;
-        }
-
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-
-        ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
-            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
-    }
-
-    bool GetTempHeightInvalidHashs(
-            uint32_t shard_id,
-            uint32_t pool_index,
-            uint64_t height,
-            std::set<std::string>* hashs) {
-        std::string key;
-        key.reserve(128);
-        key.append(kTempBftInvalidHeightHashs);
-        key.append((char*)&shard_id, sizeof(shard_id));
-        key.append((char*)&pool_index, sizeof(pool_index));
-        key.append((char*)&height, sizeof(height));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_DEBUG("get height invalid hashs failed: %u, %u, %lu, %s",
-                shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
-            return false;
-        }
-
-        auto count = val.size() / 32;
-        for (uint32_t i = 0; i < count; ++i) {
-            std::string tmp_hash(val.c_str() + i * 32, 32);
-            hashs->insert(tmp_hash);
-        }
-
-        ZJC_DEBUG("get height invalid hashs success: %u, %u, %lu, %s",
-            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
         return true;
     }
 
@@ -1772,7 +1186,7 @@ public:
         item.set_timestamp(day);
         st = db_->Put(key, item.SerializeAsString());
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
 
         return true;
@@ -1787,7 +1201,7 @@ public:
         key.append(id);
         auto st = db_->Put(key, sell_info.SerializeAsString());
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -1833,7 +1247,7 @@ public:
         key.append(id);
         auto st = db_->Put(key, sell_info.SerializeAsString());
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -1871,7 +1285,7 @@ public:
     }
 
     void SaveLatestToBlock(
-            const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block, 
+            const view_block::protobuf::ViewBlockItem& view_block, 
             db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(64);
@@ -1880,14 +1294,14 @@ public:
         value.resize(24);
         uint64_t* val_data = (uint64_t*)value.data();
         memset(val_data, 0, 24);
-        val_data[0] = view_block->qc().network_id();
-        val_data[1] = view_block->qc().pool_index();
-        val_data[2] = view_block->block_info().height();
+        val_data[0] = view_block.qc().network_id();
+        val_data[1] = view_block.qc().pool_index();
+        val_data[2] = view_block.block_info().height();
         db_batch.Put(key, value);
-        ZJC_DEBUG("success save latest to block: %u_%u_%lu",
-            view_block->qc().network_id(), 
-            view_block->qc().pool_index(), 
-            view_block->block_info().height());
+        SHARDORA_DEBUG("success save latest to block: %u_%u_%lu",
+            view_block.qc().network_id(), 
+            view_block.qc().pool_index(), 
+            view_block.block_info().height());
     }
 
     bool GetLatestToBlock(view_block::protobuf::ViewBlockItem* block) {
@@ -1901,7 +1315,7 @@ public:
         }
 
         uint64_t* val_data = (uint64_t*)value.data();
-        ZJC_DEBUG("success get latest to block: %u_%u_%lu", static_cast<uint32_t>(val_data[0]), 
+        SHARDORA_DEBUG("success get latest to block: %u_%u_%lu", static_cast<uint32_t>(val_data[0]), 
             static_cast<uint32_t>(val_data[1]), 
             val_data[2]);
         return GetBlockWithHeight(
@@ -1920,10 +1334,10 @@ public:
         key.append((char*)&network_id, sizeof(network_id));
         auto st = db_->Put(key, statistic_info.SerializeAsString());
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
         
-        ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        SHARDORA_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1936,7 +1350,7 @@ public:
         key.append(kLatestPoolStatisticTagPrefix);
         key.append((char*)&network_id, sizeof(network_id));
         db_batch.Put(key, statistic_info.SerializeAsString());
-        ZJC_INFO("success SaveLatestPoolStatisticTag network: %u, message: %s",
+        SHARDORA_DEBUG("success SaveLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(statistic_info).c_str());
     }
 
@@ -1957,42 +1371,8 @@ public:
             return false;
         }
 
-        ZJC_INFO("success GetLatestPoolStatisticTag network: %u, message: %s",
+        SHARDORA_DEBUG("success GetLatestPoolStatisticTag network: %u, message: %s",
             network_id, ProtobufToJson(*statistic_info).c_str());
-        return true;
-    }
-
-    void SaveLatestLeaderProposeMessage(const transport::protobuf::Header& header) {
-        std::string key;
-        key.append(kLatestLeaderProposeMessage);
-        uint32_t network_id = header.hotstuff().pro_msg().view_item().qc().network_id();
-        key.append((char*)&network_id, sizeof(network_id));
-        uint32_t pool_idx = header.hotstuff().pro_msg().view_item().qc().pool_index();
-        key.append((char*)&pool_idx, sizeof(pool_idx));
-        auto st = db_->Put(key, header.SerializeAsString());
-        if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
-        }
-    }
-
-    bool GetLatestLeaderProposeMessage(
-            uint32_t network_id, 
-            uint32_t pool_idx, 
-            transport::protobuf::Header* header) {
-        std::string key;
-        key.append(kLatestLeaderProposeMessage);
-        key.append((char*)&network_id, sizeof(network_id));
-        key.append((char*)&pool_idx, sizeof(pool_idx));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return false;
-        }
-
-        if (!header->ParseFromString(val)) {
-            return false;
-        }
-
         return true;
     }
 
@@ -2016,7 +1396,7 @@ public:
         
         auto st = db_->Put(key, enc_data);
         if (!st.ok()) {
-            ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+            SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
         }
     }
 
@@ -2030,7 +1410,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("get agg bls failed: %s",
+            SHARDORA_DEBUG("get agg bls failed: %s",
                 common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
             return false;
         }
@@ -2043,7 +1423,7 @@ public:
             return false;
         }
 
-        ZJC_DEBUG("save agg bls success: %s",
+        SHARDORA_DEBUG("save agg bls success: %s",
             common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
 
         *bls_prikey = libff::alt_bn128_Fr(prikey_str.c_str());
@@ -2075,6 +1455,46 @@ public:
         uint64_t* u64_arr = (uint64_t*)(value + 8);
         u64_arr[0] = view;
         db_batch.Put(key, std::string(value, sizeof(value)));
+        SHARDORA_DEBUG("save valid view block parent hash: %s, %u_%u_%lu",
+            common::Encode::HexEncode(parent_hash).c_str(), 
+            network_id, 
+            pool_index, 
+            view);
+    }
+
+    void SaveElectHeightWithBlock(
+            uint32_t sharding_id, 
+            uint64_t elect_height, 
+            const std::string& block_hash, 
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(48);
+        key.append(kElectHeightWithElectBlock);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&elect_height, sizeof(elect_height));
+        db_batch.Put(key, block_hash);
+        SHARDORA_DEBUG("save elect height with block hash: %s, sharding id: %u, elect height: %lu",
+            common::Encode::HexEncode(block_hash).c_str(), 
+            sharding_id, 
+            elect_height);
+    }
+
+    bool GetBlockWithElectHeight(
+            uint32_t sharding_id, 
+            uint64_t elect_height, 
+            view_block::protobuf::ViewBlockItem* block) {
+        std::string key;
+        key.reserve(48);
+        key.append(kElectHeightWithElectBlock);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&elect_height, sizeof(elect_height));
+        std::string block_hash;
+        auto st = db_->Get(key, &block_hash);
+        if (!st.ok()) {
+            return false;
+        }
+        
+        return GetBlock(block_hash, block);
     }
 
 private:
@@ -2083,7 +1503,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     uint64_t prev_gid_tm_us_ = 0;
     common::Tick db_batch_tick_;
-    volatile bool dumped_gid_ = false;
+    std::atomic<bool> dumped_gid_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };

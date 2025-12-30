@@ -42,7 +42,7 @@ private:
 
     static const uint32_t kTransportTestPeriod = 1000 * 1000;
     std::map<std::string, CommandFunction> cmd_map_;
-    bool destroy_{ false };
+    std::atomic<bool> destroy_{ false };
     bool show_cmd_{ false };
     bool first_node_{ false };
     std::vector<ConfigNodeInfo> config_node_info_;

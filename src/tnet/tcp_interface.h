@@ -14,6 +14,12 @@ public:
     virtual int Send(const char* data, int32_t len) = 0;
     virtual int Send(uint64_t msg_id, const std::string& data) = 0;
     virtual int Send(const char* data, int32_t len, uint64_t msg_id) = 0;
+    virtual bool CanDirectSend() const {
+        return false;
+    };
+
+    virtual void close() {
+    };
 
 public:
     TcpInterface() {}

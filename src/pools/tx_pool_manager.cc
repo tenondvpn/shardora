@@ -13,6 +13,7 @@
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "security/ecdsa/secp256k1.h"
+#include "security/ecdsa/ecdsa.h"
 #include "security/gmssl/gmssl.h"
 #include "security/oqs/oqs.h"
 #include "transport/processor.h"
@@ -39,21 +40,38 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(this, security_, i, db, kv_sync);
     }
 
-    ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
+    SHARDORA_DEBUG("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    // 每 10ms 会共识一次时间块
+    // Time blocks are consensus every 10ms
     tools_tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this));
-    // 注册 kPoolsMessage 的回调函数
+    // Register the callback function of kPoolsMessage
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
+#ifdef USE_SERVER_TEST_TRANSACTION
+    if (common::GlobalInfo::Instance()->test_pool_index() >= 0) {
+        test_tx_thread_ = std::make_shared<std::thread>(
+            &TxPoolManager::CreateTestTxs, 
+            this, 
+            common::GlobalInfo::Instance()->test_pool_index(), 
+            common::GlobalInfo::Instance()->test_pool_index(), 
+            common::GlobalInfo::Instance()->test_tx_tps());
+        SHARDORA_WARN("success create test tx thread.");
+    }
+#endif
+
 }
 
 TxPoolManager::~TxPoolManager() {
     destroy_ = true;
     FlushHeightTree();
+#ifdef USE_SERVER_TEST_TRANSACTION
+    if (test_tx_thread_) {
+        test_tx_thread_->join();
+    }
+#endif
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
     }
@@ -70,7 +88,7 @@ TxPoolManager::~TxPoolManager() {
 }
 
 void TxPoolManager::InitCrossPools() {
-    cross_pools_ = new CrossPool[network::kConsensusShardEndNetworkId]; // shard 分片的个数
+    cross_pools_ = new CrossPool[network::kConsensusShardEndNetworkId]; // Number of shards
     for (uint32_t i = network::kConsensusShardBeginNetworkId;
             i < network::kConsensusShardEndNetworkId; ++i) {
         cross_pools_[i].Init(i, db_, kv_sync_);
@@ -85,20 +103,26 @@ void TxPoolManager::InitCrossPools() {
 }
 
 int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
-    // ZJC_DEBUG("pools message fierwall coming.");
+    // SHARDORA_DEBUG("pools message fierwall coming.");
     // return transport::kFirewallCheckSuccess;
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
     if (msg_ptr->header.has_sync_heights() && !msg_ptr->header.has_tx_proto()) {
         // TODO: check all message with valid signature
-        ZJC_DEBUG("pools message fierwall coming is sync heights.");
+        SHARDORA_DEBUG("pools message fierwall coming is sync heights.");
         return transport::kFirewallCheckSuccess;
     }
 
     if (!tx_msg.has_sign() || !tx_msg.has_pubkey() ||
             tx_msg.sign().empty() || tx_msg.pubkey().empty()) {
-        ZJC_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
+        SHARDORA_DEBUG("pools check firewall message failed, invalid sign or pk. sign: %d, pk: %d, hash64: %lu", 
             tx_msg.sign().size(), tx_msg.pubkey().size(), header.hash64());
+        return transport::kFirewallCheckError;
+    }
+
+    if (!account_tx_qps_check_.check(tx_msg.pubkey())) {
+        SHARDORA_DEBUG("pools check firewall message failed, invalid qps limit pk: %d, hash64: %lu", 
+            tx_msg.pubkey().size(), header.hash64());
         return transport::kFirewallCheckError;
     }
 
@@ -109,14 +133,14 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
                 msg_ptr->msg_hash,
                 tx_msg.pubkey(),
                 tx_msg.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
+            SHARDORA_ERROR("verify signature failed!");
             return transport::kFirewallCheckError;
         }
 
         auto tmp_acc_ptr = acc_mgr_.lock();
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(gmssl.GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("failed get account info: %s", 
+            SHARDORA_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(gmssl.GetAddress(tx_msg.pubkey())).c_str());
             return transport::kFirewallCheckError;
         }
@@ -126,14 +150,14 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
                 msg_ptr->msg_hash,
                 tx_msg.pubkey(),
                 tx_msg.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
+            SHARDORA_ERROR("verify signature failed!");
             return transport::kFirewallCheckError;
         }
 
         auto tmp_acc_ptr = acc_mgr_.lock();
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(oqs.GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("failed get account info: %s", 
+            SHARDORA_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(oqs.GetAddress(tx_msg.pubkey())).c_str());
             return transport::kFirewallCheckError;
         }
@@ -142,20 +166,19 @@ int TxPoolManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
                 msg_ptr->msg_hash,
                 tx_msg.pubkey(),
                 tx_msg.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
+            SHARDORA_ERROR("verify signature failed!");
             return transport::kFirewallCheckError;
         }
 
         auto tmp_acc_ptr = acc_mgr_.lock();
         msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(security_->GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("failed get account info: %s", 
+            SHARDORA_DEBUG("failed get account info: %s", 
                 common::Encode::HexEncode(security_->GetAddress(tx_msg.pubkey())).c_str());
-            return transport::kFirewallCheckError; // xufeisofly111 bug: 共识压测时这里会导致共识卡住一段时候，之后恢复
+            return transport::kFirewallCheckError;
         }
     }
 
-    // ZJC_DEBUG("pools message fierwall coming success.");
     return transport::kFirewallCheckSuccess;
 }
 
@@ -176,13 +199,13 @@ void TxPoolManager::SyncCrossPool() {
         if (ex_height != common::kInvalidUint64) {
             uint32_t count = 0;
             for (uint64_t i = ex_height; i < cross_synced_max_heights_[i] && count < 64; ++i, ++count) {
-                ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+                SHARDORA_DEBUG("now add sync height 1, %u_%u_%lu", 
                     network::kRootCongressNetworkId,
-                    common::kRootChainPoolIndex,
+                    common::kImmutablePoolSize,
                     i);
                 kv_sync_->AddSyncHeight(
                     network::kRootCongressNetworkId,
-                    common::kRootChainPoolIndex,
+                    common::kImmutablePoolSize,
                     i,
                     sync::kSyncHigh);
             }
@@ -202,10 +225,10 @@ void TxPoolManager::FlushHeightTree() {
         }
     }
 
-//     ZJC_DEBUG("success call FlushHeightTree");
+//     SHARDORA_DEBUG("success call FlushHeightTree");
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
-        ZJC_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
+        SHARDORA_FATAL("write block to db failed: %d, status: %s", 1, st.ToString());
     }
 }
 
@@ -216,29 +239,6 @@ void TxPoolManager::ConsensusTimerMessage() {
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
-    // if (prev_get_valid_tm_ms_ < now_tm_ms) {
-    //     prev_get_valid_tm_ms_ = now_tm_ms + kGetMinPeriod;
-    //     GetMinValidTxCount();
-    // }
-
-    std::priority_queue<uint32_t, std::vector<uint32_t>, std::greater<uint32_t>> tx_count_queue;
-// #ifndef NDEBUG
-    // std::string test_str;
-    // uint32_t max_count = 0;
-    // for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-    //     if (tx_pool_[i].tx_size() > max_count) {
-    //         max_count = tx_pool_[i].tx_size();
-    //     }
-    //     // test_str += std::to_string(tx_pool_[i].tx_size()) + ",";
-    //     // tx_count_queue.push(tx_pool_[i].tx_size());
-    //     // if (tx_count_queue.size() > 2) {
-    //     //     tx_count_queue.pop();
-    //     // }
-    // }
-
-    // now_max_tx_count_ = max_count * 2 / 3;
-    // ZJC_DEBUG("set max txcount: %u, test str: %s", max_count, test_str.c_str());
-// #endif
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(now_tm_ms);
         SyncMinssingRootHeights(now_tm_ms);
@@ -257,7 +257,7 @@ void TxPoolManager::ConsensusTimerMessage() {
 
     auto etime = common::TimeUtils::TimestampMs();
     if (etime - now_tm_ms >= 10) {
-        ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
+        SHARDORA_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
     }
 
     tools_tick_.CutOff(
@@ -283,11 +283,11 @@ void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
                 root_synced_max_heights_[root_prev_synced_pool_index_]) {
             SyncRootBlockWithMaxHeights(
                 root_prev_synced_pool_index_, root_synced_max_heights_[root_prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            SHARDORA_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 root_prev_synced_pool_index_,
                 res, 
                 root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
-                root_synced_max_heights_[root_prev_synced_pool_index_]);
+                static_cast<uint64_t>(root_synced_max_heights_[root_prev_synced_pool_index_]));
         }
     }
 
@@ -299,10 +299,10 @@ void TxPoolManager::SyncMinssingRootHeights(uint64_t now_tm_ms) {
                 root_synced_max_heights_[root_prev_synced_pool_index_]) {
             SyncRootBlockWithMaxHeights(
                 root_prev_synced_pool_index_, root_synced_max_heights_[root_prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            SHARDORA_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 root_prev_synced_pool_index_,
                 res, root_cross_pools_[root_prev_synced_pool_index_].latest_height(),
-                root_synced_max_heights_[root_prev_synced_pool_index_]);
+                static_cast<uint64_t>(root_synced_max_heights_[root_prev_synced_pool_index_]));
         }
     }
 }
@@ -321,11 +321,11 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            SHARDORA_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 prev_synced_pool_index_,
                 res, 
                 tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
+                static_cast<uint64_t>(synced_max_heights_[prev_synced_pool_index_]));
         }
     }
 
@@ -337,10 +337,10 @@ void TxPoolManager::SyncMinssingHeights(uint64_t now_tm_ms) {
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+            SHARDORA_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
                 prev_synced_pool_index_,
                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
+                static_cast<uint64_t>(synced_max_heights_[prev_synced_pool_index_]));
         }
     }
 }
@@ -350,7 +350,7 @@ void TxPoolManager::SyncRootBlockWithMaxHeights(uint32_t pool_idx, uint64_t heig
         return;
     }
 
-    ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+    SHARDORA_DEBUG("now add sync height 1, %u_%u_%lu", 
         network::kRootCongressNetworkId,
         pool_idx,
         height);
@@ -376,7 +376,7 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
         return;
     }
 
-    ZJC_DEBUG("now add sync height 1, %u_%u_%lu", 
+    SHARDORA_DEBUG("now add sync height 1, %u_%u_%lu", 
         net_id,
         pool_idx,
         height);
@@ -390,12 +390,12 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint32_t pool_idx, uint64_t height) 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
-    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
-            tx_pool_[pool_idx].CheckPopedTxs();
-        }
-    }
+    // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index(msg_ptr);
+    // for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+    //     if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
+    //         tx_pool_[pool_idx].CheckPopedTxs();
+    //     }
+    // }
 
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
@@ -419,10 +419,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             if (tx_pool_[address_info->pool_index()].all_tx_size() >= 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-                ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
+                SHARDORA_DEBUG("add failed extend %u, %u, all valid: %u", 
                     tx_pool_[address_info->pool_index()].all_tx_size(), 
                     common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
-                    tx_pool_[address_info->pool_index()].tx_size());
+                    tx_pool_[address_info->pool_index()].all_tx_size());
                 return;
             }
 
@@ -432,11 +432,11 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ++prev_tps_count_;
             uint64_t dur = 1000lu;
             if (now_tm > prev_show_tm_ms_ + dur) {
-                ZJC_INFO("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
+                SHARDORA_DEBUG("pools stored message size: %d, %d, pool index: %d, gid size: %u, tx all size: %u, tps: %lu", 
                         -1, pools_msg_queue_.size(),
                         address_info->pool_index(),
                         tx_pool_[address_info->pool_index()].all_tx_size(),
-                        tx_pool_[address_info->pool_index()].tx_size(),
+                        tx_pool_[address_info->pool_index()].all_tx_size(),
                         (prev_tps_count_/(dur / 1000)));
                 prev_show_tm_ms_ = now_tm;
                 prev_tps_count_ = 0;
@@ -448,7 +448,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (header.has_sync_heights()) {
-        ZJC_DEBUG("header.has_sync_heights()");
+        SHARDORA_DEBUG("header.has_sync_heights()");
         HandleSyncPoolsMaxHeight(msg_ptr);
         return;
     }
@@ -468,10 +468,10 @@ int TxPoolManager::BackupConsensusAddTxs(
         const pools::TxItemPtr& valid_tx) {
     if (tx_pool_[pool_index].all_tx_size() >= 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-        ZJC_DEBUG("add failed extend %u, %u, all valid: %u", 
+        SHARDORA_DEBUG("add failed extend %u, %u, all valid: %u", 
             tx_pool_[pool_index].all_tx_size(), 
             common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
-            tx_pool_[pool_index].tx_size());
+            tx_pool_[pool_index].all_tx_size());
     } else {
         tx_pool_[pool_index].ConsensusAddTxs(valid_tx);
     }
@@ -486,12 +486,12 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         ADD_TX_DEBUG_INFO(header.mutable_tx_proto());
-        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, gid: %s",
+        SHARDORA_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d, nonce: %lu",
             msg_ptr->header.hash64(),
             common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
             common::Encode::HexEncode(tx_msg.to()).c_str(),
-            tx_msg.step(),
-            common::Encode::HexEncode(tx_msg.gid()).c_str());
+            (int32_t)tx_msg.step(),
+            tx_msg.nonce());
         switch (tx_msg.step()) {
         case pools::protobuf::kJoinElect:
             HandleElectTx(msg_ptr);
@@ -501,15 +501,14 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             break;
         case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kContractCreate:
-        case pools::protobuf::kContractCreateByRootFrom:
             HandleCreateContractTx(msg_ptr);
             break;
         case pools::protobuf::kContractGasPrepayment:
             HandleSetContractPrepayment(msg_ptr);
             break;
         case pools::protobuf::kRootCreateAddress: {
-            if (tx_msg.to().size() != security::kUnicastAddressLength &&
-                    tx_msg.to().size() != security::kUnicastAddressLength * 2) {
+            if (tx_msg.to().size() != common::kUnicastAddressLength &&
+                    tx_msg.to().size() != common::kUnicastAddressLength * 2) {
                 return;
             }
 
@@ -519,26 +518,25 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             }
             
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu gid: %s", 
+            SHARDORA_DEBUG("get local tokRootCreateAddress tx message hash: %s, to: %s, amount: %lu nonce: %lu", 
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
                 common::Encode::HexEncode(tx_msg.to()).c_str(),
                 tx_msg.amount(),
-                common::Encode::HexEncode(tx_msg.gid()).c_str());
+                tx_msg.nonce());
             pool_index = common::GetAddressPoolIndex(
-                tx_msg.to().substr(0, security::kUnicastAddressLength)) % common::kImmutablePoolSize;
+                tx_msg.to().substr(0, common::kUnicastAddressLength)) % common::kImmutablePoolSize;
             break;
         }
         case pools::protobuf::kContractExcute:
             HandleContractExcute(msg_ptr);
             break;
-        // case pools::protobuf::kContractCreateByRootTo: 
         case pools::protobuf::kConsensusLocalTos: {
 			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_ptr->msg_hash = pools::GetTxMessageHash(msg_ptr->header.tx_proto());
-            ZJC_DEBUG("get local to tx message hash: %s, gid: %s",
+            SHARDORA_DEBUG("get local to tx message hash: %s, nonce: %lu",
                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str(), 
-                common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str());
+                msg_ptr->header.tx_proto().nonce());
             break;
         }
         case pools::protobuf::kRootCross: {
@@ -550,14 +548,14 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
         default:
-            ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
+            SHARDORA_DEBUG("invalid tx step: %d", (int32_t)tx_msg.step());
             assert(false);
             break;
         }
 
         if (pool_index == common::kInvalidPoolIndex) {
             if (!msg_ptr->address_info) {
-                ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
+                SHARDORA_DEBUG("invalid tx step: %d", (int32_t)tx_msg.step());
                 return;
             }
 
@@ -581,7 +579,7 @@ void TxPoolManager::SyncPoolsMaxHeight() {
         auto* sync_heights = msg_ptr->header.mutable_sync_heights();
         sync_heights->set_req(true);
         transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header);
-        ZJC_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
+        SHARDORA_DEBUG("sync net data from network: %u, hash64: %lu, src sharding id: %u",
             i, msg_ptr->header.hash64(), msg_ptr->header.src_sharding_id());
         network::Route::Instance()->Send(msg_ptr);
     }
@@ -589,12 +587,12 @@ void TxPoolManager::SyncPoolsMaxHeight() {
 
 void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr) {
     if (tx_pool_ == nullptr) {
-        ZJC_DEBUG("tx_pool_ == nullptr");
+        SHARDORA_DEBUG("tx_pool_ == nullptr");
         return;
     }
 
     if (!msg_ptr->header.has_sync_heights()) {
-        ZJC_DEBUG("!msg_ptr->header.has_sync_heights()");
+        SHARDORA_DEBUG("!msg_ptr->header.has_sync_heights()");
         return;
     }
 
@@ -636,7 +634,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(msg_ptr->conn.get(), msg);
-        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s, "
+        SHARDORA_DEBUG("response pool heights: %s, cross pool heights: %s, "
             "now_max_sharding_id_: %u, src sharding id: %u, src hash64: %lu, des hash64: %lu",
             sync_debug.c_str(), cross_debug.c_str(),
             now_max_sharding_id_, msg_ptr->header.src_sharding_id(),
@@ -672,10 +670,10 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                         break;
                     }
                 
-                    ZJC_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
+                    SHARDORA_DEBUG("net: %u, get response pool heights, cross pool heights: %lu, update_height: %lu, "
                         "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
                         sharding_id, update_height, update_height,
-                        cross_synced_max_heights_[sharding_id], cross_pools_[sharding_id].latest_height(),
+                        static_cast<uint64_t>(cross_synced_max_heights_[sharding_id]), cross_pools_[sharding_id].latest_height(),
                         cross_heights[0]);
                     cross_synced_max_heights_[sharding_id] = cross_heights[0];
                 } while (0);
@@ -707,7 +705,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 }
 
-                ZJC_DEBUG("get root response pool heights: %s", sync_debug.c_str());
+                SHARDORA_DEBUG("get root response pool heights: %s", sync_debug.c_str());
             }
             return;
         }
@@ -739,7 +737,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+        SHARDORA_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 
@@ -755,7 +753,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     auto tmp_acc_ptr = acc_mgr_.lock();
     msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(addr);
     if (msg_ptr->address_info == nullptr) {
-        ZJC_WARN("no address info: %s", common::Encode::HexEncode(addr).c_str());
+        SHARDORA_WARN("no address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
     }
 
@@ -765,7 +763,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info->balance() < consensus::kJoinElectGas) {
-        ZJC_WARN("address info join elect gas invalid: %s %lu %lu", 
+        SHARDORA_WARN("address info join elect gas invalid: %s %lu %lu", 
             common::Encode::HexEncode(addr).c_str(), 
             msg_ptr->address_info->balance(), 
             consensus::kJoinElectGas);
@@ -773,14 +771,14 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_WARN("sharding error: %d, %d",
+        SHARDORA_WARN("sharding error: %d, %d",
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
         return;
     }
 
     if (!tx_msg.has_key() || tx_msg.key() != protos::kJoinElectVerifyG2) {
-        ZJC_DEBUG("key size error now: %d, max: %d.",
+        SHARDORA_DEBUG("key size error now: %d, max: %d.",
             tx_msg.key().size(), kTxStorageKeyMaxSize);
         return;
     }
@@ -790,26 +788,26 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     //         msg_hash,
     //         tx_msg.pubkey(),
     //         tx_msg.sign()) != security::kSecuritySuccess) {
-    //     ZJC_WARN("kElectJoin verify signature failed!");
+    //     SHARDORA_WARN("kElectJoin verify signature failed!");
     //     return;
     // }
 
     bls::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(tx_msg.value())) {
-        ZJC_WARN("join_info parse failed address info: %s", common::Encode::HexEncode(addr).c_str());
+        SHARDORA_WARN("join_info parse failed address info: %s", common::Encode::HexEncode(addr).c_str());
         return;
     }
 
     uint32_t tmp_shard = join_info.shard_id();
     if (tmp_shard != network::kRootCongressNetworkId) {
         if (tmp_shard != msg_ptr->address_info->sharding_id()) {
-            ZJC_DEBUG("join des shard error: %d,  %d.",
+            SHARDORA_DEBUG("join des shard error: %d,  %d.",
                 tmp_shard, msg_ptr->address_info->sharding_id());
             return;
         }
     }
     
-    ZJC_DEBUG("elect tx msg hash is %s", 
+    SHARDORA_DEBUG("elect tx msg hash is %s", 
         common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
     msg_ptr->msg_hash = msg_hash;
 }
@@ -818,83 +816,51 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
     // if (tx_msg.has_key() && tx_msg.key().size() > 0) {
-    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     SHARDORA_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     //     return;
     // }
 
     if (tx_msg.gas_price() <= 0 || tx_msg.gas_limit() <= consensus::kCallContractDefaultUseGas) {
-        ZJC_DEBUG("gas price and gas limit error %lu, %lu",
+        SHARDORA_DEBUG("gas price and gas limit error %lu, %lu",
             tx_msg.gas_price(), tx_msg.gas_limit());
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        SHARDORA_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     auto tmp_acc_ptr = acc_mgr_.lock();
-    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
-    if (msg_ptr->address_info == nullptr) {
-        ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return;
-    }
-
-    if (msg_ptr->address_info->destructed()) {
-        ZJC_ERROR("contract destructed: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return;
-    }
-
     auto from = security_->GetAddress(tx_msg.pubkey());
-    if (msg_ptr->address_info->addr() == from) {
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    if (contract_info == nullptr) {
+        SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        return;
+    }
+
+    if (contract_info->destructed()) {
+        SHARDORA_ERROR("contract destructed: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        return;
+    }
+
+    auto prepayment_id = tx_msg.to() + from;
+    msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(prepayment_id);
+    if (msg_ptr->address_info == nullptr) {
+        SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_WARN("sharding error: %d, %d",
+        SHARDORA_WARN("sharding error: %d, %d",
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
-        ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        SHARDORA_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        msg_ptr->address_info = nullptr;
         return;
     }
 
-    uint64_t height = 0;
-    uint64_t prepayment = 0;
-    // TODO: test check
-    // if (!prefix_db_->GetContractUserPrepayment(
-    //         tx_msg.to(),
-    //         from,
-    //         &height,
-    //         &prepayment)) {
-    //     ZJC_ERROR("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-    //     return;
-    // }
-
-    // if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
-    //     ZJC_ERROR("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, "
-    //         "tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
-    //         common::Encode::HexEncode(tx_msg.to()).c_str(),
-    //         prepayment,
-    //         tx_msg.amount(),
-    //         tx_msg.gas_limit(),
-    //         tx_msg.gas_price(),
-    //         (tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()));
-    //     return;
-    // }
-
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    // auto pool_index = msg_ptr->address_info->pool_index();
-    // if (security_->Verify(
-    //         msg_ptr->msg_hash,
-    //         tx_msg.pubkey(),
-    //         tx_msg.sign()) != security::kSecuritySuccess) {
-    //     ZJC_ERROR("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
-    //         "prepayment: %lu, default call contract gas: %lu, txid: %s",
-    //         msg_ptr->address_info->balance(),
-    //         tx_msg.amount(),
-    //         tx_msg.contract_prepayment(),
-    //         consensus::kCallContractDefaultUseGas,
-    //         common::Encode::HexEncode(tx_msg.gid()).c_str());
-    //     assert(false);
-    //     return;
-    // }
+    SHARDORA_DEBUG("success add tx contract execute prepyament id: %s, prepayment: %lu, nonce: %lu",
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(), 
+        msg_ptr->address_info->balance(), 
+        msg_ptr->address_info->nonce());
 }
 
 void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr) {
@@ -902,7 +868,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     // user can't direct call contract, pay contract prepayment and call contract direct
     if (!tx_msg.contract_input().empty() ||
             tx_msg.contract_prepayment() < consensus::kCallContractDefaultUseGas) {
-        ZJC_DEBUG("call contract not has valid contract input"
+        SHARDORA_DEBUG("call contract not has valid contract input"
             "and contract prepayment invalid.");
         return;
     }
@@ -914,7 +880,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kCallContractDefaultUseGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address %s balance invalid: %lu, transfer amount: %lu, "
+        SHARDORA_DEBUG("address %s balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, from: %s, to: %s",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->balance(),
@@ -938,12 +904,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info == nullptr) {
-        ZJC_WARN("no address info.");
-        return false;
-    }
-
-    if (msg_ptr->address_info->type() == address::protobuf::kWaitingRootConfirm) {
-        ZJC_WARN("address invalid and waiting root confirm.");
+        SHARDORA_WARN("no address info.");
         return false;
     }
 
@@ -958,7 +919,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info->sharding_id() != local_shard) {
-        ZJC_WARN("sharding error id: %s, shard: %d, local shard: %d",
+        SHARDORA_WARN("sharding error id: %s, shard: %d, local shard: %d",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
@@ -967,7 +928,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
-        ZJC_DEBUG("key size error now: %d, max: %d.",
+        SHARDORA_DEBUG("key size error now: %d, max: %d.",
             tx_msg.key().size(), kTxStorageKeyMaxSize);
         return false;
     }
@@ -983,12 +944,12 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    // 验证账户余额是否足够
+    // Verify that the account balance is sufficient
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address: %s balance invalid: %lu, transfer amount: %lu, "
+        SHARDORA_DEBUG("address: %s balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->balance(),
@@ -1005,7 +966,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
     if (!tx_msg.has_contract_code()) {
-        ZJC_DEBUG("create contract not has valid contract code: %s",
+        SHARDORA_DEBUG("create contract not has valid contract code: %s",
             common::Encode::HexEncode(tx_msg.contract_code()).c_str());
         return;
     }
@@ -1020,7 +981,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
             return;
         }
     } else {
-        // all shards will save the library
+        // all shards will save the library.
         default_gas = consensus::kCreateLibraryDefaultUseGas +
             network::kConsensusWaitingShardOffset *
             (tx_msg.value().size() + tx_msg.key().size()) *
@@ -1028,22 +989,22 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     if (!UserTxValid(msg_ptr)) {
-        ZJC_ERROR("create contract error!");
+        SHARDORA_ERROR("create contract error!");
         return;
     }
 
-    ZJC_INFO("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    SHARDORA_DEBUG("create contract address: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
     auto tmp_acc_ptr = acc_mgr_.lock();
     protos::AddressInfoPtr contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info != nullptr) {
-        ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        SHARDORA_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             default_gas * tx_msg.gas_price()) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+        SHARDORA_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu, gas price: %lu",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
@@ -1068,37 +1029,187 @@ void TxPoolManager::BftCheckInvalidGids(
     }
 }
 
-void TxPoolManager::PopTxs(uint32_t pool_index, bool pop_all, bool* has_user_tx, bool* has_system_tx) {
-    // uint32_t count = 0;
-    // while (!destroy_) {
-    //     transport::MessagePtr msg_ptr = nullptr;
-    //     if (!msg_queues_[pool_index].pop(&msg_ptr)) {
-    //         break;
-    //     }
+static transport::MessagePtr CreateTransactionWithAttr(
+        std::shared_ptr<security::Security>& security,
+        uint64_t nonce,
+        const std::string& from_prikey,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    // auto* brd = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_nonce(nonce);
+    new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        if (key == "create_contract") {
+            new_tx->set_step(pools::protobuf::kContractCreate);
+            new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "prepayment") {
+            new_tx->set_step(pools::protobuf::kContractGasPrepayment);
+            new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
+        }
+    }
 
-    //     ZJC_DEBUG("success pop tx gid: %s, step: %d",
-    //         common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(),
-    //         msg_ptr->header.tx_proto().step());
-    //     if (pools::IsUserTransaction(msg_ptr->header.tx_proto().step())) {
-    //         if (has_user_tx != nullptr) {
-    //             *has_user_tx = true;
-    //         }
-    //     } else {
-    //         if (has_system_tx != nullptr) {
-    //             *has_system_tx = true;
-    //         }
-    //     }
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    std::string sign;
+    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
 
-    //     // auto now_tm_ms = common::TimeUtils::TimestampMs();
-    //     DispatchTx(pool_index, msg_ptr);
-    //     if (!pop_all && ++count >= 1024) {
-    //         break;
-    //     }
-    // }
-    assert(false);
+    new_tx->set_sign(sign);
+    assert(new_tx->gas_price() > 0);
+    return msg_ptr;
+}
+
+
+static std::unordered_map<std::string, std::string> g_pri_addrs_map;
+static std::vector<std::string> g_prikeys;
+static std::vector<std::string> g_addrs;
+static std::unordered_map<std::string, std::string> g_pri_pub_map;
+static std::vector<std::string> g_oqs_prikeys;
+static std::unordered_map<std::string, std::string> g_oqs_pri_pub_map;
+static std::unordered_map<std::string, uint64_t> prikey_with_nonce;
+static std::unordered_map<std::string, std::shared_ptr<address::protobuf::AddressInfo>> address_map;
+
+static void LoadAllAccounts(int32_t shardnum=3) {
+    FILE* fd = fopen((std::string("/root/shardora/init_accounts") + std::to_string(shardnum)).c_str(), "r");
+    if (fd == nullptr) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    bool res = true;
+    std::string filed;
+    const uint32_t kMaxLen = 1024;
+    char* read_buf = new char[kMaxLen];
+    while (true) {
+        char* read_res = fgets(read_buf, kMaxLen, fd);
+        if (read_res == NULL) {
+            break;
+        }
+
+        std::string prikey = common::Encode::HexDecode(std::string(read_res, 64));
+        g_prikeys.push_back(prikey);
+        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+        security->SetPrivateKey(prikey);
+        g_pri_pub_map[prikey] = security->GetPublicKey();
+        std::string addr = security->GetAddress();
+        g_pri_addrs_map[prikey] = addr;
+        g_addrs.push_back(addr);
+        if (g_pri_addrs_map.size() >= common::kImmutablePoolSize) {
+            break;
+        }
+        std::cout << common::Encode::HexEncode(prikey) << " : " << common::Encode::HexEncode(addr) << std::endl;
+    }
+
+    assert(!g_prikeys.empty());
+    while (g_prikeys.size() < common::kImmutablePoolSize) {
+        g_prikeys.push_back(g_prikeys[0]);
+    }
+
+    fclose(fd);
+    delete[]read_buf;
+}
+
+void TxPoolManager::CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32_t tps) {
+    LoadAllAccounts(3);
+    std::shared_ptr<address::protobuf::AddressInfo> address_[pool_end + 1];
+    std::shared_ptr<security::Security> pool_sec[pool_end + 1];
+    for (auto i = pool_begin; i <= pool_end; ++i) {
+        auto from_prikey = g_prikeys[i];
+        std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+        for (uint32_t tmp_idx = 0; tmp_idx < g_prikeys.size(); ++tmp_idx) {
+            from_prikey = g_prikeys[i];
+            thread_security->SetPrivateKey(from_prikey);
+            if (common::GetAddressPoolIndex(thread_security->GetAddress()) == i) {
+                break;
+            }
+        }
+
+        pool_sec[i] = thread_security;
+        address_map[from_prikey] = prefix_db_->GetAddressInfo(thread_security->GetAddress());
+        prikey_with_nonce[from_prikey] = address_map[from_prikey]->nonce();
+        SHARDORA_WARN("success get pool: %d, prikey: %s", i, common::Encode::HexEncode(from_prikey).c_str());
+    }
+
+    std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
+    static const uint64_t kSleepTimeMs = 100lu;
+    common::GlobalInfo::Instance()->get_thread_index();
+    usleep(120000000lu);
+    uint32_t send_out_tps = common::GlobalInfo::Instance()->test_tx_tps() / (1000lu / kSleepTimeMs);
+    while (!common::GlobalInfo::Instance()->global_stoped()) {
+        if (item_functions_[0] == nullptr) {
+            usleep(1000000lu);
+            continue;
+        }
+
+        for (auto i = pool_begin; i <= pool_end; ++i) {
+            for (uint32_t tx_idx = 0; tx_idx < send_out_tps; ++tx_idx) {
+                if (tx_pool_[i].all_tx_size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+                    break;
+                }
+
+                auto from_prikey = pool_sec[i]->GetPrikey();
+                auto tx_msg_ptr = CreateTransactionWithAttr(
+                    pool_sec[i],
+                    ++prikey_with_nonce[from_prikey],
+                    from_prikey,
+                    to,
+                    "",
+                    "",
+                    1980,
+                    10000,
+                    1,
+                    3);
+                tx_msg_ptr->address_info = address_map[from_prikey];
+                pools::TxItemPtr tx_ptr = item_functions_[0](tx_msg_ptr);
+                if (tx_ptr == nullptr) {
+                    assert(false);
+                    return;
+                }
+            
+                tx_pool_[i].AddTx(tx_ptr);
+                SHARDORA_DEBUG("success create test tx thread: %s, nonce: %lu",
+                    common::Encode::HexEncode(pool_sec[i]->GetAddress()).c_str(), 
+                    prikey_with_nonce[from_prikey]);
+            }
+        }
+        
+        usleep(kSleepTimeMs * 1000lu);
+    }
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr) {
+#ifdef USE_SERVER_TEST_TRANSACTION
+    return;
+#endif
+
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
@@ -1106,7 +1217,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
     }
 
     if (item_functions_[msg_ptr->header.tx_proto().step()] == nullptr) {
-        ZJC_DEBUG("not registered step : %d", msg_ptr->header.tx_proto().step());
+        SHARDORA_DEBUG("not registered step : %d", (int32_t)msg_ptr->header.tx_proto().step());
         assert(false);
         return;
     }
@@ -1118,80 +1229,36 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         return;
     }
 
-    tx_ptr->unique_tx_hash = msg_ptr->msg_hash;
-    // 交易池增加 msg 中的交易
+    // The transaction pool adds transactions in msg
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("success add local transfer to tx pool: %u, step: %d, %s, gid: %s, from pk: %s, to: %s",
+    SHARDORA_DEBUG("trace tx success add local transfer to tx pool: %u, "
+        "step: %d, addr: %s, nonce: %lu, from pk: %s, to: %s",
         pool_index,
-        msg_ptr->header.tx_proto().step(),
-        common::Encode::HexEncode(tx_ptr->unique_tx_hash).c_str(),
-        common::Encode::HexEncode(tx_ptr->tx_info->gid()).c_str(),
+        (int32_t)msg_ptr->header.tx_proto().step(),
+        common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+        tx_ptr->tx_info->nonce(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
 void TxPoolManager::GetTxSyncToLeader(
+        uint32_t leader_idx, 
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckGidValidFunction gid_vlid_func) {
-    tx_pool_[pool_index].GetTxSyncToLeader(count, txs, gid_vlid_func);    
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
+    tx_pool_[pool_index].GetTxSyncToLeader(leader_idx, count, txs, tx_valid_func);    
 }
 
 void TxPoolManager::GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
         uint32_t count,
-        std::map<std::string, TxItemPtr>& res_map,
-        pools::CheckGidValidFunction gid_vlid_func) {
-    // TODO: check latency
-    // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-    //         pool_index != common::kImmutablePoolSize) {
-    //     if (tx_pool_[pool_index].tx_size() < now_max_tx_count_) {
-    //         return;
-    //     }
-    // }
-
-    tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, gid_vlid_func);    
-}
-
-void TxPoolManager::GetMinValidTxCount() {
-    std::priority_queue<PoolsCountPrioItem> count_queue_;
-    std::priority_queue<PoolsTmPrioItem> tm_queue_;
-    uint64_t min_tm = common::kInvalidUint64;
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        if (tx_pool_[i].tx_size() > 0) {
-            count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
-        }
-
-        if (count_queue_.size() > kMinPoolsValidCount) {
-            count_queue_.pop();
-        }
-
-        if (tx_pool_[i].oldest_timestamp() > 0) {
-            tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
-            if (tx_pool_[i].oldest_timestamp() < min_tm) {
-                min_tm = tx_pool_[i].oldest_timestamp();
-            }
-        }
-
-        if (tm_queue_.size() > kMinPoolsValidCount) {
-            tm_queue_.pop();
-        }
-    }
-
-    if (min_tm != common::kInvalidUint64) {
-        min_timestamp_ = min_tm;
-    }
-
-    if (count_queue_.size() < kMinPoolsValidCount) {
-        return;
-    }
-
-    min_valid_tx_count_ = count_queue_.top().count;
-    min_valid_timestamp_ = tm_queue_.top().max_timestamp;
+        std::vector<pools::TxItemPtr>& res_map,
+        pools::CheckAddrNonceValidFunction tx_valid_func) {
+    tx_pool_[pool_index].GetTxIdempotently(msg_ptr, res_map, count, tx_valid_func);    
 }
 
 }  // namespace pools

@@ -20,10 +20,10 @@
 #include "tnet/tcp_interface.h"
 #include "tnet/tcp_connection.h"
 
-#define TRANSPORT_DEBUG(fmt, ...) ZJC_DEBUG("[transport]" fmt, ## __VA_ARGS__)
-#define TRANSPORT_INFO(fmt, ...) ZJC_INFO("[transport]" fmt, ## __VA_ARGS__)
-#define TRANSPORT_WARN(fmt, ...) ZJC_WARN("[transport]" fmt, ## __VA_ARGS__)
-#define TRANSPORT_ERROR(fmt, ...) ZJC_ERROR("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_DEBUG(fmt, ...) SHARDORA_DEBUG("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_INFO(fmt, ...) SHARDORA_INFO("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_WARN(fmt, ...) SHARDORA_WARN("[transport]" fmt, ## __VA_ARGS__)
+#define TRANSPORT_ERROR(fmt, ...) SHARDORA_ERROR("[transport]" fmt, ## __VA_ARGS__)
 
 namespace shardora {
 
@@ -95,18 +95,19 @@ public:
         times_idx = 0;
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
-        // ZJC_DEBUG("memory check create new transport message: %d", now_count);
+        // SHARDORA_DEBUG("memory check create new transport message: %d", now_count);
          common::GlobalInfo::Instance()->AddSharedObj(11);
 
     }
 
     ~TransportMessage() {
         // auto now_count = testTransportMessageCount.fetch_sub(1);
-        // ZJC_DEBUG("memory check remove transport message: %d", now_count);
+        // SHARDORA_DEBUG("memory check remove transport message: %d", now_count);
         common::GlobalInfo::Instance()->DecSharedObj(11);
     }
 
     protobuf::Header header;
+    std::string header_str;
     std::shared_ptr<tnet::TcpInterface> conn = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
@@ -154,7 +155,7 @@ static const uint32_t kKcpSendWindowSize = 128u;
 static const uint32_t kMsgPacketMagicNum = 345234223;
 static const int32_t kTransportTxBignumVersionNum = 1;
 static const int32_t kTransportVersionNum = 2;
-static const int32_t kTcpBuffLength = 2 * 1024 * 1024;
+static const int32_t kTcpBuffLength = 10 * 1024 * 1024;
 
 inline void CloseSocket(int sock) {
 #ifdef _WIN32
