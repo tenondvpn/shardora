@@ -151,6 +151,10 @@ Status ViewBlockChain::Store(
     return Status::kSuccess;
 }
 
+void ViewBlockChain::TrySyncDiscontinuous() {
+
+}
+
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
     while (commited_block_queue_.pop(&view_block_info_ptr)) {
@@ -944,7 +948,7 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
     }
 
     auto view_block_ptr = view_block_ptr_info->view_block;
-    if (!IsQcTcValid(view_block_ptr->qc())) {
+    if (chain_type_ == kLocalChain && !IsQcTcValid(view_block_ptr->qc())) {
         view_block_ptr->mutable_qc()->set_sign_x(qc_item.sign_x());
         view_block_ptr->mutable_qc()->set_sign_y(qc_item.sign_y());
         cached_block_queue_.push(view_block_ptr_info);

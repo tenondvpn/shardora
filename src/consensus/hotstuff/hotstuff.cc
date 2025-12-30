@@ -1612,7 +1612,8 @@ void Hotstuff::HandleSyncedViewBlock(
         }
         TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_);
         TryCommit(view_block_chain(), msg_ptr, vblock->qc());
-    } else if (network::IsSameShardOrSameWaitingPool(vblock->qc().network_id(), network::kRootCongressNetworkId)) {
+    } else if (network::IsSameShardOrSameWaitingPool(
+            vblock->qc().network_id(), network::kRootCongressNetworkId)) {
         if (vblock->qc().pool_index() != pool_idx_) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u, src pool: %d",
                 vblock->qc().network_id(), pool_idx_, vblock->qc().pool_index());
@@ -1620,17 +1621,20 @@ void Hotstuff::HandleSyncedViewBlock(
         }
 
         root_view_block_chain_->Store(vblock, true, nullptr, nullptr, false);
-        TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
+        root_view_block_chain_->UpdateHighViewBlock(vblock->qc());
+        TryCommit(root_view_block_chain_, msg_ptr, root_view_block_chain_->HighViewBlock()->qc());
         // root_view_block_chain_->CommitSynced(vblock);
     } else {
         if (vblock->qc().network_id() % common::kImmutablePoolSize != pool_idx_) {
-            SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u", vblock->qc().network_id(), pool_idx_);
+            SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u",
+                vblock->qc().network_id(), pool_idx_);
             return;
         }
 
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
         cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
-        TryCommit(cross_view_block_chain, msg_ptr, vblock->qc());
+        cross_view_block_chain->UpdateHighViewBlock(vblock->qc());
+        TryCommit(cross_view_block_chain, msg_ptr, cross_view_block_chain->HighViewBlock()->qc());
         // cross_view_block_chain->CommitSynced(vblock);
     }
 }

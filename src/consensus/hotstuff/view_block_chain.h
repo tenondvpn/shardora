@@ -90,6 +90,7 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
+    void TrySyncDiscontinuous();
     bool view_commited(uint32_t network_id, View view) const {
         if (network_id == common::GlobalInfo::Instance()->network_id()) {
             if (commited_view_.find(view) != commited_view_.end()) {
@@ -268,7 +269,6 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::atomic<View> stored_to_db_view_ = 0llu;
     std::atomic<View> commited_max_view_ = 0llu;
-    common::ThreadSafeQueue<View> stored_view_queue_;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
     std::priority_queue<
