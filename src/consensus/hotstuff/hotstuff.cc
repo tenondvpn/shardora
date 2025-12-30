@@ -2130,7 +2130,7 @@ void Hotstuff::TryRecoverFromStuck(
     view_block_chain()->HandleTimerMessage();
     root_view_block_chain_->HandleTimerMessage();
     for (auto& cross_view_block_chain : cross_shard_view_block_chain_) {
-        cross_view_block_chain->HandleTimerMessage();
+        cross_view_block_chain.second->HandleTimerMessage();
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
