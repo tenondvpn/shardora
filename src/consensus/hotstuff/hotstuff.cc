@@ -1522,6 +1522,7 @@ void Hotstuff::HandleSyncedViewBlock(
         vblock->qc().pool_index(),
         vblock->qc().view(),
         vblock->block_info().height());
+    transport::MessagePtr msg_ptr;
     if (network::IsSameToLocalShard(vblock->qc().network_id())) {
         if (!view_block_chain()->ReplaceWithSyncedBlock(vblock)) {
             SHARDORA_DEBUG("block hash exists %u_%u_%lu, height: %lu",
@@ -1549,7 +1550,6 @@ void Hotstuff::HandleSyncedViewBlock(
         // TODO: fix balance map and storage map
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
-        transport::MessagePtr msg_ptr;
         if (latest_qc_item_ptr_ == nullptr ||
                 vblock->qc().view() >= latest_qc_item_ptr_->view()) {
             if (IsQcTcValid(vblock->qc())) {
