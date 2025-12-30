@@ -48,7 +48,7 @@ void Hotstuff::Init() {
         pool_idx_);
     for (uint32_t network_id = network::kConsensusShardBeginNetworkId;
             network_id < network::kConsensusShardEndNetworkId; ++network_id) {
-        if (network_id % pool_idx_ != 0) {
+        if (network_id % common::kImmutablePoolSize != pool_idx_) {
             continue;
         }
 
@@ -1623,7 +1623,7 @@ void Hotstuff::HandleSyncedViewBlock(
         TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
         // root_view_block_chain_->CommitSynced(vblock);
     } else {
-        if (vblock->qc().network_id() % pool_idx_ != 0) {
+        if (vblock->qc().network_id() % common::kImmutablePoolSize != pool_idx_) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u", vblock->qc().network_id(), pool_idx_);
             return;
         }
