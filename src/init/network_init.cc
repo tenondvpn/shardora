@@ -10,7 +10,6 @@
 #include <consensus/hotstuff/pacemaker.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
-#include <consensus/hotstuff/hotstuff_syncer.h>
 #include <consensus/consensus_utils.h>
 #include <functional>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_init.hpp>
