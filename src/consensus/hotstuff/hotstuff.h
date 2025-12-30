@@ -261,7 +261,7 @@ private:
     std::shared_ptr<IBlockWrapper> block_wrapper_;
     std::shared_ptr<ViewBlockChain> view_block_chain_;
     std::shared_ptr<ViewBlockChain> root_view_block_chain_;
-    std::unordered_map<uint32_t std::shared_ptr<ViewBlockChain>> cross_shard_view_block_chain_;
+    std::unordered_map<uint32_t, std::shared_ptr<ViewBlockChain>> cross_shard_view_block_chain_;
     std::shared_ptr<LeaderRotation> leader_rotation_;
     std::shared_ptr<ElectInfo> elect_info_;
     std::shared_ptr<db::Db> db_ = nullptr;
