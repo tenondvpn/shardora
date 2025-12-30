@@ -675,11 +675,11 @@ std::string ViewBlockChain::String() const {
 
 // 获取 db 中最新块的信息和它的 QC
 Status GetLatestViewBlockFromDb(
+    uint32_t sharding_id,
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
-    uint32_t sharding_id = common::GlobalInfo::Instance()->network_id();
     pools::protobuf::PoolLatestInfo pool_info;
     if (!prefix_db->GetLatestPoolInfo(
             sharding_id,

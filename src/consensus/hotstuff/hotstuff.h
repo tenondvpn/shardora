@@ -196,7 +196,9 @@ public:
         bool has_system_tx);
 
 private:
-    void InitAddNewViewBlock(std::shared_ptr<ViewBlock>& view_block);
+    void InitAddNewViewBlock(
+        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        std::shared_ptr<ViewBlock>& view_block);
     Status HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
@@ -252,6 +254,10 @@ private:
         common::BftMemberPtr leader, 
         std::shared_ptr<transport::TransportMessage>& hotstuff_msg, 
         const MsgType msg_type);
+    void InitLoadLatestBlock(
+        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        uint32_t network_id, 
+        uint32_t pool_index);
     // 是否允许空交易
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
     // 获取该 Leader 要增加的 consensus stat succ num

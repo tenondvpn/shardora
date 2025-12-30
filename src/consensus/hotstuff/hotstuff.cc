@@ -24,16 +24,72 @@ std::atomic<uint32_t> Hotstuff::sendout_bft_message_count_ = 0;
 void Hotstuff::Init() {
     // set pacemaker timeout callback function
     last_vote_view_ = 0lu;
+    InitLoadLatestBlock(
+        view_block_chain_,
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_);
+    if (root_view_block_chain_ == nullptr) {
+        root_view_block_chain_ = std::make_shared<ViewBlockChain>();
+        root_view_block_chain_->Init(
+            kCrossRootChian,
+            vblock->qc().network_id(),
+            db_,
+            block_mgr_,
+            nullptr,
+            kv_sync_,
+            nullptr,
+            nullptr,
+            new_block_cache_callback_);
+    }
+
+    InitLoadLatestBlock(
+        root_view_block_chain_,
+        network::kRootCongressNetworkId, 
+        pool_idx_);
+    for (uint32_t network_id = network::kConsensusShardBeginNetworkId;
+            network_id < network::kConsensusShardEndNetworkId; ++network_id) {
+        if (network_id % pool_idx_ != 0) {
+            continue;
+        }
+
+        if (network::IsSameShardOrSameWaitingPool(
+                common::GlobalInfo::Instance()->network_id(), 
+                network_id)) {
+            continue;
+        }
+
+        auto chain = std::make_shared<ViewBlockChain>();
+        chain->Init(
+            kCrossShardingChain,
+            network_id,
+            db_,
+            block_mgr_,
+            nullptr,
+            kv_sync_,
+            nullptr,
+            nullptr,
+            new_block_cache_callback_);
+        cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
+        InitLoadLatestBlock(
+            chain,
+            network_id, 
+            common::kImmutablePoolSize);
+    }
+}
+
+void Hotstuff::InitLoadLatestBlock(
+        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        uint32_t network_id, uint32_t pool_index) {
     auto latest_view_block = std::make_shared<ViewBlock>();
     // 从 db 中获取最后一个有 QC 的 ViewBlock
-    Status s = GetLatestViewBlockFromDb(db_, pool_idx_, latest_view_block);
+    Status s = GetLatestViewBlockFromDb(network_id, db_, pool_index, latest_view_block);
     if (s == Status::kSuccess) {
         auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
-        view_block_chain_->Store(latest_view_block, false, balane_map_ptr, nullptr, true);
-        auto temp_ptr = view_block_chain_->Get(latest_view_block->qc().view_block_hash());
+        view_block_chain->Store(latest_view_block, false, balane_map_ptr, nullptr, true);
+        auto temp_ptr = view_block_chain->Get(latest_view_block->qc().view_block_hash());
         assert(temp_ptr);
-        view_block_chain_->SetLatestCommittedBlock(temp_ptr);
-        InitAddNewViewBlock(latest_view_block);
+        view_block_chain->SetLatestCommittedBlock(temp_ptr);
+        InitAddNewViewBlock(view_block_chain, latest_view_block);
         auto parent_hash = latest_view_block->parent_hash();
         while (!parent_hash.empty()) {
             ViewBlock view_block;
@@ -51,19 +107,21 @@ void Hotstuff::Init() {
             parent_hash = view_block.parent_hash();
         }
     } else {
-        SHARDORA_DEBUG("no genesis, waiting for syncing, pool_idx: %d", pool_idx_);
+        SHARDORA_DEBUG("no genesis, waiting for syncing, network: %lu, pool_idx: %d", network_id, pool_index);
     }
 }
-    
-void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block) {
+
+void Hotstuff::InitAddNewViewBlock(
+        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        std::shared_ptr<ViewBlock>& latest_view_block) {
     SHARDORA_DEBUG("pool: %d, latest vb from db, vb view: %lu",
         pool_idx_, 
         latest_view_block->qc().view());
     // 初始状态，使用 db 中最后一个 view_block 初始化视图链
     // TODO: check valid
     auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
-    view_block_chain_->Store(latest_view_block, true, balane_map_ptr, nullptr, true);
-    view_block_chain_->UpdateHighViewBlock(latest_view_block->qc());
+    view_block_chain->Store(latest_view_block, true, balane_map_ptr, nullptr, true);
+    view_block_chain->UpdateHighViewBlock(latest_view_block->qc());
     StopVoting(latest_view_block->qc().view());
     // 开启第一个视图
     SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu, hash: %s",
@@ -72,7 +130,9 @@ void Hotstuff::InitAddNewViewBlock(std::shared_ptr<ViewBlock>& latest_view_block
         latest_view_block->qc().pool_index(),
         latest_view_block->qc().view(),
         common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
-    pacemaker_->NewQcView(latest_view_block->qc().view());
+    if (network::IsSameToLocalShard(latest_view_block->qc().network_id())) {
+        pacemaker_->NewQcView(latest_view_block->qc().view());
+    }
 }
 
 Status Hotstuff::Start() {
@@ -1541,12 +1601,6 @@ void Hotstuff::HandleSyncedViewBlock(
         }
         
         pacemaker_->NewQcView(vblock->qc().view());
-        // auto latest_committed_block = view_block_chain()->LatestCommittedBlock();
-        // if (!latest_committed_block ||
-        //         latest_committed_block->qc().view() < vblock->qc().view()) {
-        //     view_block_chain()->SetLatestCommittedBlock(vblock);        
-        // }
-
         // TODO: fix balance map and storage map
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
@@ -1565,20 +1619,6 @@ void Hotstuff::HandleSyncedViewBlock(
             return;
         }
 
-        if (root_view_block_chain_ == nullptr) {
-            root_view_block_chain_ = std::make_shared<ViewBlockChain>();
-            root_view_block_chain_->Init(
-                kCrossRootChian,
-                vblock->qc().network_id(),
-                db_,
-                block_mgr_,
-                nullptr,
-                kv_sync_,
-                nullptr,
-                nullptr,
-                new_block_cache_callback_);
-        }
-
         root_view_block_chain_->Store(vblock, true, nullptr, nullptr, false);
         TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
         // root_view_block_chain_->CommitSynced(vblock);
@@ -1586,22 +1626,6 @@ void Hotstuff::HandleSyncedViewBlock(
         if (vblock->qc().network_id() % pool_idx_ != 0) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u", vblock->qc().network_id(), pool_idx_);
             return;
-        }
-
-        auto iter = cross_shard_view_block_chain_.find(vblock->qc().network_id());
-        if (iter == cross_shard_view_block_chain_.end()) {
-            auto chain = std::make_shared<ViewBlockChain>();
-            chain->Init(
-                kCrossShardingChain,
-                vblock->qc().network_id(),
-                db_,
-                block_mgr_,
-                nullptr,
-                kv_sync_,
-                nullptr,
-                nullptr,
-                new_block_cache_callback_);
-            cross_shard_view_block_chain_[vblock->qc().network_id()] = chain;
         }
 
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
