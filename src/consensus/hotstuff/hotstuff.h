@@ -4,6 +4,7 @@
 #else
 #include <consensus/hotstuff/crypto.h>
 #endif
+#include "consensus/consensus_utils.h"
 #include <consensus/hotstuff/block_acceptor.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/elect_info.h>
