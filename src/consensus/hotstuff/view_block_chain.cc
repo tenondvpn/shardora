@@ -49,11 +49,7 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
-    if (!init) {
-        return Status::kSuccess;
-    }
-
-    if (view_commited(view_block->qc().network_id(), view_block->qc().view())) {
+    if (!init && view_commited(view_block->qc().network_id(), view_block->qc().view())) {
         return Status::kSuccess;
     }
 
