@@ -114,7 +114,10 @@ void Hotstuff::InitLoadLatestBlock(
 void Hotstuff::InitAddNewViewBlock(
         std::shared_ptr<ViewBlockChain> view_block_chain, 
         std::shared_ptr<ViewBlock>& latest_view_block) {
-    SHARDORA_DEBUG("pool: %d, latest vb from db, vb view: %lu",
+    SHARDORA_DEBUG("%u_%u_%llu, now pool: %u latest vb from db, vb view: %lu",
+        latest_view_block->qc().network_id(),
+        latest_view_block->qc().pool_index(),
+        latest_view_block->qc().view(),
         pool_idx_, 
         latest_view_block->qc().view());
     // 初始状态，使用 db 中最后一个 view_block 初始化视图链
@@ -122,7 +125,6 @@ void Hotstuff::InitAddNewViewBlock(
     auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
     view_block_chain->Store(latest_view_block, true, balane_map_ptr, nullptr, true);
     view_block_chain->UpdateHighViewBlock(latest_view_block->qc());
-    StopVoting(latest_view_block->qc().view());
     // 开启第一个视图
     SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu, hash: %s",
         latest_view_block->qc().view(),
@@ -131,6 +133,7 @@ void Hotstuff::InitAddNewViewBlock(
         latest_view_block->qc().view(),
         common::Encode::HexEncode(latest_view_block->qc().view_block_hash()).c_str());
     if (network::IsSameToLocalShard(latest_view_block->qc().network_id())) {
+        StopVoting(latest_view_block->qc().view());
         pacemaker_->NewQcView(latest_view_block->qc().view());
     }
 }
@@ -2100,9 +2103,6 @@ void Hotstuff::TryRecoverFromStuck(
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    // SHARDORA_DEBUG("now timeout reset get tx sync to leader.");
-    // 存在内置交易或普通交易时尝试 reset timer
-    // TODO 发送 PreResetPacemakerTimerMsg To Leader
     auto trans_msg = std::make_shared<transport::TransportMessage>();
     auto& header = trans_msg->header;
     auto* hotstuff_msg = header.mutable_hotstuff();
