@@ -899,11 +899,6 @@ void NetworkInit::SaveLatestBlock(std::shared_ptr<db::Db> db, uint32_t sharding_
     }
 
     defer(fclose(fd));
-    if (!db->Init(std::string("./shard_db_") + std::to_string(sharding_id))) {
-        SHARDORA_FATAL("init db failed!");
-        return;
-    }
-
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     for (uint64_t i = 0; i < 128llu; i++) {
         SHARDORA_DEBUG("save block height: %u_%u_%llu", sharding_id, common::kGlobalPoolIndex, i);
