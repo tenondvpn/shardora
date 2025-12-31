@@ -783,10 +783,6 @@ void NetworkInit::CreateInitAddress(uint32_t net_id) {
 }
 
 int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name) {
-    if (!parser_arg.Has("U") && !parser_arg.Has("S")) {
-        return -1;
-    }
-
     int consensus_shard_node_count = 4;
     if (parser_arg.Has("N")) {
         if (parser_arg.Get("N", consensus_shard_node_count) != common::kParseSuccess) {
