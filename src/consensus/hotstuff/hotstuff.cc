@@ -48,9 +48,9 @@ void Hotstuff::Init() {
         pool_idx_);
     for (uint32_t network_id = network::kConsensusShardBeginNetworkId;
             network_id < network::kConsensusShardEndNetworkId; ++network_id) {
-        if (network_id % common::kImmutablePoolSize != pool_idx_) {
-            continue;
-        }
+        // if (network_id % common::kImmutablePoolSize != pool_idx_) {
+        //     continue;
+        // }
 
         if (network::IsSameShardOrSameWaitingPool(
                 common::GlobalInfo::Instance()->network_id(), 
