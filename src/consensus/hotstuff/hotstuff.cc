@@ -32,7 +32,7 @@ void Hotstuff::Init() {
         root_view_block_chain_ = std::make_shared<ViewBlockChain>();
         root_view_block_chain_->Init(
             kCrossRootChian,
-            network::kRootCongressNetworkId,
+            pool_idx_,
             db_,
             block_mgr_,
             nullptr,
