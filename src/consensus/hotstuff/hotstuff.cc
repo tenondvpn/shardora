@@ -74,6 +74,7 @@ void Hotstuff::Init() {
             chain,
             network_id, 
             common::kImmutablePoolSize);
+        SHARDORA_DEBUG("now init cross consensus shard: %u", network_id);
     }
 }
 

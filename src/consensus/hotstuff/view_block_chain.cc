@@ -815,7 +815,7 @@ std::string ViewBlockChain::String() const {
 
 // 获取 db 中最新块的信息和它的 QC
 Status GetLatestViewBlockFromDb(
-    uint32_t sharding_id,
+        uint32_t sharding_id,
         const std::shared_ptr<db::Db>& db,
         const uint32_t& pool_index,
         std::shared_ptr<ViewBlock>& view_block) {
