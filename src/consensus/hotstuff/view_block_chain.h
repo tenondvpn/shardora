@@ -93,10 +93,8 @@ public:
     void HandleTimerMessage();
     std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
     bool view_commited(uint32_t network_id, View view) const {
-        if (network_id == common::GlobalInfo::Instance()->network_id()) {
-            if (commited_view_.find(view) != commited_view_.end()) {
-                return true;
-            }
+        if (commited_view_.find(view) != commited_view_.end()) {
+            return true;
         }
 
         if (prefix_db_->ViewBlockIsValidView(network_id, pool_index_, view)) {

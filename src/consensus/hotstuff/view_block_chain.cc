@@ -440,28 +440,16 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     std::shared_ptr<ViewBlockInfo> latest_commited_block = nullptr; 
     for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
         auto tmp_block = (*iter)->view_block;
-        if (tmp_block->block_info().tx_list_size() > 0 && tmp_block->block_info().tx_list(0).step() == 18) {
-            SHARDORA_INFO("now commit view block %u_%u_%lu, hash: %s, parent hash: %s, step: %d, statistic_height: %lu", 
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(), 
-                tmp_block->qc().view(),
-                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
-                tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
-                0);
-        } else {
-            SHARDORA_INFO("now commit view block %u_%u_%lu, hash: %s, "
-                "parent hash: %s, step: %d, statistic_height: %lu, tx size: %u", 
-                tmp_block->qc().network_id(), 
-                tmp_block->qc().pool_index(), 
-                tmp_block->qc().view(),
-                common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
-                common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
-                tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
-                0,
-                tmp_block->block_info().tx_list_size());
-        }
-        
+        SHARDORA_INFO("now commit view block %u_%u_%lu, hash: %s, "
+            "parent hash: %s, step: %d, statistic_height: %lu, tx size: %u", 
+            tmp_block->qc().network_id(), 
+            tmp_block->qc().pool_index(), 
+            tmp_block->qc().view(),
+            common::Encode::HexEncode(tmp_block->qc().view_block_hash()).c_str(),
+            common::Encode::HexEncode(tmp_block->parent_hash()).c_str(),
+            tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
+            0,
+            tmp_block->block_info().tx_list_size());
         ADD_DEBUG_PROCESS_TIMESTAMP();
         assert((*iter)->zjc_host_ptr);
         auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
@@ -588,7 +576,7 @@ void ViewBlockChain::HandleTimerMessage() {
 }
 
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
-    if (high_view_block_ && high_view_block_->qc().view() <= (qc.view() + 2)) {
+    if (high_view_block_ && high_view_block_->qc().view() <= (qc.view() + 1)) {
         return nullptr;
     }
 
