@@ -476,14 +476,14 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         view_blocks_info_.erase(tmp_block->parent_hash());
-        auto test_iter = view_with_blocks_.begin();
-        while (test_iter != view_with_blocks_.end()) {
-            if (test_iter->first > tmp_block->qc().view()) {
-                break;
-            }
+        // auto test_iter = view_with_blocks_.begin();
+        // while (test_iter != view_with_blocks_.end()) {
+        //     if (test_iter->first > tmp_block->qc().view()) {
+        //         break;
+        //     }
 
-            test_iter = view_with_blocks_.erase(test_iter);
-        }
+        //     test_iter = view_with_blocks_.erase(test_iter);
+        // }
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (block_acceptor_) {
             block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
