@@ -914,7 +914,7 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
 
         auto data = common::Encode::HexEncode(view_block_item.SerializeAsString());
         fwrite(data.c_str(), 1, data.size(), fd);
-        fwrite(fd, "\n", 1, 1);
+        fwrite("\n", 1, 1, fd);
     }
 
     fflush(fd);
