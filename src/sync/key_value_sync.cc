@@ -75,7 +75,8 @@ void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& ms
         if (pb_vblock) {
             if (!network::IsSameShardOrSameWaitingPool(
                     network::kRootCongressNetworkId, 
-                    network_id) && !network::IsSameToLocalShard(network_id)) {
+                    pb_vblock->qc().network_id()) && 
+                    !network::IsSameToLocalShard(pb_vblock->qc().network_id())) {
                 hotstuff_mgr_->hotstuff(pb_vblock->qc().network_id())->HandleSyncedViewBlock(
                     pb_vblock);
             } else {
