@@ -556,7 +556,9 @@ void ViewBlockChain::HandleTimerMessage() {
             if (view_commited(
                     common::GlobalInfo::Instance()->network_id(), 
                     iter->first)) {
-                iter = view_with_blocks_.erase(iter);
+                auto it_to_erase = std::next(iter).base();
+                auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
+                iter = std::make_reverse_iterator(next_valid_forward);
                 continue
             }
             
@@ -565,7 +567,9 @@ void ViewBlockChain::HandleTimerMessage() {
                 auto view_block_ptr = CheckCommit(*block_iter);
                 if (view_block_ptr) {
                     Commit(view_block_ptr);
-                    iter = view_with_blocks_.erase(iter);
+                    auto it_to_erase = std::next(iter).base();
+                    auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
+                    iter = std::make_reverse_iterator(next_valid_forward);
                     commited = true;
                     break;
                 }
