@@ -96,8 +96,8 @@ void KeyValueSync::BroadcastGlobalBlock() {
             res->set_pool_idx(view_block_ptr->qc().pool_index());
             res->set_height(view_block_ptr->qc().view());
             res->set_value(view_block_ptr->SerializeAsString());
-            res->set_key(key);
-            res->set_tag(kViewHash);
+            res->set_key("");
+            res->set_tag(kBlockHeight);
             add_size += 16 + res->value().size();
             SHARDORA_DEBUG("handle sync value view add add_size: %u  "
                 "net: %u, pool: %u, height: %lu",
@@ -565,12 +565,13 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             }
          
             assert(!pb_vblock->qc().sign_x().empty());
-            SHARDORA_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
+            SHARDORA_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s, is broadcast: %d", 
                 pb_vblock->qc().network_id(),
                 pb_vblock->qc().pool_index(),
                 pb_vblock->qc().view(),
                 pb_vblock->block_info().height(),
-                (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()));
+                (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()),
+                iter->key().empty());
             res_map[pb_vblock->qc().network_id()][pb_vblock->qc().view()] = pb_vblock;
         } while (0);
 
