@@ -887,6 +887,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 
     if (parser_arg.Has("C")) {
         SaveCrossBlockToEachShard();
+        return kInitSuccess;
     }
     return -1;
 }
