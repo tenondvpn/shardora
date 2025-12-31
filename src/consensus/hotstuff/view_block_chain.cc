@@ -564,7 +564,7 @@ void ViewBlockChain::HandleTimerMessage() {
             
             bool commited = false;
             for (auto block_iter = iter->second.begin(); block_iter != iter->second.end(); ++block_iter) {
-                auto view_block_ptr = CheckCommit(*block_iter);
+                auto view_block_ptr = CheckCommit((*block_iter)->view_block->qc());
                 if (view_block_ptr) {
                     Commit(view_block_ptr);
                     auto it_to_erase = std::next(iter).base();
