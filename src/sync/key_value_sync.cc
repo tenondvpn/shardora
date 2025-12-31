@@ -511,7 +511,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 assert(false);
                 break;
             }
-    
          
             assert(!pb_vblock->qc().sign_x().empty());
             SHARDORA_DEBUG("0 success handle network new view block: %u_%u_%lu, height: %lu key: %s", 
@@ -536,6 +535,11 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             auto thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(
                 pb_vblock->qc().pool_index());
             vblock_queues_[thread_idx].push(pb_vblock);
+            SHARDORA_DEBUG("1 success handle network new view block: %u_%u_%lu, height: %lu ", 
+                pb_vblock->qc().network_id(),
+                pb_vblock->qc().pool_index(),
+                pb_vblock->qc().view(),
+                pb_vblock->block_info().height());
         }
     }
 }
