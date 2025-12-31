@@ -938,7 +938,7 @@ void NetworkInit::SaveCrossBlockToEachShard() {
         blocks.push_back(block_item);
     }
 
-    for (uint32_t net_i = network::kConsensusShardBeginNetworkId;
+    for (uint32_t net_i = network::kRootCongressNetworkId;
             net_i < network::kConsensusShardEndNetworkId; net_i++) {
         auto db = std::make_shared<db::Db>();
         if (!db->Init(std::string("./shard_db_") + std::to_string(net_i))) {
