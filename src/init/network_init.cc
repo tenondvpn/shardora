@@ -892,7 +892,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
 }
 
 void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
-    FILE* fd = fopen("./latest_blocks", "a");
+    FILE* fd = fopen("./latest_blocks", "a+");
     if (fd == nullptr) {
         SHARDORA_FATAL("open latest_blocks failed!");
         return;
@@ -901,12 +901,13 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
     defer(fclose(fd));
     auto db = std::make_shared<db::Db>();
     if (!db->Init(std::string("./shard_db_") + std::to_string(sharding_id))) {
-        INIT_ERROR("init db failed!");
+        INIT_FATAL("init db failed!");
         return;
     }
 
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     for (uint64_t i = 0; i < 128llu; i++) {
+        SHARDORA_DEBUG("save block height: %u_%u_%llu", sharding_id, common::kGlobalPoolIndex, i);
         view_block::protobuf::ViewBlockItem view_block_item;
         if (!prefix_db->GetBlockWithHeight(sharding_id, common::kGlobalPoolIndex, i, &view_block_item)) {
             return;
@@ -915,6 +916,8 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
         auto data = common::Encode::HexEncode(view_block_item.SerializeAsString());
         fwrite(data.c_str(), 1, data.size(), fd);
         fwrite("\n", 1, 1, fd);
+        SHARDORA_DEBUG("success save block height: %u_%u_%lu", 
+            sharding_id, common::kGlobalPoolIndex, i);
     }
 
     fflush(fd);
@@ -941,9 +944,18 @@ void NetworkInit::SaveCrossBlockToEachShard() {
     for (uint32_t net_i = network::kRootCongressNetworkId;
             net_i < network::kConsensusShardEndNetworkId; net_i++) {
         auto db = std::make_shared<db::Db>();
-        if (!db->Init(std::string("./shard_db_") + std::to_string(net_i))) {
-            INIT_WARN("init db failed!");
-            return;
+        if (net_i == network::kRootCongressNetworkId) {
+            if (!db->Init(std::string("./root_db"))) {
+                if (!db->Init(std::string("./shard_db_") + std::to_string(net_i))) {
+                    INIT_WARN("init db failed!");
+                    return;
+                }
+            }
+        } else {
+            if (!db->Init(std::string("./shard_db_") + std::to_string(net_i))) {
+                INIT_WARN("init db failed!");
+                return;
+            }
         }
 
         auto prefix_db = std::make_shared<protos::PrefixDb>(db);
