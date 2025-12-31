@@ -199,6 +199,7 @@ enum VipLevel {
 static const uint32_t kUnicastAddressLength = 20u;
 static const uint32_t kPreypamentAddressLength = 40u;
 static const uint32_t kImmutablePoolSize = 32u;
+static const uint32_t kGlobalPoolIndex = kImmutablePoolSize;
 static const uint32_t kMaxTxCount = 14480u;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;

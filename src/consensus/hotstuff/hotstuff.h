@@ -262,6 +262,8 @@ private:
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
     // 获取该 Leader 要增加的 consensus stat succ num
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
+    void BroadcastGlobalPoolBlock(const std::shared_ptr<ViewBlock>& v_block);
+    void HandleTimerMessage();
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 15000lu;
 

@@ -81,6 +81,7 @@ public:
 };
 
 typedef std::shared_ptr<SyncItem> SyncItemPtr;
+typedef std::shared_ptr<view_block::protobuf::ViewBlockItem> ViewBlockPtr;
 
 class KeyValueSync {
 public:
@@ -104,6 +105,11 @@ public:
     void HandleMessage(const transport::MessagePtr& msg);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
+    void AddBroadcastGlobalBlock(const ViewBlockPtr& pb_vblock) {
+        // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        // broadcast_global_blocks_queues_[thread_idx].push(pb_vblock);
+    }
+
     void OnNewElectBlock(uint32_t sharding_id, uint64_t height) {
         if (height > elect_net_heights_map_[sharding_id]) {
             elect_net_heights_map_[sharding_id] = height;
@@ -113,11 +119,6 @@ public:
             max_sharding_id_ = sharding_id;
         }
     }
-
-    // common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>>& vblock_queue() {
-    //     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    //     return vblock_queues_[thread_idx];
-    // }
 
 private:
     void CheckSyncTimeout();
@@ -138,6 +139,7 @@ private:
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res,
         uint32_t& add_size);
+    void BroadcastGlobalBlock();
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 3000000lu;
@@ -146,6 +148,7 @@ private:
     static const uint32_t kSyncCount = 5u;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<ViewBlockPtr> broadcast_global_blocks_queues_[common::kMaxThreadCount];
     common::UniqueMap<std::string, SyncItemPtr, kCacheSyncKeyValueCount> synced_map_;
     common::Tick kv_tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
@@ -153,7 +156,7 @@ private:
     common::UniqueSet<std::string, kCacheSyncKeyValueCount> responsed_keys_;
     uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     ViewBlockSyncedCallback view_block_synced_callback_ = nullptr;
-    common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> vblock_queues_[common::kMaxThreadCount];
+    common::ThreadSafeQueue<ViewBlockPtr> vblock_queues_[common::kMaxThreadCount];
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     std::mutex wait_mutex_;
     std::condition_variable wait_con_;

@@ -567,8 +567,9 @@ void ViewBlockChain::HandleTimerMessage() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {
         for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-            if (ViewBlockIsCheckedParentHash(iter->second->view_block->qc().view_block_hash())) {
-                Commit(iter->second);
+            auto view_block_ptr = CheckCommit(iter->second->view_block->qc());
+            if (view_block_ptr) {
+                Commit(view_block_ptr);
                 // next turn
                 return;
             }
@@ -584,6 +585,120 @@ void ViewBlockChain::HandleTimerMessage() {
 
         prev_check_timeout_blocks_ms_ = now_tm_ms;
     }
+}
+
+std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
+    // fast hotstuff
+    assert(!qc.view_block_hash().empty());
+    auto v_block1_info = Get(qc.view_block_hash());
+    if (!v_block1_info) {
+        SHARDORA_DEBUG("pool: %d, Failed get v block 1: %s, %u_%u_%lu",
+            pool_idx_,
+            common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+            qc.network_id(), qc.pool_index(), qc.view());
+        if (!view_commited(qc.network_id(), qc.view())) {
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
+        }
+        // assert(false);
+        return nullptr;
+    }
+
+    if (ViewBlockIsCheckedParentHash(qc.view_block_hash())) {
+        return v_block1_info;
+    }
+
+    auto v_block1 = v_block1_info->view_block;
+#ifndef NDEBUG
+    transport::protobuf::ConsensusDebug cons_debug;
+    cons_debug.ParseFromString(v_block1->debug());
+    SHARDORA_DEBUG("pool: %d, success get v block 1: %s, %u_%u_%lu, propose_debug: %s",
+        pool_idx_,
+        common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+        qc.network_id(), qc.pool_index(), qc.view(), ProtobufToJson(cons_debug).c_str());
+#endif
+    assert(v_block1->parent_hash() != qc.view_block_hash());
+    auto v_block2_info = Get(v_block1->parent_hash());
+    if (!v_block2_info) {
+        SHARDORA_DEBUG("pool: %d, Failed get v block 2 block hash: %s, %u_%u_%lu, now chain: %s", 
+            pool_idx_,
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(), 
+            qc.network_id(), 
+            qc.pool_index(), 
+            v_block1->qc().view() - 1,
+            view_block_chain_->String().c_str());
+        if (v_block1->qc().view() > 0 && !view_commited(
+                v_block1->qc().network_id(), v_block1->qc().view() - 1)) {
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block1->parent_hash(), 0);
+        }
+        return nullptr;
+    }
+
+    auto v_block2 = v_block2_info->view_block;
+    if (v_block2->qc().view() + 1 != v_block1->qc().view()) {
+        SHARDORA_DEBUG("pool: %d, Failed get v block 2 ref: %s, "
+            "v_block2->qc().view() + 1 != v_block1->qc().view(): %lu, %lu",
+            pool_idx_,
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+            v_block2->qc().view(), 
+            v_block1->qc().view());
+        return nullptr;
+    }
+
+#ifndef NDEBUG
+    transport::protobuf::ConsensusDebug cons_debug2;
+    cons_debug2.ParseFromString(v_block2->debug());
+    SHARDORA_DEBUG("pool: %d, success get v block 2: %s, %u_%u_%lu, propose_debug: %s",
+        pool_idx_,
+        common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
+        v_block2->qc().network_id(), v_block2->qc().pool_index(), 
+        v_block2->qc().view(), ProtobufToJson(cons_debug2).c_str());
+#endif
+
+    auto v_block3_info = Get(v_block2->parent_hash());
+    if (!v_block3_info) {
+        SHARDORA_DEBUG("pool: %d, Failed get v block 3 block hash: %s, %u_%u_%lu, now chain: %s", 
+            pool_idx_,
+            common::Encode::HexEncode(v_block2->parent_hash()).c_str(), 
+            qc.network_id(), 
+            qc.pool_index(), 
+            v_block2->qc().view() - 1,
+            view_block_chain_->String().c_str());
+        if (v_block2->qc().view() > 0 && !view_commited(
+                v_block2->qc().network_id(), v_block2->qc().view() - 1)) {
+            kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
+        }
+        return nullptr;
+    }
+    
+    auto v_block3 = v_block3_info->view_block;
+#ifndef NDEBUG
+    transport::protobuf::ConsensusDebug cons_debug3;
+    cons_debug3.ParseFromString(v_block2->debug());
+    SHARDORA_DEBUG("pool: %d, success get v block views: %lu, %lu, %lu, hash: %s, %s, %s, %s, %s, now: %s, propose_debug: %s",
+        pool_idx_,
+        v_block1->qc().view(),
+        v_block2->qc().view(),
+        v_block3->qc().view(),
+        common::Encode::HexEncode(v_block1->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+        common::Encode::HexEncode(v_block2->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(v_block2->parent_hash()).c_str(),
+        common::Encode::HexEncode(v_block3->qc().view_block_hash()).c_str(),
+        common::Encode::HexEncode(qc.view_block_hash()).c_str(),
+        ProtobufToJson(cons_debug3).c_str());
+#endif
+    // fast hotstuff
+    if (v_block3->qc().view() + 1 != v_block2->qc().view()) {
+        SHARDORA_DEBUG("pool: %d, Failed get v block 2 ref: %s, "
+            "v_block3->qc().view() + 1 != v_block2->qc().view(): %lu, %lu",
+            pool_idx_,
+            common::Encode::HexEncode(v_block1->parent_hash()).c_str(),
+            v_block3->qc().view(),
+            v_block2->qc().view());
+        return nullptr;
+    }
+
+    return v_block3_info;
 }
 
 void ViewBlockChain::AddNewBlock(

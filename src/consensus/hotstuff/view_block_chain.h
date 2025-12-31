@@ -91,6 +91,7 @@ public:
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     void HandleTimerMessage();
+    std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
     bool view_commited(uint32_t network_id, View view) const {
         if (network_id == common::GlobalInfo::Instance()->network_id()) {
             if (commited_view_.find(view) != commited_view_.end()) {

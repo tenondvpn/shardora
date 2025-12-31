@@ -76,7 +76,59 @@ void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& ms
             hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
                     pb_vblock);
         }
-    }    
+    }
+
+    BroadcastGlobalBlock();
+}
+
+void KeyValueSync::BroadcastGlobalBlock() {
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> view_block_ptr = nullptr;
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    protobuf::SyncMessage& res_sync_msg = *msg.mutable_sync_proto();
+    auto sync_res = res_sync_msg.mutable_sync_value_res();
+    uint32_t add_size = 0;
+    while (broadcast_global_blocks_queues_[thread_idx].pop(&view_block_ptr)) {
+        if (view_block_ptr) {
+            auto res = sync_res->add_res();
+            res->set_network_id(view_block_ptr->qc().network_id());
+            res->set_pool_idx(view_block_ptr->qc().pool_index());
+            res->set_height(view_block_ptr->qc().view());
+            res->set_value(view_block_ptr->SerializeAsString());
+            res->set_key(key);
+            res->set_tag(kViewHash);
+            add_size += 16 + res->value().size();
+            SHARDORA_DEBUG("handle sync value view add add_size: %u  "
+                "net: %u, pool: %u, height: %lu",
+                add_size,
+                res->network_id(),
+                res->pool_idx(),
+                res->height());
+            if (add_size >= kSyncPacketMaxSize) {
+                SHARDORA_DEBUG("handle sync value view add_size failed "
+                    "net: %u, pool: %u, height: %lu",
+                    res->network_id(),
+                    res->pool_idx(),
+                    res->height());
+                break;
+            }
+        }
+    }
+
+    if (add_size == 0) {
+        return;
+    }
+
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(network::kNodeNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kSyncMessage);
+    auto* broadcast = msg.mutable_broadcast();
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    network::Route::Instance()->Send(msg_ptr);
+    SHARDORA_DEBUG("sync global block ok des: %u, des hash64: %lu",
+        network::kNodeNetworkId, msg.hash64());
 }
 
 void KeyValueSync::AddSyncViewHash(
