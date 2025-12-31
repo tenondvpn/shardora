@@ -73,8 +73,15 @@ void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& ms
     std::shared_ptr<view_block::protobuf::ViewBlockItem> pb_vblock = nullptr;
     while (vblock_queues_[thread_idx].pop(&pb_vblock)) {
         if (pb_vblock) {
-            hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
+            if (!network::IsSameShardOrSameWaitingPool(
+                    network::kRootCongressNetworkId, 
+                    network_id) && !network::IsSameToLocalShard(network_id)) {
+                hotstuff_mgr_->hotstuff(pb_vblock->qc().network_id())->HandleSyncedViewBlock(
                     pb_vblock);
+            } else {
+                hotstuff_mgr_->hotstuff(pb_vblock->qc().pool_index())->HandleSyncedViewBlock(
+                    pb_vblock);
+            }
         }
     }
 
@@ -587,6 +594,12 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             auto pb_vblock = iter2->second;
             auto thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(
                 pb_vblock->qc().pool_index());
+            if (!network::IsSameShardOrSameWaitingPool(
+                    network::kRootCongressNetworkId, 
+                    network_id) && !network::IsSameToLocalShard(network_id)) {
+                thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(network_id);
+            }
+            
             vblock_queues_[thread_idx].push(pb_vblock);
             SHARDORA_DEBUG("1 success handle network new view block: %u_%u_%lu, height: %lu ", 
                 pb_vblock->qc().network_id(),
