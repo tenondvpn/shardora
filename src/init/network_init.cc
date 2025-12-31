@@ -898,14 +898,11 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
         return;
     }
 
-    defer {
-        fclose(fd);
-    };
-
+    defer(fclose(fd));
     auto db = std::make_shared<db::Db>();
     if (!db->Init(std::string("./shard_db_") + std::to_string(sharding_id))) {
         INIT_ERROR("init db failed!");
-        return kInitError;
+        return;
     }
 
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
@@ -917,7 +914,7 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
 
         auto data = common::Encode::HexEncode(view_block_item.SerializeAsString());
         fwrite(data.c_str(), 1, data.size(), fd);
-        fwrite(fd, "\n", 1);
+        fwrite(fd, "\n", 1, 1);
     }
 
     fflush(fd);
@@ -930,15 +927,12 @@ void NetworkInit::SaveCrossBlockToEachShard() {
         return;
     }
 
-    defer {
-        fclose(fd);
-    };
-
+    defer(fclose(fd));
     std::vector<view_block::protobuf::ViewBlockItem> blocks;
     char line_buf[1024 * 1024];
     while (fgets(line_buf, sizeof(line_buf), fd) != nullptr) {
         std::string line(line_buf);
-        line = common::StringUtils::Strip(line, "\n");
+        common::StringUtil::Trim(line);
         view_block::protobuf::ViewBlockItem block_item;
         block_item.ParseFromString(common::Encode::HexDecode(line));
         blocks.push_back(block_item);
@@ -948,23 +942,22 @@ void NetworkInit::SaveCrossBlockToEachShard() {
             net_i < network::kConsensusShardEndNetworkId; net_i++) {
         auto db = std::make_shared<db::Db>();
         if (!db->Init(std::string("./shard_db_") + std::to_string(net_i))) {
-            INIT_ERROR("init db failed!");
-            return kInitError;
+            INIT_WARN("init db failed!");
+            return;
         }
 
         auto prefix_db = std::make_shared<protos::PrefixDb>(db);
         db::DbWriteBatch batch;
         for (auto iter = blocks.begin(); iter != blocks.end(); ++iter) {
-            prefix_db->SaveBlock(*iter, &batch);
+            prefix_db->SaveBlock(*iter, batch);
             auto& view_block = *iter;
-            auto& block = block.block_info();
             pools::protobuf::PoolLatestInfo pool_info;
-            pool_info.set_height(block.height());
+            pool_info.set_height(view_block.block_info().height());
             pool_info.set_hash(view_block.qc().view_block_hash());
-            pool_info.set_timestamp(block.timestamp());
+            pool_info.set_timestamp(view_block.block_info().timestamp());
             pool_info.set_view(view_block.qc().view());
             prefix_db->SaveLatestPoolInfo(
-                view_block.qc().network_id(), view_block.qc().pool_index(), pool_info, db_batch);
+                view_block.qc().network_id(), view_block.qc().pool_index(), pool_info, batch);
         }
 
         auto st = db->Put(batch);
