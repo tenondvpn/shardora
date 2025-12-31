@@ -419,7 +419,7 @@ void Hotstuff::BroadcastGlobalPoolBlock(const std::shared_ptr<ViewBlock>& v_bloc
         return;
     }
 
-    kv_sync_->BroadcastGlobalPoolBlock(v_block);
+    kv_sync_->AddBroadcastGlobalBlock(v_block);
 }
 
 void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
