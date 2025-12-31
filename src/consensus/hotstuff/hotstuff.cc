@@ -159,8 +159,7 @@ Status Hotstuff::Propose(
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    // TODO(HT): 打包的交易，超时后如何释放？
-    // 打包参与共识中的交易，如何保证幂等
+    ZJC_DEBUG("pool: %d, called propose!", pool_idx_);
     auto btime = common::TimeUtils::TimestampMs();
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
