@@ -846,8 +846,9 @@ Status GetLatestViewBlockFromDb(
         return Status::kError;
     }
 
-    SHARDORA_DEBUG("pool: %d, latest vb from db2, hash: %s, view: %lu, "
+    SHARDORA_DEBUG("%u_%u_%lu, pool: %d, latest vb from db2, hash: %s, view: %lu, "
         "leader: %d, parent_hash: %s, sign x: %s, sign y: %s",
+        sharding_id, pool_index, pb_view_block.qc().view(),
         pool_index,
         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
         pb_view_block.qc().view(), pb_view_block.qc().leader_idx(),

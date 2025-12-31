@@ -58,6 +58,7 @@ void Hotstuff::Init() {
             continue;
         }
 
+        SHARDORA_DEBUG("now init cross consensus shard: %u begin.", network_id);
         auto chain = std::make_shared<ViewBlockChain>();
         chain->Init(
             kCrossShardingChain,
@@ -74,7 +75,7 @@ void Hotstuff::Init() {
             chain,
             network_id, 
             common::kImmutablePoolSize);
-        SHARDORA_DEBUG("now init cross consensus shard: %u", network_id);
+        SHARDORA_DEBUG("now init cross consensus shard: %u end.", network_id);
     }
 }
 
@@ -109,6 +110,7 @@ void Hotstuff::InitLoadLatestBlock(
         }
     } else {
         SHARDORA_DEBUG("no genesis, waiting for syncing, network: %lu, pool_idx: %d", network_id, pool_index);
+        assert(false);
     }
 }
 
