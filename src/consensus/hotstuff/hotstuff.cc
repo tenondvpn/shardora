@@ -1530,11 +1530,11 @@ void Hotstuff::HandleSyncedViewBlock(
         TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
         // root_view_block_chain_->CommitSynced(vblock);
     } else {
-        if (vblock->qc().network_id() % common::kImmutablePoolSize != pool_idx_) {
-            SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u",
-                vblock->qc().network_id(), pool_idx_);
-            return;
-        }
+        // if (vblock->qc().network_id() % common::kImmutablePoolSize != pool_idx_) {
+        //     SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u",
+        //         vblock->qc().network_id(), pool_idx_);
+        //     return;
+        // }
 
         auto cross_view_block_chain = cross_shard_view_block_chain_[vblock->qc().network_id()];
         cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
