@@ -881,7 +881,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             return kInitError;
         }
 
-        SaveLatestBlock(net_id);
+        SaveLatestBlock(db, net_id);
         return kInitSuccess;
     }
 
@@ -891,7 +891,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     return -1;
 }
 
-void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
+void NetworkInit::SaveLatestBlock(std::shared_ptr<db::Db> db, uint32_t sharding_id) {
     FILE* fd = fopen("./latest_blocks", "a+");
     if (fd == nullptr) {
         SHARDORA_FATAL("open latest_blocks failed!");
@@ -899,7 +899,6 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
     }
 
     defer(fclose(fd));
-    auto db = std::make_shared<db::Db>();
     if (!db->Init(std::string("./shard_db_") + std::to_string(sharding_id))) {
         SHARDORA_FATAL("init db failed!");
         return;
