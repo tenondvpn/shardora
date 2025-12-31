@@ -404,7 +404,7 @@ int NetworkInit::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    SHARDORA_DEBUG("common::kPoolTimerMessage coming.");
+    // SHARDORA_DEBUG("common::kPoolTimerMessage coming.");
     if (msg_ptr->header.type() == common::kPoolTimerMessage) {
         HandleNewBlock();
         bls_mgr_->PoolTimerMessage();

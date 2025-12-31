@@ -61,7 +61,7 @@ void BlsManager::PoolTimerMessage() {
         PopFinishMessage();
         auto tmp_bls = waiting_bls_.load();
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        SHARDORA_WARN("BlsManager handle message begin.");
+        // SHARDORA_WARN("BlsManager handle message begin.");
         if (tmp_bls != nullptr) {
             tmp_bls->TimerMessage();
         }
