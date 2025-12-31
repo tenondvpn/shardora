@@ -159,7 +159,7 @@ Status Hotstuff::Propose(
         std::shared_ptr<AggregateQC> agg_qc,
         const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    ZJC_DEBUG("pool: %d, called propose!", pool_idx_);
+    SHARDORA_DEBUG("pool: %d, called propose!", pool_idx_);
     auto btime = common::TimeUtils::TimestampMs();
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
