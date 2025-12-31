@@ -901,7 +901,7 @@ void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
     defer(fclose(fd));
     auto db = std::make_shared<db::Db>();
     if (!db->Init(std::string("./shard_db_") + std::to_string(sharding_id))) {
-        INIT_FATAL("init db failed!");
+        SHARDORA_FATAL("init db failed!");
         return;
     }
 
