@@ -559,7 +559,7 @@ void ViewBlockChain::HandleTimerMessage() {
                 auto it_to_erase = std::next(iter).base();
                 auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
                 iter = std::make_reverse_iterator(next_valid_forward);
-                continue
+                continue;
             }
             
             bool commited = false;
