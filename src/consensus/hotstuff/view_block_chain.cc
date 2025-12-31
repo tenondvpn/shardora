@@ -662,7 +662,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             qc.network_id(), 
             qc.pool_index(), 
             v_block2->qc().view() - 1,
-            view_block_chain_->String().c_str());
+            String().c_str());
         if (v_block2->qc().view() > 0 && !view_commited(
                 v_block2->qc().network_id(), v_block2->qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), v_block2->parent_hash(), 0);
