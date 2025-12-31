@@ -728,6 +728,7 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     parser_arg.AddArgType('U', "gen_root", common::kNoValue);
     parser_arg.AddArgType('S', "gen_shard", common::kMaybeValue);
     parser_arg.AddArgType('N', "node_count", common::kMaybeValue);
+    parser_arg.AddArgType('C', "cross_latest", common::kNoValue);
     // parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);    
 
     for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
@@ -880,10 +881,97 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             return kInitError;
         }
 
+        SaveLatestBlock(net_id);
         return kInitSuccess;
     }
 
+    if (parser_arg.Has("C")) {
+        SaveCrossBlockToEachShard();
+    }
     return -1;
+}
+
+void NetworkInit::SaveLatestBlock(uint32_t sharding_id) {
+    FILE* fd = fopen("./latest_blocks", "a");
+    if (fd == nullptr) {
+        SHARDORA_FATAL("open latest_blocks failed!");
+        return;
+    }
+
+    defer {
+        fclose(fd);
+    };
+
+    auto db = std::make_shared<db::Db>();
+    if (!db->Init(std::string("./shard_db_") + std::to_string(sharding_id))) {
+        INIT_ERROR("init db failed!");
+        return kInitError;
+    }
+
+    auto prefix_db = std::make_shared<protos::PrefixDb>(db);
+    for (uint64_t i = 0; i < 128llu; i++) {
+        view_block::protobuf::ViewBlockItem view_block_item;
+        if (!prefix_db->GetBlockWithHeight(sharding_id, common::kGlobalPoolIndex, i, &view_block_item)) {
+            return;
+        }
+
+        auto data = common::Encode::HexEncode(view_block_item.SerializeAsString());
+        fwrite(data.c_str(), 1, data.size(), fd);
+        fwrite(fd, "\n", 1);
+    }
+
+    fflush(fd);
+}
+    
+void NetworkInit::SaveCrossBlockToEachShard() {
+    FILE* fd = fopen("./latest_blocks", "r");
+    if (fd == nullptr) {
+        SHARDORA_FATAL("open latest_blocks failed!");
+        return;
+    }
+
+    defer {
+        fclose(fd);
+    };
+
+    std::vector<view_block::protobuf::ViewBlockItem> blocks;
+    char line_buf[1024 * 1024];
+    while (fgets(line_buf, sizeof(line_buf), fd) != nullptr) {
+        std::string line(line_buf);
+        line = common::StringUtils::Strip(line, "\n");
+        view_block::protobuf::ViewBlockItem block_item;
+        block_item.ParseFromString(common::Encode::HexDecode(line));
+        blocks.push_back(block_item);
+    }
+
+    for (uint32_t net_i = network::kConsensusShardBeginNetworkId;
+            net_i < network::kConsensusShardEndNetworkId; net_i++) {
+        auto db = std::make_shared<db::Db>();
+        if (!db->Init(std::string("./shard_db_") + std::to_string(net_i))) {
+            INIT_ERROR("init db failed!");
+            return kInitError;
+        }
+
+        auto prefix_db = std::make_shared<protos::PrefixDb>(db);
+        db::DbWriteBatch batch;
+        for (auto iter = blocks.begin(); iter != blocks.end(); ++iter) {
+            prefix_db->SaveBlock(*iter, &batch);
+            auto& view_block = *iter;
+            auto& block = block.block_info();
+            pools::protobuf::PoolLatestInfo pool_info;
+            pool_info.set_height(block.height());
+            pool_info.set_hash(view_block.qc().view_block_hash());
+            pool_info.set_timestamp(block.timestamp());
+            pool_info.set_view(view_block.qc().view());
+            prefix_db->SaveLatestPoolInfo(
+                view_block.qc().network_id(), view_block.qc().pool_index(), pool_info, db_batch);
+        }
+
+        auto st = db->Put(batch);
+        if (!st.ok()) {
+            SHARDORA_FATAL("write db failed!");
+        }
+    }
 }
 
 void NetworkInit::GetNetworkNodesFromConf(
