@@ -551,32 +551,35 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
 void ViewBlockChain::HandleTimerMessage() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {
-        for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
-            if (view_commited(
-                    common::GlobalInfo::Instance()->network_id(), 
-                    iter->first)) {
-                auto it_to_erase = std::next(iter).base();
-                auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
-                iter = std::make_reverse_iterator(next_valid_forward);
-                continue;
-            }
-            
-            bool commited = false;
-            for (auto block_iter = iter->second.begin(); block_iter != iter->second.end(); ++block_iter) {
-                auto view_block_ptr = CheckCommit((*block_iter)->view_block->qc());
-                if (view_block_ptr) {
-                    Commit(view_block_ptr);
+    if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {  
+        SHARDORA_DEBUG("now check view_with_blocks_ size: %d", view_with_blocks_.size());      
+        if (view_with_blocks_.size() > 2) {
+            for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
+                if (view_commited(
+                        common::GlobalInfo::Instance()->network_id(), 
+                        iter->first)) {
                     auto it_to_erase = std::next(iter).base();
                     auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
                     iter = std::make_reverse_iterator(next_valid_forward);
-                    commited = true;
-                    break;
+                    continue;
                 }
-            }
+                
+                bool commited = false;
+                for (auto block_iter = iter->second.begin(); block_iter != iter->second.end(); ++block_iter) {
+                    auto view_block_ptr = CheckCommit((*block_iter)->view_block->qc());
+                    if (view_block_ptr) {
+                        Commit(view_block_ptr);
+                        auto it_to_erase = std::next(iter).base();
+                        auto next_valid_forward = view_with_blocks_.erase(it_to_erase);
+                        iter = std::make_reverse_iterator(next_valid_forward);
+                        commited = true;
+                        break;
+                    }
+                }
 
-            if (!commited) {
-                ++iter;
+                if (!commited) {
+                    ++iter;
+                }
             }
         }
 
