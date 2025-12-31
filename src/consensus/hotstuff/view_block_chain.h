@@ -236,9 +236,7 @@ private:
         }
         
         view_blocks_info_[view_block_info->view_block->qc().view_block_hash()] = view_block_info;
-#ifdef TEST_FORKING_ATTACK
         view_with_blocks_[view_block_info->view_block->qc().view()].push_back(view_block_info);
-#endif
     }
 
     std::shared_ptr<ViewBlockInfo> GetViewBlockInfo(
@@ -288,9 +286,7 @@ private:
     std::set<uint64_t> commited_view_;
     uint64_t prev_check_timeout_blocks_ms_ = 0;
     ChainType chain_type_ = kInvalidChain;
-#ifdef TEST_FORKING_ATTACK
     std::map<uint64_t, std::vector<std::shared_ptr<ViewBlockInfo>>> view_with_blocks_;
-#endif
 
 };
 

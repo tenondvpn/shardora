@@ -476,7 +476,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         view_blocks_info_.erase(tmp_block->parent_hash());
-#ifdef TEST_FORKING_ATTACK
         auto test_iter = view_with_blocks_.begin();
         while (test_iter != view_with_blocks_.end()) {
             if (test_iter->first > tmp_block->qc().view()) {
@@ -485,7 +484,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
             test_iter = view_with_blocks_.erase(test_iter);
         }
-#endif
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (block_acceptor_) {
             block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
@@ -554,19 +552,26 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 void ViewBlockChain::HandleTimerMessage() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {
-        for (auto iter = view_blocks_info_.begin(); iter != view_blocks_info_.end();) {
-            auto view_block_ptr = CheckCommit(iter->second->view_block->qc());
-            if (view_block_ptr) {
-                Commit(view_block_ptr);
-                // next turn
-                return;
-            }
-
+        for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
             if (view_commited(
                     common::GlobalInfo::Instance()->network_id(), 
-                    iter->second->view_block->qc().view() + 1)) {
-                iter = view_blocks_info_.erase(iter);
-            } else {
+                    iter->first)) {
+                iter = view_with_blocks_.erase(iter);
+                continue
+            }
+            
+            bool commited = false;
+            for (auto block_iter = iter->second.begin(); block_iter != iter->second.end(); ++block_iter) {
+                auto view_block_ptr = CheckCommit(*block_iter);
+                if (view_block_ptr) {
+                    Commit(view_block_ptr);
+                    iter = view_with_blocks_.erase(iter);
+                    commited = true;
+                    break;
+                }
+            }
+
+            if (!commited) {
                 ++iter;
             }
         }
