@@ -588,6 +588,10 @@ void ViewBlockChain::HandleTimerMessage() {
 }
 
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
+    if (high_view_block_ && high_view_block_->qc().view() <= (qc.view() + 2)) {
+        return nullptr;
+    }
+
     // fast hotstuff
     assert(!qc.view_block_hash().empty());
     auto v_block1_info = Get(qc.view_block_hash());
