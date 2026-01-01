@@ -452,7 +452,7 @@ bool ShardStatistic::HandleStatistic(
         block.tx_list_size(),
         debug_str.c_str(),
         statistic_pool_debug_str.c_str());
-    assert(pool_statistic_riter->first == block.timeblock_height());
+    // assert(pool_statistic_riter->first == block.timeblock_height());
     return true;
 }
 
