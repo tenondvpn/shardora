@@ -2,6 +2,8 @@
 
 #include <deque>
 #include <protos/elect.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 #include "common/bitmap.h"
 #include "common/encode.h"
