@@ -1,25 +1,31 @@
+#include "consensus/hotstuff/utils.h"
+
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
 #include <consensus/hotstuff/types.h>
-#include <consensus/hotstuff/utils.h>
 
 namespace shardora {
 
 namespace hotstuff {
 
-std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std::string& phash) {
-    std::string serialized;
-    google::protobuf::io::StringOutputStream output(&serialized);
-    google::protobuf::io::CodedOutputStream coded_output(&output);
-    tx_info.SerializePartialToString(&serialized);
-    auto hash = common::Hash::keccak256(serialized);
-    return hash;
-}
-
 std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) {
-    auto& block = view_block.block_info();
     std::string serialized;
-    google::protobuf::io::StringOutputStream output(&serialized);
-    google::protobuf::io::CodedOutputStream coded_output(&output);
-    block.SerializePartialToString(&serialized);
+    google::protobuf::io::StringOutputStream string_stream(&serialized);
+    google::protobuf::io::CodedOutputStream coded_output(&string_stream);
+    coded_output.SetSerializationDeterministic(true); 
+
+    if (!block.SerializePartialToCodedStream(&coded_output)) {
+        return "";
+    }
+
+    coded_output.Trim();
+    auto& block = view_block.block_info();
+    uint32_t sharding_id = view_block.network_id();
+    serialized.append((char*)&sharding_id, sizeof(sharding_id));
+    uint32_t pool_index = view_block.pool_index();
+    serialized.append((char*)&pool_index, sizeof(pool_index));
+    serialized.append(view_block.parent_hash());
     auto hash = common::Hash::keccak256(serialized);
 
     SHARDORA_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
