@@ -21,9 +21,9 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
 
     coded_output.Trim();
     auto& block = view_block.block_info();
-    uint32_t sharding_id = view_block.network_id();
+    uint32_t sharding_id = view_block.qc().network_id();
     serialized.append((char*)&sharding_id, sizeof(sharding_id));
-    uint32_t pool_index = view_block.pool_index();
+    uint32_t pool_index = view_block.qc().pool_index();
     serialized.append((char*)&pool_index, sizeof(pool_index));
     serialized.append(view_block.parent_hash());
     auto hash = common::Hash::keccak256(serialized);
