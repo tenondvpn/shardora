@@ -226,7 +226,7 @@ bool ShardStatistic::HandleStatistic(
         ++pool_statistic_riter;
     }
 
-    if (pool_statistic_riter == statistic_pool_info_.end()) {
+    if (pool_statistic_riter == statistic_pool_info_.rend()) {
         SHARDORA_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
         // assert(false);
         return false;
