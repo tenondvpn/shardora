@@ -106,7 +106,6 @@ public:
     std::set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    std::atomic<uint64_t> now_elect_height_ = 0;
     std::atomic<uint64_t> prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
     common::Tick tick_to_statistic_;
