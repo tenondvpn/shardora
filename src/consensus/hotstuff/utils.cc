@@ -26,6 +26,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
 }
 
 std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) {
+    auto& block = view_block.block_info();
     std::string serialized;
     google::protobuf::io::StringOutputStream output(&serialized);
     google::protobuf::io::CodedOutputStream coded_output(&output);
