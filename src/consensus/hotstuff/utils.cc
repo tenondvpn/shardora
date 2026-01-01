@@ -14,13 +14,12 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
     google::protobuf::io::StringOutputStream string_stream(&serialized);
     google::protobuf::io::CodedOutputStream coded_output(&string_stream);
     coded_output.SetSerializationDeterministic(true); 
-
+    auto& block = view_block.block_info();
     if (!block.SerializePartialToCodedStream(&coded_output)) {
         return "";
     }
 
     coded_output.Trim();
-    auto& block = view_block.block_info();
     uint32_t sharding_id = view_block.qc().network_id();
     serialized.append((char*)&sharding_id, sizeof(sharding_id));
     uint32_t pool_index = view_block.qc().pool_index();
