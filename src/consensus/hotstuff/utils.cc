@@ -9,19 +9,8 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info, const std:
     std::string serialized;
     google::protobuf::io::StringOutputStream output(&serialized);
     google::protobuf::io::CodedOutputStream coded_output(&output);
-    block.SerializePartialToString(&serialized);
+    tx_info.SerializePartialToString(&serialized);
     auto hash = common::Hash::keccak256(serialized);
-    SHARDORA_DEBUG("phash: %s, nonce: %lu, from: %s, to: %s, balance: %lu, amount: %lu, gas_limit: %lu, "
-        "gas_price: %lu, step: %u, gas_used: %lu, status: %lu, block tx hash: %s, message: %s",
-        common::Encode::HexEncode(phash).c_str(),
-        tx_info.nonce(),
-        common::Encode::HexEncode(tx_info.from()).c_str(),
-        common::Encode::HexEncode(tx_info.to()).c_str(),
-        balance, amount, gas_limit, gas_price, step,
-        gas_used,
-        status,
-        common::Encode::HexEncode(hash).c_str(),
-        common::Encode::HexEncode(message).c_str());
     return hash;
 }
 
