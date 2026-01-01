@@ -488,7 +488,7 @@ void ShardStatistic::CallNewElectBlock(
 
     prepare_elect_height_ = prepare_elect_height;
     SHARDORA_INFO("new elect block: %lu, prepare_elect_height_: %lu",
-        static_cast<uint64_t>(elect_mgr_->latest_height(sharding_id)),
+        static_cast<uint64_t>(elect_mgr_->latest_height(common::GlobalInfo::Instance()->network_id())),
         static_cast<uint64_t>(prepare_elect_height_));
 }
 
@@ -649,7 +649,7 @@ int ShardStatistic::StatisticWithHeights(
         nullptr,
         nullptr);
     auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
-        elect_mgr_->latest_height(sharding_id),
+        elect_mgr_->latest_height(common::GlobalInfo::Instance()->network_id()),
         common::GlobalInfo::Instance()->network_id(),
         nullptr,
         nullptr);
@@ -894,7 +894,7 @@ void ShardStatistic::addPrepareMembers2JoinStastics(
     if (prepare_members != nullptr) {
         SHARDORA_INFO("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, "
             "new nodes size: %u, now members size: %u, prepare members size: %u",
-            static_cast<uint64_t>(elect_mgr_->latest_height(sharding_id)),
+            static_cast<uint64_t>(elect_mgr_->latest_height(common::GlobalInfo::Instance()->network_id())),
             static_cast<uint64_t>(prepare_elect_height_),
             elect_statistic.join_elect_nodes_size(),
             now_elect_members->size(),
@@ -1019,7 +1019,7 @@ void ShardStatistic::setElectStatistics(
         shardora::common::MembersPtr &now_elect_members,
         shardora::pools::protobuf::ElectStatistic &elect_statistic,
         bool is_root) {
-    auto now_elect_height = elect_mgr_->latest_height(sharding_id);
+    auto now_elect_height = elect_mgr_->latest_height(common::GlobalInfo::Instance()->network_id());
     if (height_node_collect_info_map.empty() || height_node_collect_info_map.rbegin()->first < now_elect_height) {
         height_node_collect_info_map[now_elect_height] = std::map<std::string, StatisticMemberInfoItem>();
         auto &node_info_map = height_node_collect_info_map[now_elect_height];
