@@ -440,9 +440,11 @@ bool ShardStatistic::HandleStatistic(
         }
     }
 
-    SHARDORA_INFO("statistic height: %lu, elect height: %lu, success handle block pool: %u, height: %lu, "
+    SHARDORA_INFO("pool_statistic_riter->first == block.timeblock_height: %d, "
+        "statistic height: %lu, elect height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
         "debug_str: %s, statistic_pool_debug_str: %s",
+        (pool_statistic_riter->first == block.timeblock_height()),
         pool_statistic_riter->first,
         view_block_ptr->qc().elect_height(),
         view_block_ptr->qc().pool_index(), block.height(), 
