@@ -124,61 +124,30 @@ void ShardStatistic::ThreadToStatistic(
     }
     
     auto& pool_blocks_info = pools_consensus_blocks_[view_block_ptr->qc().pool_index()];
-    if (block_ptr->height() != pool_blocks_info->latest_consensus_height_ + 1) {
-        pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
-        SHARDORA_INFO("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
-            view_block_ptr->qc().network_id(),
-            view_block_ptr->qc().pool_index(),
-            block_ptr->height(),
-            view_block_ptr->qc().view(),
-            pool_blocks_info->latest_consensus_height_);
-    } else {
-        HandleStatistic(view_block_ptr);
-        pool_blocks_info->latest_consensus_height_ = block_ptr->height();
-        cleanUpBlocks(*pool_blocks_info);
-    }
-}
+    pool_blocks_info->blocks[block_ptr->height()] = view_block_ptr;
+    SHARDORA_INFO("pool latest height not continus: %u_%u_%lu, view: %lu, %lu,",
+        view_block_ptr->qc().network_id(),
+        view_block_ptr->qc().pool_index(),
+        block_ptr->height(),
+        view_block_ptr->qc().view(),
+        pool_blocks_info->latest_consensus_height_);
 
-void ShardStatistic::cleanUpBlocks(PoolBlocksInfo& pool_blocks_info) {
-    auto& block_map = pool_blocks_info.blocks;
-    for (auto iter = block_map.begin(); iter != block_map.end(); ) {
-        if (iter->second->block_info().height() <= pool_blocks_info.latest_consensus_height_) {
-            iter = block_map.erase(iter);
-        } else if (iter->first == pool_blocks_info.latest_consensus_height_ + 1) {
-            HandleStatistic(iter->second);
-            pool_blocks_info.latest_consensus_height_ = iter->second->block_info().height();
-            iter = block_map.erase(iter);
-        } else {
-            ++iter;
+    do {
+        auto iter = pool_blocks_info->blocks.find(pool_blocks_info->latest_consensus_height_ + 1);
+        if (iter == pool_blocks_info->blocks.end()) {
+            break;
         }
-    }
+
+        if (!HandleStatistic(iter->second)) {
+            break;
+        }
+
+        pool_blocks_info->blocks.erase(iter);
+        pool_blocks_info->latest_consensus_height_ = block_ptr->height();
+    } while (!destroy_);
 }
 
-// void ShardStatistic::HandleStatisticBlock(
-//         const block::protobuf::Block& block) {
-//     auto& elect_statistic = block.elect_statistic();
-//     SHARDORA_INFO("success handle statistic block: %s, latest_statisticed_height_: %lu, %d, %d",
-//         ProtobufToJson(elect_statistic).c_str(), latest_statisticed_height_,
-//         block.has_elect_statistic(),
-//         block.has_pool_st_info());
-//     auto& heights = elect_statistic.height_info();
-    // auto st_iter = statistic_pool_info_.begin();
-    // while (st_iter != statistic_pool_info_.end()) {
-    //     if (st_iter->first >= latest_statisticed_height_) {
-    //         break;
-    //     }
-            
-    //     SHARDORA_INFO("erase statistic height: %lu", st_iter->first);
-    //     st_iter = statistic_pool_info_.erase(st_iter);
-    //     CHECK_MEMORY_SIZE(statistic_pool_info_);
-    // }
-
-//     latest_statisticed_height_ = elect_statistic.statistic_height();
-//     latest_statistic_item_ = std::make_shared<pools::protobuf::StatisticTxItem>(heights);
-
-// }
-
-void ShardStatistic::HandleStatistic(
+bool ShardStatistic::HandleStatistic(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto& block = view_block_ptr->block_info();
     bool is_root = (
@@ -237,36 +206,36 @@ void ShardStatistic::HandleStatistic(
     // }
 
     std::string statistic_pool_debug_str;
-    auto pool_statistic_riter = statistic_pool_info_.find(block.timeblock_height());
-    // while (pool_statistic_riter != statistic_pool_info_.rend()) {
-    //     auto pool_iter = pool_statistic_riter->second.find(pool_idx);
-    //     SHARDORA_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
-    //         pool_iter->first, pool_idx, block.height(), 
-    //         (pool_iter != pool_statistic_riter->second.end()));
-    //     if (pool_iter != pool_statistic_riter->second.end()) {
-    //         SHARDORA_INFO("pool: %u, get block height: %lu, and statistic height: %lu, max_height: %lu",
-    //             pool_idx,
-    //             block.height(),
-    //             pool_statistic_riter->first,
-    //             pool_iter->second.statistic_max_height);
-    //         if (pool_iter->second.statistic_max_height <= block.height()) {
-    //             break;
-    //         }
-    //     }
+    auto pool_statistic_riter = statistic_pool_info_.rbegin();// find(block.timeblock_height());
+    while (pool_statistic_riter != statistic_pool_info_.rend()) {
+        auto pool_iter = pool_statistic_riter->second.find(pool_idx);
+        SHARDORA_INFO("check elect height: %lu, pool: %u, block height: %lu, find: %d",
+            pool_iter->first, pool_idx, block.height(), 
+            (pool_iter != pool_statistic_riter->second.end()));
+        if (pool_iter != pool_statistic_riter->second.end()) {
+            SHARDORA_INFO("pool: %u, get block height: %lu, and statistic height: %lu, max_height: %lu",
+                pool_idx,
+                block.height(),
+                pool_statistic_riter->first,
+                pool_iter->second.statistic_max_height);
+            if (pool_iter->second.statistic_max_height <= block.height()) {
+                break;
+            }
+        }
 
-    //     ++pool_statistic_riter;
-    // }
+        ++pool_statistic_riter;
+    }
 
     if (pool_statistic_riter == statistic_pool_info_.end()) {
         SHARDORA_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
-        assert(false);
-        return;
+        // assert(false);
+        return false;
     }
 
     auto pool_iter = pool_statistic_riter->second.find(pool_idx);
     if (pool_iter == pool_statistic_riter->second.end()) {
         assert(false);
-        return;
+        return false;
         // pool_statistic_riter->second[pool_idx] = StatisticInfoItem();
         // pool_iter = pool_statistic_riter->second.find(pool_idx);
     }
@@ -437,7 +406,7 @@ void ShardStatistic::HandleStatistic(
     std::string leader_id = getLeaderIdFromBlock(*view_block_ptr);
     if (leader_id.empty()) {
         assert(false);
-        return;
+        return false;
     }
 
     auto elect_height_iter = height_node_collect_info_map.find(
@@ -484,7 +453,7 @@ void ShardStatistic::HandleStatistic(
         block.tx_list_size(),
         debug_str.c_str(),
         statistic_pool_debug_str.c_str());
-
+    return true;
 }
 
 std::string ShardStatistic::getLeaderIdFromBlock(

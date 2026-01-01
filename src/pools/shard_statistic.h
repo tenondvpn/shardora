@@ -87,10 +87,9 @@ public:
         bool is_root);
     void CreateStatisticTransaction(uint64_t timeblock_height);
     // void HandleStatisticBlock(const block::protobuf::Block &block);
-    void HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
+    bool HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
     std::string getLeaderIdFromBlock(const view_block::protobuf::ViewBlockItem &block);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
-    void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
     void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     void ThreadCallback();
 
