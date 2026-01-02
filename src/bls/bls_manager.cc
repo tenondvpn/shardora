@@ -151,11 +151,12 @@ void BlsManager::OnNewElectBlock(
         dkg_cache_,
         ck_client_);
 //     SHARDORA_WARN("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
+    auto tmp_tm_block_info = latest_timeblock_info_.load();
     waiting_bls->OnNewElectionBlock(
         elect_height,
         prev_elect_height,
         members,
-        latest_timeblock_info_);
+        tmp_tm_block_info);
     waiting_bls_.store(waiting_bls);
     SHARDORA_WARN("success add new bls dkg, elect_height: %lu, prev valid elect height: %lu",
         elect_height, prev_elect_height);
@@ -269,8 +270,9 @@ void BlsManager::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
-    if (latest_timeblock_info_ != nullptr) {
-        if (latest_time_block_height <= latest_timeblock_info_->latest_time_block_height) {
+    auto tmp_latest_tm = latest_timeblock_info_.load();
+    if (tmp_latest_tm != nullptr) {
+        if (latest_time_block_height <= tmp_latest_tm->latest_time_block_height) {
             return;
         }
     }
@@ -279,7 +281,7 @@ void BlsManager::OnTimeBlock(
     timeblock_info->lastest_time_block_tm = lastest_time_block_tm;
     timeblock_info->latest_time_block_height = latest_time_block_height;
     timeblock_info->vss_random = vss_random;
-    latest_timeblock_info_ = timeblock_info;
+    latest_timeblock_info_.store(timeblock_info);
 }
 
 void BlsManager::SetUsedElectionBlock(

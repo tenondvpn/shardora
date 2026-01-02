@@ -145,7 +145,7 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
+    std::atomic<std::shared_ptr<TimeBlockItem>> latest_timeblock_info_ = nullptr;
     uint64_t latest_elect_height_ = 0;
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
     common::Tick bls_tick_;
