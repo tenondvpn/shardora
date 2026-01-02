@@ -1570,7 +1570,7 @@ void Hotstuff::SyncLaterBlocks(
         uint32_t network_id, 
         uint32_t pool_index, 
         View view) {
-    auto call_sync_later_func = [&]() {
+    auto call_sync_later_func = [this, view_block_chain, network_id, pool_index, view]() {
         if (view_block_chain->HighView() >= view + 2) {
             return;
         }
