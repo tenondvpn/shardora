@@ -821,6 +821,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
 Status Hotstuff::HandleProposeMsgStep_Directly(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         const std::string& expect_view_block_hash) {
+#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
     SHARDORA_DEBUG("HandleProposeMsgStep_Directly called hash: %lu, propose_debug: %s",
