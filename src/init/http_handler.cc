@@ -148,6 +148,8 @@ static int CreateTransactionWithAttr(
     }
 
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
+    SHARDORA_DEBUG("new tx hash: %s, tx: %s", 
+        common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx));
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
     if (http_handler->security_ptr()->Verify(

@@ -244,60 +244,6 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
     }
 
     coded_output.Trim();
-
-    // std::string message;
-    // message.reserve(tx_info.ByteSizeLong());
-    // uint64_t nonce = tx_info.nonce();
-    // message.append(std::string((char*)&nonce, sizeof(nonce)));
-    // message.append(tx_info.pubkey());
-    // message.append(tx_info.to());
-    // uint64_t amount = tx_info.amount();
-    // message.append(std::string((char*)&amount, sizeof(amount)));
-    // uint64_t gas_limit = tx_info.gas_limit();
-    // message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
-    // uint64_t gas_price = tx_info.gas_price();
-    // message.append(std::string((char*)&gas_price, sizeof(gas_price)));
-    // if (tx_info.has_step()) {
-    //     uint64_t step = tx_info.step();
-    //     message.append(std::string((char*)&step, sizeof(step)));
-    // }
-
-    // if (tx_info.has_contract_code()) {
-    //     message.append(tx_info.contract_code());
-    // }
-
-    // if (tx_info.has_contract_input()) {
-    //     message.append(tx_info.contract_input());
-    // }
-
-    // if (tx_info.has_contract_prepayment()) {
-    //     uint64_t prepay = tx_info.contract_prepayment();
-    //     message.append(std::string((char*)&prepay, sizeof(prepay)));
-    // }
-
-    // if (tx_info.has_key()) {
-    //     message.append(tx_info.key());
-    //     if (tx_info.has_value()) {
-    //         message.append(tx_info.value());
-    //     }
-    // }
-
-    // SHARDORA_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
-    //     "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
-    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
-    //     common::Encode::HexEncode(tx_info.pubkey()).c_str(),
-    //     common::Encode::HexEncode(tx_info.to()).c_str(),
-    //     tx_info.amount(),
-    //     tx_info.gas_limit(),
-    //     tx_info.gas_price(),
-    //     tx_info.step(),
-    //     common::Encode::HexEncode(tx_info.contract_code()).c_str(),
-    //     common::Encode::HexEncode(tx_info.contract_input()).c_str(),
-    //     tx_info.contract_prepayment(),
-    //     common::Encode::HexEncode(tx_info.key()).c_str(),
-    //     common::Encode::HexEncode(tx_info.value()).c_str());
-
-    // SHARDORA_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(serialized);
 }
 

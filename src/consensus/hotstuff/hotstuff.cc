@@ -768,7 +768,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyQC(std::shared_ptr<ProposeMsgWrapper
 
         ADD_DEBUG_PROCESS_TIMESTAMP();
 // #ifndef NDEBUG
-//         auto msg_hash = GetQCMsgHash(pro_msg.tc());
+//         auto msg_hash = GetQCMsgHash(pro_msg.tc());爱他
 //         auto* tc_ptr = &pro_msg.tc();
 //         SHARDORA_WARN("HandleProposeMsgStep_VerifyQC success verify qc %u_%u_%lu, hash: %s, "
 //             "view block hash: %s, sign x: %s called hash: %lu, propose_debug: %s",
