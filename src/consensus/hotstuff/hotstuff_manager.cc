@@ -437,7 +437,6 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    // 打印总 tps
     double tps = 0;
     if (now_tm_ms >= prev_handler_timer_tm_ms_ + 3000lu) {
         prev_handler_timer_tm_ms_ = now_tm_ms;

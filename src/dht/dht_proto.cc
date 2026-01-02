@@ -31,7 +31,6 @@ void DhtProto::CreateBootstrapResponse(
     msg.set_src_sharding_id(local_sharding_id);
     msg.set_des_dht_key(des_dht_key);
     msg.set_type(common::kDhtMessage);
-    // TODO(tt): add sign
     auto* res_dht_msg = msg.mutable_dht_proto();
     auto* bootstrap_res = res_dht_msg->mutable_bootstrap_res();
     bootstrap_res->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());

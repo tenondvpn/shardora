@@ -891,7 +891,6 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
         const std::string& key, 
         std::string* val) {
     std::string phash = parent_hash;
-    // TODO: check valid
     while (true) {
         if (phash.empty()) {
             break;
@@ -934,7 +933,6 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
         const evmc::address& addr,
         const evmc::bytes32& key) {
     std::string phash = parent_hash;
-    // TODO: check valid
     while (true) {
         if (phash.empty()) {
             break;
@@ -972,7 +970,6 @@ void ViewBlockChain::MergeAllPrevBalanceMap(
         const std::string& parent_hash, 
         BalanceAndNonceMap& acc_balance_map) {
     std::string phash = parent_hash;
-    // TODO: check valid
     uint32_t count = 0;
     while (true) {
         if (phash.empty()) {

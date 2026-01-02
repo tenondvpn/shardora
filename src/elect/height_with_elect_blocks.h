@@ -131,7 +131,6 @@ public:
         assert(common_pk != libff::alt_bn128_G2::zero());
     }
 
-    // TODO: multi thread problem.
     common::MembersPtr GetMembersPtr(
             std::shared_ptr<security::Security>& security,
             uint64_t height,

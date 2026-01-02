@@ -119,7 +119,6 @@ int ElectTxItem::processElect(
     uint32_t min_area_weight = common::kInvalidUint32;
     uint32_t min_tx_count = common::kInvalidUint32;
     std::vector<NodeDetailPtr> elect_nodes(members->size(), nullptr);
-    // TODO: add weedout
     int res = CheckWeedout(members, *statistic, &min_area_weight, &min_tx_count, elect_nodes);
     if (res != kConsensusSuccess) {
         assert(false);
@@ -307,7 +306,6 @@ int ElectTxItem::getMaxElectHeightInfo(
         max_elect_height = now_elect_height;
     }
 
-    // TODO: check if elect height valid
     if (max_elect_height != now_elect_height) {
         SHARDORA_DEBUG("old elect coming max_elect_height: %lu, now_elect_height: %lu",
             max_elect_height, now_elect_height);
@@ -784,9 +782,6 @@ int ElectTxItem::CheckWeedout(
     }
 
     std::set<uint32_t> weedout_nodes;
-
-    // 第二次淘汰
-    // TODO: add weedout nodes
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {

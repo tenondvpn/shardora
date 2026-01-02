@@ -99,7 +99,6 @@ int ContractUserCreateCall::HandleTx(
         if (from_balance > gas_used * block_tx.gas_price()) {
             from_balance -= gas_used * block_tx.gas_price();
             gas_used = 0;
-            // TODO(): check key exists and reserve gas
             gas_used += (tx_info->key().size() + tx_info->value().size()) *
                 consensus::kKeyValueStorageEachBytes;
             SHARDORA_DEBUG("create contract key: %s, value: %s", 
