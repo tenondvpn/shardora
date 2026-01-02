@@ -189,7 +189,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
         }
     }
 
-    view_block_ptr = std::make_shared<ViewBlock>();
+    auto view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
         return view_block_ptr;
