@@ -123,7 +123,6 @@ Status Crypto::ReconstructAndVerifyThresSign(
     }
 
     // Reconstruct sign
-    // TODO(HT): 先判断是否已经处理过的index
     map_iter->second[index] = partial_sign;
     SHARDORA_DEBUG("msg hash: %s, ok count: %u, t: %u, index: %u, elect_height: %lu, pool: %u",
         common::Encode::HexEncode(msg_hash).c_str(), 
@@ -166,7 +165,7 @@ Status Crypto::ReconstructAndVerifyThresSign(
     if (s != Status::kSuccess) {
         // TODO: check each partial sign
         SHARDORA_ERROR("verify thresh sign failed!");
-        // assert(false);
+        assert(false);
         return s;
     }
 

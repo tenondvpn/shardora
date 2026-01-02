@@ -740,7 +740,6 @@ void ViewBlockChain::AddNewBlock(
         db::DbWriteBatch& db_batch) {
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
-    // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
     SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, step: %d, status: %d",
@@ -758,7 +757,6 @@ void ViewBlockChain::AddNewBlock(
         (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).step() : -1),
         (view_block_item->block_info().tx_list_size() > 0 ? view_block_item->block_info().tx_list(0).status() : -1));
     assert(view_block_item->qc().elect_height() >= 1);
-    // block 两条信息持久化
     if (!prefix_db_->SaveBlock(*view_block_item, db_batch)) {
         SHARDORA_DEBUG("block saved: %lu", block_item->height());
         return;
@@ -785,7 +783,6 @@ bool ViewBlockChain::IsValid() {
         return false;
     }
 
-    // 有且只有一个节点不存在父节点
     uint32_t num = 0;
     for (auto it = view_blocks_info_.begin(); it != view_blocks_info_.end(); it++) {
         auto& vb = it->second->view_block;

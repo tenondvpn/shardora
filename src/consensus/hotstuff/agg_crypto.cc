@@ -181,7 +181,7 @@ Status AggCrypto::VerifyAggregateQC(
     if (agg_qc->QCs().size() == 0) {
         return Status::kError;
     }
-    // TODO 默认取 agg_qc 中第一个 qc 对应的 elect_item
+    
     auto elect_height = agg_qc->QCs()[0]->elect_height();
     auto elect_item = GetElectItem(sharding_id, elect_height);
     if (!elect_item) {

@@ -123,12 +123,9 @@ void Hotstuff::InitAddNewViewBlock(
         latest_view_block->qc().view(),
         pool_idx_, 
         latest_view_block->qc().view());
-    // 初始状态，使用 db 中最后一个 view_block 初始化视图链
-    // TODO: check valid
     auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
     view_block_chain->Store(latest_view_block, true, balane_map_ptr, nullptr, true);
     view_block_chain->UpdateHighViewBlock(latest_view_block->qc());
-    // 开启第一个视图
     SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu, hash: %s",
         latest_view_block->qc().view(),
         latest_view_block->qc().network_id(),
@@ -645,7 +642,6 @@ Status Hotstuff::HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>
                 auto tmp_msg_ptr = std::make_shared<transport::TransportMessage>();
                 tmp_msg_ptr->header.CopyFrom(iter->second->header);
                 auto leader = leader_rotation_->GetLeader();
-                // TODO: check is same leader
                 if (!leader || SendMsgToLeader(leader, tmp_msg_ptr, VOTE) != Status::kSuccess) {
                     SHARDORA_ERROR("pool: %d, Send vote message is error.",
                         pool_idx_, pro_msg_wrap->msg_ptr->header.hash64());
@@ -669,11 +665,7 @@ Status Hotstuff::HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWra
     auto& view_item = *pro_msg_wrap->view_block_ptr;
     auto local_idx = leader_rotation_->GetLocalMemberIdx();
     if (VerifyLeader(pro_msg_wrap) != Status::kSuccess) {
-        // TODO 一旦某个节点状态滞后，那么 Leader 就与其他 replica 不同，导致无法处理新提案
-        // 只能依赖同步，但由于同步慢于新的 propose 消息
-        // 即是这里再加一次同步，也很难追上 propose 的速度，导致该节点掉队，因此还是需要一个队列缓存一下
-        // 暂时无法处理的 propose 消息
-        if (sync_pool_fn_) { // leader 不一致触发同步
+        if (sync_pool_fn_) {
             sync_pool_fn_(pool_idx_, 1);
         }
 
@@ -1407,7 +1399,6 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    // TODO: Flow Control
     if (latest_qc_item_ptr_ != nullptr) {
         SHARDORA_DEBUG("reset timer propose message called view: %lu",
             latest_qc_item_ptr_->view());
@@ -1506,7 +1497,6 @@ void Hotstuff::HandleSyncedViewBlock(
         }
         
         pacemaker_->NewQcView(vblock->qc().view());
-        // TODO: fix balance map and storage map
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
         if (latest_qc_item_ptr_ == nullptr ||
@@ -1862,7 +1852,6 @@ Status Hotstuff::ConstructViewBlock(
     SHARDORA_DEBUG("get prev block hash: %s, height: %lu", 
         common::Encode::HexEncode(view_block->parent_hash()).c_str(), 
         pre_v_block->block_info().height());
-    // TODO 如果单分支最多连续打包三个默认交易
     auto s = wrapper()->Wrap(
         msg_ptr,
         pre_v_block, 
@@ -1886,8 +1875,6 @@ Status Hotstuff::ConstructViewBlock(
         qc->view(),
         pre_v_block->qc().view(),
         last_vote_view_);
-    // TODO 有问题，由于 qc.view 的含义变更为本次 view 而非上一个视图的 view
-    // 因此 CurView 此时还没有增加，还是上一次投票的 View，正常来说此时 last_vote_view_ == pacemaker()->CurView()
     if (last_vote_view_ > pacemaker()->CurView()) {
         // assert(last_vote_view_ <= pacemaker()->CurView());
         view_block->release_qc();

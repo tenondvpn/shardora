@@ -505,7 +505,6 @@ Status BlockAcceptor::addTxsToPool(
             break;
         }
         case pools::protobuf::kNormalTo: {
-            // TODO These Single Txs are still taken directly from the local transaction pool
             pools::protobuf::AllToTxMessage all_to_txs;
             if (!all_to_txs.ParseFromString(tx->value()) || all_to_txs.to_tx_arr_size() == 0) {
                 assert(false);
@@ -535,7 +534,6 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kStatistic:
         {
-            // TODO These Single Txs are still taken directly from the local transaction pool
             SHARDORA_WARN("add tx now get statistic tx: %u", pool_idx());
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::StatisticTxItem>(
@@ -585,7 +583,6 @@ Status BlockAcceptor::addTxsToPool(
         }
         case pools::protobuf::kConsensusRootTimeBlock:
         {
-            // TODO These Single Txs are still taken directly from the local transaction pool
             if (directly_user_leader_txs) {
                 tx_ptr = std::make_shared<consensus::TimeBlockTx>(
                     msg_ptr, i, account_mgr_, security_ptr_, address_info);
@@ -642,8 +639,6 @@ Status BlockAcceptor::addTxsToPool(
             break;
         }
         default:
-            // TODO Not finished! Need to support writing other transactions
-            // break;
             SHARDORA_FATAL("invalid tx step: %d", (int32_t)tx->step());
             return Status::kError;
         }

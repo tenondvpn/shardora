@@ -61,12 +61,8 @@ public:
         sync_pool_fn_ = fn;
     }
 
-    void HandleTimerMessage(const transport::MessagePtr& msg_ptr);
-    // 本地超时
     void OnLocalTimeout();
-    // 收到超时消息
     void OnRemoteTimeout(const transport::MessagePtr& msg_ptr);
-    // 视图切换
     void NewTc(const std::shared_ptr<TC>& tc);
     void NewAggQc(const std::shared_ptr<AggregateQC>& agg_qc);
     void NewQcView(uint64_t qc_view);
@@ -88,7 +84,6 @@ public:
         update_high_qc_fn_(qc);
     }
 
-    // 重置超时实例
     void ResetViewDuration(const std::shared_ptr<ViewDuration>& dur) {
         duration_ = dur;
         
@@ -148,12 +143,12 @@ private:
     UpdateHighQCFn update_high_qc_fn_ = nullptr;
     NewProposalFn new_proposal_fn_ = nullptr;
     StopVotingFn stop_voting_fn_ = nullptr;
-    SyncPoolFn sync_pool_fn_ = nullptr; // 同步 HighQC HighTC
+    SyncPoolFn sync_pool_fn_ = nullptr;
     uint64_t last_time_us_ = 0;
     uint64_t duration_us_ = 0;
     std::shared_ptr<transport::TransportMessage> last_timeout_ = nullptr;
 #ifdef USE_AGG_BLS
-    std::unordered_map<uint32_t, std::shared_ptr<QC>> high_qcs_; // 统计 high_qcs
+    std::unordered_map<uint32_t, std::shared_ptr<QC>> high_qcs_;
     std::vector<std::shared_ptr<AggregateSignature>> high_qc_sigs_;
     View high_qcs_view_ = BeforeGenesisView;
 #endif
