@@ -388,7 +388,6 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             bool has_user_tx = false;
             bool has_system_tx = false;
             ADD_DEBUG_PROCESS_TIMESTAMP();
-            pacemaker(pool_idx)->HandleTimerMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto tx_valid_func = [&](
                     const address::protobuf::AddressInfo& addr_info, 
