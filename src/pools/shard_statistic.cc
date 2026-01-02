@@ -419,7 +419,6 @@ bool ShardStatistic::HandleStatistic(
     }
 
     auto& node_info_map = elect_height_iter->second;
-    // 聚合每个选举高度，每个节点在各个pool 中完成交易的gas总和
     auto node_iter = node_info_map.find(leader_id);
     if (node_iter == node_info_map.end()) {
         node_info_map[leader_id] = StatisticMemberInfoItem();

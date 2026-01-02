@@ -550,7 +550,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     auto& res_arr = sync_msg.sync_value_res().res();
     auto now_tm_us = common::TimeUtils::TimestampUs();
     SHARDORA_DEBUG("now handle kv response hash64: %lu", msg_ptr->header.hash64());
-    std::map<uint32_t, std::map<uint64_t, std::shared_ptr<view_block::protobuf::ViewBlockItem>>> res_map;
+    std::map<uint32_t, std::map<uint32_t, std::map<uint64_t, std::shared_ptr<view_block::protobuf::ViewBlockItem>>>> res_map;
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         std::string key = iter->key();
         if (iter->tag() == kBlockHeight) {
@@ -585,7 +585,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 pb_vblock->block_info().height(),
                 (iter->tag() == kBlockHeight ? key.c_str() : common::Encode::HexEncode(key).c_str()),
                 iter->key().empty());
-            res_map[pb_vblock->qc().network_id()][pb_vblock->qc().view()] = pb_vblock;
+            res_map[pb_vblock->qc().network_id()][pb_vblock->qc().pool_index()][pb_vblock->qc().view()] = pb_vblock;
         } while (0);
 
         responsed_keys_.add(key);
@@ -596,22 +596,24 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
     for (auto iter = res_map.begin(); iter != res_map.end(); ++iter) {
         auto network_id = iter->first;
-        for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2) {
-            auto pb_vblock = iter2->second;
-            auto thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(
-                pb_vblock->qc().pool_index());
-            if (!network::IsSameShardOrSameWaitingPool(
-                    network::kRootCongressNetworkId, 
-                    network_id) && !network::IsSameToLocalShard(network_id)) {
-                thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(network_id);
+        for (auto pool_iter = iter->second.begin(); pool_iter != iter->second.end(); ++pool_iter) {
+            for (auto iter2 = pool_iter->second.begin(); iter2 != pool_iter->second.end(); ++iter2) {
+                auto pb_vblock = iter2->second;
+                auto thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(
+                    pb_vblock->qc().pool_index());
+                if (!network::IsSameShardOrSameWaitingPool(
+                        network::kRootCongressNetworkId, 
+                        network_id) && !network::IsSameToLocalShard(network_id)) {
+                    thread_idx = transport::TcpTransport::Instance()->GetThreadIndexWithPool(network_id);
+                }
+                
+                vblock_queues_[thread_idx].push(pb_vblock);
+                SHARDORA_DEBUG("1 success handle network new view block: %u_%u_%lu, height: %lu ", 
+                    pb_vblock->qc().network_id(),
+                    pb_vblock->qc().pool_index(),
+                    pb_vblock->qc().view(),
+                    pb_vblock->block_info().height());
             }
-            
-            vblock_queues_[thread_idx].push(pb_vblock);
-            SHARDORA_DEBUG("1 success handle network new view block: %u_%u_%lu, height: %lu ", 
-                pb_vblock->qc().network_id(),
-                pb_vblock->qc().pool_index(),
-                pb_vblock->qc().view(),
-                pb_vblock->block_info().height());
         }
     }
 }
