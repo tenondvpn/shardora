@@ -142,8 +142,8 @@ void ShardStatistic::ThreadToStatistic(
             break;
         }
 
+        pool_blocks_info->latest_consensus_height_++;
         pool_blocks_info->blocks.erase(iter);
-        pool_blocks_info->latest_consensus_height_ = block_ptr->height();
     } while (!destroy_);
 }
 
