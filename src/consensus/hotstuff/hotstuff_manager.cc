@@ -155,7 +155,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
         return -1;
     }
 
-    // Since signature verification is resource-intensive, check the database again to avoid repeated synchronization
+    // Since signature verification is resource-intensive, check the database again to avoid repeated synchronization.
     if (prefix_db_->BlockExists(pb_vblock.qc().view_block_hash())) {
         SHARDORA_DEBUG("already stored, %lu_%lu_%lu, hash: %s",
             pb_vblock.qc().network_id(),
@@ -172,7 +172,7 @@ int HotstuffManager::VerifySyncedViewBlock(const view_block::protobuf::ViewBlock
     return 0;
 }
 
-// Verify view block with qc
+// Verify view block with commit qc
 Status HotstuffManager::VerifyViewBlockWithCommitQC(const view_block::protobuf::ViewBlockItem& vblock) {
     if (!vblock.has_qc() || !vblock.has_block_info()) {
         SHARDORA_ERROR("vblock is not valid, blockview: %lu, qcview: %lu");

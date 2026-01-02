@@ -159,7 +159,7 @@ public:
     inline std::shared_ptr<ViewBlock> LatestCommittedBlock() const {
         return latest_committed_block_;
     }
-
+    // Set the latest committed block
     inline void SetLatestCommittedBlock(const std::shared_ptr<ViewBlockInfo>& view_block_info) {
         auto view_block = view_block_info->view_block;
         if (latest_committed_block_ &&
@@ -170,7 +170,7 @@ public:
             return;
         }
 
-        // 允许设置旧的 view block
+        // Allow setting old view blocks
         SHARDORA_DEBUG("changed latest commited block %u_%u_%lu, new view: %lu, sign x: %s",
             view_block->qc().network_id(), 
             view_block->qc().pool_index(), 
@@ -263,7 +263,7 @@ private:
     std::atomic<View> high_view_block_view_ = 0llu;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
-    std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block
+    std::shared_ptr<ViewBlock> latest_committed_block_; // latest committed block
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
@@ -302,5 +302,3 @@ Status GetLatestViewBlockFromDb(
 } // namespace consensus
     
 } // namespace shardora
-
-

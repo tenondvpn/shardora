@@ -148,7 +148,7 @@ Status Hotstuff::Start() {
     if (!local_member) {
         return Status::kError;
     }
-    if (!leader) {
+    if (!leader) { // check if it is empty
         SHARDORA_ERROR("Get Leader is error.");
     } else if (leader->index == local_member->index) {
         SHARDORA_DEBUG("ViewBlock start propose");
@@ -1016,9 +1016,9 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
             pro_msg_wrap->view_block_ptr->qc().pool_index(),
             pro_msg_wrap->view_block_ptr->qc().view(),
             ProtobufToJson(cons_debug).c_str());
-#endif
-        // 父块不存在，则加入等待队列，后续处理
-        if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // 父块缺失触发同步
+#endif // If the parent block does not exist, add it to the waiting queue for subsequent processing
+        // The lack of a parent block triggers synchronization
+        if (s == Status::kLackOfParentBlock && sync_pool_fn_) { 
             sync_pool_fn_(pool_idx_, 1);
         }
 
@@ -1078,7 +1078,7 @@ Status Hotstuff::HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& p
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     if (!pro_msg_wrap->msg_ptr->is_leader) {
-        // 避免对 view 重复投票
+        // Avoid repeated voting on the view
         voted_msgs_[pro_msg_wrap->view_block_ptr->qc().view()] = trans_msg;
         auto iter = voted_msgs_.begin();
         auto riter = voted_msgs_.rbegin();
@@ -1259,6 +1259,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.replica_idx());
     qc_item.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());
     // 切换视图
+    // switch view
     SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu",
         qc_item.view(),
         qc_item.network_id(),
@@ -1307,7 +1308,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         qc_item.pool_index(),
         qc_item.view(),
         (int32_t)ret);
-    // assert(ret != Status::kInvalidOpposedCount); 有可能由于状态不一致临时出现
+    // assert(ret != Status::kInvalidOpposedCount); It may occur temporarily due to inconsistent status
     if (ret != Status::kSuccess) {
         if (ret == Status::kBlsVerifyWaiting) {
             SHARDORA_DEBUG("kBlsWaiting pool: %d, view: %lu, hash64: %lu",
@@ -1334,7 +1335,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
 #endif
     qc_item.set_sign_x(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->X));
     qc_item.set_sign_y(libBLS::ThresholdUtils::fieldElementToString(reconstructed_sign->Y));
-    // 切换视图
+    // switch view
     SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu",
         qc_item.view(),
         qc_item.network_id(),
@@ -1495,7 +1496,7 @@ void Hotstuff::HandleSyncedViewBlock(
         if (elect_item && elect_item->IsValid()) {
             elect_item->consensus_stat(pool_idx_)->Commit(vblock);
         }
-        
+
         pacemaker_->NewQcView(vblock->qc().view());
         view_block_chain()->Store(vblock, true, nullptr, nullptr, false);
         view_block_chain()->UpdateHighViewBlock(vblock->qc());
@@ -1578,7 +1579,7 @@ void Hotstuff::SyncLaterBlocks(
 }
 
 Status Hotstuff::VerifyQC(const QC& qc) {
-    // 验证 qc
+    // verify qc
     if (!IsQcTcValid(qc)) {
         assert(false);
         return Status::kError;

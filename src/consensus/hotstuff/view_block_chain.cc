@@ -110,16 +110,16 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
-    // 当 view_block 是 start_block_ 的父块，允许添加
+    // When view_block is the parent block of start_block_, it is allowed to be added
     if (start_block_->parent_hash() == view_block->qc().view_block_hash()) {
         SetViewBlockToMap(block_info_ptr);
-        // 更新 start_block_
+        // update start_block_
         start_block_ = view_block;
         return Status::kSuccess;
     }
     
     if (!directly_store) {
-        // 父块必须存在
+        // The parent block must exist
         auto it = view_blocks_info_.find(view_block->parent_hash());
         if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
             if (latest_committed_block_ == nullptr ||
@@ -134,7 +134,7 @@ Status ViewBlockChain::Store(
         }
     }
 
-    // 如果有 qc，则 qc 指向的块必须存在
+    // If there is a qc, the block pointed to by qc must exist
     // if (view_block->has_qc() && !view_block->qc().view_block_hash().empty() && !QCRef(*view_block)) {
     //     SHARDORA_ERROR("view block qc error, hash: %s, view: %lu",
     //         common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(), view_block->qc().view());        
@@ -840,7 +840,7 @@ std::string ViewBlockChain::String() const {
     return ret;
 }
 
-// 获取 db 中最新块的信息和它的 QC
+// Get the information of the latest block in db and its QC
 Status GetLatestViewBlockFromDb(
         uint32_t sharding_id,
         const std::shared_ptr<db::Db>& db,
@@ -856,7 +856,7 @@ Status GetLatestViewBlockFromDb(
         return Status::kError;
     }
 
-    // 获取 block 对应的 view_block 所打包的 qc 信息，如果没有，说明是创世块
+    // Get the qc information packaged by the view_block corresponding to the block. If not, it is the genesis block.
     View view = pool_info.view();
     uint32_t leader_idx = 0;
     HashStr parent_hash = "";
@@ -1217,4 +1217,3 @@ void ViewBlockChain::OnTimeBlock(
 } // namespace hotstuff
 
 } // namespace shardora
-
