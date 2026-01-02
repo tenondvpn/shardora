@@ -156,11 +156,17 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
         uint64_t height) {
     auto iter = view_with_blocks_.find(height);
     if (iter != view_with_blocks_.end()) {
-        if (iter->second.size() == 1) {
+        if (iter->second.size() == 1 && !iter->second[0]->view_block->qc().sign_x().empty()) {
             return iter->second[0]->view_block;
         }
 
+        std::shared_ptr<ViewBlock> signed_block = nullptr;
         for (auto it = iter->second.begin(); it != iter->second.end(); ++it) {
+            if (iter->second[0]->view_block->qc().sign_x().empty()) {
+                continue;
+            }
+
+            signed_block = (*it)->view_block;
             if ((*it)->valid) {
                 return (*it)->view_block;
             }
@@ -184,8 +190,8 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
             }
         }
 
-        if (iter->second.size() > 1) {
-            return (*iter->second.rbegin())->view_block;
+        if (signed_block) {
+            return signed_block;
         }
     }
 
