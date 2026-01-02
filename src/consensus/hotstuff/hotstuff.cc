@@ -1571,11 +1571,11 @@ void Hotstuff::SyncLaterBlocks(
         uint32_t pool_index, 
         View view) {
     auto call_sync_later_func = [&]() {
-        if (view_block_chain->HighQC().view() >= view + 2) {
+        if (view_block_chain->HighView() >= view + 2) {
             return;
         }
 
-        for (View i = view; i < view + 2; ++i) {
+        for (View i = view + 1; i <= view + 2; ++i) {
             kv_sync_->AddSyncHeight(
                 network_id,
                 pool_index,
