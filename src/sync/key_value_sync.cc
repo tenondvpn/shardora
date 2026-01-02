@@ -431,6 +431,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         uint16_t* pool_index_arr = (uint16_t*)key.c_str();
         auto view_block_ptr_info = hotstuff_mgr_->chain(pool_index_arr[0])->GetViewBlockWithHash(
             std::string(key.c_str() + 2, 32));
+        if (!view_block_ptr_info) {
+            continue;
+        }
+        
         auto view_block_ptr= view_block_ptr_info->view_block;
         if (view_block_ptr != nullptr && !view_block_ptr->qc().sign_x().empty()) {
             SHARDORA_DEBUG("success get view block request coming: %u_%u view block hash: %s, hash: %lu",
