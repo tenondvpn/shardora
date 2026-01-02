@@ -99,6 +99,7 @@ include_directories(SYSTEM
 add_definitions(
 #    -DSHARDORA_UNITTEST # for testing
     #-DFOR_CONSOLE_DEBUG
+    -DTEST_LOCAL_NETWORK
     -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r
 #    -DTEST_TRANSPORT_PERFOMANCE
 #    -DSHARDORA_TRACE_MESSAGE
