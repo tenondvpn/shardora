@@ -48,7 +48,7 @@ public:
         bool init);
     // Get Block by hash value, fetch from neighbor nodes if necessary
     std::shared_ptr<ViewBlockInfo> Get(const HashStr& hash);
-    std::shared_ptr<ViewBlock> GetViewBlockWithHash(const HashStr& hash);
+    std::shared_ptr<ViewBlockInfo> GetViewBlockWithHash(const HashStr& hash);
     std::shared_ptr<ViewBlock> GetViewBlockWithHeight(uint32_t network_id, uint64_t height);
     // std::shared_ptr<ViewBlock> Get(uint64_t view);
     // If has block
@@ -179,7 +179,6 @@ public:
             common::Encode::HexEncode(view_block->qc().sign_x()).c_str());
         assert(!view_block->qc().sign_x().empty());
         latest_committed_block_ = view_block;
-        commited_block_queue_.push(view_block_info);
     }
 
     inline ViewBlockStatus GetViewBlockStatus(const std::shared_ptr<ViewBlock>& view_block) const {
@@ -273,13 +272,11 @@ private:
     std::atomic<View> commited_max_view_ = 0llu;
     common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> cached_block_queue_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> cached_block_map_;
+    std::map<uint64_t, std::vector<std::shared_ptr<ViewBlockInfo>>> cached_view_with_blocks_;
     std::priority_queue<
         std::shared_ptr<ViewBlockInfo>, 
         std::vector<std::shared_ptr<ViewBlockInfo>>,
         ViewBlockInfoCmp> cached_pri_queue_;
-    common::ThreadSafeQueue<std::shared_ptr<ViewBlockInfo>> commited_block_queue_;
-    std::unordered_map<uint64_t, std::shared_ptr<ViewBlockInfo>> commited_block_map_;
-    std::priority_queue<uint64_t, std::vector<uint64_t>, std::greater<uint64_t>> commited_pri_queue_;
     block::AccountLruMap<102400> account_lru_map_;
     std::shared_ptr<sync::KeyValueSync> kv_sync_;
     std::shared_ptr<IBlockAcceptor> block_acceptor_;

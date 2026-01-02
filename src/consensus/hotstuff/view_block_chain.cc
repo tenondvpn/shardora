@@ -151,60 +151,66 @@ Status ViewBlockChain::Store(
     return Status::kSuccess;
 }
 
-std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(uint32_t network_id, uint64_t height) {
-    std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
-    while (commited_block_queue_.pop(&view_block_info_ptr)) {
-        commited_block_map_[view_block_info_ptr->view_block->block_info().height()] = view_block_info_ptr;
-        commited_pri_queue_.push(view_block_info_ptr->view_block->block_info().height());
-        CHECK_MEMORY_SIZE(commited_block_map_);
-    }
-
-    std::shared_ptr<ViewBlock> view_block_ptr;
-    auto iter = commited_block_map_.find(height);
-    if (iter != commited_block_map_.end()) {
-        view_block_ptr = iter->second->view_block;
-    }
-
-    if (commited_pri_queue_.size() >= kCachedViewBlockCount) {
-        auto temp_height = commited_pri_queue_.top();
-        auto temp_iter = commited_block_map_.find(temp_height);
-        if (temp_iter != commited_block_map_.end()) {
-            commited_block_map_.erase(temp_iter);
+std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
+        uint32_t network_id, 
+        uint64_t height) {
+    auto iter = view_with_blocks_.find(height);
+    if (iter != view_with_blocks_.end()) {
+        if (iter->second.size() == 1) {
+            return iter->second[0]->view_block;
         }
 
-        commited_pri_queue_.pop();
+        for (auto it = iter->second.begin(); it != iter->second.end(); ++it) {
+            if ((*it)->valid) {
+                return (*it)->view_block;
+            }
+
+            auto p_block = GetViewBlockWithHash((*it)->view_block->parent_hash());
+            if (!p_block) {
+                continue;
+            }
+
+            if (p_block->valid) {
+                return (*it)->view_block;
+            }
+        
+            auto gp_block = GetViewBlockWithHash(p_block->view_block->parent_hash());
+            if (!gp_block) {
+                continue;
+            }
+
+            if (gp_block->valid) {
+                return (*it)->view_block;
+            }
+        }
+
+        if (iter->second.size() > 1) {
+            return (*iter->second.rbegin())->view_block;
+        }
     }
 
-    if (network_id == 0) {
-        return nullptr;
-    }
-
-    if (view_block_ptr) {
-        return view_block_ptr;
-    }
-
-    SHARDORA_DEBUG("now get block with height from db.");
     view_block_ptr = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
         return view_block_ptr;
     }
 
-    return nullptr;
+    return nullptr;   
 }
 
-std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& hash) {
+std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashStr& hash) {
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
     while (cached_block_queue_.pop(&view_block_info_ptr)) {
         cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;
         cached_pri_queue_.push(view_block_info_ptr);
         CHECK_MEMORY_SIZE(cached_block_map_);
+        view_with_blocks_[view_block_info_ptr->view_block->qc().view()].push_back(view_block_info_ptr);
     }
 
-    std::shared_ptr<ViewBlock> view_block_ptr;
+    std::shared_ptr<ViewBlockInfo> view_block_ptr;
     auto iter = cached_block_map_.find(hash);
     if (iter != cached_block_map_.end()) {
-        view_block_ptr = iter->second->view_block;
+        view_block_ptr = iter->second;
     }
 
     if (cached_pri_queue_.size() >= kCachedViewBlockCount) {
@@ -212,6 +218,15 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
         auto temp_iter = cached_block_map_.find(temp_ptr->view_block->qc().view_block_hash());
         if (temp_iter != cached_block_map_.end()) {
             cached_block_map_.erase(temp_iter);
+        }
+
+        auto iter= view_with_blocks_.begin();
+        while (iter != view_with_blocks_.end()) {
+            if (iter->first <= temp_ptr->view_block->qc().view()) {
+                iter = view_with_blocks_.erase(iter);
+            } else {
+                ++iter;
+            }
         }
 
         cached_pri_queue_.pop();
@@ -226,9 +241,11 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHash(const HashStr& h
     }
 
     SHARDORA_DEBUG("now get block with hash from db.");
-    view_block_ptr = std::make_shared<ViewBlock>();
-    auto& view_block = *view_block_ptr;
+    view_block_ptr = std::make_shared<ViewBlockInfo>();
+    view_block_ptr->view_block = std::make_shared<ViewBlock>();
+    auto& view_block = *view_block_ptr->view_block;
     if (prefix_db_->GetBlock(hash, &view_block)) {
+        view_block_ptr->valid = true;
         return view_block_ptr;
     }
 
@@ -464,6 +481,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         AddNewBlock(tmp_block, db_batch);
+        (*iter)->valid = true;
         if ((*iter)->acc_balance_map_ptr) {
             for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
                     acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {

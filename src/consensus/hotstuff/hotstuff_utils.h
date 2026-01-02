@@ -93,7 +93,7 @@ public:
     std::shared_ptr<QC> qc;
     BalanceAndNonceMapPtr acc_balance_map_ptr;
     std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
-    bool valid;
+    std::atomic<bool> valid;
 
     ViewBlockInfo() : 
         view_block(nullptr), 
