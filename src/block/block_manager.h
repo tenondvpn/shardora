@@ -44,7 +44,6 @@ public:
     BlockManager(transport::MultiThreadHandler& net_handler_, std::shared_ptr<ck::ClickHouseClient> ck_client);
     ~BlockManager();
 
-    // TODO: not thread thafe
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 

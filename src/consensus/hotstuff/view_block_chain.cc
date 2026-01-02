@@ -154,8 +154,8 @@ Status ViewBlockChain::Store(
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
         uint32_t network_id, 
         uint64_t height) {
-    auto iter = view_with_blocks_.find(height);
-    if (iter != view_with_blocks_.end()) {
+    auto iter = cached_view_with_blocks_.find(height);
+    if (iter != cached_view_with_blocks_.end()) {
         if (iter->second.size() == 1 && !iter->second[0]->view_block->qc().sign_x().empty()) {
             return iter->second[0]->view_block;
         }
@@ -210,7 +210,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
         cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;
         cached_pri_queue_.push(view_block_info_ptr);
         CHECK_MEMORY_SIZE(cached_block_map_);
-        view_with_blocks_[view_block_info_ptr->view_block->qc().view()].push_back(view_block_info_ptr);
+        cached_view_with_blocks_[view_block_info_ptr->view_block->qc().view()].push_back(view_block_info_ptr);
     }
 
     std::shared_ptr<ViewBlockInfo> view_block_ptr;
@@ -226,10 +226,10 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
             cached_block_map_.erase(temp_iter);
         }
 
-        auto iter= view_with_blocks_.begin();
-        while (iter != view_with_blocks_.end()) {
+        auto iter= cached_view_with_blocks_.begin();
+        while (iter != cached_view_with_blocks_.end()) {
             if (iter->first <= temp_ptr->view_block->qc().view()) {
-                iter = view_with_blocks_.erase(iter);
+                iter = cached_view_with_blocks_.erase(iter);
             } else {
                 ++iter;
             }
@@ -595,7 +595,7 @@ void ViewBlockChain::HandleTimerMessage() {
                         assert(false);
                         continue;
                     }
-                    
+
                     auto view_block_ptr = CheckCommit((*block_iter)->view_block->qc());
                     if (view_block_ptr) {
                         Commit(view_block_ptr);

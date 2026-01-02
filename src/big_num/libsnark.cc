@@ -46,9 +46,6 @@ libff::alt_bn128_Fq decodeFqElement(bytesConstRef _data)
     // h256::AlignLeft ensures that the h256 is zero-filled on the right if _data
     // is too short.
     h256 xbin(_data, h256::AlignLeft);
-    // TODO: Consider using a compiler time constant for comparison.
-    if (u256(xbin) >= u256(fromLibsnarkBigint(libff::alt_bn128_Fq::mod)))
-        assert(false);
     return toLibsnarkBigint(xbin);
 }
 
@@ -59,8 +56,6 @@ libff::alt_bn128_G1 decodePointG1(bytesConstRef _data)
     if (x == libff::alt_bn128_Fq::zero() && y == libff::alt_bn128_Fq::zero())
         return libff::alt_bn128_G1::zero();
     libff::alt_bn128_G1 p(x, y, libff::alt_bn128_Fq::one());
-    if (!p.is_well_formed())
-        assert(false);
     return p;
 }
 

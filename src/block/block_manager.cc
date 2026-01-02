@@ -332,7 +332,6 @@ void BlockManager::RootHandleNormalToTx(
     }
 }
 
-// TODO refactor needed!
 void BlockManager::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs) {
@@ -357,7 +356,6 @@ void BlockManager::AddNewBlock(
     auto view_block_item = view_block_info->view_block;
     assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
-    // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
     SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s, ck_client_: %d",
@@ -714,8 +712,6 @@ void BlockManager::CreateStatisticTx() {
 
     // 对应 timeblock_height 的 elect_statistic 已经收集，不会进行重复收集
     MarkDoneTimeblockHeightStatistic(timeblock_height);
-
-    // TODO: fix invalid hash
     auto unique_hash = common::Hash::keccak256(
         std::string("create_statistic_tx_") + 
         std::to_string(elect_statistic.sharding_id()) + "_" +
