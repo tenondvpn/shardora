@@ -378,4 +378,3 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
 } // namespace hotstuff
 
 } // namespace shardora
-

@@ -754,7 +754,7 @@ bool BlockAcceptor::IsBlockValid(const view_block::protobuf::ViewBlockItem& view
     }
 
     auto cur_time = common::TimeUtils::TimestampMs();
-    // The timestamp of the new block must be greater than the timestamp of the previous block
+    // The timestamp of the new block must be greater than the timestamp of the previous block.
     uint64_t preblock_time = pools_mgr_->latest_timestamp(pool_idx());
     if (zjc_block->timestamp() <= preblock_time && zjc_block->timestamp() + 10000lu >= cur_time) {
         SHARDORA_WARN("Accept timestamp error: %lu, %lu, cur: %lu", zjc_block->timestamp(), preblock_time, cur_time);

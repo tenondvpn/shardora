@@ -436,7 +436,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         }
 
         if (local_poly.polynomial_size() <= 0) {
-            // just private key.
+            // just private key
             genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
             for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
                 local_poly.add_polynomial(common::Encode::HexDecode(

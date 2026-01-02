@@ -82,8 +82,7 @@ void Hotstuff::Init() {
 void Hotstuff::InitLoadLatestBlock(
         std::shared_ptr<ViewBlockChain> view_block_chain, 
         uint32_t network_id, uint32_t pool_index) {
-    auto latest_view_block = std::make_shared<ViewBlock>();
-    // 从 db 中获取最后一个有 QC 的 ViewBlock
+    auto latest_view_block = std::make_shared<ViewBlock>(); // Get the last ViewBlock with QC from the db
     Status s = GetLatestViewBlockFromDb(network_id, db_, pool_index, latest_view_block);
     if (s == Status::kSuccess) {
         auto balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
@@ -148,7 +147,7 @@ Status Hotstuff::Start() {
     if (!local_member) {
         return Status::kError;
     }
-    if (!leader) { // check if it is empty
+    if (!leader) { // Check if it is empty
         SHARDORA_ERROR("Get Leader is error.");
     } else if (leader->index == local_member->index) {
         SHARDORA_DEBUG("ViewBlock start propose");
@@ -822,14 +821,13 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
 Status Hotstuff::HandleProposeMsgStep_Directly(
         std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
         const std::string& expect_view_block_hash) {
-#ifndef NDEBUG
     transport::protobuf::ConsensusDebug cons_debug;
     cons_debug.ParseFromString(pro_msg_wrap->msg_ptr->header.debug());
     SHARDORA_DEBUG("HandleProposeMsgStep_Directly called hash: %lu, propose_debug: %s",
         pro_msg_wrap->msg_ptr->header.hash64(), 
         ProtobufToJson(cons_debug).c_str());
 #endif
-    // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
+    // Verify ViewBlock.block and tx_propose, verify tx_propose, fill in Block tx related fields
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->view_block_ptr->mutable_block_info()->clear_tx_list();
     auto balance_map_ptr = std::make_shared<BalanceAndNonceMap>();
@@ -905,8 +903,8 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
             pro_msg_wrap->view_block_ptr->qc().network_id(),
             pro_msg_wrap->view_block_ptr->qc().pool_index(),
             pro_msg_wrap->view_block_ptr->qc().view());
-        // 父块不存在，则加入等待队列，后续处理
-        if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // 父块缺失触发同步
+        // If the parent block does not exist, add it to the waiting queue for subsequent processing
+        if (s == Status::kLackOfParentBlock && sync_pool_fn_) { // The lack of a parent block triggers synchronization
             sync_pool_fn_(pool_idx_, 1);
         }
 
@@ -927,7 +925,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
         common::Encode::HexEncode(pro_msg_wrap->view_block_ptr->qc().view_block_hash()).c_str(),
         ProtobufToJson(cons_debug).c_str());
 #endif
-    // Verify ViewBlock.block and tx_propose, 验证tx_propose，填充Block tx相关字段
+    // Verify ViewBlock.block and tx_propose, verify tx_propose, fill in Block tx related fields
     auto& proto_msg = pro_msg_wrap->msg_ptr->header.hotstuff().pro_msg();
     pro_msg_wrap->acc_balance_and_nonce_map_ptr = std::make_shared<BalanceAndNonceMap>();
     auto& balance_and_nonce_map = *pro_msg_wrap->acc_balance_and_nonce_map_ptr;
@@ -1016,8 +1014,8 @@ Status Hotstuff::HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapp
             pro_msg_wrap->view_block_ptr->qc().pool_index(),
             pro_msg_wrap->view_block_ptr->qc().view(),
             ProtobufToJson(cons_debug).c_str());
-#endif // If the parent block does not exist, add it to the waiting queue for subsequent processing
-        // The lack of a parent block triggers synchronization
+#endif
+        // If the parent block does not exist, add it to the waiting queue for subsequent processing. The lack of a parent block triggers synchronization.
         if (s == Status::kLackOfParentBlock && sync_pool_fn_) { 
             sync_pool_fn_(pool_idx_, 1);
         }
@@ -1209,8 +1207,8 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         vote_msg.view(),
         msg_ptr->header.hash64());
 
-    // 同步 replica 的 txs
-    // 生成聚合签名，创建qc
+    // Sync replica's txs
+    // Generate aggregate signature, create qc
     auto elect_height = vote_msg.elect_height();
     auto replica_idx = vote_msg.replica_idx();
 
@@ -1258,7 +1256,6 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
         ProtobufToJson(cons_debug).c_str(),
         vote_msg.replica_idx());
     qc_item.mutable_agg_sig()->CopyFrom(agg_sig.DumpToProto());
-    // 切换视图
     // switch view
     SHARDORA_DEBUG("success new set qc view: %lu, %u_%u_%lu",
         qc_item.view(),
@@ -1680,7 +1677,7 @@ Status Hotstuff::VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) 
         return Status::kSuccess;
     }
 
-    auto leader = leader_rotation()->GetLeader(); // 判断是否为空
+    auto leader = leader_rotation()->GetLeader(); // Check if it is empty
     if (!leader) {
         SHARDORA_ERROR("Get Leader is error.");
         return Status::kError;

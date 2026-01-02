@@ -125,7 +125,7 @@ int NetworkInit::Init(int argc, char** argv) {
     //     }
     // }
 
-    // 随机数
+    // random number
     vss_mgr_ = std::make_shared<vss::VssManager>();
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     SHARDORA_INFO("init 0 4");
@@ -268,8 +268,7 @@ int NetworkInit::Init(int argc, char** argv) {
     SHARDORA_WARN("init shard_statistic_ success.");
     block_mgr_->LoadLatestBlocks();
     RegisterFirewallCheck();
-    hotstuff_mgr_->Start();
-    // 以上应该放入 hotstuff 实例初始化中，并接收创世块
+    hotstuff_mgr_->Start(); // The above should be placed in the hotstuff instance initialization and receive the genesis block
     SHARDORA_WARN("init hotstuff_mgr_ start success.");
     AddCmds();
     net_handler_.Start();
@@ -440,8 +439,7 @@ void NetworkInit::InitLocalNetworkId() {
             auto id = security_->GetAddress(in[member_idx].pubkey());
             SHARDORA_INFO("network: %d get member id: %s, local id: %s",
                 sharding_id, common::Encode::HexEncode(id).c_str(),
-                common::Encode::HexEncode(security_->GetAddress()).c_str());
-            // 如果本 node pubkey 与 elect block 当中记录的相同，则分配到对应的 sharding
+                common::Encode::HexEncode(security_->GetAddress()).c_str()); // If the pubkey of this node is the same as the one recorded in the elect block, it will be assigned to the corresponding sharding
             if (id == security_->GetAddress()) {
                 SHARDORA_INFO("should join network: %u", sharding_id);
                 des_sharding_id_ = sharding_id;
@@ -1357,7 +1355,7 @@ void NetworkInit::SendJoinElectTransaction() {
     }
 
     new_tx->set_sign(sign);
-    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
+    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx The receiving end has calculated it, so there is no need to transmit it here
     network::Route::Instance()->Send(msg_ptr);
     SHARDORA_DEBUG("success send join elect request transaction: %u, join: %u, addr: %s, nonce: %lu, "
         "hash64: %lu, tx hash: %s, pk: %s sign: %s",
