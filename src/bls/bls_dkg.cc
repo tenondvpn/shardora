@@ -140,14 +140,16 @@ void BlsDkg::OnNewElectionBlock(
     swap_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     finish_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     SHARDORA_WARN("bls time point now: %lu, time block tm: %lu, begin_time_sec_: %lu, "
-        "kDkgPeriodUs: %lu, ver_offset_: %lu, swap_offset_: %lu, finish_offset_: %lu",
+        "kDkgPeriodUs: %lu, ver_offset_: %lu, swap_offset_: %lu, "
+        "finish_offset_: %lu, elect_hegiht_: %lu",
         common::TimeUtils::TimestampSeconds(),
         latest_timeblock_info->lastest_time_block_tm,
         begin_time_us_,
         kDkgPeriodUs,
         ver_offset_,
         swap_offset_,
-        finish_offset_);
+        finish_offset_,
+        elect_hegiht_);
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;

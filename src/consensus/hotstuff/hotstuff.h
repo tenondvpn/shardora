@@ -264,6 +264,11 @@ private:
     uint32_t GetPendingSuccNumOfLeader(const std::shared_ptr<ViewBlock>& v_block);
     void BroadcastGlobalPoolBlock(const std::shared_ptr<ViewBlock>& v_block);
     void HandleTimerMessage();
+    void SyncLaterBlocks(
+        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        uint32_t network_id, 
+        uint32_t pool_index, 
+        View view);
 
     static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 15000lu;
 
@@ -300,6 +305,7 @@ private:
     uint64_t prev_sync_latest_view_tm_ms_ = 0;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
+    common::Tick layter_sync_tick_;
     
 // #ifndef NDEBUG
     static std::atomic<uint32_t> sendout_bft_message_count_;

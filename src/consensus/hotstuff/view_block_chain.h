@@ -135,11 +135,16 @@ public:
     }
 
     inline std::shared_ptr<ViewBlock> HighViewBlock() const {
-        return high_view_block_;
+        return high_view_block_.load();
     }
 
     inline const QC& HighQC() const {
-        return high_view_block_->qc();
+        auto view_block = HighViewBlock();
+        if (view_block == nullptr) {
+            return QC();
+        }
+
+        return view_block->qc();
     }
 
     void ResetViewBlock(const HashStr& hash) {
@@ -256,7 +261,7 @@ private:
         
     static const uint32_t kCachedViewBlockCount = 16u;
 
-    std::shared_ptr<ViewBlock> high_view_block_ = nullptr;
+    std::atomic<std::shared_ptr<ViewBlock>> high_view_block_ = nullptr;
     std::shared_ptr<ViewBlock> start_block_;
     std::unordered_map<HashStr, std::shared_ptr<ViewBlockInfo>> view_blocks_info_;
     std::shared_ptr<ViewBlock> latest_committed_block_; // 最新 committed block

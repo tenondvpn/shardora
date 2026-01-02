@@ -1517,6 +1517,13 @@ void Hotstuff::HandleSyncedViewBlock(
         }
         TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_);
         TryCommit(view_block_chain(), msg_ptr, vblock->qc());
+        if (vblock->block_info().tx_list_size() > 0) {
+            SyncLaterBlocks(
+                view_block_chain(), 
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view());
+        }
     } else if (network::IsSameShardOrSameWaitingPool(
             vblock->qc().network_id(), network::kRootCongressNetworkId)) {
         if (vblock->qc().pool_index() != pool_idx_) {
@@ -1529,6 +1536,13 @@ void Hotstuff::HandleSyncedViewBlock(
         root_view_block_chain_->UpdateHighViewBlock(vblock->qc());
         TryCommit(root_view_block_chain_, msg_ptr, vblock->qc());
         // root_view_block_chain_->CommitSynced(vblock);
+        if (vblock->block_info().tx_list_size() > 0) {
+            SyncLaterBlocks(
+                root_view_block_chain_, 
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view());
+        }
     } else {
         if (vblock->qc().network_id() % common::kImmutablePoolSize != pool_idx_) {
             SHARDORA_ERROR("invalid shard id: %u, pool_idx: %u",
@@ -1541,8 +1555,36 @@ void Hotstuff::HandleSyncedViewBlock(
         cross_view_block_chain->Store(vblock, true, nullptr, nullptr, false);
         cross_view_block_chain->UpdateHighViewBlock(vblock->qc());
         TryCommit(cross_view_block_chain, msg_ptr, vblock->qc());
-        // cross_view_block_chain->CommitSynced(vblock);
+        if (vblock->block_info().tx_list_size() > 0) {
+            SyncLaterBlocks(
+                cross_view_block_chain, 
+                vblock->qc().network_id(), 
+                vblock->qc().pool_index(), 
+                vblock->qc().view());
+        }
     }
+}
+
+void Hotstuff::SyncLaterBlocks(
+        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        uint32_t network_id, 
+        uint32_t pool_index, 
+        View view) {
+    auto call_sync_later_func = [&]() {
+        if (view_block_chain->HighQC().view() >= view + 2) {
+            return;
+        }
+
+        for (View i = view; i < view + 2; ++i) {
+            kv_sync_->AddSyncHeight(
+                network_id,
+                pool_index,
+                i,
+                sync::kSyncHighest);
+        }
+    };
+
+    layter_sync_tick_.CutOff(10000000llu, call_sync_later_func);
 }
 
 Status Hotstuff::VerifyQC(const QC& qc) {
