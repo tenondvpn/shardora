@@ -215,11 +215,6 @@ bool ShardStatistic::HandleStatistic(
         view_block_ptr->qc().pool_index(),
         block.height(),
         block.timeblock_height());
-    // if (block.has_elect_statistic() || block.has_pool_st_info()) {
-    //     HandleStatisticBlock(block);
-    // }
-
-    std::string statistic_pool_debug_str;
     auto pool_statistic_riter = statistic_pool_info_.rbegin();// find(block.timeblock_height());
     while (pool_statistic_riter != statistic_pool_info_.rend()) {
         auto pool_iter = pool_statistic_riter->second.find(pool_idx);
@@ -232,7 +227,8 @@ bool ShardStatistic::HandleStatistic(
                 block.height(),
                 pool_statistic_riter->first,
                 pool_iter->second.statistic_max_height);
-            if (pool_iter->second.statistic_max_height <= block.height()) {
+            if (pool_iter->second.statistic_max_height <= block.height() && 
+                    pool_iter->second.statistic_min_height <= block.height()) {
                 break;
             }
         }
@@ -241,7 +237,6 @@ bool ShardStatistic::HandleStatistic(
     }
 
     if (pool_statistic_riter == statistic_pool_info_.rend()) {
-        SHARDORA_INFO("statistic_pool_debug_str failed, has statisticed: %s", statistic_pool_debug_str.c_str());
         // assert(false);
         return false;
     }
