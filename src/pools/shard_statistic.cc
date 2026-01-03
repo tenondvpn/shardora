@@ -437,17 +437,6 @@ bool ShardStatistic::HandleStatistic(
     auto& node_info = node_iter->second;
     node_info.gas_sum += block.all_gas();
     node_info.tx_count += block.tx_list_size();
-    std::string debug_str = ", height_node_collect_info_map height: ";
-    for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-            titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-        debug_str += std::to_string(titer->first) + ":";
-        for (auto siter = titer->second.begin(); siter != titer->second.end(); ++siter) {
-            debug_str += ", leader id: " + common::Encode::HexEncode(siter->first) + 
-            ", block_gas: " + std::to_string(siter->second.gas_sum) + 
-            ", tx count: " + std::to_string(siter->second.tx_count) + ", ";
-        }
-    }
-
     SHARDORA_INFO("pool_statistic_riter->first == block.timeblock_height: %d, "
         "statistic height: %lu, elect height: %lu, success handle block pool: %u, height: %lu, "
         "tm height: %lu, leader_id: %s, tx_count: %u, tx size: %u, "
@@ -460,8 +449,8 @@ bool ShardStatistic::HandleStatistic(
         common::Encode::HexEncode(leader_id).c_str(),
         node_info.tx_count,
         block.tx_list_size(),
-        debug_str.c_str(),
-        statistic_pool_debug_str.c_str());
+        "",
+        "");
     // assert(pool_statistic_riter->first == block.timeblock_height());
     return true;
 }
@@ -691,35 +680,11 @@ int ShardStatistic::StatisticWithHeights(
     auto id_pk_map = statistic_info_ptr->id_pk_map;
     auto& id_agg_bls_pk_map = statistic_info_ptr->id_agg_bls_pk_map;
     auto& id_agg_bls_pk_proof_map = statistic_info_ptr->id_agg_bls_pk_proof_map;
-    std::string debug_str;
     ++pool_iter;
-    std::string tx_count_debug_str;
     for (; pool_iter != iter->second.end(); ++pool_iter) {
-        tx_count_debug_str += "pool idx: " + std::to_string(pool_iter->first) + ", ";
         auto* statistic_info_ptr = &pool_iter->second;
         all_gas_amount += statistic_info_ptr->all_gas_amount;
         root_all_gas_amount += statistic_info_ptr->root_all_gas_amount;
-        debug_str += "pool: " + std::to_string(pool_iter->first) + 
-            ", gas_amount: " + std::to_string(statistic_info_ptr->root_all_gas_amount) + 
-            ", root_all_gas_amount: " + std::to_string(statistic_info_ptr->root_all_gas_amount) +
-            ", join_elect_stoke_map height: ";
-        for (auto titer = statistic_info_ptr->join_elect_stoke_map.begin(); 
-                titer != statistic_info_ptr->join_elect_stoke_map.end(); ++titer) {
-            debug_str += std::to_string(titer->first) + ",";
-        }
-
-        debug_str += ", join_elect_shard_map height: ";
-        for (auto titer = statistic_info_ptr->join_elect_shard_map.begin(); 
-                titer != statistic_info_ptr->join_elect_shard_map.end(); ++titer) {
-            debug_str += std::to_string(titer->first) + ",";
-        }
-
-        debug_str += ", height_node_collect_info_map height: ";
-        for (auto titer = statistic_info_ptr->height_node_collect_info_map.begin(); 
-                titer != statistic_info_ptr->height_node_collect_info_map.end(); ++titer) {
-            debug_str += std::to_string(titer->first) + ",";
-        }
-
         for (auto h_join_elect_stoke_iter = statistic_info_ptr->join_elect_stoke_map.begin();
                 h_join_elect_stoke_iter != statistic_info_ptr->join_elect_stoke_map.end(); 
                 ++h_join_elect_stoke_iter) {
@@ -772,7 +737,6 @@ int ShardStatistic::StatisticWithHeights(
         for (auto h_height_node_collect_info_iter = statistic_info_ptr->height_node_collect_info_map.begin();
                 h_height_node_collect_info_iter != statistic_info_ptr->height_node_collect_info_map.end(); 
                 ++h_height_node_collect_info_iter) {
-            tx_count_debug_str += "height: " + std::to_string(h_height_node_collect_info_iter->first) + ", ";
             auto tmp_iter = height_node_collect_info_map.find(h_height_node_collect_info_iter->first);
             if (tmp_iter == height_node_collect_info_map.end()) {
                 height_node_collect_info_map[h_height_node_collect_info_iter->first] = h_height_node_collect_info_iter->second;
@@ -780,8 +744,6 @@ int ShardStatistic::StatisticWithHeights(
                 for (auto height_node_collect_info_iter = h_height_node_collect_info_iter->second.begin();
                         height_node_collect_info_iter != h_height_node_collect_info_iter->second.end();
                         ++height_node_collect_info_iter) {
-                    tx_count_debug_str += "id: " + common::Encode::HexEncode(height_node_collect_info_iter->first) + 
-                        ": " + std::to_string(height_node_collect_info_iter->second.tx_count) + ", ";
                     auto stoke_iter = tmp_iter->second.find(height_node_collect_info_iter->first);
                     if (stoke_iter == tmp_iter->second.end()) {
                         tmp_iter->second[height_node_collect_info_iter->first] = height_node_collect_info_iter->second;
@@ -842,8 +804,8 @@ int ShardStatistic::StatisticWithHeights(
         ProtobufToJson(elect_statistic).c_str(),
         piter->first,
         iter->first, 
-        debug_str.c_str(), 
-        tx_count_debug_str.c_str());
+        "", 
+        "");
     assert(piter->first > iter->first);
     statistic_height_map_[iter->first] = elect_statistic;
     CHECK_MEMORY_SIZE(statistic_height_map_);
