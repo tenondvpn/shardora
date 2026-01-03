@@ -185,6 +185,19 @@ bool ShardStatistic::HandleStatistic(
             exist_iter = statistic_pool_info_.find(block.pool_statistic_height());
         } 
         
+        if (statistic_pool_info_.size() >= 2) {
+            auto iter = statistic_pool_info_.rbegin()++;
+            iter->second[pool_idx].statistic_max_height = block.height();
+            SHARDORA_INFO(
+                "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
+                "pool: %u, height: %lu, statistic_min_height: %lu, statistic_max_height: %lu", 
+                iter->first, 
+                pool_idx, 
+                block.height(), 
+                iter->second[pool_idx].statistic_min_height,
+                iter->second[pool_idx].statistic_max_height);
+        }
+
         exist_iter->second[pool_idx].statistic_min_height = block.height() + 1;
         SHARDORA_INFO(
             "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
@@ -242,26 +255,26 @@ bool ShardStatistic::HandleStatistic(
 
     auto& pool_statistic_info = pool_iter->second;
     auto* statistic_info_ptr = &pool_statistic_info;
-    if (statistic_info_ptr->statistic_max_height == 0llu) {
-        for (auto iter = pool_statistic_height_with_block_height_map_.begin(); 
-                iter != pool_statistic_height_with_block_height_map_.end(); ++iter) {
-            if (iter->first > pool_statistic_riter->first) {
-                auto tmp_pool_iter = iter->second.find(pool_idx);
-                if (tmp_pool_iter != iter->second.end()) {
-                    statistic_info_ptr->statistic_max_height = tmp_pool_iter->second;
-                    SHARDORA_INFO("pool statistic set min and max height: %u, %lu, %lu, "
-                        "exists statistic height: %lu, prev statistic height: %lu",
-                        pool_iter->first, 
-                        statistic_info_ptr->statistic_min_height, 
-                        statistic_info_ptr->statistic_max_height,
-                        iter->first,
-                        pool_statistic_riter->first);
-                }
+    // if (statistic_info_ptr->statistic_max_height == 0llu) {
+    //     for (auto iter = pool_statistic_height_with_block_height_map_.begin(); 
+    //             iter != pool_statistic_height_with_block_height_map_.end(); ++iter) {
+    //         if (iter->first > pool_statistic_riter->first) {
+    //             auto tmp_pool_iter = iter->second.find(pool_idx);
+    //             if (tmp_pool_iter != iter->second.end()) {
+    //                 statistic_info_ptr->statistic_max_height = tmp_pool_iter->second;
+    //                 SHARDORA_INFO("pool statistic set min and max height: %u, %lu, %lu, "
+    //                     "exists statistic height: %lu, prev statistic height: %lu",
+    //                     pool_iter->first, 
+    //                     statistic_info_ptr->statistic_min_height, 
+    //                     statistic_info_ptr->statistic_max_height,
+    //                     iter->first,
+    //                     pool_statistic_riter->first);
+    //             }
                     
-                break;
-            }
-        }
-    }
+    //             break;
+    //         }
+    //     }
+    // }
 
     auto& join_elect_stoke_map = statistic_info_ptr->join_elect_stoke_map;
     auto& join_elect_shard_map = statistic_info_ptr->join_elect_shard_map;
