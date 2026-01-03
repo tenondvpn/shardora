@@ -592,27 +592,27 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     for (uint32_t tmp_pool_idx = 0; tmp_pool_idx < common::kInvalidPoolIndex; ++tmp_pool_idx) {
-        // for (auto tmp_iter = pool_statistic_height_with_block_height_map_.begin(); 
-        //         tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
-        //     SHARDORA_INFO("pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
-        //         "tmp_iter->first: %lu iter->first: %lu",
-        //         tmp_pool_idx, tmp_iter->first, iter->first);
-        //     if (tmp_iter->first > iter->first) {
-        //         auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
-        //         if (tmp_pool_iter != tmp_iter->second.end()) {
-        //             iter->second[tmp_pool_idx].statistic_max_height = tmp_pool_iter->second;
-        //             SHARDORA_INFO("success get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
-        //                 "tmp_iter->first: %lu iter->first: %lu, tmp_pool_iter->second: %lu",
-        //                 tmp_pool_idx, tmp_iter->first, iter->first, tmp_pool_iter->second);
-        //         } else {
-        //             SHARDORA_INFO("failed get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
-        //                 "tmp_iter->first: %lu iter->first: %lu",
-        //                 tmp_pool_idx, tmp_iter->first, iter->first);
-        //         }
+        for (auto tmp_iter = pool_statistic_height_with_block_height_map_.begin(); 
+                tmp_iter != pool_statistic_height_with_block_height_map_.end(); ++tmp_iter) {
+            SHARDORA_INFO("pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                "tmp_iter->first: %lu iter->first: %lu",
+                tmp_pool_idx, tmp_iter->first, iter->first);
+            if (tmp_iter->first > iter->first) {
+                auto tmp_pool_iter = tmp_iter->second.find(tmp_pool_idx);
+                if (tmp_pool_iter != tmp_iter->second.end()) {
+                    iter->second[tmp_pool_idx].statistic_max_height = tmp_pool_iter->second;
+                    SHARDORA_INFO("success get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                        "tmp_iter->first: %lu iter->first: %lu, tmp_pool_iter->second: %lu",
+                        tmp_pool_idx, tmp_iter->first, iter->first, tmp_pool_iter->second);
+                } else {
+                    SHARDORA_INFO("failed get pool_statistic_height_with_block_height_map_ tmp_pool_idx: %d, "
+                        "tmp_iter->first: %lu iter->first: %lu",
+                        tmp_pool_idx, tmp_iter->first, iter->first);
+                }
                     
-        //         break;
-        //     }
-        // }
+                break;
+            }
+        }
         
         if (iter->second[tmp_pool_idx].statistic_min_height >
                 iter->second[tmp_pool_idx].statistic_max_height) {
