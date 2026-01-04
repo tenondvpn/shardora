@@ -949,6 +949,8 @@ void NetworkInit::SaveCrossBlockToEachShard() {
 
         auto prefix_db = std::make_shared<protos::PrefixDb>(db);
         db::DbWriteBatch batch;
+        pools::protobuf::PoolStatisticTxInfo pool_st_info;
+        pool_st_info.set_height(1);
         for (auto iter = blocks.begin(); iter != blocks.end(); ++iter) {
             prefix_db->SaveBlock(*iter, batch);
             auto& view_block = *iter;
@@ -959,8 +961,17 @@ void NetworkInit::SaveCrossBlockToEachShard() {
             pool_info.set_view(view_block.qc().view());
             prefix_db->SaveLatestPoolInfo(
                 view_block.qc().network_id(), view_block.qc().pool_index(), pool_info, batch);
+            auto statistic_info = pool_st_info.add_pool_statisitcs();
+            statistic_info->set_pool_index(view_block.qc().pool_index());
+            statistic_info->set_min_height(0);
+            statistic_info->set_max_height(view_block.block_info().height());
+            
         }
 
+        prefix_db->SaveLatestPoolStatisticTag(
+            net_i, 
+            pool_st_info, 
+            db_batch);
         auto st = db->Put(batch);
         if (!st.ok()) {
             SHARDORA_FATAL("write db failed!");
