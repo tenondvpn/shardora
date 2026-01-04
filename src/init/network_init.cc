@@ -949,7 +949,6 @@ void NetworkInit::SaveCrossBlockToEachShard() {
 
         auto prefix_db = std::make_shared<protos::PrefixDb>(db);
         db::DbWriteBatch batch;
-        pool_st_info.set_height(1);
         for (auto iter = blocks.begin(); iter != blocks.end(); ++iter) {
             prefix_db->SaveBlock(*iter, batch);
             auto& view_block = *iter;
