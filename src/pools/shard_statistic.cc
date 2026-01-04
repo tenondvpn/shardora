@@ -229,11 +229,8 @@ bool ShardStatistic::HandleStatistic(
                 pool_statistic_riter->first,
                 pool_iter->second.statistic_min_height,
                 pool_iter->second.statistic_max_height);
-            if (pool_iter->second.statistic_min_height == 0) {
-                continue;
-            }
-            
-            if (pool_iter->second.statistic_max_height < block.height() && 
+            if (pool_iter->second.statistic_min_height != 0 && 
+                    pool_iter->second.statistic_max_height < block.height() && 
                     pool_iter->second.statistic_min_height <= block.height()) {
                 break;
             }
