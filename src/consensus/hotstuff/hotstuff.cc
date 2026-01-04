@@ -1560,11 +1560,15 @@ void Hotstuff::SyncLaterBlocks(
         uint32_t pool_index, 
         View view) {
     auto call_sync_later_func = [this, view_block_chain, network_id, pool_index, view]() {
-        if (view_block_chain->HighView() >= view + 2) {
-            return;
-        }
-
         for (View i = view + 1; i <= view + 2; ++i) {
+            SHARDORA_DEBUG("now sync later block %u_%u_%lu",
+                network_id, pool_index, i);
+            if (view_block_chain->HighView() >= i) {
+                continue;
+            }
+            
+            SHARDORA_DEBUG("real now sync later block %u_%u_%lu",
+                network_id, pool_index, i);
             kv_sync_->AddSyncHeight(
                 network_id,
                 pool_index,

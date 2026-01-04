@@ -64,8 +64,8 @@ void KeyValueSync::AddSyncHeight(
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     item_queues_[thread_idx].push(item);
-    SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u",
-        item->key.c_str(), item->priority);
+    SHARDORA_DEBUG("block height add new sync item key: %s, priority: %u, %u_%u_%lu",
+        item->key.c_str(), item->priority, network_id, pool_idx, height);
 }
 
 void KeyValueSync::HotstuffConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
