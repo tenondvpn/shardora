@@ -1577,7 +1577,11 @@ void Hotstuff::SyncLaterBlocks(
         }
     };
 
+#ifdef TEST_LOCAL_NETWORK
+    layter_sync_tick_.CutOff(3000000llu, call_sync_later_func);
+#else
     layter_sync_tick_.CutOff(10000000llu, call_sync_later_func);
+#endif
 }
 
 Status Hotstuff::VerifyQC(const QC& qc) {
