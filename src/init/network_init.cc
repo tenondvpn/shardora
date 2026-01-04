@@ -789,14 +789,14 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     }
     
     SHARDORA_DEBUG("now consensus_shard_node_count: %u", consensus_shard_node_count);
-    std::set<uint32_t> valid_net_ids_set;
-    std::string valid_arg_i_value;
-    for (uint32_t net_id = network::kConsensusShardBeginNetworkId; 
-            net_id < network::kConsensusShardEndNetworkId; ++net_id) {
-        CreateInitAddress(net_id);
-    }
-
     if (parser_arg.Has("U")) {
+         std::set<uint32_t> valid_net_ids_set;
+        std::string valid_arg_i_value;
+        for (uint32_t net_id = network::kConsensusShardBeginNetworkId; 
+                net_id < network::kConsensusShardEndNetworkId; ++net_id) {
+            CreateInitAddress(net_id);
+        }
+        
         net_name = "root2";
         valid_net_ids_set.clear();
         valid_net_ids_set.insert(network::kRootCongressNetworkId);
