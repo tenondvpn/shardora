@@ -971,7 +971,7 @@ void NetworkInit::SaveCrossBlockToEachShard() {
         prefix_db->SaveLatestPoolStatisticTag(
             net_i, 
             pool_st_info, 
-            db_batch);
+            batch);
         auto st = db->Put(batch);
         if (!st.ok()) {
             SHARDORA_FATAL("write db failed!");
