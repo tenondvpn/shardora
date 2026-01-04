@@ -106,8 +106,8 @@ public:
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
 
     void AddBroadcastGlobalBlock(const ViewBlockPtr& pb_vblock) {
-        // auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        // broadcast_global_blocks_queues_[thread_idx].push(pb_vblock);
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        broadcast_global_blocks_queues_[thread_idx].push(pb_vblock);
     }
 
     void OnNewElectBlock(uint32_t sharding_id, uint64_t height) {
