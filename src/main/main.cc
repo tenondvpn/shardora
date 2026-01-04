@@ -9,7 +9,7 @@ static void GlobalInitSpdlog() {
 
     // auto logger = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>(
     //     "async_file", "log/shardora.log", true);
-    auto logger = spdlog::basic_logger_mt("sync_file", "log/shardora.log", true);
+    auto logger = spdlog::basic_logger_mt("sync_file", "log/shardora.log", false);
     spdlog::set_default_logger(logger);
 
     // 关键：强制设置全局 pattern
