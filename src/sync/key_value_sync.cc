@@ -170,7 +170,6 @@ void KeyValueSync::ConsensusTimerMessage() {
     auto now_tm_ms2 = common::TimeUtils::TimestampMs();
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         hotstuff_mgr_->chain(i)->GetViewBlockWithHash("");
-        hotstuff_mgr_->chain(i)->GetViewBlockWithHeight(0, 0);
     }
 
     auto now_tm_ms3 = common::TimeUtils::TimestampMs();

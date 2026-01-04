@@ -213,6 +213,10 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
         cached_view_with_blocks_[view_block_info_ptr->view_block->qc().view()].push_back(view_block_info_ptr);
     }
 
+    if (hash.empty()) {
+        return nullptr;
+    }
+    
     std::shared_ptr<ViewBlockInfo> view_block_ptr;
     auto iter = cached_block_map_.find(hash);
     if (iter != cached_block_map_.end()) {
