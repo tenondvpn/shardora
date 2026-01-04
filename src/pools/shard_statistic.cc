@@ -222,11 +222,17 @@ bool ShardStatistic::HandleStatistic(
             pool_iter->first, pool_idx, block.height(), 
             (pool_iter != pool_statistic_riter->second.end()));
         if (pool_iter != pool_statistic_riter->second.end()) {
-            SHARDORA_INFO("pool: %u, get block height: %lu, and statistic height: %lu, max_height: %lu",
+            SHARDORA_INFO("pool: %u, get block height: %lu, and "
+                "statistic height: %lu, min_height: %lu, max_height: %lu",
                 pool_idx,
                 block.height(),
                 pool_statistic_riter->first,
+                pool_iter->second.statistic_min_height,
                 pool_iter->second.statistic_max_height);
+            if (pool_iter->second.statistic_min_height == 0) {
+                continue;
+            }
+            
             if (pool_iter->second.statistic_max_height < block.height() && 
                     pool_iter->second.statistic_min_height <= block.height()) {
                 break;
