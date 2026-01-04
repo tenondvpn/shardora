@@ -188,7 +188,7 @@ bool ShardStatistic::HandleStatistic(
         if (statistic_pool_info_.size() >= 2) {
             auto iter = statistic_pool_info_.rbegin();
             ++iter;
-            iter->second[pool_idx].statistic_max_height = block.height();
+            iter->second[pool_idx].statistic_max_height = block.height() - 1;
             SHARDORA_INFO(
                 "prev exists success handle kPoolStatisticTag tx statistic_height: %lu, "
                 "pool: %u, height: %lu, statistic_min_height: %lu, statistic_max_height: %lu", 
@@ -199,7 +199,7 @@ bool ShardStatistic::HandleStatistic(
                 iter->second[pool_idx].statistic_max_height);
         }
 
-        exist_iter->second[pool_idx].statistic_min_height = block.height() + 1;
+        exist_iter->second[pool_idx].statistic_min_height = block.height();
         SHARDORA_INFO(
             "exists success handle kPoolStatisticTag tx statistic_height: %lu, "
             "pool: %u, height: %lu, statistic_min_height: %lu, nonce: %lu", 
@@ -227,7 +227,7 @@ bool ShardStatistic::HandleStatistic(
                 block.height(),
                 pool_statistic_riter->first,
                 pool_iter->second.statistic_max_height);
-            if (pool_iter->second.statistic_max_height <= block.height() && 
+            if (pool_iter->second.statistic_max_height < block.height() && 
                     pool_iter->second.statistic_min_height <= block.height()) {
                 break;
             }
