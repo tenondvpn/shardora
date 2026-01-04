@@ -580,7 +580,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 void ViewBlockChain::HandleTimerMessage() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_check_timeout_blocks_ms_ + 3000u < now_tm_ms) {  
-        SHARDORA_DEBUG("now check view_with_blocks_ size: %d", view_with_blocks_.size());      
+        // SHARDORA_DEBUG("now check view_with_blocks_ size: %d", view_with_blocks_.size());      
         if (view_with_blocks_.size() > 2) {
             for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
                 if (view_commited(

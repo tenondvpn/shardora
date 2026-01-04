@@ -217,7 +217,7 @@ void KeyValueSync::PopItems() {
             }
 
             if (responsed_keys_.exists(item->key)) {
-                SHARDORA_DEBUG("responsed_keys_.exists(item->key): %s", item->key.c_str());
+                // SHARDORA_DEBUG("responsed_keys_.exists(item->key): %s", item->key.c_str());
                 continue;
             }
 
