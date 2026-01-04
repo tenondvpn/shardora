@@ -326,6 +326,8 @@ public:
             uint32_t pool_index,
             uint64_t height,
             std::string* block_hash) {
+        assert(sharding_id >= network::kRootCongressNetworkId &&
+            sharding_id <= network::kConsensusShardEndNetworkId);
         std::string key;
         key.reserve(32);
         key.append(kBlockHeightPrefix);
@@ -334,8 +336,8 @@ public:
         key.append((char*)&height, sizeof(height));
         auto st = db_->Get(key, block_hash);
         if (!st.ok()) {
-            SHARDORA_DEBUG("failed get sync key value %u_%u_%lu, success get block with height: %u, %u, %lu",
-                sharding_id, pool_index, height, sharding_id, pool_index, height);
+            SHARDORA_DEBUG("failed get sync key value %u_%u_%lu",
+                sharding_id, pool_index, height);
             return false;
         }
 
