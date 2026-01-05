@@ -1,5 +1,6 @@
 #include <bls/agg_bls.h>
 #include <bls/bls_dkg.h>
+#include "broadcast/broadcast_utils.h"
 #include <common/encode.h>
 #include <common/log.h>
 #include <common/defer.h>
