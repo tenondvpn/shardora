@@ -23,7 +23,7 @@
 
 using namespace shardora;
 static bool global_stop = false;
-static const std::string kBroadcastIp = "192.168.0.21";
+static const std::string kBroadcastIp = "127.0.0.1";
 static const uint16_t kBroadcastPort = 13001;
 static int shardnum = 3;
 static const int delayus = 0;
