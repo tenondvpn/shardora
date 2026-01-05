@@ -361,7 +361,8 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     uint32_t leader_idx = 0;
-    if (msg_ptr->header.hotstuff().pro_msg().has_qc()) {
+    if (msg_ptr->header.hotstuff().pro_msg().has_view_item() &&
+            msg_ptr->header.hotstuff().pro_msg().view_item().has_qc()) {
         leader_idx = msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx();
     } else if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {
         leader_idx = msg_ptr->header.hotstuff().pro_msg().view_item().tc().leader_idx();
