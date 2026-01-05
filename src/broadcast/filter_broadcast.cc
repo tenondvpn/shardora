@@ -48,8 +48,7 @@ void FilterBroadcast::Broadcasting(
         return;
     }
 
-    if ((int32_t)now_hop_count >=
-            common::GlobalInfo::Instance()->broadcast_max_hop_count()) {
+    if ((int32_t)now_hop_count >= kBroadcastHopLimit) {
         return;
     }
 
