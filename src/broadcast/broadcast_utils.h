@@ -29,7 +29,7 @@ static inline void SetDefaultBroadcastParam(transport::protobuf::BroadcastParam*
     broadcast->set_layer_right(common::kInvalidUint64);
     int32_t neigber_count = kBroadcastDefaultNeighborCount;
     broadcast->set_neighbor_count(neigber_count);
-    float overlap = 0.5f;
+    float overlap = 2.0f;
     broadcast->set_overlap(overlap);
 }
 
