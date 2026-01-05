@@ -190,11 +190,6 @@ bool TcpAcceptor::OnRead() {
 
         conn->SetPacketEncoder(packet_factory_->CreateEncoder());
         conn->SetPacketDecoder(packet_factory_->CreateDecoder());
-        event_loop.PostTask(std::bind(
-                &NewConnectionHandler,
-                std::ref(*conn),
-                std::ref(conn_handler_)));
-        event_loop.Wakeup();
         std::string from_ip;
         uint16_t from_port;
         if (socket->GetIpPort(&from_ip, &from_port) != 0) {
@@ -203,6 +198,11 @@ bool TcpAcceptor::OnRead() {
             continue;
         }
 
+        event_loop.PostTask(std::bind(
+            &NewConnectionHandler,
+            std::ref(*conn),
+            std::ref(conn_handler_)));
+        event_loop.Wakeup();
         SHARDORA_INFO("accept success %s:%d", from_ip.c_str(), from_port);
         conn_map_[from_ip + std::to_string(from_port)] = conn;
         CHECK_MEMORY_SIZE(conn_map_);

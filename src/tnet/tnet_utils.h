@@ -31,7 +31,7 @@ static const uint32_t kDvMaxEvents = kEpollMaxEvents;
 class TcpConnection;
 class Packet;
 
-typedef std::function<bool(TcpConnection&)> ConnectionHandler;
+typedef std::function<bool(std::shared_ptr<TcpConnection>)ConnectionHandler;
 typedef std::function<bool(std::shared_ptr<TcpConnection>, Packet&)> PacketHandler;
 typedef std::function<void()> WriteableHandler;
 
