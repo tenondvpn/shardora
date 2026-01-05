@@ -1,6 +1,7 @@
 #include "sync/key_value_sync.h"
 
 #include "block/block_manager.h"
+#include "broadcast/broadcast_utils.h"
 #include "common/defer.h"
 #include "common/global_info.h"
 #include "common/log.h"
