@@ -35,8 +35,8 @@ public:
         int con_res = connect(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
         if (con_res < 0) {
             if (errno == EINPROGRESS) {
-                SHARDORA_ERROR("connect failed on fd [%d] [%s] con_res[%d] errorno[%d]",
-                    fd_, strerror(errno), con_res, errno);
+                // SHARDORA_ERROR("connect failed on fd [%d] [%s] con_res[%d] errorno[%d]",
+                //     fd_, strerror(errno), con_res, errno);
                 return 1;
             }
 
