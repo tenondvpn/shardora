@@ -337,10 +337,11 @@ Status Crypto::SignMessage(transport::MessagePtr& msg_ptr) {
     }
     
     msg_ptr->header.set_sign(sign);
-    SHARDORA_INFO("leader sign message success hash: %s, sign: %s, hash64: %lu",
+    SHARDORA_INFO("leader sign message success hash: %s, sign: %s, hash64: %lu, pk: %s",
         common::Encode::HexEncode(msg_hash).c_str(),
         common::Encode::HexEncode(sign).c_str(),
-        msg_ptr->header.hash64());
+        msg_ptr->header.hash64(),
+        common::Encode::HexEncode(security_->GetPublicKey()).c_str());
     assert(VerifyMessage(msg_ptr) == Status::kSuccess);
     return Status::kSuccess;
 }
