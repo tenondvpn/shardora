@@ -111,14 +111,16 @@ void ThreadHandler::HandleMessage() {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
             // PacemakerTimerMessage
-            btime = common::TimeUtils::TimestampUs();
+            // btime = common::TimeUtils::TimestampUs();
             msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPacemakerTimerMessage);
             ADD_DEBUG_PROCESS_TIMESTAMP();
             Processor::Instance()->HandleMessage(msg_ptr);
             ADD_DEBUG_PROCESS_TIMESTAMP();
         } else {
+#ifndef NDEBUG
             auto btime = common::TimeUtils::TimestampUs();
+#endif
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kPoolTimerMessage);
             // SHARDORA_DEBUG("start kPoolTimerMessage message handled msg hash: %lu, thread idx: %d, maping: %d", 
