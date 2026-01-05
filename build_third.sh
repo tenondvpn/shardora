@@ -66,7 +66,7 @@ mkdir -p $SRC_PATH/third_party/include/cpppbc && cp -rnf ./*.h $SRC_PATH/third_p
 cp -rnf ./lib*.a $SRC_PATH/third_party/lib
 cd $SRC_PATH
 cd third_party/clickhouse &&  git submodule update --init && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
-
+sed -i 's/ciso646/version/g' ../contrib/absl/absl/base/options.h
 cp -rnf ../contrib/absl/absl $SRC_PATH/third_party/include/
 cp -rnf ../contrib/lz4/lz4 $SRC_PATH/third_party/include/
 cp -rnf ../contrib/zstd/zstd $SRC_PATH/third_party/include/
