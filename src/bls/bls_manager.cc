@@ -114,7 +114,7 @@ void BlsManager::OnNewElectBlock(
     elect_item->members = members;
     elect_members_[sharding_id] = elect_item;
     CHECK_MEMORY_SIZE(elect_members_);
-    SHARDORA_WARN("sharding: %u, success add new bls dkg, elect_height: %lu, member count: %u",
+    SHARDORA_DEBUG("sharding: %u, success add new bls dkg, elect_height: %lu, member count: %u",
         sharding_id, elect_height, members->size());
     if (!network::IsSameToLocalShard(sharding_id)) {
         return;
@@ -158,7 +158,7 @@ void BlsManager::OnNewElectBlock(
         members,
         tmp_tm_block_info);
     waiting_bls_.store(waiting_bls);
-    SHARDORA_WARN("success add new bls dkg, elect_height: %lu, prev valid elect height: %lu",
+    SHARDORA_DEBUG("success add new bls dkg, elect_height: %lu, prev valid elect height: %lu",
         elect_height, prev_elect_height);
 }
 
@@ -179,7 +179,7 @@ int BlsManager::FirewallCheckMessage(transport::MessagePtr& msg_ptr) {
         }
     }
 
-    SHARDORA_WARN("check firewall success!");
+    SHARDORA_DEBUG("check firewall success!");
     return transport::kFirewallCheckSuccess;
 }
 
@@ -306,21 +306,21 @@ int BlsManager::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* bn_sign) {    
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
-    bn_sign->to_affine_coordinates();
-    std::string sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
-    std::string sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
-    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
-    BLSPublicKeyShare pkey(local_sec_key, t, n);
-    std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    SHARDORA_WARN("sign t: %u, n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-        t, n,
-        (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
-        (sign_x).c_str(), (sign_y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-    std::string verify_hash;
-    assert(Verify(t, n, *pkey.getPublicKey(), *bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
+    // bn_sign->to_affine_coordinates();
+    // std::string sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
+    // std::string sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
+    // std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
+    // BLSPublicKeyShare pkey(local_sec_key, t, n);
+    // std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
+    // SHARDORA_WARN("sign t: %u, n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+    //     t, n,
+    //     (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
+    //     (sign_x).c_str(), (sign_y).c_str(),
+    //     libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+    //     libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+    //     libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+    // std::string verify_hash;
+    // assert(Verify(t, n, *pkey.getPublicKey(), *bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
     return kBlsSuccess;
 }
 
@@ -337,20 +337,20 @@ int BlsManager::Sign(
     bn_sign.to_affine_coordinates();
     *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-#ifndef NDEBUG
-    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
-    BLSPublicKeyShare pkey(local_sec_key, t, n);
-    std::shared_ptr<std::vector<std::string>> strs = pkey.toString();
-    SHARDORA_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-        t, n, 
-        (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
-        (*sign_x).c_str(), (*sign_y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-    std::string verify_hash;
-    assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
-#endif
+// #ifndef NDEBUG
+//     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
+//     BLSPublicKeyShare pkey(local_sec_key, t, n);
+//     std::shared_ptr<std::vector<std::string>> strs = pkey.toString();
+//     SHARDORA_WARN("sign t: %u, , n: %u, , pk: %s,%s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+//         t, n, 
+//         (*strs)[0].c_str(), (*strs)[1].c_str(), (*strs)[2].c_str(), (*strs)[3].c_str(),
+//         (*sign_x).c_str(), (*sign_y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+//     std::string verify_hash;
+//     assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
+// #endif
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -375,20 +375,20 @@ int BlsManager::Verify(
         return kBlsError;
     }
 
-#ifndef NDEBUG
-    auto bn_sign = sign;
-    bn_sign.to_affine_coordinates();
-    auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
-    auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
-    auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-    SHARDORA_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
-        t, n,
-        (sign_x).c_str(), (sign_y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str(),
-        pk_str.c_str());
-#endif
+// #ifndef NDEBUG
+//     auto bn_sign = sign;
+//     bn_sign.to_affine_coordinates();
+//     auto pk_str = libBLS::ThresholdUtils::fieldElementToString(pubkey.X.c0);
+//     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+//     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+//     SHARDORA_WARN("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s, pk: %s",
+//         t, n,
+//         (sign_x).c_str(), (sign_y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str(),
+//         pk_str.c_str());
+// #endif
     return BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -431,7 +431,7 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
         finish_msg_queue_.push(msg_ptr);
-        SHARDORA_WARN("queue size finish_msg_queue_: %d, hash64: %lu",
+        SHARDORA_DEBUG("queue size finish_msg_queue_: %d, hash64: %lu",
             finish_msg_queue_.size(), msg_ptr->header.hash64());
         return;
     }
@@ -459,7 +459,7 @@ void BlsManager::PopFinishMessage() {
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
-    SHARDORA_WARN("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
+    SHARDORA_DEBUG("0 handle finish called hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
@@ -550,7 +550,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->verified[bls_msg.index()]) {
-        SHARDORA_WARN("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
+        SHARDORA_DEBUG("1 handle finish called hash64: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -580,11 +580,11 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->success_verified) {
-        SHARDORA_WARN("success check all members agg signature, elect_height: %lu",
+        SHARDORA_INFO("success check all members agg signature, elect_height: %lu",
             bls_msg.elect_height());
     }
 
-    SHARDORA_WARN("handle finish success. sharding: %u, member index: %u, cpk_hash: %s, common pk: %s",
+    SHARDORA_INFO("handle finish success. sharding: %u, member index: %u, cpk_hash: %s, common pk: %s",
         bls_msg.finish_req().network_id(),
         bls_msg.index(),
         common::Encode::HexEncode(cpk_hash).c_str(),
@@ -592,7 +592,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
-        SHARDORA_WARN("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
+        SHARDORA_DEBUG("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
             max_iter->second->count,
             bls_msg.finish_req().network_id(),
             bls_msg.index(),
@@ -660,7 +660,7 @@ void BlsManager::CheckAggSignValid(
             finish_item->all_common_public_keys[member_idx] = libff::alt_bn128_G2::zero();
             BLS_ERROR("invalid bls item index: %d", member_idx);
         } else {
-            SHARDORA_WARN("valid bls item index: %d", member_idx);
+            SHARDORA_DEBUG("valid bls item index: %d", member_idx);
         }
 
         return;
@@ -900,7 +900,7 @@ bool BlsManager::VerifyAggSignValid(
             return false;
         }
 
-        SHARDORA_WARN("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+        SHARDORA_DEBUG("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
             t, n,
             common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),

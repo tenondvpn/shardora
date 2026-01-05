@@ -412,7 +412,7 @@ Status Hotstuff::Propose(
 
 #endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    SHARDORA_WARN("propose use time: %lu", (common::TimeUtils::TimestampMs() - btime));
+    SHARDORA_DEBUG("propose use time: %lu", (common::TimeUtils::TimestampMs() - btime));
     return Status::kSuccess;
 }
 
@@ -714,7 +714,7 @@ Status Hotstuff::HandleTC(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
             assert(IsQcTcValid(*tc_ptr));
             latest_qc_item_ptr_ = tc_ptr;
         }
-        SHARDORA_WARN("commit use time: %lu", (common::TimeUtils::TimestampMs() - btime));
+        SHARDORA_DEBUG("commit use time: %lu", (common::TimeUtils::TimestampMs() - btime));
 
 // #ifndef NDEBUG
 //         auto msg_hash = GetTCMsgHash(pro_msg.tc());

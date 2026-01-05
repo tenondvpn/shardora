@@ -48,21 +48,21 @@ Status Crypto::PartialSign(
         return Status::kError;
     }
 
-#ifndef NDEBUG
-    auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
-            elect_item->LocalMember()->bls_publick_key.X.c0);
-    SHARDORA_DEBUG("bls parial sign t: %u, n: %u, member index: %u, "
-        "local seckey: %s, bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
-        elect_item->t(),
-        elect_item->n(),
-        elect_item->LocalMember()->index,
-        libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
-        member_bls_pk.c_str(),
-        sign_x->c_str(),
-        sign_y->c_str(),
-        common::Encode::HexEncode(msg_hash).c_str(),
-        elect_height);
-#endif
+// #ifndef NDEBUG
+//     auto member_bls_pk = libBLS::ThresholdUtils::fieldElementToString(
+//             elect_item->LocalMember()->bls_publick_key.X.c0);
+//     SHARDORA_DEBUG("bls parial sign t: %u, n: %u, member index: %u, "
+//         "local seckey: %s, bls pk: %s, sign x: %s, y: %s, hash: %s, elect height: %lu",
+//         elect_item->t(),
+//         elect_item->n(),
+//         elect_item->LocalMember()->index,
+//         libBLS::ThresholdUtils::fieldElementToString(elect_item->local_sk()).c_str(),
+//         member_bls_pk.c_str(),
+//         sign_x->c_str(),
+//         sign_y->c_str(),
+//         common::Encode::HexEncode(msg_hash).c_str(),
+//         elect_height);
+// #endif
     return Status::kSuccess;
 }
 

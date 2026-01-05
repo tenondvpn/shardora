@@ -467,7 +467,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
     std::shared_ptr<ViewBlockInfo> latest_commited_block = nullptr; 
     for (auto iter = to_commit_blocks.begin(); iter != to_commit_blocks.end(); ++iter) {
         auto tmp_block = (*iter)->view_block;
-        SHARDORA_INFO("now commit view block %u_%u_%lu, hash: %s, "
+        SHARDORA_DEBUG("now commit view block %u_%u_%lu, hash: %s, "
             "parent hash: %s, step: %d, statistic_height: %lu, tx size: %u", 
             tmp_block->qc().network_id(), 
             tmp_block->qc().pool_index(), 

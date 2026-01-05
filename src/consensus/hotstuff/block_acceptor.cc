@@ -176,7 +176,7 @@ Status BlockAcceptor::Accept(
         }
 
         auto* addr_info = view_block.mutable_block_info()->add_address_array();
-        SHARDORA_INFO("%u_%u_%lu, success addr info: %s, balance: %lu, nonce: %lu", 
+        SHARDORA_DEBUG("%u_%u_%lu, success addr info: %s, balance: %lu, nonce: %lu", 
             view_block.qc().network_id(),
             view_block.qc().pool_index(),
             view_block.qc().view(),
@@ -267,7 +267,7 @@ Status BlockAcceptor::Accept(
             ProtobufToJson(view_block).c_str());
     }
 
-    SHARDORA_INFO("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu, "
+    SHARDORA_DEBUG("success do transaction tx size: %u, add: %u, %u_%u_%lu, height: %lu, "
         "timeblock height: %lu, local latest timeblock height: %lu", 
         txs_ptr->txs.size(), 
         view_block.block_info().tx_list_size(), 
