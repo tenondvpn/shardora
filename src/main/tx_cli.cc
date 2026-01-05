@@ -80,25 +80,25 @@ void SignalRegister() {
 }
 
 static void WriteDefaultLogConf() {
-    FILE* file = NULL;
-    file = fopen("./log4cpp.properties", "w");
-    if (file == NULL) {
-        return;
+    spdlog::init_thread_pool(8192, 1);
+
+    auto logger = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>(
+        "async_file", "log/shardora.log", true);
+    // auto logger = spdlog::basic_logger_mt("sync_file", "log/shardora.log", false);
+    spdlog::set_default_logger(logger);
+
+    // 关键：强制设置全局 pattern
+    spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e [thread %t] %-5l [%n] %v%$");
+
+    // 额外保险：遍历所有 sink 重新设置（防止被覆盖）
+    for (auto& sink : logger->sinks()) {
+        sink->set_pattern("%Y-%m-%d %H:%M:%S.%e [thread %t] %-5l [%n] %v%$");
     }
-    std::string log_str = ("# log4cpp.properties\n"
-        "log4cpp.rootCategory = DEBUG\n"
-        "log4cpp.category.sub1 = DEBUG, programLog\n"
-        "log4cpp.appender.rootAppender = ConsoleAppender\n"
-        "log4cpp.appender.rootAppender.layout = PatternLayout\n"
-        "log4cpp.appender.rootAppender.layout.ConversionPattern = %d [%p] %m%n\n"
-        "log4cpp.appender.programLog = RollingFileAppender\n"
-        "log4cpp.appender.programLog.fileName = ./txcli.log\n") +
-        std::string("log4cpp.appender.programLog.maxFileSize = 1073741824\n"
-            "log4cpp.appender.programLog.maxBackupIndex = 1\n"
-            "log4cpp.appender.programLog.layout = PatternLayout\n"
-            "log4cpp.appender.programLog.layout.ConversionPattern = %d [%p] %m%n\n");
-    fwrite(log_str.c_str(), log_str.size(), 1, file);
-    fclose(file);
+
+    spdlog::set_level(spdlog::level::debug);
+    spdlog::flush_on(spdlog::level::err);
+
+    spdlog::debug("init spdlog success: %d", 1);
 }
 
 static transport::MessagePtr CreateTransactionWithAttr(
