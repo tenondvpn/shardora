@@ -387,7 +387,6 @@ void ViewBlockChain::CommitSynced(std::shared_ptr<view_block::protobuf::ViewBloc
 
 void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) {
     std::list<std::shared_ptr<ViewBlockInfo>> to_commit_blocks;
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<ViewBlockInfo> tmp_block_info = v_block_info;
     while (tmp_block_info != nullptr) {
         auto tmp_block = tmp_block_info->view_block;
@@ -477,15 +476,9 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             tmp_block->block_info().tx_list_size() > 0 ? tmp_block->block_info().tx_list(0).step(): -1,
             0,
             tmp_block->block_info().tx_list_size());
-        ADD_DEBUG_PROCESS_TIMESTAMP();
         assert((*iter)->zjc_host_ptr);
         auto& db_batch = (*iter)->zjc_host_ptr->db_batch_;
         new_block_cache_callback_(tmp_block, db_batch);
-        ADD_DEBUG_PROCESS_TIMESTAMP();
-        // SaveBlockCheckedParentHash(
-        //     tmp_block->parent_hash(), 
-        //     tmp_block->qc().view());
-        ADD_DEBUG_PROCESS_TIMESTAMP();
         if (tmp_block->qc().view() > commited_max_view_) {
             commited_max_view_ = tmp_block->qc().view();
         }
@@ -512,7 +505,6 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
 
         //     test_iter = view_with_blocks_.erase(test_iter);
         // }
-        ADD_DEBUG_PROCESS_TIMESTAMP();
         if (block_acceptor_) {
             block_acceptor_->CalculateTps(tmp_block->block_info().tx_list_size());
         }
@@ -553,14 +545,12 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         latest_commited_block = *iter;
     }
     
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     if (latest_commited_block) {
         SetLatestCommittedBlock(latest_commited_block);
     }
 
     
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     // std::vector<std::shared_ptr<ViewBlock>> forked_blockes;
     // auto v_block = v_block_info->view_block;
 // #ifndef NDEBUG
