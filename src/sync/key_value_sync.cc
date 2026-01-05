@@ -133,6 +133,7 @@ void KeyValueSync::BroadcastGlobalBlock() {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     auto* broadcast = msg.mutable_broadcast();
+    broadcast::SetDefaultBroadcastParam(broadcast);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
     network::Route::Instance()->Send(msg_ptr);
     SHARDORA_DEBUG("sync global block ok des: %u, des hash64: %lu",

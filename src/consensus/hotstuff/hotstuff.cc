@@ -301,6 +301,7 @@ Status Hotstuff::Propose(
 
     if (!header.has_broadcast()) {
         auto broadcast = header.mutable_broadcast();
+        broadcast::SetDefaultBroadcastParam(broad_param);
     }
 
     auto t4 = common::TimeUtils::TimestampMs();
