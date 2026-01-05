@@ -68,7 +68,7 @@ void BlsDkg::TimerMessage() {
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
         SHARDORA_WARN("now call send verify g2.");
-        BroadcastVerfify();
+        // BroadcastVerfify();
         has_broadcast_verify_ = true;
     }
 
@@ -76,7 +76,7 @@ void BlsDkg::TimerMessage() {
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
         SHARDORA_WARN("now call send swap sec key.");
-        SwapSecKey();
+        // SwapSecKey();
         has_broadcast_swapkey_ = true;
     }
 
@@ -837,9 +837,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 
 void BlsDkg::FinishBroadcast() try {
     SHARDORA_DEBUG("test 0");
-    if (members_ == nullptr ||
-            local_member_index_ >= member_count_ ||
-            valid_sec_key_count_ < min_aggree_member_count_) {
+    if (members_ == nullptr || local_member_index_ >= member_count_ /*|| valid_sec_key_count_ < min_aggree_member_count_*/) {
         BLS_ERROR("elect_height: %lu, valid count error.valid_sec_key_count_: %d,"
             "min_aggree_member_count_: %d, members_ == nullptr: %d, local_member_index_: %d,"
             "member_count_: %d",
@@ -859,35 +857,36 @@ void BlsDkg::FinishBroadcast() try {
     auto& for_common_pk_g2s = dkg_cache_->verify_g2_cache();
     std::vector<libff::alt_bn128_Fr> valid_seck_keys;
     for (size_t i = 0; i < member_count_; ++i) {
-        auto iter = valid_swapkey_set_.find(i);
-        if (iter == valid_swapkey_set_.end()) {
-            valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-            common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            SHARDORA_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
-            continue;
-        }
+        // auto iter = valid_swapkey_set_.find(i);
+        // if (iter == valid_swapkey_set_.end()) {
+        //     valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
+        //     common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
+        //     SHARDORA_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
+        //     continue;
+        // }
 
         auto& id = (*members_)[i]->id;
         auto g2_iter = for_common_pk_g2s.find(id);
-        if (g2_iter == for_common_pk_g2s.end()) {
-            valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-            common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            SHARDORA_WARN("elect_height: %d, invalid all_verification_vector index: %d",
-                elect_hegiht_, i);
-            continue;
-        }
+        // if (g2_iter == for_common_pk_g2s.end()) {
+        //     valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
+        //     common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
+        //     SHARDORA_WARN("elect_height: %d, invalid all_verification_vector index: %d",
+        //         elect_hegiht_, i);
+        //     continue;
+        // }
 
         std::string seckey;
         if (!dkg_cache_->GetSwapKey(
                 common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
-                (*members_)[i]->id,
+                id,
                 i,
                 &seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
                 elect_hegiht_, i);
+            assert(false);
             continue;
         }
 
