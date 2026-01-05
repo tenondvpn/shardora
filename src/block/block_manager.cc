@@ -111,7 +111,7 @@ void BlockManager::HandleAllConsensusBlocks() {
         while (no_sleep) {
             no_sleep = false;
             for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
-                int32_t count = 0;
+                uint32_t count = 0;
                 while (count++ < kEachTimeHandleBlocksCount) {
                     std::shared_ptr<hotstuff::ViewBlockInfo> view_block_info_ptr = nullptr;
                     consensus_block_queues_[i].pop(&view_block_info_ptr);
@@ -269,7 +269,7 @@ void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::
     }
 
     auto& to_txs = view_block.block_info().normal_to();
-    for (uint32_t i = 0; i < to_txs.to_tx_arr_size(); ++i) {
+    for (int32_t i = 0; i < to_txs.to_tx_arr_size(); ++i) {
         if (to_txs.to_tx_arr(i).des_shard() != common::GlobalInfo::Instance()->network_id()) {
             SHARDORA_WARN("sharding invalid: %u, %u",
                 to_txs.to_heights().sharding_id(),
@@ -909,7 +909,7 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     std::string unique_str;
-    for (uint32_t i = 0; i < prev_heights.heights_size(); ++i) {
+    for (int32_t i = 0; i < prev_heights.heights_size(); ++i) {
         unique_str += std::to_string(prev_heights.heights(i)) + "_";
     }
 

@@ -72,7 +72,7 @@ Status ViewBlockChain::Store(
 
     if (chain_type_ == kLocalChain && balane_map_ptr == nullptr) {
         balane_map_ptr = std::make_shared<BalanceAndNonceMap>();
-        for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
+        for (int32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
             auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
                 view_block->block_info().address_array(i));
             prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, zjc_host_ptr->db_batch_);
@@ -84,7 +84,7 @@ Status ViewBlockChain::Store(
         }
 
 
-        for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
+        for (int32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
             auto key = view_block->block_info().key_value_array(i).addr() + 
                 view_block->block_info().key_value_array(i).key();
             prefix_db_->SaveTemporaryKv(

@@ -685,6 +685,7 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
     // auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     // *changed_idx = req.change_idx();
     // return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+    return libff::alt_bn128_G2::zero();
 }
 
 void BlsDkg::BroadcastVerfify() try {
