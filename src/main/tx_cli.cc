@@ -457,7 +457,6 @@ int tx_main(int argc, char** argv) {
     LoadAllAccounts(shardnum);
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -614,7 +613,6 @@ int base_tx_main(int argc, char** argv) {
     auto base_private_key = "19997691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848000000000";
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -704,7 +702,6 @@ int one_tx_main(int argc, char** argv) {
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     std::cout << 0 << std::endl;
@@ -771,7 +768,6 @@ int create_library(int argc, char** argv) {
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -845,7 +841,6 @@ int contract_main(int argc, char** argv) {
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -927,7 +922,6 @@ int contract_set_prepayment(int argc, char** argv) {
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -1000,7 +994,6 @@ int contract_call(int argc, char** argv, bool more=false) {
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -1089,7 +1082,6 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
     LoadAllAccounts(shardnum);
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
@@ -1163,7 +1155,6 @@ int oqs_tx(const std::string& to, uint64_t amount) {
     GetOqsKeys();
     SignalRegister();
     WriteDefaultLogConf();
-    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
