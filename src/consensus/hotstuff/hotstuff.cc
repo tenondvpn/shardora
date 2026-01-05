@@ -163,7 +163,9 @@ Status Hotstuff::Propose(
         const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SHARDORA_DEBUG("pool: %d, called propose!", pool_idx_);
+#ifndef NDEBUG
     auto btime = common::TimeUtils::TimestampMs();
+#endif
     auto pre_v_block = view_block_chain()->HighViewBlock();
     if (!pre_v_block) {
         SHARDORA_DEBUG("pool %u not has prev view block.", pool_idx_);
@@ -198,13 +200,15 @@ Status Hotstuff::Propose(
             latest_qc_item_ptr_ = tc;
         }
 
-        if (latest_leader_propose_message_ && 
-                latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
-            latest_leader_propose_message_ = nullptr;
-        }
+        // if (latest_leader_propose_message_ && 
+        //         latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() <= tc->view()) {
+        //     latest_leader_propose_message_ = nullptr;
+        // }
     }
 
+#ifndef NDEBUG
     auto t1 = common::TimeUtils::TimestampMs();
+#endif
 //     if (latest_leader_propose_message_ &&
 //             latest_leader_propose_message_->header.hotstuff().pro_msg().view_item().qc().view() >= 
 //             pacemaker_->CurView()) {
@@ -264,7 +268,9 @@ Status Hotstuff::Propose(
 //         return Status::kError;
 //     }
 
+#ifndef NDEBUG
     auto t2 = common::TimeUtils::TimestampMs();
+#endif
     // SHARDORA_DEBUG("1 now ontime called propose: %d", pool_idx_);
     // auto tmp_msg_ptr = latest_leader_propose_message_;
     // if (!tmp_msg_ptr ||
@@ -292,7 +298,9 @@ Status Hotstuff::Propose(
         pb_pro_msg->release_view_item();
     }
     
+#ifndef NDEBUG
     auto t3 = common::TimeUtils::TimestampMs();
+#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     ConstructHotstuffMsg(PROPOSE, pb_pro_msg, nullptr, nullptr, hotstuff_msg);
     if (latest_qc_item_ptr_) {
@@ -304,7 +312,9 @@ Status Hotstuff::Propose(
         broadcast::SetDefaultBroadcastParam(brd_param);
     }
 
+#ifndef NDEBUG
     auto t4 = common::TimeUtils::TimestampMs();
+#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     dht::DhtKeyManager dht_key(tmp_msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
@@ -341,8 +351,8 @@ Status Hotstuff::Propose(
     consensus_debug.set_begin_timestamp(common::TimeUtils::TimestampMs());
     header.set_debug(consensus_debug.SerializeAsString());
     SHARDORA_DEBUG("leader begin propose_debug: %s", ProtobufToJson(consensus_debug).c_str());
-#endif
     auto t5 = common::TimeUtils::TimestampMs();
+#endif
     s = crypto()->SignMessage(tmp_msg_ptr);
     if (s != Status::kSuccess) {
         SHARDORA_WARN("sign message failed pool: %d, view: %lu, construct hotstuff msg failed",
@@ -350,15 +360,19 @@ Status Hotstuff::Propose(
         return s;
     }
 
-    if (tmp_msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
-        latest_leader_propose_message_ = tmp_msg_ptr;
-    }
+    // if (tmp_msg_ptr->header.hotstuff().pro_msg().has_view_item()) {
+    //     latest_leader_propose_message_ = tmp_msg_ptr;
+    // }
 
+#ifndef NDEBUG
     auto t6 = common::TimeUtils::TimestampMs();
+#endif
     transport::TcpTransport::Instance()->AddLocalMessage(tmp_msg_ptr);
     SHARDORA_DEBUG("1 success add local message: %lu", tmp_msg_ptr->header.hash64());
     network::Route::Instance()->Send(tmp_msg_ptr);
+#ifndef NDEBUG
     auto t7 = common::TimeUtils::TimestampMs();
+#endif
     auto old_last_leader_propose_view_ = last_leader_propose_view_;
     last_leader_propose_view_ = std::max<uint64_t>(
         hotstuff_msg->pro_msg().view_item().qc().view(), 

@@ -333,13 +333,13 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             SHARDORA_ERROR("net_id is error.");
             return;
         }
+        
         if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
             SHARDORA_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
             return;
         }
 
-        switch (hotstuff_msg.type())
-        {
+        switch (hotstuff_msg.type())  {
             case PROPOSE: {
                 ADD_DEBUG_PROCESS_TIMESTAMP();
                 Status s = crypto(hotstuff_msg.pool_index())->VerifyMessage(msg_ptr);
