@@ -1472,7 +1472,7 @@ void GenesisBlockInit::AddBlockItemToCache(
     }
 
     prefix_db_->SaveBlock(*view_block, db_batch);
-    for (uint32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
+    for (int32_t i = 0; i < view_block->block_info().address_array_size(); ++i) {
         auto new_addr_info = std::make_shared<address::protobuf::AddressInfo>(
             view_block->block_info().address_array(i));
         prefix_db_->AddAddressInfo(new_addr_info->addr(), *new_addr_info, db_batch);
@@ -1482,7 +1482,7 @@ void GenesisBlockInit::AddBlockItemToCache(
             ProtobufToJson(*new_addr_info).c_str());
     }
 
-    for (uint32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
+    for (int32_t i = 0; i < view_block->block_info().key_value_array_size(); ++i) {
         auto key = view_block->block_info().key_value_array(i).addr() + 
             view_block->block_info().key_value_array(i).key();
         prefix_db_->SaveTemporaryKv(
@@ -1491,7 +1491,7 @@ void GenesisBlockInit::AddBlockItemToCache(
             db_batch);
     }
 
-    for (uint32_t i = 0; i < block->joins_size(); ++i) {
+    for (int32_t i = 0; i < block->joins_size(); ++i) {
         auto& join_info = block->joins(i);
         prefix_db_->SaveElectNodeStoke(
             join_info.addr(),
@@ -1795,7 +1795,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         fread(data, 1, sizeof(data), fd);
         auto lines = common::Split<2048>(data, '\n');
         auto& pool_index_map = net_pool_index_map_[net_id];
-        for (int32_t i = 0; i < lines.Count(); ++i) {
+        for (uint32_t i = 0; i < lines.Count(); ++i) {
             auto items = common::Split<>(lines[i], '\t');
             if (items.Count() != 2) {
                 break;

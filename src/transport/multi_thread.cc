@@ -105,7 +105,7 @@ void ThreadHandler::HandleMessage() {
 
         auto btime = common::TimeUtils::TimestampUs();
         if (is_hotstuff_thread_) {
-            auto btime = common::TimeUtils::TimestampUs();
+            // auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->header.set_type(common::kHotstuffSyncTimerMessage);
             ADD_DEBUG_PROCESS_TIMESTAMP();

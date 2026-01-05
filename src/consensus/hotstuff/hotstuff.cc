@@ -322,7 +322,7 @@ Status Hotstuff::Propose(
         pb_pro_msg->tx_propose().txs_size());
     propose_debug_str += ", tx gids: ";
     security::Ecdsa ecdsa;
-    for (uint32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
+    for (int32_t tx_idx = 0; tx_idx < pb_pro_msg->tx_propose().txs_size(); ++tx_idx) {
         if (!pb_pro_msg->tx_propose().txs(tx_idx).pubkey().empty()) {
             propose_debug_str += common::Encode::HexEncode(ecdsa.GetAddress(pb_pro_msg->tx_propose().txs(tx_idx).pubkey())) + "_" +
                 common::Encode::HexEncode(pb_pro_msg->tx_propose().txs(tx_idx).to())  + "_" +
@@ -1387,7 +1387,7 @@ void Hotstuff::HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr) {
 
 #ifndef NDEBUG
     std::string gids;
-    for (uint32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
+    for (int32_t i = 0; i < pre_rst_timer_msg.txs_size(); ++i) {
         gids += std::to_string(pre_rst_timer_msg.txs(i).nonce()) + " ";
     }
 

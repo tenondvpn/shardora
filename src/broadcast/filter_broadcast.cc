@@ -48,7 +48,7 @@ void FilterBroadcast::Broadcasting(
         return;
     }
 
-    if ((int32_t)now_hop_count >= kBroadcastHopLimit) {
+    if (now_hop_count >= kBroadcastHopLimit) {
         return;
     }
 

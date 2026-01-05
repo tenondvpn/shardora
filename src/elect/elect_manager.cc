@@ -349,7 +349,7 @@ void ElectManager::UpdatePrevElectMembers(
 
     auto t = common::GetSignerCount(members->size());
     int32_t i = 0;
-    int32_t local_member_index = kInvalidMemberIndex;
+    int32_t local_member_index = (int32_t)kInvalidMemberIndex;
     for (auto iter = members->begin(); iter != members->end(); ++iter, ++i) {
         if ((*iter)->id == security_->GetAddress()) {
             local_member_index = i;

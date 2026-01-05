@@ -989,7 +989,7 @@ void NetworkInit::GetNetworkNodesFromConf(
                 SHARDORA_DEBUG("reuse private key: %s", items[0]);
             }
         } else {
-            for (uint32_t i = 0; i < count; i++) {
+            for (int32_t i = 0; i < count; i++) {
                 sks.push_back(common::Random::RandomString(32));
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(sks[i]);
