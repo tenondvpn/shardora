@@ -23,7 +23,7 @@ void FilterBroadcast::Broadcasting(
     assert(dht_ptr);
     auto readonly_dht_ptr = dht_ptr->readonly_hash_sort_dht();
     if (readonly_dht_ptr->size() < 2u) {
-        P2P_DEBUG("random Broadcasting: %lu, size: %u, dht net: %d",
+        SHARDORA_DEBUG("random Broadcasting: %lu, size: %u, dht net: %d",
             msg_ptr->header.hash64(), readonly_dht_ptr->size(), dht_ptr->local_node()->sharding_id);
         // assert(false);
         return;
@@ -43,7 +43,7 @@ void FilterBroadcast::Broadcasting(
     // }
 
     if (message.broadcast().has_hop_limit() && message.broadcast().hop_limit() <= now_hop_count) {
-        P2P_DEBUG("message.broadcast().hop_limit() <= now_hop_count[%d, %d] hash: %lu",
+        SHARDORA_DEBUG("message.broadcast().hop_limit() <= now_hop_count[%d, %d] hash: %lu",
             message.broadcast().hop_limit(), now_hop_count, message.hash64());
         return;
     }
@@ -61,7 +61,7 @@ void FilterBroadcast::Broadcasting(
             bloomfilter->insert((*iter)->id_hash);
         }
 
-        P2P_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
+        SHARDORA_DEBUG("layer Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
         // msg_ptr->header.mutable_broadcast()->clear_bloomfilter();
         // TODO(xielei): test gossip ,remove it later
         message.set_hop_count(now_hop_count + 1);
@@ -72,7 +72,7 @@ void FilterBroadcast::Broadcasting(
     //     //     bloomfilter->insert((*iter)->id_hash);
     //     // }
 
-    //     P2P_DEBUG("random Broadcasting: %lu, size: %u",
+    //     SHARDORA_DEBUG("random Broadcasting: %lu, size: %u",
     //         msg_ptr->header.hash64(), nodes.size());
     //     if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
     //         return;
@@ -132,7 +132,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
     bloomfilter->insert(dht_ptr->local_node()->id_hash);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->find((*hash_order_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            P2P_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+            SHARDORA_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
                 (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
                 (*hash_order_dht)[pos_vec[i]]->public_port,
                 (*hash_order_dht)[pos_vec[i]]->id_hash,
@@ -164,7 +164,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
         return lhs->id_hash < rhs->id_hash;
     });
 
-    P2P_DEBUG("layer send pre_left: %lu, prev_right: %lu, left: %lu, right: %lu, nodes count: %u",
+    SHARDORA_DEBUG("layer send pre_left: %lu, prev_right: %lu, left: %lu, right: %lu, nodes count: %u",
         broad_param->layer_left(), broad_param->layer_right(), 
         (*hash_order_dht)[left]->id_hash, (*hash_order_dht)[right]->id_hash, nodes.size());
     return nodes;
@@ -188,7 +188,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     uint32_t now_hop_count = message.hop_count();
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->find((*readobly_dht)[pos_vec[i]]->id_hash) != bloomfilter->end()) {
-            P2P_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
+            SHARDORA_DEBUG("bloom filtered: %s:%d, %lu, hash64: %lu",
                 (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
                 (*readobly_dht)[pos_vec[i]]->public_port,
                 (*readobly_dht)[pos_vec[i]]->id_hash,
@@ -197,7 +197,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         }
 
         nodes.push_back((*readobly_dht)[pos_vec[i]]);
-        P2P_DEBUG("bloom filter add node: %s:%d, %lu, hash64: %lu, ign hop: %d, now hop: %d",
+        SHARDORA_DEBUG("bloom filter add node: %s:%d, %lu, hash64: %lu, ign hop: %d, now hop: %d",
                 (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
                 (*readobly_dht)[pos_vec[i]]->public_port,
                 (*readobly_dht)[pos_vec[i]]->id_hash,
@@ -213,10 +213,10 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         }
     }
 
-    // P2P_DEBUG("data size: %u, pos_vec size: %u, readobly_dht->size: %u",
+    // SHARDORA_DEBUG("data size: %u, pos_vec size: %u, readobly_dht->size: %u",
     //     bloomfilter->data().size(), pos_vec.size(), readobly_dht->size());
     // for (uint32_t i = 0; i < bloomfilter->data().size(); ++i) {
-    //     P2P_DEBUG("data i: %d, data: %lu", i, bloomfilter->data()[i]);
+    //     SHARDORA_DEBUG("data i: %d, data: %lu", i, bloomfilter->data()[i]);
     // }
 
     bloomfilter->insert(dht_ptr->local_node()->id_hash);
@@ -264,7 +264,7 @@ void FilterBroadcast::Send(
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);
-        P2P_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
+        SHARDORA_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
             nodes[i]->public_ip.c_str(),
             nodes[i]->public_port,
             msg_ptr->header.hash64(),
@@ -301,7 +301,7 @@ void FilterBroadcast::LayerSend(
             broad_param->set_layer_right(GetLayerRight(src_right, message));
         }
 
-        P2P_DEBUG("broadcast layer send to: %s:%d, txhash: %lu, src:  %lu, %.lu, new: %lu, %lu",
+        SHARDORA_DEBUG("broadcast layer send to: %s:%d, txhash: %lu, src:  %lu, %.lu, new: %lu, %lu",
             nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64(),
             src_left,
             src_right,

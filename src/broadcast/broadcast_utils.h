@@ -2,6 +2,7 @@
 
 #include "common/utils.h"
 #include "common/log.h"
+#include "protos/transport.pb.h"
 
 #define BROAD_DEBUG(fmt, ...) SHARDORA_DEBUG("[broadcast]" fmt, ## __VA_ARGS__)
 #define BROAD_INFO(fmt, ...) SHARDORA_INFO("[broadcast]" fmt, ## __VA_ARGS__)
