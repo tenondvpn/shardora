@@ -289,7 +289,6 @@ Status Hotstuff::Propose(
             return s;
         }
 
-
         pb_pro_msg->release_view_item();
     }
     

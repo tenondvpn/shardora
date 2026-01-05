@@ -112,10 +112,10 @@ public:
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     bool retry;
-#ifndef NDEBUG
+// #ifndef NDEBUG
     uint64_t times[64];
     std::string debug_str[64];
-#endif
+// #endif
     uint32_t times_idx;
     uint64_t handle_timeout;
     uint64_t timeout;

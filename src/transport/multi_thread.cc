@@ -84,18 +84,18 @@ void ThreadHandler::HandleMessage() {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 200000lu) {
-            //     // for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-            //     //     auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
-            //     //     // if (diff_time > 1000000lu) {
-            //     //         SHARDORA_DEBUG("over handle message debug %lu timestamp: %lu, debug: %s, "
-            //     //             "thread_idx: %d, maping_thread_idx: %d, all time: %lu",
-            //     //             msg_ptr->header.hash64(), msg_ptr->times[i], 
-            //     //             msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx, (etime - btime));
-            //     //     // }
-            //     // }
-            //     SHARDORA_DEBUG("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
-            //         msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime));
-                SHARDORA_DEBUG("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
+                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+                    auto diff_time = msg_ptr->times[i] - msg_ptr->times[i - 1];
+                    if (diff_time > 200000lu) {
+                        SHARDORA_INFO("over handle message debug %lu timestamp: %lu, debug: %s, "
+                            "thread_idx: %d, maping_thread_idx: %d, all time: %lu",
+                            msg_ptr->header.hash64(), msg_ptr->times[i], 
+                            msg_ptr->debug_str[i].c_str(), thread_idx, maping_thread_idx, (etime - btime));
+                    }
+                }
+                // SHARDORA_DEBUG("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu", 
+                //     msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime));
+                SHARDORA_INFO("end message handled msg hash: %lu, thread idx: %d, type: %d, use time: %lu, protobuf: %s", 
                     msg_ptr->header.hash64(), thread_idx, msg_ptr->header.type(), (etime - btime),
                     "ProtobufToJson(msg_ptr->header).c_str()");
             }
