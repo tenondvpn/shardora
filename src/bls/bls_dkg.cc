@@ -1166,7 +1166,7 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
 
     msg.set_type(common::kBlsMessage);
     auto* broad_param = msg.mutable_broadcast();
-    broadcast::SetBroadcastParam(broad_param);
+    broadcast::SetDefaultBroadcastParam(broad_param);
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
     transport::TcpTransport::Instance()->SetMessageHash(msg);
