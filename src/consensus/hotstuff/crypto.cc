@@ -365,7 +365,7 @@ Status Crypto::VerifyMessage(const transport::MessagePtr& msg_ptr) {
             msg_ptr->header.hotstuff().pro_msg().view_item().has_qc()) {
         leader_idx = msg_ptr->header.hotstuff().pro_msg().view_item().qc().leader_idx();
     } else if (msg_ptr->header.hotstuff().pro_msg().has_tc()) {
-        leader_idx = msg_ptr->header.hotstuff().pro_msg().view_item().tc().leader_idx();
+        leader_idx = msg_ptr->header.hotstuff().pro_msg().tc().leader_idx();
     } else {
         return Status::kInvalidArgument;
     }
