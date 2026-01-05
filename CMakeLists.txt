@@ -119,7 +119,7 @@ add_definitions(
     #-DUSE_AGG_BLS
 )
 
-add_compile_options(-fPIC)
+add_compile_options(-fPIC -Wno-deprecated-declarations)
 
 if(MSVC)
     # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")  # default: /MD

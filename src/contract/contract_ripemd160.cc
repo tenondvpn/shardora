@@ -1022,14 +1022,14 @@ int Ripemd160::AggSignAndVerify(
         }
 
         pi_proofs.push_back(tmp_pi_proof);
-        if (pi_proofs.size() == ars.signer_count()) {
+        if ((int32_t)pi_proofs.size() == ars.signer_count()) {
             break;
         }
 
         ++valid_idx;
     }
 
-    if (pi_proofs.size() == ars.signer_count()) {
+    if ((int32_t)pi_proofs.size() == ars.signer_count()) {
         ars.AggreSign(messages, y_primes, delta_primes, pi_proofs, ring, agg_signature);
         auto tmp_key = std::string("ars_create_agg_sign");
         unsigned char data[20480] = {0};

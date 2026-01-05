@@ -103,7 +103,7 @@ void ThreadHandler::HandleMessage() {
             SHARDORA_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), thread_idx);
         }
 
-        auto btime = common::TimeUtils::TimestampUs();
+        // auto btime = common::TimeUtils::TimestampUs();
         if (is_hotstuff_thread_) {
             // auto btime = common::TimeUtils::TimestampUs();
             auto msg_ptr = std::make_shared<transport::TransportMessage>();

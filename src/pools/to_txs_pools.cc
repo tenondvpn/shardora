@@ -300,7 +300,7 @@ int ToTxsPools::CreateToTxWithHeights(
         *prev_to_heights = *prev_to_heights_;
     }
 
-    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+    for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) > leader_to_heights.heights(i)) {
             SHARDORA_DEBUG("prev heights invalid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), leader_to_heights.heights(i));
@@ -309,7 +309,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     bool heights_valid = false;
-    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+    for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         if (prev_to_heights->heights(i) < leader_to_heights.heights(i)) {
             SHARDORA_DEBUG("prev heights valid, pool: %u, prev height: %lu, now: %lu",
                 i, prev_to_heights->heights(i), leader_to_heights.heights(i));
