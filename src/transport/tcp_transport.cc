@@ -388,38 +388,42 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     }
 
     std::string peer_spec = ip + ":" + std::to_string(port);
-    auto from_iter = from_conn_map_.find(peer_spec);
-    if (from_iter != from_conn_map_.end()) {
-        if (!from_iter->second->ShouldReconnect()) {
-            SHARDORA_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
-            return from_iter->second;
-        }
 
-        if (from_iter->second->CheckStoped()) {
-            from_conn_map_.erase(from_iter);
-            CHECK_MEMORY_SIZE(from_conn_map_);
-        }
-    }
-
-    auto iter = conn_map_.find(peer_spec);
-    if (iter != conn_map_.end()) {
-        if (!iter->second->ShouldReconnect()) {
-            SHARDORA_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
-            return iter->second;
-        }
-
-        if (iter->second->CheckStoped()) {
-            conn_map_.erase(iter);
-            CHECK_MEMORY_SIZE(conn_map_);
+    {
+        auto from_iter = from_conn_map_.find(peer_spec);
+        if (from_iter != from_conn_map_.end()) {
+            if (!from_iter->second->ShouldReconnect()) {
+                SHARDORA_DEBUG("use exists client connect (from_map) %s:%d", ip.c_str(), port);
+                return from_iter->second;
+            }
+            
+            if (from_iter->second->CheckStoped()) {
+                from_conn_map_.erase(from_iter);
+                CHECK_MEMORY_SIZE(from_conn_map_);
+            }
         }
     }
 
-//     std::string local_spec = common::GlobalInfo::Instance()->config_local_ip() + ":" +
-//         std::to_string(common::GlobalInfo::Instance()->config_local_port());
+    {
+        auto iter = conn_map_.find(peer_spec);
+        if (iter != conn_map_.end()) {
+            if (!iter->second->ShouldReconnect()) {
+                SHARDORA_DEBUG("use exists client connect (conn_map) %s:%d", ip.c_str(), port);
+                return iter->second;
+            }
+
+            if (iter->second->CheckStoped()) {
+                conn_map_.erase(iter);
+                CHECK_MEMORY_SIZE(conn_map_);
+            }
+        }
+    }
+
     auto tcp_conn = transport_->CreateConnection(
         peer_spec,
         "",
         3u * 1000u * 1000u);
+
     if (tcp_conn == nullptr) {
         return nullptr;
     }
@@ -428,9 +432,10 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     conn_map_[peer_spec] = tcp_conn;
     CHECK_MEMORY_SIZE(conn_map_);
     in_check_queue_.push(tcp_conn);
-    SHARDORA_DEBUG("success connect send message %s:%d, conn map size: %d, in_check_queue_ size: %d", 
-        ip.c_str(), port, conn_map_.size(), in_check_queue_.size());
-    while (!destroy_) {
+    SHARDORA_DEBUG("success connect new socket %s:%d, conn map size: %d", 
+        ip.c_str(), port, conn_map_.size());
+    int process_limit = 32;
+    while (process_limit-- > 0 && !destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!out_check_queue_.pop(&out_conn)) {
             break;

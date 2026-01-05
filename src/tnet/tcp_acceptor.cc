@@ -157,6 +157,14 @@ bool TcpAcceptor::OnRead() {
             break;
         }
 
+        std::string from_ip;
+        uint16_t from_port;
+        if (socket->GetIpPort(&from_ip, &from_port) != 0) {
+            SHARDORA_ERROR("accept failed %s:%d", from_ip.c_str(), from_port);
+            socket->Free();
+            continue;
+        }
+
         if (!socket->SetNonBlocking(true)) {
             SHARDORA_ERROR("set nonblocking failed, close socket");
             socket->Free();
@@ -190,14 +198,6 @@ bool TcpAcceptor::OnRead() {
 
         conn->SetPacketEncoder(packet_factory_->CreateEncoder());
         conn->SetPacketDecoder(packet_factory_->CreateDecoder());
-        std::string from_ip;
-        uint16_t from_port;
-        if (socket->GetIpPort(&from_ip, &from_port) != 0) {
-            SHARDORA_ERROR("accept failed %s:%d", from_ip.c_str(), from_port);
-            socket->Free();
-            continue;
-        }
-
         event_loop.PostTask(std::bind(
             &NewConnectionHandler,
             std::ref(*conn),

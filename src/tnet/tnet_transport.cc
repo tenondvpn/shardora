@@ -38,20 +38,38 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         return NULL;
     }
 
+    // 1. Set non-blocking
     if (!socket->SetNonBlocking(true)) {
         SHARDORA_ERROR("set non-blocking failed");
         socket->Free();
         return NULL;
     }
 
+    // 2. Set CloseExec
     if (!socket->SetCloseExec(true)) {
         SHARDORA_ERROR("set close-exec failed");
     }
 
+    // 3. [New] Enable KeepAlive to maintain long connection activity
+    int keep_alive = 1;
+    if (setsockopt(socket->GetFd(), SOL_SOCKET, SO_KEEPALIVE, &keep_alive, sizeof(keep_alive)) < 0) {
+        SHARDORA_WARN("set SO_KEEPALIVE failed, errno: %d", errno);
+    }
+
+    // 4. [Critical Fix] Set Linger option for graceful shutdown
+    // l_onoff=1, l_linger=1: When close() is called, if there is data in the buffer, wait 1 second to finish sending before closing, sending FIN.
+    // This effectively prevents sending RST directly, which causes getpeername error on the server side.
+    struct linger so_linger;
+    so_linger.l_onoff = 1;
+    so_linger.l_linger = 1; 
+    if (setsockopt(socket->GetFd(), SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0) {
+        SHARDORA_WARN("set SO_LINGER failed, errno: %d", errno);
+    }
+
+    // 5. Set buffer size
     if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
         SHARDORA_ERROR("set recv buf failed");
     }
-
     if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
         SHARDORA_ERROR("set recv buf failed");
     }
@@ -65,6 +83,93 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     conn->SetPacketHandler(packet_handler_);
     conn->SetPacketEncoder(packet_factory_->CreateEncoder());
     conn->SetPacketDecoder(packet_factory_->CreateDecoder());
+
+    // 6. Connect
+    if (!conn->Connect(timeout)) {
+        SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
+                peer_spec.c_str(), errno, strerror(errno));
+        // Note: If Connect internally handles close, only the wrapper needs to be released here
+        conn->Destroy(true);
+        return nullptr;
+    }
+
+    return conn;
+}
+
+// std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
+//         const std::string& peer_spec,
+//         const std::string& local_spec,
+//         uint32_t timeout) {
+//     auto socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
+//     if (socket == NULL) {
+//         SHARDORA_ERROR("create tcp client socket failed");
+//         return NULL;
+//     }
+std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
+        const std::string& peer_spec,
+        const std::string& local_spec,
+        uint32_t timeout) {
+    auto socket = SocketFactory::CreateTcpClientSocket(peer_spec, local_spec);
+    if (socket == NULL) {
+        SHARDORA_ERROR("create tcp client socket failed");
+        return NULL;
+    }
+
+//     if (!socket->SetNonBlocking(true)) {
+//         SHARDORA_ERROR("set non-blocking failed");
+//         socket->Free();
+//         return NULL;
+//     }
+    if (!socket->SetNonBlocking(true)) {
+        SHARDORA_ERROR("set non-blocking failed");
+        socket->Free();
+        return NULL;
+    }
+
+//     if (!socket->SetCloseExec(true)) {
+//         SHARDORA_ERROR("set close-exec failed");
+//     }
+    if (!socket->SetCloseExec(true)) {
+        SHARDORA_ERROR("set close-exec failed");
+    }
+
+//     if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
+//         SHARDORA_ERROR("set recv buf failed");
+//     }
+    if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
+        SHARDORA_ERROR("set recv buf failed");
+    }
+
+//     if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
+//         SHARDORA_ERROR("set recv buf failed");
+//     }
+    if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
+        SHARDORA_ERROR("set recv buf failed");
+    }
+
+//     auto conn = CreateTcpConnection(GetNextEventLoop(), socket);
+//     if (conn == nullptr) {
+//         SHARDORA_ERROR("create tcp connection failed");
+//         return nullptr;
+//     }
+    auto conn = CreateTcpConnection(GetNextEventLoop(), socket);
+    if (conn == nullptr) {
+        SHARDORA_ERROR("create tcp connection failed");
+        return nullptr;
+    }
+
+//     conn->SetPacketHandler(packet_handler_);
+//     conn->SetPacketEncoder(packet_factory_->CreateEncoder());
+//     conn->SetPacketDecoder(packet_factory_->CreateDecoder());
+//     if (!conn->Connect(timeout)) {
+//         SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
+//                 peer_spec.c_str(), errno, strerror(errno));
+//         conn->Destroy(true);
+//         return nullptr;
+//     }
+    conn->SetPacketHandler(packet_handler_);
+    conn->SetPacketEncoder(packet_factory_->CreateEncoder());
+    conn->SetPacketDecoder(packet_factory_->CreateDecoder());
     if (!conn->Connect(timeout)) {
         SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
                 peer_spec.c_str(), errno, strerror(errno));
@@ -72,6 +177,8 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         return nullptr;
     }
 
+//     return conn;
+// }
     return conn;
 }
 
