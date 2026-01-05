@@ -63,6 +63,7 @@ int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std:
             common::Encode::HexEncode(hash).c_str(),
             common::Encode::HexEncode(str_pk).c_str(),
             common::Encode::HexEncode(sign).c_str());
+        assert(false);
         return kSecurityError;
     }
     return kSecuritySuccess;
