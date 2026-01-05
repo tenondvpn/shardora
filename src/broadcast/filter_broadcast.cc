@@ -53,8 +53,8 @@ void FilterBroadcast::Broadcasting(
     }
 
     auto bloomfilter = GetBloomfilter(message);
-    // if (message.broadcast().has_hop_to_layer() &&
-    //         now_hop_count >= message.broadcast().hop_to_layer()) {
+    if (message.broadcast().has_hop_to_layer() &&
+            now_hop_count >= message.broadcast().hop_to_layer()) {
         auto nodes = GetlayerNodes(dht_ptr, bloomfilter, message);
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
             bloomfilter->insert((*iter)->id_hash);
@@ -65,23 +65,22 @@ void FilterBroadcast::Broadcasting(
         // TODO(xielei): test gossip ,remove it later
         message.set_hop_count(now_hop_count + 1);
         LayerSend(dht_ptr, msg_ptr, nodes);
-    // } else {
-    //     auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
-    //     // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
-    //     //     bloomfilter->insert((*iter)->id_hash);
-    //     // }
+    } else {
+        auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
+        // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
+        //     bloomfilter->insert((*iter)->id_hash);
+        // }
 
-    //     SHARDORA_DEBUG("random Broadcasting: %lu, size: %u",
-    //         msg_ptr->header.hash64(), nodes.size());
-    //     if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
-    //         return;
-    //     }
+        SHARDORA_DEBUG("random Broadcasting: %lu, size: %u",
+            msg_ptr->header.hash64(), nodes.size());
+        if (msg_ptr->header.broadcast().bloomfilter_size() >= 64) {
+            return;
+        }
 
-    //     // TODO(xielei): test gossip ,remove it later
-    //     // msg_ptr->header.mutable_broadcast()->clear_bloomfilter();
-    //     message.set_hop_count(now_hop_count + 1);
-    //     Send(dht_ptr, msg_ptr, nodes);
-    // }
+        // msg_ptr->header.mutable_broadcast()->clear_bloomfilter();
+        message.set_hop_count(now_hop_count + 1);
+        Send(dht_ptr, msg_ptr, nodes);
+    }
 }
 
 std::shared_ptr<std::unordered_set<uint64_t>> FilterBroadcast::GetBloomfilter(
