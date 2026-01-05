@@ -2176,7 +2176,8 @@ void Hotstuff::TryRecoverFromStuck(
     hotstuff_msg->set_pool_index(pool_idx_);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SendMsgToLeader(leader, trans_msg, PRE_RESET_TIMER);
-    SHARDORA_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, has_single_tx: %d, tx size: %u, hash: %lu",
+    SHARDORA_INFO("pool: %d, send prereset msg from: %lu to: %lu, "
+        "has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
         leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),
         trans_msg->header.hash64());
