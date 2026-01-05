@@ -109,6 +109,8 @@ void BlsManager::OnNewElectBlock(
             in[i].pool_idx_mod_num(),
             *agg_bls_pk,
             *agg_bls_pk_proof));
+        SHARDORA_INFO("new elect set elect item index: %u, net: %u, pk: %s", i, elect_block->shard_network_id(),
+            common::Encode::HexEncode(in[i].pubkey()).c_str());
     }
 
     elect_item->members = members;
