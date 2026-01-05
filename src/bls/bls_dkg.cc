@@ -10,6 +10,7 @@
 #include "bls/bls_utils.h"
 #include "bls/dkg_cache.h"
 #include "bls/bls_manager.h"
+#include "broadcast/broadcast_utils.h"
 #include "common/global_info.h"
 #include "db/db.h"
 #include "dht/dht_key.h"
