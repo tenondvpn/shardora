@@ -355,6 +355,7 @@ void TcpTransport::Output() {
                     if (tcp_conn == nullptr) {
                         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0);
+                        last_conn = nullptr;
                         continue;
                     }
 
@@ -496,11 +497,11 @@ void TcpTransport::CheckConnectionValid() {
 
     for (uint32_t i = 0; i < common::kMaxMessageTypeCount; ++i) {
         if (in_message_type_count_[i] > 0) {
-            SHARDORA_INFO("in message type: %d, count: %u", i, in_message_type_count_[i]);
+            SHARDORA_DEBUG("in message type: %d, count: %u", i, in_message_type_count_[i]);
         }
 
         if (out_message_type_count_[i] > 0) {
-            SHARDORA_INFO("out message type: %d, count: %u", i, out_message_type_count_[i].fetch_add(0));
+            SHARDORA_DEBUG("out message type: %d, count: %u", i, out_message_type_count_[i].fetch_add(0));
         }
     }
 

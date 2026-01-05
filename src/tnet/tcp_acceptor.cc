@@ -207,7 +207,8 @@ bool TcpAcceptor::OnRead() {
         conn_map_[from_ip + std::to_string(from_port)] = conn;
         CHECK_MEMORY_SIZE(conn_map_);
         in_check_queue_->push(conn);
-        while (!destroy_) {
+        int cleanup_limit = 32;
+        while (!destroy_ && cleanup_limit-- > 0) {
             std::shared_ptr<TcpConnection> out_conn = nullptr;
             if (!out_check_queue_->pop(&out_conn) || out_conn == nullptr) {
                 break;

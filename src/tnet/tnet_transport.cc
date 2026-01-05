@@ -59,12 +59,12 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     // 4. [Critical Fix] Set Linger option for graceful shutdown
     // l_onoff=1, l_linger=1: When close() is called, if there is data in the buffer, wait 1 second to finish sending before closing, sending FIN.
     // This effectively prevents sending RST directly, which causes getpeername error on the server side.
-    // struct linger so_linger;
-    // so_linger.l_onoff = 1;
-    // so_linger.l_linger = 1; 
-    // if (setsockopt(socket->GetFd(), SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0) {
-    //     SHARDORA_WARN("set SO_LINGER failed, errno: %d", errno);
-    // }
+    struct linger so_linger;
+    so_linger.l_onoff = 1;
+    so_linger.l_linger = 1; 
+    if (setsockopt(socket->GetFd(), SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0) {
+        SHARDORA_WARN("set SO_LINGER failed, errno: %d", errno);
+    }
 
     // 5. Set buffer size
     if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
@@ -89,7 +89,7 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
                 peer_spec.c_str(), errno, strerror(errno));
         // Note: If Connect internally handles close, only the wrapper needs to be released here
-        conn->Destroy(true);
+        conn->Destroy(false);
         return nullptr;
     }
 
