@@ -54,7 +54,7 @@ struct Construct {
 #endif
 
 #ifndef NDEBUG
-#define ADD_DEBUG_PROCESS_TIMESTAMP()
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #define TMP_ADD_DEBUG_PROCESS_TIMESTAMP()
 
 #define ADD_DEBUG_PROCESS_TIMESTAMP() { \
@@ -92,7 +92,7 @@ struct Construct {
         msg_ptr->times_idx++; \
     } \
 }
-#define ADD_DEBUG_PROCESS_TIMESTAMP()
+// #define ADD_DEBUG_PROCESS_TIMESTAMP()
 #define TMP_ADD_DEBUG_PROCESS_TIMESTAMP()
 #endif
 

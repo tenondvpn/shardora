@@ -98,9 +98,7 @@ int GlobalInfo::Init(const common::Config& config) {
 }
 
 uint8_t GlobalInfo::get_thread_index() {
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto now_thread_id_tmp = std::this_thread::get_id();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
     uint8_t thread_idx = 0;
     if (should_check_thread_all_valid_) {
@@ -127,7 +125,6 @@ uint8_t GlobalInfo::get_thread_index() {
         thread_idx = iter->second;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     return thread_idx;
 }
 
