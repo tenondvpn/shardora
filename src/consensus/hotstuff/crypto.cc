@@ -341,6 +341,7 @@ Status Crypto::SignMessage(transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(msg_hash).c_str(),
         common::Encode::HexEncode(sign).c_str(),
         msg_ptr->header.hash64());
+    assert(VerifyMessage(msg_ptr) == Status::kSuccess);
     return Status::kSuccess;
 }
 
