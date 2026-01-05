@@ -316,6 +316,9 @@ int TcpTransport::Send(
 }
 
 void TcpTransport::Output() {
+    std::string last_ip;
+    uint16_t last_port = 0;
+    std::shared_ptr<tnet::TcpConnection> last_conn = nullptr;
     while (!destroy_) {
         while (true) {
             std::shared_ptr<tnet::TcpConnection> conn = nullptr;
@@ -339,7 +342,16 @@ void TcpTransport::Output() {
 
                 int32_t try_times = 0;
                 while (try_times++ < 3) {
-                    auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
+                    std::shared_ptr<tnet::TcpConnection> tcp_conn = nullptr;
+                    if (last_conn != nullptr && last_ip == item_ptr->des_ip && last_port == item_ptr->port) {
+                        tcp_conn = last_conn;
+                    } else {
+                        tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
+                        last_conn = tcp_conn;
+                        last_ip = item_ptr->des_ip;
+                        last_port = item_ptr->port;
+                    }
+
                     if (tcp_conn == nullptr) {
                         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0);
@@ -352,8 +364,11 @@ void TcpTransport::Output() {
                             item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
                         if (res <= 0) {
                             tcp_conn->Destroy(true);
+                            last_conn = nullptr; // Clear cache on destroy
                         }
                         
+                        // Avoid busy loop on immediate retry
+                        std::this_thread::yield();
                         continue;
                     }
 
@@ -393,7 +408,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         auto from_iter = from_conn_map_.find(peer_spec);
         if (from_iter != from_conn_map_.end()) {
             if (!from_iter->second->ShouldReconnect()) {
-                SHARDORA_DEBUG("use exists client connect (from_map) %s:%d", ip.c_str(), port);
+                SHARDORA_INFO("use exists client connect (from_map) %s:%d", ip.c_str(), port);
                 return from_iter->second;
             }
             
@@ -408,7 +423,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         auto iter = conn_map_.find(peer_spec);
         if (iter != conn_map_.end()) {
             if (!iter->second->ShouldReconnect()) {
-                SHARDORA_DEBUG("use exists client connect (conn_map) %s:%d", ip.c_str(), port);
+                SHARDORA_INFO("use exists client connect (conn_map) %s:%d", ip.c_str(), port);
                 return iter->second;
             }
 
@@ -446,7 +461,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         if (iter != conn_map_.end()) {
             conn_map_.erase(iter);
             CHECK_MEMORY_SIZE(conn_map_);
-            SHARDORA_DEBUG("remove accept connection: %s", key.c_str());
+            SHARDORA_INFO("remove accept connection: %s", key.c_str());
         }
     }
 
@@ -472,6 +487,7 @@ void TcpTransport::CheckConnectionValid() {
         waiting_check_queue_.pop_front();
         conn->ShouldReconnect();
         if (conn->CheckStoped()) {
+            SHARDORA_INFO("1 checked stopted conn.");
             out_check_queue_.push(conn);
         } else {
             waiting_check_queue_.push_back(conn);

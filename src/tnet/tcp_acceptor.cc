@@ -245,7 +245,7 @@ void TcpAcceptor::CheckConnectionValid() {
         conn->ShouldReconnect();
         SHARDORA_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", waiting_check_queue_.size());
         if (conn->CheckStoped()) {
-            SHARDORA_DEBUG("checked stopted conn.");
+            SHARDORA_INFO("checked stopted conn.");
             out_check_queue_->push(conn);
         } else {
             waiting_check_queue_.push_back(conn);
