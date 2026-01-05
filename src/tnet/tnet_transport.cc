@@ -1,5 +1,10 @@
 #include "tnet/tnet_transport.h"
 
+#include <cerrno>
+#include <cstring>
+#include <thread>
+#include <chrono>
+
 #include "tnet/tcp_connection.h"
 #include "tnet/socket/socket_factory.h"
 
@@ -57,7 +62,8 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     }
 
     // 4. [Critical Fix] Set Linger option for graceful shutdown
-    // l_onoff=1, l_linger=1: When close() is called, if there is data in the buffer, wait 1 second to finish sending before closing, sending FIN.
+    // l_onoff=1, l_linger=1: When close() is called, if there is data in the buffer, 
+    // wait 1 second to finish sending before closing, sending FIN.
     // This effectively prevents sending RST directly, which causes getpeername error on the server side.
     struct linger so_linger;
     so_linger.l_onoff = 1;
@@ -71,7 +77,7 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         SHARDORA_ERROR("set recv buf failed");
     }
     if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
-        SHARDORA_ERROR("set recv buf failed");
+        SHARDORA_ERROR("set send buf failed");
     }
 
     auto conn = CreateTcpConnection(GetNextEventLoop(), socket);
@@ -85,11 +91,14 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     conn->SetPacketDecoder(packet_factory_->CreateDecoder());
 
     // 6. Connect
+    // Update: Connect failure is common (network jitter, target down), use WARN instead of ERROR.
     if (!conn->Connect(timeout)) {
-        SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
-                peer_spec.c_str(), errno, strerror(errno));
-        // Note: If Connect internally handles close, only the wrapper needs to be released here
-        conn->Destroy(false);
+        SHARDORA_WARN("connect peer [%s] failed: %s (%d)",
+                peer_spec.c_str(), strerror(errno), errno);
+        
+        // Use Destroy(true) to close socket immediately since connection failed.
+        // No need to wait for IO thread.
+        conn->Destroy(true);
         return nullptr;
     }
 
@@ -146,12 +155,18 @@ bool TnetTransport::Init() {
 
 void TnetTransport::Destroy() {
     if (acceptor_thread_ != nullptr) {
+        if (acceptor_thread_->joinable()) {
+            acceptor_thread_->join();
+        }
         delete acceptor_thread_;
         acceptor_thread_ = nullptr;
     }
 
     for (size_t i = 0; i < thread_vec_.size(); i++) {
         if (thread_vec_[i] != nullptr) {
+            if (thread_vec_[i]->joinable()) {
+                thread_vec_[i]->join();
+            }
             delete thread_vec_[i];
             thread_vec_[i] = nullptr;
         }
@@ -205,7 +220,7 @@ bool TnetTransport::Start() {
         });
 
         if (!waiting_success_) {
-            SHARDORA_DEBUG("waiting for work_thread failed.");
+            SHARDORA_ERROR("waiting for work_thread failed.");
             return false;
         }
         thread_vec_.push_back(tmp_thread);
@@ -230,11 +245,10 @@ bool TnetTransport::Start() {
     });
 
     if (!waiting_success_) {
-        SHARDORA_DEBUG("waiting for work_thread failed.");
+        SHARDORA_ERROR("waiting for accept_thread failed.");
         return false;
     }
     SHARDORA_DEBUG("waiting for accept_thread success.");
-//     acceptor_thread_->detach();
     return true;
 }
 
@@ -258,10 +272,16 @@ bool TnetTransport::Stop() {
         }
     }
 
-    acceptor_thread_->join();
+    // Join threads if they exist
+    if (acceptor_thread_ && acceptor_thread_->joinable()) {
+        acceptor_thread_->join();
+    }
+    
     for (size_t i = 0; i < thread_vec_.size(); i++) {
         auto thread = thread_vec_[i];
-        thread->join();
+        if (thread && thread->joinable()) {
+            thread->join();
+        }
     }
 
     stoped_ = true;
