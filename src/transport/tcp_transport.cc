@@ -409,7 +409,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         auto from_iter = from_conn_map_.find(peer_spec);
         if (from_iter != from_conn_map_.end()) {
             if (!from_iter->second->ShouldReconnect()) {
-                SHARDORA_INFO("use exists client connect (from_map) %s:%d", ip.c_str(), port);
+                SHARDORA_DEBUG("use exists client connect (from_map) %s:%d", ip.c_str(), port);
                 return from_iter->second;
             }
             
@@ -424,7 +424,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         auto iter = conn_map_.find(peer_spec);
         if (iter != conn_map_.end()) {
             if (!iter->second->ShouldReconnect()) {
-                SHARDORA_INFO("use exists client connect (conn_map) %s:%d", ip.c_str(), port);
+                SHARDORA_DEBUG("use exists client connect (conn_map) %s:%d", ip.c_str(), port);
                 return iter->second;
             }
 
@@ -448,7 +448,7 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     conn_map_[peer_spec] = tcp_conn;
     CHECK_MEMORY_SIZE(conn_map_);
     in_check_queue_.push(tcp_conn);
-    SHARDORA_DEBUG("success connect new socket %s:%d, conn map size: %d", 
+    SHARDORA_INFO("success connect new socket %s:%d, conn map size: %d", 
         ip.c_str(), port, conn_map_.size());
     int process_limit = 32;
     while (process_limit-- > 0 && !destroy_) {
