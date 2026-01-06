@@ -435,7 +435,7 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
-    PopPoolsMessage()
+    PopPoolsMessage();
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
