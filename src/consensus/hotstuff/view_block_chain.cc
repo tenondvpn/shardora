@@ -539,7 +539,7 @@ void GetQCWrappedByGenesis(uint32_t pool_index, QC* qc) {
     }
 
     QC& qc_item = *qc;
-    qc_item.set_network_id(common::GlobalInfo::Instance()->network_id());
+    qc_item.set_network_id(net_id);
     qc_item.set_pool_index(pool_index);
     qc_item.set_view(BeforeGenesisView);
     qc_item.set_view_block_hash("");

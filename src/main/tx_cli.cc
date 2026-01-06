@@ -16,14 +16,28 @@
 using namespace shardora;
 static bool global_stop = false;
 static const std::string kBroadcastIp = "127.0.0.1";
-static const uint16_t kBroadcastPort = 13004;
-static const int shardnum = 3;
+static const uint16_t kBroadcastPort = 13001;
+static int shardnum = 3;
 static const int delayus = 500;
-static const bool multi_pool = true;
+static const bool multi_pool = false;
 static const std::string db_path = "./txclidb";
-static const std::string from_prikey = "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";   
+static const std::string from_prikey =
+    "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848";
+static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::string>> net_pool_sk_map = {
+    {3, {{15, "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708"},
+         {9, "580bb274af80b8d39b33f25ddbc911b14a1b3a2a6ec8ca376ffe9661cf809d36"}}},
+    {4, {{15, "ed8aa75374998a6fb20139171e570ae67ceb34817b87b05400023ff9f1e06532"},
+         {12, "c2e8fb3673f82cadd860d7523c12e71a7279faec0814803e547286bb0363d0e8"}}}
+};
 
 static void SignalCallback(int sig_int) { global_stop = true; }
+
+static const std::string get_from_prikey(uint32_t net_id, int32_t pool_id) {
+    if (pool_id == -1) {
+        return from_prikey;
+    }
+    return net_pool_sk_map[net_id][pool_id];
+}
 
 void SignalRegister() {
 #ifndef _WIN32
@@ -172,6 +186,27 @@ static void LoadAllAccounts() {
 }
 
 int tx_main(int argc, char** argv) {
+    // ./txcli 0 $net_id $pool_id $ip $port $delay_us
+    uint32_t pool_id = -1;
+    auto ip = kBroadcastIp;
+    auto port = kBroadcastPort;
+    auto delayus_a = delayus;
+    if (argc >= 4) {
+        shardnum = std::stoi(argv[2]);
+        pool_id = std::stoi(argv[3]);
+    }
+
+    if (argc >= 6) {
+        ip = argv[4];
+        port = std::stoi(argv[5]);
+    }
+    
+    if (argc >= 7) {
+        delayus_a = std::stoi(argv[6]);
+    }    
+
+    std::cout << "send tcp client ip_port" << ip << ": " << port << std::endl;
+    
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
@@ -179,7 +214,7 @@ int tx_main(int argc, char** argv) {
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
-    if (!db_ptr->Init(db_path)) {
+    if (!db_ptr->Init(db_path + "_" + std::to_string(shardnum) + "_" + std::to_string(pool_id))) {
         std::cout << "init db failed!" << std::endl;
         return 1;
     }
@@ -211,12 +246,14 @@ int tx_main(int argc, char** argv) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
     }
-
-    std::string prikey = common::Encode::HexDecode(from_prikey);
+    
+    std::string prikey = common::Encode::HexDecode(get_from_prikey(shardnum, pool_id));
     std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
+    std::cout << "from: " << common::Encode::HexEncode(security->GetAddress())
+              << "sk: " << common::Encode::HexEncode(from_prikey) << std::endl;    
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint32_t step_num = 1000;
@@ -243,8 +280,6 @@ int tx_main(int argc, char** argv) {
         //     tmp_data[0] = common::Random::RandomInt16();
         // }
 
-        
-
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
@@ -256,7 +291,9 @@ int tx_main(int argc, char** argv) {
             10000,
             1,
             shardnum);
-        if (transport::TcpTransport::Instance()->Send(kBroadcastIp, kBroadcastPort, tx_msg_ptr->header) != 0) {
+
+        
+        if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
@@ -279,7 +316,7 @@ int tx_main(int argc, char** argv) {
             count = 0;
         }
 
-        usleep(delayus);
+        usleep(delayus_a);
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
@@ -714,7 +751,7 @@ int contract_call(int argc, char** argv, bool more=false) {
 
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
-    if (argc <= 1) {
+    if (argc <= 1 || argv[1][0] == '0') {
         tx_main(argc, argv);
         transport::TcpTransport::Instance()->Stop();
         usleep(1000000);
