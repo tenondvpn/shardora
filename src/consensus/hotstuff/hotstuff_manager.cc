@@ -42,9 +42,9 @@ HotstuffManager::HotstuffManager() {}
 
 HotstuffManager::~HotstuffManager() {
     destroy_ = true;
-    if (pop_message_thread_) {
-        pop_message_thread_->join();
-    }
+    // if (pop_message_thread_) {
+    //     pop_message_thread_->join();
+    // }
 }
 
 int HotstuffManager::Init(
@@ -73,9 +73,9 @@ int HotstuffManager::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     elect_info_ = std::make_shared<ElectInfo>(security_ptr, elect_mgr_);
-    pop_message_thread_ = std::make_shared<std::thread>(
-        &HotstuffManager::PopPoolsMessage, 
-        this);
+    // pop_message_thread_ = std::make_shared<std::thread>(
+    //     &HotstuffManager::PopPoolsMessage, 
+    //     this);
 
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
 #ifdef USE_AGG_BLS
@@ -402,29 +402,6 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                     pool_hotstuff_[pool_idx]->view_block_chain(), 
                     addr_info, 
                     tx_info);
-                // if (pools::IsUserTransaction(tx_info.step())) {
-                //     return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
-                //         addr_info.addr(), 
-                //         tx_info.nonce(), 
-                //         latest_block->qc().view_block_hash());
-                // }
-                
-                // zjcvm::ZjchainHost zjc_host;
-                // zjc_host.parent_hash_ = latest_block->qc().view_block_hash();
-                // zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
-                // std::string val;
-                // if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                //     SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
-                //         common::Encode::HexEncode(tx_info.to()).c_str(),
-                //         common::Encode::HexEncode(tx_info.key()).c_str(),
-                //         (int32_t)tx_info.step());
-                //     return 1;
-                // }
-
-                // SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-                //     common::Encode::HexEncode(tx_info.to()).c_str(),
-                //     common::Encode::HexEncode(tx_info.key()).c_str());
-                // return 0;
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {
@@ -458,12 +435,14 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
         }
     }
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    PopPoolsMessage()
+    ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
 
 void HotstuffManager::PopPoolsMessage() {
-    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    while (!destroy_) {
+    // auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    // while (!destroy_) {
         auto consensus_tx_count = 0;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (!destroy_) {
@@ -514,7 +493,12 @@ void HotstuffManager::PopPoolsMessage() {
                         SHARDORA_WARN("get address failed nonce: %lu", tx->nonce());
                         continue;
                     }
-            
+                    
+                    auto tx_hash = pools::GetTxMessageHash(*tx);
+                    if (pool_hotstuff_[address_info->pool_index()]->acceptor()->TxHashVerified(tx_hash)) {
+                        continue;
+                    }
+
                     std::string contract_prepayment_id;
                     pools::TxItemPtr tx_ptr = nullptr;
                     switch (tx->step()) {
@@ -580,7 +564,6 @@ void HotstuffManager::PopPoolsMessage() {
                     }
                     
                     if (tx_ptr != nullptr) {
-                        auto tx_hash = pools::GetTxMessageHash(*tx);
                         if (tx_ptr->tx_info->pubkey().size() == 64u) {
                             security::GmSsl gmssl;
                             if (gmssl.Verify(
@@ -615,11 +598,14 @@ void HotstuffManager::PopPoolsMessage() {
                 }
             }
         }
-        if (consensus_tx_count > 0)
-        SHARDORA_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
-        std::unique_lock<std::mutex> lock(pop_tx_mu_);
-        pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
-    }
+
+        if (consensus_tx_count > 0) {
+            SHARDORA_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
+        }
+
+    //     std::unique_lock<std::mutex> lock(pop_tx_mu_);
+    //     pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
+    // }
 }
 
 void HotstuffManager::InitLatestInfo(pools::protobuf::PoolLatestInfo& pool_info, uint32_t pool_index) {

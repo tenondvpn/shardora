@@ -356,7 +356,8 @@ public:
             address_info(addr_info),
             is_consensus_add_tx(false),
             tx_info_index(tx_info_idx),
-            synced_leaders_(common::kEachShardMaxNodeCount) {
+            synced_leaders_(common::kEachShardMaxNodeCount),
+            sign_verified(false) {
         msg_ptr = msgp;
         tx_info = nullptr;
         if (tx_info_index < 0) {
@@ -415,6 +416,7 @@ public:
     bool is_consensus_add_tx;
     int32_t tx_info_index;
     common::Bitmap synced_leaders_;
+    bool sign_verified;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;

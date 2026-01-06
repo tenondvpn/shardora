@@ -71,29 +71,6 @@ public:
                 const address::protobuf::AddressInfo& addr_info, 
                 pools::protobuf::TxMessage& tx_info) -> int {
             return CheckTransactionValid(parent_hash, view_block_chain, addr_info, tx_info);
-            // if (pools::IsUserTransaction(tx_info.step())) {
-            //     return view_block_chain->CheckTxNonceValid(
-            //         addr_info.addr(), 
-            //         tx_info.nonce(), 
-            //         parent_hash);
-            // }
-            
-            // zjcvm::ZjchainHost zjc_host;
-            // zjc_host.parent_hash_ = parent_hash;
-            // zjc_host.view_block_chain_ = view_block_chain;
-            // std::string val;
-            // if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            //     SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
-            //         common::Encode::HexEncode(tx_info.to()).c_str(),
-            //         common::Encode::HexEncode(tx_info.key()).c_str(),
-            //         (int32_t)tx_info.step());
-            //     return 1;
-            // }
-
-            // SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-            //     common::Encode::HexEncode(tx_info.to()).c_str(),
-            //     common::Encode::HexEncode(tx_info.key()).c_str());
-            // return 0;
         };
 
         txs_pools_->GetTxSyncToLeader(

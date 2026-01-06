@@ -1229,6 +1229,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, const transport::MessagePtr&
         return;
     }
 
+    tx_ptr->sign_verified = true;
     // The transaction pool adds transactions in msg
     TMP_ADD_DEBUG_PROCESS_TIMESTAMP();
     tx_pool_[pool_index].AddTx(tx_ptr);

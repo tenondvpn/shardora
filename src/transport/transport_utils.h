@@ -96,8 +96,7 @@ public:
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
         // SHARDORA_DEBUG("memory check create new transport message: %d", now_count);
-         common::GlobalInfo::Instance()->AddSharedObj(11);
-
+        common::GlobalInfo::Instance()->AddSharedObj(11);
     }
 
     ~TransportMessage() {
@@ -123,6 +122,7 @@ public:
     bool handled;
     bool is_leader;
     int32_t thread_index;
+    std::shared_ptr<common::Bitmap> bitmap_ptr;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
