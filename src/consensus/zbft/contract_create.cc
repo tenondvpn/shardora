@@ -238,9 +238,9 @@ int ContractUserCreateCall::HandleTx(
             to_item_ptr->set_sharding_id(view_block.qc().network_id());
             to_item_ptr->set_des_sharding_id(network::kRootCongressNetworkId);
             zjc_host.cross_to_map_[to_item_ptr->des()] = to_item_ptr;
-            if (block_tx.contract_prepayment() > 0) {
-                to_item_ptr->set_prepayment(block_tx.contract_prepayment());
-            }
+            // if (block_tx.contract_prepayment() > 0) {
+            //     to_item_ptr->set_prepayment(block_tx.contract_prepayment());
+            // }
 
             SHARDORA_DEBUG("success add to tx item addr prepayment id: %s, prepayment: %lu",
                 common::Encode::HexEncode(to_item_ptr->des()).c_str(),

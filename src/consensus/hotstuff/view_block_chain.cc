@@ -1039,7 +1039,7 @@ int ViewBlockChain::CheckTxNonceValid(
         }
 
         if (!it->second->view_block) {
-            return false;
+            return -1;
         }
         
         phash = it->second->view_block->parent_hash();
