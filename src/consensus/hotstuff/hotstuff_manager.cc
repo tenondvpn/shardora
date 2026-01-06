@@ -494,7 +494,7 @@ void HotstuffManager::PopPoolsMessage() {
             }
             
             auto tx_hash = pools::GetTxMessageHash(*tx);
-            if (pool_hotstuff_[address_info->pool_index()]->acceptor()->TxHashVerified(tx_hash)) {
+            if (!pool_hotstuff_[address_info->pool_index()]->acceptor()->TxHashVerified(tx_hash)) {
                 continue;
             }
 
