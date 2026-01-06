@@ -62,6 +62,7 @@ public:
     // Handle Synced Block From KeyValueSyncer
     virtual double Tps() = 0;
     virtual void CalculateTps(uint64_t tx_list_size) = 0;
+    virtual bool TxHashVerified(const std::string& tx_hash) = 0;
 };
 
 class BlockAcceptor : public IBlockAcceptor {
