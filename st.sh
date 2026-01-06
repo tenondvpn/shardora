@@ -1,0 +1,1 @@
+grep shard_statistic ./s3_1/log/shardora.log | grep 'elect height: 7' | grep ', success handle block pool:' | awk -F'success handle block pool: ' '{split($2, a, ","); print a[1], $0}' | sort -n -k1 | cut -d' ' -f2- | awk -F', statistic' '{print $2}'

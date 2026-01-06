@@ -130,16 +130,15 @@ void AddDescriptorsImpl() {
       " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
       "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
       "94967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rconsensu"
-      "s_gap\030\r \001(\004\022\r\n\005nonce\030\016 \002(\004*\342\001\n\013AddressTy"
-      "pe\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootE"
-      "lect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\031"
-      "\n\025kImmutablePoolAddress\020\005\022\025\n\021kLocalToTxA"
-      "ddress\020\006\022\021\n\rkElectAddress\020\007\022\027\n\023kContract"
-      "Prepayment\020\010\022\027\n\023kWaitingRootConfirm\020\t\022\020\n"
+      "s_gap\030\r \001(\004\022\r\n\005nonce\030\016 \002(\004*\272\001\n\013AddressTy"
+      "pe\022\013\n\007kNormal\020\000\022\016\n\nkRootElect\020\002\022\016\n\nkRoot"
+      "Timer\020\003\022\016\n\nkStatistic\020\004\022\031\n\025kImmutablePoo"
+      "lAddress\020\005\022\025\n\021kLocalToTxAddress\020\006\022\021\n\rkEl"
+      "ectAddress\020\007\022\027\n\023kContractPrepayment\020\010\022\020\n"
       "\014kPoolAddress\020\n"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 655);
+      descriptor, 615);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -166,7 +165,6 @@ const ::google::protobuf::EnumDescriptor* AddressType_descriptor() {
 bool AddressType_IsValid(int value) {
   switch (value) {
     case 0:
-    case 1:
     case 2:
     case 3:
     case 4:
@@ -174,7 +172,6 @@ bool AddressType_IsValid(int value) {
     case 6:
     case 7:
     case 8:
-    case 9:
     case 10:
       return true;
     default:

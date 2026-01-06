@@ -33,7 +33,7 @@ public:
         }
 
         auto now_tm_skip = 0;//common::TimeUtils::TimestampSeconds() / 30lu;
-        auto index = 0;// (now_tm_skip + pool_idx_) % members->size();
+        auto index = (now_tm_skip + pool_idx_) % members->size();
         return (*members)[index];
     }
 
@@ -49,7 +49,7 @@ public:
 
         return (*members)[member_index];
     }
-    
+
     inline uint32_t GetLocalMemberIdx() const {
         auto sharding_id = common::GlobalInfo::Instance()->network_id();
         assert(elect_info_ != nullptr);
@@ -73,7 +73,7 @@ public:
     }
 
     void SetExtraNonce(const std::string& extra_nonce) {
-        extra_nonce_ = extra_nonce; 
+        extra_nonce_ = extra_nonce;
     }
 
     inline uint32_t MemberSize(uint32_t sharding_id) const {
@@ -81,8 +81,8 @@ public:
         if (!elect_item) {
             return common::kInvalidUint32;
         }
-        
-        return elect_item->Members()->size(); 
+
+        return elect_item->Members()->size();
     }
 
 private:
@@ -91,7 +91,7 @@ private:
         if (!elect_item) {
             return std::make_shared<common::Members>();
         }
-        return elect_item->Members(); 
+        return elect_item->Members();
     }
 
     common::BftMemberPtr getLeaderByRate(uint64_t random_hash);
@@ -102,7 +102,7 @@ private:
     std::shared_ptr<ElectInfo> elect_info_ = nullptr;
     std::string extra_nonce_ = "";
     // Since the choice of Leader is affected by the timestamp, it is necessary to record an expected_leader to solve the problem of inconsistent leaders across timestamp boundaries.
-    common::BftMemberPtr expected_leader_; 
+    common::BftMemberPtr expected_leader_;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
 };
 

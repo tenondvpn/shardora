@@ -399,7 +399,7 @@ static void GetOqsKeys() {
 //         cli_con.notify_one();
 //         return EVHTP_RES_ERROR;
 //     }
-    
+
 //     struct evbuffer* input = buf;//req->buffer_in;
 //     size_t len = evbuffer_get_length(input);
 //     char* response_data = (char*)malloc(len + 1);
@@ -407,8 +407,8 @@ static void GetOqsKeys() {
 //     response_data[len] = '\0';
 //     auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
 //     auto addr = common::Encode::Base64Decode((*json_ptr)["addr"]);
-//     // printf("success get address %s info: %s\n", 
-//     //     common::Encode::HexEncode(addr).c_str(), 
+//     // printf("success get address %s info: %s\n",
+//     //     common::Encode::HexEncode(addr).c_str(),
 //     //     response_data);
 //     account_info_jsons[addr] = json_ptr;
 //     free(response_data);
@@ -443,17 +443,17 @@ int tx_main(int argc, char** argv) {
         global_chain_node_ip = ip;
         port = std::stoi(argv[5]);
     }
-    
+
     if (argc >= 7) {
         delayus_a = std::stoi(argv[6]);
     }
 
     if (argc >= 8) {
         multi = std::stoi(argv[7]);
-    }    
+    }
 
     std::cout << "send tcp client ip_port" << ip << ": " << port << ", pool_id: " << pool_id << std::endl;
-    
+
     LoadAllAccounts(shardnum);
     SignalRegister();
     WriteDefaultLogConf();
@@ -487,12 +487,12 @@ int tx_main(int argc, char** argv) {
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     UpdateAddressNonce();
     std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
@@ -510,7 +510,7 @@ int tx_main(int argc, char** argv) {
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
-        uint32_t batch_count = 1;
+        uint32_t batch_count = 1000;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 if (pool_id == -1) {
@@ -523,7 +523,7 @@ int tx_main(int argc, char** argv) {
                     thread_security->SetPrivateKey(from_prikey);
                     uint64_t nonce = src_prikey_with_nonce[from_prikey];
                     if (nonce + 10000 <= prikey_with_nonce[from_prikey]) {
-                        printf("update address nonce: %s, now: %lu, chain: %lu\n", 
+                        printf("update address nonce: %s, now: %lu, chain: %lu\n",
                             common::Encode::HexEncode(thread_security->GetAddress()).c_str(),
                             prikey_with_nonce[from_prikey],
                             nonce);
@@ -553,7 +553,7 @@ int tx_main(int argc, char** argv) {
             ++all_count;
         }
     };
-    
+
     std::vector<std::thread> thread_vec;
     if (pool_id == -1) {
         uint32_t each_thread_size = g_prikeys.size() / kThreadCount;
@@ -596,7 +596,7 @@ int tx_main(int argc, char** argv) {
 }
 
 int base_tx_main(int argc, char** argv) {
-    // ./txcli 7 $count $ip $port 
+    // ./txcli 7 $count $ip $port
     uint32_t pool_id = -1;
     auto ip = kBroadcastIp;
     auto port = kBroadcastPort;
@@ -634,12 +634,12 @@ int base_tx_main(int argc, char** argv) {
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     std::string to = common::Encode::HexDecode("b63034b54564a92eeb1df463ac5b85182c64b1cd");
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
@@ -675,7 +675,7 @@ int base_tx_main(int argc, char** argv) {
             10000,
             1,
             shardnum);
-         
+
         if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
@@ -726,7 +726,7 @@ int one_tx_main(int argc, char** argv) {
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
@@ -871,7 +871,7 @@ int contract_main(int argc, char** argv) {
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
@@ -952,7 +952,7 @@ int contract_set_prepayment(int argc, char** argv) {
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
@@ -1112,7 +1112,7 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
@@ -1127,7 +1127,7 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
     auto sign_res = gmssl.Sign(test_hash, &test_sign);
     assert(sign_res == 0);
     int verify_res = gmssl.Verify(test_hash, gmssl.GetPublicKey(), test_sign);
-    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign)
         << ", verify res: " << verify_res << std::endl;
 
     auto tx_msg_ptr = GmsslCreateTransactionWithAttr(
@@ -1141,7 +1141,7 @@ int gmssl_tx(const std::string& private_key, const std::string& to, uint64_t amo
         1,
         3);
 
-        
+
     if (transport::TcpTransport::Instance()->Send("127.0.0.1", 13001, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
@@ -1185,7 +1185,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
         std::cout << "init tcp client failed!" << std::endl;
         return 1;
     }
-    
+
     if (transport::TcpTransport::Instance()->Start(false) != 0) {
         std::cout << "start tcp client failed!" << std::endl;
         return 1;
@@ -1202,7 +1202,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
     auto sign_res = oqs.Sign(test_hash, &test_sign);
     assert(sign_res == 0);
     int verify_res = oqs.Verify(test_hash, oqs.GetPublicKey(), test_sign);
-    std::cout << "test sign: " << common::Encode::HexEncode(test_sign) 
+    std::cout << "test sign: " << common::Encode::HexEncode(test_sign)
         << ", verify res: " << verify_res << std::endl;
 
     auto tx_msg_ptr = OqsCreateTransactionWithAttr(
@@ -1216,7 +1216,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
         1,
         3);
 
-        
+
     if (transport::TcpTransport::Instance()->Send("127.0.0.1", 13001, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
         return 1;
@@ -1300,4 +1300,4 @@ int main(int argc, char** argv) {
     transport::TcpTransport::Instance()->Stop();
     return 0;
 }
- 
+

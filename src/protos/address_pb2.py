@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.address.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x14protos/address.proto\x12\x19shardora.address.protobuf\x1a\x10protos/bls.proto\"\xe4\x02\n\x0b\x41\x64\x64ressInfo\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x0f\n\x07\x62\x61lance\x18\x02 \x02(\x04\x12\x13\n\x0bsharding_id\x18\x03 \x02(\r\x12\x12\n\npool_index\x18\x04 \x02(\r\x12\x0c\n\x04\x61\x64\x64r\x18\x05 \x02(\x0c\x12\x34\n\x04type\x18\x06 \x02(\x0e\x32&.shardora.address.protobuf.AddressType\x12\x12\n\nbytes_code\x18\x07 \x01(\x0c\x12\x15\n\rlatest_height\x18\x08 \x02(\x04\x12\x11\n\x06\x63redit\x18\t \x01(\x05:\x01\x30\x12\x30\n\x03g2s\x18\n \x03(\x0b\x32#.shardora.bls.protobuf.BlsPublicKey\x12\x1d\n\telect_pos\x18\x0b \x01(\r:\n4294967295\x12\x12\n\ndestructed\x18\x0c \x01(\x08\x12\x15\n\rconsensus_gap\x18\r \x01(\x04\x12\r\n\x05nonce\x18\x0e \x02(\x04*\xe2\x01\n\x0b\x41\x64\x64ressType\x12\x0b\n\x07kNormal\x10\x00\x12\r\n\tkContract\x10\x01\x12\x0e\n\nkRootElect\x10\x02\x12\x0e\n\nkRootTimer\x10\x03\x12\x0e\n\nkStatistic\x10\x04\x12\x19\n\x15kImmutablePoolAddress\x10\x05\x12\x15\n\x11kLocalToTxAddress\x10\x06\x12\x11\n\rkElectAddress\x10\x07\x12\x17\n\x13kContractPrepayment\x10\x08\x12\x17\n\x13kWaitingRootConfirm\x10\t\x12\x10\n\x0ckPoolAddress\x10\n')
+  serialized_pb=_b('\n\x14protos/address.proto\x12\x19shardora.address.protobuf\x1a\x10protos/bls.proto\"\xe4\x02\n\x0b\x41\x64\x64ressInfo\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x0f\n\x07\x62\x61lance\x18\x02 \x02(\x04\x12\x13\n\x0bsharding_id\x18\x03 \x02(\r\x12\x12\n\npool_index\x18\x04 \x02(\r\x12\x0c\n\x04\x61\x64\x64r\x18\x05 \x02(\x0c\x12\x34\n\x04type\x18\x06 \x02(\x0e\x32&.shardora.address.protobuf.AddressType\x12\x12\n\nbytes_code\x18\x07 \x01(\x0c\x12\x15\n\rlatest_height\x18\x08 \x02(\x04\x12\x11\n\x06\x63redit\x18\t \x01(\x05:\x01\x30\x12\x30\n\x03g2s\x18\n \x03(\x0b\x32#.shardora.bls.protobuf.BlsPublicKey\x12\x1d\n\telect_pos\x18\x0b \x01(\r:\n4294967295\x12\x12\n\ndestructed\x18\x0c \x01(\x08\x12\x15\n\rconsensus_gap\x18\r \x01(\x04\x12\r\n\x05nonce\x18\x0e \x02(\x04*\xba\x01\n\x0b\x41\x64\x64ressType\x12\x0b\n\x07kNormal\x10\x00\x12\x0e\n\nkRootElect\x10\x02\x12\x0e\n\nkRootTimer\x10\x03\x12\x0e\n\nkStatistic\x10\x04\x12\x19\n\x15kImmutablePoolAddress\x10\x05\x12\x15\n\x11kLocalToTxAddress\x10\x06\x12\x11\n\rkElectAddress\x10\x07\x12\x17\n\x13kContractPrepayment\x10\x08\x12\x10\n\x0ckPoolAddress\x10\n')
   ,
   dependencies=[protos_dot_bls__pb2.DESCRIPTOR,])
 
@@ -36,56 +36,47 @@ _ADDRESSTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kContract', index=1, number=1,
+      name='kRootElect', index=1, number=2,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kRootElect', index=2, number=2,
+      name='kRootTimer', index=2, number=3,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kRootTimer', index=3, number=3,
+      name='kStatistic', index=3, number=4,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kStatistic', index=4, number=4,
+      name='kImmutablePoolAddress', index=4, number=5,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kImmutablePoolAddress', index=5, number=5,
+      name='kLocalToTxAddress', index=5, number=6,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kLocalToTxAddress', index=6, number=6,
+      name='kElectAddress', index=6, number=7,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kElectAddress', index=7, number=7,
+      name='kContractPrepayment', index=7, number=8,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kContractPrepayment', index=8, number=8,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='kWaitingRootConfirm', index=9, number=9,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='kPoolAddress', index=10, number=10,
+      name='kPoolAddress', index=8, number=10,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=429,
-  serialized_end=655,
+  serialized_end=615,
 )
 _sym_db.RegisterEnumDescriptor(_ADDRESSTYPE)
 
 AddressType = enum_type_wrapper.EnumTypeWrapper(_ADDRESSTYPE)
 kNormal = 0
-kContract = 1
 kRootElect = 2
 kRootTimer = 3
 kStatistic = 4
@@ -93,7 +84,6 @@ kImmutablePoolAddress = 5
 kLocalToTxAddress = 6
 kElectAddress = 7
 kContractPrepayment = 8
-kWaitingRootConfirm = 9
 kPoolAddress = 10
 
 
