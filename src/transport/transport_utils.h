@@ -122,7 +122,6 @@ public:
     bool handled;
     bool is_leader;
     int32_t thread_index;
-    std::shared_ptr<common::Bitmap> bitmap_ptr;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
