@@ -19,6 +19,10 @@ std::string GetTxMessageHash(
     const block::protobuf::BlockTx& tx_info, 
     const std::string& phash);
 std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block);
+int CheckTransactionValid(
+    const std::string& parent_hash, 
+    const address::protobuf::AddressInfo& addr_info, 
+    pools::protobuf::TxMessage& tx_info);
 
 } // namespace consensus
 

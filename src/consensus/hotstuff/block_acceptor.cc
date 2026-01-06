@@ -344,26 +344,27 @@ Status BlockAcceptor::addTxsToPool(
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
             pools::protobuf::TxMessage& tx_info) -> int {
-        if (pools::IsUserTransaction(tx_info.step())) {
-            return view_block_chain_->CheckTxNonceValid(
-                addr_info.addr(), 
-                tx_info.nonce(), 
-                parent_hash);
-        }
+        return CheckTransactionValid(parent_hash, addr_info, tx_info);
+        // if (pools::IsUserTransaction(tx_info.step())) {
+        //     return view_block_chain_->CheckTxNonceValid(
+        //         addr_info.addr(), 
+        //         tx_info.nonce(), 
+        //         parent_hash);
+        // }
         
-        std::string val;
-        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str(),
-                (int32_t)tx_info.step());
-            return 1;
-        }
+        // std::string val;
+        // if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+        //     SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
+        //         common::Encode::HexEncode(tx_info.to()).c_str(),
+        //         common::Encode::HexEncode(tx_info.key()).c_str(),
+        //         (int32_t)tx_info.step());
+        //     return 1;
+        // }
 
-        SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-            common::Encode::HexEncode(tx_info.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str());
-        return 0;
+        // SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+        //     common::Encode::HexEncode(tx_info.to()).c_str(),
+        //     common::Encode::HexEncode(tx_info.key()).c_str());
+        // return 0;
     };
 
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {

@@ -333,7 +333,7 @@ void HotstuffManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             SHARDORA_ERROR("net_id is error.");
             return;
         }
-        
+
         if (hotstuff_msg.pool_index() >= common::kInvalidPoolIndex) {
             SHARDORA_ERROR("pool index invalid[%d]!", hotstuff_msg.pool_index());
             return;
@@ -394,32 +394,33 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                     pools::protobuf::TxMessage& tx_info) -> int {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
-                    return false;
+                    return -1;
                 }
                 
-                if (pools::IsUserTransaction(tx_info.step())) {
-                    return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
-                        addr_info.addr(), 
-                        tx_info.nonce(), 
-                        latest_block->qc().view_block_hash());
-                }
+                return CheckTransactionValid(latest_block->qc().view_block_hash(), addr_info, tx_info);
+                // if (pools::IsUserTransaction(tx_info.step())) {
+                //     return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
+                //         addr_info.addr(), 
+                //         tx_info.nonce(), 
+                //         latest_block->qc().view_block_hash());
+                // }
                 
-                zjcvm::ZjchainHost zjc_host;
-                zjc_host.parent_hash_ = latest_block->qc().view_block_hash();
-                zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
-                std::string val;
-                if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                    SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
-                        common::Encode::HexEncode(tx_info.to()).c_str(),
-                        common::Encode::HexEncode(tx_info.key()).c_str(),
-                        (int32_t)tx_info.step());
-                    return 1;
-                }
+                // zjcvm::ZjchainHost zjc_host;
+                // zjc_host.parent_hash_ = latest_block->qc().view_block_hash();
+                // zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
+                // std::string val;
+                // if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+                //     SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
+                //         common::Encode::HexEncode(tx_info.to()).c_str(),
+                //         common::Encode::HexEncode(tx_info.key()).c_str(),
+                //         (int32_t)tx_info.step());
+                //     return 1;
+                // }
 
-                SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-                    common::Encode::HexEncode(tx_info.to()).c_str(),
-                    common::Encode::HexEncode(tx_info.key()).c_str());
-                return 0;
+                // SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
+                //     common::Encode::HexEncode(tx_info.to()).c_str(),
+                //     common::Encode::HexEncode(tx_info.key()).c_str());
+                // return 0;
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {

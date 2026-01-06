@@ -60,30 +60,32 @@ Status BlockWrapper::Wrap(
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
             pools::protobuf::TxMessage& tx_info) -> int {
-        if (pools::IsUserTransaction(tx_info.step())) {
-            return view_block_chain->CheckTxNonceValid(
-                addr_info.addr(), 
-                tx_info.nonce(), 
-                prev_view_block->qc().view_block_hash());
-        }
+        return CheckTransactionValid(prev_view_block->qc().view_block_hash(), addr_info, tx_info);
         
-        zjcvm::ZjchainHost zjc_host;
-        zjc_host.parent_hash_ = prev_view_block->qc().view_block_hash();
-        zjc_host.view_block_chain_ = view_block_chain;
-        std::string val;
-        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str(),
-                (int32_t)tx_info.step());
-            return 1;
-        }
+        // if (pools::IsUserTransaction(tx_info.step())) {
+        //     return view_block_chain->CheckTxNonceValid(
+        //         addr_info.addr(), 
+        //         tx_info.nonce(), 
+        //         prev_view_block->qc().view_block_hash());
+        // }
+        
+        // zjcvm::ZjchainHost zjc_host;
+        // zjc_host.parent_hash_ = prev_view_block->qc().view_block_hash();
+        // zjc_host.view_block_chain_ = view_block_chain;
+        // std::string val;
+        // if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
+        //     SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
+        //         common::Encode::HexEncode(tx_info.to()).c_str(),
+        //         common::Encode::HexEncode(tx_info.key()).c_str(),
+        //         (int32_t)tx_info.step());
+        //     return 1;
+        // }
 
-        SHARDORA_INFO("not user tx unique hash success to: %s, unique hash: %s, parent_hash: %s",
-            common::Encode::HexEncode(tx_info.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str(),
-            common::Encode::HexEncode(zjc_host.parent_hash_).c_str());
-        return 0;
+        // SHARDORA_INFO("not user tx unique hash success to: %s, unique hash: %s, parent_hash: %s",
+        //     common::Encode::HexEncode(tx_info.to()).c_str(),
+        //     common::Encode::HexEncode(tx_info.key()).c_str(),
+        //     common::Encode::HexEncode(zjc_host.parent_hash_).c_str());
+        // return 0;
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);
