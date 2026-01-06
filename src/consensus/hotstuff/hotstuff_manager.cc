@@ -441,17 +441,17 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 
 void HotstuffManager::PopPoolsMessage() {
-    // auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
+    auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     // while (!destroy_) {
         auto consensus_tx_count = 0;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (!destroy_) {
-                if (consensus_add_tx_msgs_.empty()) {
+                if (consensus_add_tx_msgs_[thread_index].empty()) {
                     break;
                 }
 
-                auto msg_ptr = consensus_add_tx_msgs_.top();
-                consensus_add_tx_msgs_.pop();
+                auto msg_ptr = consensus_add_tx_msgs_[thread_index].front();
+                consensus_add_tx_msgs_[thread_index].pop();
                 const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
                 if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg()) {
                     txs_ptr = &msg_ptr->header.hotstuff().pre_reset_timer_msg().txs();
