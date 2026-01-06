@@ -48,8 +48,8 @@ init_config() {
 }
 
 init_firewall() {
-    iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-    grubby --update-kernel=ALL --args="tcp_bbr2=1"
+#    iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+#    grubby --update-kernel=ALL --args="tcp_bbr2=1"
 
     DEV=eth0
     RATE="1000mbit"

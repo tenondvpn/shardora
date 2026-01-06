@@ -67,11 +67,11 @@ init() {
     fi  
 
     if [ "$PASSWORD" == "" ]; then
-        PASSWORD="Xf4aGbTaf!"
+        PASSWORD="NL!"
     fi
 
     if [ "$TARGET" == "" ]; then
-        TARGET=Debug
+        TARGET=Release
     fi
 
     killall -9 shardora
