@@ -173,8 +173,7 @@ public:
     }
 
     void ConsensusAddTxsMessage(const transport::MessagePtr& msg_ptr) {
-        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-        consensus_add_tx_msgs_[thread_idx].push(msg_ptr);
+        consensus_add_tx_msgs_.push(msg_ptr);
         pop_tx_con_.notify_one();
     }
 
@@ -329,7 +328,7 @@ private:
     uint64_t prev_check_timer_single_tm_ms_[common::kImmutablePoolSize] = {0};
     uint64_t first_timeblock_timestamp_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-    common::ThreadSafeQueue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
+    std::queue<transport::MessagePtr> consensus_add_tx_msgs_;
     // std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
     std::atomic<bool> destroy_ = false;
     std::condition_variable pop_tx_con_;
