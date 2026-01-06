@@ -213,16 +213,6 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
         cached_view_with_blocks_[view_block_info_ptr->view_block->qc().view()].push_back(view_block_info_ptr);
     }
 
-    if (hash.empty()) {
-        return nullptr;
-    }
-    
-    std::shared_ptr<ViewBlockInfo> view_block_ptr;
-    auto iter = cached_block_map_.find(hash);
-    if (iter != cached_block_map_.end()) {
-        view_block_ptr = iter->second;
-    }
-
     if (cached_pri_queue_.size() >= kCachedViewBlockCount) {
         auto temp_ptr = cached_pri_queue_.top();
         auto temp_iter = cached_block_map_.find(temp_ptr->view_block->qc().view_block_hash());
@@ -244,6 +234,12 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
 
     if (hash.empty()) {
         return nullptr;
+    }
+
+    std::shared_ptr<ViewBlockInfo> view_block_ptr;
+    auto iter = cached_block_map_.find(hash);
+    if (iter != cached_block_map_.end()) {
+        view_block_ptr = iter->second;
     }
 
     if (view_block_ptr) {

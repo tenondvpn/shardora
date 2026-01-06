@@ -89,9 +89,9 @@ public:
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
-#ifndef NDEBUG
+// #ifndef NDEBUG
         memset(times, 0, sizeof(times));
-#endif
+// #endif
         times_idx = 0;
         thread_index = -1;
         // auto now_count = testTransportMessageCount.fetch_add(1);
