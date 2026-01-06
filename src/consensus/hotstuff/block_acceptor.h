@@ -1,6 +1,7 @@
 #pragma once
 
-#include <common/utils.h>
+#include "common/lru_set.h"
+#include "common/utils.h"
 #include <consensus/consensus_utils.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/types.h>
@@ -81,7 +82,7 @@ public:
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<elect::ElectManager> elect_mgr,
         std::shared_ptr<ViewBlockChain> view_block_chain);
-        
+
     bool TxHashVerified(const std::string& tx_hash) {
         return checked_tx_hash_.Push(tx_hash);
     }
@@ -169,7 +170,7 @@ public:
     std::atomic<uint32_t> prev_count_ = 0;
     double cur_tps_ = 0;
     std::shared_ptr<ViewBlockChain> view_block_chain_;
-    common::LRUSet<std::string> checked_tx_hash_(10 * common::kMaxTxCount);
+    common::LRUSet<std::string> checked_tx_hash_{10 * common::kMaxTxCount};
 
 };
 
