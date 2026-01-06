@@ -60,7 +60,11 @@ Status BlockWrapper::Wrap(
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
             pools::protobuf::TxMessage& tx_info) -> int {
-        return CheckTransactionValid(prev_view_block->qc().view_block_hash(), addr_info, tx_info);
+        return CheckTransactionValid(
+            prev_view_block->qc().view_block_hash(), 
+            view_block_chain, 
+            addr_info, 
+            tx_info);
         
         // if (pools::IsUserTransaction(tx_info.step())) {
         //     return view_block_chain->CheckTxNonceValid(

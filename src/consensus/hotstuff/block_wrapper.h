@@ -70,7 +70,7 @@ public:
         auto tx_valid_func = [&](
                 const address::protobuf::AddressInfo& addr_info, 
                 pools::protobuf::TxMessage& tx_info) -> int {
-            return CheckTransactionValid(parent_hash, addr_info, tx_info);
+            return CheckTransactionValid(parent_hash, view_block_chain, addr_info, tx_info);
             // if (pools::IsUserTransaction(tx_info.step())) {
             //     return view_block_chain->CheckTxNonceValid(
             //         addr_info.addr(), 

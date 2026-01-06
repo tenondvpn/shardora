@@ -4,6 +4,8 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 #include <consensus/hotstuff/types.h>
+#include "consensus/hotstuff/view_block_chain.h"
+#include "pools/tx_utils.h"
 #include "zjcvm/zjc_host.h"
 
 namespace shardora {
@@ -46,10 +48,11 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
 
 int CheckTransactionValid(
         const std::string& parent_hash, 
+        std::shared_ptr<ViewBlockChain> view_block_chain,
         const address::protobuf::AddressInfo& addr_info, 
         pools::protobuf::TxMessage& tx_info) {
     if (pools::IsUserTransaction(tx_info.step())) {
-        return pool_hotstuff_[pool_idx]->view_block_chain()->CheckTxNonceValid(
+        return view_block_chain->CheckTxNonceValid(
             addr_info.addr(), 
             tx_info.nonce(), 
             parent_hash);
@@ -57,7 +60,7 @@ int CheckTransactionValid(
     
     zjcvm::ZjchainHost zjc_host;
     zjc_host.parent_hash_ = parent_hash;
-    zjc_host.view_block_chain_ = pool_hotstuff_[pool_idx]->view_block_chain();
+    zjc_host.view_block_chain_ = view_block_chain;
     std::string val;
     if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
         SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
