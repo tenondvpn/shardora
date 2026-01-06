@@ -442,171 +442,164 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void HotstuffManager::PopPoolsMessage() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
-    // while (!destroy_) {
-        auto consensus_tx_count = 0;
-        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-            while (!destroy_) {
-                if (consensus_add_tx_msgs_[thread_index].empty()) {
-                    break;
-                }
+    auto consensus_tx_count = 0;
+    while (!destroy_) {
+        if (consensus_add_tx_msgs_[thread_index].empty()) {
+            break;
+        }
 
-                auto msg_ptr = consensus_add_tx_msgs_[thread_index].front();
-                consensus_add_tx_msgs_[thread_index].pop();
-                const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
-                if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg()) {
-                    txs_ptr = &msg_ptr->header.hotstuff().pre_reset_timer_msg().txs();
-                } else {
-                    auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
-                    txs_ptr = &vote_msg.txs();
-                }
+        auto msg_ptr = consensus_add_tx_msgs_[thread_index].front();
+        consensus_add_tx_msgs_[thread_index].pop();
+        const google::protobuf::RepeatedPtrField<shardora::pools::protobuf::TxMessage>* txs_ptr = nullptr;
+        if (msg_ptr->header.hotstuff().has_pre_reset_timer_msg()) {
+            txs_ptr = &msg_ptr->header.hotstuff().pre_reset_timer_msg().txs();
+        } else {
+            auto& vote_msg = msg_ptr->header.hotstuff().vote_msg();
+            txs_ptr = &vote_msg.txs();
+        }
 
-                auto& txs = *txs_ptr;
-                consensus_tx_count += txs.size();
-                SHARDORA_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
-                for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
-                    auto* tx = &txs[i];
-                    std::string from_id;
-                    if (!pools::IsUserTransaction(tx->step())) {
-                        continue;
-                    }
-                    
-                    if (tx->pubkey().size() == 64u) {
-                        security::GmSsl gmssl;
-                        from_id = gmssl.GetAddress(tx->pubkey());
-                    } else if (tx->pubkey().size() > 128u) {
-                        security::Oqs oqs;
-                        from_id = oqs.GetAddress(tx->pubkey());
-                    } else {
-                        from_id = security_ptr_->GetAddress(tx->pubkey());
-                    }
-
-                    uint32_t pool_index = common::kInvalidPoolIndex;
-                    protos::AddressInfoPtr address_info = nullptr;
-                    if (tx->step() == pools::protobuf::kContractExcute) {
-                        pool_index = common::GetAddressPoolIndex(tx->to());
-                        address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
-                    } else {
-                        pool_index = common::GetAddressPoolIndex(tx->to());
-                        address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(from_id);
-                    }
+        auto& txs = *txs_ptr;
+        consensus_tx_count += txs.size();
+        SHARDORA_DEBUG("tps success handle message hash64: %lu, tx size: %d", msg_ptr->header.hash64(), txs.size());
+        for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
+            auto* tx = &txs[i];
+            std::string from_id;
+            if (!pools::IsUserTransaction(tx->step())) {
+                continue;
+            }
             
-                    if (!address_info) {
-                        SHARDORA_WARN("get address failed nonce: %lu", tx->nonce());
-                        continue;
-                    }
-                    
-                    auto tx_hash = pools::GetTxMessageHash(*tx);
-                    if (pool_hotstuff_[address_info->pool_index()]->acceptor()->TxHashVerified(tx_hash)) {
-                        continue;
-                    }
+            if (tx->pubkey().size() == 64u) {
+                security::GmSsl gmssl;
+                from_id = gmssl.GetAddress(tx->pubkey());
+            } else if (tx->pubkey().size() > 128u) {
+                security::Oqs oqs;
+                from_id = oqs.GetAddress(tx->pubkey());
+            } else {
+                from_id = security_ptr_->GetAddress(tx->pubkey());
+            }
 
-                    std::string contract_prepayment_id;
-                    pools::TxItemPtr tx_ptr = nullptr;
-                    switch (tx->step()) {
-                    case pools::protobuf::kNormalFrom:
-                        tx_ptr = std::make_shared<consensus::FromTxItem>(
-                                msg_ptr, i, account_mgr_, security_ptr_, address_info);
-                        // ADD_TX_DEBUG_INFO((const_cast<pools::protobuf::TxMessage*>(tx)));
-                        break;
-                    case pools::protobuf::kContractCreate:
-                        tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
-                                contract_mgr_, 
-                                db_, 
-                                msg_ptr, i, 
-                                account_mgr_, 
-                                security_ptr_, 
-                                address_info);
-                        contract_prepayment_id = tx->to() + from_id;
-                        break;
-                    case pools::protobuf::kCreateLibrary:
-                        tx_ptr = std::make_shared<consensus::CreateLibrary>(
-                                msg_ptr, i, 
-                                account_mgr_, 
-                                security_ptr_, 
-                                address_info);
-                        contract_prepayment_id = tx->to() + from_id;
-                        break;
-                    case pools::protobuf::kContractExcute:
-                        tx_ptr = std::make_shared<consensus::ContractCall>(
-                                contract_mgr_, 
-                                db_, 
-                                msg_ptr, i,
-                                account_mgr_, 
-                                security_ptr_, 
-                                address_info);
-                        contract_prepayment_id = tx->to() + from_id;
-                        break;
-                    case pools::protobuf::kContractGasPrepayment:
-                        tx_ptr = std::make_shared<consensus::ContractPrepayment>(
-                                db_, 
-                                msg_ptr, i,
-                                account_mgr_, 
-                                security_ptr_, 
-                                address_info);
-                        contract_prepayment_id = tx->to() + from_id;
-                        break;
-                    case pools::protobuf::kJoinElect:
-                    {
-                        auto keypair = bls::AggBls::Instance()->GetKeyPair();
-                        tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
-                            msg_ptr, i, 
-                            account_mgr_, 
-                            security_ptr_, 
-                            prefix_db_, 
-                            elect_mgr_, 
-                            address_info,
-                            (*tx).pubkey(),
-                            keypair->pk(),
-                            keypair->proof());
-                        break;
+            uint32_t pool_index = common::kInvalidPoolIndex;
+            protos::AddressInfoPtr address_info = nullptr;
+            if (tx->step() == pools::protobuf::kContractExcute) {
+                pool_index = common::GetAddressPoolIndex(tx->to());
+                address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
+            } else {
+                pool_index = common::GetAddressPoolIndex(tx->to());
+                address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(from_id);
+            }
+    
+            if (!address_info) {
+                SHARDORA_WARN("get address failed nonce: %lu", tx->nonce());
+                continue;
+            }
+            
+            auto tx_hash = pools::GetTxMessageHash(*tx);
+            if (pool_hotstuff_[address_info->pool_index()]->acceptor()->TxHashVerified(tx_hash)) {
+                continue;
+            }
+
+            std::string contract_prepayment_id;
+            pools::TxItemPtr tx_ptr = nullptr;
+            switch (tx->step()) {
+            case pools::protobuf::kNormalFrom:
+                tx_ptr = std::make_shared<consensus::FromTxItem>(
+                        msg_ptr, i, account_mgr_, security_ptr_, address_info);
+                // ADD_TX_DEBUG_INFO((const_cast<pools::protobuf::TxMessage*>(tx)));
+                break;
+            case pools::protobuf::kContractCreate:
+                tx_ptr = std::make_shared<consensus::ContractUserCreateCall>(
+                        contract_mgr_, 
+                        db_, 
+                        msg_ptr, i, 
+                        account_mgr_, 
+                        security_ptr_, 
+                        address_info);
+                contract_prepayment_id = tx->to() + from_id;
+                break;
+            case pools::protobuf::kCreateLibrary:
+                tx_ptr = std::make_shared<consensus::CreateLibrary>(
+                        msg_ptr, i, 
+                        account_mgr_, 
+                        security_ptr_, 
+                        address_info);
+                contract_prepayment_id = tx->to() + from_id;
+                break;
+            case pools::protobuf::kContractExcute:
+                tx_ptr = std::make_shared<consensus::ContractCall>(
+                        contract_mgr_, 
+                        db_, 
+                        msg_ptr, i,
+                        account_mgr_, 
+                        security_ptr_, 
+                        address_info);
+                contract_prepayment_id = tx->to() + from_id;
+                break;
+            case pools::protobuf::kContractGasPrepayment:
+                tx_ptr = std::make_shared<consensus::ContractPrepayment>(
+                        db_, 
+                        msg_ptr, i,
+                        account_mgr_, 
+                        security_ptr_, 
+                        address_info);
+                contract_prepayment_id = tx->to() + from_id;
+                break;
+            case pools::protobuf::kJoinElect:
+            {
+                auto keypair = bls::AggBls::Instance()->GetKeyPair();
+                tx_ptr = std::make_shared<consensus::JoinElectTxItem>(
+                    msg_ptr, i, 
+                    account_mgr_, 
+                    security_ptr_, 
+                    prefix_db_, 
+                    elect_mgr_, 
+                    address_info,
+                    (*tx).pubkey(),
+                    keypair->pk(),
+                    keypair->proof());
+                break;
+            }
+            default:
+                break;
+            }
+            
+            if (tx_ptr != nullptr) {
+                if (tx_ptr->tx_info->pubkey().size() == 64u) {
+                    security::GmSsl gmssl;
+                    if (gmssl.Verify(
+                            tx_hash,
+                            tx_ptr->tx_info->pubkey(),
+                            tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                        assert(false);
+                    } else {
+                        pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
                     }
-                    default:
-                        break;
+                } else if (tx_ptr->tx_info->pubkey().size() > 128u) {
+                    security::Oqs oqs;
+                    if (oqs.Verify(
+                            tx_hash,
+                            tx_ptr->tx_info->pubkey(),
+                            tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                        assert(false);
+                    } else {
+                        pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
                     }
-                    
-                    if (tx_ptr != nullptr) {
-                        if (tx_ptr->tx_info->pubkey().size() == 64u) {
-                            security::GmSsl gmssl;
-                            if (gmssl.Verify(
-                                    tx_hash,
-                                    tx_ptr->tx_info->pubkey(),
-                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                                assert(false);
-                            } else {
-                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
-                            }
-                        } else if (tx_ptr->tx_info->pubkey().size() > 128u) {
-                            security::Oqs oqs;
-                            if (oqs.Verify(
-                                    tx_hash,
-                                    tx_ptr->tx_info->pubkey(),
-                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                                assert(false);
-                            } else {
-                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
-                            }
-                        } else {
-                            if (security_ptr_->Verify(
-                                    tx_hash,
-                                    tx_ptr->tx_info->pubkey(),
-                                    tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
-                                assert(false);
-                            } else {
-                                pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
-                            }
-                        }
+                } else {
+                    if (security_ptr_->Verify(
+                            tx_hash,
+                            tx_ptr->tx_info->pubkey(),
+                            tx_ptr->tx_info->sign()) != security::kSecuritySuccess) {
+                        assert(false);
+                    } else {
+                        pools_mgr_->BackupConsensusAddTxs(msg_ptr, address_info->pool_index(), tx_ptr);
                     }
                 }
             }
         }
+    }
 
-        if (consensus_tx_count > 0) {
-            SHARDORA_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
-        }
-
-    //     std::unique_lock<std::mutex> lock(pop_tx_mu_);
-    //     pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
-    // }
+    if (consensus_tx_count > 0) {
+        SHARDORA_DEBUG("tps success add consensus_tx_count: %lu", consensus_tx_count);
+    }
 }
 
 void HotstuffManager::InitLatestInfo(pools::protobuf::PoolLatestInfo& pool_info, uint32_t pool_index) {
