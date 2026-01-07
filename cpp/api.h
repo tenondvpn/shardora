@@ -204,13 +204,11 @@ public:
                     int64_t nonce = -1;
                     auto str = info["nonce"].get<std::string>();
                     auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), nonce);
-
                     if (ec != std::errc()) {
                         std::cout << "nonce invalid:" << str << std::endl;
                         return -1;
                     }
 
-                    long long res = strtoll(info["nonce"].get<std::string>().c_str(), &nonce, 0);
                     return nonce;
                 }
             } catch (std::exception& e) {
