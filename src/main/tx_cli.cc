@@ -731,8 +731,8 @@ int call_bentchmark(int argc, char** argv) {
     int32_t pool_id = -1;
     auto ip = kBroadcastIp;
     auto port = kBroadcastPort;
-    const std::string to = "";
-    const std::string input = "";
+    std::string to = "";
+    std::string input = "";
     if (argc >= 4) {
         to = argv[2];
         input = argv[3];
