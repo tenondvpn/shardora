@@ -714,7 +714,7 @@ void UpdateAddressNonce() {
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(*iter);
-        int64_t nonce = client.fetchNonce(common::Encode::HexEncode(security->GetAddress());
+        int64_t nonce = client.fetchNonce(common::Encode::HexEncode(security->GetAddress()));
         if (nonce <= -1) {
             continue;
         }
