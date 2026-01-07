@@ -237,7 +237,6 @@ static transport::MessagePtr GmsslCreateTransactionWithAttr(
     return msg_ptr;
 }
 
-
 static transport::MessagePtr OqsCreateTransactionWithAttr(
         security::Oqs& oqs,
         uint64_t nonce,
@@ -392,39 +391,6 @@ static void GetOqsKeys() {
 
     fclose(fd);
     delete[]read_buf;
-}
-
-static evhtp_res GetAccountInfoCallback(evhtp_request_t* req, evbuf_t* buf, void* arg) {
-    if (req->status != 200) {
-        fprintf(stderr, "请求失败，状态码: %d\n", req->status);
-        cli_con.notify_one();
-        return EVHTP_RES_ERROR;
-    }
-
-    struct evbuffer* input = buf;//req->buffer_in;
-    size_t len = evbuffer_get_length(input);
-    char* response_data = (char*)malloc(len + 1);
-    evbuffer_copyout(input, response_data, len);
-    response_data[len] = '\0';
-    auto json_ptr = std::make_shared<nlohmann::json>(nlohmann::json::parse(response_data));
-    auto addr = common::Encode::Base64Decode((*json_ptr)["addr"]);
-    // printf("success get address %s info: %s\n",
-    //     common::Encode::HexEncode(addr).c_str(),
-    //     response_data);
-    account_info_jsons[addr] = json_ptr;
-    free(response_data);
-    std::unique_lock<std::mutex> l(cli_mutex);
-    cli_con.notify_one();
-    return EVHTP_RES_OK;
-}
-
-std::shared_ptr<nlohmann::json> GetAddressInfo(http::HttpClient& http_cli, const std::string& peer_ip, const std::string& addr) {
-    account_info_jsons[addr] = nullptr;
-    std::string data = common::StringUtil::Format("/query_account?address=%s", common::Encode::HexEncode(addr).c_str());
-    http_cli.Post(peer_ip.c_str(), 23001, data, "", GetAccountInfoCallback);
-    std::unique_lock<std::mutex> l(cli_mutex);
-    cli_con.wait_for(l, std::chrono::milliseconds(1000));
-    return account_info_jsons[addr];
 }
 
 int tx_main(int argc, char** argv) {
@@ -758,12 +724,6 @@ void UpdateAddressNonce() {
 }
 
 int main(int argc, char** argv) {
-    std::cout << argc << std::endl;
-    security::Ecdsa ecdsa;
-    ecdsa.SetPrivateKey(common::Encode::HexDecode("cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848"));
-    std::cout << common::Encode::HexEncode(ecdsa.GetPublicKey()) << std::endl;
-    ecdsa.SetPrivateKey(common::Encode::HexDecode("6d36dc82744a049e58beb80555d15f5381cb46981b11224f4af421660300b350"));
-    std::cout << common::Encode::HexEncode(ecdsa.GetPublicKey()) << std::endl;
     if (argv[1][0] == '0') {
         tx_main(argc, argv);
         transport::TcpTransport::Instance()->Stop();
@@ -771,9 +731,6 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    usleep(1000000);
-    // cli.Destroy();
-    transport::TcpTransport::Instance()->Stop();
     return 0;
 }
 
