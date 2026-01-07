@@ -742,7 +742,7 @@ int call_bentchmark(int argc, char** argv) {
     if (argc >= 4) {
         input = argv[3];
     }
-    
+
     if (to.empty()) {
         std::cout << "to is empty" << std::endl;
         return -1;
@@ -808,7 +808,7 @@ int call_bentchmark(int argc, char** argv) {
         std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
         thread_security->SetPrivateKey(from_prikey);
         uint32_t count = 0;
-        uint32_t batch_count = 1000;
+        uint32_t batch_count = 1;
         while (!global_stop) {
             if (count % batch_count == 0) {
                 if (pool_id == -1) {
