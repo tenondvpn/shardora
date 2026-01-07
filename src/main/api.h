@@ -316,6 +316,7 @@ public:
             if (!contract_bytes.empty()) params.emplace("bytes_code", contract_bytes);
             if (!input.empty()) params.emplace("input", input);
             auto res = cli.Post("/transaction", params);
+            std::cout << res->body << std::endl;
             return (res && res->status == 200);
         } catch (...) { return false; }
     }
