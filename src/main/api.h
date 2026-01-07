@@ -297,7 +297,7 @@ public:
             httplib::Client cli(node_host_, node_port_);
             security::Ecdsa ecdsa;
             ecdsa.SetPrivateKey(common::Encode::HexDecode(private_key));
-            if (nonce == -1) nonce = fetchNonce(common::Encode::HexEncode(ecdsa.GetAddress());
+            if (nonce == -1) nonce = fetchNonce(common::Encode::HexEncode(ecdsa.GetAddress()));
             if (nonce == -1) return false;
             Sign sig = signMessage(ecdsa, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
             httplib::Params params;
