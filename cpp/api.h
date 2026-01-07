@@ -284,17 +284,17 @@ public:
 
             Sign sig = signMessage(kp, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
             httplib::Params params;
-            params.emplace("nonce", std::to_string(nonce));
+            params.emplace("nonce", nonce);
             params.emplace("pubkey", utils::bytesToHex(kp.pkbytes).substr(2));
             params.emplace("to", to);
-            params.emplace("type", std::to_string(step));
-            params.emplace("amount", std::to_string(amount));
+            params.emplace("type", step);
+            params.emplace("amount", amount);
             params.emplace("gas_limit", "999999");
             params.emplace("gas_price", "1");
             params.emplace("shard_id", "3");
             params.emplace("key", key);
             params.emplace("val", val);
-            params.emplace("pepay", std::to_string(prepayment));
+            params.emplace("pepay", prepayment);
             params.emplace("sign_r", sig.r);
             params.emplace("sign_s", sig.s);
             params.emplace("sign_v", std::to_string(sig.v));
