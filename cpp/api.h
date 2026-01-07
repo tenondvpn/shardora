@@ -310,7 +310,7 @@ public:
             Sign sig = signMessage(kp, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
             httplib::Params params;
             params.emplace("nonce", std::to_string(nonce));
-            params.emplace("pubkey", utils::bytesToHex(kp.pkbytes).substr(2));
+            params.emplace("pubkey", utils::bytesToHex(kp.pkbytes));
             params.emplace("to", to);
             params.emplace("type", std::to_string(step));
             params.emplace("amount", std::to_string(amount));
