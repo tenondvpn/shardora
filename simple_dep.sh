@@ -1,4 +1,5 @@
 killall -9 shardora
+killall -9 seth
 killall -9 txcli
 
 TEST_TX_TPS=30000
