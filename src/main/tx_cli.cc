@@ -761,10 +761,6 @@ int call_bentchmark(int argc, char** argv) {
 
     std::cout << "send tcp client ip_port" << ip << ": " << port << ", pool_id: " << pool_id << std::endl;
     LoadAllAccounts(shardnum);
-    if (InitPrepayment(to) != 0) {
-        return -1;
-    }
-
     SignalRegister();
     WriteDefaultLogConf();
     transport::MultiThreadHandler net_handler;
@@ -795,6 +791,10 @@ int call_bentchmark(int argc, char** argv) {
     }
 
     UpdateAddressNonce();
+    if (InitPrepayment(to) != 0) {
+        return -1;
+    }
+
     std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
     auto update_nonce_thread = [&]() {

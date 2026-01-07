@@ -183,7 +183,7 @@ static void HttpTransaction(const httplib::Request& req, httplib::Response& http
     auto shard_id = req.get_param_value("shard_id");
     uint64_t nonce = 0;
     if (!common::StringUtil::ToUint64(nonce_str, &nonce)) {
-        std::string res = std::string("amount not integer: ") + nonce_str;
+        std::string res = std::string("nonce not integer: ") + nonce_str;
         http_res.set_content(res, "text/plain");
         return;
     }
