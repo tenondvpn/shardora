@@ -260,13 +260,13 @@ public:
         return kp;
     }
 
-    Sign signMessage(security::Ecdsa& ecdsa;, uint64_t nonce, const std::string& to, uint64_t amount,
+    Sign signMessage(security::Ecdsa& ecdsa, uint64_t nonce, const std::string& to, uint64_t amount,
                     uint64_t gas_limit, uint64_t gas_price, int step,
                     const std::string& contract_bytes, const std::string& input,
                     uint64_t prepay, const std::string& key, const std::string& val) {
         std::string message;
         message.append(std::string((char*)&nonce, sizeof(nonce)));
-        message.append(std::string(kp.pkbytes.begin(), kp.pkbytes.end()));
+        message.append(ecdsa.GetPublicKey());
         message.append(to);
         message.append(std::string((char*)&amount, sizeof(amount)));
         message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
