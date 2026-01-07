@@ -200,6 +200,7 @@ public:
         if (res && res->status == 200) {
             try {
                 json info = json::parse(res->body);
+                std::cout << res->body << std::endl;
                 if (info.contains("nonce")) {
                     int64_t nonce = -1;
                     auto str = info["nonce"].get<std::string>();
