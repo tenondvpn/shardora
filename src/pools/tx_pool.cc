@@ -452,6 +452,10 @@ void TxPool::GetTxIdempotently(
         }
 
         consensus_tx_map_[tx_ptr->address_info->addr()][tx_ptr->tx_info->nonce()] = tx_ptr;
+        SHARDORA_DEBUG("consensus_added_txs_ success add tx nonce addr: %s, addr nonce: %lu, tx nonce: %lu",
+            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+            tx_ptr->address_info->nonce(), 
+            tx_ptr->tx_info->nonce());
     }
 
     std::set<uint32_t> system_added_step;
