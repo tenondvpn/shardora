@@ -194,7 +194,7 @@ contract DataContract {
      }
 
    //确权接口，即分配收益
-      function distributeRewards(
+    function distributeRewards(
         bool verifiedSuccess,          //true：确权通过，false:确权不通过
         uint256 batchNumber,           //批次号
         address originator,     //原创者地址
@@ -224,7 +224,7 @@ contract DataContract {
         return true;
     }
 
-// 卖家主动下架接口
+    // 卖家主动下架接口
     function removeListing() public onlyPlatform returns (bool success) {
         // 遍历所有买家订单
         for (uint256 i = 0; i < buyerAddresses.length; i++) {

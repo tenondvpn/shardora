@@ -717,8 +717,10 @@ void UpdateAddressNonce() {
 int InitPrepayment(const std::string& contract_address) {
     ShardoraSDK client(kBroadcastIp);
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
-        auto res_json = client.setGasPrepayment(*iter, contract_address, 9000000000lu);
+        auto prikey = common::Encode::HexEncode(*iter);
+        auto res_json = client.setGasPrepayment(prikey, contract_address, 9000000000lu);
         if (res_json["status"] != 0) {
+            std::cout << "set prepayment failed: " << contract_address << ", " << prikey << std::endl;
             return -1;
         }
     }
@@ -733,12 +735,16 @@ int call_bentchmark(int argc, char** argv) {
     auto port = kBroadcastPort;
     std::string to = "";
     std::string input = "";
-    if (argc >= 4) {
+    if (argc >= 3) {
         to = argv[2];
-        input = argv[3];
     }
 
+    if (argc >= 4) {
+        input = argv[3];
+    }
+    
     if (to.empty()) {
+        std::cout << "to is empty" << std::endl;
         return -1;
     }
 
