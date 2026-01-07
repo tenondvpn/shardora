@@ -720,7 +720,7 @@ int InitPrepayment(const std::string& contract_address) {
         auto prikey = common::Encode::HexEncode(*iter);
         auto res_json = client.setGasPrepayment(prikey, contract_address, 9000000000lu);
         if (res_json["status"] != 0) {
-            std::cout << "set prepayment failed: " << contract_address << ", " << prikey << ", " << res_json.dump() std::endl;
+            std::cout << "set prepayment failed: " << contract_address << ", " << prikey << ", " << res_json.dump() << std::endl;
             return -1;
         }
     }
