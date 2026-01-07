@@ -259,13 +259,13 @@ public:
         return kp;
     }
 
-    Sign signMessage(const Keypair& kp, uint64_t nonce, const std::string& to, uint64_t amount,
+    Sign signMessage(security::Ecdsa& ecdsa;, uint64_t nonce, const std::string& to, uint64_t amount,
                     uint64_t gas_limit, uint64_t gas_price, int step,
                     const std::string& contract_bytes, const std::string& input,
                     uint64_t prepay, const std::string& key, const std::string& val) {
         std::string message;
         message.append(std::string((char*)&nonce, sizeof(nonce)));
-        message.append(std::string(kp.pkbytes.begin(), kp.pkbytes.end()));
+        message.append(ecdsa.GetPublicKey());
         message.append(to);
         message.append(std::string((char*)&amount, sizeof(amount)));
         message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
@@ -282,17 +282,11 @@ public:
             }
         }
 
-        std::vector<uint8_t> vec(message.begin(), message.end());
-        std::string h_str = utils::keccak256(vec);
-        std::cout << "hash: " << h_str << std::endl;
-        std::vector<uint8_t> h = utils::hexToBytes(h_str);
-        secp256k1_ecdsa_recoverable_signature sig;
-        secp256k1_ecdsa_sign_recoverable(ctx, &sig, h.data(), kp.skbytes.data(), nullptr, nullptr);
-        uint8_t output[64];
-        int recid;
-        secp256k1_ecdsa_recoverable_signature_serialize_compact(ctx, output, &recid, &sig);
-        return {utils::bytesToHex(std::vector<uint8_t>(output, output + 32)), 
-                utils::bytesToHex(std::vector<uint8_t>(output + 32, output + 64)), recid};
+        std::string h_str = common::Hash::keccak256(message);
+        std::cout << "hash: " << common::Encode::HexEncode(h_str) << std::endl;
+        std::string sign;
+        ecdsa.Sign(h_str, sign);
+        return {sign.substr(0, 32), sign.substr(32, 32), sign[64]};
     }
 
     bool transfer(const std::string& private_key, std::string to, uint64_t amount, 
@@ -301,19 +295,12 @@ public:
                 uint64_t prepayment = 0, bool check_tx_valid = true) {
         try {
             httplib::Client cli(node_host_, node_port_);
-            Keypair kp = getKeypair(private_key);
-            if (nonce == -1) {
-                nonce = fetchNonce(kp.account_id) + 1;
-                if (nonce == -1) {
-                    std::cout << "fetch nonce failed!" << std::endl; 
-                    return false;
-                }
-            }
-
-            Sign sig = signMessage(kp, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
+            security::Ecdsa ecdsa;
+            ecdsa.SetPrivateKey(private_key);
+            Sign sig = signMessage(ecdsa, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
             httplib::Params params;
             params.emplace("nonce", std::to_string(nonce));
-            params.emplace("pubkey", utils::bytesToHex(kp.pkbytes));
+            params.emplace("pubkey", common::Encode::HexEncode(ecdsa.GetPublicKey()));
             params.emplace("to", to);
             params.emplace("type", std::to_string(step));
             params.emplace("amount", std::to_string(amount));
