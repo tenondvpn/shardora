@@ -20,7 +20,7 @@
 #include "security/oqs/oqs.h"
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
-#include "../../cpp/api.h"
+#include "api.h"
 
 using namespace shardora;
 static bool global_stop = false;
