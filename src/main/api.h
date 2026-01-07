@@ -259,7 +259,7 @@ public:
         return kp;
     }
 
-    Sign signMessage(security::Ecdsa& ecdsa;, uint64_t nonce, const std::string& to, uint64_t amount,
+    Sign signMessage(security::Ecdsa& ecdsa, uint64_t nonce, const std::string& to, uint64_t amount,
                     uint64_t gas_limit, uint64_t gas_price, int step,
                     const std::string& contract_bytes, const std::string& input,
                     uint64_t prepay, const std::string& key, const std::string& val) {
