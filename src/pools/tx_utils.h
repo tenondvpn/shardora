@@ -282,9 +282,9 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    SHARDORA_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
+    SHARDORA_DEBUG("nonce: %lu, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
         "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
-        common::Encode::HexEncode(tx_info.gid()).c_str(),
+        common::Encode::HexEncode(tx_info.nonce()).c_str(),
         common::Encode::HexEncode(tx_info.pubkey()).c_str(),
         common::Encode::HexEncode(tx_info.to()).c_str(),
         tx_info.amount(),
