@@ -235,7 +235,7 @@ public:
         kp.skbytes = utils::hexToBytes(privKeyHex);
         secp256k1_pubkey pubkey;
         if (!secp256k1_ec_pubkey_create(ctx, &pubkey, kp.skbytes.data())) throw std::runtime_error("Invalid private key");
-        size_t len = 65;
+        size_t len = 33;
         kp.pkbytes.resize(len);
         secp256k1_ec_pubkey_serialize(ctx, kp.pkbytes.data(), &len, &pubkey, SECP256K1_EC_COMPRESSED);
         std::vector<uint8_t> pubKeyNoPrefix(kp.pkbytes.begin() + 1, kp.pkbytes.end());
