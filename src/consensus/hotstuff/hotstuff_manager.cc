@@ -482,7 +482,8 @@ void HotstuffManager::PopPoolsMessage() {
             protos::AddressInfoPtr address_info = nullptr;
             if (tx->step() == pools::protobuf::kContractExcute) {
                 pool_index = common::GetAddressPoolIndex(tx->to());
-                address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(tx->to());
+                auto prepayment_id = tx_msg.to() + from;
+                address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(prepayment_id);
             } else {
                 pool_index = common::GetAddressPoolIndex(tx->to());
                 address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(from_id);
@@ -490,6 +491,14 @@ void HotstuffManager::PopPoolsMessage() {
     
             if (!address_info) {
                 SHARDORA_WARN("get address failed nonce: %lu", tx->nonce());
+                continue;
+            }
+
+            if (address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                SHARDORA_WARN("sharding error: %d, %d",
+                    address_info->sharding_id(),
+                    common::GlobalInfo::Instance()->network_id());
+                SHARDORA_ERROR("failed add tx. %s", common::Encode::HexEncode(address_info->addr()).c_str());
                 continue;
             }
             
