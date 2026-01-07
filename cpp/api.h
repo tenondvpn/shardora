@@ -282,6 +282,7 @@ public:
             }
         }
         std::string h_str = utils::keccak256(b);
+        std::cout << "hash: " << h_str << std::endl;
         std::vector<uint8_t> h = utils::hexToBytes(h_str);
         secp256k1_ecdsa_recoverable_signature sig;
         secp256k1_ecdsa_sign_recoverable(ctx, &sig, h.data(), kp.skbytes.data(), nullptr, nullptr);
