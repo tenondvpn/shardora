@@ -124,16 +124,6 @@ Status BlockAcceptor::Accept(
     auto txs_ptr = std::make_shared<consensus::WaitingTxsItem>();
     Status s = Status::kSuccess;
     ADD_DEBUG_PROCESS_TIMESTAMP();
-
-#ifndef NDEBUG
-    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != common::kUnicastAddressLength && 
-                iter->first.size() != common::kPreypamentAddressLength) {
-            assert(false);
-        }
-    }
-#endif
-
     s = GetAndAddTxsLocally(
         msg_ptr,
         view_block.parent_hash(), 
@@ -147,15 +137,6 @@ Status BlockAcceptor::Accept(
         SHARDORA_WARN("GetAndAddTxsLocally error!");
         return s;
     }
-    
-#ifndef NDEBUG
-    for (auto iter = balance_and_nonce_map.begin(); iter != balance_and_nonce_map.end(); ++iter) {
-        if (iter->first.size() != common::kUnicastAddressLength && 
-                iter->first.size() != common::kPreypamentAddressLength) {
-            assert(false);
-        }
-    }
-#endif
 
     // 3. Do txs and create block_tx.
     ADD_DEBUG_PROCESS_TIMESTAMP();
@@ -176,6 +157,7 @@ Status BlockAcceptor::Accept(
         }
 
         auto* addr_info = view_block.mutable_block_info()->add_address_array();
+        *addr_info = *iter->second;
         SHARDORA_DEBUG("%u_%u_%lu, success addr info: %s, balance: %lu, nonce: %lu", 
             view_block.qc().network_id(),
             view_block.qc().pool_index(),
@@ -183,7 +165,6 @@ Status BlockAcceptor::Accept(
             common::Encode::HexEncode(addr_info->addr()).c_str(), 
             addr_info->balance(),
             addr_info->nonce());
-        *addr_info = *iter->second;
         assert(addr_info->has_balance());
         assert(addr_info->has_nonce());
         assert(addr_info->has_sharding_id());
@@ -209,7 +190,7 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
-            SHARDORA_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
+            SHARDORA_DEBUG("%u_%u_%lu, success add key value addr: %s, key: %s", 
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view(),
@@ -230,7 +211,7 @@ Status BlockAcceptor::Accept(
                 kv_info.addr() + kv_info.key(), 
                 kv_info.SerializeAsString(), 
                 zjc_host.db_batch_);
-            SHARDORA_INFO("%u_%u_%lu, success add key value addr: %s, key: %s", 
+            SHARDORA_DEBUG("%u_%u_%lu, success add key value addr: %s, key: %s", 
                 view_block.qc().network_id(),
                 view_block.qc().pool_index(),
                 view_block.qc().view(),
@@ -277,7 +258,6 @@ Status BlockAcceptor::Accept(
         view_block.block_info().height(),
         view_block.block_info().timeblock_height(),
         tm_block_mgr_->LatestTimestampHeight());
-
     view_block.mutable_qc()->set_view_block_hash(GetBlockHash(view_block));
     SHARDORA_DEBUG("success set view block hash: %s, parent: %s, %u_%u_%lu",
         common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str(),
