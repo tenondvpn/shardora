@@ -390,6 +390,11 @@ private:
     }
 
 public:
+    ShardoraSDK(const std::string& node_host = "127.0.0.1", int node_port = 23001) : client(node_host, node_port) {}
+    int64_t fetchNonce(const std::string& address) {
+        return client.fetchNonce(address); 
+    }
+
     json compileSolidity(const std::string& source_code) {
         try {
             json compiled = SolidityCompiler::compile(source_code);

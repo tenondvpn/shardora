@@ -148,7 +148,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
@@ -216,7 +216,7 @@ static transport::MessagePtr GmsslCreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (gmssl.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
@@ -282,7 +282,7 @@ static transport::MessagePtr OqsCreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg);
-    auto tx_hash = pools::GetTxMessageHash(*new_tx); // cout 输出信息
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (oqs.Sign(tx_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
@@ -432,15 +432,6 @@ int tx_main(int argc, char** argv) {
         return 1;
     }
 
-    std::string val;
-    uint64_t pos = 0;
-    if (db_ptr->Get("txcli_pos", &val).ok()) {
-        if (!common::StringUtil::ToUint64(val, &pos)) {
-            std::cout << "get pos failed!" << std::endl;
-            return 1;
-        }
-    }
-
     if (net_handler.Init(db_ptr, security) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
@@ -467,8 +458,8 @@ int tx_main(int argc, char** argv) {
         UpdateAddressNonceThread();
     };
 
-    const std::string key = "";//"test_for_batch_content";
-    const std::string value = ""; //"123456789012345678901234123456781234567890123456789012341123456789012345678901234123456781234567890123456789012341234567812345678901234567890123412345678123456789012345678901234123456782345678123456789012345678901234123456781234567890123456789012341234567812345678901234567890123412345678123456789012345678901234112345678901234567890123412345678123456789012345678901234123456781234567890123456789012341234567812345678901234567890123412345678234567812345678901234567890123412345678123456789012345678901234123456781234567890123456789012341234567812345678901234567890123411234567890123456789012341234567812345678901234567890123412345678123456789012345678901234123456781234567890123456789012341234567823456781234567890123456789012341234567812345678901234567890123412345678";
+    const std::string key = "";
+    const std::string value = "";
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
         std::cout << "begin: " << begin_idx << ", end: " << end_idx << ", all: " << g_prikeys.size() << std::endl;
         std::string to = common::Encode::HexDecode("27d4c39244f26c157b5a87898569ef4ce5807413");
@@ -710,7 +701,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
 }
 
 void UpdateAddressNonce() {
-    ShardoraClient client(kBroadcastIp);
+    ShardoraSDK client(kBroadcastIp);
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(*iter);
@@ -723,9 +714,189 @@ void UpdateAddressNonce() {
     }
 }
 
+int InitPrepayment(const std::string& contract_address) {
+    ShardoraSDK client(kBroadcastIp);
+    for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
+        auto res_json = client.setGasPrepayment(*iter, contract_address, 9000000000lu);
+        if (res_json["status"] != 0) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+int call_bentchmark(int argc, char** argv) {
+    // ./txcli 0 $net_id $pool_id $ip $port $delay_us $multi_pool
+    int32_t pool_id = -1;
+    auto ip = kBroadcastIp;
+    auto port = kBroadcastPort;
+    const std::string to = "";
+    const std::string input = "";
+    if (argc >= 4) {
+        to = argv[2];
+        input = argv[3];
+    }
+
+    if (to.empty()) {
+        return -1;
+    }
+
+    if (argc >= 6) {
+        shardnum = std::stoi(argv[4]);
+        pool_id = std::stoi(argv[5]);
+    }
+
+    if (argc >= 8) {
+        ip = argv[6];
+        global_chain_node_ip = ip;
+        port = std::stoi(argv[7]);
+    }
+
+    std::cout << "send tcp client ip_port" << ip << ": " << port << ", pool_id: " << pool_id << std::endl;
+    LoadAllAccounts(shardnum);
+    if (InitPrepayment(to) != 0) {
+        return -1;
+    }
+
+    SignalRegister();
+    WriteDefaultLogConf();
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init(db_path + "_" + std::to_string(shardnum) + "_" + std::to_string(pool_id))) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    if (net_handler.Init(db_ptr, security) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    UpdateAddressNonce();
+    std::atomic<uint32_t> all_count = 0;
+    prikey_with_nonce  = src_prikey_with_nonce;
+    auto update_nonce_thread = [&]() {
+        UpdateAddressNonceThread();
+    };
+
+    auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
+        std::cout << "begin: " << begin_idx << ", end: " << end_idx << ", all: " << g_prikeys.size() << std::endl;
+        uint32_t prikey_pos = begin_idx;
+        auto from_prikey = g_prikeys[begin_idx];;
+        std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+        thread_security->SetPrivateKey(from_prikey);
+        uint32_t count = 0;
+        uint32_t batch_count = 1000;
+        while (!global_stop) {
+            if (count % batch_count == 0) {
+                if (pool_id == -1) {
+                    ++prikey_pos;
+                    if (prikey_pos >= end_idx) {
+                        prikey_pos = begin_idx;
+                    }
+
+                    from_prikey = g_prikeys[prikey_pos];
+                    thread_security->SetPrivateKey(from_prikey);
+                    uint64_t nonce = src_prikey_with_nonce[from_prikey];
+                    if (nonce + 10000 <= prikey_with_nonce[from_prikey]) {
+                        printf("update address nonce: %s, now: %lu, chain: %lu\n",
+                            common::Encode::HexEncode(thread_security->GetAddress()).c_str(),
+                            prikey_with_nonce[from_prikey],
+                            nonce);
+                        prikey_with_nonce[from_prikey] = nonce;
+                    }
+                }
+                usleep(100000lu);
+            }
+
+            auto tx_msg_ptr = CreateTransactionWithAttr(
+                thread_security,
+                ++prikey_with_nonce[from_prikey],
+                from_prikey,
+                to,
+                "call",
+                input,
+                0,
+                100000000lu,
+                1,
+                shardnum);
+            if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
+                std::cout << "send tcp client failed!" << std::endl;
+                return 1;
+            }
+
+            count++;
+            ++all_count;
+        }
+    };
+
+    std::vector<std::thread> thread_vec;
+    if (pool_id == -1) {
+        uint32_t each_thread_size = g_prikeys.size() / kThreadCount;
+        for (uint32_t i = 0; i < kThreadCount; ++i) {
+            thread_vec.push_back(std::thread(tx_thread, i * each_thread_size, (i + 1) * each_thread_size));
+        }
+    } else {
+        kThreadCount = 1;
+        for (uint32_t i = 0; i < g_prikeys.size(); ++i) {
+            auto from_prikey = g_prikeys[i];
+            std::shared_ptr<security::Security> thread_security = std::make_shared<security::Ecdsa>();
+            thread_security->SetPrivateKey(from_prikey);
+            if (common::GetAddressPoolIndex(thread_security->GetAddress()) == pool_id) {
+                thread_vec.push_back(std::thread(tx_thread, i, i + 1));
+                break;
+            }
+        }
+    }
+
+    auto tps_thread = [&]() {
+        uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+        while (!global_stop) {
+            auto dur = common::TimeUtils::TimestampUs() - now_tm_us;
+            if (dur >= 3000000lu) {
+                auto tps = all_count * 1000000lu / dur;
+                std::cout << "tps: " << tps << std::endl;
+                now_tm_us = common::TimeUtils::TimestampUs();
+                all_count.exchange(0);
+            }
+        }
+    };
+
+    thread_vec.push_back(std::thread(tps_thread));
+    thread_vec.push_back(std::thread(update_nonce_thread));
+    for (uint32_t i = 0; i < kThreadCount; ++i) {
+        thread_vec[i].join();
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     if (argv[1][0] == '0') {
         tx_main(argc, argv);
+        transport::TcpTransport::Instance()->Stop();
+        usleep(1000000);
+        return 0;
+    }
+
+    if (argv[1][0] == '1') {
+        call_bentchmark(argc, argv);
         transport::TcpTransport::Instance()->Stop();
         usleep(1000000);
         return 0;
