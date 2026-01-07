@@ -257,31 +257,31 @@ public:
         return kp;
     }
 
-    Sign signMessage(const Keypair& kp, int nonce, const std::string& to, uint64_t amount,
+    Sign signMessage(const Keypair& kp, uint64_t nonce, const std::string& to, uint64_t amount,
                     uint64_t gas_limit, uint64_t gas_price, int step,
                     const std::string& contract_bytes, const std::string& input,
                     uint64_t prepay, const std::string& key, const std::string& val) {
-        std::vector<uint8_t> b;
-        auto append = [&](const std::vector<uint8_t>& v) { b.insert(b.end(), v.begin(), v.end()); };
-        append(utils::longToBytesLittleEndian(nonce));
-        append(kp.pkbytes);
-        append(utils::hexToBytes(to));
-        append(utils::longToBytesLittleEndian(amount));
-        append(utils::longToBytesLittleEndian(gas_limit));
-        append(utils::longToBytesLittleEndian(gas_price));
-        append(utils::longToBytesLittleEndian(step));
-        if (!contract_bytes.empty()) append(utils::hexToBytes(contract_bytes));
-        if (!input.empty()) append(utils::hexToBytes(input));
-        append(utils::longToBytesLittleEndian(prepay));
+        std::string message;
+        message.append(std::string((char*)&nonce, sizeof(nonce)));
+        message.append(std::string(kp.pkbytes.begin(), kp.pkbytes.end()));
+        message.append(to);
+        message.append(std::string((char*)&amount, sizeof(amount)));
+        message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
+        message.append(std::string((char*)&gas_price, sizeof(gas_price)));
+        uint64_t tmp_step = step;
+        message.append(std::string((char*)&tmp_step, sizeof(tmp_step)));
+        message.append(contract_bytes);
+        message.append(input);
+        message.append(std::string((char*)&prepay, sizeof(prepay)));
         if (!key.empty()) {
-            std::vector<uint8_t> k(key.begin(), key.end());
-            append(k);
+            message.append(key);
             if (!val.empty()) {
-                std::vector<uint8_t> v(val.begin(), val.end());
-                append(v);
+                message.append(val);
             }
         }
-        std::string h_str = utils::keccak256(b);
+
+        std::vector<uint8_t> vec(message.begin(), message.end());
+        std::string h_str = utils::keccak256(vec);
         std::cout << "hash: " << h_str << std::endl;
         std::vector<uint8_t> h = utils::hexToBytes(h_str);
         secp256k1_ecdsa_recoverable_signature sig;
@@ -294,7 +294,7 @@ public:
     }
 
     bool transfer(const std::string& private_key, std::string to, uint64_t amount, 
-                int nonce = -1, int step = 0, std::string contract_bytes = "", 
+                int64_t nonce = -1, int step = 0, std::string contract_bytes = "", 
                 std::string input = "", std::string key = "", std::string val = "", 
                 uint64_t prepayment = 0, bool check_tx_valid = true) {
         try {
