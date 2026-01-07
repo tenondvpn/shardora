@@ -283,10 +283,10 @@ public:
         }
 
         std::string h_str = common::Hash::keccak256(message);
-        std::cout << "hash: " << common::Encode::HexEncode(h_str) << std::endl;
         std::string sign;
         ecdsa.Sign(h_str, &sign);
-        std::cout << "hash: " << common::Encode::HexEncode(h_str) << ", sign: " << common::Encode::HexEncode(sign) << std::endl;
+        std::cout << "hash: " << common::Encode::HexEncode(h_str) << ", " << common::Encode::HexEncode(message) 
+            << ", sign: " << common::Encode::HexEncode(sign) << std::endl;
         return {sign.substr(0, 32), sign.substr(32, 32), sign[64]};
     }
 
