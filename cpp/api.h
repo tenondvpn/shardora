@@ -289,7 +289,7 @@ public:
             params.emplace("to", to);
             params.emplace("type", std::to_string(step));
             params.emplace("amount", std::to_string(amount));
-            params.emplace("gas_limit", "999999");
+            params.emplace("gas_limit", "9999999");
             params.emplace("gas_price", "1");
             params.emplace("shard_id", "3");
             params.emplace("key", key);
