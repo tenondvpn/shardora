@@ -16,7 +16,8 @@
 #include <thread>
 #include <chrono>
 #include <random>
-
+#include <charconv>
+#include <system_error>
 // ==========================================
 // External Dependencies
 // ==========================================
@@ -199,7 +200,19 @@ public:
         if (res && res->status == 200) {
             try {
                 json info = json::parse(res->body);
-                if (info.contains("nonce")) return info["nonce"].get<int64_t>();
+                if (info.contains("nonce")) {
+                    int64_t nonce = -1;
+                    auto str = info["nonce"].get<std::string>();
+                    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), nonce);
+
+                    if (ec != std::errc()) {
+                        std::cout << "nonce invalid:" << str << std::endl;
+                        return -1;
+                    }
+
+                    long long res = strtoll(info["nonce"].get<std::string>().c_str(), &nonce, 0);
+                    return nonce;
+                }
             } catch (std::exception& e) {
                 std::cout << "fetch nonce failed: " << e.what() << std::endl;
                 return -1; 
