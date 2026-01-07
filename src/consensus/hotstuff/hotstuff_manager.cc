@@ -482,7 +482,7 @@ void HotstuffManager::PopPoolsMessage() {
             protos::AddressInfoPtr address_info = nullptr;
             if (tx->step() == pools::protobuf::kContractExcute) {
                 pool_index = common::GetAddressPoolIndex(tx->to());
-                auto prepayment_id = tx_msg.to() + from;
+                auto prepayment_id = tx->to() + from_id;
                 address_info = pool_hotstuff_[pool_index]->view_block_chain()->ChainGetAccountInfo(prepayment_id);
             } else {
                 pool_index = common::GetAddressPoolIndex(tx->to());
