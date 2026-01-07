@@ -328,7 +328,7 @@ public:
             httplib::Params params;
             params.emplace("input", input_data);
             params.emplace("address", contract_address);
-            params.emplace("from", comon::Encode::HexEncode(ecdsa.GetAddress()));
+            params.emplace("from", common::Encode::HexEncode(ecdsa.GetAddress()));
             auto res = cli.Post("/abi_query_contract", params);
             if (res && res->status == 200) return res->body;
             return "";
