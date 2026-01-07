@@ -69,14 +69,14 @@
 #define DEBUG(logfmt, ...)
 #define SHARDORA_DEBUG(logfmt, ...)
 #else
-#define DEBUG(logfmt, ...)
-#define SHARDORA_DEBUG(logfmt, ...)
-// #define DEBUG(logfmt, ...)  do {\
-//     spdlog::debug(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
-// } while (0)
-// #define SHARDORA_DEBUG(logfmt, ...)  do {\
-//     spdlog::debug(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
-// } while (0)
+//#define DEBUG(logfmt, ...)
+//#define SHARDORA_DEBUG(logfmt, ...)
+ #define DEBUG(logfmt, ...)  do {\
+     spdlog::debug(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
+ } while (0)
+ #define SHARDORA_DEBUG(logfmt, ...)  do {\
+     spdlog::debug(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
+ } while (0)
 #endif
 // #define SHARDORA_INFO(logfmt, ...)
 // #define SHARDORA_WARN(logfmt, ...)

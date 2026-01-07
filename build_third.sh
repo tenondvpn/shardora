@@ -1,7 +1,7 @@
 git submodule init
 git submodule update
 
-export nproc=32
+export nproc=8
 #centos
 dnf install -y gnutls-devel
 dnf install -y perl
@@ -17,16 +17,15 @@ apt install -y libgnutls28-dev zlib1g-dev libssh2-1-dev
 SRC_PATH=`pwd`
 cd $SRC_PATH
 cd third_party/spdlog && git checkout . && git submodule update --init && cmake -S . -B build_release -DSPDLOG_ENABLE_SOURCE_LOC=ON -DWITH_TESTS=OFF -DPORTABLE=1  -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" -DWITH_GFLAGS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
-exit 0
 
 cd $SRC_PATH
-cd third_party/rocksdb && git checkout . && git submodule update --init && cmake -S . -B build_release -DWITH_TESTS=OFF -DPORTABLE=1  -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" -DWITH_GFLAGS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+cd third_party/rocksdb && git checkout . && sed -i "s/-march=native//g" ./CMakeLists.txt && git submodule update --init && cmake -S . -B build_release -DWITH_TESTS=OFF -DPORTABLE=1  -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" -DWITH_GFLAGS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 
 cd $SRC_PATH
 cd third_party/log4cpp && git checkout . && sed -i 's/SHARED/STATIC/g' ./CMakeLists.txt &&  sed -i '14i\#include <ctime>' ./include/log4cpp/DailyRollingFileAppender.hh  && cmake -S . -B build_release -DBUILD_SHARED_LIBS=OFF  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 
 cd $SRC_PATH
-cd third_party/gmssl && git checkout d655c06 && sed -i '19i\#include <gmssl/sm2.h>' ./include/gmssl/sm2_recover.h && cmake -S . -B build_release -DBUILD_SHARED_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DENABLE_SM2_EXTS=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
+cd third_party/gmssl && git checkout d655c06 && sed -i "s/-march=native//g" ./CMakeLists.txt && sed -i '19i\#include <gmssl/sm2.h>' ./include/gmssl/sm2_recover.h && cmake -S . -B build_release -DBUILD_SHARED_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DENABLE_SM2_EXTS=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 objcopy --localize-symbol=OPENSSL_hexchar2int        --localize-symbol=OPENSSL_hexstr2buf        $SRC_PATH/third_party/lib/libgmssl.a
 cd $SRC_PATH
 cd third_party/evmone &&  git submodule update --init && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
@@ -114,5 +113,5 @@ cd third_party/fmt && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM
 cd $SRC_PATH
 cd third_party/httplib && cp ./httplib.h $SRC_PATH/third_party/include/
 
-
-
+cd $SRC_PATH
+rm -rf third_party/lib/lib*.so* third_party/lib64/lib*.so*

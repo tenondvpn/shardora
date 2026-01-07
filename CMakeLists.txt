@@ -165,8 +165,8 @@ else()
         # -march=native: Use all instruction sets available on the host CPU (AVX2/AVX512 etc). 
         #                Huge performance boost for BLS/Crypto.
         # -funroll-loops: Aggressive loop unrolling
-        add_compile_options(-O3 -march=native -funroll-loops)
-        
+	#add_compile_options(-O3 -march=native -funroll-loops)
+	add_compile_options(-O3 -funroll-loops)
         # Enable Dead Code Elimination (works with Linker options below)
         add_compile_options(-ffunction-sections -fdata-sections)
         
