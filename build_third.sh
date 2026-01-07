@@ -41,7 +41,7 @@ mkdir -p $SRC_PATH/third_party/include/libbls && cp -rnf ../third_party ../tools
 cp -rnf ../deps/deps_inst/x86_or_x64/include/boost/* $SRC_PATH/third_party/include/boost/
 cp -rnf ./libbls.a $SRC_PATH/third_party/lib/libdkgbls.a
 cd $SRC_PATH
-cd third_party/protobuf/ && git checkout 48cb18e && ./autogen.sh && ./configure --prefix=$SRC_PATH/third_party/ && make -j${nproc} && make install
+cd third_party/protobuf/ && git checkout 48cb18e && ./autogen.sh && ./configure --disable-shared --enable-static CXXFLAGS="-fPIC -O3" CFLAGS="-fPIC -O3" --prefix=$SRC_PATH/third_party/ && make -j${nproc} && make install
 
 cd $SRC_PATH
 cd third_party/gtest &&  git submodule update --init && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
