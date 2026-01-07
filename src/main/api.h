@@ -296,7 +296,7 @@ public:
         try {
             httplib::Client cli(node_host_, node_port_);
             security::Ecdsa ecdsa;
-            ecdsa.SetPrivateKey(private_key);
+            ecdsa.SetPrivateKey(common::Encode::HexDecode(private_key));
             Sign sig = signMessage(ecdsa, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
             httplib::Params params;
             params.emplace("nonce", std::to_string(nonce));
@@ -323,11 +323,12 @@ public:
     std::string queryContract(const std::string& private_key, const std::string& contract_address, const std::string& input_data) {
         try {
             httplib::Client cli(node_host_, node_port_);
-            Keypair kp = getKeypair(private_key);
+            security::Ecdsa ecdsa;
+            ecdsa.SetPrivateKey(common::Encode::HexDecode(private_key));
             httplib::Params params;
             params.emplace("input", input_data);
             params.emplace("address", contract_address);
-            params.emplace("from", kp.account_id);
+            params.emplace("from", comon::Encode::HexEncode(ecdsa.GetAddress()));
             auto res = cli.Post("/abi_query_contract", params);
             if (res && res->status == 200) return res->body;
             return "";
