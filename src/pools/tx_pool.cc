@@ -130,6 +130,19 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
+    if (tx_ptr->tx_info->step() == pools::protobuf::kContractExcute) {
+        if (tx_ptr->address_info->addr().size() != common::kPreypamentAddressLength) {
+            SHARDORA_DEBUG("trace tx pool: %d, kContractExcute "
+                "failed add tx %s, key: %s, nonce: %lu, step: %d", 
+                pool_index_,
+                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(), 
+                tx_ptr->tx_info->nonce(),
+                (int32_t)tx_ptr->tx_info->step());
+            return kPoolsError;
+        }
+    }
+
     if (IsUserTransaction(tx_ptr->tx_info->step()) && 
             added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         SHARDORA_DEBUG("add failed extend %u, %u, all valid: %u", 
