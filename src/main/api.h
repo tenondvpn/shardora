@@ -30,7 +30,7 @@
 #include <secp256k1_recovery.h>
 #include <openssl/evp.h>
 #include "common/encode.h"
-#include
+#include "security/ecdsa/ecdsa.h"
 
 namespace shardora {
 
