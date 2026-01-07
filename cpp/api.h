@@ -200,8 +200,13 @@ public:
             try {
                 json info = json::parse(res->body);
                 if (info.contains("nonce")) return info["nonce"].get<int64_t>();
-            } catch (...) { return -1; }
+            } catch (std::exception& e) {
+                std::cout << "fetch nonce failed: " << e.what() << std::endl;
+                return -1; 
+            }
         }
+
+        std::cout << "fetch nonce failed: " << res->status << ", " << res->body << std::endl;
         return -1; 
     }
 
@@ -271,7 +276,10 @@ public:
             Keypair kp = getKeypair(private_key);
             if (nonce == -1) {
                 nonce = fetchNonce(kp.account_id) + 1;
-                if (nonce == -1) return false;
+                if (nonce == -1) {
+                    std::cout << "fetch nonce failed!" << std::endl; 
+                    return false;
+                }
             }
 
             Sign sig = signMessage(kp, nonce, to, amount, 999999, 1, step, contract_bytes, input, prepayment, key, val);
