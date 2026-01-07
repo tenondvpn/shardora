@@ -285,7 +285,7 @@ public:
         std::string h_str = common::Hash::keccak256(message);
         std::cout << "hash: " << common::Encode::HexEncode(h_str) << std::endl;
         std::string sign;
-        ecdsa.Sign(h_str, sign);
+        ecdsa.Sign(h_str, &sign);
         return {sign.substr(0, 32), sign.substr(32, 32), sign[64]};
     }
 
