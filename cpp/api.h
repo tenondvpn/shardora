@@ -233,14 +233,27 @@ public:
     Keypair getKeypair(const std::string& privKeyHex) {
         Keypair kp;
         kp.skbytes = utils::hexToBytes(privKeyHex);
+        
         secp256k1_pubkey pubkey;
-        if (!secp256k1_ec_pubkey_create(ctx, &pubkey, kp.skbytes.data())) throw std::runtime_error("Invalid private key");
-        size_t len = 33;
+        if (!secp256k1_ec_pubkey_create(ctx, &pubkey, kp.skbytes.data())) {
+            throw std::runtime_error("Invalid private key");
+        }
+
+        // Modification 1: Compressed public key length is fixed at 33 bytes 
+        // (1 byte prefix + 32 bytes X coordinate)
+        size_t len = 33; 
         kp.pkbytes.resize(len);
+
+        // Modification 2: Use the SECP256K1_EC_COMPRESSED flag for serialization
         secp256k1_ec_pubkey_serialize(ctx, kp.pkbytes.data(), &len, &pubkey, SECP256K1_EC_COMPRESSED);
+
+        // Address generation logic (Note: This will change the generated address!)
+        // The logic here is to remove the 1st byte prefix (0x02 or 0x03) 
+        // and hash the remaining 32 bytes of the X coordinate.
         std::vector<uint8_t> pubKeyNoPrefix(kp.pkbytes.begin() + 1, kp.pkbytes.end());
         std::string hash = utils::keccak256(pubKeyNoPrefix);
         kp.account_id = hash.substr(hash.length() - 40);
+        
         return kp;
     }
 
