@@ -323,7 +323,10 @@ public:
             auto res = cli.Post("/transaction", params);
             std::cout << res->body << std::endl;
             return (res && res->status == 200);
-        } catch (...) { return false; }
+        } catch (std::exception& e) { 
+            std::cout << "transfer failed: " << e.what() << std::endl; 
+            eturn false; 
+        }
     }
 
     std::string queryContract(const std::string& private_key, const std::string& contract_address, const std::string& input_data) {
