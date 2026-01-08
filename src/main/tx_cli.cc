@@ -700,12 +700,17 @@ int oqs_tx(const std::string& to, uint64_t amount) {
     std::cout << "send success." << std::endl;
 }
 
-void UpdateAddressNonce() {
+void UpdateAddressNonce(const std::string& contract_address) {
     ShardoraSDK client(kBroadcastIp);
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(*iter);
-        int64_t nonce = client.fetchNonce(common::Encode::HexEncode(security->GetAddress()));
+        auto addr = security->GetAddress();
+        if (contract_address.empty()) {
+            addr = contract_address + addr;
+        }
+
+        int64_t nonce = client.fetchNonce(common::Encode::HexEncode(addr));
         if (nonce <= -1) {
             continue;
         }
@@ -798,6 +803,7 @@ int call_bentchmark(int argc, char** argv) {
     std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
     UpdateAddressNonce();
+    UpdateAddressNonce(common::Encode::HexDecode(to));
     auto update_nonce_thread = [&]() {
         // UpdateAddressNonceThread();
     };
@@ -832,9 +838,10 @@ int call_bentchmark(int argc, char** argv) {
                 usleep(100000lu);
             }
 
+            auto addr = common::Encode::HexDecode(to) + thread_security->GetAddress();
             auto tx_msg_ptr = CreateTransactionWithAttr(
                 thread_security,
-                ++prikey_with_nonce[from_prikey],
+                ++prikey_with_nonce[addr],
                 from_prikey,
                 common::Encode::HexDecode(to),
                 "call",
