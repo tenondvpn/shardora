@@ -703,7 +703,7 @@ int oqs_tx(const std::string& to, uint64_t amount) {
 
 void UpdateAddressNonce() {
     std::string contract_address;
-    UpdateAddressNonce(contract_address)
+    UpdateAddressNonce(contract_address);
 }
 
 void UpdateAddressNonce(const std::string& contract_address) {
