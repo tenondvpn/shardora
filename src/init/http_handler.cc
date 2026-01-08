@@ -173,7 +173,7 @@ static int CreateTransactionWithAttr(
     SHARDORA_DEBUG("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());
     try {
         auto tx_hash = pools::GetTxMessageHash(*new_tx);
-        SHARDORA_DEBUG("new tx hash: %s, msg: %s, tx: %s", 
+        SHARDORA_DEBUG("new tx hash: %s, tx: %s", 
             common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx).c_str());
         if (http_handler->security_ptr()->Verify(
                 tx_hash, from_pk, sign) != security::kSecuritySuccess) {
