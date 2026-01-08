@@ -266,7 +266,7 @@ public:
         std::string message;
         message.append(std::string((char*)&nonce, sizeof(nonce)));
         message.append(ecdsa.GetPublicKey());
-        message.append(to);
+        message.append(common::Encode::HexDecode(to));
         message.append(std::string((char*)&amount, sizeof(amount)));
         message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
         message.append(std::string((char*)&gas_price, sizeof(gas_price)));
