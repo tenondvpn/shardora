@@ -797,8 +797,9 @@ int call_bentchmark(int argc, char** argv) {
 
     std::atomic<uint32_t> all_count = 0;
     prikey_with_nonce  = src_prikey_with_nonce;
+    UpdateAddressNonce();
     auto update_nonce_thread = [&]() {
-        UpdateAddressNonceThread();
+        // UpdateAddressNonceThread();
     };
 
     auto tx_thread = [&](uint32_t begin_idx, uint32_t end_idx) {
