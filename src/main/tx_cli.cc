@@ -711,7 +711,7 @@ void UpdateAddressNonce(const std::string& contract_address) {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(*iter);
         auto addr = security->GetAddress();
-        if (contract_address.empty()) {
+        if (!contract_address.empty()) {
             addr = contract_address + addr;
         }
 
@@ -720,7 +720,7 @@ void UpdateAddressNonce(const std::string& contract_address) {
             continue;
         }
 
-        src_prikey_with_nonce[*iter] = nonce;
+        src_prikey_with_nonce[addr] = nonce;
     }
 }
 
