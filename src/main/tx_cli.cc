@@ -51,6 +51,7 @@ std::map<std::string, std::shared_ptr<nlohmann::json>> account_info_jsons;
 
 
 void UpdateAddressNonce();
+void UpdateAddressNonce(const std::string& addr);
 void UpdateAddressNonceThread() {
     while (!global_stop) {
         UpdateAddressNonce();
@@ -700,7 +701,12 @@ int oqs_tx(const std::string& to, uint64_t amount) {
     std::cout << "send success." << std::endl;
 }
 
-void UpdateAddressNonce(const std::string& contract_address = "") {
+void UpdateAddressNonce() {
+    std::string contract_address;
+    UpdateAddressNonce(contract_address)
+}
+
+void UpdateAddressNonce(const std::string& contract_address) {
     ShardoraSDK client(kBroadcastIp);
     for (auto iter = g_prikeys.begin(); iter != g_prikeys.end(); ++iter) {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
