@@ -147,13 +147,34 @@ static int CreateTransactionWithAttr(
         new_tx->set_contract_prepayment(pepay_val);
     }
 
+    if (sign_r.empty() || sign_s.empty()) {
+        SHARDORA_ERROR("Missing signature components! r_len: %lu, s_len: %lu", 
+            sign_r.size(), sign_s.size());
+        return kSignatureInvalid;
+    }
+
+    std::string sign;
+    sign.reserve(65);
+    sign.append(sign_r);
+    sign.append(sign_s);
+    sign.push_back(static_cast<char>(sign_v));
+
+    if (sign.size() != 65) {
+        SHARDORA_ERROR("Invalid signature length constructed: %lu. (r: %lu, s: %lu)", 
+            sign.size(), sign_r.size(), sign_s.size());
+        return kSignatureInvalid;
+    }
+
+    if (from_pk.empty()) {
+            SHARDORA_ERROR("Public key is empty in Verify!");
+            return kSignatureInvalid;
+    }
+    
     SHARDORA_DEBUG("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());
     try {
         auto tx_hash = pools::GetTxMessageHash(*new_tx);
         SHARDORA_DEBUG("new tx hash: %s, msg: %s, tx: %s", 
             common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx).c_str());
-        std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
-        sign[64] = char(sign_v);
         if (http_handler->security_ptr()->Verify(
                 tx_hash, from_pk, sign) != security::kSecuritySuccess) {
             SHARDORA_ERROR("verify signature failed tx_hash: %s, "
