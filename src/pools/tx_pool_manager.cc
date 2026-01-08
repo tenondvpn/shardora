@@ -554,8 +554,8 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (pool_index == common::kInvalidPoolIndex) {
-            if (!msg_ptr->address_info) {
-                SHARDORA_DEBUG("invalid tx step: %d", (int32_t)tx_msg.step());
+            if (msg_ptr->address_info == nullptr) {
+                SHARDORA_DEBUG("invalid tx step: %d, address invalid.", (int32_t)tx_msg.step());
                 return;
             }
 
