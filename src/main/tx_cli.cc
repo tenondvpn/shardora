@@ -155,7 +155,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         assert(false);
         return nullptr;
     }
-    
+
     std::cout << " tx nonce: " << nonce << std::endl
         << "tx from: " << common::Encode::HexEncode(security->GetAddress()) << std::endl
         << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
@@ -850,10 +850,10 @@ int call_bentchmark(int argc, char** argv) {
                 from_prikey,
                 common::Encode::HexDecode(to),
                 "call",
-                input,
-                0,
+                common::Encode::HexDecode(input),
+                110lu,
                 100000000lu,
-                1,
+                1lu,
                 shardnum);
             if (transport::TcpTransport::Instance()->Send(ip, port, tx_msg_ptr->header) != 0) {
                 std::cout << "send tcp client failed!" << std::endl;
