@@ -201,6 +201,7 @@ public:
         auto res = cli.Post("/query_account", params);
         if (res && res->status == 200) {
             try {
+                std::cout << res->body << std::endl;
                 json info = json::parse(res->body);
                 if (info.contains("nonce")) {
                     int64_t nonce = -1;
