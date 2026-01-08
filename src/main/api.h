@@ -315,8 +315,8 @@ public:
             params.emplace("key", key);
             params.emplace("val", val);
             params.emplace("pepay", std::to_string(prepayment));
-            params.emplace("sign_r", sig.r);
-            params.emplace("sign_s", sig.s);
+            params.emplace("sign_r", common::Encode::HexEncode(sig.r));
+            params.emplace("sign_s", common::Encode::HexEncode(sig.s));
             params.emplace("sign_v", std::to_string(sig.v));
             if (!contract_bytes.empty()) params.emplace("bytes_code", contract_bytes);
             if (!input.empty()) params.emplace("input", input);
