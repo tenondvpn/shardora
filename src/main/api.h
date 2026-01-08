@@ -306,7 +306,7 @@ public:
             httplib::Params params;
             params.emplace("nonce", std::to_string(nonce));
             params.emplace("pubkey", common::Encode::HexEncode(ecdsa.GetPublicKey()));
-            params.emplace("to", to);
+            params.emplace("to", common::Encode::HexEncode(to));
             params.emplace("type", std::to_string(step));
             params.emplace("amount", std::to_string(amount));
             params.emplace("gas_limit", std::to_string(gas_limit));
@@ -328,7 +328,6 @@ public:
             return false; 
         }
     }
-
     std::string queryContract(const std::string& private_key, const std::string& contract_address, const std::string& input_data) {
         try {
             httplib::Client cli(node_host_, node_port_);
