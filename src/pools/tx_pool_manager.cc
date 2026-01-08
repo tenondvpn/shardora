@@ -873,6 +873,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
         return;
     }
 
+    auto tmp_acc_ptr = acc_mgr_.lock();
     auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
     if (contract_info == nullptr) {
         msg_ptr->address_info = nullptr;
