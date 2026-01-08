@@ -300,6 +300,7 @@ public:
             ecdsa.SetPrivateKey(common::Encode::HexDecode(private_key));
             if (nonce == -1) nonce = fetchNonce(common::Encode::HexEncode(ecdsa.GetAddress()));
             if (nonce == -1) return false;
+            nonce++;
             uint64_t gas_limit = 9999999lu;
             uint64_t gas_price = 1llu;
             Sign sig = signMessage(ecdsa, nonce, to, amount, gas_limit, gas_price, step, contract_bytes, input, prepayment, key, val);
