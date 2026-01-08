@@ -47,6 +47,20 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
             block_tx.set_from((*iter)->address_info->addr());
         }
 
+        // auto iter = acc_balance_map.find(block_tx.from());
+        // if (iter == acc_balance_map.end()) {
+        //     if (iter->second.nonce + 1 != block_tx.nonce()) {
+        //         tx_list->RemoveLast();
+        //         SHARDORA_WARN("handle tx failed: %u_%u_%lu, tx step: %d, nonce: %lu, res: %d",
+        //             view_block->qc().network_id(), 
+        //             view_block->qc().pool_index(), 
+        //             view_block->qc().view(), 
+        //             (int32_t)block_tx.step(), 
+        //             block_tx.nonce(),
+        //             res);
+        //         continue;
+        //     }
+        // }
         block_tx.set_status(consensus::kConsensusSuccess);
         int do_tx_res = (*iter)->HandleTx(
             *view_block,

@@ -155,7 +155,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         assert(false);
         return nullptr;
     }
-/*
+    
     std::cout << " tx nonce: " << nonce << std::endl
         << "tx from: " << common::Encode::HexEncode(security->GetAddress()) << std::endl
         << "tx pukey: " << common::Encode::HexEncode(new_tx->pubkey()) << std::endl
@@ -166,7 +166,6 @@ static transport::MessagePtr CreateTransactionWithAttr(
         << "amount: " << amount << std::endl
         << "gas_limit: " << gas_limit << std::endl
         << std::endl;
-*/
     new_tx->set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
