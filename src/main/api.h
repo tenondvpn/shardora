@@ -325,7 +325,7 @@ public:
             return (res && res->status == 200);
         } catch (std::exception& e) { 
             std::cout << "transfer failed: " << e.what() << std::endl; 
-            eturn false; 
+            return false; 
         }
     }
 
