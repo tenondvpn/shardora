@@ -148,25 +148,30 @@ static int CreateTransactionWithAttr(
     }
 
     SHARDORA_DEBUG("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());
-    auto tx_hash = pools::GetTxMessageHash(*new_tx);
-    SHARDORA_DEBUG("new tx hash: %s, msg: %s, tx: %s", 
-        common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx).c_str());
-    std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
-    sign[64] = char(sign_v);
-    if (http_handler->security_ptr()->Verify(
-            tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-        SHARDORA_ERROR("verify signature failed tx_hash: %s, "
-            "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
-            common::Encode::HexEncode(tx_hash).c_str(),
-            common::Encode::HexEncode(sign_r).c_str(),
-            common::Encode::HexEncode(sign_s).c_str(),
-            sign_v,
-            common::Encode::HexEncode(from_pk).c_str(),
-            msg.hash64());
+    try {
+        auto tx_hash = pools::GetTxMessageHash(*new_tx);
+        SHARDORA_DEBUG("new tx hash: %s, msg: %s, tx: %s", 
+            common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx).c_str());
+        std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
+        sign[64] = char(sign_v);
+        if (http_handler->security_ptr()->Verify(
+                tx_hash, from_pk, sign) != security::kSecuritySuccess) {
+            SHARDORA_ERROR("verify signature failed tx_hash: %s, "
+                "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
+                common::Encode::HexEncode(tx_hash).c_str(),
+                common::Encode::HexEncode(sign_r).c_str(),
+                common::Encode::HexEncode(sign_s).c_str(),
+                sign_v,
+                common::Encode::HexEncode(from_pk).c_str(),
+                msg.hash64());
+            return kSignatureInvalid;
+        }
+
+        new_tx->set_sign(sign);
+    } catch (const std::exception& e) {
+        SHARDORA_ERROR("exception when create transaction: %s", e.what());
         return kSignatureInvalid;
     }
-
-    new_tx->set_sign(sign);
     return kHttpSuccess;
 }
  
