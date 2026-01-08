@@ -835,7 +835,7 @@ int call_bentchmark(int argc, char** argv) {
                 thread_security,
                 ++prikey_with_nonce[from_prikey],
                 from_prikey,
-                to,
+                common::ENcode::HexDecode(to),
                 "call",
                 input,
                 0,
