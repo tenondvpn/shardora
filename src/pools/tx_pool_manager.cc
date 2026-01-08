@@ -873,6 +873,13 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
         return;
     }
 
+    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    if (contract_info == nullptr) {
+        msg_ptr->address_info = nullptr;
+        SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        return;
+    }
+
     if (!UserTxValid(msg_ptr)) {
         return;
     }
