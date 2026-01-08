@@ -284,7 +284,7 @@ int ContractCall::HandleTx(
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));
     auto etime = common::TimeUtils::TimestampMs();
-    SHARDORA_DEBUG("contract nonce %lu, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
+    SHARDORA_INFO("contract nonce %lu, to: %s, user: %s, test_from_balance: %lu, prepament: %lu, "
         "gas used: %lu, gas_price: %lu, status: %d, step: %d, "
         "amount: %ld, to_balance: %ld, contract_balance_add: %ld, "
         "contract new balance: %lu, use time: %lu",
