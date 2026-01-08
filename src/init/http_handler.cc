@@ -147,6 +147,7 @@ static int CreateTransactionWithAttr(
         new_tx->set_contract_prepayment(pepay_val);
     }
 
+    SHARDORA_DEBUG("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     SHARDORA_DEBUG("new tx hash: %s, msg: %s, tx: %s", 
         common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx).c_str());
