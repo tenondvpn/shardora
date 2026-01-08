@@ -451,7 +451,7 @@ void ZjchainHost::emit_log(const evmc::address& addr,
         topics_str += common::Encode::HexEncode(std::string((char*)topics[i].bytes, sizeof(topics[i].bytes))) + ", ";
     }
 
-    SHARDORA_WARN("emit_log caller: %s, data: %s, topics: %s",
+    SHARDORA_DEBUG("emit_log caller: %s, data: %s, topics: %s",
         common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
         common::Encode::HexEncode(std::string((char*)data, data_size)).c_str(),
         topics_str.c_str());
