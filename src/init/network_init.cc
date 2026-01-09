@@ -792,18 +792,19 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     uint32_t end_shard_id = 4;
     parser_arg.Get("E", end_shard_id);
     std::set<uint32_t> valid_net_ids_set;
+    for (uint32_t i = network::kRootCongressNetworkId; i < end_shard_id; i++) {
+        valid_net_ids_set.insert(i);
+    }
+
     SHARDORA_DEBUG("now consensus_shard_node_count: %u", consensus_shard_node_count);
     if (parser_arg.Has("U")) {
         std::string valid_arg_i_value;
         for (uint32_t net_id = network::kConsensusShardBeginNetworkId; 
-                net_id < network::kConsensusShardEndNetworkId; ++net_id) {
+                net_id < end_shard_id; ++net_id) {
             CreateInitAddress(net_id);
         }
         
         net_name = "root2";
-        valid_net_ids_set.clear();
-        valid_net_ids_set.insert(network::kRootCongressNetworkId);
-        valid_net_ids_set.insert(3);
         auto db = std::make_shared<db::Db>();
         if (!db->Init("./shard_db_2")) {
             INIT_ERROR("init db failed!");
@@ -816,7 +817,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
-            network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
+            end_shard_id - network::kConsensusShardBeginNetworkId);
         GetNetworkNodesFromConf(
             end_shard_id,
             consensus_shard_node_count, 
@@ -842,16 +843,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             }
 
             net_name = "shard" + net_id_str;
-            uint32_t net_id = static_cast<uint32_t>(std::stoul(net_id_str));
-            if (net_id == network::kConsensusShardBeginNetworkId) {
-                valid_net_ids_set.insert(network::kRootCongressNetworkId);
-            }
-            valid_net_ids_set.insert(net_id);
-
-            if (valid_net_ids_set.size() == 0) {
-                return kInitError;
-            }
-            
             SHARDORA_DEBUG("save shard db: shard_db");
             auto db = std::make_shared<db::Db>();
             if (!db->Init("./shard_db_" + net_id_str)) {
@@ -880,7 +871,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
                 return kInitError;
             }
 
-            SaveLatestBlock(db, net_id);
+            SaveLatestBlock(db, i);
         }
             
         return kInitSuccess;
