@@ -422,10 +422,10 @@ Status Hotstuff::Propose(
             max_view(), 
             last_leader_propose_view_);
     }
-
-#endif
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SHARDORA_DEBUG("propose use time: %lu", (common::TimeUtils::TimestampMs() - btime));
+
+#endif
     return Status::kSuccess;
 }
 
@@ -1177,7 +1177,7 @@ void Hotstuff::HandleVoteMsg(const transport::MessagePtr& msg_ptr) {
     std::string followers_gids;
     auto view_block_info_ptr = view_block_chain_->Get(vote_msg.view_block_hash());
     if (!view_block_info_ptr) {
-        SHARDORA_INFO("follower view block hash not equal to leader pool: %d, onVote, hash: %s, view: %lu, "
+        SHARDORA_DEBUG("follower view block hash not equal to leader pool: %d, onVote, hash: %s, view: %lu, "
             "local high view: %lu, replica: %lu, hash64: %lu, propose_debug: %s, followers_gids: %s",
             pool_idx_,
             common::Encode::HexEncode(vote_msg.view_block_hash()).c_str(),
@@ -2189,7 +2189,7 @@ void Hotstuff::TryRecoverFromStuck(
     hotstuff_msg->set_pool_index(pool_idx_);
     ADD_DEBUG_PROCESS_TIMESTAMP();
     SendMsgToLeader(leader, trans_msg, PRE_RESET_TIMER);
-    SHARDORA_INFO("pool: %d, send prereset msg from: %lu to: %lu, "
+    SHARDORA_DEBUG("pool: %d, send prereset msg from: %lu to: %lu, "
         "has_single_tx: %d, tx size: %u, hash: %lu",
         pool_idx_, pre_rst_timer_msg->replica_idx(), 
         leader_rotation_->GetLeader()->index, has_system_tx, txs->size(),

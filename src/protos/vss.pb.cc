@@ -99,14 +99,14 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\020protos/vss.proto\022\025shardora.vss.protobu"
-      "f\"~\n\nVssMessage\022\023\n\013random_hash\030\001 \001(\004\022\016\n\006"
-      "random\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\021\n\ttm"
-      "_height\030\004 \001(\004\022\024\n\014elect_height\030\005 \001(\004\022\014\n\004t"
-      "ype\030\006 \001(\005"
+      "\n\020protos/vss.proto\022\021shardora.vss.protobuf\"~\n"
+      "\nVssMessage\022\023\n\013random_hash\030\001 \001(\004\022\016\n\006rand"
+      "om\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\021\n\ttm_hei"
+      "ght\030\004 \001(\004\022\024\n\014elect_height\030\005 \001(\004\022\014\n\004type\030"
+      "\006 \001(\005"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 169);
+      descriptor, 165);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/vss.proto", &protobuf_RegisterTypes);
 }

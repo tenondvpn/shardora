@@ -120,25 +120,25 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\024protos/address.proto\022\031shardora.address"
-      ".protobuf\032\020protos/bls.proto\"\344\002\n\013AddressI"
-      "nfo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \002(\004\022\023\n\013"
-      "sharding_id\030\003 \002(\r\022\022\n\npool_index\030\004 \002(\r\022\014\n"
-      "\004addr\030\005 \002(\014\0224\n\004type\030\006 \002(\0162&.shardora.add"
-      "ress.protobuf.AddressType\022\022\n\nbytes_code\030"
-      "\007 \001(\014\022\025\n\rlatest_height\030\010 \002(\004\022\021\n\006credit\030\t"
-      " \001(\005:\0010\0220\n\003g2s\030\n \003(\0132#.shardora.bls.prot"
-      "obuf.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42"
-      "94967295\022\022\n\ndestructed\030\014 \001(\010\022\025\n\rconsensu"
-      "s_gap\030\r \001(\004\022\r\n\005nonce\030\016 \002(\004*\272\001\n\013AddressTy"
-      "pe\022\013\n\007kNormal\020\000\022\016\n\nkRootElect\020\002\022\016\n\nkRoot"
-      "Timer\020\003\022\016\n\nkStatistic\020\004\022\031\n\025kImmutablePoo"
-      "lAddress\020\005\022\025\n\021kLocalToTxAddress\020\006\022\021\n\rkEl"
-      "ectAddress\020\007\022\027\n\023kContractPrepayment\020\010\022\020\n"
-      "\014kPoolAddress\020\n"
+      "\n\024protos/address.proto\022\025shardora.address.pro"
+      "tobuf\032\020protos/bls.proto\"\334\002\n\013AddressInfo\022"
+      "\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \002(\004\022\023\n\013shar"
+      "ding_id\030\003 \002(\r\022\022\n\npool_index\030\004 \002(\r\022\014\n\004add"
+      "r\030\005 \002(\014\0220\n\004type\030\006 \002(\0162\".shardora.address.pro"
+      "tobuf.AddressType\022\022\n\nbytes_code\030\007 \001(\014\022\025\n"
+      "\rlatest_height\030\010 \002(\004\022\021\n\006credit\030\t \001(\005:\0010\022"
+      ",\n\003g2s\030\n \003(\0132\037.shardora.bls.protobuf.BlsPubl"
+      "icKey\022\035\n\telect_pos\030\013 \001(\r:\n4294967295\022\022\n\n"
+      "destructed\030\014 \001(\010\022\025\n\rconsensus_gap\030\r \001(\004\022"
+      "\r\n\005nonce\030\016 \002(\004*\272\001\n\013AddressType\022\013\n\007kNorma"
+      "l\020\000\022\016\n\nkRootElect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nk"
+      "Statistic\020\004\022\031\n\025kImmutablePoolAddress\020\005\022\025"
+      "\n\021kLocalToTxAddress\020\006\022\021\n\rkElectAddress\020\007"
+      "\022\027\n\023kContractPrepayment\020\010\022\020\n\014kPoolAddres"
+      "s\020\n"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 615);
+      descriptor, 603);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();

@@ -91,21 +91,21 @@ public:
         new_block_cache_callback_(new_block_cache_callback) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
         pacemaker_->SetNewProposalFn(std::bind(&Hotstuff::Propose, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));        
+        pacemaker_->SetStopVotingFn(std::bind(&Hotstuff::StopVoting, this, std::placeholders::_1));
 
     }
     ~Hotstuff() {};
 
     void Init();
-    
+
     // std::shared_ptr<ViewBlock> GetViewBlock(uint64_t view) {
     //     return view_block_chain_->Get(view);
     // }
 
     void SetSyncPoolFn(SyncPoolFn sync_fn) {
         sync_pool_fn_ = sync_fn;
-    }    
-    
+    }
+
     Status Start();
     void HandleProposeMsg(const transport::MessagePtr& msg_ptr);
     void HandlePreResetTimerMsg(const transport::MessagePtr& msg_ptr);
@@ -116,7 +116,7 @@ public:
         const transport::MessagePtr& msg_ptr);
     Status TryCommit(
         const std::shared_ptr<ViewBlockChain>& view_block_chain,
-        const transport::MessagePtr& msg_ptr, 
+        const transport::MessagePtr& msg_ptr,
         const QC& commit_qc);
     Status HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> propose_msg_wrap);
 
@@ -133,7 +133,7 @@ public:
     // 已经投票
     inline bool HasVoted(const View& view) {
         return last_vote_view_ >= view;
-    }    
+    }
 
     inline std::shared_ptr<IBlockWrapper> wrapper() const {
         return block_wrapper_;
@@ -142,7 +142,7 @@ public:
 #ifdef USE_AGG_BLS
     inline std::shared_ptr<AggCrypto> crypto() const {
         return crypto_;
-    }    
+    }
 #else
     inline std::shared_ptr<Crypto> crypto() const {
         return crypto_;
@@ -191,13 +191,13 @@ public:
     }
 
     void TryRecoverFromStuck(
-        const transport::MessagePtr& msg_ptr, 
-        bool has_new_tx, 
+        const transport::MessagePtr& msg_ptr,
+        bool has_new_tx,
         bool has_system_tx);
 
 private:
     void InitAddNewViewBlock(
-        std::shared_ptr<ViewBlockChain> view_block_chain, 
+        std::shared_ptr<ViewBlockChain> view_block_chain,
         std::shared_ptr<ViewBlock>& view_block);
     Status HandleProposeMsgStep_HasVote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_VerifyLeader(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
@@ -207,7 +207,7 @@ private:
     Status HandleProposeMsgStep_ChainStore(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_Vote(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap);
     Status HandleProposeMsgStep_Directly(
-        std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap, 
+        std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap,
         const std::string& expect_view_block_hash);
 
     bool HandleProposeMsgCondition(std::shared_ptr<ProposeMsgWrapper>& pro_msg_wrap) {
@@ -222,7 +222,7 @@ private:
         const std::shared_ptr<ViewBlockInfo>& v_block,
         const QC& commit_qc);
     std::shared_ptr<ViewBlockInfo> CheckCommit(
-        const std::shared_ptr<ViewBlockChain>& view_block_chain, 
+        const std::shared_ptr<ViewBlockChain>& view_block_chain,
         const QC& qc);
     Status VerifyVoteMsg(
             const hotstuff::protobuf::VoteMsg& vote_msg);
@@ -230,33 +230,33 @@ private:
     Status VerifyFollower(const transport::MessagePtr& msg_ptr);
     Status VerifyQC(const QC& qc);
     Status VerifyViewBlock(
-            const ViewBlock& v_block, 
+            const ViewBlock& v_block,
             const std::shared_ptr<ViewBlockChain>& view_block_chain,
             const TC* tc,
-            const uint32_t& elect_height);    
+            const uint32_t& elect_height);
     Status ConstructProposeMsg(const transport::MessagePtr& msg_ptr, hotstuff::protobuf::ProposeMsg* pro_msg);
     Status ConstructVoteMsg(
         const transport::MessagePtr& msg_ptr,
         hotstuff::protobuf::VoteMsg* vote_msg,
-        uint64_t elect_height, 
-        const std::shared_ptr<ViewBlock>& v_block);    
-    Status ConstructViewBlock( 
-        const transport::MessagePtr& msg_ptr, 
+        uint64_t elect_height,
+        const std::shared_ptr<ViewBlock>& v_block);
+    Status ConstructViewBlock(
+        const transport::MessagePtr& msg_ptr,
         ViewBlock* view_block,
         hotstuff::protobuf::TxPropose* tx_propose);
     void ConstructHotstuffMsg(
-            const MsgType msg_type, 
-            pb_ProposeMsg* pb_pro_msg, 
+            const MsgType msg_type,
+            pb_ProposeMsg* pb_pro_msg,
             pb_VoteMsg* pb_vote_msg,
             pb_NewViewMsg* pb_nv_msg,
             pb_HotstuffMessage* pb_hf_msg);
     Status SendMsgToLeader(
-        common::BftMemberPtr leader, 
-        std::shared_ptr<transport::TransportMessage>& hotstuff_msg, 
+        common::BftMemberPtr leader,
+        std::shared_ptr<transport::TransportMessage>& hotstuff_msg,
         const MsgType msg_type);
     void InitLoadLatestBlock(
-        std::shared_ptr<ViewBlockChain> view_block_chain, 
-        uint32_t network_id, 
+        std::shared_ptr<ViewBlockChain> view_block_chain,
+        uint32_t network_id,
         uint32_t pool_index);
     // 是否允许空交易
     bool IsEmptyBlockAllowed(const ViewBlock& v_block);
@@ -265,12 +265,12 @@ private:
     void BroadcastGlobalPoolBlock(const std::shared_ptr<ViewBlock>& v_block);
     void HandleTimerMessage();
     void SyncLaterBlocks(
-        std::shared_ptr<ViewBlockChain> view_block_chain, 
-        uint32_t network_id, 
-        uint32_t pool_index, 
+        std::shared_ptr<ViewBlockChain> view_block_chain,
+        uint32_t network_id,
+        uint32_t pool_index,
         View view);
 
-    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 1000lu;
+    static const uint64_t kLatestPoposeSendTxToLeaderPeriodMs = 3000;
 
     std::shared_ptr<block::BlockManager> block_mgr_;
     uint32_t pool_idx_;
@@ -306,7 +306,7 @@ private:
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     consensus::BlockCacheCallback new_block_cache_callback_ = nullptr;
     common::Tick layter_sync_tick_;
-    
+
 // #ifndef NDEBUG
     static std::atomic<uint32_t> sendout_bft_message_count_;
     uint32_t gTestChangeViewCount = 0;

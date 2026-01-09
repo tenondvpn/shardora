@@ -86,7 +86,8 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (tx_valid_func(*tmblock_tx_ptr->address_info, *tmblock_tx_ptr->tx_info) != 0) {
+        uint64_t now_nonce = 0ll;
+        if (tx_valid_func(*tmblock_tx_ptr->address_info, *tmblock_tx_ptr->tx_info, &now_nonce) != 0) {
             return false;
         }
         
@@ -128,7 +129,8 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         auto account_info = account_mgr_->pools_address_info(pool_index);
         tx_info->set_to(account_info->addr());
         tx_info->set_key(common::Hash::keccak256(tx_info->value()));
-        if (tx_valid_func(*account_info, *tx_info) != 0) {
+        uint64_t now_nonce = 0ll;
+        if (tx_valid_func(*account_info, *tx_info, &now_nonce) != 0) {
             return nullptr;
         }
 

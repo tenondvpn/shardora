@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.sync.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x11protos/sync.proto\x12\x16shardora.sync.protobuf\"&\n\x08SyncItem\x12\x0b\n\x03key\x18\x01 \x01(\x0c\x12\r\n\x05value\x18\x02 \x01(\x0c\";\n\x08SyncInfo\x12/\n\x05items\x18\x01 \x03(\x0b\x32 .shardora.sync.protobuf.SyncItem\"?\n\x0eSyncHeightItem\x12\x10\n\x08pool_idx\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x0b\n\x03tag\x18\x03 \x01(\r\"I\n\x0b\x46lushDbItem\x12\x15\n\rmax_vec_index\x18\x01 \x01(\x04\x12\x12\n\nmax_height\x18\x02 \x01(\x04\x12\x0f\n\x07heights\x18\x03 \x03(\x04\"m\n\x10SyncValueRequest\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x0c\n\x04keys\x18\x02 \x03(\x0c\x12\x37\n\x07heights\x18\x03 \x03(\x0b\x32&.shardora.sync.protobuf.SyncHeightItem\"l\n\x0bSyncResItem\x12\x0b\n\x03key\x18\x01 \x01(\x0c\x12\r\n\x05value\x18\x02 \x01(\x0c\x12\x12\n\nnetwork_id\x18\x03 \x01(\r\x12\x10\n\x08pool_idx\x18\x04 \x01(\r\x12\x0e\n\x06height\x18\x05 \x01(\x04\x12\x0b\n\x03tag\x18\x06 \x01(\r\"Y\n\x11SyncValueResponse\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x30\n\x03res\x18\x02 \x03(\x0b\x32#.shardora.sync.protobuf.SyncResItem\"\x92\x01\n\x0bSyncMessage\x12@\n\x0esync_value_req\x18\x01 \x01(\x0b\x32(.shardora.sync.protobuf.SyncValueRequest\x12\x41\n\x0esync_value_res\x18\x02 \x01(\x0b\x32).shardora.sync.protobuf.SyncValueResponse')
+  serialized_pb=_b('\n\x11protos/sync.proto\x12\x12shardora.sync.protobuf\"&\n\x08SyncItem\x12\x0b\n\x03key\x18\x01 \x01(\x0c\x12\r\n\x05value\x18\x02 \x01(\x0c\"7\n\x08SyncInfo\x12+\n\x05items\x18\x01 \x03(\x0b\x32\x1c.shardora.sync.protobuf.SyncItem\"?\n\x0eSyncHeightItem\x12\x10\n\x08pool_idx\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x0b\n\x03tag\x18\x03 \x01(\r\"I\n\x0b\x46lushDbItem\x12\x15\n\rmax_vec_index\x18\x01 \x01(\x04\x12\x12\n\nmax_height\x18\x02 \x01(\x04\x12\x0f\n\x07heights\x18\x03 \x03(\x04\"i\n\x10SyncValueRequest\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x0c\n\x04keys\x18\x02 \x03(\x0c\x12\x33\n\x07heights\x18\x03 \x03(\x0b\x32\".shardora.sync.protobuf.SyncHeightItem\"l\n\x0bSyncResItem\x12\x0b\n\x03key\x18\x01 \x01(\x0c\x12\r\n\x05value\x18\x02 \x01(\x0c\x12\x12\n\nnetwork_id\x18\x03 \x01(\r\x12\x10\n\x08pool_idx\x18\x04 \x01(\r\x12\x0e\n\x06height\x18\x05 \x01(\x04\x12\x0b\n\x03tag\x18\x06 \x01(\r\"U\n\x11SyncValueResponse\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12,\n\x03res\x18\x02 \x03(\x0b\x32\x1f.shardora.sync.protobuf.SyncResItem\"\x8a\x01\n\x0bSyncMessage\x12<\n\x0esync_value_req\x18\x01 \x01(\x0b\x32$.shardora.sync.protobuf.SyncValueRequest\x12=\n\x0esync_value_res\x18\x02 \x01(\x0b\x32%.shardora.sync.protobuf.SyncValueResponse')
 )
 
 
@@ -58,8 +58,8 @@ _SYNCITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=45,
-  serialized_end=83,
+  serialized_start=41,
+  serialized_end=79,
 )
 
 
@@ -89,8 +89,8 @@ _SYNCINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=85,
-  serialized_end=144,
+  serialized_start=81,
+  serialized_end=136,
 )
 
 
@@ -134,8 +134,8 @@ _SYNCHEIGHTITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=146,
-  serialized_end=209,
+  serialized_start=138,
+  serialized_end=201,
 )
 
 
@@ -179,8 +179,8 @@ _FLUSHDBITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=211,
-  serialized_end=284,
+  serialized_start=203,
+  serialized_end=276,
 )
 
 
@@ -224,8 +224,8 @@ _SYNCVALUEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=286,
-  serialized_end=395,
+  serialized_start=278,
+  serialized_end=383,
 )
 
 
@@ -290,8 +290,8 @@ _SYNCRESITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=397,
-  serialized_end=505,
+  serialized_start=385,
+  serialized_end=493,
 )
 
 
@@ -328,8 +328,8 @@ _SYNCVALUERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=507,
-  serialized_end=596,
+  serialized_start=495,
+  serialized_end=580,
 )
 
 
@@ -366,8 +366,8 @@ _SYNCMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=599,
-  serialized_end=745,
+  serialized_start=583,
+  serialized_end=721,
 )
 
 _SYNCINFO.fields_by_name['items'].message_type = _SYNCITEM

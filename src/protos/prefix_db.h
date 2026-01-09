@@ -388,7 +388,7 @@ public:
         std::string block_str;
         view_block.SerializeToString(&block_str);
         if (view_block.block_info().tx_list_size() >= 500) {
-            SHARDORA_WARN("block tx size: %u, block size: %u",
+            SHARDORA_DEBUG("block tx size: %u, block size: %u",
                 view_block.block_info().tx_list_size(), 
                 block_str.size());
         }

@@ -391,7 +391,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
             ADD_DEBUG_PROCESS_TIMESTAMP();
             auto tx_valid_func = [&](
                     const address::protobuf::AddressInfo& addr_info, 
-                    pools::protobuf::TxMessage& tx_info) -> int {
+                    pools::protobuf::TxMessage& tx_info,
+                    uint64_t* now_nonce) -> int {
                 auto latest_block = pool_hotstuff_[pool_idx]->view_block_chain()->HighViewBlock();
                 if (!latest_block) {
                     return -1;
@@ -401,7 +402,8 @@ void HotstuffManager::HandleTimerMessage(const transport::MessagePtr& msg_ptr) {
                     latest_block->qc().view_block_hash(), 
                     pool_hotstuff_[pool_idx]->view_block_chain(), 
                     addr_info, 
-                    tx_info);
+                    tx_info,
+                    now_nonce);
             };
 
             if (now_tm_ms >= prev_check_timer_single_tm_ms_[pool_idx] + 1000lu) {

@@ -69,8 +69,8 @@
   },
   {
     "spec": "EnumerableSet",
-    "contract": "EnumerableSetHarness",
-    "files": ["certora/harnesses/EnumerableSetHarness.sol"]
+    "contract": "EnumerableShardoraarness",
+    "files": ["certora/harnesses/EnumerableShardoraarness.sol"]
   },
   {
     "spec": "EnumerableMap",

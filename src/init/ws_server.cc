@@ -91,7 +91,7 @@
 //         uint32_t all_transactions = 0;
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
-//                 SetHost(common::GlobalInfo::Instance()->ck_host()).
+//                 Shardoraost(common::GlobalInfo::Instance()->ck_host()).
 //                 SetPort(common::GlobalInfo::Instance()->ck_port()).
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -140,7 +140,7 @@
 //     uint32_t all_transactions = 0;
 //     try {
 //         clickhouse::Client ck_client0(clickhouse::ClientOptions().
-//             SetHost(common::GlobalInfo::Instance()->ck_host()).
+//             Shardoraost(common::GlobalInfo::Instance()->ck_host()).
 //             SetPort(common::GlobalInfo::Instance()->ck_port()).
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -193,7 +193,7 @@
 //         "' and height > " + std::to_string(latest_prepayment_height_) + " limit 1000;";
 //     try {
 //         clickhouse::Client ck_client0(clickhouse::ClientOptions().
-//             SetHost(common::GlobalInfo::Instance()->ck_host()).
+//             Shardoraost(common::GlobalInfo::Instance()->ck_host()).
 //             SetPort(common::GlobalInfo::Instance()->ck_port()).
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -246,7 +246,7 @@
 //         SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), 0);
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
-//                 SetHost(common::GlobalInfo::Instance()->ck_host()).
+//                 Shardoraost(common::GlobalInfo::Instance()->ck_host()).
 //                 SetPort(common::GlobalInfo::Instance()->ck_port()).
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -468,7 +468,7 @@
 //     SHARDORA_DEBUG("get c2c run cmd: %s", cmd.c_str());
 //     try {
 //         clickhouse::Client ck_client0(clickhouse::ClientOptions().
-//             SetHost(common::GlobalInfo::Instance()->ck_host()).
+//             Shardoraost(common::GlobalInfo::Instance()->ck_host()).
 //             SetPort(common::GlobalInfo::Instance()->ck_port()).
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -613,7 +613,7 @@
 //         uint32_t all_transactions = 0;
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
-//                 SetHost(common::GlobalInfo::Instance()->ck_host()).
+//                 Shardoraost(common::GlobalInfo::Instance()->ck_host()).
 //                 SetPort(common::GlobalInfo::Instance()->ck_port()).
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));

@@ -190,6 +190,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     SHARDORA_DEBUG("0 now tx size: %u", all_tx_size());
+    auto over_addr_nonce_ptr = std::make_shared<std::unordered_map<std::string, uint64_t>>();
     for (uint32_t i = 0; i < (uint32_t)view_block.block_info().tx_list_size(); ++i) {
         auto addr = IsTxUseFromAddress(view_block.block_info().tx_list(i).step()) ? 
             view_block.block_info().tx_list(i).from() : 
@@ -283,6 +284,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
             common::Encode::HexEncode(view_block.block_info().tx_list(i).unique_hash()).c_str(), 
             common::Encode::HexEncode(addr).c_str(), 
             view_block.block_info().tx_list(i).nonce());
+        (*over_addr_nonce_ptr)[addr] = view_block.block_info().tx_list(i).nonce();
     }
         
     if (prev_delay_tm_timeout_ + 3000lu <= (now_tm_us / 1000lu) && all_delay_tx_count_ > 0) {
@@ -293,6 +295,7 @@ void TxPool::TxOver(view_block::protobuf::ViewBlockItem& view_block) {
         prev_delay_tm_timeout_ = now_tm_us / 1000lu;
     }
 
+    over_addr_map_queue_.push(over_addr_nonce_ptr);
     SHARDORA_DEBUG("all now tx size: %u", all_tx_size());
 }
 
@@ -356,9 +359,11 @@ void TxPool::GetTxSyncToLeader(
             }
 
             if (valid_nonce == common::kInvalidUint64) {
+                uint64_t now_nonce = 0ll;
                 int res = tx_valid_func(
                         *tx_ptr->address_info, 
-                        *tx_ptr->tx_info);
+                        *tx_ptr->tx_info,
+                        &now_nonce);
                 if (res != 0) {
                     if (res > 0) {
                         continue;
@@ -487,11 +492,22 @@ void TxPool::GetTxIdempotently(
                 }
                 
                 if (valid_nonce == common::kInvalidUint64) {
+                    uint64_t now_nonce = 0llu;
                     int res = tx_valid_func(
                         *tx_ptr->address_info, 
-                        *tx_ptr->tx_info);
+                        *tx_ptr->tx_info,
+                        &now_nonce);
                     if (res != 0) {
                         if (res > 0) {
+                            if (now_nonce >= tx_ptr->tx_info->nonce() + iter->second.size()) {
+                                break;
+                            }
+
+                            nonce_iter = iter->second.lower_bound(now_nonce);
+                            if (nonce_iter->second->tx_info->nonce() != now_nonce) {
+                                break;
+                            }
+                            
                             SHARDORA_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
                                 pool_index_,
                                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../patched/utils/structs/EnumerableSet.sol";
 
-contract EnumerableSetHarness {
+contract EnumerableShardoraarness {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     EnumerableSet.Bytes32Set private _set;

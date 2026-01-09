@@ -59,12 +59,14 @@ Status BlockWrapper::Wrap(
     //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
-            pools::protobuf::TxMessage& tx_info) -> int {
+            pools::protobuf::TxMessage& tx_info,
+            uint64_t* now_nonce) -> int {
         return CheckTransactionValid(
             prev_view_block->qc().view_block_hash(), 
             view_block_chain, 
             addr_info, 
-            tx_info);
+            tx_info,
+            now_nonce);
     };
 
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);

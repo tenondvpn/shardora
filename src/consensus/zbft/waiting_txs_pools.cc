@@ -75,9 +75,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetToTxs(pool_index, "");
         if (txs_item) {
             auto iter = txs_item->txs.begin();
+            uint64_t now_nonce = 0llu;
             if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
+                    *(*iter)->tx_info,
+                    &now_nonce) != 0) {
                 txs_item = nullptr;
             } else {
                 SHARDORA_DEBUG("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
@@ -97,9 +99,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         SHARDORA_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
         if (txs_item) {
             auto iter = txs_item->txs.begin();
+            uint64_t now_nonce = 0llu;
             if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
+                    *(*iter)->tx_info,
+                    &now_nonce) != 0) {
                 txs_item = nullptr;
             }
         }
@@ -110,9 +114,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetElectTx(pool_index, "");
         if (txs_item) {
             auto iter = txs_item->txs.begin();
+            uint64_t now_nonce = 0llu;
             if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
+                    *(*iter)->tx_info,
+                    &now_nonce) != 0) {
                 txs_item = nullptr;
             }
         }

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.bls.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x10protos/bls.proto\x12\x15shardora.bls.protobuf\x1a\x12protos/elect.proto\"c\n\rVerifyVecItem\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\x12\x0c\n\x04z_c0\x18\x05 \x01(\x0c\x12\x0c\n\x04z_c1\x18\x06 \x01(\x0c\"F\n\x0c\x42lsPublicKey\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\"_\n\x0fVerifyVecBrdReq\x12\x38\n\nverify_vec\x18\x01 \x03(\x0b\x32$.shardora.bls.protobuf.VerifyVecItem\x12\x12\n\nchange_idx\x18\x02 \x01(\r\"M\n\x10JoinElectBlsInfo\x12\x39\n\x0bverified_g2\x18\x01 \x01(\x0b\x32$.shardora.bls.protobuf.VerifyVecItem\"\xa2\x02\n\rJoinElectInfo\x12\x10\n\x08shard_id\x18\x01 \x01(\r\x12\x12\n\nmember_idx\x18\x02 \x01(\r\x12\x12\n\nchange_idx\x18\x03 \x01(\r\x12\x36\n\x06g2_req\x18\x04 \x01(\x0b\x32&.shardora.bls.protobuf.VerifyVecBrdReq\x12\x0c\n\x04\x61\x64\x64r\x18\x05 \x01(\x0c\x12\r\n\x05stoke\x18\x06 \x01(\x04\x12\x12\n\npublic_key\x18\x07 \x01(\x0c\x12\x35\n\x06\x62ls_pk\x18\x08 \x01(\x0b\x32%.shardora.elect.protobuf.BlsPublicKey\x12\x37\n\tbls_proof\x18\t \x01(\x0b\x32$.shardora.elect.protobuf.BlsPopProof\"<\n\x0fLocalPolynomial\x12\x12\n\npolynomial\x18\x01 \x03(\x0c\x12\x15\n\nchange_idx\x18\x02 \x01(\r:\x01\x30\"\xf1\x01\n\x0cLocalBlsItem\x12\x12\n\npolynomial\x18\x01 \x03(\x0c\x12\x19\n\x11local_private_key\x18\x02 \x01(\x0c\x12\x38\n\nverify_vec\x18\x03 \x03(\x0b\x32$.shardora.bls.protobuf.VerifyVecItem\x12\x1a\n\x12local_secrity_keys\x18\x04 \x03(\x0c\x12:\n\rcommon_pubkey\x18\x05 \x03(\x0b\x32#.shardora.bls.protobuf.BlsPublicKey\x12\x0f\n\x07valid_t\x18\x06 \x01(\r\x12\x0f\n\x07valid_n\x18\x07 \x01(\r\"J\n\x0e\x42lsVerifyValue\x12\x38\n\nverify_vec\x18\x01 \x03(\x0b\x32$.shardora.bls.protobuf.VerifyVecItem\"9\n\x0fVerifyVecBrdRes\x12\x11\n\tpublic_ip\x18\x01 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x02 \x01(\r\"k\n\x0eSwapSecKeyItem\x12\x0f\n\x07sec_key\x18\x01 \x01(\x0c\x12\x13\n\x0bsec_key_len\x18\x02 \x01(\r\x12\x33\n\x06old_g2\x18\x03 \x01(\x0b\x32#.shardora.bls.protobuf.BlsPublicKey\"D\n\rSwapSecKeyReq\x12\x33\n\x04keys\x18\x01 \x03(\x0b\x32%.shardora.bls.protobuf.SwapSecKeyItem\"D\n\rSwapSecKeyRes\x12\r\n\x05index\x18\x01 \x01(\r\x12\x0f\n\x07sec_key\x18\x02 \x01(\x0c\x12\x13\n\x0bsec_key_len\x18\x03 \x01(\r\"+\n\x12\x41gainstParticipant\x12\x15\n\ragainst_index\x18\x01 \x01(\r\"\xce\x01\n\x0f\x46inishBroadcast\x12\x0e\n\x06\x62itmap\x18\x01 \x03(\x04\x12\x33\n\x06pubkey\x18\x02 \x01(\x0b\x32#.shardora.bls.protobuf.BlsPublicKey\x12:\n\rcommon_pubkey\x18\x03 \x01(\x0b\x32#.shardora.bls.protobuf.BlsPublicKey\x12\x12\n\nnetwork_id\x18\x04 \x01(\r\x12\x12\n\nbls_sign_x\x18\x05 \x01(\x0c\x12\x12\n\nbls_sign_y\x18\x06 \x01(\x0c\"\x1f\n\x0e\x43heckVerfiyReq\x12\r\n\x05index\x18\x01 \x01(\r\" \n\x0f\x43heckSwapKeyReq\x12\r\n\x05index\x18\x01 \x01(\r\"\xe5\x02\n\nBlsMessage\x12:\n\nverify_brd\x18\x01 \x01(\x0b\x32&.shardora.bls.protobuf.VerifyVecBrdReq\x12\x36\n\x08swap_req\x18\x02 \x01(\x0b\x32$.shardora.bls.protobuf.SwapSecKeyReq\x12:\n\nfinish_req\x18\x03 \x01(\x0b\x32&.shardora.bls.protobuf.FinishBroadcast\x12?\n\x10\x63heck_verify_req\x18\x04 \x01(\x0b\x32%.shardora.bls.protobuf.CheckVerfiyReq\x12\x41\n\x11\x63heck_swapkey_req\x18\x05 \x01(\x0b\x32&.shardora.bls.protobuf.CheckSwapKeyReq\x12\r\n\x05index\x18\x06 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x07 \x01(\x04')
+  serialized_pb=_b('\n\x10protos/bls.proto\x12\x11shardora.bls.protobuf\x1a\x12protos/elect.proto\"c\n\rVerifyVecItem\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\x12\x0c\n\x04z_c0\x18\x05 \x01(\x0c\x12\x0c\n\x04z_c1\x18\x06 \x01(\x0c\"F\n\x0c\x42lsPublicKey\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\"[\n\x0fVerifyVecBrdReq\x12\x34\n\nverify_vec\x18\x01 \x03(\x0b\x32 .shardora.bls.protobuf.VerifyVecItem\x12\x12\n\nchange_idx\x18\x02 \x01(\r\"I\n\x10JoinElectBlsInfo\x12\x35\n\x0bverified_g2\x18\x01 \x01(\x0b\x32 .shardora.bls.protobuf.VerifyVecItem\"\x96\x02\n\rJoinElectInfo\x12\x10\n\x08shard_id\x18\x01 \x01(\r\x12\x12\n\nmember_idx\x18\x02 \x01(\r\x12\x12\n\nchange_idx\x18\x03 \x01(\r\x12\x32\n\x06g2_req\x18\x04 \x01(\x0b\x32\".shardora.bls.protobuf.VerifyVecBrdReq\x12\x0c\n\x04\x61\x64\x64r\x18\x05 \x01(\x0c\x12\r\n\x05stoke\x18\x06 \x01(\x04\x12\x12\n\npublic_key\x18\x07 \x01(\x0c\x12\x31\n\x06\x62ls_pk\x18\x08 \x01(\x0b\x32!.shardora.elect.protobuf.BlsPublicKey\x12\x33\n\tbls_proof\x18\t \x01(\x0b\x32 .shardora.elect.protobuf.BlsPopProof\"<\n\x0fLocalPolynomial\x12\x12\n\npolynomial\x18\x01 \x03(\x0c\x12\x15\n\nchange_idx\x18\x02 \x01(\r:\x01\x30\"\xe9\x01\n\x0cLocalBlsItem\x12\x12\n\npolynomial\x18\x01 \x03(\x0c\x12\x19\n\x11local_private_key\x18\x02 \x01(\x0c\x12\x34\n\nverify_vec\x18\x03 \x03(\x0b\x32 .shardora.bls.protobuf.VerifyVecItem\x12\x1a\n\x12local_secrity_keys\x18\x04 \x03(\x0c\x12\x36\n\rcommon_pubkey\x18\x05 \x03(\x0b\x32\x1f.shardora.bls.protobuf.BlsPublicKey\x12\x0f\n\x07valid_t\x18\x06 \x01(\r\x12\x0f\n\x07valid_n\x18\x07 \x01(\r\"F\n\x0e\x42lsVerifyValue\x12\x34\n\nverify_vec\x18\x01 \x03(\x0b\x32 .shardora.bls.protobuf.VerifyVecItem\"9\n\x0fVerifyVecBrdRes\x12\x11\n\tpublic_ip\x18\x01 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x02 \x01(\r\"g\n\x0eSwapSecKeyItem\x12\x0f\n\x07sec_key\x18\x01 \x01(\x0c\x12\x13\n\x0bsec_key_len\x18\x02 \x01(\r\x12/\n\x06old_g2\x18\x03 \x01(\x0b\x32\x1f.shardora.bls.protobuf.BlsPublicKey\"@\n\rSwapSecKeyReq\x12/\n\x04keys\x18\x01 \x03(\x0b\x32!.shardora.bls.protobuf.SwapSecKeyItem\"D\n\rSwapSecKeyRes\x12\r\n\x05index\x18\x01 \x01(\r\x12\x0f\n\x07sec_key\x18\x02 \x01(\x0c\x12\x13\n\x0bsec_key_len\x18\x03 \x01(\r\"+\n\x12\x41gainstParticipant\x12\x15\n\ragainst_index\x18\x01 \x01(\r\"\xc6\x01\n\x0f\x46inishBroadcast\x12\x0e\n\x06\x62itmap\x18\x01 \x03(\x04\x12/\n\x06pubkey\x18\x02 \x01(\x0b\x32\x1f.shardora.bls.protobuf.BlsPublicKey\x12\x36\n\rcommon_pubkey\x18\x03 \x01(\x0b\x32\x1f.shardora.bls.protobuf.BlsPublicKey\x12\x12\n\nnetwork_id\x18\x04 \x01(\r\x12\x12\n\nbls_sign_x\x18\x05 \x01(\x0c\x12\x12\n\nbls_sign_y\x18\x06 \x01(\x0c\"\x1f\n\x0e\x43heckVerfiyReq\x12\r\n\x05index\x18\x01 \x01(\r\" \n\x0f\x43heckSwapKeyReq\x12\r\n\x05index\x18\x01 \x01(\r\"\xd1\x02\n\nBlsMessage\x12\x36\n\nverify_brd\x18\x01 \x01(\x0b\x32\".shardora.bls.protobuf.VerifyVecBrdReq\x12\x32\n\x08swap_req\x18\x02 \x01(\x0b\x32 .shardora.bls.protobuf.SwapSecKeyReq\x12\x36\n\nfinish_req\x18\x03 \x01(\x0b\x32\".shardora.bls.protobuf.FinishBroadcast\x12;\n\x10\x63heck_verify_req\x18\x04 \x01(\x0b\x32!.shardora.bls.protobuf.CheckVerfiyReq\x12=\n\x11\x63heck_swapkey_req\x18\x05 \x01(\x0b\x32\".shardora.bls.protobuf.CheckSwapKeyReq\x12\r\n\x05index\x18\x06 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x07 \x01(\x04')
   ,
   dependencies=[protos_dot_elect__pb2.DESCRIPTOR,])
 
@@ -88,8 +88,8 @@ _VERIFYVECITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=63,
-  serialized_end=162,
+  serialized_start=59,
+  serialized_end=158,
 )
 
 
@@ -140,8 +140,8 @@ _BLSPUBLICKEY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=164,
-  serialized_end=234,
+  serialized_start=160,
+  serialized_end=230,
 )
 
 
@@ -178,8 +178,8 @@ _VERIFYVECBRDREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=236,
-  serialized_end=331,
+  serialized_start=232,
+  serialized_end=323,
 )
 
 
@@ -209,8 +209,8 @@ _JOINELECTBLSINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=333,
-  serialized_end=410,
+  serialized_start=325,
+  serialized_end=398,
 )
 
 
@@ -296,8 +296,8 @@ _JOINELECTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=413,
-  serialized_end=703,
+  serialized_start=401,
+  serialized_end=679,
 )
 
 
@@ -334,8 +334,8 @@ _LOCALPOLYNOMIAL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=705,
-  serialized_end=765,
+  serialized_start=681,
+  serialized_end=741,
 )
 
 
@@ -407,8 +407,8 @@ _LOCALBLSITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=768,
-  serialized_end=1009,
+  serialized_start=744,
+  serialized_end=977,
 )
 
 
@@ -438,8 +438,8 @@ _BLSVERIFYVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1011,
-  serialized_end=1085,
+  serialized_start=979,
+  serialized_end=1049,
 )
 
 
@@ -476,8 +476,8 @@ _VERIFYVECBRDRES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1087,
-  serialized_end=1144,
+  serialized_start=1051,
+  serialized_end=1108,
 )
 
 
@@ -521,8 +521,8 @@ _SWAPSECKEYITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1146,
-  serialized_end=1253,
+  serialized_start=1110,
+  serialized_end=1213,
 )
 
 
@@ -552,8 +552,8 @@ _SWAPSECKEYREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1255,
-  serialized_end=1323,
+  serialized_start=1215,
+  serialized_end=1279,
 )
 
 
@@ -597,8 +597,8 @@ _SWAPSECKEYRES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1325,
-  serialized_end=1393,
+  serialized_start=1281,
+  serialized_end=1349,
 )
 
 
@@ -628,8 +628,8 @@ _AGAINSTPARTICIPANT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1395,
-  serialized_end=1438,
+  serialized_start=1351,
+  serialized_end=1394,
 )
 
 
@@ -694,8 +694,8 @@ _FINISHBROADCAST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1441,
-  serialized_end=1647,
+  serialized_start=1397,
+  serialized_end=1595,
 )
 
 
@@ -725,8 +725,8 @@ _CHECKVERFIYREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1649,
-  serialized_end=1680,
+  serialized_start=1597,
+  serialized_end=1628,
 )
 
 
@@ -756,8 +756,8 @@ _CHECKSWAPKEYREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1682,
-  serialized_end=1714,
+  serialized_start=1630,
+  serialized_end=1662,
 )
 
 
@@ -829,8 +829,8 @@ _BLSMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1717,
-  serialized_end=2074,
+  serialized_start=1665,
+  serialized_end=2002,
 )
 
 _VERIFYVECBRDREQ.fields_by_name['verify_vec'].message_type = _VERIFYVECITEM

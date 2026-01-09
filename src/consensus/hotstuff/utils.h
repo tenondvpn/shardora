@@ -24,7 +24,8 @@ int CheckTransactionValid(
     const std::string& parent_hash, 
     std::shared_ptr<ViewBlockChain> view_block_chain,
     const address::protobuf::AddressInfo& addr_info, 
-    pools::protobuf::TxMessage& tx_info);
+    pools::protobuf::TxMessage& tx_info,
+    uint64_t* now_nonce);
 
 } // namespace consensus
 

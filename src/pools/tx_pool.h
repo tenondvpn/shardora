@@ -12,6 +12,7 @@
 
 #include "common/bloom_filter.h"
 #include "common/global_info.h"
+#include "common/lru_map.h"
 #include "common/hash.h"
 #include "common/spin_mutex.h"
 #include "common/time_utils.h"
@@ -84,6 +85,29 @@ public:
             const uint64_t timestamp);
     void SyncBlock();
     void TxOver(view_block::protobuf::ViewBlockItem& view_block);
+    bool NewTxValid(const std::string& addr, uint64_t nonce) {
+        std::shared_ptr<std::unordered_map<std::string, uint64_t>> over_map_ptr;
+        while (over_addr_map_queue_.pop(&over_map_ptr) && over_map_ptr != nullptr) {
+            for (auto iter = over_map_ptr->begin(); iter != over_map_ptr->end(); ++iter) {
+                add_addr_nonce_map_.Put(iter->first, iter->second);
+            }
+        }
+
+        uint64_t over_nonce = 0lu;
+        if (add_addr_nonce_map_.Get(addr, over_nonce)) {
+            if (over_nonce >= nonce || (over_nonce + 4 * common::kMaxTxCount) <= nonce) {
+                SHARDORA_DEBUG("trace tx pool: %d, failed add tx %s, nonce: %lu, over_nonce: %lu, max nonce: %lu", 
+                    pool_index_,
+                    common::Encode::HexEncode(addr).c_str(),
+                    nonce,
+                    over_nonce,
+                    (over_nonce + 4 * common::kMaxTxCount));
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     uint32_t all_tx_size() const {
         uint32_t cons_map_size = 0;
@@ -177,6 +201,8 @@ private:
     uint64_t local_thread_id_count_ = 0;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> added_txs_;
     common::ThreadSafeQueue<TxItemPtr, 1024 * 256> consensus_added_txs_;
+    common::ThreadSafeQueue<std::shared_ptr<std::unordered_map<std::string, uint64_t>>, 1024 * 256> over_addr_map_queue_;
+    common::LRUMap<std::string, uint64_t> add_addr_nonce_map_{102400};
     std::map<std::string, std::map<uint64_t, TxItemPtr>> tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> consensus_tx_map_;
     std::map<std::string, std::map<uint64_t, TxItemPtr>> system_tx_map_;

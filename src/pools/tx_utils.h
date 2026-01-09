@@ -421,7 +421,7 @@ public:
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<int(const address::protobuf::AddressInfo& addr, pools::protobuf::TxMessage&)> CheckAddrNonceValidFunction;
+typedef std::function<int(const address::protobuf::AddressInfo& addr, pools::protobuf::TxMessage&, uint64_t* now_nonce)> CheckAddrNonceValidFunction;
 
 };  // namespace pools
 

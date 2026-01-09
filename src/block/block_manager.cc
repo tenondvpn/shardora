@@ -1025,9 +1025,11 @@ bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceVali
             return false;
         }
 
+        uint64_t now_nonce = 0ll;
         if (tx_valid_func(
                 *iter->second->tx_ptr->address_info, 
-                *iter->second->tx_ptr->tx_info) != 0) {
+                *iter->second->tx_ptr->tx_info,
+                &now_nonce) != 0) {
             return false;
         }
 
@@ -1051,9 +1053,11 @@ bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFun
             continue;
         }
 
+        uint64_t now_nonce = 0ll;
         if (tx_valid_func(
                 *shard_elect_tx->tx_ptr->address_info, 
-                *shard_elect_tx->tx_ptr->tx_info) != 0) {
+                *shard_elect_tx->tx_ptr->tx_info,
+                &now_nonce) != 0) {
             return false;
         }
         

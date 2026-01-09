@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.elect.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x12protos/elect.proto\x12\x17shardora.elect.protobuf\"u\n\x0eVerifyVecValue\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\x12\x0c\n\x04z_c0\x18\x05 \x01(\x0c\x12\x0c\n\x04z_c1\x18\x06 \x01(\x0c\x12\x0f\n\x07valid_t\x18\x07 \x01(\r\"F\n\x0c\x42lsPublicKey\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\"=\n\x0b\x42lsPopProof\x12\x0e\n\x06sign_x\x18\x01 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x02 \x01(\x0c\x12\x0e\n\x06sign_z\x18\x03 \x01(\x0c\"f\n\x0ePrevMemberInfo\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\x12\x1c\n\x10pool_idx_mod_num\x18\x05 \x01(\x05:\x02-1\"\xa3\x01\n\x0bPrevMembers\x12;\n\nbls_pubkey\x18\x01 \x03(\x0b\x32\'.shardora.elect.protobuf.PrevMemberInfo\x12\x19\n\x11prev_elect_height\x18\x02 \x01(\x04\x12<\n\rcommon_pubkey\x18\x03 \x01(\x0b\x32%.shardora.elect.protobuf.BlsPublicKey\"\xee\x01\n\x06member\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x18\n\x10pool_idx_mod_num\x18\x02 \x01(\x05\x12\x15\n\rmining_amount\x18\x03 \x01(\x04\x12\x11\n\tfts_value\x18\x04 \x01(\x04\x12\x15\n\rconsensus_gap\x18\x05 \x01(\x04\x12\x39\n\nagg_bls_pk\x18\x06 \x01(\x0b\x32%.shardora.elect.protobuf.BlsPublicKey\x12>\n\x10\x61gg_bls_pk_proof\x18\x07 \x01(\x0b\x32$.shardora.elect.protobuf.BlsPopProof\"\xd3\x01\n\nElectBlock\x12+\n\x02in\x18\x01 \x03(\x0b\x32\x1f.shardora.elect.protobuf.member\x12:\n\x0cprev_members\x18\x02 \x01(\x0b\x32$.shardora.elect.protobuf.PrevMembers\x12\x18\n\x10shard_network_id\x18\x03 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x04 \x01(\x04\x12\x16\n\x0e\x61ll_gas_amount\x18\x05 \x01(\x04\x12\x14\n\x0cgas_for_root\x18\x06 \x01(\x04\"Y\n\x13WaitingNodesMessage\x12\x14\n\x0cnodes_filter\x18\x01 \x03(\x04\x12\x18\n\x10waiting_shard_id\x18\x02 \x01(\r\x12\x12\n\nstoke_hash\x18\x03 \x01(\x0c\"i\n\x14WaitingNodeHeartbeat\x12\x11\n\tpublic_ip\x18\x01 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x02 \x01(\r\x12\x12\n\nnetwork_id\x18\x03 \x01(\r\x12\x15\n\rtimestamp_sec\x18\x04 \x01(\x04\"@\n\x15LeaderRotationMessage\x12\x11\n\tleader_id\x18\x01 \x01(\x0c\x12\x14\n\x0cpool_mod_num\x18\x02 \x01(\r\"9\n\x11SyncNodeStokeItem\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x18\n\x10synced_tm_height\x18\x02 \x01(\x04\"l\n\x14SyncNodeStokeRequest\x12=\n\tsync_item\x18\x01 \x03(\x0b\x32*.shardora.elect.protobuf.SyncNodeStokeItem\x12\x15\n\rnow_tm_height\x18\x02 \x01(\x04\"3\n\x14SyncNodeStokeResItem\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x0f\n\x07\x62\x61lance\x18\x02 \x01(\x04\"l\n\x15SyncNodeStokeResponse\x12<\n\x05items\x18\x01 \x03(\x0b\x32-.shardora.elect.protobuf.SyncNodeStokeResItem\x12\x15\n\rnow_tm_height\x18\x02 \x01(\x04\"\xa7\x04\n\x0c\x45lectMessage\x12\x38\n\x0b\x65lect_block\x18\x01 \x01(\x0b\x32#.shardora.elect.protobuf.ElectBlock\x12=\n\x10prev_elect_block\x18\x02 \x01(\x0b\x32#.shardora.elect.protobuf.ElectBlock\x12\x43\n\rwaiting_nodes\x18\x03 \x01(\x0b\x32,.shardora.elect.protobuf.WaitingNodesMessage\x12\x14\n\x0cmember_index\x18\x04 \x01(\x05\x12\x0f\n\x07sign_ch\x18\x05 \x01(\x0c\x12\x10\n\x08sign_res\x18\x06 \x01(\x0c\x12H\n\x11waiting_heartbeat\x18\x07 \x01(\x0b\x32-.shardora.elect.protobuf.WaitingNodeHeartbeat\x12G\n\x0fleader_rotation\x18\x08 \x01(\x0b\x32..shardora.elect.protobuf.LeaderRotationMessage\x12\x45\n\x0esync_stoke_req\x18\t \x01(\x0b\x32-.shardora.elect.protobuf.SyncNodeStokeRequest\x12\x46\n\x0esync_stoke_res\x18\n \x01(\x0b\x32..shardora.elect.protobuf.SyncNodeStokeResponse')
+  serialized_pb=_b('\n\x12protos/elect.proto\x12\x13shardora.elect.protobuf\"u\n\x0eVerifyVecValue\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\x12\x0c\n\x04z_c0\x18\x05 \x01(\x0c\x12\x0c\n\x04z_c1\x18\x06 \x01(\x0c\x12\x0f\n\x07valid_t\x18\x07 \x01(\r\"F\n\x0c\x42lsPublicKey\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\"=\n\x0b\x42lsPopProof\x12\x0e\n\x06sign_x\x18\x01 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x02 \x01(\x0c\x12\x0e\n\x06sign_z\x18\x03 \x01(\x0c\"f\n\x0ePrevMemberInfo\x12\x0c\n\x04x_c0\x18\x01 \x01(\x0c\x12\x0c\n\x04x_c1\x18\x02 \x01(\x0c\x12\x0c\n\x04y_c0\x18\x03 \x01(\x0c\x12\x0c\n\x04y_c1\x18\x04 \x01(\x0c\x12\x1c\n\x10pool_idx_mod_num\x18\x05 \x01(\x05:\x02-1\"\x9b\x01\n\x0bPrevMembers\x12\x37\n\nbls_pubkey\x18\x01 \x03(\x0b\x32#.shardora.elect.protobuf.PrevMemberInfo\x12\x19\n\x11prev_elect_height\x18\x02 \x01(\x04\x12\x38\n\rcommon_pubkey\x18\x03 \x01(\x0b\x32!.shardora.elect.protobuf.BlsPublicKey\"\xe6\x01\n\x06member\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x18\n\x10pool_idx_mod_num\x18\x02 \x01(\x05\x12\x15\n\rmining_amount\x18\x03 \x01(\x04\x12\x11\n\tfts_value\x18\x04 \x01(\x04\x12\x15\n\rconsensus_gap\x18\x05 \x01(\x04\x12\x35\n\nagg_bls_pk\x18\x06 \x01(\x0b\x32!.shardora.elect.protobuf.BlsPublicKey\x12:\n\x10\x61gg_bls_pk_proof\x18\x07 \x01(\x0b\x32 .shardora.elect.protobuf.BlsPopProof\"\xcb\x01\n\nElectBlock\x12\'\n\x02in\x18\x01 \x03(\x0b\x32\x1b.shardora.elect.protobuf.member\x12\x36\n\x0cprev_members\x18\x02 \x01(\x0b\x32 .shardora.elect.protobuf.PrevMembers\x12\x18\n\x10shard_network_id\x18\x03 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x04 \x01(\x04\x12\x16\n\x0e\x61ll_gas_amount\x18\x05 \x01(\x04\x12\x14\n\x0cgas_for_root\x18\x06 \x01(\x04\"Y\n\x13WaitingNodesMessage\x12\x14\n\x0cnodes_filter\x18\x01 \x03(\x04\x12\x18\n\x10waiting_shard_id\x18\x02 \x01(\r\x12\x12\n\nstoke_hash\x18\x03 \x01(\x0c\"i\n\x14WaitingNodeHeartbeat\x12\x11\n\tpublic_ip\x18\x01 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x02 \x01(\r\x12\x12\n\nnetwork_id\x18\x03 \x01(\r\x12\x15\n\rtimestamp_sec\x18\x04 \x01(\x04\"@\n\x15LeaderRotationMessage\x12\x11\n\tleader_id\x18\x01 \x01(\x0c\x12\x14\n\x0cpool_mod_num\x18\x02 \x01(\r\"9\n\x11SyncNodeStokeItem\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x18\n\x10synced_tm_height\x18\x02 \x01(\x04\"h\n\x14SyncNodeStokeRequest\x12\x39\n\tsync_item\x18\x01 \x03(\x0b\x32&.shardora.elect.protobuf.SyncNodeStokeItem\x12\x15\n\rnow_tm_height\x18\x02 \x01(\x04\"3\n\x14SyncNodeStokeResItem\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x0f\n\x07\x62\x61lance\x18\x02 \x01(\x04\"h\n\x15SyncNodeStokeResponse\x12\x38\n\x05items\x18\x01 \x03(\x0b\x32).shardora.elect.protobuf.SyncNodeStokeResItem\x12\x15\n\rnow_tm_height\x18\x02 \x01(\x04\"\x8b\x04\n\x0c\x45lectMessage\x12\x34\n\x0b\x65lect_block\x18\x01 \x01(\x0b\x32\x1f.shardora.elect.protobuf.ElectBlock\x12\x39\n\x10prev_elect_block\x18\x02 \x01(\x0b\x32\x1f.shardora.elect.protobuf.ElectBlock\x12?\n\rwaiting_nodes\x18\x03 \x01(\x0b\x32(.shardora.elect.protobuf.WaitingNodesMessage\x12\x14\n\x0cmember_index\x18\x04 \x01(\x05\x12\x0f\n\x07sign_ch\x18\x05 \x01(\x0c\x12\x10\n\x08sign_res\x18\x06 \x01(\x0c\x12\x44\n\x11waiting_heartbeat\x18\x07 \x01(\x0b\x32).shardora.elect.protobuf.WaitingNodeHeartbeat\x12\x43\n\x0fleader_rotation\x18\x08 \x01(\x0b\x32*.shardora.elect.protobuf.LeaderRotationMessage\x12\x41\n\x0esync_stoke_req\x18\t \x01(\x0b\x32).shardora.elect.protobuf.SyncNodeStokeRequest\x12\x42\n\x0esync_stoke_res\x18\n \x01(\x0b\x32*.shardora.elect.protobuf.SyncNodeStokeResponse')
 )
 
 
@@ -93,8 +93,8 @@ _VERIFYVECVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=47,
-  serialized_end=164,
+  serialized_start=43,
+  serialized_end=160,
 )
 
 
@@ -145,8 +145,8 @@ _BLSPUBLICKEY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=166,
-  serialized_end=236,
+  serialized_start=162,
+  serialized_end=232,
 )
 
 
@@ -190,8 +190,8 @@ _BLSPOPPROOF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=238,
-  serialized_end=299,
+  serialized_start=234,
+  serialized_end=295,
 )
 
 
@@ -249,8 +249,8 @@ _PREVMEMBERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=301,
-  serialized_end=403,
+  serialized_start=297,
+  serialized_end=399,
 )
 
 
@@ -294,8 +294,8 @@ _PREVMEMBERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=406,
-  serialized_end=569,
+  serialized_start=402,
+  serialized_end=557,
 )
 
 
@@ -367,8 +367,8 @@ _MEMBER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=572,
-  serialized_end=810,
+  serialized_start=560,
+  serialized_end=790,
 )
 
 
@@ -433,8 +433,8 @@ _ELECTBLOCK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=813,
-  serialized_end=1024,
+  serialized_start=793,
+  serialized_end=996,
 )
 
 
@@ -478,8 +478,8 @@ _WAITINGNODESMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1026,
-  serialized_end=1115,
+  serialized_start=998,
+  serialized_end=1087,
 )
 
 
@@ -530,8 +530,8 @@ _WAITINGNODEHEARTBEAT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1117,
-  serialized_end=1222,
+  serialized_start=1089,
+  serialized_end=1194,
 )
 
 
@@ -568,8 +568,8 @@ _LEADERROTATIONMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1224,
-  serialized_end=1288,
+  serialized_start=1196,
+  serialized_end=1260,
 )
 
 
@@ -606,8 +606,8 @@ _SYNCNODESTOKEITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1290,
-  serialized_end=1347,
+  serialized_start=1262,
+  serialized_end=1319,
 )
 
 
@@ -644,8 +644,8 @@ _SYNCNODESTOKEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1349,
-  serialized_end=1457,
+  serialized_start=1321,
+  serialized_end=1425,
 )
 
 
@@ -682,8 +682,8 @@ _SYNCNODESTOKERESITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1459,
-  serialized_end=1510,
+  serialized_start=1427,
+  serialized_end=1478,
 )
 
 
@@ -720,8 +720,8 @@ _SYNCNODESTOKERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1512,
-  serialized_end=1620,
+  serialized_start=1480,
+  serialized_end=1584,
 )
 
 
@@ -814,8 +814,8 @@ _ELECTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1623,
-  serialized_end=2174,
+  serialized_start=1587,
+  serialized_end=2110,
 )
 
 _PREVMEMBERS.fields_by_name['bls_pubkey'].message_type = _PREVMEMBERINFO

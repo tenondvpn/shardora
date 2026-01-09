@@ -417,14 +417,16 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
 
-            if (tx_pool_[address_info->pool_index()].all_tx_size() >= 
-                    common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
-                SHARDORA_DEBUG("add failed extend %u, %u, all valid: %u", 
-                    tx_pool_[address_info->pool_index()].all_tx_size(), 
-                    common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
-                    tx_pool_[address_info->pool_index()].all_tx_size());
-                return;
-            }
+            // if (tx_pool_[address_info->pool_index()].all_tx_size() >= 
+            //         common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
+                if (!NewTxValid(address_info->pool_index(), address_info->addr(), tx_msg.nonce())) {
+                    SHARDORA_DEBUG("add failed extend %u, %u, all valid: %u", 
+                        tx_pool_[address_info->pool_index()].all_tx_size(), 
+                        common::GlobalInfo::Instance()->each_tx_pool_max_txs(), 
+                        tx_pool_[address_info->pool_index()].all_tx_size());
+                    return;
+                }
+            // }
 
             msg_ptr->address_info = address_info;
 #ifndef NDEBUG

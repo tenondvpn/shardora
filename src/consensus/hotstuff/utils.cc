@@ -50,12 +50,14 @@ int CheckTransactionValid(
         const std::string& parent_hash, 
         std::shared_ptr<ViewBlockChain> view_block_chain,
         const address::protobuf::AddressInfo& addr_info, 
-        pools::protobuf::TxMessage& tx_info) {
+        pools::protobuf::TxMessage& tx_info,
+        uint64_t* now_nonce) {
     if (pools::IsUserTransaction(tx_info.step())) {
         return view_block_chain->CheckTxNonceValid(
             addr_info.addr(), 
             tx_info.nonce(), 
-            parent_hash);
+            parent_hash,
+            now_nonce);
     }
     
     zjcvm::ZjchainHost zjc_host;

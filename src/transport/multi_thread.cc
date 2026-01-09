@@ -318,6 +318,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     threads_message_queues_[thread_index][priority].push(msg_ptr);
+    CHECK_MEMORY_SIZE(threads_message_queues_[thread_index][priority]);
     wait_con_[thread_index % all_thread_count_].notify_one();
     SHARDORA_DEBUG("queue size message push success: %lu, queue_idx: %d, "
         "priority: %d, thread queue size: %u, net: %u, type: %d, from: %s:%d",

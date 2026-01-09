@@ -75,7 +75,8 @@ public:
     int CheckTxNonceValid(
         const std::string& addr, 
         uint64_t nonce, 
-        const std::string& parent_hash);
+        const std::string& parent_hash,
+        uint64_t* now_nonce);
     // If a chain is valid
     bool IsValid();
     std::string String() const;

@@ -323,8 +323,9 @@ Status BlockAcceptor::addTxsToPool(
     auto& txs_map = txs_ptr->txs;
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
-            pools::protobuf::TxMessage& tx_info) -> int {
-        return CheckTransactionValid(parent_hash, view_block_chain_, addr_info, tx_info);
+            pools::protobuf::TxMessage& tx_info,
+            uint64_t* now_nonce) -> int {
+        return CheckTransactionValid(parent_hash, view_block_chain_, addr_info, tx_info, now_nonce);
     };
 
     for (uint32_t i = 0; i < uint32_t(txs.size()); i++) {
@@ -369,8 +370,9 @@ Status BlockAcceptor::addTxsToPool(
         auto now_map_iter = now_balance_map.find(address_info->addr());
         if (now_map_iter == now_balance_map.end()) {
             if (pools::IsUserTransaction(tx->step())) {
+                uint64_t now_nonce = 0lu;
                 if (view_block_chain_ && view_block_chain_->CheckTxNonceValid(
-                        address_info->addr(), tx->nonce(), parent_hash) != 0) {
+                        address_info->addr(), tx->nonce(), parent_hash, &now_nonce) != 0) {
                     SHARDORA_WARN("check tx nonce addr: %s, failed: %lu, phash: %s", 
                         common::Encode::HexEncode(address_info->addr()).c_str(),
                         tx->nonce(), 

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.dht.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x10protos/dht.proto\x12\x15shardora.dht.protobuf\"J\n\x10\x42ootstrapRequest\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x11\n\tpublic_ip\x18\x02 \x01(\t\x12\x13\n\x0bpublic_port\x18\x03 \x01(\x05\"K\n\x11\x42ootstrapResponse\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x11\n\tpublic_ip\x18\x02 \x01(\t\x12\x13\n\x0bpublic_port\x18\x03 \x01(\x05\"c\n\x08NodeInfo\x12\x11\n\tpublic_ip\x18\x01 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x02 \x01(\x05\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x13\n\x0bsharding_id\x18\x04 \x01(\x05\x12\n\n\x02id\x18\x05 \x01(\x0c\"\x82\x01\n\x17RefreshNeighborsRequest\x12\r\n\x05\x63ount\x18\x01 \x01(\r\x12\x13\n\x0b\x62loomfilter\x18\x02 \x03(\x04\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x11\n\tpublic_ip\x18\x04 \x01(\t\x12\x13\n\x0bpublic_port\x18\x05 \x01(\x05\x12\x0b\n\x03ids\x18\x06 \x03(\x0c\"J\n\x18RefreshNeighborsResponse\x12.\n\x05nodes\x18\x01 \x03(\x0b\x32\x1f.shardora.dht.protobuf.NodeInfo\"(\n\x10HeartbeatRequest\x12\x14\n\x0c\x64ht_key_hash\x18\x01 \x01(\x04\")\n\x11HeartbeatResponse\x12\x14\n\x0c\x64ht_key_hash\x18\x01 \x01(\x04\"i\n\x0e\x43onnectReqeust\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x13\n\x0bis_response\x18\x02 \x01(\x08\x12\x11\n\tpublic_ip\x18\x03 \x01(\t\x12\x13\n\x0bpublic_port\x18\x04 \x01(\x05\x12\n\n\x02id\x18\x05 \x01(\x0c\" \n\x0cTimerRequest\x12\x10\n\x08tm_milli\x18\x01 \x01(\x04\"\x9d\x04\n\nDhtMessage\x12>\n\rbootstrap_req\x18\x01 \x01(\x0b\x32\'.shardora.dht.protobuf.BootstrapRequest\x12?\n\rbootstrap_res\x18\x02 \x01(\x0b\x32(.shardora.dht.protobuf.BootstrapResponse\x12M\n\x15refresh_neighbors_req\x18\x03 \x01(\x0b\x32..shardora.dht.protobuf.RefreshNeighborsRequest\x12N\n\x15refresh_neighbors_res\x18\x04 \x01(\x0b\x32/.shardora.dht.protobuf.RefreshNeighborsResponse\x12:\n\x0b\x63onnect_req\x18\x05 \x01(\x0b\x32%.shardora.dht.protobuf.ConnectReqeust\x12>\n\rheartbeat_req\x18\x06 \x01(\x0b\x32\'.shardora.dht.protobuf.HeartbeatRequest\x12?\n\rheartbeat_res\x18\x07 \x01(\x0b\x32(.shardora.dht.protobuf.HeartbeatResponse\x12\x32\n\x05timer\x18\x08 \x01(\x0b\x32#.shardora.dht.protobuf.TimerRequest')
+  serialized_pb=_b('\n\x10protos/dht.proto\x12\x11shardora.dht.protobuf\"J\n\x10\x42ootstrapRequest\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x11\n\tpublic_ip\x18\x02 \x01(\t\x12\x13\n\x0bpublic_port\x18\x03 \x01(\x05\"K\n\x11\x42ootstrapResponse\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x11\n\tpublic_ip\x18\x02 \x01(\t\x12\x13\n\x0bpublic_port\x18\x03 \x01(\x05\"c\n\x08NodeInfo\x12\x11\n\tpublic_ip\x18\x01 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x02 \x01(\x05\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x13\n\x0bsharding_id\x18\x04 \x01(\x05\x12\n\n\x02id\x18\x05 \x01(\x0c\"\x82\x01\n\x17RefreshNeighborsRequest\x12\r\n\x05\x63ount\x18\x01 \x01(\r\x12\x13\n\x0b\x62loomfilter\x18\x02 \x03(\x04\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x11\n\tpublic_ip\x18\x04 \x01(\t\x12\x13\n\x0bpublic_port\x18\x05 \x01(\x05\x12\x0b\n\x03ids\x18\x06 \x03(\x0c\"F\n\x18RefreshNeighborsResponse\x12*\n\x05nodes\x18\x01 \x03(\x0b\x32\x1b.shardora.dht.protobuf.NodeInfo\"(\n\x10HeartbeatRequest\x12\x14\n\x0c\x64ht_key_hash\x18\x01 \x01(\x04\")\n\x11HeartbeatResponse\x12\x14\n\x0c\x64ht_key_hash\x18\x01 \x01(\x04\"i\n\x0e\x43onnectReqeust\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x13\n\x0bis_response\x18\x02 \x01(\x08\x12\x11\n\tpublic_ip\x18\x03 \x01(\t\x12\x13\n\x0bpublic_port\x18\x04 \x01(\x05\x12\n\n\x02id\x18\x05 \x01(\x0c\" \n\x0cTimerRequest\x12\x10\n\x08tm_milli\x18\x01 \x01(\x04\"\xfd\x03\n\nDhtMessage\x12:\n\rbootstrap_req\x18\x01 \x01(\x0b\x32#.shardora.dht.protobuf.BootstrapRequest\x12;\n\rbootstrap_res\x18\x02 \x01(\x0b\x32$.shardora.dht.protobuf.BootstrapResponse\x12I\n\x15refresh_neighbors_req\x18\x03 \x01(\x0b\x32*.shardora.dht.protobuf.RefreshNeighborsRequest\x12J\n\x15refresh_neighbors_res\x18\x04 \x01(\x0b\x32+.shardora.dht.protobuf.RefreshNeighborsResponse\x12\x36\n\x0b\x63onnect_req\x18\x05 \x01(\x0b\x32!.shardora.dht.protobuf.ConnectReqeust\x12:\n\rheartbeat_req\x18\x06 \x01(\x0b\x32#.shardora.dht.protobuf.HeartbeatRequest\x12;\n\rheartbeat_res\x18\x07 \x01(\x0b\x32$.shardora.dht.protobuf.HeartbeatResponse\x12.\n\x05timer\x18\x08 \x01(\x0b\x32\x1f.shardora.dht.protobuf.TimerRequest')
 )
 
 
@@ -65,8 +65,8 @@ _BOOTSTRAPREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=43,
-  serialized_end=117,
+  serialized_start=39,
+  serialized_end=113,
 )
 
 
@@ -110,8 +110,8 @@ _BOOTSTRAPRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=119,
-  serialized_end=194,
+  serialized_start=115,
+  serialized_end=190,
 )
 
 
@@ -169,8 +169,8 @@ _NODEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=196,
-  serialized_end=295,
+  serialized_start=192,
+  serialized_end=291,
 )
 
 
@@ -235,8 +235,8 @@ _REFRESHNEIGHBORSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=298,
-  serialized_end=428,
+  serialized_start=294,
+  serialized_end=424,
 )
 
 
@@ -266,8 +266,8 @@ _REFRESHNEIGHBORSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=430,
-  serialized_end=504,
+  serialized_start=426,
+  serialized_end=496,
 )
 
 
@@ -297,8 +297,8 @@ _HEARTBEATREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=506,
-  serialized_end=546,
+  serialized_start=498,
+  serialized_end=538,
 )
 
 
@@ -328,8 +328,8 @@ _HEARTBEATRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=548,
-  serialized_end=589,
+  serialized_start=540,
+  serialized_end=581,
 )
 
 
@@ -387,8 +387,8 @@ _CONNECTREQEUST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=591,
-  serialized_end=696,
+  serialized_start=583,
+  serialized_end=688,
 )
 
 
@@ -418,8 +418,8 @@ _TIMERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=698,
-  serialized_end=730,
+  serialized_start=690,
+  serialized_end=722,
 )
 
 
@@ -498,8 +498,8 @@ _DHTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=733,
-  serialized_end=1274,
+  serialized_start=725,
+  serialized_end=1234,
 )
 
 _REFRESHNEIGHBORSRESPONSE.fields_by_name['nodes'].message_type = _NODEINFO
