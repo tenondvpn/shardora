@@ -725,6 +725,7 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     parser_arg.AddArgType('V', "vpn_vip_level", common::kNoValue);
     parser_arg.AddArgType('U', "gen_root", common::kNoValue);
     parser_arg.AddArgType('S', "gen_shard", common::kMaybeValue);
+    parser_arg.AddArgType('E', "end_net", common::kMaybeValue);
     parser_arg.AddArgType('N', "node_count", common::kMaybeValue);
     parser_arg.AddArgType('C', "cross_latest", common::kNoValue);
     // parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);    
@@ -788,6 +789,8 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         }
     }
     
+    uint32_t end_shard_id = 4;
+    parser_arg.Get("E", end_shard_id);
     std::set<uint32_t> valid_net_ids_set;
     SHARDORA_DEBUG("now consensus_shard_node_count: %u", consensus_shard_node_count);
     if (parser_arg.Has("U")) {
@@ -815,6 +818,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
             network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
         GetNetworkNodesFromConf(
+            end_shard_id,
             consensus_shard_node_count, 
             root_genesis_nodes, 
             cons_genesis_nodes_of_shards, 
@@ -831,51 +835,55 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
     }
 
     if (parser_arg.Has("S")) {
-        std::string net_id_str;
-        if (parser_arg.Get("S", net_id_str) != common::kParseSuccess) {
-            return kInitError;
-        }
+        for (uint32_t i = 3; i < end_shard_id; i++) {
+            std::string net_id_str = std::to_string(i);
+            if (parser_arg.Get("S", net_id_str) != common::kParseSuccess) {
+                return kInitError;
+            }
 
-        net_name = "shard" + net_id_str;
-        uint32_t net_id = static_cast<uint32_t>(std::stoul(net_id_str));
-        // shard3 创世时需要 root 节点参与
-        if (net_id == network::kConsensusShardBeginNetworkId) {
-            valid_net_ids_set.insert(network::kRootCongressNetworkId);
-        }
-        valid_net_ids_set.insert(net_id);
+            net_name = "shard" + net_id_str;
+            uint32_t net_id = static_cast<uint32_t>(std::stoul(net_id_str));
+            // shard3 创世时需要 root 节点参与
+            if (net_id == network::kConsensusShardBeginNetworkId) {
+                valid_net_ids_set.insert(network::kRootCongressNetworkId);
+            }
+            valid_net_ids_set.insert(net_id);
 
-        if (valid_net_ids_set.size() == 0) {
-            return kInitError;
-        }
-        
-        SHARDORA_DEBUG("save shard db: shard_db");
-        auto db = std::make_shared<db::Db>();
-        if (!db->Init("./shard_db_" + net_id_str)) {
-            INIT_ERROR("init db failed!");
-            return kInitError;
-        }
+            if (valid_net_ids_set.size() == 0) {
+                return kInitError;
+            }
+            
+            SHARDORA_DEBUG("save shard db: shard_db");
+            auto db = std::make_shared<db::Db>();
+            if (!db->Init("./shard_db_" + net_id_str)) {
+                INIT_ERROR("init db failed!");
+                return kInitError;
+            }
 
-        account_mgr_ = std::make_shared<block::AccountManager>();
-        // account_mgr_->Init(db, pools_mgr_);
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
-        init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
-        std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
-            network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
-        GetNetworkNodesFromConf(
-            consensus_shard_node_count, 
-            root_genesis_nodes, 
-            cons_genesis_nodes_of_shards, 
-            db);
-        if (genesis_block.CreateGenesisBlocks(
-                GenisisNetworkType::ShardNetwork,
-                root_genesis_nodes,
-                cons_genesis_nodes_of_shards,
-                valid_net_ids_set) != 0) {
-            return kInitError;
-        }
+            account_mgr_ = std::make_shared<block::AccountManager>();
+            // account_mgr_->Init(db, pools_mgr_);
+            block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
+            init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
+            std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
+            std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
+                network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
+            GetNetworkNodesFromConf(
+                end_shard_id,
+                consensus_shard_node_count, 
+                root_genesis_nodes, 
+                cons_genesis_nodes_of_shards, 
+                db);
+            if (genesis_block.CreateGenesisBlocks(
+                    GenisisNetworkType::ShardNetwork,
+                    root_genesis_nodes,
+                    cons_genesis_nodes_of_shards,
+                    valid_net_ids_set) != 0) {
+                return kInitError;
+            }
 
-        SaveLatestBlock(db, net_id);
+            SaveLatestBlock(db, net_id);
+        }
+            
         return kInitSuccess;
     }
 
@@ -883,6 +891,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         SaveCrossBlockToEachShard();
         return kInitSuccess;
     }
+    
     return -1;
 }
 
@@ -969,6 +978,7 @@ void NetworkInit::SaveCrossBlockToEachShard() {
 }
 
 void NetworkInit::GetNetworkNodesFromConf(
+        uint32_t end_shard_id,
         uint32_t cons_shard_node_count,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
@@ -1024,14 +1034,17 @@ void NetworkInit::GetNetworkNodesFromConf(
             common::Encode::HexEncode(node_ptr->id).c_str());
     }
     fclose(rfd);
-    uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;        
     uint32_t n = cons_shard_node_count;
     uint32_t t = common::GetSignerCount(n);
-    for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < network::kConsensusShardEndNetworkId; net_i++) {
+    for (uint32_t net_i = network::kConsensusShardBeginNetworkId; net_i < end_shard_id; net_i++) {
         auto filename = std::string("/root/shardora/shards") + std::to_string(net_i);
         bool reuse_shard = common::isFileExist(filename);
         auto sfd = fopen(filename.c_str(), (reuse_shard ? "r" : "w"));
-        assert(sfd != nullptr);
+        if (sfd == nullptr) {
+            SHARDORA_FATAL("open file failed: %s", filename.c_str());
+            break;
+        }
+
         std::vector<std::string> shard_sks;
         get_sks_func(sfd, shard_sks, n, reuse_shard);
         std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;

@@ -39,6 +39,23 @@ int ParserArgs::Get(const std::string& key, uint16_t& value) {
     return kParseSuccess;
 }
 
+int ParserArgs::Get(const std::string& key, uint32_t& value) {
+    auto iter = result_.find(key);
+    if (iter == result_.end()) {
+        return kParseFailed;
+    }
+
+    if (iter->second.empty()) {
+        return kParseFailed;
+    }
+
+    if (!StringUtil::ToUint32(iter->second[0], &value)) {
+        return kParseFailed;
+    }
+
+    return kParseSuccess;
+}
+
 int ParserArgs::Get(const std::string& key, std::string& value) {
     auto iter = result_.find(key);
     if (iter == result_.end()) {

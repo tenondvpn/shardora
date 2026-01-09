@@ -166,8 +166,8 @@ static int CreateTransactionWithAttr(
     }
 
     if (from_pk.empty()) {
-            SHARDORA_ERROR("Public key is empty in Verify!");
-            return kSignatureInvalid;
+        SHARDORA_ERROR("Public key is empty in Verify!");
+        return kSignatureInvalid;
     }
     
     SHARDORA_DEBUG("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());

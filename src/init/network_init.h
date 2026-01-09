@@ -52,6 +52,7 @@ private:
     int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void AddCmds();
     void GetNetworkNodesFromConf(
+        uint32_t end_shard_id,
         uint32_t cons_shard_node_count,
         std::vector<GenisisNodeInfoPtr>&, 
         std::vector<GenisisNodeInfoPtrVector>&, 
