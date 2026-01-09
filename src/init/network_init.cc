@@ -805,7 +805,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         valid_net_ids_set.insert(network::kRootCongressNetworkId);
         valid_net_ids_set.insert(3);
         auto db = std::make_shared<db::Db>();
-        if (!db->Init("./root_db")) {
+        if (!db->Init("./shard_db_2")) {
             INIT_ERROR("init db failed!");
             return kInitError;
         }
