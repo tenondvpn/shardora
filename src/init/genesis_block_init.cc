@@ -1790,7 +1790,11 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     std::set<std::string> valid_ids;
     auto load_addrs_func = [&](uint32_t net_id, const char* filename) {
         auto fd = fopen(filename, "r");
-        assert(fd != nullptr);
+        if (fd == nullptr) {
+            SHARDORA_FATAL("open file failed: %s", filename.c_str());
+            break;
+        }
+        
         char data[1024 * 1024] = {0};
         fread(data, 1, sizeof(data), fd);
         auto lines = common::Split<2048>(data, '\n');
