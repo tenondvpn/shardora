@@ -470,7 +470,7 @@ void ClickHouseClient::FlushToCkWithData() try {
 
             uint32_t idx = 0;
             clickhouse::Client ck_client(clickhouse::ClientOptions().
-                Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+                SetHost(common::GlobalInfo::Instance()->ck_host()).
                 SetPort(common::GlobalInfo::Instance()->ck_port()).
                 SetUser(common::GlobalInfo::Instance()->ck_user()).
                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -596,7 +596,7 @@ bool ClickHouseClient::CreateTransactionTable() {
         common::GlobalInfo::Instance()->ck_user().c_str(),
         common::GlobalInfo::Instance()->ck_pass().c_str());
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -629,7 +629,7 @@ bool ClickHouseClient::CreateBlockTable() {
         "ORDER BY(pool_index,height) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -649,7 +649,7 @@ bool ClickHouseClient::CreateAccountTable() {
         "ORDER BY(id,pool_index) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -672,7 +672,7 @@ bool ClickHouseClient::CreateAccountKeyValueTable() {
         "ORDER BY(type, key, from, to) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -697,7 +697,7 @@ bool ClickHouseClient::CreateStatisticTable() {
         "ORDER BY(time) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -717,7 +717,7 @@ bool ClickHouseClient::CreatePrivateKeyTable() {
         "ORDER BY(seckey) "
         "SETTINGS index_granularity = 8192;");
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -747,7 +747,7 @@ bool ClickHouseClient::CreateC2cTable() {
         "ORDER BY(seller, orderId) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -769,7 +769,7 @@ bool ClickHouseClient::CreatePrepaymentTable() {
         "ORDER BY(contract, user) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -878,7 +878,7 @@ bool ClickHouseClient::CreateBlsElectInfoTable() {
         "ORDER BY(elect_height, member_idx) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -915,7 +915,7 @@ bool ClickHouseClient::CreateBlsBlockInfoTable() {
         "ORDER BY(elect_height, view) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -971,7 +971,7 @@ void ClickHouseClient::HandleBlsBlockMessage(const BlsBlockInfo& info) {
     item.AppendColumn("common_pk", common_pk);
 
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -1016,7 +1016,7 @@ void ClickHouseClient::HandleBlsElectMessage(const BlsElectInfo& info) try {
         info.local_sk.c_str(), info.common_pk.c_str(), info.swaped_sec_keys.c_str());
 
     clickhouse::Client ck_client(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -1065,7 +1065,7 @@ void ClickHouseClient::Statistic() try {
     std::string cmd = "select count(*) as cnt from zjc_ck_transaction_table;";
     uint32_t all_transactions = 0;
     clickhouse::Client ck_client0(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -1078,7 +1078,7 @@ void ClickHouseClient::Statistic() try {
     cmd = "select count(*) from zjc_ck_account_table;";
     uint32_t all_address = 0;
     clickhouse::Client ck_client1(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -1091,7 +1091,7 @@ void ClickHouseClient::Statistic() try {
     cmd = "select sum(balance) from zjc_ck_account_table;";
     uint64_t sum_balance = 0;
     clickhouse::Client ck_client2(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -1104,7 +1104,7 @@ void ClickHouseClient::Statistic() try {
     cmd = "select count(*) from zjc_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
     uint32_t all_contracts = 0;
     clickhouse::Client ck_client3(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
@@ -1140,7 +1140,7 @@ void ClickHouseClient::Statistic() try {
     statistics.AppendColumn("all_waiting_nodes", st_wnodes);
     statistics.AppendColumn("date", st_date);
     clickhouse::Client ck_client4(clickhouse::ClientOptions().
-        Shardoraost(common::GlobalInfo::Instance()->ck_host()).
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
         SetUser(common::GlobalInfo::Instance()->ck_user()).
         SetPassword(common::GlobalInfo::Instance()->ck_pass()));
