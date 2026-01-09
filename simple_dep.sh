@@ -45,8 +45,8 @@ echo $bootstrap
 for ((net_id=2; net_id<${SHARD_END_NETWORK_ID}; net_id++)); do
     shard_node_count=`wc -l /root/shardora/shards${net_id} | awk -F' ' '{print $1}'`
     for ((i=1; i<=$shard_node_count;i++)); do
-        prikey=`sed -n "$i""p" /root/shardora/shards3 | awk -F'\t' '{print $1}'`
-        pubkey=`sed -n "$i""p" /root/shardora/shards3 | awk -F'\t' '{print $2}'`
+        prikey=`sed -n "$i""p" /root/shardora/shards${net_id} | awk -F'\t' '{print $1}'`
+        pubkey=`sed -n "$i""p" /root/shardora/shards${net_id} | awk -F'\t' '{print $2}'`
         echo $prikey
         cp -rf /root/nodes/temp /root/nodes/s${net_id}_$i
         sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
