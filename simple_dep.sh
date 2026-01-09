@@ -58,7 +58,7 @@ for ((net_id=2; net_id<${SHARD_END_NETWORK_ID}; net_id++)); do
             sed -i 's/TEST_POOL_INDEX/-1/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
         fi
 
-        sed -i 's/TEST_TX_TPS/'$TEST_TX_TPS'/g' /root/nodes/${net_id}_$i/conf/shardora.conf
+        sed -i 's/TEST_TX_TPS/'$TEST_TX_TPS'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
 
         if ((i>=100)); then
             sed -i 's/HTTP_PORT/2'${net_id}$i'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
