@@ -8,7 +8,7 @@ static void GlobalInitSpdlog() {
     spdlog::init_thread_pool(8192, 1);
 
     auto logger = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>(
-        "async_file", "log/shardora.log", true);
+        "async_file", "log/shardora.log", false);
     // auto logger = spdlog::basic_logger_mt("sync_file", "log/shardora.log", false);
     spdlog::set_default_logger(logger);
 
