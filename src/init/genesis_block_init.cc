@@ -1788,11 +1788,11 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     // Execute once
     static bool hasRunOnce = false;
     std::set<std::string> valid_ids;
-    auto load_addrs_func = [&](uint32_t net_id, const char* filename) {
+    auto load_addrs_func = [&](uint32_t net_id, const char* filename) -> bool {
         auto fd = fopen(filename, "r");
         if (fd == nullptr) {
-            SHARDORA_FATAL("open file failed: %s", filename);
-            return;
+            SHARDORA_WARN("open file failed: %s", filename);
+            return false;
         }
 
         char data[1024 * 1024] = {0};
@@ -1818,14 +1818,15 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         }
 
         fclose(fd);
+        return true;
     };
 
     if (!hasRunOnce) {
-        load_addrs_func(network::kConsensusShardBeginNetworkId, "/root/shardora/root_nodes");
-        for (uint32_t net_id = network::kConsensusShardBeginNetworkId;
-                net_id < network::kConsensusShardEndNetworkId; net_id++) {
+        for (uint32_t net_id = 2; net_id < network::kConsensusShardEndNetworkId; net_id++) {
             load_addrs_func(net_id, (std::string("/root/shardora/init_accounts") + std::to_string(net_id)).c_str());
-            load_addrs_func(net_id, (std::string("/root/shardora/shards") + std::to_string(net_id)).c_str());
+            if (!load_addrs_func(net_id, (std::string("/root/shardora/shards") + std::to_string(net_id)).c_str())) {
+                break;
+            }
         }    
     }
 
