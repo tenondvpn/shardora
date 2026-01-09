@@ -1791,10 +1791,10 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     auto load_addrs_func = [&](uint32_t net_id, const char* filename) {
         auto fd = fopen(filename, "r");
         if (fd == nullptr) {
-            SHARDORA_FATAL("open file failed: %s", filename.c_str());
-            break;
+            SHARDORA_FATAL("open file failed: %s", filename);
+            return;
         }
-        
+
         char data[1024 * 1024] = {0};
         fread(data, 1, sizeof(data), fd);
         auto lines = common::Split<2048>(data, '\n');
