@@ -865,7 +865,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
             std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
             std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
-                network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
+                end_shard_id-network::kConsensusShardBeginNetworkId);
             GetNetworkNodesFromConf(
                 end_shard_id,
                 consensus_shard_node_count, 
