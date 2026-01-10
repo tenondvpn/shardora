@@ -22,7 +22,7 @@ namespace hotstuff {
 std::atomic<uint32_t> Hotstuff::sendout_bft_message_count_ = 0;
 // #endif
 
-void Hotstuff::Init() {
+void Hotstuff::StartInit() {
     // set pacemaker timeout callback function
     last_vote_view_ = 0lu;
     InitLoadLatestBlock(
@@ -144,6 +144,7 @@ void Hotstuff::InitAddNewViewBlock(
 }
 
 Status Hotstuff::Start() {
+    StartInit();
     auto leader = leader_rotation()->GetLeader();
     auto elect_item = elect_info_->GetElectItemWithShardingId(common::GlobalInfo::Instance()->network_id());
     if (!elect_item || !elect_item->IsValid()) {
