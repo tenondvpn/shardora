@@ -853,7 +853,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
             init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
             std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
-            src/init/network_init.h cons_genesis_nodes_of_shards;
+            std::map<uint32_t, std::vector<GenisisNodeInfoPtr>> cons_genesis_nodes_of_shards;
             GetNetworkNodesFromConf(
                 end_shard_id,
                 consensus_shard_node_count, 
