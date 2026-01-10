@@ -868,9 +868,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
             }
 
             SaveLatestBlock(db, i);
+            std::cout << "shard" << i << " genisis success!" << std::endl;
         }
             
-        std::cout << "shard" << net_id_str << " genisis success!" << std::endl;
         return kInitSuccess;
     }
 
