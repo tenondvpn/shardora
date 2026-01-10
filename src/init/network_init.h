@@ -84,7 +84,7 @@ private:
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     void HandleNewBlock();
     void SaveLatestBlock(std::shared_ptr<db::Db> db, uint32_t sharding_id);
-    bool InitLocalNetworkIdWithLatestElectBlock() {
+    bool InitLocalNetworkIdWithLatestElectBlock();
     void SaveCrossBlockToEachShard();
         
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
