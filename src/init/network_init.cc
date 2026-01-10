@@ -816,8 +816,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
-        std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
-            end_shard_id - network::kConsensusShardBeginNetworkId);
+        std::map<uint32_t, std::vector<GenisisNodeInfoPtr>> cons_genesis_nodes_of_shards;
         GetNetworkNodesFromConf(
             end_shard_id,
             consensus_shard_node_count, 
@@ -825,10 +824,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             cons_genesis_nodes_of_shards, 
             db);
         if (genesis_block.CreateGenesisBlocks(
-                GenisisNetworkType::RootNetwork,
+                network::kRootCongressNetworkId,
                 root_genesis_nodes,
-                cons_genesis_nodes_of_shards,
-                valid_net_ids_set) != 0) {
+                cons_genesis_nodes_of_shards) != 0) {
             return kInitError;
         }
 
@@ -855,8 +853,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
             init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
             std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
-            std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(
-                end_shard_id-network::kConsensusShardBeginNetworkId);
+            src/init/network_init.h cons_genesis_nodes_of_shards;
             GetNetworkNodesFromConf(
                 end_shard_id,
                 consensus_shard_node_count, 
@@ -864,10 +861,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
                 cons_genesis_nodes_of_shards, 
                 db);
             if (genesis_block.CreateGenesisBlocks(
-                    GenisisNetworkType::ShardNetwork,
+                    i,
                     root_genesis_nodes,
-                    cons_genesis_nodes_of_shards,
-                    valid_net_ids_set) != 0) {
+                    cons_genesis_nodes_of_shards) != 0) {
                 return kInitError;
             }
 
@@ -971,7 +967,7 @@ void NetworkInit::GetNetworkNodesFromConf(
         uint32_t end_shard_id,
         uint32_t cons_shard_node_count,
         std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
+        std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards,
         const std::shared_ptr<db::Db>& db) {
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     auto get_sks_func = [](FILE *fd, std::vector<std::string>& sks, int32_t count, bool reuse) {
@@ -1059,7 +1055,7 @@ void NetworkInit::GetNetworkNodesFromConf(
                 common::Encode::HexEncode(node_ptr->id).c_str());     
         }
         
-        cons_genesis_nodes_of_shards[net_i-network::kConsensusShardBeginNetworkId] = cons_genesis_nodes;
+        cons_genesis_nodes_of_shards[net_i] = cons_genesis_nodes;
         fclose(sfd);
     }
     // }
