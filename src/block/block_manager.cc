@@ -41,6 +41,8 @@ BlockManager::BlockManager(
 }
 
 BlockManager::~BlockManager() {
+    destroy_ = true;
+    wait_con_.notify_all();
     if (handle_consensus_block_thread_) {
         handle_consensus_block_thread_->join();
     }
@@ -105,7 +107,7 @@ void BlockManager::ConsensusAddBlock(
 
 void BlockManager::HandleAllConsensusBlocks() {
     common::GlobalInfo::Instance()->get_thread_index();
-    while (!common::GlobalInfo::Instance()->global_stoped()) {
+    while (!destroy_) {
         auto now_tm = common::TimeUtils::TimestampUs();
         bool no_sleep = true;
         while (no_sleep) {
