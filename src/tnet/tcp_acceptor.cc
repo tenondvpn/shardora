@@ -157,14 +157,9 @@ bool TcpAcceptor::OnRead() {
             break;
         }
 
-        std::string from_ip;
-        uint16_t from_port;
-        if (socket->GetIpPort(&from_ip, &from_port) != 0) {
-            SHARDORA_ERROR("accept failed %s:%d", from_ip.c_str(), from_port);
-            socket->Free();
-            continue;
-        }
-
+        auto svr_socket = std::dynamic_pointer_cast<ServerSocket>(socket);
+        std::string from_ip = InAddrToString(svr_socket->peer_addr());
+        uint16_t from_port = svr_socket->peer_port();
         if (!socket->SetNonBlocking(true)) {
             SHARDORA_ERROR("set nonblocking failed, close socket");
             socket->Free();

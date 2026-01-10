@@ -36,6 +36,9 @@ std::shared_ptr<Socket> ListenSocket::Accept() const {
         return nullptr;
     }
 
+    char ip_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET_ADDRSTRLEN);
+    printf("Client connected from: %s:%d\n", ip_str, ntohs(client_addr.sin_port));
     auto server_socket = std::make_shared<ServerSocket>(
             fd,
             addr.sin_addr.s_addr,
