@@ -837,11 +837,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     if (parser_arg.Has("S")) {
         for (uint32_t i = 3; i < end_shard_id; i++) {
             std::string net_id_str = std::to_string(i);
-            if (parser_arg.Get("S", net_id_str) != common::kParseSuccess) {
-                return kInitError;
-            }
-
-            SHARDORA_DEBUG("save shard db: shard_db");
             auto db = std::make_shared<db::Db>();
             if (!db->Init("./shard_db_" + net_id_str)) {
                 INIT_ERROR("init db failed!");
