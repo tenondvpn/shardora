@@ -72,15 +72,17 @@ void Hotstuff::Init() {
             nullptr,
             new_block_cache_callback_);
         cross_shard_view_block_chain_[network_id] = chain;
-        InitLoadLatestBlock(
-            chain,
-            network_id, 
-            common::kImmutablePoolSize);
+        if (!InitLoadLatestBlock(
+                chain,
+                network_id, 
+                common::kImmutablePoolSize)) {
+            break;
+        }
         SHARDORA_DEBUG("now init cross consensus shard: %u end.", network_id);
     }
 }
 
-void Hotstuff::InitLoadLatestBlock(
+bool Hotstuff::InitLoadLatestBlock(
         std::shared_ptr<ViewBlockChain> view_block_chain, 
         uint32_t network_id, uint32_t pool_index) {
     auto latest_view_block = std::make_shared<ViewBlock>(); // Get the last ViewBlock with QC from the db
@@ -108,10 +110,13 @@ void Hotstuff::InitLoadLatestBlock(
 
             parent_hash = view_block.parent_hash();
         }
+
+        return true;
     } else {
         SHARDORA_DEBUG("no genesis, waiting for syncing, network: %lu, pool_idx: %d", network_id, pool_index);
-        assert(false);
     }
+
+    return false;
 }
 
 void Hotstuff::InitAddNewViewBlock(
