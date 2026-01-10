@@ -835,9 +835,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     }
 
     if (parser_arg.Has("S")) {
-        account_mgr_ = std::make_shared<block::AccountManager>();
-        // account_mgr_->Init(db, pools_mgr_);
-        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, nullptr);
         for (uint32_t i = 3; i < end_shard_id; i++) {
             std::cout << "now genisis shard" << i << std::endl;
             std::string net_id_str = std::to_string(i);
@@ -847,7 +844,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                 return kInitError;
             }
 
-            init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
+            auto account_mgr = std::make_shared<block::AccountManager>();
+            auto block_mgr = std::make_shared<block::BlockManager>(net_handler_, nullptr);
+            init::GenesisBlockInit genesis_block(account_mgr, block_mgr, db);
             std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
             std::map<uint32_t, std::vector<GenisisNodeInfoPtr>> cons_genesis_nodes_of_shards;
             GetNetworkNodesFromConf(
