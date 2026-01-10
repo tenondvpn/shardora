@@ -49,7 +49,7 @@ private:
     int InitHttpServer();
     int InitSecurity();
     int CheckJoinWaitingPool();
-    int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
+    int GenesisCmd(common::ParserArgs& parser_arg);
     void AddCmds();
     void GetNetworkNodesFromConf(
         uint32_t end_shard_id,

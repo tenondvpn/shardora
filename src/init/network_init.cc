@@ -103,11 +103,10 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    std::string net_name;
-    int genesis_check = GenesisCmd(parser_arg, net_name);
+    int genesis_check = GenesisCmd(parser_arg);
     if (genesis_check != -1) {
         common::GlobalInfo::Instance()->set_global_stoped();
-        std::cout << net_name << " genesis cmd over, exit." << std::endl;
+        std::cout << "genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
 
@@ -783,7 +782,7 @@ void NetworkInit::CreateInitAddress(uint32_t net_id) {
     fclose(fd);
 }
 
-int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name) {
+int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     int consensus_shard_node_count = 4;
     if (parser_arg.Has("N")) {
         if (parser_arg.Get("N", consensus_shard_node_count) != common::kParseSuccess) {
@@ -806,7 +805,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             CreateInitAddress(net_id);
         }
         
-        net_name = "root2";
         auto db = std::make_shared<db::Db>();
         if (!db->Init("./shard_db_2")) {
             INIT_ERROR("init db failed!");
@@ -832,6 +830,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             return kInitError;
         }
 
+        std::cout << "root genisis success!" << std::endl;
         return kInitSuccess;
     }
 
@@ -842,7 +841,6 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
                 return kInitError;
             }
 
-            net_name = "shard" + net_id_str;
             SHARDORA_DEBUG("save shard db: shard_db");
             auto db = std::make_shared<db::Db>();
             if (!db->Init("./shard_db_" + net_id_str)) {
@@ -872,6 +870,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_nam
             SaveLatestBlock(db, i);
         }
             
+        std::cout << "shard" << net_id_str << " genisis success!" << std::endl;
         return kInitSuccess;
     }
 
