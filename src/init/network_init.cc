@@ -431,7 +431,8 @@ void NetworkInit::InitLocalNetworkId() {
             sharding_id < network::kConsensusShardEndNetworkId; ++sharding_id) {
         elect::protobuf::ElectBlock elect_block;
         if (!prefix_db_->GetLatestElectBlock(sharding_id, &elect_block)) {
-            SHARDORA_FATAL("failed!");
+            SHARDORA_WARN("get latest elect block failed: %u", sharding_id);
+            break;
         }
 
         auto& in = elect_block.in();
