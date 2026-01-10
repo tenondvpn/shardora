@@ -437,7 +437,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         auto parent_block_info = Get(tmp_block->parent_hash());
         if (parent_block_info == nullptr) {
             auto latest_committed_block = LatestCommittedBlock();
-            if (latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
+            if (latest_committed_block && latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
                 if (tmp_block->qc().view() > 0 && !view_commited(
                         tmp_block->qc().network_id(), tmp_block->qc().view() - 1)) {
                     SHARDORA_DEBUG("lack of qc block, add sync view hash: %s, %u_%u_%lu",
