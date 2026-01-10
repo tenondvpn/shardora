@@ -38,15 +38,14 @@ public:
         std::shared_ptr<db::Db>& db);
     ~GenesisBlockInit();
     int CreateGenesisBlocks(
-        const GenisisNetworkType& net_type,
+        uint32_t network_id,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-        const std::set<uint32_t>& valid_net_ids_set);
+        const std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards);
 
 private:
     int CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards);
+        const std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards);
     int CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,

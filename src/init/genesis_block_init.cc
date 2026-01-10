@@ -52,43 +52,25 @@ GenesisBlockInit::GenesisBlockInit(
 GenesisBlockInit::~GenesisBlockInit() {}
 
 int GenesisBlockInit::CreateGenesisBlocks(
-    const GenisisNetworkType& net_type,
-    const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-    const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-    const std::set<uint32_t>& valid_net_ids_set) {
+        uint32_t network_id,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards) {
     int res = kInitSuccess;    
-    std::vector<GenisisNodeInfoPtr> real_root_genesis_nodes;
-    std::vector<GenisisNodeInfoPtrVector> real_cons_genesis_nodes_of_shards(cons_genesis_nodes_of_shards.size());
-    auto root_iter = valid_net_ids_set.find(network::kRootCongressNetworkId);
-    if (root_iter != valid_net_ids_set.end()) {
-        real_root_genesis_nodes = root_genesis_nodes;
-    }
-
-    for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
-        uint32_t shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
-        auto shard_iter = valid_net_ids_set.find(shard_node_net_id);
-        if (shard_iter != valid_net_ids_set.end()) {
-            real_cons_genesis_nodes_of_shards[i] = cons_genesis_nodes_of_shards[i]; 
-        }
-    }
-
-    if (net_type == GenisisNetworkType::RootNetwork) {
+    if (network_id == network::kRootCongressNetworkId) {
         CreatePoolsAddressInfo(network::kRootCongressNetworkId);
         std::vector<std::string> prikeys;
-        CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, real_root_genesis_nodes);
-        for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
-            uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
-            if (cons_genesis_nodes_of_shards[i].size() != 0) {
-                CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes_of_shards[i]);    
-            }
+        CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, root_genesis_nodes);
+        for (auto iter = cons_genesis_nodes_of_shards.begin();
+                iter != cons_genesis_nodes_of_shards.end(); ++iter) {
+            CreateNodePrivateInfo(iter->first, 1llu, iter->second);    
         }
         
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         PrepareCreateGenesisBlocks(network::kRootCongressNetworkId);
-        res = CreateRootGenesisBlocks(real_root_genesis_nodes,
-                                      real_cons_genesis_nodes_of_shards);
-        for (uint32_t i = 0; i < real_root_genesis_nodes.size(); ++i) {
-            prikeys.push_back(real_root_genesis_nodes[i]->prikey);
+        res = CreateRootGenesisBlocks(root_genesis_nodes,
+                                      cons_genesis_nodes_of_shards);
+        for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
+            prikeys.push_back(root_genesis_nodes[i]->prikey);
         }
 
 #ifndef DISABLE_GENESIS_BLS_VERIFY
@@ -96,37 +78,29 @@ int GenesisBlockInit::CreateGenesisBlocks(
 #endif
         // SaveGenisisPoolHeights(network::kRootCongressNetworkId);
     } else {
-        for (uint32_t i = 0; i < real_cons_genesis_nodes_of_shards.size(); i++) {
-            std::vector<std::string> prikeys;
-            uint32_t shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
-            std::vector<GenisisNodeInfoPtr> cons_genesis_nodes = real_cons_genesis_nodes_of_shards[i];
+        std::vector<std::string> prikeys;
+        auto& cons_genesis_nodes = cons_genesis_nodes_of_shards[network_id];
+        CreatePoolsAddressInfo(network_id);
+        CreateNodePrivateInfo(network_id, 1llu, cons_genesis_nodes);
+        common::GlobalInfo::Instance()->set_network_id(network_id);
+        PrepareCreateGenesisBlocks(network_id);            
+        res = CreateShardGenesisBlocks(root_genesis_nodes,
+                                        cons_genesis_nodes,
+                                        network_id);
+        assert(res == kInitSuccess);
 
-            if (shard_node_net_id == 0 || cons_genesis_nodes.size() == 0) {
-                continue;
-            }
-
-            CreatePoolsAddressInfo(shard_node_net_id);
-            CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
-            common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
-            PrepareCreateGenesisBlocks(shard_node_net_id);            
-            res = CreateShardGenesisBlocks(real_root_genesis_nodes,
-                                           cons_genesis_nodes,
-                                           shard_node_net_id);
-            assert(res == kInitSuccess);
-
-            for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
-                prikeys.push_back(cons_genesis_nodes[i]->prikey);
-            }
+        for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
+            prikeys.push_back(cons_genesis_nodes[i]->prikey);
+        }
 
 #ifndef DISABLE_GENESIS_BLS_VERIFY            
-            ComputeG2sForNodes(prikeys);
+        ComputeG2sForNodes(prikeys);
 #endif
             // SaveGenisisPoolHeights(shard_node_net_id);
-        }
     }
 
     // db_->CompactRange("", "");
-    if (net_type == GenisisNetworkType::RootNetwork) {
+    if (network_id == network::kRootCongressNetworkId) {
         FILE* fd = fopen("./bls_pk", "w");
         auto str = bls_pk_json_.dump();
         auto w_size = fwrite(str.c_str(), 1, str.size(), fd);
@@ -962,7 +936,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
 int GenesisBlockInit::CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
+        const std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards) {
     // GenerateRootAccounts();
     InitShardGenesisAccount();
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
