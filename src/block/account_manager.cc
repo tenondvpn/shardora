@@ -41,7 +41,7 @@ int AccountManager::Init(
         network_id, common::Encode::HexEncode(immutable_pool_addr_).c_str());
     std::unordered_set<uint32_t> pool_idx_set;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
-        auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(pool_idx_set));
+        auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(network_id));
         auto addr = hash.substr(
             hash.size() - common::kUnicastAddressLength, 
             common::kUnicastAddressLength);
