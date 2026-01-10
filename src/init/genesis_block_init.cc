@@ -1802,21 +1802,20 @@ void GenesisBlockInit::InitShardGenesisAccount() {
             if (!load_addrs_func(net_id, (std::string("/root/shardora/shards") + std::to_string(net_id)).c_str())) {
                 break;
             }
-        }    
-    }
-
-
-    uint64_t aver_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
-    uint64_t rest_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
-    uint32_t count = 0;
-    for (auto it = valid_ids.begin(); it != valid_ids.end(); ++it, ++count) {
-        uint64_t balance = aver_balance;
-        if (count == valid_ids.size() - 1) {
-            balance += rest_balance;
         }
 
-        genesis_acount_balance_map_.insert(std::pair<std::string, uint64_t>(*it, balance));
-        SHARDORA_INFO("genesis add addr: %s, balance: %lu", common::Encode::HexEncode(*it).c_str(), balance);
+        uint64_t aver_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
+        uint64_t rest_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
+        uint32_t count = 0;
+        for (auto it = valid_ids.begin(); it != valid_ids.end(); ++it, ++count) {
+            uint64_t balance = aver_balance;
+            if (count == valid_ids.size() - 1) {
+                balance += rest_balance;
+            }
+
+            genesis_acount_balance_map_.insert(std::pair<std::string, uint64_t>(*it, balance));
+            SHARDORA_INFO("genesis add addr: %s, balance: %lu", common::Encode::HexEncode(*it).c_str(), balance);
+        }
     }
 
     hasRunOnce = true;
