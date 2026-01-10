@@ -79,7 +79,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         // SaveGenisisPoolHeights(network::kRootCongressNetworkId);
     } else {
         std::vector<std::string> prikeys;
-        auto& cons_genesis_nodes = cons_genesis_nodes_of_shards[network_id];
+        auto& cons_genesis_nodes = cons_genesis_nodes_of_shards.at(network_id);
         CreatePoolsAddressInfo(network_id);
         CreateNodePrivateInfo(network_id, 1llu, cons_genesis_nodes);
         common::GlobalInfo::Instance()->set_network_id(network_id);
@@ -1019,9 +1019,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             }
         }
 
-        for (uint32_t k = 0; k < cons_genesis_nodes_of_shards.size(); k++) {
-            uint32_t net_id = k + network::kConsensusShardBeginNetworkId;
-            auto cons_genesis_nodes = cons_genesis_nodes_of_shards[k];
+        for (auto iter = cons_genesis_nodes_of_shards.begin(); iter != cons_genesis_nodes_of_shards.end(); ++iter) {
+            uint32_t net_id = iter->first;
+            auto cons_genesis_nodes = iter->second;
             for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
                 if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
                     auto join_elect_tx_info = tx_list->Add();
@@ -1107,9 +1107,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     vb_latest_view[network::kRootCongressNetworkId]++;
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     pool_prev_vb_hash_map[network::kRootCongressNetworkId] = vb_prehashes[network::kRootCongressNetworkId];
-    for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
-        uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
-        GenisisNodeInfoPtrVector genesis_nodes = cons_genesis_nodes_of_shards[i];
+    for (auto iter = cons_genesis_nodes_of_shards.begin(); iter != cons_genesis_nodes_of_shards.end(); ++iter) {
+        uint32_t net_id = iter->first;
+        auto& genesis_nodes = iter->second;
         if (CreateElectBlock(
                 net_id,
                 prehashes[net_id],
@@ -1153,7 +1153,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         vb_latest_view);
     if (res == kInitSuccess) {
         std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
-        for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
+        for (auto iter = cons_genesis_nodes_of_shards.begin(); iter != cons_genesis_nodes_of_shards.end(); ++iter) {
+            auto& nodes = iter->second;
             all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
         }
 
