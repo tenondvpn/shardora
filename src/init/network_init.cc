@@ -260,14 +260,15 @@ int NetworkInit::Init(int argc, char** argv) {
         }
     }
 
+    SHARDORA_WARN("init shard_statistic_ success.");
+    block_mgr_->LoadLatestBlocks();
+    RegisterFirewallCheck();
     if (shard_statistic_->Init() != pools::kPoolsSuccess) {
         INIT_ERROR("init shard statistic failed!");
         return kInitError;
     }
 
-    SHARDORA_WARN("init shard_statistic_ success.");
-    block_mgr_->LoadLatestBlocks();
-    RegisterFirewallCheck();
+
     hotstuff_mgr_->Start(); // The above should be placed in the hotstuff instance initialization and receive the genesis block
     SHARDORA_WARN("init hotstuff_mgr_ start success.");
     AddCmds();
