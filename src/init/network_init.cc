@@ -214,6 +214,7 @@ int NetworkInit::Init(int argc, char** argv) {
         hotstuff_mgr_,
         security_->GetAddress(),
         new_db_cb);
+    block_mgr_->InitLocalNetworkId();
     auto consensus_init_res = hotstuff_mgr_->Init(
         kv_sync_,
         contract_mgr_,
@@ -411,18 +412,50 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
+
+bool NetworkInit::InitLocalNetworkIdWithLatestElectBlock() {
+    for (uint32_t i = network::kRootCongressNetworkId;
+            i < network::kConsensusShardEndNetworkId; ++i) {
+        elect::protobuf::ElectBlock elect_block;
+        if (!prefix_db_->GetHavePrevlatestElectBlock(i, &elect_block)) {
+            SHARDORA_ERROR("get elect latest block failed: %u", i);
+            break;
+        }
+
+        if (!elect_block.prev_members_size() == 0) {
+            return false;
+        }
+
+        for (int32_t midx = 0; midx < elect_block.in_size(); ++midx) {
+            auto& member = elect_block.in(midx);
+            if (security_->GetAddress(member.pubkey()) == security_->GetAddress()) {
+                common::GlobalInfo::Instance()->set_network_id(i);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 void NetworkInit::InitLocalNetworkId() {
     uint32_t got_sharding_id = common::kInvalidUint32;
     if (!prefix_db_->GetJoinShard(&got_sharding_id, &des_sharding_id_)) {
         auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
         if (local_node_account_info == nullptr) {
-            SHARDORA_INFO("failed get local account info id: %s",
-                common::Encode::HexEncode(security_->GetAddress()).c_str());
-            return;
+            if (!InitLocalNetworkIdWithLatestElectBlock()) {
+                SHARDORA_INFO("failed get local account info id: %s",
+                    common::Encode::HexEncode(security_->GetAddress()).c_str());
+                return;
+            }
+            
+            got_sharding_id = common::GlobalInfo::Instance()->network_id();
+            des_sharding_id_ = got_sharding_id;
+        } else {
+            got_sharding_id = local_node_account_info->sharding_id();
+            des_sharding_id_ = got_sharding_id;
         }
 
-        got_sharding_id = local_node_account_info->sharding_id();
-        des_sharding_id_ = got_sharding_id;
         prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
         SHARDORA_INFO("success save local sharding %u, %u", got_sharding_id, des_sharding_id_);
     }

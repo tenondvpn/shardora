@@ -52,6 +52,7 @@ for ((net_id=2; net_id<${SHARD_END_NETWORK_ID}; net_id++)); do
         sed -i 's/PRIVATE_KEY/'$prikey'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
         sed -i 's/LOCAL_IP/127.0.0.1/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
         sed -i 's/BOOTSTRAP/'$bootstrap'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
+        sed -i 's/NETWORK_ID/'$net_id'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
         if ((i<=TEST_TX_MAX_POOL_INDEX)); then
             sed -i 's/TEST_POOL_INDEX/'$(($i-1))'/g' /root/nodes/s${net_id}_$i/conf/shardora.conf
         else

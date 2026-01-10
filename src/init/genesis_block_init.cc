@@ -149,8 +149,8 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
 
         pool_address_info_[pool_idx] = CreateAddress("", 0, network_id, pool_idx, addr, 0, 0);
         pool_idx_set.insert(pool_idx);
-        SHARDORA_DEBUG("init pool index: %u, base address: %s", 
-            pool_idx, common::Encode::HexEncode(addr).c_str());
+        SHARDORA_DEBUG("network_id: %u, init pool index: %u, base address: %s", 
+            network_id, pool_idx, common::Encode::HexEncode(addr).c_str());
     }
 }
 

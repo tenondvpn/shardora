@@ -41,7 +41,7 @@ int AccountManager::Init(
         network_id, common::Encode::HexEncode(immutable_pool_addr_).c_str());
     std::unordered_set<uint32_t> pool_idx_set;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
-        auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(network_id));
+        auto hash = common::Hash::keccak256(std::to_string(i) + std::to_string(pool_idx_set));
         auto addr = hash.substr(
             hash.size() - common::kUnicastAddressLength, 
             common::kUnicastAddressLength);
@@ -57,8 +57,8 @@ int AccountManager::Init(
 
         pool_base_addrs_[pool_idx] = addr;
         pool_idx_set.insert(pool_idx);
-        SHARDORA_DEBUG("init pool index: %u, base address: %s", 
-            pool_idx, common::Encode::HexEncode(addr).c_str());
+        SHARDORA_DEBUG("network_id: %u, init pool index: %u, base address: %s", 
+            network_id, pool_idx, common::Encode::HexEncode(addr).c_str());
     }
 
     return kBlockSuccess;

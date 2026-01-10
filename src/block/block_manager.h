@@ -51,7 +51,6 @@ public:
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string&);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
-
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
