@@ -214,7 +214,6 @@ int NetworkInit::Init(int argc, char** argv) {
         hotstuff_mgr_,
         security_->GetAddress(),
         new_db_cb);
-    block_mgr_->InitLocalNetworkId();
     auto consensus_init_res = hotstuff_mgr_->Init(
         kv_sync_,
         contract_mgr_,
@@ -422,7 +421,7 @@ bool NetworkInit::InitLocalNetworkIdWithLatestElectBlock() {
             break;
         }
 
-        if (!elect_block.prev_members_size() == 0) {
+        if (!elect_block.has_prev_members()) {
             return false;
         }
 
@@ -448,7 +447,7 @@ void NetworkInit::InitLocalNetworkId() {
                     common::Encode::HexEncode(security_->GetAddress()).c_str());
                 return;
             }
-            
+
             got_sharding_id = common::GlobalInfo::Instance()->network_id();
             des_sharding_id_ = got_sharding_id;
         } else {
