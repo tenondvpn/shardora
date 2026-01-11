@@ -1800,9 +1800,9 @@ void GenesisBlockInit::InitShardGenesisAccount() {
 
     if (!hasRunOnce) {
         SHARDORA_DEBUG("now load init addr from 2%u to: %u",
-            network::kConsensusShardBeginNetworkId, 
+            network::kRootCongressNetworkId, 
             network::kConsensusShardEndNetworkId);
-        for (uint32_t net_id = network::kConsensusShardBeginNetworkId;
+        for (uint32_t net_id = network::kRootCongressNetworkId;
                 net_id < network::kConsensusShardEndNetworkId; net_id++) {
             load_addrs_func(
                 net_id, 
