@@ -52,7 +52,7 @@ int ShardStatistic::Init() {
         auto& pool_map = statistic_pool_info_[statistic_info.height()];
         for (int32_t i = 0; i < statistic_info.pool_statisitcs_size(); ++i) {
             StatisticInfoItem statistic_item;
-            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height() + 1;
+            statistic_item.statistic_min_height = statistic_info.pool_statisitcs(i).max_height();
             pool_map[i] = statistic_item;
             SHARDORA_DEBUG("success set latest statisticed height "
                 "pool: %d, %lu, statistic_min_height: %lu", 
