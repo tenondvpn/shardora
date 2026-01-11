@@ -1764,6 +1764,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     static bool hasRunOnce = false;
     std::set<std::string> valid_ids;
     auto load_addrs_func = [&](uint32_t net_id, const char* filename) -> bool {
+        SHARDORA_DEBUG("now load file: %s", filename);
         auto fd = fopen(filename, "r");
         if (fd == nullptr) {
             SHARDORA_WARN("open file failed: %s", filename);
