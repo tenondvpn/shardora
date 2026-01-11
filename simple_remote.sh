@@ -125,7 +125,7 @@ make_package() {
     cp /root/shardora/temp_cmd.sh /root/nodes/shardora/pkg
     cp /root/shardora/start_cmd.sh /root/nodes/shardora/pkg
     cp /root/shardora/wondershaper /root/nodes/shardora/pkg
-    cp -rf /root/nodes/shardora/root_db /root/nodes/shardora/pkg/shard_db_2
+    cp -rf /root/nodes/shardora/shard_db_2 /root/nodes/shardora/pkg/shard_db_2
     cp -rf /root/nodes/shardora/shard_db_3 /root/nodes/shardora/pkg
     cp -rf /root/nodes/temp /root/nodes/shardora/pkg
     cp -rf /root/shardora/gdb/* /root/nodes/shardora/pkg
