@@ -1799,6 +1799,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     };
 
     if (!hasRunOnce) {
+        SHARDORA_DEBUG("now load init addr from 2 to: %u", network::kConsensusShardEndNetworkId);
         for (uint32_t net_id = 2; net_id < network::kConsensusShardEndNetworkId; net_id++) {
             load_addrs_func(net_id, (std::string("/root/shardora/init_accounts") + std::to_string(net_id)).c_str());
             if (!load_addrs_func(net_id, (std::string("/root/shardora/shards") + std::to_string(net_id)).c_str())) {
