@@ -501,7 +501,8 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     auto b = common::TimeUtils::TimestampMs();
     defer({
         auto e = common::TimeUtils::TimestampMs();
-        SHARDORA_DEBUG("pool: %d handle propose duration: %lu ms", pool_idx_, e-b);
+        SHARDORA_DEBUG("pool: %d handle propose duration: %lu ms, hash64: %lu",
+            pool_idx_, e-b, msg_ptr->header.hash64());
     });
 
     pro_msg_wrap->view_block_ptr = std::make_shared<ViewBlock>(
@@ -575,11 +576,9 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMessageByStep(pro_msg_wrap);
     if (st != Status::kSuccess) {
-#ifndef NDEBUG
         SHARDORA_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
             msg_ptr->header.hash64(),
             ProtobufToJson(cons_debug).c_str());
-#endif
         // leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
         // CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
     } else {
@@ -593,6 +592,10 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
         //     CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
         // }
     }
+
+    SHARDORA_DEBUG("handle propose message success hash: %lu, propose_debug: %s",
+        msg_ptr->header.hash64(),
+        ProtobufToJson(cons_debug).c_str());
     ADD_DEBUG_PROCESS_TIMESTAMP();
 }
 
@@ -601,34 +604,52 @@ Status Hotstuff::HandleProposeMessageByStep(std::shared_ptr<ProposeMsgWrapper> p
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto st = HandleProposeMsgStep_VerifyLeader(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        SHARDORA_DEBUG("HandleProposeMsgStep_VerifyLeader failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(),
+            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
         return st;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_VerifyViewBlock(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        SHARDORA_DEBUG("HandleProposeMsgStep_VerifyViewBlock failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(),
+            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
         return st;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_TxAccept(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        SHARDORA_DEBUG("HandleProposeMsgStep_TxAccept failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(),
+            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
         return st;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_ChainStore(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        SHARDORA_DEBUG("HandleProposeMsgStep_ChainStore failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(),
+            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
         return st;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
     st = HandleProposeMsgStep_Vote(pro_msg_wrap);
     if (st != Status::kSuccess) {
+        SHARDORA_DEBUG("HandleProposeMsgStep_Vote failed hash: %lu, propose_debug: %s",
+            msg_ptr->header.hash64(),
+            ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
         return st;
     }
 
     ADD_DEBUG_PROCESS_TIMESTAMP();
+    SHARDORA_DEBUG("HandleProposeMessageByStep success hash: %lu, propose_debug: %s",
+        msg_ptr->header.hash64(),
+        ProtobufToJson(msg_ptr->header.hotstuff()).c_str());
     return Status::kSuccess;
 }
 

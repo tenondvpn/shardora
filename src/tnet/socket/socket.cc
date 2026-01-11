@@ -9,9 +9,12 @@ namespace shardora {
 
 namespace tnet {
 
-Socket::Socket() {}
+Socket::Socket() {
+    common::GlobalInfo::Instance()->AddSharedObj(14);
+}
 
 Socket::~Socket() {
+    common::GlobalInfo::Instance()->DecSharedObj(14);
     // Close();
 }
 
