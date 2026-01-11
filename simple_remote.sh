@@ -108,8 +108,8 @@ init() {
 
     echo "node count: " $nodes_count
     rm -rf /root/nodes/shardora/latest_blocks
-    cd /root/nodes/shardora && ./shardora -U -N $nodes_count
-    cd /root/nodes/shardora && ./shardora -S 3 -N $nodes_count
+    cd /root/nodes/shardora && ./shardora -U -N $nodes_count -E 4
+    cd /root/nodes/shardora && ./shardora -S 3 -N $nodes_count -E 4
     cd /root/nodes/shardora && ./shardora -C
 
 }
