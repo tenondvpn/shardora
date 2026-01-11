@@ -165,8 +165,8 @@ else()
         # -march=native: Use all instruction sets available on the host CPU (AVX2/AVX512 etc). 
         #                Huge performance boost for BLS/Crypto.
         # -funroll-loops: Aggressive loop unrolling
-	#add_compile_options(-O3 -march=native -funroll-loops)
-	add_compile_options(-O3 -funroll-loops)
+        #add_compile_options(-O3 -march=native -funroll-loops)
+        add_compile_options(-O3 -funroll-loops)
         # Enable Dead Code Elimination (works with Linker options below)
         add_compile_options(-ffunction-sections -fdata-sections)
         
@@ -176,6 +176,9 @@ else()
             # -s: Strip symbols (smaller binary)
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -s")
         endif()
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -fno-omit-frame-pointer")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
     endif()
     
     set(LINK_DL dl)

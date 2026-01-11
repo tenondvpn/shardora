@@ -20,9 +20,13 @@ protected:
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)
-        : pools::TxItem(msg_ptr, tx_index, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        : pools::TxItem(msg_ptr, tx_index, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {
+        common::GlobalInfo::Instance()->AddSharedObj(13);
+    }
 
-    virtual ~TxItemBase() {}
+    virtual ~TxItemBase() {
+        common::GlobalInfo::Instance()->DecSharedObj(13);
+    }
 
     virtual int HandleTx(
             view_block::protobuf::ViewBlockItem& view_block,
