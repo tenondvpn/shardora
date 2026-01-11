@@ -1777,6 +1777,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
         for (uint32_t i = 0; i < lines.Count(); ++i) {
             auto items = common::Split<>(lines[i], '\t');
             if (items.Count() != 2) {
+                SHARDORA_WARN("open file failed: %s, %s", filename, lines[i]);
                 break;
             }
 
