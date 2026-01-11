@@ -5,6 +5,8 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
+#include "common/global_info.h"
+
 namespace shardora {
 
 namespace tnet {
