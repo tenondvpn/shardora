@@ -34,7 +34,18 @@ public:
 
         auto now_tm_skip = 0;//common::TimeUtils::TimestampSeconds() / 30lu;
         auto index = (now_tm_skip + pool_idx_) % members->size();
-        return (*members)[index];
+        do {
+            if ((*members)[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
+                ++index;
+                if (index >= members->size()) {
+                    index = 0;
+                }
+
+                continue;
+            }
+            
+            return (*members)[index];
+        } while (0);
     }
 
     inline common::BftMemberPtr GetExpectedLeader() const {
