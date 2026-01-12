@@ -578,7 +578,7 @@ void Hotstuff::HandleProposeMsg(const transport::MessagePtr& msg_ptr) {
     if (st != Status::kSuccess) {
         SHARDORA_ERROR("handle propose message failed hash: %lu, propose_debug: %s",
             msg_ptr->header.hash64(),
-            ProtobufToJson(cons_debug).c_str());
+            ProtobufToJson(msg_ptr->header).c_str());
         // leader_view_with_propose_msgs_[propose_view] = pro_msg_wrap;
         // CHECK_MEMORY_SIZE(leader_view_with_propose_msgs_);
     } else {
