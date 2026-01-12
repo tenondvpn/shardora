@@ -98,6 +98,10 @@ void ToTxsPools::ThreadToStatistic(
                 }
 
                 SHARDORA_DEBUG("sucess remove pool: %d, height: %lu", i, iter->first);
+                if (pool_consensus_heihgts_[i] <= iter->first) {
+                    pool_consensus_heihgts_[i] = iter->first + 1;
+                }
+
                 iter = added_heights_[i].erase(iter);
             }
         }
