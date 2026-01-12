@@ -121,7 +121,9 @@ bool Execution::GetStorage(
     auto str_key = str_id + key;
     std::string tmp_val;
     auto res = prefix_db_->GetTemporaryKv(str_key, &tmp_val);
-    if (!res.ok()) {
+    if (!res) {
+        SHARDORA_DEBUG("failed get storage: %s", 
+            common::Encode::HexEncode(str_key).c_str());
         return false;
     }
 
