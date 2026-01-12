@@ -195,7 +195,7 @@ public:
         auto* block = &view_block->block_info();
         uint32_t pool_index = view_block->qc().pool_index();
         if (view_block->qc().network_id() != network::kRootCongressNetworkId) {
-            if (pool_index != common::kCrossPoolIndex) {
+            if (pool_index != common::kGlobalPoolIndex) {
                 return;
             }
 
