@@ -119,15 +119,13 @@ bool Execution::GetStorage(
         const std::string& key,
         std::string* val) {
     auto str_key = str_id + key;
-    std::string tmp_val;
-    auto res = prefix_db_->GetTemporaryKv(str_key, &tmp_val);
+    auto res = prefix_db_->GetTemporaryKv(str_key, val);
     if (!res) {
         SHARDORA_DEBUG("failed get storage: %s", 
             common::Encode::HexEncode(str_key).c_str());
         return false;
     }
 
-    *val = kv_info.value();
     SHARDORA_DEBUG("get storage: %s, %s", 
         common::Encode::HexEncode(str_key).c_str(), 
         "common::Encode::HexEncode(*val).c_str()");
