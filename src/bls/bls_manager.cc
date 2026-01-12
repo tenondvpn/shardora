@@ -1026,10 +1026,8 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
                 libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
         } while (0);
 
-        if (i == 0 && mem_bls_pk->x_c0() == "") {
-            // TODO: remove it
-            SHARDORA_ERROR("first member bls pk is empty!");
-            return kBlsError;
+        if (mem_bls_pk->x_c0() == "") {
+            SHARDORA_ERROR("member index: %d, bls pk is empty!", i);
         }
     }
 
