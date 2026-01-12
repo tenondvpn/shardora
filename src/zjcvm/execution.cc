@@ -121,8 +121,7 @@ bool Execution::GetStorage(
     auto str_key = str_id + key;
     std::string tmp_val;
     auto res = prefix_db_->GetTemporaryKv(str_key, &tmp_val);
-    block::protobuf::KeyValueInfo kv_info;
-    if (!kv_info.ParseFromString(tmp_val)) {
+    if (!res.ok()) {
         return false;
     }
 
