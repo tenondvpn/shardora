@@ -188,7 +188,10 @@ bool ShardStatistic::HandleStatistic(
         
         if (statistic_pool_info_.size() >= 2) {
             auto iter = statistic_pool_info_.rbegin();
-            ++iter;
+            while (iter->first >= block.pool_statistic_height()) {
+                ++iter;
+            }
+            
             iter->second[pool_idx].statistic_max_height = block.height() - 1;
             if (iter->second[pool_idx].statistic_max_height < iter->second[pool_idx].statistic_min_height) {
                 iter->second[pool_idx].statistic_max_height = iter->second[pool_idx].statistic_min_height;
