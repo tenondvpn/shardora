@@ -36,22 +36,12 @@ typedef std::function<bool(std::shared_ptr<TcpConnection>, Packet&)> PacketHandl
 typedef std::function<void()> WriteableHandler;
 
 inline static std::string InAddrToString(in_addr_t ip_int) {
-    // 1. 准备一个足够大的缓冲区
-    // INET_ADDRSTRLEN 是库中定义的宏，通常为 16
     char buffer[INET_ADDRSTRLEN];
-
-    // 2. 将 in_addr_t 包装进 struct in_addr
-    // 因为 inet_ntop 需要传入指针
     struct in_addr addr;
     addr.s_addr = ip_int;
-
-    // 3. 转换
-    // AF_INET 表示 IPv4
-    // buffer 会被填充为字符串
     const char* result = inet_ntop(AF_INET, &addr, buffer, sizeof(buffer));
-
     if (result == nullptr) {
-        return ""; // 转换失败
+        return "";
     }
 
     return std::string(buffer);
