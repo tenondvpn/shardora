@@ -484,7 +484,11 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         if ((*iter)->acc_balance_map_ptr) {
             for (auto acc_iter = (*iter)->acc_balance_map_ptr->begin(); 
                     acc_iter != (*iter)->acc_balance_map_ptr->end(); ++acc_iter) {
-                account_lru_map_.insert(acc_iter->second);
+                auto AccountPtr = account_lru_map_.get(acc_iter->first);
+                if (!AccountPtr || AccountPtr->nonce() < acc_iter->second->nonce()) {
+                    account_lru_map_.insert(acc_iter->second);
+                }
+
                 SHARDORA_DEBUG("success update address: %s, balance: %lu, nonce: %lu",
                     common::Encode::HexEncode(acc_iter->second->addr()).c_str(),
                     acc_iter->second->balance(),
