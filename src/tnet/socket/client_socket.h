@@ -58,7 +58,7 @@ public:
     }
 
 private:
-    in_addr_t peer_addr_,
+    in_addr_t peer_addr_;
 
     DISALLOW_COPY_AND_ASSIGN(ClientSocket);
 };
