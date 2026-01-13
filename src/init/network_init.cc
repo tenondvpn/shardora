@@ -1000,7 +1000,7 @@ void NetworkInit::GetNetworkNodesFromConf(
     auto prefix_db = std::make_shared<protos::PrefixDb>(db);
     auto get_sks_func = [](FILE *fd, std::vector<std::string>& sks, int32_t count, bool reuse) {
         if (reuse) {
-            char data[1024*1024];
+            char data[1024*1024] = {0};
             fread(data, 1, sizeof(data), fd);
             auto lines = common::Split<1024>(data, '\n');
             for (uint32_t i = 0; i < lines.Count(); ++i) {

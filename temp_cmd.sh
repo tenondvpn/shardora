@@ -47,30 +47,6 @@ init_config() {
 #    cd /root/pkg && rpm -ivh gdb-7.6.1-120.el7.x86_64.rpm
 }
 
-init_firewall() {
-#    iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-#    grubby --update-kernel=ALL --args="tcp_bbr2=1"
-
-    DEV=eth0
-    RATE="1000mbit"
-    DELAY="50ms 10ms loss 0.01%"
-    #DELAY="25ms"
-
-    # 清除旧规则
-    tc qdisc del dev $DEV root 2>/dev/null
-
-    # 设置HTB根队列
-    #tc qdisc add dev $DEV root handle 1: htb default 12
-    #tc class add dev $DEV parent 1: classid 1:1 htb rate 1000mbit
-
-    # 创建子类并添加延迟
-    #tc class add dev $DEV parent 1:1 classid 1:12 htb rate $RATE ceil $RATE
-    #tc qdisc add dev $DEV parent 1:12 handle 12: netem delay $DELAY 
-
-    # tc qdisc del dev eth0 root
-    # tc qdisc add dev eth0 root netem delay 25ms
-    # /root/pkg/wondershaper eth0 500000 500000
-}
 
 deploy_nodes() {
     end_pos=$(($start_pos + $node_count - 1))
@@ -121,8 +97,6 @@ deploy_nodes() {
 
 killall -9 shardora
 
-init_config
-sudo sysctl -p
-ulimit -c unlimited
+# init_config
 init_firewall
 deploy_nodes
