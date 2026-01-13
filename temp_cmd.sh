@@ -11,42 +11,6 @@ echo "new node: $local_ip $start_pos $node_count $start_shard $end_shard"
 rm -rf /root/zjnodes/
 mkdir -p /root/zjnodes/
 
-init_config() {
-    # echo "fs.file-max = 1024000" >> /etc/sysctl.conf
-    # echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
-    # echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
-    # echo "net.core.rmem_default = 65536" >> /etc/sysctl.conf
-    # echo "net.core.wmem_default = 65536" >> /etc/sysctl.conf
-    # echo "net.core.netdev_max_backlog = 4096" >> /etc/sysctl.conf
-    # echo "net.core.somaxconn = 409600" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
-    # echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_max_syn_backlog = 4096" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_congestion_control = hybla" >> /etc/sysctl.conf
-    # echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
-
-    # echo "*               soft    nofile           5120000" >> /etc/security/limits.conf
-    # echo "*               hard    nofile          10240000" >> /etc/security/limits.conf
-
-    # echo "session required pam_limits.so" >> /etc/pam.d/common-session
-
-    # echo "ulimit -SHn 1024000" >> /etc/profile
-    # # yum install -y wondershaper
-    # echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
-    # echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
-
-#    cd /root/pkg && rpm -ivh gdb-7.6.1-120.el7.x86_64.rpm
-}
-
 
 deploy_nodes() {
     end_pos=$(($start_pos + $node_count - 1))
@@ -97,6 +61,4 @@ deploy_nodes() {
 
 killall -9 shardora
 
-# init_config
-init_firewall
 deploy_nodes
