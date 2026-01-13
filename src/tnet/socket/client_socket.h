@@ -15,8 +15,8 @@ public:
             in_addr_t local_addr,
             uint16_t local_port)
             : TcpSocket(local_addr, local_port),
-              peer_addr_(peer_addr),
-              peer_port_(peer_port) {
+              ip_(peer_addr),
+              port_(peer_port) {
     }
 
     virtual ~ClientSocket() {
@@ -30,8 +30,8 @@ public:
 #ifndef _WIN32
         sockaddr_in addr;
         addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = peer_addr_;
-        addr.sin_port = htons(peer_port_);
+        addr.sin_addr.s_addr = ip_;
+        addr.sin_port = htons(port_);
         int con_res = connect(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
         if (con_res < 0) {
             if (errno == EINPROGRESS) {
@@ -49,16 +49,14 @@ public:
     }
 
     in_addr_t GetPeerAddr() const {
-        return peer_addr_;
+        return ip_;
     }
 
     uint16_t GetPeerPort() const {
-        return peer_port_;
+        return port_;
     }
 
 private:
-    in_addr_t peer_addr_;
-    uint16_t peer_port_{ 0 };
 
     DISALLOW_COPY_AND_ASSIGN(ClientSocket);
 };
