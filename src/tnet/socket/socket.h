@@ -44,7 +44,7 @@ public:
     virtual void Free();
     int GetIpPort(std::string* ip, uint16_t* port);
 
-// protected:
+protected:
 
     int32_t fd_{ -1 };
     std::string ip_;

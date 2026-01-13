@@ -14,9 +14,9 @@ public:
             uint16_t peer_port,
             in_addr_t local_addr,
             uint16_t local_port)
-            : TcpSocket(local_addr, local_port),
-              ip_(peer_addr),
-              port_(peer_port) {
+            : TcpSocket(local_addr, local_port) {
+        ip_ = peer_addr;
+        port_ = peer_port;
     }
 
     virtual ~ClientSocket() {
