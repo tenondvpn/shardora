@@ -93,7 +93,10 @@ void AccountManager::AddNewBlock(const view_block::protobuf::ViewBlockItem& view
         auto addr_info_ptr = std::make_shared<address::protobuf::AddressInfo>(
             view_block_item.block_info().address_array(i));
         auto acc_ptr = account_lru_map_.get(addr_info_ptr->addr());
-        if (!acc_ptr || acc_ptr->nonce() < addr_info_ptr->nonce()) {
+        if (!acc_ptr || 
+                acc_ptr->latest_height() < addr_info_ptr->latest_height() || 
+                (acc_ptr->latest_height() == addr_info_ptr->latest_height() &&
+                acc_ptr->tx_index() < addr_info_ptr->tx_index())) {
             account_lru_map_.insert(addr_info_ptr);
         }
     }
