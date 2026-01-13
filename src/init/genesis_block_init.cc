@@ -1517,7 +1517,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
     for (auto iter = cons_genesis_nodes.begin(); iter != cons_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
-            SHARDORA_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
+            SHARDORA_FATAL("invalid id: %s, prikey: %s", 
+                common::Encode::HexEncode((*iter)->id).c_str(), 
+                common::Encode::HexEncode((*iter)->prikey).c_str());
             return kInitError;
         }
 
