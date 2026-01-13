@@ -17,7 +17,7 @@ Socket::Socket() {
 
 Socket::~Socket() {
     common::GlobalInfo::Instance()->DecSharedObj(14);
-    // Close();
+    Close();
 }
 
 int Socket::Read(void* buf, size_t len) const {
