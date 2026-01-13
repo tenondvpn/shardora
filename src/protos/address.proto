@@ -24,7 +24,7 @@ message AddressInfo {
     required AddressType type = 6;
     optional bytes bytes_code = 7;
     required uint64 latest_height = 8;
-    required uint64 block_index = 9;
+    required uint32 tx_index = 9;
     optional int32 credit = 10 [default=0];
     repeated bls.protobuf.BlsPublicKey g2s = 11;
     optional uint32 elect_pos = 12 [default=4294967295];
