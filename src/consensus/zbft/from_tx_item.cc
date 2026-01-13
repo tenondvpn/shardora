@@ -5,6 +5,7 @@ namespace shardora {
 namespace consensus {
 
 int FromTxItem::HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -104,6 +105,8 @@ int FromTxItem::HandleTx(
     // Deduct the amount from the source account
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
+    acc_balance_map[from]->set_latest_height(view_block.block_info().height());
+    acc_balance_map[from]->set_tx_index(tx_index);
     SHARDORA_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());

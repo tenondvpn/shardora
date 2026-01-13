@@ -7,6 +7,7 @@ namespace shardora {
 namespace consensus {
 
 int ToTxLocalItem::HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -39,6 +40,8 @@ int ToTxLocalItem::HandleTx(
         view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce());
     acc_balance_map[block_tx.to()]->set_balance(src_to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+    acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+    acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
     SHARDORA_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(block_tx.to()).c_str(), 
         ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
@@ -100,6 +103,8 @@ void ToTxLocalItem::CreateLocalToTx(
         to_balance += amount;
         acc_balance_map[addr]->set_balance(to_balance);
         acc_balance_map[addr]->set_nonce(nonce);
+        acc_balance_map[addr]->set_latest_height(view_block.block_info().height());
+        acc_balance_map[addr]->set_tx_index(tx_index);
         if (!to_tx_item.library_bytes().empty()) {
             acc_balance_map[addr]->set_bytes_code(to_tx_item.library_bytes());
         }

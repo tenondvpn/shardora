@@ -7,6 +7,7 @@ namespace shardora {
 namespace consensus {
 
 int ContractCall::HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -248,6 +249,8 @@ int ContractCall::HandleTx(
             if (!acc_balance_map[block_tx.to()]->destructed()) {
                 acc_balance_map[block_tx.to()]->set_balance(block_tx.amount());
                 acc_balance_map[block_tx.to()]->set_nonce(0);
+                acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+                acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
             }
         }
 
@@ -280,6 +283,8 @@ int ContractCall::HandleTx(
     // must prepayment's nonce, not caller or contract
     acc_balance_map[preppayment_id]->set_balance(from_balance);
     acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
+    acc_balance_map[preppayment_id]->set_latest_height(view_block.block_info().height);
+    acc_balance_map[preppayment_id]->set_tx_index(tx_index);
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ADD_TX_DEBUG_INFO((&block_tx));

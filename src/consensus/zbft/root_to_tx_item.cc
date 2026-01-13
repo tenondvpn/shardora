@@ -28,6 +28,7 @@ RootToTxItem::RootToTxItem(
 RootToTxItem::~RootToTxItem() {}
 
 int RootToTxItem::HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -80,6 +81,8 @@ int RootToTxItem::HandleTx(
         addr_info->set_latest_height(view_block.block_info().height());
         addr_info->set_balance(0);
         addr_info->set_nonce(0);
+        addr_info->set_latest_height(view_block.block_info().height());
+        addr_info->set_tx_index(tx_index);
         if (to_item.has_library_bytes()) {
             addr_info->set_bytes_code(to_item.library_bytes());
         }
@@ -89,6 +92,8 @@ int RootToTxItem::HandleTx(
 
     acc_balance_map[block_tx.to()]->set_balance(to_balance);
     acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
+    acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+    acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
     if (block_tx.status() == kConsensusSuccess) {
         auto iter = zjc_host.cross_to_map_.find(to_item.des());
         std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;

@@ -35,6 +35,7 @@ public:
     }
 
     virtual int HandleTx(
+            uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -57,6 +58,8 @@ public:
             view_block.qc().pool_index(), view_block.qc().view(), to_nonce, block_tx.nonce());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+        acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+        acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
         auto& unique_hash = tx_info->key();
         std::string val;
         if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
@@ -112,6 +115,8 @@ public:
 
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+        acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+        acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
         SHARDORA_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());

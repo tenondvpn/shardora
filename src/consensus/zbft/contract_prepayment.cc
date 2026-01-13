@@ -7,6 +7,7 @@ namespace shardora {
 namespace consensus {
 
 int ContractPrepayment::HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -81,6 +82,8 @@ int ContractPrepayment::HandleTx(
 
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
+    acc_balance_map[from]->set_latest_height(view_block.block_info().height());
+    acc_balance_map[from]->set_tx_index(tx_index);
     assert(acc_balance_map[from]->has_sharding_id());
     assert(acc_balance_map[from]->has_pool_index());
     assert(acc_balance_map[from]->has_addr());

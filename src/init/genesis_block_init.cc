@@ -127,6 +127,7 @@ void GenesisBlockInit::CreatePoolsAddressInfo(uint16_t network_id) {
     immutable_pool_address_info_->set_addr(immutable_pool_addr);
     immutable_pool_address_info_->set_type(address::protobuf::kImmutablePoolAddress);
     immutable_pool_address_info_->set_latest_height(0);
+    immutable_pool_address_info_->set_tx_index(0);
     immutable_pool_address_info_->set_nonce(0);
     SHARDORA_DEBUG("init pool immutable index net: %u, base address: %s", 
         network_id, common::Encode::HexEncode(immutable_pool_addr).c_str());
@@ -170,6 +171,7 @@ std::shared_ptr<address::protobuf::AddressInfo> GenesisBlockInit::CreateAddress(
     addr_info->set_addr(addr);
     addr_info->set_type(address::protobuf::kNormal);
     addr_info->set_latest_height(latest_height);
+    addr_info->set_tx_index(0);
     addr_info->set_nonce(nonce);
     return addr_info;
 }
@@ -605,6 +607,7 @@ int GenesisBlockInit::CreateElectBlock(
     tx_info->set_to(account_info->addr());
     tx_info->set_nonce(account_info->nonce());
     account_info->set_nonce(account_info->nonce() + 1);
+    account_info->set_tx_index(account_info->nonce() + 1);
     tx_info->set_amount(0);
     tx_info->set_gas_limit(0);
     tx_info->set_gas_used(0);
@@ -784,6 +787,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             immutable_pool_address_info_->pool_index(), 
             immutable_pool_address_info_->addr(), 0, tx_info->nonce());
         immutable_pool_address_info_->set_nonce(immutable_pool_address_info_->nonce() + 1);
+        immutable_pool_address_info_->set_tx_index(immutable_pool_address_info_->nonce() + 1);
         tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_height(root_pool_height[common::kImmutablePoolSize]++);
@@ -823,6 +827,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tx_info->set_to(immutable_pool_address_info_->addr());
         tx_info->set_nonce(immutable_pool_address_info_->nonce());
         immutable_pool_address_info_->set_nonce(immutable_pool_address_info_->nonce() + 1);
+        immutable_pool_address_info_->set_tx_index(immutable_pool_address_info_->nonce() + 1);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
@@ -968,6 +973,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_to(pool_address_info_[i]->addr());
             tx_info->set_nonce(pool_address_info_[i]->nonce());
             pool_address_info_[i]->set_nonce(pool_address_info_[i]->nonce() + 1);
+            pool_address_info_[i]->set_tx_index(pool_address_info_[i]->nonce() + 1);
             tx_info->set_from("");
             tx_info->set_amount(0);
             tx_info->set_balance(0);
@@ -1635,6 +1641,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_nonce(address_info->nonce());
             address_info->set_nonce(address_info->nonce() + 1);
+            address_info->set_tx_index(address_info->nonce() + 1);
             tx_info->set_from("");
             tx_info->set_to(address_info->addr());
             tx_info->set_amount(0);
@@ -1649,6 +1656,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_to(pool_address_info_[i]->addr());
             tx_info->set_nonce(pool_address_info_[i]->nonce());
             pool_address_info_[i]->set_nonce(pool_address_info_[i]->nonce() + 1);
+            pool_address_info_[i]->set_tx_index(pool_address_info_[i]->nonce() + 1);
             tx_info->set_from("");
             tx_info->set_amount(0);
             tx_info->set_balance(0);

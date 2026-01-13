@@ -23,7 +23,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chain_id);
-
+    uint32_t tx_index = 0;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
         auto& tx_info = (*iter)->tx_info;
         auto& block_tx = *tx_list->Add();
@@ -63,6 +63,7 @@ Status ShardBlockExecutor::DoTransactionAndCreateTxBlock(
         // }
         block_tx.set_status(consensus::kConsensusSuccess);
         int do_tx_res = (*iter)->HandleTx(
+            tx_index++,
             *view_block,
             zjc_host,
             acc_balance_map,

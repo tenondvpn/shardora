@@ -32,6 +32,7 @@ public:
 
     virtual ~ContractCall() {}
     virtual int HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& block,
         zjcvm::ZjchainHost& zjchost,
         hotstuff::BalanceAndNonceMap& acc_balance_map,

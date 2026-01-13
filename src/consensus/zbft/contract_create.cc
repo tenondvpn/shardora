@@ -9,6 +9,7 @@ namespace shardora {
 namespace consensus {
 
 int ContractUserCreateCall::HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         zjcvm::ZjchainHost& zjc_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -188,6 +189,7 @@ int ContractUserCreateCall::HandleTx(
             contract_info->set_type(address::protobuf::kNormal);
             contract_info->set_bytes_code(zjc_host.create_bytes_code_);
             contract_info->set_latest_height(view_block.block_info().height());
+            contract_info->set_tx_index(tx_index);
             contract_info->set_nonce(0);
             SHARDORA_DEBUG("success add contract address info: %s, %s", 
                 common::Encode::HexEncode(block_tx.to()).c_str(), 
@@ -201,6 +203,7 @@ int ContractUserCreateCall::HandleTx(
             contract_prepayment_info->set_pool_index(view_block.qc().pool_index());
             contract_prepayment_info->set_type(address::protobuf::kNormal);
             contract_prepayment_info->set_latest_height(view_block.block_info().height());
+            contract_prepayment_info->set_tx_index(tx_index);
             contract_prepayment_info->set_nonce(0);
             SHARDORA_DEBUG("success add contract address prepayment info: %s, %s, prepayment: %lu", 
                 common::Encode::HexEncode(block_tx.to() + from).c_str(), 
@@ -213,6 +216,8 @@ int ContractUserCreateCall::HandleTx(
     from_balance = tmp_from_balance;
     acc_balance_map[from]->set_balance(from_balance);
     acc_balance_map[from]->set_nonce(block_tx.nonce());
+    acc_balance_map[from]->set_latest_height(view_block.block_info().height());
+    acc_balance_map[from]->set_tx_index(tx_index);
     SHARDORA_DEBUG("success add addr: %s, value: %s", 
         common::Encode::HexEncode(from).c_str(), 
         ProtobufToJson(*(acc_balance_map[from])).c_str());

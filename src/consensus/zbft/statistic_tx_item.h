@@ -39,6 +39,7 @@ public:
     }
 
     virtual int HandleTx(
+            uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
             zjcvm::ZjchainHost& zjc_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
@@ -86,6 +87,8 @@ public:
             common::Encode::HexEncode(unique_hash).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
         acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
+        acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+        acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
         SHARDORA_DEBUG("success add addr: %s, value: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
             ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());

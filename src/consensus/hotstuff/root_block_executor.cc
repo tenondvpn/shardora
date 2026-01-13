@@ -43,6 +43,7 @@ void RootBlockExecutor::RootDefaultTx(
     auto iter = txs_ptr->txs.begin();
     (*iter)->TxToBlockTx(*(*iter)->tx_info, &tx);
     int do_tx_res = (*iter)->HandleTx(
+        0,
         *view_block,
         zjc_host,
         balance_map,
@@ -62,11 +63,13 @@ void RootBlockExecutor::RootCreateAccountAddressBlock(
     auto* block = view_block->mutable_block_info();
     auto tx_list = block->mutable_tx_list();
     auto& tx_map = txs_ptr->txs;
+    uint32_t tx_index = 0;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
         auto& src_tx = (*iter)->tx_info;
         (*iter)->TxToBlockTx(*src_tx, &tx);
         int do_tx_res = (*iter)->HandleTx(
+            tx_index++,
             *view_block,
             zjc_host,
             acc_balance_map,
@@ -101,6 +104,7 @@ void RootBlockExecutor::RootCreateElectConsensusShardBlock(
     auto& tx = *tx_list->Add();
     (*iter)->TxToBlockTx(*(*iter)->tx_info, &tx);
     int do_tx_res = (*iter)->HandleTx(
+        0,
         *view_block,
         zjc_host,
         acc_balance_map,
