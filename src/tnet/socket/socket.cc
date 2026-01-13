@@ -266,6 +266,7 @@ int Socket::GetIpPort(std::string* ip, uint16_t* port) {
         return 0;
     }
 
+    assert(false);
     if (fd_ == 0) {
         SHARDORA_ERROR("get from connection ip port failed: fd = 0");
         return -1;
