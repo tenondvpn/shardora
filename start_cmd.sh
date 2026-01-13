@@ -73,7 +73,7 @@ net.ipv4.tcp_slow_start_after_idle = 0
 EOF
 
 # 4. 应用更改
-sysctl -p
+sysctl -p > /dev/null 2>&1 &
 
 start_nodes() {
     end_pos=$(($start_pos + $node_count - 1))
