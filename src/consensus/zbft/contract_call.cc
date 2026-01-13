@@ -283,7 +283,7 @@ int ContractCall::HandleTx(
     // must prepayment's nonce, not caller or contract
     acc_balance_map[preppayment_id]->set_balance(from_balance);
     acc_balance_map[preppayment_id]->set_nonce(block_tx.nonce());
-    acc_balance_map[preppayment_id]->set_latest_height(view_block.block_info().height);
+    acc_balance_map[preppayment_id]->set_latest_height(view_block.block_info().height());
     acc_balance_map[preppayment_id]->set_tx_index(tx_index);
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
