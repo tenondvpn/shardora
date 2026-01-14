@@ -283,8 +283,6 @@ private:
     std::map<uint64_t, std::vector<std::shared_ptr<ViewBlockInfo>>> view_with_blocks_;
     common::LRUMap<BlockViewKey, std::shared_ptr<ViewBlockInfo>> latest_commited_view_lru_map_{ 128 };
     common::LRUMap<std::string, std::shared_ptr<ViewBlockInfo>> latest_commited_hash_lru_map_{ 128 };
-    std::thread::id local_thread_id_;
-    uint64_t local_thread_id_count_ = 0;
 };
 
 // from db

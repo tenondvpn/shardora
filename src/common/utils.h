@@ -454,7 +454,7 @@ static inline bool isFileExist(const std::string& path) {
     ++count; \
     static std::thread::id init_thread_id = std::this_thread::get_id(); \
     auto now_thread_id = std::this_thread::get_id(); \
-    SHARDORA_DEBUG("now handle thread id: %u, old: %u, count: %d", now_thread_id, init_thread_id, count); \
+    SHARDORA_DEBUG("now handle thread id: %u, old: %u, count: %d", (uint32_t)now_thread_id, (uint32_t)init_thread_id, (int32_t)count); \
     if (count > 3) { \
         assert(init_thread_id == now_thread_id); \
     } else { \
