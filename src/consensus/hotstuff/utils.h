@@ -61,14 +61,14 @@ bool ViewBlockIsCheckedParentHash(
     std::shared_ptr<protos::PrefixDb> prefix_db, 
     const std::string& hash);
 
-} // namespace consensus
+} // namespace hotstuff
 
 } // namespace shardora
 
 namespace std {
     template <>
-    struct hash<shardora::consensus::BlockViewKey> {
-        std::size_t operator()(const shardora::consensus::BlockViewKey& k) const {
+    struct hash<shardora::hotstuff::BlockViewKey> {
+        std::size_t operator()(const shardora::hotstuff::BlockViewKey& k) const {
             std::size_t seed = 0;
             auto hash_combine = [&seed](auto value) {
                 seed ^= std::hash<decltype(value)>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
