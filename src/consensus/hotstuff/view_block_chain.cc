@@ -49,7 +49,11 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
-    if (!init && BlockViewCommited(view_block->qc().network_id(), view_block->qc().view())) {
+    if (!init && BlockViewCommited(
+            prefix_db_, 
+            view_block->qc().network_id(), 
+            view_block->qc().pool_index(), 
+            view_block->qc().view())) {
         return Status::kSuccess;
     }
 
@@ -158,7 +162,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
     std::shared_ptr<ViewBlockInfo> view_block_ptr;
     if (latest_commited_view_lru_map_.Get(
             BlockViewKey(network_id, pool_index_, height), 
-            &view_block_ptr)) {
+            view_block_ptr)) {
         return view_block_ptr->view_block;
     }
 
