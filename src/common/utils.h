@@ -451,18 +451,15 @@ static inline bool isFileExist(const std::string& path) {
 #ifndef NDEBUG
 #define CheckThreadIdValid() { \
     if (common::GlobalInfo::Instance()->main_inited_success()) { \
-        static uint64_t count = 0; \
-        ++count; \
-        static std::thread::id init_thread_id = std::this_thread::get_id(); \
+        ++local_thread_id_count_; \
         auto now_thread_id = std::this_thread::get_id(); \
-        /* 使用 std::hash 将 id 转换为整数，以便 %u 打印 */ \
         uint32_t now_id_val = (uint32_t)std::hash<std::thread::id>{}(now_thread_id); \
-        uint32_t init_id_val = (uint32_t)std::hash<std::thread::id>{}(init_thread_id); \
-        SHARDORA_DEBUG("now handle thread id: %u, old: %u, count: %d", now_id_val, init_id_val, (int32_t)count); \
-        if (count > 3) { \
-            assert(init_thread_id == now_thread_id); \
+        uint32_t init_id_val = (uint32_t)std::hash<std::thread::id>{}(local_thread_id_); \
+        SHARDORA_DEBUG("now handle thread id: %u, old: %u, count: %d", now_id_val, init_id_val, (int32_t)local_thread_id_count_); \
+        if (local_thread_id_count_ > 3) { \
+            assert(local_thread_id_ == now_thread_id); \
         } else { \
-            init_thread_id = now_thread_id; \
+            local_thread_id_ = now_thread_id; \
         } \
     } \
 }
