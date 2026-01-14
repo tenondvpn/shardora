@@ -38,22 +38,6 @@ struct BlockViewKey {
     }
 };
 
-namespace std {
-    template <>
-    struct hash<BlockViewKey> {
-        std::size_t operator()(const BlockViewKey& k) const {
-            std::size_t seed = 0;
-            auto hash_combine = [&seed](auto value) {
-                seed ^= std::hash<decltype(value)>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            };
-
-            hash_combine(k.network_id);
-            hash_combine(k.pool_index);
-            hash_combine(k.view);
-            return seed;
-        }
-    };
-}
 
 std::string GetTxMessageHash(
     const block::protobuf::BlockTx& tx_info, 
@@ -76,3 +60,19 @@ bool ViewBlockIsCheckedParentHash(
 
 } // namespace shardora
 
+namespace std {
+    template <>
+    struct hash<shardora::consensus::BlockViewKey> {
+        std::size_t operator()(const shardora::consensus::BlockViewKey& k) const {
+            std::size_t seed = 0;
+            auto hash_combine = [&seed](auto value) {
+                seed ^= std::hash<decltype(value)>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            };
+
+            hash_combine(k.network_id);
+            hash_combine(k.pool_index);
+            hash_combine(k.view);
+            return seed;
+        }
+    };
+}
