@@ -321,14 +321,14 @@ void TxPool::GetTxSyncToLeader(
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
          if (!IsUserTransaction(tx_ptr->tx_info->step())) {
             system_tx_map_[std::to_string(tx_ptr->tx_info->step())][tx_ptr->tx_info->nonce()] = tx_ptr;
-            SHARDORA_DEBUG("pool: %d, success add system tx nonce addr: %s, "
+            SHARDORA_DEBUG("pool: %u, success add system tx nonce addr: %s, "
                 "addr nonce: %lu, tx nonce: %lu, unique hash: %s, step: %u",
                 pool_index_,
                 common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                 tx_ptr->address_info->nonce(), 
                 tx_ptr->tx_info->nonce(),
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                tx_ptr->tx_info->step());
+                (int32_t)tx_ptr->tx_info->step());
             continue;
         }
 
@@ -444,7 +444,7 @@ void TxPool::GetTxIdempotently(
                 tx_ptr->address_info->nonce(), 
                 tx_ptr->tx_info->nonce(),
                 common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str(),
-                tx_ptr->tx_info->step());
+                (uint32_t)tx_ptr->tx_info->step());
             continue;
         }
 
