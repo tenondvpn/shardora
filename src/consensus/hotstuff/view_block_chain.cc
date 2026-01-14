@@ -229,7 +229,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
         }
     }
 
-    auto view_block_ptr = std::make_shared<ViewBlockInfo>();
+    view_block_ptr = std::make_shared<ViewBlockInfo>();
     view_block_ptr->view_block = std::make_shared<ViewBlock>();
     auto& view_block = *view_block_ptr->view_block;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
@@ -665,7 +665,7 @@ void ViewBlockChain::HandleTimerMessage() {
                             iter->first + 1)) {
                         if (!ViewBlockIsCheckedParentHash(
                                 prefix_db_, 
-                                (*block_iter)->view_block().qc().view_block_hash())) {
+                                (*block_iter)->view_block->qc().view_block_hash())) {
                             block_iter = iter->second.erase(block_iter);
                             continue;
                         }
