@@ -292,7 +292,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
     }
 
     std::shared_ptr<ViewBlockInfo> view_block_ptr;
-    if (latest_commited_hash_lru_map_.Get(hash, &view_block_ptr)) {
+    if (latest_commited_hash_lru_map_.Get(hash, view_block_ptr)) {
         return view_block_ptr;
     }
 
