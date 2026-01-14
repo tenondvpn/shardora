@@ -81,7 +81,6 @@ public:
     bool IsValid();
     std::string String() const;
     void UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_item);
-    bool ViewBlockIsCheckedParentHash(const std::string& hash);
     // void SaveBlockCheckedParentHash(const std::string& hash, uint64_t view);
     protos::AddressInfoPtr ChainGetAccountInfo(const std::string& acc_id);
     protos::AddressInfoPtr ChainGetPoolAccountInfo(uint32_t pool_index);
@@ -93,18 +92,7 @@ public:
         uint64_t vss_random);
     void HandleTimerMessage();
     std::shared_ptr<ViewBlockInfo> CheckCommit(const QC& qc);
-    bool view_commited(uint32_t network_id, View view) const {
-        if (commited_view_.find(view) != commited_view_.end()) {
-            return true;
-        }
-
-        if (prefix_db_->ViewBlockIsValidView(network_id, pool_index_, view)) {
-            return true;
-        }
-
-        return false;
-    }
-
+    
     uint64_t GetMaxHeight() {
         if (latest_committed_block_->has_block_info()) {
             return latest_committed_block_->block_info().height();

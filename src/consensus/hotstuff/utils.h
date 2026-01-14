@@ -26,6 +26,12 @@ int CheckTransactionValid(
     const address::protobuf::AddressInfo& addr_info, 
     pools::protobuf::TxMessage& tx_info,
     uint64_t* now_nonce);
+bool view_commited(
+    std::shared_ptr<protos::PrefixDb> prefix_db, 
+    uint32_t network_id, View view);
+bool ViewBlockIsCheckedParentHash(
+    std::shared_ptr<protos::PrefixDb> prefix_db, 
+    const std::string& hash);
 
 } // namespace consensus
 

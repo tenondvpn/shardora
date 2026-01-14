@@ -63,7 +63,7 @@ void Hotstuff::StartInit() {
         auto chain = std::make_shared<ViewBlockChain>();
         chain->Init(
             kCrossShardingChain,
-            network_id,
+            common::kGlobalPoolIndex,
             db_,
             block_mgr_,
             nullptr,
@@ -1505,6 +1505,24 @@ Status Hotstuff::Commit(
 
 void Hotstuff::HandleSyncedViewBlock(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
+    if (view_commited(
+            prefix_db_, 
+            vblock->qc().network_id(), 
+            vblock->qc().pool_index(), 
+            vblock->qc().view())) {
+        return;
+    }
+    
+    if (view_commited(
+            prefix_db_, 
+            vblock->qc().network_id(), 
+            vblock->qc().pool_index(), 
+            vblock->qc().view() + 1)) {
+        if (!ViewBlockIsCheckedParentHash(prefix_db_, vblock->qc().view_block_hash())) {
+            return;
+        }
+    }
+
     if (prefix_db_->BlockExists(vblock->qc().view_block_hash())) {
         SHARDORA_DEBUG("block db exists %u_%u_%lu, height: %lu",
             vblock->qc().network_id(), 
@@ -1674,15 +1692,21 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().view() - 1);
         if (view_block_chain->HighQC().view() < (v_block.qc().view() + db_stored_view_) && 
                 v_block.qc().view() > 0 && 
-                !view_block_chain->view_commited(
-                    v_block.qc().network_id(), v_block.qc().view() - 1)) {
+                !view_commited(
+                    prefix_db_,
+                    v_block.qc().network_id(), 
+                    v_block.qc().pool_index(), 
+                    v_block.qc().view() - 1)) {
             kv_sync_->AddSyncViewHash(
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 
                 v_block.parent_hash(),
                 0);
         } else if (!view_block_chain->view_commited(
-                v_block.qc().network_id(), v_block.qc().view() - 1)) {
+                prefix_db_,
+                v_block.qc().network_id(), 
+                v_block.qc().pool_index(), 
+                v_block.qc().view() - 1)) {
             SHARDORA_DEBUG("now add sync height 0, %u_%u_%lu", 
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 

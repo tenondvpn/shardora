@@ -78,6 +78,26 @@ int CheckTransactionValid(
     return 0;
 }
 
+bool view_commited(
+        std::shared_ptr<protos::PrefixDb> prefix_db, 
+        uint32_t network_id, View view) {
+    if (commited_view_.find(view) != commited_view_.end()) {
+        return true;
+    }
+
+    if (prefix_db->ViewBlockIsValidView(network_id, pool_index_, view)) {
+        return true;
+    }
+
+    return false;
+}
+
+
+bool ViewBlockIsCheckedParentHash(
+        std::shared_ptr<protos::PrefixDb> prefix_db, 
+        const std::string& hash) {
+    return prefix_db->ParentHashExists(hash);
+}
 
 } // namespace consensus
 
