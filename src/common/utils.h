@@ -450,6 +450,9 @@ static inline bool isFileExist(const std::string& path) {
 
 #ifndef NDEBUG
 #define CheckThreadIdValid() { \
+    if (!common::GlobalInfo::Instance()->main_inited_success()) { \
+        return; \
+    } \
     static uint64_t count = 0; \
     ++count; \
     static std::thread::id init_thread_id = std::this_thread::get_id(); \
