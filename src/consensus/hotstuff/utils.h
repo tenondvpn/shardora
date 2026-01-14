@@ -5,6 +5,7 @@
 
 #include "common/hash.h"
 #include "protos/block.pb.h"
+#include "protos/view_block.pb.h"
 
 namespace shardora {
 
