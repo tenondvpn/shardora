@@ -37,6 +37,10 @@ public:
         uint32_t try_times = 0;
         while (try_times++ <= members->size()) {
             if ((*members)[index]->bls_publick_key == libff::alt_bn128_G2::zero()) {
+                SHARDORA_DEBUG("pool_idx_: %u, leader rotation: "
+                    "skip invalid bls leader index: %u, member size: %u", 
+                    pool_idx_,
+                    index, members->size());
                 ++index;
                 if (index >= members->size()) {
                     index = 0;
@@ -45,6 +49,9 @@ public:
                 continue;
             }
 
+            SHARDORA_DEBUG("leader rotation: %u, leader index: %u, member size: %u", 
+                pool_idx_, index, members->size());
+                
             return (*members)[index];
         }
 
