@@ -1505,7 +1505,7 @@ Status Hotstuff::Commit(
 
 void Hotstuff::HandleSyncedViewBlock(
         std::shared_ptr<view_block::protobuf::ViewBlockItem>& vblock) {
-    if (view_commited(
+    if (BlockViewCommited(
             prefix_db_, 
             vblock->qc().network_id(), 
             vblock->qc().pool_index(), 
@@ -1513,7 +1513,7 @@ void Hotstuff::HandleSyncedViewBlock(
         return;
     }
     
-    if (view_commited(
+    if (BlockViewCommited(
             prefix_db_, 
             vblock->qc().network_id(), 
             vblock->qc().pool_index(), 
@@ -1692,7 +1692,7 @@ Status Hotstuff::VerifyViewBlock(
             v_block.qc().view() - 1);
         if (view_block_chain->HighQC().view() < (v_block.qc().view() + db_stored_view_) && 
                 v_block.qc().view() > 0 && 
-                !view_commited(
+                !BlockViewCommited(
                     prefix_db_,
                     v_block.qc().network_id(), 
                     v_block.qc().pool_index(), 
@@ -1702,7 +1702,7 @@ Status Hotstuff::VerifyViewBlock(
                 v_block.qc().pool_index(), 
                 v_block.parent_hash(),
                 0);
-        } else if (!view_block_chain->view_commited(
+        } else if (!BlockViewCommited(
                 prefix_db_,
                 v_block.qc().network_id(), 
                 v_block.qc().pool_index(), 

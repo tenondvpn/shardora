@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tuple>
+
 #include <common/hash.h>
 #include <protos/block.pb.h>
 #include <protos/prefix_db.h>
@@ -16,6 +18,43 @@ enum ChainType : int32_t {
     kCrossShardingChain = 2,
 };
 
+struct BlockViewKey {
+    uint32_t network_id;
+    uint32_t pool_index;
+    uint64_t view;
+    BlockViewKey(uint32_t network_id,
+        uint32_t pool_index,
+        uint64_t view) : network_id(network_id), pool_index(pool_index), view(view) {}
+
+    bool operator==(const BlockViewKey& other) const {
+        return network_id == other.network_id &&
+               pool_index == other.pool_index &&
+               view == other.view;
+    }
+
+    bool operator<(const BlockViewKey& other) const {
+        return std::tie(network_id, pool_index, view) <
+               std::tie(other.network_id, other.pool_index, other.view);
+    }
+};
+
+namespace std {
+    template <>
+    struct hash<BlockViewKey> {
+        std::size_t operator()(const BlockViewKey& k) const {
+            std::size_t seed = 0;
+            auto hash_combine = [&seed](auto value) {
+                seed ^= std::hash<decltype(value)>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            };
+
+            hash_combine(k.network_id);
+            hash_combine(k.pool_index);
+            hash_combine(k.view);
+            return seed;
+        }
+    };
+}
+
 std::string GetTxMessageHash(
     const block::protobuf::BlockTx& tx_info, 
     const std::string& phash);
@@ -26,7 +65,7 @@ int CheckTransactionValid(
     const address::protobuf::AddressInfo& addr_info, 
     pools::protobuf::TxMessage& tx_info,
     uint64_t* now_nonce);
-bool view_commited(
+bool BlockViewCommited(
     std::shared_ptr<protos::PrefixDb> prefix_db, 
     uint32_t network_id, View view);
 bool ViewBlockIsCheckedParentHash(

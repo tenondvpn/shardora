@@ -49,7 +49,7 @@ Status ViewBlockChain::Store(
         return Status::kSuccess;
     }
 
-    if (!init && view_commited(view_block->qc().network_id(), view_block->qc().view())) {
+    if (!init && BlockViewCommited(view_block->qc().network_id(), view_block->qc().view())) {
         return Status::kSuccess;
     }
 
@@ -122,8 +122,9 @@ Status ViewBlockChain::Store(
         // The parent block must exist
         auto it = view_blocks_info_.find(view_block->parent_hash());
         if (it == view_blocks_info_.end() || it->second->view_block == nullptr) {
-            if (latest_committed_block_ == nullptr ||
-                    latest_committed_block_->qc().view_block_hash() != view_block->parent_hash()) {
+            auto tmp_latest_committed_block = latest_committed_block_.load();
+            if (tmp_latest_committed_block == nullptr ||
+                    tmp_latest_committed_block->qc().view_block_hash() != view_block->parent_hash()) {
                 SHARDORA_ERROR("lack of parent view block, hash: %s, parent hash: %s, cur view: %lu, pool: %u",
                     common::Encode::HexEncode(view_block->qc().view_block_hash()).c_str(),
                     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
@@ -154,51 +155,90 @@ Status ViewBlockChain::Store(
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
         uint32_t network_id, 
         uint64_t height) {
+    std::shared_ptr<ViewBlockInfo> view_block_ptr;
+    if (latest_commited_view_lru_map_.Get(
+            BlockViewKey(network_id, pool_index_, height), 
+            &view_block_ptr)) {
+        return view_block_ptr->view_block;
+    }
+
+    bool view_commited = BlockViewCommited(prefix_db_, network_id, pool_index_, height);
     auto iter = cached_view_with_blocks_.find(height);
     if (iter != cached_view_with_blocks_.end()) {
-        if (iter->second.size() == 1 && !iter->second[0]->view_block->qc().sign_x().empty()) {
-            return iter->second[0]->view_block;
-        }
-
-        std::shared_ptr<ViewBlock> signed_block = nullptr;
-        for (auto it = iter->second.begin(); it != iter->second.end(); ++it) {
-            if (iter->second[0]->view_block->qc().sign_x().empty()) {
+        for (auto it = iter->second.begin(); it != iter->second.end(); ) {
+            if (view_commited && !(*it)->valid) {
+                it = iter->second.erase(it);
                 continue;
             }
 
-            signed_block = (*it)->view_block;
+            if ((*it)->view_block->qc().sign_x().empty()) {
+                ++it;
+                continue;
+            }
+
+            view_block_ptr = (*it);
             if ((*it)->valid) {
-                return (*it)->view_block;
+                break;
             }
 
             auto p_block = GetViewBlockWithHash((*it)->view_block->parent_hash());
             if (!p_block) {
+                ++it;
                 continue;
             }
 
-            if (p_block->valid) {
-                return (*it)->view_block;
-            }
-        
             auto gp_block = GetViewBlockWithHash(p_block->view_block->parent_hash());
             if (!gp_block) {
+                ++it;
                 continue;
             }
 
             if (gp_block->valid) {
-                return (*it)->view_block;
+                break;
             }
+                
+            ++it;
         }
 
-        if (signed_block) {
-            return signed_block;
+        if (iter->second.empty()) {
+            cached_view_with_blocks_.erase(iter);
+        }
+
+        if (view_block_ptr) {
+            if (view_block_ptr->valid) {
+                latest_commited_hash_lru_map_.Put(
+                    view_block_ptr->view_block->qc().view_block_hash(), 
+                    view_block_ptr);
+                latest_commited_view_lru_map_.Put(
+                    BlockViewKey(
+                        view_block_ptr->view_block->qc().network_id(), 
+                        view_block_ptr->view_block->qc().pool_index(), 
+                        view_block_ptr->view_block->qc().view()), 
+                    view_block_ptr);
+                return view_block_ptr->view_block;
+            }
+
+            auto latest_commited_block = LatestCommittedBlock();
+            if (view_block_ptr->view_block->qc().view() > latest_commited_block->qc().view()) {
+                return view_block_ptr->view_block;
+            }
         }
     }
 
-    auto view_block_ptr = std::make_shared<ViewBlock>();
-    auto& view_block = *view_block_ptr;
+    auto view_block_ptr = std::make_shared<ViewBlockInfo>();
+    view_block_ptr->view_block = std::make_shared<ViewBlock>();
+    auto& view_block = *view_block_ptr->view_block;
     if (prefix_db_->GetBlockWithHeight(network_id, pool_index_, height, &view_block)) {
-        return view_block_ptr;
+        latest_commited_hash_lru_map_.Put(
+            view_block_ptr->view_block->qc().view_block_hash(), 
+            view_block_ptr);
+        latest_commited_view_lru_map_.Put(
+            BlockViewKey(
+                view_block_ptr->view_block->qc().network_id(), 
+                view_block_ptr->view_block->qc().pool_index(), 
+                view_block_ptr->view_block->qc().view()), 
+            view_block_ptr);
+        return view_block_ptr->view_block;
     }
 
     return nullptr;   
@@ -211,6 +251,17 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
         cached_pri_queue_.push(view_block_info_ptr);
         CHECK_MEMORY_SIZE(cached_block_map_);
         cached_view_with_blocks_[view_block_info_ptr->view_block->qc().view()].push_back(view_block_info_ptr);
+        if (view_block_info_ptr->valid) {
+            latest_commited_hash_lru_map_.Put(
+                view_block_info_ptr->view_block->qc().view_block_hash(), 
+                view_block_info_ptr);
+            latest_commited_view_lru_map_.Put(
+                BlockViewKey(
+                    view_block_info_ptr->view_block->qc().network_id(), 
+                    view_block_info_ptr->view_block->qc().pool_index(), 
+                    view_block_info_ptr->view_block->qc().view()), 
+                view_block_info_ptr);
+        }
     }
 
     while (cached_pri_queue_.size() >= kCachedViewBlockCount) {
@@ -237,6 +288,10 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
     }
 
     std::shared_ptr<ViewBlockInfo> view_block_ptr;
+    if (latest_commited_hash_lru_map_.Get(hash, &view_block_ptr)) {
+        return view_block_ptr;
+    }
+
     auto iter = cached_block_map_.find(hash);
     if (iter != cached_block_map_.end()) {
         view_block_ptr = iter->second;
@@ -252,6 +307,15 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashSt
     auto& view_block = *view_block_ptr->view_block;
     if (prefix_db_->GetBlock(hash, &view_block)) {
         view_block_ptr->valid = true;
+        latest_commited_hash_lru_map_.Put(
+            view_block_ptr->view_block->qc().view_block_hash(), 
+            view_block_ptr);
+        latest_commited_view_lru_map_.Put(
+            BlockViewKey(
+                view_block_ptr->view_block->qc().network_id(), 
+                view_block_ptr->view_block->qc().pool_index(), 
+                view_block_ptr->view_block->qc().view()), 
+            view_block_ptr);
         return view_block_ptr;
     }
 
@@ -391,13 +455,13 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
             common::Encode::HexEncode(tmp_block_info->view_block->parent_hash()).c_str(),
             tmp_block_info->view_block->block_info().tx_list_size() > 0 ? tmp_block_info->view_block->block_info().tx_list(0).step(): -1,
             0,
-            view_commited(
+            BlockViewCommited(
                 prefix_db_,
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().pool_index(),
                 tmp_block->qc().view()),
             tmp_block->qc().sign_x().empty());
-        if (!view_commited(
+        if (!BlockViewCommited(
                 prefix_db_,
                 tmp_block->qc().network_id(), 
                 tmp_block->qc().pool_index(),
@@ -418,7 +482,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         }
 
         if (tmp_block->qc().sign_x().empty()) {
-            if (tmp_block->qc().view() > 0 && !view_commited(
+            if (tmp_block->qc().view() > 0 && !BlockViewCommited(
                     prefix_db_,
                     tmp_block->qc().network_id(), 
                     tmp_block->qc().pool_index(),
@@ -440,7 +504,7 @@ void ViewBlockChain::Commit(const std::shared_ptr<ViewBlockInfo>& v_block_info) 
         if (parent_block_info == nullptr) {
             auto latest_committed_block = LatestCommittedBlock();
             if (latest_committed_block && latest_committed_block->qc().view() < tmp_block->qc().view() - 1) {
-                if (tmp_block->qc().view() > 0 && !view_commited(
+                if (tmp_block->qc().view() > 0 && !BlockViewCommited(
                         prefix_db_,
                         tmp_block->qc().network_id(), 
                         tmp_block->qc().pool_index(), 
@@ -577,7 +641,7 @@ void ViewBlockChain::HandleTimerMessage() {
         // SHARDORA_DEBUG("now check view_with_blocks_ size: %d", view_with_blocks_.size());      
         if (view_with_blocks_.size() > 2) {
             for (auto iter = view_with_blocks_.rbegin(); iter != view_with_blocks_.rend();) {
-                if (view_commited(
+                if (BlockViewCommited(
                         prefix_db_,
                         common::GlobalInfo::Instance()->network_id(), 
                         pool_index_,
@@ -590,7 +654,7 @@ void ViewBlockChain::HandleTimerMessage() {
 
                 bool commited = false;
                 for (auto block_iter = iter->second.begin(); block_iter != iter->second.end();) {
-                    if (view_commited(
+                    if (BlockViewCommited(
                             prefix_db_,
                             common::GlobalInfo::Instance()->network_id(), 
                             pool_index_,
@@ -649,8 +713,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             pool_index_,
             common::Encode::HexEncode(qc.view_block_hash()).c_str(),
             qc.network_id(), qc.pool_index(), qc.view());
-                        prefix_db_,
-        if (!view_commited(, qc.network_id(), qc.pool_index(), qc.view())) {
+        if (!BlockViewCommited(prefix_db_, qc.network_id(), qc.pool_index(), qc.view())) {
             kv_sync_->AddSyncViewHash(qc.network_id(), qc.pool_index(), qc.view_block_hash(), 0);
         }
         // assert(false);
@@ -680,7 +743,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             qc.pool_index(), 
             v_block1->qc().view() - 1,
             String().c_str());
-        if (v_block1->qc().view() > 0 && !view_commited(
+        if (v_block1->qc().view() > 0 && !BlockViewCommited(
                 prefix_db_,
                 v_block1->qc().network_id(),
                 v_block1->qc().pool_index(),
@@ -720,7 +783,7 @@ std::shared_ptr<ViewBlockInfo> ViewBlockChain::CheckCommit(const QC& qc) {
             qc.pool_index(), 
             v_block2->qc().view() - 1,
             String().c_str());
-        if (v_block2->qc().view() > 0 && !view_commited(
+        if (v_block2->qc().view() > 0 && !BlockViewCommited(
                 prefix_db_,
                 v_block2->qc().network_id(), 
                 v_block2->qc().pool_index(),

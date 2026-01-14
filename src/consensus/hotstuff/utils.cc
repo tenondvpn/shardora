@@ -78,7 +78,7 @@ int CheckTransactionValid(
     return 0;
 }
 
-bool view_commited(
+bool BlockViewCommited(
         std::shared_ptr<protos::PrefixDb> prefix_db, 
         uint32_t network_id, View view) {
     if (commited_view_.find(view) != commited_view_.end()) {
