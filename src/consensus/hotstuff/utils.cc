@@ -6,6 +6,7 @@
 #include <consensus/hotstuff/types.h>
 #include "consensus/hotstuff/view_block_chain.h"
 #include "pools/tx_utils.h"
+#include "protos/prefix_db.h"
 #include "zjcvm/zjc_host.h"
 
 namespace shardora {
@@ -80,7 +81,8 @@ int CheckTransactionValid(
 
 bool BlockViewCommited(
         std::shared_ptr<protos::PrefixDb> prefix_db, 
-        uint32_t network_id, View view) {
+        uint32_t network_id, 
+        uint64_t view) {
     if (commited_view_.find(view) != commited_view_.end()) {
         return true;
     }

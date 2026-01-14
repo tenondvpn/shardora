@@ -55,7 +55,8 @@ int CheckTransactionValid(
     uint64_t* now_nonce);
 bool BlockViewCommited(
     std::shared_ptr<protos::PrefixDb> prefix_db, 
-    uint32_t network_id, View view);
+    uint32_t network_id,
+    uint64_t view);
 bool ViewBlockIsCheckedParentHash(
     std::shared_ptr<protos::PrefixDb> prefix_db, 
     const std::string& hash);
