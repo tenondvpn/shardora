@@ -82,16 +82,9 @@ int CheckTransactionValid(
 bool BlockViewCommited(
         std::shared_ptr<protos::PrefixDb> prefix_db, 
         uint32_t network_id, 
+        uint32_t pool_index, 
         uint64_t view) {
-    if (commited_view_.find(view) != commited_view_.end()) {
-        return true;
-    }
-
-    if (prefix_db->ViewBlockIsValidView(network_id, pool_index_, view)) {
-        return true;
-    }
-
-    return false;
+    return prefix_db->ViewBlockIsValidView(network_id, pool_index_, view);
 }
 
 
