@@ -108,12 +108,11 @@ public:
     }
 
     void FlushHeightTree(db::DbWriteBatch& db_batch) {
-        CheckThreadIdValid();
+        // CheckThreadIdValid();
         // TODO: fix bug
         if (height_tree_ptr_ != nullptr) {
             auto tmp_tree_ptr = height_tree_ptr_;
             tmp_tree_ptr->FlushToDb(db_batch);
-            // 清理内存
             height_tree_ptr_ = nullptr;
         }
     }

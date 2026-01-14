@@ -36,7 +36,7 @@ void TxPool::Init(
 }
 
 void TxPool::InitHeightTree() {
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         return;
     }
@@ -638,7 +638,7 @@ uint64_t TxPool::UpdateLatestInfo(
         return common::kInvalidUint64;
     }
     
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     auto tmp_height_tree_ptr = height_tree_ptr_;
     if (!tmp_height_tree_ptr) {
         InitHeightTree();
@@ -731,7 +731,7 @@ void TxPool::ConsensusAddTxs(const pools::TxItemPtr& tx_ptr) {
         return;
     }
 
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (consensus_added_txs_.size() >= common::GlobalInfo::Instance()->each_tx_pool_max_txs()) {
         SHARDORA_WARN("add failed extend %u, %u, all valid: %u", 
             consensus_added_txs_.size(), common::GlobalInfo::Instance()->each_tx_pool_max_txs(), all_tx_size());

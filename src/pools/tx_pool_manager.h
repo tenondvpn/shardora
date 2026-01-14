@@ -158,7 +158,6 @@ public:
     }
 #endif
 
-    // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
             std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
             db::DbWriteBatch& db_batch) {
@@ -173,7 +172,6 @@ public:
             return;
         }
 
-        // 更新 pool_mgr 全局状态
         if (height > synced_max_heights_[pool_index]) {
             synced_max_heights_[pool_index] = height;
         }
@@ -182,7 +180,6 @@ public:
         pool_info.set_height(height);
         pool_info.set_hash(hash);
         pool_info.set_timestamp(block->timestamp());
-        // 更新对应 pool 的最新状态，主要是高度信息和哈希值
         uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(
             height, hash, view_block->parent_hash(), block->timestamp());
         pool_info.set_synced_height(synced_height);
