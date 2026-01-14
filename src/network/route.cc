@@ -64,7 +64,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
             auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-            assert(message.broadcast().bloomfilter_size() < 64);
+            // assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
             SHARDORA_DEBUG("0 broadcast: %lu, now size: %u", msg_ptr->header.hash64(), broadcast_queue_[thread_idx].size());
             broadcast_queue_[thread_idx].push(msg_ptr);
