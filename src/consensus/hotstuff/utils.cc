@@ -84,7 +84,7 @@ bool BlockViewCommited(
         uint32_t network_id, 
         uint32_t pool_index, 
         uint64_t view) {
-    return prefix_db->ViewBlockIsValidView(network_id, pool_index_, view);
+    return prefix_db->ViewBlockIsValidView(network_id, pool_index, view);
 }
 
 
