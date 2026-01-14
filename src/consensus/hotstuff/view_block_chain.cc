@@ -159,6 +159,7 @@ Status ViewBlockChain::Store(
 std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
         uint32_t network_id, 
         uint64_t height) {
+    CheckThreadIdValid();
     std::shared_ptr<ViewBlockInfo> view_block_ptr;
     if (latest_commited_view_lru_map_.Get(
             BlockViewKey(network_id, pool_index_, height), 
@@ -249,6 +250,7 @@ std::shared_ptr<ViewBlock> ViewBlockChain::GetViewBlockWithHeight(
 }
 
 std::shared_ptr<ViewBlockInfo> ViewBlockChain::GetViewBlockWithHash(const HashStr& hash) {
+    CheckThreadIdValid();
     std::shared_ptr<ViewBlockInfo> view_block_info_ptr;
     while (cached_block_queue_.pop(&view_block_info_ptr)) {
         cached_block_map_[view_block_info_ptr->view_block->qc().view_block_hash()] = view_block_info_ptr;

@@ -148,6 +148,22 @@
 
 #endif
 
+
+#ifndef NDEBUG
+#define CheckThreadIdValid() { \
+    auto now_thread_id = std::this_thread::get_id(); \
+     \
+    if (local_thread_id_count_ >= 1) { \
+        assert(local_thread_id_ == now_thread_id); \
+    } else { \
+        local_thread_id_ = now_thread_id; \
+    } \
+    if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; } \
+}
+#else
+#define CheckThreadIdValid()
+#endif
+
 static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
     // return "";
 #ifdef NDEBUG
