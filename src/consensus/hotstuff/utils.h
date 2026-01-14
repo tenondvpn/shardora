@@ -1,12 +1,16 @@
 #pragma once
 
+#include <memory>
 #include <tuple>
 
-#include <common/hash.h>
-#include <protos/block.pb.h>
-#include <protos/prefix_db.h>
+#include "common/hash.h"
+#include "protos/block.pb.h"
 
 namespace shardora {
+
+namespace protos {
+    class PrefixDb;
+}
 
 namespace hotstuff {
 
