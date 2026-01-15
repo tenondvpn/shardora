@@ -448,6 +448,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_pool_idx(view_block_ptr->qc().pool_index());
             res->set_height(view_block_ptr->qc().view());
             res->set_value(view_block_ptr->SerializeAsString());
+            assert(view_block_ptr->ParseFromString(res->value()));
             res->set_key(key);
             res->set_tag(kViewHash);
             add_size += 16 + res->value().size();
@@ -514,6 +515,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_pool_idx(req_height.pool_idx());
             res->set_height(req_height.height());
             res->set_value(view_block_ptr->SerializeAsString());
+            assert(view_block_ptr->ParseFromString(res->value()));
             res->set_tag(kBlockHeight);
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
