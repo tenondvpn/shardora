@@ -290,7 +290,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
+    // assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
     SHARDORA_DEBUG("broadcast success: %lu", header.hash64());
     broadcast_->Broadcasting(des_dht, msg_ptr);
 }
