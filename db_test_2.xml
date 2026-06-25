@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="54" failures="42" disabled="0" errors="0" time="1.168" timestamp="2026-05-24T16:01:55.651" name="AllTests">
+  <testsuite name="TestDb" tests="21" failures="13" disabled="0" skipped="0" errors="0" time="0.485" timestamp="2026-05-24T16:01:55.651">
+    <testcase name="PutAndGet" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="48" status="run" result="completed" time="0.002" timestamp="2026-05-24T16:01:55.651" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutWithCharPointer" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="58" status="run" result="completed" time="0.023" timestamp="2026-05-24T16:01:55.654" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="GetNonExistentKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="71" status="run" result="completed" time="0.012" timestamp="2026-05-24T16:01:55.678" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="DeleteKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="77" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:55.690" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="DeleteNonExistentKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="90" status="run" result="completed" time="0." timestamp="2026-05-24T16:01:55.698" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="ExistKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="96" status="run" result="completed" time="0.019" timestamp="2026-05-24T16:01:55.699" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="OverwriteValue" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="106" status="run" result="completed" time="0.011" timestamp="2026-05-24T16:01:55.719" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="OverwriteWithEmpty" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="117" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:55.730" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="EmptyValue" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="129" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:55.738" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="EmptyKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="140" status="run" result="completed" time="0.011" timestamp="2026-05-24T16:01:55.747" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="MultipleKeys" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="152" status="run" result="completed" time="0.007" timestamp="2026-05-24T16:01:55.758" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="LargeValue" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="173" status="run" result="completed" time="0." timestamp="2026-05-24T16:01:55.766" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="ClearPrefix" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="187" status="run" result="completed" time="0.047" timestamp="2026-05-24T16:01:55.767" classname="TestDb" />
+    <testcase name="ClearPrefixNoMatch" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="201" status="run" result="completed" time="0.042" timestamp="2026-05-24T16:01:55.814" classname="TestDb" />
+    <testcase name="ClearPrefixEmpty" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="212" status="run" result="completed" time="0.041" timestamp="2026-05-24T16:01:55.856" classname="TestDb" />
+    <testcase name="GetAllPrefix" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="219" status="run" result="completed" time="0.045" timestamp="2026-05-24T16:01:55.897" classname="TestDb" />
+    <testcase name="GetAllPrefixNoMatch" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="235" status="run" result="completed" time="0.033" timestamp="2026-05-24T16:01:55.942" classname="TestDb" />
+    <testcase name="GetAllPrefixAll" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="244" status="run" result="completed" time="0.038" timestamp="2026-05-24T16:01:55.976" classname="TestDb" />
+    <testcase name="DoubleInitFails" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="257" status="run" result="completed" time="0.046" timestamp="2026-05-24T16:01:56.014" classname="TestDb" />
+    <testcase name="DestroyAndReinit" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="262" status="run" result="completed" time="0.068" timestamp="2026-05-24T16:01:56.060" classname="TestDb" />
+    <testcase name="BinaryKeyAndValue" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc" line="278" status="run" result="completed" time="0.007" timestamp="2026-05-24T16:01:56.129" classname="TestDb">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db.cc:29
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="TestDbBranches" tests="18" failures="15" disabled="0" skipped="0" errors="0" time="0.456" timestamp="2026-05-24T16:01:56.137">
+    <testcase name="ExistReturnsFalseForMissingKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="36" status="run" result="completed" time="0.039" timestamp="2026-05-24T16:01:56.137" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="ExistReturnsTrueAfterPut" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="40" status="run" result="completed" time="0." timestamp="2026-05-24T16:01:56.176" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutKeyValueAndGet" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="46" status="run" result="completed" time="0.03" timestamp="2026-05-24T16:01:56.177" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutWithCharPtrAndLen" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="54" status="run" result="completed" time="0.009" timestamp="2026-05-24T16:01:56.210" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutWithBinaryCharPtr" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="63" status="run" result="completed" time="0.004" timestamp="2026-05-24T16:01:56.219" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="DeleteExistingKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="74" status="run" result="completed" time="0.041" timestamp="2026-05-24T16:01:56.224" classname="TestDbBranches">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="DeleteNonexistentKeySucceeds" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="82" status="run" result="completed" time="0.043" timestamp="2026-05-24T16:01:56.265" classname="TestDbBranches" />
+    <testcase name="GetNonexistentKeyFails" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="87" status="run" result="completed" time="0.05" timestamp="2026-05-24T16:01:56.309" classname="TestDbBranches" />
+    <testcase name="ClearPrefixRemovesMatchingKeys" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="93" status="run" result="completed" time="0.044" timestamp="2026-05-24T16:01:56.359" classname="TestDbBranches">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="ClearPrefixNoMatchDoesNothing" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="107" status="run" result="completed" time="0.044" timestamp="2026-05-24T16:01:56.404" classname="TestDbBranches">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="GetAllPrefixReturnsMatchingEntries" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="113" status="run" result="completed" time="0.04" timestamp="2026-05-24T16:01:56.448" classname="TestDbBranches">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="GetAllPrefixNoMatchReturnsEmpty" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="128" status="run" result="completed" time="0.044" timestamp="2026-05-24T16:01:56.488" classname="TestDbBranches" />
+    <testcase name="GetVectorReturnsEmptyVector" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="135" status="run" result="completed" time="0." timestamp="2026-05-24T16:01:56.533" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutBatchBelowThresholdSkipsWrite" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="142" status="run" result="completed" time="0.019" timestamp="2026-05-24T16:01:56.534" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutBatchAboveThresholdWrites" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="149" status="run" result="completed" time="0.003" timestamp="2026-05-24T16:01:56.554" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="OverwriteExistingKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="157" status="run" result="completed" time="0.011" timestamp="2026-05-24T16:01:56.558" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="DbAccessorReturnsNonNull" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="165" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:56.570" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="DbWriteBatchDeleteReducesLogicalContent" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc" line="169" status="run" result="completed" time="0.015" timestamp="2026-05-24T16:01:56.578" classname="TestDbBranches">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_branches.cc:20
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="TestDbDirect" tests="2" failures="2" disabled="0" skipped="0" errors="0" time="0.011" timestamp="2026-05-24T16:01:56.594">
+    <testcase name="BasicRocksDBOperations" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_direct.cc" line="45" status="run" result="completed" time="0.006" timestamp="2026-05-24T16:01:56.594" classname="TestDbDirect">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_direct.cc:53&#x0A;Value of: s.ok()&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_direct.cc:53
+Value of: s.ok()
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="RocksDBIterator" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_direct.cc" line="101" status="run" result="completed" time="0.004" timestamp="2026-05-24T16:01:56.600" classname="TestDbDirect">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_direct.cc:107&#x0A;Value of: s.ok()&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_direct.cc:107
+Value of: s.ok()
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="DbUtilsConstants" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-05-24T16:01:56.605">
+    <testcase name="LinkLetterValueIsStable" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_utils_constants.cc" line="9" status="run" result="completed" time="0." timestamp="2026-05-24T16:01:56.605" classname="DbUtilsConstants" />
+  </testsuite>
+  <testsuite name="TestDbWriteBatch" tests="12" failures="12" disabled="0" skipped="0" errors="0" time="0.215" timestamp="2026-05-24T16:01:56.605">
+    <testcase name="PutAndCommit" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="46" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:56.605" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="DeleteInBatch" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="64" status="run" result="completed" time="0.007" timestamp="2026-05-24T16:01:56.613" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="ClearBatch" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="85" status="run" result="completed" time="0.001" timestamp="2026-05-24T16:01:56.622" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="ApproximateSize" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="100" status="run" result="completed" time="0.044" timestamp="2026-05-24T16:01:56.626" classname="TestDbWriteBatch">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="EmptyBatchNotWritten" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="111" status="run" result="completed" time="0.04" timestamp="2026-05-24T16:01:56.671" classname="TestDbWriteBatch">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="LargeBatchWritten" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="120" status="run" result="completed" time="0.054" timestamp="2026-05-24T16:01:56.711" classname="TestDbWriteBatch">
+      <failure message="unknown file&#x0A;Unknown C++ exception thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+Unknown C++ exception thrown in TearDown().
+]]></failure>
+    </testcase>
+    <testcase name="BatchAtomicity" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="129" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:56.766" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="AppendBatches" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="145" status="run" result="completed" time="0.008" timestamp="2026-05-24T16:01:56.774" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="PutAndDeleteSameKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="165" status="run" result="completed" time="0.001" timestamp="2026-05-24T16:01:56.782" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="DeleteThenPutSameKey" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="180" status="run" result="completed" time="0.012" timestamp="2026-05-24T16:01:56.787" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="MultipleBatchCommits" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="198" status="run" result="completed" time="0." timestamp="2026-05-24T16:01:56.800" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="BinaryDataInBatch" file="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc" line="221" status="run" result="completed" time="0.019" timestamp="2026-05-24T16:01:56.800" classname="TestDbWriteBatch">
+      <failure message="/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27&#x0A;Value of: db_-&gt;Init(db_path_)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/Users/xl/Desktop/work/shardora/ShardoraPub/src/db/tests/test_db_write_batch.cc:27
+Value of: db_->Init(db_path_)
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

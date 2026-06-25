@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html class="theme-green">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>dht/dht_utils.cc - GCC Code Coverage Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="coverage.css"/>
+    <script src="coverage.js"></script>
+  </head>
+
+  <body>
+    <div class="Layout-main">
+      <div class="Layout-main-centered-lg" style="max-width: 1280px;">
+        <div class="d-flex flex-justify-center">
+          <h1>GCC Code Coverage Report</h1>
+        </div>
+        <hr class="block-separator"/>
+        <header>
+<div id="summary-coverage.dht_utils.cc.3c4b8e96483da20918e105f40523c16f.html" class="summary">
+  <div>
+    <table class="legend">
+      <tr>
+        <th scope="row">Directory:</th>
+        <td>src/</td>
+      </tr>
+      <tr>
+        <th scope="row">Coverage:</th>
+        <td class="legend">
+          <span class="coverage-low">low: &ge; 0%</span>
+          <span class="coverage-medium">medium: &ge; 75.0%</span>
+          <span class="coverage-high">high: &ge; 90.0%</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div>
+    <table class="coverage">
+      <tr>
+        <th></th>
+        <th scope="col">Coverage</th>
+        <th scope="col">Exec / Excl / Total</th>
+      </tr>
+      <tr>
+        <th scope="row">Lines:</th>
+        <td class="coverage-high">100.0%</td>
+        <td class="coverage-high">15 / 0 / 15</td>
+      </tr>
+      <tr>
+        <th scope="row">Functions:</th>
+        <td class="coverage-high">100.0%</td>
+        <td class="coverage-high">3 / 0 / 3</td>
+      </tr>
+      <tr>
+        <th scope="row">Branches:</th>
+        <td class="coverage-low">50.0%</td>
+        <td class="coverage-low">8 / 0 / 16</td>
+      </tr>
+    </table>
+  </div>
+</div>
+        </header>
+        <hr/>
+        <nav>
+<div class="m-3">
+  <details>
+    <summary>List of functions</summary>
+<div class="Box m-3 functionslist">
+  <div class="Box-header py-2 d-flex sticky">
+    <div role="rowheader" class="color-fg-muted flex-auto min-width-0 col-md-2 sortable sorted-ascending">Function (File:Line)</div>
+    <div role="rowheader" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline sortable">Calls</div>
+    <div role="rowheader" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2 sortable">Lines</div>
+    <div role="rowheader" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2 sortable">Branches</div>
+    <div role="rowheader" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2 sortable">Blocks</div>
+  </div>
+  <div class="Box-row Box-row--focus-gray py-2 d-flex">
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 col-md-2"><a href="#l30">shardora::dht::DefaultDhtSignCallback(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;*, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;*, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;*) (src/dht/dht_utils.cc:30)</a>    </div>
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="27">called 27 times</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">-%</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
+  </div>
+  <div class="Box-row Box-row--focus-gray py-2 d-flex">
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 col-md-2"><a href="#l10">shardora::dht::Node::Node() (src/dht/dht_utils.cc:10)</a>    </div>
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="6030">called 6030 times</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">-%</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
+  </div>
+  <div class="Box-row Box-row--focus-gray py-2 d-flex">
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 col-md-2"><a href="#l12">shardora::dht::Node::Node(int, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt; const&amp;, unsigned short, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt; const&amp;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt; const&amp;) (src/dht/dht_utils.cc:12)</a>    </div>
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="19890">called 19890 times</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">50.0%</div>
+    <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
+  </div>
+</div>  </details>
+</div>
+
+        </nav>
+        <main>
+<div class="Box m-3 file-source">
+  <div class="Box-header d-flex flex-space-between sticky">
+    dht/dht_utils.cc
+    <div class="toggle-buttons">
+      <button type="button" class="button_toggle_coveredLine show_coveredLine" value="coveredLine" title="Toggle covered lines">8 covered</button>
+      <button type="button" class="button_toggle_uncoveredLine show_uncoveredLine" value="uncoveredLine" title="Toggle uncovered lines">0 uncovered</button>
+      <button type="button" class="button_toggle_partialCoveredLine show_partialCoveredLine" value="partialCoveredLine" title="Toggle partial covered lines">7 partial covered</button>
+      <button type="button" class="button_toggle_excludedLine show_excludedLine" value="excludedLine" title="Toggle excluded lines">0 excluded</button>
+    </div>
+    <div class="nav">
+      <a class="nav prev" href="coverage.dht_proto.cc.f416d52af7628bcc3236a6179e2da95f.html"></a>
+      <a class="nav index" href="coverage.html"></a>
+      <a class="nav next" href="coverage.dht_utils.h.44f3af439eac2ab4d34d6c6658eff22a.html"></a>
+    </div>
+  </div>
+  <div class="source-table-container">
+    <table class="text-mono text-small">
+      <tr>
+        <th align="right">Line</th>
+        <th align="right">Branch</th>
+        <th align="right">Exec</th>
+        <th align="left" style="width: 100%;">Source</th>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l1" href="#l1">1</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;dht/dht_utils.h&quot;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l2" href="#l2">2</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l3" href="#l3">3</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;protos/dht.pb.h&quot;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l4" href="#l4">4</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;dht/dht_key.h&quot;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l5" href="#l5">5</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l6" href="#l6">6</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="k">namespace</span><span class="w"> </span><span class="nn">shardora</span><span class="w"> </span><span class="p">{</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l7" href="#l7">7</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l8" href="#l8">8</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="k">namespace</span><span class="w"> </span><span class="nn">dht</span><span class="w"> </span><span class="p">{</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l9" href="#l9">9</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l10" href="#l10">10</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">6030</td>
+        <td class="src  coveredLine show_coveredLine"><span class="n">Node</span><span class="o">::</span><span class="n">Node</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l11" href="#l11">11</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l12" href="#l12">12</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">19890</td>
+        <td class="src  coveredLine show_coveredLine"><span class="n">Node</span><span class="o">::</span><span class="n">Node</span><span class="p">(</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l13" href="#l13">13</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">in_sharding_id</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l14" href="#l14">14</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_public_ip</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l15" href="#l15">15</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">in_public_port</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l16" href="#l16">16</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_pubkey_str</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l17" href="#l17">17</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">9945</td>
+        <td class="src  coveredLine show_coveredLine"><span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l18" href="#l18">18</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">9945</td>
+        <td class="src  coveredLine show_coveredLine"><span class="w">    </span><span class="n">sharding_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_sharding_id</span><span class="p">;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l19" href="#l19">19</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">1/2</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">DhtKeyManager</span><span class="w"> </span><span class="nf">dhtkey</span><span class="p">(</span><span class="n">sharding_id</span><span class="p">,</span><span class="w"> </span><span class="n">in_id</span><span class="p">);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l20" href="#l20">20</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">2/4</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+              <div class="takenBranch">&check; Branch 2 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 3 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">dht_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dhtkey</span><span class="p">.</span><span class="n">StrKey</span><span class="p">();</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l21" href="#l21">21</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">1/2</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">dht_key_hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">common</span><span class="o">::</span><span class="n">Hash</span><span class="o">::</span><span class="n">Hash64</span><span class="p">(</span><span class="n">dht_key</span><span class="p">);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l22" href="#l22">22</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">1/2</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">public_ip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_public_ip</span><span class="p">;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l23" href="#l23">23</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">9945</td>
+        <td class="src  coveredLine show_coveredLine"><span class="w">    </span><span class="n">public_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_public_port</span><span class="p">;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l24" href="#l24">24</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">1/2</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">pubkey_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_pubkey_str</span><span class="p">;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l25" href="#l25">25</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">    </span><span class="c1">//assert(!pubkey_str.empty());</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l26" href="#l26">26</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">1/2</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_id</span><span class="p">;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l27" href="#l27">27</a></td>
+        <td class="linebranch">
+          <details class="linebranchDetails">
+            <summary class="linebranchSummary">1/2</summary>
+            <div class="linebranchContents">
+              <div class="takenBranch">&check; Branch 0 taken 9945 times.</div>
+              <div class="notTakenBranch">&cross; Branch 1 not taken.</div>
+            </div>
+          </details>
+        </td>
+        <td class="linecount partialCoveredLine show_partialCoveredLine">9945</td>
+        <td class="src  partialCoveredLine show_partialCoveredLine"><span class="w">    </span><span class="n">id_hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">common</span><span class="o">::</span><span class="n">Hash</span><span class="o">::</span><span class="n">Hash64</span><span class="p">(</span><span class="n">id</span><span class="p">);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l28" href="#l28">28</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">9945</td>
+        <td class="src  coveredLine show_coveredLine"><span class="p">}</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l29" href="#l29">29</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l30" href="#l30">30</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">27</td>
+        <td class="src  coveredLine show_coveredLine"><span class="kt">int</span><span class="w"> </span><span class="n">DefaultDhtSignCallback</span><span class="p">(</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l31" href="#l31">31</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">peer_pubkey</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l32" href="#l32">32</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">append_data</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l33" href="#l33">33</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">*</span><span class="w"> </span><span class="n">enc_data</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l34" href="#l34">34</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">*</span><span class="w"> </span><span class="n">sign_ch</span><span class="p">,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l35" href="#l35">35</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">*</span><span class="w"> </span><span class="n">sign_re</span><span class="p">)</span><span class="w"> </span><span class="p">{</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l36" href="#l36">36</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="w">    </span><span class="cm">/*  std::string sec_key;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l37" href="#l37">37</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      security::PublicKey pubkey(peer_pubkey);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l38" href="#l38">38</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      if (security::EcdhCreateKey::Instance()-&gt;CreateKey(</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l39" href="#l39">39</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              pubkey,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l40" href="#l40">40</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              sec_key) != security::kSecuritySuccess) {</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l41" href="#l41">41</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          return dht::kDhtError;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l42" href="#l42">42</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      }</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l43" href="#l43">43</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l44" href="#l44">44</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      auto now_tm_sec = std::chrono::steady_clock::now().time_since_epoch().count() /</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l45" href="#l45">45</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          1000000000llu;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l46" href="#l46">46</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      std::string enc_src_data = std::to_string(now_tm_sec);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l47" href="#l47">47</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      uint32_t data_size = (enc_src_data.size() / AES_BLOCK_SIZE) * AES_BLOCK_SIZE + AES_BLOCK_SIZE;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l48" href="#l48">48</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      char* tmp_out_enc = (char*)malloc(data_size);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l49" href="#l49">49</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      memset(tmp_out_enc, 0, data_size);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l50" href="#l50">50</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      if (security::Aes::Encrypt(</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l51" href="#l51">51</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              (char*)enc_src_data.c_str(),</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l52" href="#l52">52</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              enc_src_data.size(),</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l53" href="#l53">53</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              (char*)sec_key.c_str(),</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l54" href="#l54">54</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              sec_key.size(),</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l55" href="#l55">55</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">              tmp_out_enc) != security::kSecuritySuccess) {</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l56" href="#l56">56</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          free(tmp_out_enc);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l57" href="#l57">57</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          return dht::kDhtError;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l58" href="#l58">58</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      }</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l59" href="#l59">59</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l60" href="#l60">60</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      *enc_data = std::string(tmp_out_enc, data_size);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l61" href="#l61">61</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      free(tmp_out_enc);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l62" href="#l62">62</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      security::Signature sign;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l63" href="#l63">63</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      bool sign_res = security::Security::Instance()-&gt;Sign(</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l64" href="#l64">64</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          *enc_data,</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l65" href="#l65">65</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          *(security::Security::Instance()-&gt;prikey()),</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l66" href="#l66">66</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          *(security::Security::Instance()-&gt;pubkey()),</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l67" href="#l67">67</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          sign);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l68" href="#l68">68</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      if (!sign_res) {</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l69" href="#l69">69</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">          return dht::kDhtError;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l70" href="#l70">70</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      }</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l71" href="#l71">71</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l72" href="#l72">72</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      std::string sign_challenge_str;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l73" href="#l73">73</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      std::string sign_response_str;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l74" href="#l74">74</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      sign.Serialize(sign_challenge_str, sign_response_str);</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l75" href="#l75">75</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      *sign_ch = sign_challenge_str;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l76" href="#l76">76</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="cm">      *sign_re = sign_response_str;*/</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l77" href="#l77">77</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount coveredLine show_coveredLine">27</td>
+        <td class="src  coveredLine show_coveredLine"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">dht</span><span class="o">::</span><span class="n">kDhtSuccess</span><span class="p">;</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l78" href="#l78">78</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="p">}</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l79" href="#l79">79</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l80" href="#l80">80</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="p">}</span><span class="w">  </span><span class="c1">// namespace dht</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l81" href="#l81">81</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l82" href="#l82">82</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "><span class="p">}</span><span class="w">  </span><span class="c1">// namespace shardora</span></td>
+      </tr>
+      <tr class="source-line">
+        <td class="lineno"><a id="l83" href="#l83">83</a></td>
+        <td class="linebranch">
+        </td>
+        <td class="linecount"></td>
+        <td class="src "></td>
+      </tr>
+    </table>
+  </div>
+</div>
+        </main>
+        <hr class="block-separator"/>
+        <footer class="text-center">
+          Created using <a href="http://gcovr.com/en/8.6">GCOVR (Version 8.6)</a>
+          at 2026-05-24 18:38:54
+        </footer>
+      </div>
+    </div>
+  </body>
+
+</html>

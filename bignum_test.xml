@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="66" failures="0" disabled="0" errors="0" time="0.031" timestamp="2026-05-05T17:39:23.599" name="AllTests">
+  <testsuite name="TestBignumUtils" tests="22" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-05-05T17:39:23.599">
+    <testcase name="FromBigEndianUint32" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="28" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="FromBigEndianUint64" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="35" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="FromBigEndianZero" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="41" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="FromBigEndianMax" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="47" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="FromBigEndianSingleByte" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="53" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="FromBigEndianBigint" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="59" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="ToBigEndianUint32" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="70" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="ToBigEndianZero" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="80" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="ToBigEndianMax" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="90" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="ToBigEndianUint64" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="100" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="ToBigEndianRawPointer" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="114" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="RoundTripUint32" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="129" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="RoundTripUint64" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="139" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="RoundTripBigint" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="149" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="RoundTripBigintLarge" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="159" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256BasicArithmetic" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="172" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256Multiplication" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="179" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256LargeValue" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="186" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256Overflow" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="193" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256BitwiseOps" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="200" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256Comparison" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="208" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+    <testcase name="U256Division" file="/root/shardora/src/big_num/tests/test_bignum_utils.cc" line="219" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestBignumUtils" />
+  </testsuite>
+  <testsuite name="TestLibsnark" tests="29" failures="0" disabled="0" skipped="0" errors="0" time="0.015" timestamp="2026-05-05T17:39:23.599">
+    <testcase name="FixedHashDefaultConstruction" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="32" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashFromUnsigned" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="41" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashEquality" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="51" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashComparison" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="59" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashXor" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="68" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashOr" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="75" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashAnd" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="82" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashNot" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="89" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashIncrement" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="99" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashFromBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="110" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashToBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="119" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashArithConversion" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="127" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashContains" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="137" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashClear" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="144" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="FixedHashHex" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="151" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="VectorRefBasic" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="162" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="VectorRefEmpty" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="171" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="VectorRefCropped" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="178" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="VectorRefCroppedOutOfBounds" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="188" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="VectorRefToVector" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="197" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="VectorRefToString" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="204" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="G1AddIdentityBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="212" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="G1AddGeneratorPlusZeroBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="225" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="G1MulByOneBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="242" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="G1MulByZeroBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="257" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="G1MulConsistencyWithAdd" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="273" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="PairingEmptyInputBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="300" status="run" result="completed" time="0.007" timestamp="2026-05-05T17:39:23.599" classname="TestLibsnark" />
+    <testcase name="PairingInvalidLengthBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="310" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.607" classname="TestLibsnark" />
+    <testcase name="PairingZeroPointsBytes" file="/root/shardora/src/big_num/tests/test_libsnark.cc" line="318" status="run" result="completed" time="0.007" timestamp="2026-05-05T17:39:23.607" classname="TestLibsnark" />
+  </testsuite>
+  <testsuite name="TestSnark" tests="15" failures="0" disabled="0" skipped="0" errors="0" time="0.015" timestamp="2026-05-05T17:39:23.614">
+    <testcase name="G1AddIdentity" file="/root/shardora/src/big_num/tests/test_snark.cc" line="34" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.614" classname="TestSnark" />
+    <testcase name="G1AddGeneratorPlusZero" file="/root/shardora/src/big_num/tests/test_snark.cc" line="46" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.614" classname="TestSnark" />
+    <testcase name="G1AddZeroPlusGenerator" file="/root/shardora/src/big_num/tests/test_snark.cc" line="62" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1AddCommutative" file="/root/shardora/src/big_num/tests/test_snark.cc" line="77" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1AddAssociative" file="/root/shardora/src/big_num/tests/test_snark.cc" line="102" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1AddInvalidInput" file="/root/shardora/src/big_num/tests/test_snark.cc" line="120" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1MulByZero" file="/root/shardora/src/big_num/tests/test_snark.cc" line="128" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1MulByOne" file="/root/shardora/src/big_num/tests/test_snark.cc" line="143" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1MulByTwo" file="/root/shardora/src/big_num/tests/test_snark.cc" line="159" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1MulByThree" file="/root/shardora/src/big_num/tests/test_snark.cc" line="182" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1MulDistributive" file="/root/shardora/src/big_num/tests/test_snark.cc" line="203" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="G1MulZeroPoint" file="/root/shardora/src/big_num/tests/test_snark.cc" line="231" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="PairingEmptyInput" file="/root/shardora/src/big_num/tests/test_snark.cc" line="245" status="run" result="completed" time="0.007" timestamp="2026-05-05T17:39:23.615" classname="TestSnark" />
+    <testcase name="PairingInvalidLength" file="/root/shardora/src/big_num/tests/test_snark.cc" line="253" status="run" result="completed" time="0." timestamp="2026-05-05T17:39:23.622" classname="TestSnark" />
+    <testcase name="PairingZeroPoints" file="/root/shardora/src/big_num/tests/test_snark.cc" line="260" status="run" result="completed" time="0.007" timestamp="2026-05-05T17:39:23.622" classname="TestSnark" />
+  </testsuite>
+</testsuites>

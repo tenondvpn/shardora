@@ -1,0 +1,21 @@
+# Runtime image for Shardora nodes on linux/arm64 (e.g. Apple Silicon Docker).
+# Build from repository root: docker buildx build --platform linux/arm64 -f docker/arm64/Dockerfile.runtime -t shardora-node:arm64 .
+FROM --platform=linux/arm64 ubuntu:22.04
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    iproute2 \
+    procps \
+    psmisc \
+    coreutils \
+    netbase \
+    util-linux \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY start_cmd.sh /root/start_cmd.sh
+COPY docker/arm64/temp_cmd_docker.sh /usr/local/bin/temp_cmd_docker.sh
+COPY docker/arm64/start_cmd_docker.sh /usr/local/bin/start_cmd_docker.sh
+RUN chmod +x /root/start_cmd.sh /usr/local/bin/temp_cmd_docker.sh /usr/local/bin/start_cmd_docker.sh
+
+WORKDIR /root

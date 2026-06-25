@@ -1,0 +1,123 @@
+diff --git a/src/broadcast/tests/CMakeLists.txt b/src/broadcast/tests/CMakeLists.txt
+index af7ceee1..92270dd9 100644
+--- a/src/broadcast/tests/CMakeLists.txt
++++ b/src/broadcast/tests/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_executable(broadcast_test ${broadcast_test_src})
+ 
+ add_dependencies(broadcast_test broadcast)
+ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-    target_link_libraries(broadcast_test PRIVATE broadcast dht transport common protos gtest gtest_main gmock gmock_main pthread dl)
++    target_link_libraries(broadcast_test PRIVATE broadcast dht transport security common protos gmssl gtest gtest_main gmock gmock_main pthread dl)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(broadcast_test PRIVATE broadcast dht transport common protos gtest gtest_main gmock gmock_main)
+ endif()
+diff --git a/src/common/tests/CMakeLists.txt b/src/common/tests/CMakeLists.txt
+index 921edb5b..05556a87 100644
+--- a/src/common/tests/CMakeLists.txt
++++ b/src/common/tests/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_executable(common_test ${common_test_src})
+ 
+ add_dependencies(common_test common)
+ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-    target_link_libraries(common_test PRIVATE common gtest gtest_main gmock gmock_main pthread dl)
++    target_link_libraries(common_test PRIVATE common gmssl gtest gtest_main gmock gmock_main pthread dl)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(common_test PRIVATE common gtest gtest_main gmock gmock_main)
+ endif()
+diff --git a/src/db/tests/CMakeLists.txt b/src/db/tests/CMakeLists.txt
+index 0dfc1366..1bb8fc66 100644
+--- a/src/db/tests/CMakeLists.txt
++++ b/src/db/tests/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_executable(db_test ${db_test_src})
+ 
+ add_dependencies(db_test db)
+ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-    target_link_libraries(db_test PRIVATE db common leveldb bz2 gtest gtest_main gmock gmock_main pthread dl)
++    target_link_libraries(db_test PRIVATE db common leveldb gtest gtest_main gmock gmock_main pthread dl)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(db_test PRIVATE db common leveldb bz2 gtest gtest_main gmock gmock_main)
+ endif()
+diff --git a/src/dht/tests/CMakeLists.txt b/src/dht/tests/CMakeLists.txt
+index b880d80d..adffca5e 100644
+--- a/src/dht/tests/CMakeLists.txt
++++ b/src/dht/tests/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_executable(dht_test ${dht_test_src})
+ 
+ add_dependencies(dht_test dht)
+ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-    target_link_libraries(dht_test PRIVATE dht transport common protos gtest gtest_main gmock gmock_main pthread dl)
++    target_link_libraries(dht_test PRIVATE dht transport security common protos gmssl gtest gtest_main gmock gmock_main pthread dl)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(dht_test PRIVATE dht transport common protos gtest gtest_main gmock gmock_main)
+ endif()
+diff --git a/src/elect/tests/CMakeLists.txt b/src/elect/tests/CMakeLists.txt
+index 435df366..77a446c0 100644
+--- a/src/elect/tests/CMakeLists.txt
++++ b/src/elect/tests/CMakeLists.txt
+@@ -6,4 +6,4 @@ aux_source_directory(./ elect_test_src)
+ add_executable(elect_test ${elect_test_src})
+ 
+ add_dependencies(elect_test elect)
+-target_link_libraries(elect_test PRIVATE elect bz2 gtest gtest_main gmock gmock_main pthread dl)
++target_link_libraries(elect_test PRIVATE elect gtest gtest_main gmock gmock_main pthread dl)
+diff --git a/src/pools/tests/CMakeLists.txt b/src/pools/tests/CMakeLists.txt
+index fd60c00d..b215a3cb 100644
+--- a/src/pools/tests/CMakeLists.txt
++++ b/src/pools/tests/CMakeLists.txt
+@@ -21,8 +21,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+         broadcast
+         dht
+         transport
+-        websocket
+-        http
+         contract
+         pki
+         big_num
+@@ -48,8 +46,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+         broadcast
+         dht
+         transport
+-        websocket
+-        http
+         contract
+         pki
+         big_num
+diff --git a/src/shardoravm/tests/CMakeLists.txt b/src/shardoravm/tests/CMakeLists.txt
+index 3c1bf81e..0b1517d0 100644
+--- a/src/shardoravm/tests/CMakeLists.txt
++++ b/src/shardoravm/tests/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_executable(shardoravm_test ${shardoravm_test_src})
+ 
+ add_dependencies(shardoravm_test shardoravm)
+ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-    target_link_libraries(shardoravm_test PRIVATE shardoravm pthread gtest gtest_main gmock gmock_main pthread dl)
++    target_link_libraries(shardoravm_test PRIVATE shardoravm consensus gmssl pthread gtest gtest_main gmock gmock_main pthread dl)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(shardoravm_test PRIVATE shardoravm gtest gtest_main gmock gmock_main)
+ endif()
+diff --git a/src/timeblock/tests/CMakeLists.txt b/src/timeblock/tests/CMakeLists.txt
+index aca6cbb0..670f013b 100644
+--- a/src/timeblock/tests/CMakeLists.txt
++++ b/src/timeblock/tests/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_executable(tmblock_test ${tmblock_test_src})
+ 
+ add_dependencies(tmblock_test timeblock)
+ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-    target_link_libraries(tmblock_test PRIVATE timeblock common protos db gtest gtest_main gmock gmock_main pthread dl)
++    target_link_libraries(tmblock_test PRIVATE timeblock common protos db ssl crypto gmp gtest gtest_main gmock gmock_main pthread dl)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(tmblock_test PRIVATE timeblock common protos db gtest gtest_main gmock gmock_main)
+ endif()
+diff --git a/src/transport/tests/test_tcp_transport.cc b/src/transport/tests/test_tcp_transport.cc
+index 96d5aa58..05184df8 100644
+--- a/src/transport/tests/test_tcp_transport.cc
++++ b/src/transport/tests/test_tcp_transport.cc
+@@ -31,7 +31,7 @@ public:
+ TEST_F(TestTcpTransport, TestServer) {
+     transport::MultiThreadHandler net_handler;
+     auto db_ptr = std::make_shared<db::Db>();
+-    auto security_ptr = std::make_shared<security::Ecdsa>();
++    std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
+     // MultiThreadHandler::Init now requires both db and security
+     ASSERT_EQ(net_handler.Init(db_ptr, security_ptr), 0);
+ 

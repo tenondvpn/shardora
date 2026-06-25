@@ -1,0 +1,73 @@
+diff --git a/src/big_num/snark.cc b/src/big_num/snark.cc
+index 61fae863..7f5009ca 100644
+--- a/src/big_num/snark.cc
++++ b/src/big_num/snark.cc
+@@ -86,7 +86,9 @@ void Snark::InitLibSnark() {
+ }
+ 
+ libff::bigint<libff::alt_bn128_q_limbs> Snark::ToLibsnarkBigint(const std::string& in_x) {
+-    assert(in_x.size() == 32);
++    if (in_x.size() != 32) {
++        throw std::runtime_error("invalid bigint byte length");
++    }
+     libff::bigint<libff::alt_bn128_q_limbs> b;
+     auto const N = b.N;
+     constexpr size_t L = sizeof(b.data[0]);
+@@ -123,7 +125,9 @@ libff::alt_bn128_Fq Snark::DecodeFqElement(const std::string& data) {
+ }
+ 
+ libff::alt_bn128_G1 Snark::DecodePointG1(const std::string& data) {
+-    assert(data.size() > 32);
++    if (data.size() < 64) {
++        throw std::runtime_error("invalid alt_bn128 G1 encoding length");
++    }
+     libff::alt_bn128_Fq x = DecodeFqElement(data.substr(0, data.size()));
+     libff::alt_bn128_Fq y = DecodeFqElement(data.substr(32, data.size() - 32));
+     if (x == libff::alt_bn128_Fq::zero() && y == libff::alt_bn128_Fq::zero()) {
+@@ -148,14 +152,18 @@ std::string Snark::EncodePointG1(libff::alt_bn128_G1 p) {
+ }
+ 
+ libff::alt_bn128_Fq2 Snark::DecodeFq2Element(const std::string& data) {
+-    assert(data.size() > 32);
++    if (data.size() < 64) {
++        throw std::runtime_error("invalid alt_bn128 Fq2 encoding length");
++    }
+     return libff::alt_bn128_Fq2(
+         DecodeFqElement(data.substr(32, data.size() - 32)),
+         DecodeFqElement(data.substr(0, data.size())));
+ }
+ 
+ libff::alt_bn128_G2 Snark::DecodePointG2(const std::string& data) {
+-    assert(data.size() > 64);
++    if (data.size() < 128) {
++        throw std::runtime_error("invalid alt_bn128 G2 encoding length");
++    }
+     libff::alt_bn128_Fq2 const x = DecodeFq2Element(data);
+     libff::alt_bn128_Fq2 const y = DecodeFq2Element(data.substr(64, data.size() - 64));
+     if (x == libff::alt_bn128_Fq2::zero() && y == libff::alt_bn128_Fq2::zero())
+diff --git a/src/block/tests/test_block.cc b/src/block/tests/test_block.cc
+index 672bbe00..5bb68853 100644
+--- a/src/block/tests/test_block.cc
++++ b/src/block/tests/test_block.cc
+@@ -217,6 +217,10 @@ TEST_F(TestBlock, AddressInfoSerialize) {
+     addr.set_balance(1000000);
+     addr.set_nonce(42);
+     addr.set_type(address::protobuf::kNormal);
++    addr.set_sharding_id(3);
++    addr.set_pool_index(5);
++    addr.set_latest_height(100);
++    addr.set_tx_index(7);
+ 
+     std::string serialized = addr.SerializeAsString();
+     address::protobuf::AddressInfo deserialized;
+@@ -224,6 +228,10 @@ TEST_F(TestBlock, AddressInfoSerialize) {
+     ASSERT_EQ(deserialized.addr(), addr.addr());
+     ASSERT_EQ(deserialized.balance(), 1000000u);
+     ASSERT_EQ(deserialized.nonce(), 42u);
++    ASSERT_EQ(deserialized.sharding_id(), 3u);
++    ASSERT_EQ(deserialized.pool_index(), 5u);
++    ASSERT_EQ(deserialized.latest_height(), 100u);
++    ASSERT_EQ(deserialized.tx_index(), 7u);
+ }
+ 
+ // --- Constants Tests ---

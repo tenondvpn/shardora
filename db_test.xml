@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="35" failures="1" disabled="0" errors="0" time="0.183" timestamp="2026-05-05T17:56:48.674" name="AllTests">
+  <testsuite name="TestDb" tests="21" failures="0" disabled="0" skipped="0" errors="0" time="0.111" timestamp="2026-05-05T17:56:48.674">
+    <testcase name="PutAndGet" file="/root/shardora/src/db/tests/test_db.cc" line="48" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.674" classname="TestDb" />
+    <testcase name="PutWithCharPointer" file="/root/shardora/src/db/tests/test_db.cc" line="58" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.679" classname="TestDb" />
+    <testcase name="GetNonExistentKey" file="/root/shardora/src/db/tests/test_db.cc" line="71" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.683" classname="TestDb" />
+    <testcase name="DeleteKey" file="/root/shardora/src/db/tests/test_db.cc" line="77" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.688" classname="TestDb" />
+    <testcase name="DeleteNonExistentKey" file="/root/shardora/src/db/tests/test_db.cc" line="90" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.692" classname="TestDb" />
+    <testcase name="ExistKey" file="/root/shardora/src/db/tests/test_db.cc" line="96" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.696" classname="TestDb" />
+    <testcase name="OverwriteValue" file="/root/shardora/src/db/tests/test_db.cc" line="106" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.701" classname="TestDb" />
+    <testcase name="OverwriteWithEmpty" file="/root/shardora/src/db/tests/test_db.cc" line="117" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.705" classname="TestDb" />
+    <testcase name="EmptyValue" file="/root/shardora/src/db/tests/test_db.cc" line="129" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.710" classname="TestDb" />
+    <testcase name="EmptyKey" file="/root/shardora/src/db/tests/test_db.cc" line="140" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.714" classname="TestDb" />
+    <testcase name="MultipleKeys" file="/root/shardora/src/db/tests/test_db.cc" line="152" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.718" classname="TestDb" />
+    <testcase name="LargeValue" file="/root/shardora/src/db/tests/test_db.cc" line="173" status="run" result="completed" time="0.006" timestamp="2026-05-05T17:56:48.723" classname="TestDb" />
+    <testcase name="ClearPrefix" file="/root/shardora/src/db/tests/test_db.cc" line="187" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.730" classname="TestDb" />
+    <testcase name="ClearPrefixNoMatch" file="/root/shardora/src/db/tests/test_db.cc" line="201" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.735" classname="TestDb" />
+    <testcase name="ClearPrefixEmpty" file="/root/shardora/src/db/tests/test_db.cc" line="212" status="run" result="completed" time="0.005" timestamp="2026-05-05T17:56:48.740" classname="TestDb" />
+    <testcase name="GetAllPrefix" file="/root/shardora/src/db/tests/test_db.cc" line="219" status="run" result="completed" time="0.006" timestamp="2026-05-05T17:56:48.745" classname="TestDb" />
+    <testcase name="GetAllPrefixNoMatch" file="/root/shardora/src/db/tests/test_db.cc" line="235" status="run" result="completed" time="0.007" timestamp="2026-05-05T17:56:48.752" classname="TestDb" />
+    <testcase name="GetAllPrefixAll" file="/root/shardora/src/db/tests/test_db.cc" line="244" status="run" result="completed" time="0.008" timestamp="2026-05-05T17:56:48.759" classname="TestDb" />
+    <testcase name="DoubleInitFails" file="/root/shardora/src/db/tests/test_db.cc" line="257" status="run" result="completed" time="0.006" timestamp="2026-05-05T17:56:48.768" classname="TestDb" />
+    <testcase name="DestroyAndReinit" file="/root/shardora/src/db/tests/test_db.cc" line="262" status="run" result="completed" time="0.007" timestamp="2026-05-05T17:56:48.774" classname="TestDb" />
+    <testcase name="BinaryKeyAndValue" file="/root/shardora/src/db/tests/test_db.cc" line="278" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.781" classname="TestDb" />
+  </testsuite>
+  <testsuite name="TestDbDirect" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.019" timestamp="2026-05-05T17:56:48.785">
+    <testcase name="BasicRocksDBOperations" file="/root/shardora/src/db/tests/test_db_direct.cc" line="45" status="run" result="completed" time="0.01" timestamp="2026-05-05T17:56:48.785" classname="TestDbDirect" />
+    <testcase name="RocksDBIterator" file="/root/shardora/src/db/tests/test_db_direct.cc" line="101" status="run" result="completed" time="0.008" timestamp="2026-05-05T17:56:48.795" classname="TestDbDirect" />
+  </testsuite>
+  <testsuite name="TestDbWriteBatch" tests="12" failures="1" disabled="0" skipped="0" errors="0" time="0.053" timestamp="2026-05-05T17:56:48.804">
+    <testcase name="PutAndCommit" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="46" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.804" classname="TestDbWriteBatch" />
+    <testcase name="DeleteInBatch" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="64" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.809" classname="TestDbWriteBatch">
+      <failure message="/root/shardora/src/db/tests/test_db_write_batch.cc:81&#x0A;Value of: db_-&gt;Exist(&quot;del_key3&quot;)&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/root/shardora/src/db/tests/test_db_write_batch.cc:81
+Value of: db_->Exist("del_key3")
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+    <testcase name="ClearBatch" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="84" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.813" classname="TestDbWriteBatch" />
+    <testcase name="ApproximateSize" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="99" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.817" classname="TestDbWriteBatch" />
+    <testcase name="EmptyBatchNotWritten" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="110" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.822" classname="TestDbWriteBatch" />
+    <testcase name="LargeBatchWritten" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="119" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.826" classname="TestDbWriteBatch" />
+    <testcase name="BatchAtomicity" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="128" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.831" classname="TestDbWriteBatch" />
+    <testcase name="AppendBatches" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="144" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.835" classname="TestDbWriteBatch" />
+    <testcase name="PutAndDeleteSameKey" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="164" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.840" classname="TestDbWriteBatch" />
+    <testcase name="DeleteThenPutSameKey" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="179" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.844" classname="TestDbWriteBatch" />
+    <testcase name="MultipleBatchCommits" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="197" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.848" classname="TestDbWriteBatch" />
+    <testcase name="BinaryDataInBatch" file="/root/shardora/src/db/tests/test_db_write_batch.cc" line="220" status="run" result="completed" time="0.004" timestamp="2026-05-05T17:56:48.853" classname="TestDbWriteBatch" />
+  </testsuite>
+</testsuites>
