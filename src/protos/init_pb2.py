@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.init.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x11protos/init.proto\x12\x16shardora.init.protobuf\x1a\x10protos/bls.proto\x1a\x17protos/view_block.proto\"#\n\x15GetAddressInfoRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\"Y\n\x16GetAddressInfoResponse\x12?\n\nview_block\x18\x01 \x01(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\"\x85\x01\n\x12InvalidLeaderPools\x12\r\n\x05pools\x18\x01 \x03(\x05\x12\x14\n\x0c\x65lect_height\x18\x02 \x01(\x04\x12\x14\n\x0cmember_index\x18\x03 \x01(\r\x12\x0f\n\x07mod_num\x18\x04 \x01(\x05\x12\x12\n\nleader_idx\x18\x05 \x01(\r\x12\x0f\n\x07version\x18\x06 \x01(\r\"\xef\x01\n\x12GenesisInitBlsInfo\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x10\n\x08shard_id\x18\x02 \x01(\r\x12\n\n\x02id\x18\x03 \x01(\x0c\x12\x14\n\x0c\x62ls_enc_data\x18\x04 \x01(\x0c\x12\x10\n\x08\x62ls_hash\x18\x05 \x01(\x0c\x12\x37\n\tjoin_info\x18\x06 \x01(\x0b\x32$.shardora.bls.protobuf.JoinElectInfo\x12:\n\nlocal_poly\x18\x07 \x01(\x0b\x32&.shardora.bls.protobuf.LocalPolynomial\x12\x0e\n\x06prikey\x18\x08 \x01(\x0c\"\xcb\x01\n\x0bInitMessage\x12?\n\x08\x61\x64\x64r_req\x18\x01 \x01(\x0b\x32-.shardora.init.protobuf.GetAddressInfoRequest\x12@\n\x08\x61\x64\x64r_res\x18\x02 \x01(\x0b\x32..shardora.init.protobuf.GetAddressInfoResponse\x12\x39\n\x05pools\x18\x03 \x01(\x0b\x32*.shardora.init.protobuf.InvalidLeaderPools')
+  serialized_pb=_b('\n\x11protos/init.proto\x12\x12shardora.init.protobuf\x1a\x10protos/bls.proto\x1a\x17protos/view_block.proto\"#\n\x15GetAddressInfoRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\"U\n\x16GetAddressInfoResponse\x12;\n\nview_block\x18\x01 \x01(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\"\x85\x01\n\x12InvalidLeaderPools\x12\r\n\x05pools\x18\x01 \x03(\x05\x12\x14\n\x0c\x65lect_height\x18\x02 \x01(\x04\x12\x14\n\x0cmember_index\x18\x03 \x01(\r\x12\x0f\n\x07mod_num\x18\x04 \x01(\x05\x12\x12\n\nleader_idx\x18\x05 \x01(\r\x12\x0f\n\x07version\x18\x06 \x01(\r\"\xe7\x01\n\x12GenesisInitBlsInfo\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x10\n\x08shard_id\x18\x02 \x01(\r\x12\n\n\x02id\x18\x03 \x01(\x0c\x12\x14\n\x0c\x62ls_enc_data\x18\x04 \x01(\x0c\x12\x10\n\x08\x62ls_hash\x18\x05 \x01(\x0c\x12\x33\n\tjoin_info\x18\x06 \x01(\x0b\x32 .shardora.bls.protobuf.JoinElectInfo\x12\x36\n\nlocal_poly\x18\x07 \x01(\x0b\x32\".shardora.bls.protobuf.LocalPolynomial\x12\x0e\n\x06prikey\x18\x08 \x01(\x0c\"\xbf\x01\n\x0bInitMessage\x12;\n\x08\x61\x64\x64r_req\x18\x01 \x01(\x0b\x32).shardora.init.protobuf.GetAddressInfoRequest\x12<\n\x08\x61\x64\x64r_res\x18\x02 \x01(\x0b\x32*.shardora.init.protobuf.GetAddressInfoResponse\x12\x35\n\x05pools\x18\x03 \x01(\x0b\x32&.shardora.init.protobuf.InvalidLeaderPools')
   ,
   dependencies=[protos_dot_bls__pb2.DESCRIPTOR,protos_dot_view__block__pb2.DESCRIPTOR,])
 
@@ -54,8 +54,8 @@ _GETADDRESSINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=88,
-  serialized_end=123,
+  serialized_start=84,
+  serialized_end=119,
 )
 
 
@@ -85,8 +85,8 @@ _GETADDRESSINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=125,
-  serialized_end=214,
+  serialized_start=121,
+  serialized_end=206,
 )
 
 
@@ -151,8 +151,8 @@ _INVALIDLEADERPOOLS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=217,
-  serialized_end=350,
+  serialized_start=209,
+  serialized_end=342,
 )
 
 
@@ -231,8 +231,8 @@ _GENESISINITBLSINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=353,
-  serialized_end=592,
+  serialized_start=345,
+  serialized_end=576,
 )
 
 
@@ -276,8 +276,8 @@ _INITMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=595,
-  serialized_end=798,
+  serialized_start=579,
+  serialized_end=770,
 )
 
 _GETADDRESSINFORESPONSE.fields_by_name['view_block'].message_type = protos_dot_view__block__pb2._VIEWBLOCKITEM

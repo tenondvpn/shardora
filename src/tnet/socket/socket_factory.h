@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unistd.h>
+
 #include "tnet/tnet_utils.h"
 #include "tnet/socket/client_socket.h"
 #include "tnet/socket/listen_socket.h"
@@ -32,10 +34,24 @@ public:
         socket->SetFd(fd);
         if (!socket->Bind()) {
             SHARDORA_ERROR("bind failed, spec [%s]", spec.c_str());
-            socket->Free();
+            // Bug fix #19: On bind failure, the old code called socket->Free()
+            // (which is a no-op) then created a new ListenSocket with the SAME fd.
+            // This meant the fd was shared between the freed and new socket objects.
+            // Now we properly close the fd and create a fresh one for retry.
+            delete socket;
+            close(fd);
+            
+            fd = ::socket(AF_INET, SOCK_STREAM, 0);
+            if (fd < 0) {
+                SHARDORA_ERROR("create retry socket failed [%s]", strerror(errno));
+                return NULL;
+            }
             socket = new ListenSocket(addr, 0);
             socket->SetFd(fd);
             if (!socket->Bind()) {
+                SHARDORA_ERROR("retry bind also failed, spec [%s]", spec.c_str());
+                delete socket;
+                close(fd);
                 return NULL;
             }
         }

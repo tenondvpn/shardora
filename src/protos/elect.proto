@@ -45,8 +45,6 @@ message member {
     optional uint64 mining_amount = 3;
     optional uint64 fts_value = 4;
     optional uint64 consensus_gap = 5;
-    optional BlsPublicKey agg_bls_pk = 6;
-    optional BlsPopProof agg_bls_pk_proof = 7;
 }
 
 message ElectBlock {

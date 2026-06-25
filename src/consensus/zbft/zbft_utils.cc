@@ -1,15 +1,14 @@
 #include "consensus/zbft/zbft_utils.h"
 
+#include "common/hash.h"
+#include "common/utils.h"
 #include "consensus/consensus_utils.h"
-#include "elect/elect_manager.h"
-#include "network/network_utils.h"
 
 namespace shardora {
-
 namespace consensus {
 
 std::string StatusToString(uint32_t status) {
-    switch (status) {
+    switch (static_cast<BftStatus>(status)) {
     case kConsensusInit:
         return "bft_init";
     case kConsensusPrepare:
@@ -20,39 +19,53 @@ std::string StatusToString(uint32_t status) {
         return "bft_commit";
     case kConsensusCommited:
         return "bft_success";
+    case kConsensusToTxInit:
+        return "bft_to_tx_init";
+    case kConsensusRootBlock:
+        return "bft_root_block";
+    case kConsensusCallContract:
+        return "bft_call_contract";
+    case kConsensusStepTimeout:
+        return "bft_step_timeout";
+    case kConsensusSyncBlock:
+        return "bft_sync_block";
+    case kConsensusFailed:
+        return "bft_failed";
+    case kConsensusWaitingBackup:
+        return "bft_waiting_backup";
+    case kConsensusOppose:
+        return "bft_oppose";
+    case kConsensusAgree:
+        return "bft_agree";
+    case kConsensusHandled:
+        return "bft_handled";
+    case kConsensusReChallenge:
+        return "bft_re_challenge";
+    case kConsensusLeaderWaitingBlock:
+        return "bft_leader_waiting_block";
     default:
         return "unknown";
     }
 }
 
 std::string GetTxValueProtoHash(const std::string& key, const std::string& value) {
+    (void)key;
+    (void)value;
     return "";
 }
 
-
 std::string GetCommitedBlockHash(const std::string& prepare_hash) {
-    auto tmp_hash = prepare_hash;
-    bool is_commited_block = true;
-    tmp_hash.append((char*)&is_commited_block, sizeof(is_commited_block));
-    tmp_hash = common::Hash::keccak256(tmp_hash);
-    return tmp_hash;
+    return common::Hash::keccak256(prepare_hash + "commited");
 }
 
 uint32_t NewAccountGetNetworkId(const std::string& addr) {
-    return 3;
-    // return static_cast<uint32_t>((common::Hash::Hash64(addr) *
-    //     vss::VssManager::Instance()->EpochRandom()) %
-    //     common::GlobalInfo::Instance()->consensus_shard_count()) +
-    //     network::kConsensusShardBeginNetworkId;
+    (void)addr;
+    return static_cast<uint32_t>(common::kConsensusCreateAcount);
 }
 
 bool IsRootSingleBlockTx(uint32_t tx_type) {
-    if (tx_type == common::kConsensusRootElectShard ||
-            tx_type == common::kConsensusRootTimeBlock) {
-        return true;
-    }
-
-    return false;
+    return tx_type == common::kConsensusRootElectShard ||
+            tx_type == common::kConsensusRootTimeBlock;
 }
 
 bool IsShardSingleBlockTx(uint32_t tx_type) {
@@ -60,5 +73,4 @@ bool IsShardSingleBlockTx(uint32_t tx_type) {
 }
 
 }  // namespace consensus
-
-}  //namespace shardora
+}  // namespace shardora

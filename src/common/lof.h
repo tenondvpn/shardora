@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "common/utils.h"
+
 namespace shardora {
 
 namespace common {

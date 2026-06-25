@@ -207,7 +207,7 @@ if __name__ == "__main__":
     parser.add_argument('--private_key', '-p', type=str, help='私钥， 默认从./init_accounts3 获取第一个')
     parser.add_argument('--to', '-t', type=str, help='目标地址，默认随机值')
     parser.add_argument('--amount', '-a', type=int, help='转账金额默认0')
-    parser.add_argument('--prepayment', '-g', type=int, help='预置gas费默认0')
+    parser.add_argument('--prefund', '-g', type=int, help='预置gas费默认0')
     parser.add_argument('--sol', '-s', type=str, help='合约文件')
     parser.add_argument('--query', '-q', type=str, help='查询合约的函数名')
     parser.add_argument('--query_result', '-r', type=str, help='查询合约的返回值类型列表')
@@ -227,7 +227,7 @@ if __name__ == "__main__":
     to = None
     from_address = None
     amount = 0
-    prepayment = 0
+    prefund = 0
     function = ""
     function_types = []
     function_args = []
@@ -258,8 +258,8 @@ if __name__ == "__main__":
     if args.amount:
         amount = args.amount
 
-    if args.prepayment:
-        prepayment = args.prepayment
+    if args.prefund:
+        prefund = args.prefund
 
     if args.function:
         function = args.function
@@ -370,7 +370,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if sol_file is None and function == "":
-        if to is not None and prepayment > 0:
+        if to is not None and prefund > 0:
             res = shardora_api.transfer(
                 private_key,
                 to,
@@ -381,13 +381,13 @@ if __name__ == "__main__":
                 "",
                 "",
                 "",
-                prepayment=prepayment,
+                prefund=prefund,
                 check_tx_valid=True)
             if not res:
-                print("prepayment contract failed!")
+                print("prefund contract failed!")
                 sys.exit(1)
             else:
-                print("prepayment contract success!")
+                print("prefund contract success!")
                 sys.exit(0)
 
         print(f"invalid params sol_file is None and function is None")
@@ -404,7 +404,7 @@ if __name__ == "__main__":
             function_types,
             tmp_function_args,
             -1,
-            prepayment=prepayment,
+            prefund=prefund,
             check_tx_valid=True,
             is_library=create_library,
             in_libraries=libraries,

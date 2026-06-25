@@ -5,7 +5,7 @@ interface mm {
     function existsDID(string memory _did) external view returns (bool);
 }
 
-contract assethashtree {
+contract asshardoraashtree {
     // 定义用户及其权利类型的数据结构
     struct UserRights {
         string userId; // 用户DID

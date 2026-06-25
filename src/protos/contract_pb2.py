@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.contract.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x15protos/contract.proto\x12\x1ashardora.contract.protobuf\"6\n\x0fGetAttrByKeyReq\x12\x11\n\tcall_addr\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\"J\n\x0fGetAttrByKeyRes\x12\x11\n\tcall_addr\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\x12\x12\n\nattr_value\x18\x03 \x01(\x0c\"\x97\x01\n\x0f\x43ontractMessage\x12\x41\n\x0cget_attr_req\x18\x01 \x01(\x0b\x32+.shardora.contract.protobuf.GetAttrByKeyReq\x12\x41\n\x0cget_attr_res\x18\x02 \x01(\x0b\x32+.shardora.contract.protobuf.GetAttrByKeyRes')
+  serialized_pb=_b('\n\x15protos/contract.proto\x12\x16shardora.contract.protobuf\"6\n\x0fGetAttrByKeyReq\x12\x11\n\tcall_addr\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\"J\n\x0fGetAttrByKeyRes\x12\x11\n\tcall_addr\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\x12\x12\n\nattr_value\x18\x03 \x01(\x0c\"\x8f\x01\n\x0f\x43ontractMessage\x12=\n\x0cget_attr_req\x18\x01 \x01(\x0b\x32\'.shardora.contract.protobuf.GetAttrByKeyReq\x12=\n\x0cget_attr_res\x18\x02 \x01(\x0b\x32\'.shardora.contract.protobuf.GetAttrByKeyRes')
 )
 
 
@@ -58,8 +58,8 @@ _GETATTRBYKEYREQ = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=53,
-  serialized_end=107,
+  serialized_start=49,
+  serialized_end=103,
 )
 
 
@@ -103,8 +103,8 @@ _GETATTRBYKEYRES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=109,
-  serialized_end=183,
+  serialized_start=105,
+  serialized_end=179,
 )
 
 
@@ -141,8 +141,8 @@ _CONTRACTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=186,
-  serialized_end=337,
+  serialized_start=182,
+  serialized_end=325,
 )
 
 _CONTRACTMESSAGE.fields_by_name['get_attr_req'].message_type = _GETATTRBYKEYREQ

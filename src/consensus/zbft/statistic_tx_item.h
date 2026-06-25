@@ -39,45 +39,50 @@ public:
     }
 
     virtual int HandleTx(
+            uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
-            zjcvm::ZjchainHost& zjc_host,
+            shardoravm::ShardorahainHost& shardora_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         uint64_t to_balance = 0;
         uint64_t to_nonce = 0;
         auto& unique_hash = tx_info->key();
         if (GetTempAccountBalance(
-                zjc_host, 
+                shardora_host, 
                 block_tx.to(), 
                 acc_balance_map, 
                 &to_balance, 
                 &to_nonce) != consensus::kConsensusSuccess) {
-            SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            SHARDORA_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
         std::string val;
-        if (zjc_host.GetKeyValue(block_tx.to(), unique_hash, &val) == zjcvm::kZjcvmSuccess) {
-            SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+        if (shardora_host.GetKeyValue(block_tx.to(), unique_hash, &val) == shardoravm::kShardoravmSuccess) {
+            SHARDORA_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
 
         pools::protobuf::ElectStatistic elect_statistic;
         if (!elect_statistic.ParseFromString(tx_info->value())) {
-            assert(false);
-            SHARDORA_INFO("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
+            //assert(false);
+            SHARDORA_DEBUG("unique hash has consensus: %s", common::Encode::HexEncode(unique_hash).c_str());
             return consensus::kConsensusError;
         }
     
         if (elect_statistic.sharding_id() != view_block.qc().network_id()) {
-            SHARDORA_INFO("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
+            SHARDORA_DEBUG("invalid sharding id %u, %u", elect_statistic.sharding_id(), view_block.qc().network_id());
             return consensus::kConsensusError;
         }
 
-        InitHost(zjc_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-        zjc_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
+        elect_statistic.set_nonce(block_tx.nonce());
+        InitHost(shardora_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
+        block::protobuf::TxHashStatus tx_hash_status;
+        tx_hash_status.set_status(block_tx.status());
+        auto status_val = tx_hash_status.SerializeAsString();
+        shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), status_val);
+        shardora_host.SaveKeyValue(block_tx.to(), unique_hash, tx_info->value());
         block_tx.set_unique_hash(unique_hash);
-        block_tx.set_nonce(to_nonce + 1);
         SHARDORA_WARN("success call statistic tx pool: %d, view: %lu, "
             "to_nonce: %lu. tx nonce: %lu, to: %s, unique hash: %s", 
             view_block.qc().pool_index(), view_block.qc().view(),
@@ -85,10 +90,14 @@ public:
             common::Encode::HexEncode(block_tx.to()).c_str(),
             common::Encode::HexEncode(unique_hash).c_str());
         acc_balance_map[block_tx.to()]->set_balance(to_balance);
-        acc_balance_map[block_tx.to()]->set_nonce(to_nonce + 1);
-        SHARDORA_DEBUG("success add addr: %s, value: %s", 
+        acc_balance_map[block_tx.to()]->set_nonce(block_tx.nonce());
+        acc_balance_map[block_tx.to()]->set_latest_height(view_block.block_info().height());
+        acc_balance_map[block_tx.to()]->set_tx_index(tx_index);
+        SHARDORA_DEBUG("success add addr: %s, value: %s, unique hash: %s, elect_statistic: %s", 
             common::Encode::HexEncode(block_tx.to()).c_str(), 
-            ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str());
+            ProtobufToJson(*(acc_balance_map[block_tx.to()])).c_str(),
+            common::Encode::HexEncode(unique_hash).c_str(),
+            ProtobufToJson(elect_statistic).c_str());
 
         pools::protobuf::PoolStatisticTxInfo pool_st_info;
         pool_st_info.set_height(elect_statistic.statistic_height());
@@ -99,9 +108,10 @@ public:
             statistic_info->set_max_height(elect_statistic.height_info().heights(i).max_height());
         }
 
-        prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, zjc_host.db_batch_);
+        prefix_db_->SaveLatestPoolStatisticTag(elect_statistic.sharding_id(), pool_st_info, shardora_host.db_batch_);
         *view_block.mutable_block_info()->mutable_elect_statistic() = elect_statistic;
         *view_block.mutable_block_info()->mutable_pool_st_info() = pool_st_info;
+        view_block.mutable_block_info()->add_unique_hashs(block_tx.unique_hash());
         return consensus::kConsensusSuccess;
     }
 

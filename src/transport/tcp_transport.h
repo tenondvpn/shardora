@@ -1,4 +1,5 @@
 #pragma once
+#ifndef SHARDORA_USE_UV
 
 #include <condition_variable>
 #include <deque>
@@ -106,3 +107,7 @@ private:
 }  // namespace transport
 
 }  // namespace shardora
+
+#else
+#include "transport/uv_tcp_transport.h"
+#endif

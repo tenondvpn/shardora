@@ -5,7 +5,7 @@
 #define private public
 #include "common/split.h"
 
-namespace shardora {
+namespace seth {
 
 namespace common {
 
@@ -95,8 +95,48 @@ TEST_F(TestSplit, SplitWithBadChar) {
     ASSERT_EQ(line_split.SubLen(7), strlen("ddd"));
 }
 
+TEST_F(TestSplit, EmptyInputAndOutOfRangeAccess) {
+    Split<> empty("", ',');
+    ASSERT_EQ(empty.Count(), 0u);
+    ASSERT_EQ(empty[0], nullptr);
+    ASSERT_EQ(empty.SubLen(0), -1);
+}
+
+TEST_F(TestSplit, MaxSplitLimitStopsParsingFurtherDelimiters) {
+    // kMaxSplitNum=3 means at most 4 chunks are tracked.
+    Split<3> s("a,b,c,d,e", ',');
+    ASSERT_EQ(s.Count(), 4u);
+    ASSERT_EQ(std::string(s[0]), "a");
+    ASSERT_EQ(std::string(s[1]), "b");
+    ASSERT_EQ(std::string(s[2]), "c");
+    // parser breaks when delimiter count exceeds limit at next delimiter.
+    ASSERT_EQ(std::string(s[3]), "d");
+}
+
+TEST_F(TestSplit, ExplicitLenZeroBehavesAsCStringLength) {
+    const char* text = "x|y|z";
+    Split<> s(text, '|', 0);
+    ASSERT_EQ(s.Count(), 3u);
+    ASSERT_EQ(std::string(s[0]), "x");
+    ASSERT_EQ(std::string(s[1]), "y");
+    ASSERT_EQ(std::string(s[2]), "z");
+}
+
+TEST_F(TestSplit, NullInputWithExplicitLengthProducesZeroCount) {
+    Split<> s(nullptr, ',', 1);
+    ASSERT_EQ(s.Count(), 0u);
+    ASSERT_EQ(s[0], nullptr);
+    ASSERT_EQ(s.SubLen(0), -1);
+}
+
+TEST_F(TestSplit, ExplicitLengthTruncatesInput) {
+    Split<> s("left,right", ',', 4);  // only "left" is parsed
+    ASSERT_EQ(s.Count(), 1u);
+    ASSERT_EQ(std::string(s[0]), "left");
+}
+
 }  // namespace test
 
 }  // namespace common
 
-}  // namespace shardora
+}  // namespace seth

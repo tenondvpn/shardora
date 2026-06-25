@@ -2,15 +2,17 @@
 #include <math.h>
 
 #include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+#include <filesystem>
 
 #include <gtest/gtest.h>
-
-#include "bzlib.h"
 
 #define private public
 #include "db/db.h"
 
-namespace shardora {
+namespace seth {
 
 namespace db {
 
@@ -18,98 +20,282 @@ namespace test {
 
 class TestDb : public testing::Test {
 public:
-    static void SetUpTestCase() {    
-    }
-
-    static void TearDownTestCase() {
-    }
+    static void SetUpTestCase() {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp() {
+        db_path_ = "/tmp/seth_db_test_" + std::to_string(test_counter_++);
+        db_ = std::make_shared<Db>();
+        ASSERT_TRUE(db_->Init(db_path_));
     }
 
     virtual void TearDown() {
+        db_->Destroy();
+        db_.reset();
+        std::filesystem::remove_all(db_path_);
     }
+
+protected:
+    std::string db_path_;
+    std::shared_ptr<Db> db_;
+    static int test_counter_;
 };
 
-TEST_F(TestDb, All) {
-    Db test_db;
-    test_db.Init("/tmp/rocksdb_simple_example");
-    auto put_st = test_db.Put("key", "value");
-    ASSERT_TRUE(put_st.ok());
-    std::string value;
-    auto get_st = test_db.Get("key", &value);
-    ASSERT_TRUE(get_st.ok());
-    ASSERT_EQ(value, "value");
-    ASSERT_TRUE(test_db.Exist("key"));
-    ASSERT_FALSE(test_db.Exist("key1"));
-    auto delete_st = test_db.Delete("key");
-    ASSERT_TRUE(delete_st.ok());
-    auto get_st2 = test_db.Get("key", &value);
-    ASSERT_FALSE(get_st2.ok());
+int TestDb::test_counter_ = 0;
 
-    std::string src("压缩和归档库 bzip2：一个完全免费，免费专利和高质量的数据压缩 doboz：能够快速解压缩的压缩库"
-        "PhysicsFS：对各种归档提供抽象访问的库，主要用于视频游戏，设计灵感部分来自于Quake3的文件子系统。"
-        "KArchive：用于创建，读写和操作文件档案（例如zip和 tar）的库，它通过QIODevice的一系列子类，使用gzip格式，提供了透明的压缩和解压缩的数据。"
-        "LZ4 ：非常快速的压缩算法"
-        "LZHAM ：无损压缩数据库，压缩比率跟LZMA接近，但是解压缩速度却要快得多。"
-        "LZMA ：7z格式默认和通用的压缩方法。"
-        "LZMAT ：及其快速的实时无损数据压缩库"
-        "miniz：单一的C源文件，紧缩 / 膨胀压缩库，使用zlib兼容API，ZIP归档读写，PNG写方式。"
-        "Minizip：Zlib最新bug修复，支持PKWARE磁盘跨越，AES加密和IO缓冲。"
-        "Snappy ：快速压缩和解压缩"
-        "ZLib ：非常紧凑的数据流压缩库"
-        "ZZIPlib：提供ZIP归档的读权限。"
-        "并发性"
-        "并发执行和多线程"
-        "Boost.Compute ：用于OpenCL的C++GPU计算库"
-        "Bolt ：针对GPU进行优化的C++模板库"
-        "C++React ：用于C++11的反应性编程库"
-        " Intel TBB ：Intel线程构件块"
-        " Libclsph：基于OpenCL的GPU加速SPH流体仿真库"
-        "OpenCL ：并行编程的异构系统的开放标准"
-        "OpenMP：OpenMP API"
-        "Thrust ：类似于C++标准模板库的并行算法库"
-        " HPX ：用于任何规模的并行和分布式应用程序的通用C++运行时系统"
-        " VexCL ：用于OpenCL / CUDA 的C++向量表达式模板库。"
-        "容器"
-        "C++ B - tree ：基于B树数据结构，实现命令内存容器的模板库"
-        "Hashmaps： C++中开放寻址哈希表算法的实现"
-        "密码学"
-        "Bcrypt ：一个跨平台的文件加密工具，加密文件可以移植到所有可支持的操作系统和处理器中。"
-        "BeeCrypt："
-        "Botan： C++加密库"
-        "Crypto++：一个有关加密方案的免费的C++库"
-        "GnuPG： OpenPGP标准的完整实现"
-        "GnuTLS ：实现了SSL，TLS和DTLS协议的安全通信库"
-        "Libgcrypt"
-        "libmcrypt"
-        "LibreSSL：免费的SSL / TLS协议，属于2014 OpenSSL的一个分支"
-        "LibTomCrypt：一个非常全面的，模块化的，可移植的加密工具"
-        "libsodium：基于NaCI的加密库，固执己见，容易使用"
-        "Nettle 底层的加密库"
-        "OpenSSL ： 一个强大的，商用的，功能齐全的，开放源代码的加密库。"
-        "Tiny AES128 in C ：用C实现的一个小巧，可移植的实现了AES128ESB的加密算法"
-        "-------------------- -"
-        "作者：benpaobagzb"
-        "来源：CSDN"
-        "原文：https ://blog.csdn.net/benpaobagzb/article/details/50783501 "
-        "版权声明：本文为博主原创文章，转载请附上博文链接！; lawfjlasdfalsd");
-    std::string cdest(src.size(), 0);
-    uint32_t csize = src.size();
-    auto cret = BZ2_bzBuffToBuffCompress((char*)&(cdest[0]), &csize, (char*)src.c_str(), src.size(), 9, 0, 0);
-    ASSERT_TRUE(cret == BZ_OK);
-    std::cout << "src size: " << src.size() << ", dest size: " << csize << std::endl;
-    std::string ddtest(src.size(), 0);
-    uint32_t dsize = src.size();
-    auto dret = BZ2_bzBuffToBuffDecompress((char*)&(ddtest[0]), &dsize, (char*)cdest.c_str(), csize, 0, 0);
-    ASSERT_TRUE(dret == BZ_OK);
-    ASSERT_TRUE(dsize == src.size());
-    ASSERT_TRUE(ddtest == src);
-    test_db.Destroy();
+// --- Basic Put/Get/Delete Tests ---
+
+TEST_F(TestDb, PutAndGet) {
+    auto st = db_->Put("key1", "value1");
+    ASSERT_TRUE(st.ok());
+
+    std::string value;
+    st = db_->Get("key1", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value, "value1");
+}
+
+TEST_F(TestDb, PutWithCharPointer) {
+    const char* data = "binary\x00data\x01here";
+    size_t len = 16;
+    auto st = db_->Put("binkey", data, len);
+    ASSERT_TRUE(st.ok());
+
+    std::string value;
+    st = db_->Get("binkey", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value.size(), len);
+    ASSERT_EQ(memcmp(value.c_str(), data, len), 0);
+}
+
+TEST_F(TestDb, GetNonExistentKey) {
+    std::string value;
+    auto st = db_->Get("nonexistent", &value);
+    ASSERT_FALSE(st.ok());
+}
+
+TEST_F(TestDb, DeleteKey) {
+    db_->Put("key_to_delete", "value");
+    ASSERT_TRUE(db_->Exist("key_to_delete"));
+
+    auto st = db_->Delete("key_to_delete");
+    ASSERT_TRUE(st.ok());
+    ASSERT_FALSE(db_->Exist("key_to_delete"));
+
+    std::string value;
+    st = db_->Get("key_to_delete", &value);
+    ASSERT_FALSE(st.ok());
+}
+
+TEST_F(TestDb, DeleteNonExistentKey) {
+    // Deleting a non-existent key should not fail
+    auto st = db_->Delete("never_existed");
+    ASSERT_TRUE(st.ok());
+}
+
+TEST_F(TestDb, ExistKey) {
+    ASSERT_FALSE(db_->Exist("mykey"));
+    db_->Put("mykey", "myvalue");
+    ASSERT_TRUE(db_->Exist("mykey"));
+    db_->Delete("mykey");
+    ASSERT_FALSE(db_->Exist("mykey"));
+}
+
+// --- Overwrite Tests ---
+
+TEST_F(TestDb, OverwriteValue) {
+    db_->Put("key", "original");
+    std::string value;
+    db_->Get("key", &value);
+    ASSERT_EQ(value, "original");
+
+    db_->Put("key", "updated");
+    db_->Get("key", &value);
+    ASSERT_EQ(value, "updated");
+}
+
+TEST_F(TestDb, OverwriteWithEmpty) {
+    db_->Put("key", "notempty");
+    db_->Put("key", "");
+
+    std::string value;
+    auto st = db_->Get("key", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value, "");
+}
+
+// --- Empty Key/Value Tests ---
+
+TEST_F(TestDb, EmptyValue) {
+    auto st = db_->Put("empty_val_key", "");
+    ASSERT_TRUE(st.ok());
+
+    std::string value;
+    st = db_->Get("empty_val_key", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value, "");
+    ASSERT_TRUE(db_->Exist("empty_val_key"));
+}
+
+TEST_F(TestDb, EmptyKey) {
+    auto st = db_->Put("", "value_for_empty_key");
+    ASSERT_TRUE(st.ok());
+
+    std::string value;
+    st = db_->Get("", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value, "value_for_empty_key");
+}
+
+// --- Multiple Keys Tests ---
+
+TEST_F(TestDb, MultipleKeys) {
+    const int count = 100;
+    for (int i = 0; i < count; ++i) {
+        std::string key = "key_" + std::to_string(i);
+        std::string val = "value_" + std::to_string(i);
+        auto st = db_->Put(key, val);
+        ASSERT_TRUE(st.ok());
+    }
+
+    for (int i = 0; i < count; ++i) {
+        std::string key = "key_" + std::to_string(i);
+        std::string expected = "value_" + std::to_string(i);
+        std::string value;
+        auto st = db_->Get(key, &value);
+        ASSERT_TRUE(st.ok());
+        ASSERT_EQ(value, expected);
+    }
+}
+
+// --- Large Value Tests ---
+
+TEST_F(TestDb, LargeValue) {
+    std::string large_value(1024 * 1024, 'X');  // 1MB
+    auto st = db_->Put("large_key", large_value);
+    ASSERT_TRUE(st.ok());
+
+    std::string value;
+    st = db_->Get("large_key", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value.size(), large_value.size());
+    ASSERT_EQ(value, large_value);
+}
+
+// --- ClearPrefix Tests ---
+
+TEST_F(TestDb, ClearPrefix) {
+    db_->Put("prefix_aaa", "1");
+    db_->Put("prefix_bbb", "2");
+    db_->Put("prefix_ccc", "3");
+    db_->Put("other_key", "4");
+
+    db_->ClearPrefix("prefix_");
+
+    ASSERT_FALSE(db_->Exist("prefix_aaa"));
+    ASSERT_FALSE(db_->Exist("prefix_bbb"));
+    ASSERT_FALSE(db_->Exist("prefix_ccc"));
+    ASSERT_TRUE(db_->Exist("other_key"));
+}
+
+TEST_F(TestDb, ClearPrefixNoMatch) {
+    db_->Put("key1", "val1");
+    db_->Put("key2", "val2");
+
+    db_->ClearPrefix("nonexistent_prefix_");
+
+    // Nothing should be deleted
+    ASSERT_TRUE(db_->Exist("key1"));
+    ASSERT_TRUE(db_->Exist("key2"));
+}
+
+TEST_F(TestDb, ClearPrefixEmpty) {
+    // ClearPrefix with empty prefix on empty db should not crash
+    db_->ClearPrefix("anything");
+}
+
+// --- GetAllPrefix Tests ---
+
+TEST_F(TestDb, GetAllPrefix) {
+    db_->Put("user:001", "alice");
+    db_->Put("user:002", "bob");
+    db_->Put("user:003", "charlie");
+    db_->Put("item:001", "sword");
+    db_->Put("item:002", "shield");
+
+    std::map<std::string, std::string> result;
+    db_->GetAllPrefix("user:", result);
+
+    ASSERT_EQ(result.size(), 3u);
+    ASSERT_EQ(result["user:001"], "alice");
+    ASSERT_EQ(result["user:002"], "bob");
+    ASSERT_EQ(result["user:003"], "charlie");
+}
+
+TEST_F(TestDb, GetAllPrefixNoMatch) {
+    db_->Put("key1", "val1");
+
+    std::map<std::string, std::string> result;
+    db_->GetAllPrefix("nonexistent:", result);
+
+    ASSERT_TRUE(result.empty());
+}
+
+TEST_F(TestDb, GetAllPrefixAll) {
+    db_->Put("abc_1", "v1");
+    db_->Put("abc_2", "v2");
+    db_->Put("abc_3", "v3");
+
+    std::map<std::string, std::string> result;
+    db_->GetAllPrefix("abc_", result);
+
+    ASSERT_EQ(result.size(), 3u);
+}
+
+// --- Init/Destroy Lifecycle Tests ---
+
+TEST_F(TestDb, DoubleInitFails) {
+    // db_ is already initialized in SetUp
+    ASSERT_FALSE(db_->Init(db_path_));
+}
+
+TEST_F(TestDb, DestroyAndReinit) {
+    db_->Put("before_destroy", "value");
+    db_->Destroy();
+
+    // Reinit should work
+    ASSERT_TRUE(db_->Init(db_path_));
+
+    // Data should persist (RocksDB is persistent)
+    std::string value;
+    auto st = db_->Get("before_destroy", &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value, "value");
+}
+
+// --- Binary Data Tests ---
+
+TEST_F(TestDb, BinaryKeyAndValue) {
+    std::string binary_key(32, '\0');
+    binary_key[0] = '\x01';
+    binary_key[15] = '\xFF';
+    binary_key[31] = '\xAB';
+
+    std::string binary_value(64, '\0');
+    binary_value[0] = '\xDE';
+    binary_value[63] = '\xAD';
+
+    auto st = db_->Put(binary_key, binary_value);
+    ASSERT_TRUE(st.ok());
+
+    std::string value;
+    st = db_->Get(binary_key, &value);
+    ASSERT_TRUE(st.ok());
+    ASSERT_EQ(value, binary_value);
 }
 
 }  // namespace test
 
 }  // namespace db
 
-}  // namespace shardora
+}  // namespace seth

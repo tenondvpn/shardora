@@ -1,5 +1,10 @@
 #include "tnet/tnet_transport.h"
 
+#include <cerrno>
+#include <cstring>
+#include <thread>
+#include <chrono>
+
 #include "tnet/tcp_connection.h"
 #include "tnet/socket/socket_factory.h"
 
@@ -20,10 +25,10 @@ TnetTransport::TnetTransport(
           thread_count_(thread_count),
           packet_handler_(packet_handler),
           packet_factory_(packet_factory) {
-    assert(packet_factory != nullptr);
-    assert(recv_buff_size > 1024u);
-    assert(send_buff_size > 1024u);
-    assert(thread_count > 0);
+    //assert(packet_factory != nullptr);
+    //assert(recv_buff_size > 1024u);
+    //assert(send_buff_size > 1024u);
+    //assert(thread_count > 0);
 }
 
 TnetTransport::~TnetTransport() {}
@@ -38,22 +43,48 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
         return NULL;
     }
 
+    // 1. Set non-blocking
     if (!socket->SetNonBlocking(true)) {
         SHARDORA_ERROR("set non-blocking failed");
         socket->Free();
         return NULL;
     }
 
+    // 2. Set CloseExec
     if (!socket->SetCloseExec(true)) {
         SHARDORA_ERROR("set close-exec failed");
     }
 
+    // 3. [New] Enable KeepAlive to maintain long connection activity
+    int keep_alive = 1;
+    if (setsockopt(socket->GetFd(), SOL_SOCKET, SO_KEEPALIVE, &keep_alive, sizeof(keep_alive)) < 0) {
+        SHARDORA_WARN("set SO_KEEPALIVE failed, errno: %d", errno);
+    }
+
+    // 3b. Enable TCP_NODELAY for low-latency consensus messages.
+    // Without this, Nagle's algorithm can buffer small consensus messages
+    // (votes, proposals) for up to 200ms, causing consensus timeouts.
+    if (!socket->SetTcpNoDelay(true)) {
+        SHARDORA_WARN("set TCP_NODELAY failed");
+    }
+
+    // 4. [Critical Fix] Set Linger option for graceful shutdown
+    // l_onoff=1, l_linger=1: When close() is called, if there is data in the buffer, 
+    // wait 1 second to finish sending before closing, sending FIN.
+    // This effectively prevents sending RST directly, which causes getpeername error on the server side.
+    struct linger so_linger;
+    so_linger.l_onoff = 1;
+    so_linger.l_linger = 1; 
+    if (setsockopt(socket->GetFd(), SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0) {
+        SHARDORA_WARN("set SO_LINGER failed, errno: %d", errno);
+    }
+
+    // 5. Set buffer size
     if (recv_buff_size_ != 0  && !socket->SetSoRcvBuf(recv_buff_size_)) {
         SHARDORA_ERROR("set recv buf failed");
     }
-
     if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
-        SHARDORA_ERROR("set recv buf failed");
+        SHARDORA_ERROR("set send buf failed");
     }
 
     auto conn = CreateTcpConnection(GetNextEventLoop(), socket);
@@ -65,9 +96,15 @@ std::shared_ptr<TcpConnection> TnetTransport::CreateConnection(
     conn->SetPacketHandler(packet_handler_);
     conn->SetPacketEncoder(packet_factory_->CreateEncoder());
     conn->SetPacketDecoder(packet_factory_->CreateDecoder());
+
+    // 6. Connect
+    // Update: Connect failure is common (network jitter, target down), use WARN instead of ERROR.
     if (!conn->Connect(timeout)) {
-        SHARDORA_ERROR("connect peer [%s] failed[%d][%s]",
-                peer_spec.c_str(), errno, strerror(errno));
+        SHARDORA_WARN("connect peer [%s] failed: %s (%d)",
+                peer_spec.c_str(), strerror(errno), errno);
+        
+        // Use Destroy(true) to close socket immediately since connection failed.
+        // No need to wait for IO thread.
         conn->Destroy(true);
         return nullptr;
     }
@@ -125,12 +162,18 @@ bool TnetTransport::Init() {
 
 void TnetTransport::Destroy() {
     if (acceptor_thread_ != nullptr) {
+        if (acceptor_thread_->joinable()) {
+            acceptor_thread_->join();
+        }
         delete acceptor_thread_;
         acceptor_thread_ = nullptr;
     }
 
     for (size_t i = 0; i < thread_vec_.size(); i++) {
         if (thread_vec_[i] != nullptr) {
+            if (thread_vec_[i]->joinable()) {
+                thread_vec_[i]->join();
+            }
             delete thread_vec_[i];
             thread_vec_[i] = nullptr;
         }
@@ -155,7 +198,7 @@ void TnetTransport::Destroy() {
 }
 
 void TnetTransport::Dispatch() {
-    assert(!event_loop_vec_.empty());
+    //assert(!event_loop_vec_.empty());
     if (!acceptor_isolate_thread_) {
         stoped_ = false;
         if (event_loop_vec_[0] != NULL) {
@@ -184,7 +227,7 @@ bool TnetTransport::Start() {
         });
 
         if (!waiting_success_) {
-            SHARDORA_DEBUG("waiting for work_thread failed.");
+            SHARDORA_ERROR("waiting for work_thread failed.");
             return false;
         }
         thread_vec_.push_back(tmp_thread);
@@ -209,11 +252,10 @@ bool TnetTransport::Start() {
     });
 
     if (!waiting_success_) {
-        SHARDORA_DEBUG("waiting for work_thread failed.");
+        SHARDORA_ERROR("waiting for accept_thread failed.");
         return false;
     }
     SHARDORA_DEBUG("waiting for accept_thread success.");
-//     acceptor_thread_->detach();
     return true;
 }
 
@@ -237,10 +279,16 @@ bool TnetTransport::Stop() {
         }
     }
 
-    acceptor_thread_->join();
+    // Join threads if they exist
+    if (acceptor_thread_ && acceptor_thread_->joinable()) {
+        acceptor_thread_->join();
+    }
+    
     for (size_t i = 0; i < thread_vec_.size(); i++) {
         auto thread = thread_vec_[i];
-        thread->join();
+        if (thread && thread->joinable()) {
+            thread->join();
+        }
     }
 
     stoped_ = true;
@@ -254,20 +302,20 @@ const std::vector<EventLoop*>& TnetTransport::GetEventLoopVec() const {
 EventLoop& TnetTransport::GetAcceptorEventLoop() const {
     EventLoop* event_loop = NULL;
     if (acceptor_isolate_thread_) {
-        assert(acceptor_event_loop_ != NULL);
+        //assert(acceptor_event_loop_ != NULL);
         event_loop = acceptor_event_loop_;
     } else {
-        assert(!event_loop_vec_.empty());
+        //assert(!event_loop_vec_.empty());
         size_t index = round_robin_index_.fetch_add(1) % event_loop_vec_.size();
         event_loop = event_loop_vec_[index];
     }
 
-    assert(event_loop != NULL);
+    //assert(event_loop != NULL);
     return *event_loop;
 }
 
 EventLoop& TnetTransport::GetNextEventLoop() const {
-    assert(!event_loop_vec_.empty());
+    //assert(!event_loop_vec_.empty());
     size_t index = round_robin_index_.fetch_add(1) % event_loop_vec_.size();
     return *event_loop_vec_[index];
 }

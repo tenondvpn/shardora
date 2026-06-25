@@ -14,11 +14,11 @@ RUN yum install -y psmisc
 
 RUN mkdir -p /root/shardora/cbuild_Debug
 RUN mkdir -p /root/shardora/cbuild_Release
-RUN mkdir -p /root/shardora/zjnodes_local
+RUN mkdir -p /root/shardora/shardoras_local
 # 设置工作目录
 COPY ./cbuild_Release/shardora /root/shardora/cbuild_Release/shardora
 COPY ./cbuild_Debug/shardora /root/shardora/cbuild_Debug/shardora
-COPY ./zjnodes_local /root/shardora/zjnodes_local
+COPY ./shardoras_local /root/shardora/shardoras_local
 COPY ./docker_simple_dep.sh /root/shardora/
 COPY ./init_accounts3 /root/shardora/
 COPY ./shards3 /root/shardora/

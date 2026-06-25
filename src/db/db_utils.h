@@ -4,7 +4,7 @@
 #include "common/encode.h"
 
 #define DB_DEBUG(fmt, ...) SHARDORA_DEBUG("[db]" fmt, ## __VA_ARGS__)
-#define DB_INFO(fmt, ...) SHARDORA_INFO("[db]" fmt, ## __VA_ARGS__)
+#define DB_INFO(fmt, ...) SHARDORA_DEBUG("[db]" fmt, ## __VA_ARGS__)
 #define DB_WARN(fmt, ...) SHARDORA_WARN("[db]" fmt, ## __VA_ARGS__)
 #define DB_ERROR(fmt, ...) SHARDORA_ERROR("[db]" fmt, ## __VA_ARGS__)
 
@@ -18,7 +18,7 @@ static const char kDbFieldLinkLetter = '\x01';
 // class MyWriteBatchHandler : public TmpDbWriteBatch::Handler {
 // public:
 //     MyWriteBatchHandler() {}
-//     // 重写 Handle方法，处理每个操作
+//     // Override Handle method to process each operation
 //     virtual void Put(const DbSlice& key, const DbSlice& value) override {
 //         SHARDORA_DEBUG("Put operation: Key=%s, Value=%s", 
 //             common::Encode::HexEncode(key.ToString()).c_str(), common::Encode::HexEncode(value.ToString()).c_str());

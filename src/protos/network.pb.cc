@@ -229,23 +229,23 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\024protos/network.proto\022\031shardora.network"
-      ".protobuf\"7\n\026GetNetworkNodesRequest\022\016\n\006n"
-      "et_id\030\001 \001(\r\022\r\n\005count\030\002 \001(\r\"W\n\010NodeInfo\022\023"
-      "\n\013sharding_id\030\001 \001(\005\022\021\n\tpublic_ip\030\002 \001(\014\022\023"
-      "\n\013public_port\030\003 \001(\005\022\016\n\006pubkey\030\004 \001(\014\"M\n\027G"
-      "etNetworkNodesResponse\0222\n\005nodes\030\001 \003(\0132#."
-      "shardora.network.protobuf.NodeInfo\"+\n\017Dr"
-      "opNodeRequest\022\n\n\002ip\030\001 \001(\014\022\014\n\004port\030\002 \001(\005\""
-      "\354\001\n\016NetworkMessage\022L\n\021get_net_nodes_req\030"
-      "\001 \001(\01321.shardora.network.protobuf.GetNet"
-      "workNodesRequest\022M\n\021get_net_nodes_res\030\002 "
-      "\001(\01322.shardora.network.protobuf.GetNetwo"
-      "rkNodesResponse\022=\n\tdrop_node\030\003 \001(\0132*.sha"
-      "rdora.network.protobuf.DropNodeRequest"
+      "\n\024protos/network.proto\022\025shardora.network.pro"
+      "tobuf\"7\n\026GetNetworkNodesRequest\022\016\n\006net_i"
+      "d\030\001 \001(\r\022\r\n\005count\030\002 \001(\r\"W\n\010NodeInfo\022\023\n\013sh"
+      "arding_id\030\001 \001(\005\022\021\n\tpublic_ip\030\002 \001(\014\022\023\n\013pu"
+      "blic_port\030\003 \001(\005\022\016\n\006pubkey\030\004 \001(\014\"I\n\027GetNe"
+      "tworkNodesResponse\022.\n\005nodes\030\001 \003(\0132\037.shardora"
+      ".network.protobuf.NodeInfo\"+\n\017DropNodeRe"
+      "quest\022\n\n\002ip\030\001 \001(\014\022\014\n\004port\030\002 \001(\005\"\340\001\n\016Netw"
+      "orkMessage\022H\n\021get_net_nodes_req\030\001 \001(\0132-."
+      "shardora.network.protobuf.GetNetworkNodesReq"
+      "uest\022I\n\021get_net_nodes_res\030\002 \001(\0132..shardora.n"
+      "etwork.protobuf.GetNetworkNodesResponse\022"
+      "9\n\tdrop_node\030\003 \001(\0132&.shardora.network.protob"
+      "uf.DropNodeRequest"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 558);
+      descriptor, 538);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/network.proto", &protobuf_RegisterTypes);
 }

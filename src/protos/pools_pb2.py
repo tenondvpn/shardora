@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.pools.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x12protos/pools.proto\x12\x17shardora.pools.protobuf\x1a\x10protos/bls.proto\x1a\x12protos/elect.proto\"\x97\x01\n\x0bToTxHeights\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\x12\x10\n\x08tos_hash\x18\x04 \x01(\x0c\x12\x11\n\tleader_id\x18\x05 \x01(\x0c\x12\x15\n\relelct_height\x18\x06 \x01(\x04\x12\x10\n\x08tx_count\x18\x07 \x01(\r\"\xc6\x01\n\x0fToTxMessageItem\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x04\x12\x12\n\npool_index\x18\x02 \x01(\x05\x12\x13\n\x0bsharding_id\x18\x03 \x01(\r\x12\x0b\n\x03\x64\x65s\x18\x04 \x01(\x0c\x12\x1b\n\x13\x65lect_join_g2_value\x18\x06 \x01(\x0c\x12\x15\n\rlibrary_bytes\x18\x08 \x01(\x0c\x12\x0c\n\x04\x66rom\x18\t \x01(\x0c\x12\x12\n\nprepayment\x18\n \x01(\x04\x12\x17\n\x0f\x64\x65s_sharding_id\x18\x0b \x01(\r\"K\n\rShardToTxItem\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\"Q\n\x13PoolStatisticTxItem\x12\x12\n\npool_index\x18\x01 \x01(\r\x12\x12\n\nmin_height\x18\x02 \x01(\x04\x12\x12\n\nmax_height\x18\x03 \x01(\x04\"\x8e\x01\n\x0fStatisticTxItem\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12=\n\x07heights\x18\x02 \x03(\x0b\x32,.shardora.pools.protobuf.PoolStatisticTxItem\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\x12\x11\n\ttm_height\x18\x04 \x01(\x04\"c\n\x12InitPoolHeightItem\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\x12\x11\n\ttm_height\x18\x04 \x01(\x04\"l\n\x13PoolStatisticTxInfo\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x45\n\x0fpool_statisitcs\x18\x02 \x03(\x0b\x32,.shardora.pools.protobuf.PoolStatisticTxItem\"a\n\x17\x43rossShardStatisticItem\x12\x11\n\tsrc_shard\x18\x01 \x01(\r\x12\x10\n\x08src_pool\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\x04\x12\x11\n\tdes_shard\x18\x04 \x01(\r\"\x7f\n\x13\x43rossShardStatistic\x12\x41\n\x07\x63rosses\x18\x01 \x03(\x0b\x32\x30.shardora.pools.protobuf.CrossShardStatisticItem\x12\x14\n\x0c\x65lect_height\x18\x02 \x01(\x04\x12\x0f\n\x07tx_hash\x18\x03 \x01(\x0c\"\xc6\x01\n\x0bToTxMessage\x12\x14\n\x0cheights_hash\x18\x01 \x01(\x0c\x12\x35\n\x03tos\x18\x02 \x03(\x0b\x32(.shardora.pools.protobuf.ToTxMessageItem\x12\x14\n\x0c\x65lect_height\x18\x04 \x01(\x04\x12\x41\n\x07\x63rosses\x18\x05 \x03(\x0b\x32\x30.shardora.pools.protobuf.CrossShardStatisticItem\x12\x11\n\tdes_shard\x18\x06 \x01(\r\"\x85\x01\n\x0e\x41llToTxMessage\x12\x37\n\tto_tx_arr\x18\x01 \x03(\x0b\x32$.shardora.pools.protobuf.ToTxMessage\x12:\n\nto_heights\x18\x02 \x01(\x0b\x32&.shardora.pools.protobuf.ShardToTxItem\"r\n\x0ePoolLatestInfo\x12\x11\n\x06height\x18\x01 \x01(\x04:\x01\x30\x12\x0c\n\x04hash\x18\x02 \x01(\x0c\x12\x18\n\rsynced_height\x18\x03 \x01(\x04:\x01\x30\x12\x14\n\ttimestamp\x18\x04 \x01(\x04:\x01\x30\x12\x0f\n\x04view\x18\x05 \x01(\x04:\x01\x30\" \n\x08\x41reaInfo\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\"\xba\x01\n\x11PoolStatisticItem\x12\x10\n\x08tx_count\x18\x01 \x03(\r\x12\x0e\n\x06stokes\x18\x02 \x03(\x04\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\x12\x35\n\narea_point\x18\x04 \x03(\x0b\x32!.shardora.pools.protobuf.AreaInfo\x12\x0f\n\x07gas_sum\x18\x05 \x03(\x04\x12\x0e\n\x06\x63redit\x18\x06 \x03(\x04\x12\x15\n\rconsensus_gap\x18\x07 \x03(\x04\"\xa9\x02\n\rJoinElectNode\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\r\n\x05stoke\x18\x02 \x01(\x04\x12\r\n\x05shard\x18\x03 \x01(\r\x12\x11\n\telect_pos\x18\x04 \x01(\x05\x12\x35\n\narea_point\x18\x05 \x01(\x0b\x32!.shardora.pools.protobuf.AreaInfo\x12\x0e\n\x06\x63redit\x18\x06 \x01(\x04\x12\x15\n\rconsensus_gap\x18\x07 \x01(\x04\x12\x39\n\nagg_bls_pk\x18\x08 \x01(\x0b\x32%.shardora.elect.protobuf.BlsPublicKey\x12>\n\x10\x61gg_bls_pk_proof\x18\t \x01(\x0b\x32$.shardora.elect.protobuf.BlsPopProof\"\xa9\x02\n\x0e\x45lectStatistic\x12>\n\nstatistics\x18\x01 \x03(\x0b\x32*.shardora.pools.protobuf.PoolStatisticItem\x12=\n\x0bheight_info\x18\x02 \x01(\x0b\x32(.shardora.pools.protobuf.StatisticTxItem\x12@\n\x10join_elect_nodes\x18\x03 \x03(\x0b\x32&.shardora.pools.protobuf.JoinElectNode\x12\x13\n\x0bsharding_id\x18\x04 \x01(\r\x12\x12\n\ngas_amount\x18\x05 \x01(\x04\x12\x13\n\x0blof_leaders\x18\x06 \x03(\r\x12\x18\n\x10statistic_height\x18\x07 \x01(\x04\"P\n\x12SyncPoolsMaxHeight\x12\x12\n\x03req\x18\x01 \x01(\x08:\x05\x66\x61lse\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x15\n\rcross_heights\x18\x03 \x03(\x04\"@\n\x0fTxDelayTestInfo\x12\x16\n\x0etx_debug_tm_ms\x18\x01 \x01(\x04\x12\x15\n\rtx_debug_info\x18\x02 \x01(\x0c\"\x8f\x03\n\tTxMessage\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\r\n\x05nonce\x18\x02 \x01(\x04\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x11\n\tgas_limit\x18\x04 \x01(\x04\x12\x11\n\tgas_price\x18\x05 \x01(\x04\x12\x0b\n\x03key\x18\x06 \x01(\x0c\x12\r\n\x05value\x18\x07 \x01(\x0c\x12\n\n\x02to\x18\x08 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\t \x01(\x04\x12<\n\x04step\x18\n \x01(\x0e\x32!.shardora.pools.protobuf.StepType:\x0bkNormalFrom\x12\x1b\n\x13\x63ontract_prepayment\x18\x0b \x01(\x04\x12\x15\n\rcontract_code\x18\x0c \x01(\x0c\x12\x16\n\x0e\x63ontract_input\x18\r \x01(\x0c\x12\x0c\n\x04sign\x18\x0e \x01(\x0c\x12:\n\x08tx_debug\x18\x0f \x03(\x0b\x32(.shardora.pools.protobuf.TxDelayTestInfo\x12 \n\x18tx_debug_timeout_seconds\x18\x10 \x01(\x04*\xe5\x02\n\x08StepType\x12\x0f\n\x0bkNormalFrom\x10\x00\x12\r\n\tkNormalTo\x10\x01\x12\x1c\n\x18kConsensusRootElectShard\x10\x02\x12\x1b\n\x17kConsensusRootTimeBlock\x10\x03\x12!\n\x1dkConsensusCreateGenesisAcount\x10\x04\x12\x16\n\x12kConsensusLocalTos\x10\x05\x12\x13\n\x0fkContractCreate\x10\x06\x12\x1a\n\x16kContractGasPrepayment\x10\x07\x12\x13\n\x0fkContractExcute\x10\x08\x12\x16\n\x12kRootCreateAddress\x10\t\x12\x0e\n\nkStatistic\x10\x0c\x12\x0e\n\nkJoinElect\x10\r\x12\x12\n\x0ekCreateLibrary\x10\x0e\x12\n\n\x06kCross\x10\x0f\x12\x0e\n\nkRootCross\x10\x10\x12\x15\n\x11kPoolStatisticTag\x10\x12')
+  serialized_pb=_b('\n\x12protos/pools.proto\x12\x13shardora.pools.protobuf\x1a\x10protos/bls.proto\x1a\x12protos/elect.proto\"\x97\x01\n\x0bToTxHeights\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\x12\x10\n\x08tos_hash\x18\x04 \x01(\x0c\x12\x11\n\tleader_id\x18\x05 \x01(\x0c\x12\x15\n\relelct_height\x18\x06 \x01(\x04\x12\x10\n\x08tx_count\x18\x07 \x01(\r\"\xc3\x01\n\x0fToTxMessageItem\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x04\x12\x12\n\npool_index\x18\x02 \x01(\x05\x12\x13\n\x0bsharding_id\x18\x03 \x01(\r\x12\x0b\n\x03\x64\x65s\x18\x04 \x01(\x0c\x12\x1b\n\x13\x65lect_join_g2_value\x18\x06 \x01(\x0c\x12\x15\n\rlibrary_bytes\x18\x08 \x01(\x0c\x12\x0c\n\x04\x66rom\x18\t \x01(\x0c\x12\x0f\n\x07prefund\x18\n \x01(\x04\x12\x17\n\x0f\x64\x65s_sharding_id\x18\x0b \x01(\r\"K\n\rShardToTxItem\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\"Q\n\x13PoolStatisticTxItem\x12\x12\n\npool_index\x18\x01 \x01(\r\x12\x12\n\nmin_height\x18\x02 \x01(\x04\x12\x12\n\nmax_height\x18\x03 \x01(\x04\"\x8a\x01\n\x0fStatisticTxItem\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x39\n\x07heights\x18\x02 \x03(\x0b\x32(.shardora.pools.protobuf.PoolStatisticTxItem\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\x12\x11\n\ttm_height\x18\x04 \x01(\x04\"c\n\x12InitPoolHeightItem\x12\x13\n\x0bsharding_id\x18\x01 \x01(\r\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x14\n\x0c\x62lock_height\x18\x03 \x01(\x04\x12\x11\n\ttm_height\x18\x04 \x01(\x04\"h\n\x13PoolStatisticTxInfo\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x41\n\x0fpool_statisitcs\x18\x02 \x03(\x0b\x32(.shardora.pools.protobuf.PoolStatisticTxItem\"a\n\x17\x43rossShardStatisticItem\x12\x11\n\tsrc_shard\x18\x01 \x01(\r\x12\x10\n\x08src_pool\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\x04\x12\x11\n\tdes_shard\x18\x04 \x01(\r\"{\n\x13\x43rossShardStatistic\x12=\n\x07\x63rosses\x18\x01 \x03(\x0b\x32,.shardora.pools.protobuf.CrossShardStatisticItem\x12\x14\n\x0c\x65lect_height\x18\x02 \x01(\x04\x12\x0f\n\x07tx_hash\x18\x03 \x01(\x0c\"\xbe\x01\n\x0bToTxMessage\x12\x14\n\x0cheights_hash\x18\x01 \x01(\x0c\x12\x31\n\x03tos\x18\x02 \x03(\x0b\x32$.shardora.pools.protobuf.ToTxMessageItem\x12\x14\n\x0c\x65lect_height\x18\x04 \x01(\x04\x12=\n\x07\x63rosses\x18\x05 \x03(\x0b\x32,.shardora.pools.protobuf.CrossShardStatisticItem\x12\x11\n\tdes_shard\x18\x06 \x01(\r\"}\n\x0e\x41llToTxMessage\x12\x33\n\tto_tx_arr\x18\x01 \x03(\x0b\x32 .shardora.pools.protobuf.ToTxMessage\x12\x36\n\nto_heights\x18\x02 \x01(\x0b\x32\".shardora.pools.protobuf.ShardToTxItem\"r\n\x0ePoolLatestInfo\x12\x11\n\x06height\x18\x01 \x01(\x04:\x01\x30\x12\x0c\n\x04hash\x18\x02 \x01(\x0c\x12\x18\n\rsynced_height\x18\x03 \x01(\x04:\x01\x30\x12\x14\n\ttimestamp\x18\x04 \x01(\x04:\x01\x30\x12\x0f\n\x04view\x18\x05 \x01(\x04:\x01\x30\" \n\x08\x41reaInfo\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\"\xd0\x01\n\x11PoolStatisticItem\x12\x10\n\x08tx_count\x18\x01 \x03(\r\x12\x0e\n\x06stokes\x18\x02 \x03(\x04\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\x12\x31\n\narea_point\x18\x04 \x03(\x0b\x32\x1d.shardora.pools.protobuf.AreaInfo\x12\x0f\n\x07gas_sum\x18\x05 \x03(\x04\x12\x0e\n\x06\x63redit\x18\x06 \x03(\x04\x12\x15\n\rconsensus_gap\x18\x07 \x03(\x04\x12\x18\n\x10\x61vg_geo_distance\x18\x08 \x01(\x04\"\xaa\x01\n\rJoinElectNode\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\r\n\x05stoke\x18\x02 \x01(\x04\x12\r\n\x05shard\x18\x03 \x01(\r\x12\x11\n\telect_pos\x18\x04 \x01(\x05\x12\x31\n\narea_point\x18\x05 \x01(\x0b\x32\x1d.shardora.pools.protobuf.AreaInfo\x12\x0e\n\x06\x63redit\x18\x06 \x01(\x04\x12\x15\n\rconsensus_gap\x18\x07 \x01(\x04\"\xe2\x02\n\x0e\x45lectStatistic\x12:\n\nstatistics\x18\x01 \x03(\x0b\x32&.shardora.pools.protobuf.PoolStatisticItem\x12\x39\n\x0bheight_info\x18\x02 \x01(\x0b\x32$.shardora.pools.protobuf.StatisticTxItem\x12<\n\x10join_elect_nodes\x18\x03 \x03(\x0b\x32\".shardora.pools.protobuf.JoinElectNode\x12\x13\n\x0bsharding_id\x18\x04 \x01(\r\x12\x12\n\ngas_amount\x18\x05 \x01(\x04\x12\x13\n\x0blof_leaders\x18\x06 \x03(\r\x12\x18\n\x10statistic_height\x18\x07 \x01(\x04\x12\r\n\x05nonce\x18\x08 \x01(\x04\x12\x34\n\x0b\x65lect_block\x18\t \x01(\x0b\x32\x1f.shardora.elect.protobuf.ElectBlock\"P\n\x12SyncPoolsMaxHeight\x12\x12\n\x03req\x18\x01 \x01(\x08:\x05\x66\x61lse\x12\x0f\n\x07heights\x18\x02 \x03(\x04\x12\x15\n\rcross_heights\x18\x03 \x03(\x04\"@\n\x0fTxDelayTestInfo\x12\x16\n\x0etx_debug_tm_ms\x18\x01 \x01(\x04\x12\x15\n\rtx_debug_info\x18\x02 \x01(\x0c\"\xa9\x03\n\tTxMessage\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\r\n\x05nonce\x18\x02 \x01(\x04\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x11\n\tgas_limit\x18\x04 \x01(\x04\x12\x11\n\tgas_price\x18\x05 \x01(\x04\x12\x0b\n\x03key\x18\x06 \x01(\x0c\x12\r\n\x05value\x18\x07 \x01(\x0c\x12\n\n\x02to\x18\x08 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\t \x01(\x04\x12\x38\n\x04step\x18\n \x01(\x0e\x32\x1d.shardora.pools.protobuf.StepType:\x0bkNormalFrom\x12\x18\n\x10\x63ontract_prefund\x18\x0b \x01(\x04\x12\x15\n\rcontract_code\x18\x0c \x01(\x0c\x12\x16\n\x0e\x63ontract_input\x18\r \x01(\x0c\x12\x0c\n\x04sign\x18\x0e \x01(\x0c\x12\x36\n\x08tx_debug\x18\x0f \x03(\x0b\x32$.shardora.pools.protobuf.TxDelayTestInfo\x12 \n\x18tx_debug_timeout_seconds\x18\x10 \x01(\x04\x12\x0f\n\x07tx_hash\x18\x11 \x01(\x0c\x12\x12\n\neth_raw_tx\x18\x12 \x01(\x0c*\xf7\x02\n\x08StepType\x12\x0f\n\x0bkNormalFrom\x10\x00\x12\r\n\tkNormalTo\x10\x01\x12\x1c\n\x18kConsensusRootElectShard\x10\x02\x12\x1b\n\x17kConsensusRootTimeBlock\x10\x03\x12!\n\x1dkConsensusCreateGenesisAcount\x10\x04\x12\x16\n\x12kConsensusLocalTos\x10\x05\x12\x13\n\x0fkCreateContract\x10\x06\x12\x17\n\x13kContractGasPrefund\x10\x07\x12\x13\n\x0fkContractExcute\x10\x08\x12\x16\n\x12kRootCreateAddress\x10\t\x12\x0e\n\nkStatistic\x10\x0c\x12\x0e\n\nkJoinElect\x10\r\x12\x12\n\x0ekCreateLibrary\x10\x0e\x12\n\n\x06kCross\x10\x0f\x12\x0e\n\nkRootCross\x10\x10\x12\x15\n\x11kPoolStatisticTag\x10\x11\x12\x13\n\x0fkContractRefund\x10\x12')
   ,
   dependencies=[protos_dot_bls__pb2.DESCRIPTOR,protos_dot_elect__pb2.DESCRIPTOR,])
 
@@ -57,11 +57,11 @@ _STEPTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kContractCreate', index=6, number=6,
+      name='kCreateContract', index=6, number=6,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kContractGasPrepayment', index=7, number=7,
+      name='kContractGasPrefund', index=7, number=7,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -93,14 +93,18 @@ _STEPTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kPoolStatisticTag', index=15, number=18,
+      name='kPoolStatisticTag', index=15, number=17,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='kContractRefund', index=16, number=18,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3011,
-  serialized_end=3368,
+  serialized_start=2953,
+  serialized_end=3328,
 )
 _sym_db.RegisterEnumDescriptor(_STEPTYPE)
 
@@ -111,8 +115,8 @@ kConsensusRootElectShard = 2
 kConsensusRootTimeBlock = 3
 kConsensusCreateGenesisAcount = 4
 kConsensusLocalTos = 5
-kContractCreate = 6
-kContractGasPrepayment = 7
+kCreateContract = 6
+kContractGasPrefund = 7
 kContractExcute = 8
 kRootCreateAddress = 9
 kStatistic = 12
@@ -120,7 +124,8 @@ kJoinElect = 13
 kCreateLibrary = 14
 kCross = 15
 kRootCross = 16
-kPoolStatisticTag = 18
+kPoolStatisticTag = 17
+kContractRefund = 18
 
 
 
@@ -192,8 +197,8 @@ _TOTXHEIGHTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=86,
-  serialized_end=237,
+  serialized_start=82,
+  serialized_end=233,
 )
 
 
@@ -254,7 +259,7 @@ _TOTXMESSAGEITEM = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='prepayment', full_name='shardora.pools.protobuf.ToTxMessageItem.prepayment', index=7,
+      name='prefund', full_name='shardora.pools.protobuf.ToTxMessageItem.prefund', index=7,
       number=10, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -279,8 +284,8 @@ _TOTXMESSAGEITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=240,
-  serialized_end=438,
+  serialized_start=236,
+  serialized_end=431,
 )
 
 
@@ -324,8 +329,8 @@ _SHARDTOTXITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=440,
-  serialized_end=515,
+  serialized_start=433,
+  serialized_end=508,
 )
 
 
@@ -369,8 +374,8 @@ _POOLSTATISTICTXITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=517,
-  serialized_end=598,
+  serialized_start=510,
+  serialized_end=591,
 )
 
 
@@ -421,8 +426,8 @@ _STATISTICTXITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=601,
-  serialized_end=743,
+  serialized_start=594,
+  serialized_end=732,
 )
 
 
@@ -473,8 +478,8 @@ _INITPOOLHEIGHTITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=745,
-  serialized_end=844,
+  serialized_start=734,
+  serialized_end=833,
 )
 
 
@@ -511,8 +516,8 @@ _POOLSTATISTICTXINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=846,
-  serialized_end=954,
+  serialized_start=835,
+  serialized_end=939,
 )
 
 
@@ -563,8 +568,8 @@ _CROSSSHARDSTATISTICITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=956,
-  serialized_end=1053,
+  serialized_start=941,
+  serialized_end=1038,
 )
 
 
@@ -608,8 +613,8 @@ _CROSSSHARDSTATISTIC = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1055,
-  serialized_end=1182,
+  serialized_start=1040,
+  serialized_end=1163,
 )
 
 
@@ -667,8 +672,8 @@ _TOTXMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1185,
-  serialized_end=1383,
+  serialized_start=1166,
+  serialized_end=1356,
 )
 
 
@@ -705,8 +710,8 @@ _ALLTOTXMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1386,
-  serialized_end=1519,
+  serialized_start=1358,
+  serialized_end=1483,
 )
 
 
@@ -764,8 +769,8 @@ _POOLLATESTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1521,
-  serialized_end=1635,
+  serialized_start=1485,
+  serialized_end=1599,
 )
 
 
@@ -802,8 +807,8 @@ _AREAINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1637,
-  serialized_end=1669,
+  serialized_start=1601,
+  serialized_end=1633,
 )
 
 
@@ -863,6 +868,13 @@ _POOLSTATISTICITEM = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='avg_geo_distance', full_name='shardora.pools.protobuf.PoolStatisticItem.avg_geo_distance', index=7,
+      number=8, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -875,8 +887,8 @@ _POOLSTATISTICITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1672,
-  serialized_end=1858,
+  serialized_start=1636,
+  serialized_end=1844,
 )
 
 
@@ -936,20 +948,6 @@ _JOINELECTNODE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='agg_bls_pk', full_name='shardora.pools.protobuf.JoinElectNode.agg_bls_pk', index=7,
-      number=8, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='agg_bls_pk_proof', full_name='shardora.pools.protobuf.JoinElectNode.agg_bls_pk_proof', index=8,
-      number=9, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -962,8 +960,8 @@ _JOINELECTNODE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1861,
-  serialized_end=2158,
+  serialized_start=1847,
+  serialized_end=2017,
 )
 
 
@@ -1023,6 +1021,20 @@ _ELECTSTATISTIC = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='nonce', full_name='shardora.pools.protobuf.ElectStatistic.nonce', index=7,
+      number=8, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='elect_block', full_name='shardora.pools.protobuf.ElectStatistic.elect_block', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1035,8 +1047,8 @@ _ELECTSTATISTIC = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2161,
-  serialized_end=2458,
+  serialized_start=2020,
+  serialized_end=2374,
 )
 
 
@@ -1080,8 +1092,8 @@ _SYNCPOOLSMAXHEIGHT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2460,
-  serialized_end=2540,
+  serialized_start=2376,
+  serialized_end=2456,
 )
 
 
@@ -1118,8 +1130,8 @@ _TXDELAYTESTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2542,
-  serialized_end=2606,
+  serialized_start=2458,
+  serialized_end=2522,
 )
 
 
@@ -1201,7 +1213,7 @@ _TXMESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='contract_prepayment', full_name='shardora.pools.protobuf.TxMessage.contract_prepayment', index=10,
+      name='contract_prefund', full_name='shardora.pools.protobuf.TxMessage.contract_prefund', index=10,
       number=11, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -1242,6 +1254,20 @@ _TXMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='tx_hash', full_name='shardora.pools.protobuf.TxMessage.tx_hash', index=16,
+      number=17, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='eth_raw_tx', full_name='shardora.pools.protobuf.TxMessage.eth_raw_tx', index=17,
+      number=18, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1254,8 +1280,8 @@ _TXMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2609,
-  serialized_end=3008,
+  serialized_start=2525,
+  serialized_end=2950,
 )
 
 _STATISTICTXITEM.fields_by_name['heights'].message_type = _POOLSTATISTICTXITEM
@@ -1267,11 +1293,10 @@ _ALLTOTXMESSAGE.fields_by_name['to_tx_arr'].message_type = _TOTXMESSAGE
 _ALLTOTXMESSAGE.fields_by_name['to_heights'].message_type = _SHARDTOTXITEM
 _POOLSTATISTICITEM.fields_by_name['area_point'].message_type = _AREAINFO
 _JOINELECTNODE.fields_by_name['area_point'].message_type = _AREAINFO
-_JOINELECTNODE.fields_by_name['agg_bls_pk'].message_type = protos_dot_elect__pb2._BLSPUBLICKEY
-_JOINELECTNODE.fields_by_name['agg_bls_pk_proof'].message_type = protos_dot_elect__pb2._BLSPOPPROOF
 _ELECTSTATISTIC.fields_by_name['statistics'].message_type = _POOLSTATISTICITEM
 _ELECTSTATISTIC.fields_by_name['height_info'].message_type = _STATISTICTXITEM
 _ELECTSTATISTIC.fields_by_name['join_elect_nodes'].message_type = _JOINELECTNODE
+_ELECTSTATISTIC.fields_by_name['elect_block'].message_type = protos_dot_elect__pb2._ELECTBLOCK
 _TXMESSAGE.fields_by_name['step'].enum_type = _STEPTYPE
 _TXMESSAGE.fields_by_name['tx_debug'].message_type = _TXDELAYTESTINFO
 DESCRIPTOR.message_types_by_name['ToTxHeights'] = _TOTXHEIGHTS

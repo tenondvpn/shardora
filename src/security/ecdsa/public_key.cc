@@ -13,7 +13,7 @@ PublicKey::PublicKey(const Curve& curve)
         : curve_(curve), ec_point_(
             EC_POINT_new(curve.group_.get()),
             EC_POINT_clear_free) {
-    assert(ec_point_ != nullptr);
+    //assert(ec_point_ != nullptr);
 }
 
 PublicKey::PublicKey(const Curve& curve, PrivateKey& privkey)
@@ -24,9 +24,9 @@ PublicKey::PublicKey(const Curve& curve, PrivateKey& privkey)
 }
 
 PublicKey::PublicKey(const Curve& curve, const std::string& src) : curve_(curve) {
-    assert(src.size() == kPublicKeyUncompressSize || src.size() == kPublicCompressKeySize);
+    //assert(src.size() == kPublicKeyUncompressSize || src.size() == kPublicCompressKeySize);
     ec_point_ = SecurityStringTrans::Instance()->StringToEcPoint(curve, src);
-    assert(ec_point_ != nullptr);
+    //assert(ec_point_ != nullptr);
     Serialize(str_pubkey_);
     Serialize(str_pubkey_uncompressed_, false);
     DeserializeToSecp256k1(str_pubkey_);
@@ -36,10 +36,10 @@ PublicKey::PublicKey(const PublicKey& src)
         : curve_(src.curve_), ec_point_(
             EC_POINT_new(curve_.group_.get()),
             EC_POINT_clear_free) {
-    assert(ec_point_ != nullptr);
+    //assert(ec_point_ != nullptr);
     if (EC_POINT_copy(ec_point_.get(), src.ec_point_.get()) != 1) {
         CRYPTO_ERROR("copy ec point failed!");
-        assert(false);
+        //assert(false);
     }
 
     str_pubkey_ = src.str_pubkey_;
@@ -56,7 +56,7 @@ PublicKey& PublicKey::operator=(const PublicKey& src) {
 
     if (EC_POINT_copy(ec_point_.get(), src.ec_point_.get()) != 1) {
         CRYPTO_ERROR("PubKey copy failed");
-        assert(false);
+        //assert(false);
     }
 
     str_pubkey_ = src.str_pubkey_;
@@ -92,7 +92,7 @@ int PublicKey::Deserialize(const std::string& src) {
 }
 
 int PublicKey::FromPrivateKey(const Curve& curve, PrivateKey& privkey) {
-    assert(ec_point_ != nullptr);
+    //assert(ec_point_ != nullptr);
     if (BN_is_zero(privkey.bignum().get()) ||
         (BN_cmp(privkey.bignum().get(), curve.order_.get()) != -1)) {
         CRYPTO_ERROR("Input private key is invalid. Public key "

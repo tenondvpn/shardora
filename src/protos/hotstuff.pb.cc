@@ -32,7 +32,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protob
 }  // namespace protobuf_protos_2fpools_2eproto
 namespace protobuf_protos_2fview_5fblock_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_AggregateSig;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_QcItem;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_QcItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fview_5fblock_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_ViewBlockItem;
 }  // namespace protobuf_protos_2fview_5fblock_2eproto
 namespace shardora {
@@ -270,6 +270,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, partial_sig_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, txs_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, leader_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::VoteMsg, tm_height_),
   6,
   0,
   4,
@@ -279,6 +280,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   3,
   ~0u,
   7,
+  8,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::hotstuff::protobuf::PreResetTimerMsg, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -303,9 +305,9 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 9, 22, sizeof(::shardora::hotstuff::protobuf::HotstuffMessage)},
   { 30, 38, sizeof(::shardora::hotstuff::protobuf::NewViewMsg)},
   { 41, 50, sizeof(::shardora::hotstuff::protobuf::ProposeMsg)},
-  { 54, 68, sizeof(::shardora::hotstuff::protobuf::VoteMsg)},
-  { 77, 85, sizeof(::shardora::hotstuff::protobuf::PreResetTimerMsg)},
-  { 88, 94, sizeof(::shardora::hotstuff::protobuf::ResetTimerMsg)},
+  { 54, 69, sizeof(::shardora::hotstuff::protobuf::VoteMsg)},
+  { 79, 87, sizeof(::shardora::hotstuff::protobuf::PreResetTimerMsg)},
+  { 90, 96, sizeof(::shardora::hotstuff::protobuf::ResetTimerMsg)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -339,44 +341,43 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\025protos/hotstuff.proto\022\032shardora.hotstu"
-      "ff.protobuf\032\027protos/view_block.proto\032\022pr"
-      "otos/pools.proto\"}\n\tTxPropose\022\?\n\007tx_type"
-      "\030\001 \001(\0162!.shardora.pools.protobuf.StepTyp"
-      "e:\013kNormalFrom\022/\n\003txs\030\002 \003(\0132\".shardora.p"
-      "ools.protobuf.TxMessage\"\213\003\n\017HotstuffMess"
-      "age\022\014\n\004type\030\001 \001(\r\0227\n\007pro_msg\030\002 \001(\0132&.sha"
-      "rdora.hotstuff.protobuf.ProposeMsg\0225\n\010vo"
-      "te_msg\030\003 \001(\0132#.shardora.hotstuff.protobu"
-      "f.VoteMsg\022;\n\013newview_msg\030\004 \001(\0132&.shardor"
-      "a.hotstuff.protobuf.NewViewMsg\022I\n\023pre_re"
-      "set_timer_msg\030\005 \001(\0132,.shardora.hotstuff."
-      "protobuf.PreResetTimerMsg\022B\n\017reset_timer"
-      "_msg\030\006 \001(\0132).shardora.hotstuff.protobuf."
-      "ResetTimerMsg\022\016\n\006net_id\030\007 \001(\r\022\036\n\npool_in"
-      "dex\030\010 \001(\r:\n4294967295\"\222\001\n\nNewViewMsg\0220\n\002"
-      "tc\030\001 \001(\0132$.shardora.view_block.protobuf."
-      "QcItem\022<\n\007qc_view\030\002 \001(\0132+.shardora.view_"
+      "\n\025protos/hotstuff.proto\022\026shardora.hotstuff.p"
+      "rotobuf\032\027protos/view_block.proto\032\022protos"
+      "/pools.proto\"u\n\tTxPropose\022;\n\007tx_type\030\001 \001"
+      "(\0162\035.shardora.pools.protobuf.StepType:\013kNorm"
+      "alFrom\022+\n\003txs\030\002 \003(\0132\036.shardora.pools.protobu"
+      "f.TxMessage\"\367\002\n\017HotstuffMessage\022\014\n\004type\030"
+      "\001 \001(\r\0223\n\007pro_msg\030\002 \001(\0132\".shardora.hotstuff.p"
+      "rotobuf.ProposeMsg\0221\n\010vote_msg\030\003 \001(\0132\037.s"
+      "eth.hotstuff.protobuf.VoteMsg\0227\n\013newview"
+      "_msg\030\004 \001(\0132\".shardora.hotstuff.protobuf.NewV"
+      "iewMsg\022E\n\023pre_reset_timer_msg\030\005 \001(\0132(.se"
+      "th.hotstuff.protobuf.PreResetTimerMsg\022>\n"
+      "\017reset_timer_msg\030\006 \001(\0132%.shardora.hotstuff.p"
+      "rotobuf.ResetTimerMsg\022\016\n\006net_id\030\007 \001(\r\022\036\n"
+      "\npool_index\030\010 \001(\r:\n4294967295\"\212\001\n\nNewVie"
+      "wMsg\022,\n\002tc\030\001 \001(\0132 .shardora.view_block.proto"
+      "buf.QcItem\0228\n\007qc_view\030\002 \001(\0132\'.shardora.view_"
       "block.protobuf.ViewBlockItem\022\024\n\014elect_he"
-      "ight\030\003 \001(\004\"\317\001\n\nProposeMsg\022\024\n\014elect_heigh"
-      "t\030\001 \001(\004\022>\n\tview_item\030\002 \001(\0132+.shardora.vi"
-      "ew_block.protobuf.ViewBlockItem\0220\n\002tc\030\003 "
-      "\001(\0132$.shardora.view_block.protobuf.QcIte"
-      "m\0229\n\ntx_propose\030\004 \001(\0132%.shardora.hotstuf"
-      "f.protobuf.TxPropose\"\201\002\n\007VoteMsg\022\023\n\013repl"
-      "ica_idx\030\001 \001(\r\022\027\n\017view_block_hash\030\002 \001(\014\022\014"
-      "\n\004view\030\003 \001(\004\022\024\n\014elect_height\030\004 \001(\004\022\016\n\006si"
-      "gn_x\030\005 \001(\014\022\016\n\006sign_y\030\006 \001(\014\022\?\n\013partial_si"
-      "g\030\007 \001(\0132*.shardora.view_block.protobuf.A"
-      "ggregateSig\022/\n\003txs\030\010 \003(\0132\".shardora.pool"
-      "s.protobuf.TxMessage\022\022\n\nleader_idx\030\t \001(\r"
-      "\"o\n\020PreResetTimerMsg\022\023\n\013replica_idx\030\001 \001("
-      "\r\022/\n\003txs\030\002 \003(\0132\".shardora.pools.protobuf"
-      ".TxMessage\022\025\n\rhas_single_tx\030\003 \001(\010\"#\n\rRes"
-      "etTimerMsg\022\022\n\nleader_idx\030\001 \001(\r"
+      "ight\030\003 \001(\004\"\303\001\n\nProposeMsg\022\024\n\014elect_heigh"
+      "t\030\001 \001(\004\022:\n\tview_item\030\002 \001(\0132\'.shardora.view_b"
+      "lock.protobuf.ViewBlockItem\022,\n\002tc\030\003 \001(\0132"
+      " .shardora.view_block.protobuf.QcItem\0225\n\ntx_"
+      "propose\030\004 \001(\0132!.shardora.hotstuff.protobuf.T"
+      "xPropose\"\214\002\n\007VoteMsg\022\023\n\013replica_idx\030\001 \001("
+      "\r\022\027\n\017view_block_hash\030\002 \001(\014\022\014\n\004view\030\003 \001(\004"
+      "\022\024\n\014elect_height\030\004 \001(\004\022\016\n\006sign_x\030\005 \001(\014\022\016"
+      "\n\006sign_y\030\006 \001(\014\022;\n\013partial_sig\030\007 \001(\0132&.se"
+      "th.view_block.protobuf.AggregateSig\022+\n\003t"
+      "xs\030\010 \003(\0132\036.shardora.pools.protobuf.TxMessage"
+      "\022\022\n\nleader_idx\030\t \001(\r\022\021\n\ttm_height\030\n \001(\004\""
+      "k\n\020PreResetTimerMsg\022\023\n\013replica_idx\030\001 \001(\r"
+      "\022+\n\003txs\030\002 \003(\0132\036.shardora.pools.protobuf.TxMe"
+      "ssage\022\025\n\rhas_single_tx\030\003 \001(\010\"#\n\rResetTim"
+      "erMsg\022\022\n\nleader_idx\030\001 \001(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1390);
+      descriptor, 1345);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/hotstuff.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fview_5fblock_2eproto::AddDescriptors();
@@ -2019,6 +2020,7 @@ const int VoteMsg::kSignYFieldNumber;
 const int VoteMsg::kPartialSigFieldNumber;
 const int VoteMsg::kTxsFieldNumber;
 const int VoteMsg::kLeaderIdxFieldNumber;
+const int VoteMsg::kTmHeightFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 VoteMsg::VoteMsg()
@@ -2052,8 +2054,8 @@ VoteMsg::VoteMsg(const VoteMsg& from)
     partial_sig_ = NULL;
   }
   ::memcpy(&view_, &from.view_,
-    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
-    reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
+    static_cast<size_t>(reinterpret_cast<char*>(&tm_height_) -
+    reinterpret_cast<char*>(&view_)) + sizeof(tm_height_));
   // @@protoc_insertion_point(copy_constructor:shardora.hotstuff.protobuf.VoteMsg)
 }
 
@@ -2062,8 +2064,8 @@ void VoteMsg::SharedCtor() {
   sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&partial_sig_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&leader_idx_) -
-      reinterpret_cast<char*>(&partial_sig_)) + sizeof(leader_idx_));
+      reinterpret_cast<char*>(&tm_height_) -
+      reinterpret_cast<char*>(&partial_sig_)) + sizeof(tm_height_));
 }
 
 VoteMsg::~VoteMsg() {
@@ -2120,6 +2122,7 @@ void VoteMsg::Clear() {
         reinterpret_cast<char*>(&leader_idx_) -
         reinterpret_cast<char*>(&view_)) + sizeof(leader_idx_));
   }
+  tm_height_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -2250,6 +2253,20 @@ bool VoteMsg::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 tm_height = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u /* 80 & 0xFF */)) {
+          set_has_tm_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &tm_height_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2330,6 +2347,11 @@ void VoteMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->leader_idx(), output);
   }
 
+  // optional uint64 tm_height = 10;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(10, this->tm_height(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2399,6 +2421,11 @@ void VoteMsg::SerializeWithCachedSizes(
   // optional uint32 leader_idx = 9;
   if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->leader_idx(), target);
+  }
+
+  // optional uint64 tm_height = 10;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(10, this->tm_height(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2487,6 +2514,13 @@ size_t VoteMsg::ByteSizeLong() const {
     }
 
   }
+  // optional uint64 tm_height = 10;
+  if (has_tm_height()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->tm_height());
+  }
+
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -2546,6 +2580,9 @@ void VoteMsg::MergeFrom(const VoteMsg& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
+  if (cached_has_bits & 0x00000100u) {
+    set_tm_height(from.tm_height());
+  }
 }
 
 void VoteMsg::CopyFrom(const ::google::protobuf::Message& from) {
@@ -2584,6 +2621,7 @@ void VoteMsg::InternalSwap(VoteMsg* other) {
   swap(elect_height_, other->elect_height_);
   swap(replica_idx_, other->replica_idx_);
   swap(leader_idx_, other->leader_idx_);
+  swap(tm_height_, other->tm_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

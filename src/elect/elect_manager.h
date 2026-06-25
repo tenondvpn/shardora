@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <mutex>
 #include <memory>
 #include <map>
@@ -88,8 +89,30 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     // mul thread access
-    std::atomic<common::MembersPtr> members_ptr_[network::kConsensusShardEndNetworkId];
-    std::atomic<common::MembersPtr> waiting_members_ptr_[network::kConsensusShardEndNetworkId];
+    common::MembersPtr LoadMembers(uint32_t network_id) const {
+        std::lock_guard<std::mutex> lock(members_mutex_[network_id]);
+        return members_ptr_[network_id];
+    }
+
+    void StoreMembers(uint32_t network_id, const common::MembersPtr& members) {
+        std::lock_guard<std::mutex> lock(members_mutex_[network_id]);
+        members_ptr_[network_id] = members;
+    }
+
+    common::MembersPtr LoadWaitingMembers(uint32_t network_id) const {
+        std::lock_guard<std::mutex> lock(waiting_members_mutex_[network_id]);
+        return waiting_members_ptr_[network_id];
+    }
+
+    void StoreWaitingMembers(uint32_t network_id, const common::MembersPtr& members) {
+        std::lock_guard<std::mutex> lock(waiting_members_mutex_[network_id]);
+        waiting_members_ptr_[network_id] = members;
+    }
+
+    common::MembersPtr members_ptr_[network::kConsensusShardEndNetworkId];
+    common::MembersPtr waiting_members_ptr_[network::kConsensusShardEndNetworkId];
+    mutable std::mutex members_mutex_[network::kConsensusShardEndNetworkId];
+    mutable std::mutex waiting_members_mutex_[network::kConsensusShardEndNetworkId];
     std::shared_ptr<HeightWithElectBlock> height_with_block_ = nullptr;
     std::atomic<uint64_t> elect_net_heights_map_[network::kConsensusShardEndNetworkId];
 

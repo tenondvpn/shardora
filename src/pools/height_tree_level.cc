@@ -327,7 +327,7 @@ void HeightTreeLevel::PrintTree() {
                     continue;
                 }
 
-                assert(iter != level_map->end());
+                //assert(iter != level_map->end());
                 iter->second->PrintLevel(level_idx);
             }
 

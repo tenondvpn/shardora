@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.c2c.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x10protos/c2c.proto\x12\x15shardora.c2c.protobuf\"Y\n\tOrderInfo\x12\r\n\x05\x62uyer\x18\x01 \x01(\x0c\x12-\n\x06status\x18\x02 \x01(\x0e\x32\x1d.shardora.c2c.protobuf.Status\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\"\x94\x02\n\x08SellInfo\x12\x15\n\rprotocol_addr\x18\x01 \x01(\x0c\x12\x0e\n\x06seller\x18\x02 \x01(\x0c\x12\x15\n\rpledge_amount\x18\x03 \x01(\x04\x12\r\n\x05price\x18\x04 \x01(\x04\x12\x12\n\nreceivable\x18\x05 \x01(\x0c\x12\x18\n\x10manager_released\x18\x06 \x01(\x08\x12\x17\n\x0fseller_released\x18\x07 \x01(\x08\x12-\n\x06status\x18\x08 \x01(\x0e\x32\x1d.shardora.c2c.protobuf.Status\x12\x34\n\norder_info\x18\t \x01(\x0b\x32 .shardora.c2c.protobuf.OrderInfo\x12\x0f\n\x07reports\x18\n \x03(\x0c\"9\n\x08NewOrder\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\r\n\x05\x62uyer\x18\x03 \x01(\x0c\"c\n\x07NewSell\x12\x15\n\rprotocol_addr\x18\x01 \x01(\x0c\x12\x0e\n\x06seller\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\r\n\x05price\x18\x04 \x01(\x04\x12\x12\n\nreceivable\x18\x05 \x01(\x0c\"3\n\x0b\x42uyerReport\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x14\n\x0creports_info\x18\x02 \x01(\x0c\"\x19\n\x07GetSell\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\"\x80\x02\n\nC2cMessage\x12,\n\x04sell\x18\x01 \x01(\x0b\x32\x1e.shardora.c2c.protobuf.NewSell\x12.\n\x05order\x18\x02 \x01(\x0b\x32\x1f.shardora.c2c.protobuf.NewOrder\x12\x32\n\x06report\x18\x03 \x01(\x0b\x32\".shardora.c2c.protobuf.BuyerReport\x12.\n\x05sells\x18\x04 \x03(\x0b\x32\x1f.shardora.c2c.protobuf.SellInfo\x12\x30\n\x08get_sell\x18\x05 \x03(\x0b\x32\x1e.shardora.c2c.protobuf.GetSell*\x8d\x01\n\x06Status\x12\x0c\n\x08kDefault\x10\x00\x12\x0e\n\nkConfirmed\x10\x01\x12\r\n\tkReported\x10\x02\x12\x10\n\x0ckSellWaiting\x10\x03\x12\x0e\n\nkSellValid\x10\x04\x12\x10\n\x0ckSellInvalid\x10\x05\x12\x11\n\rkSellReleased\x10\x06\x12\x0f\n\x0bkSellExists\x10\x07')
+  serialized_pb=_b('\n\x10protos/c2c.proto\x12\x11shardora.c2c.protobuf\"U\n\tOrderInfo\x12\r\n\x05\x62uyer\x18\x01 \x01(\x0c\x12)\n\x06status\x18\x02 \x01(\x0e\x32\x19.shardora.c2c.protobuf.Status\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\"\x8c\x02\n\x08SellInfo\x12\x15\n\rprotocol_addr\x18\x01 \x01(\x0c\x12\x0e\n\x06seller\x18\x02 \x01(\x0c\x12\x15\n\rpledge_amount\x18\x03 \x01(\x04\x12\r\n\x05price\x18\x04 \x01(\x04\x12\x12\n\nreceivable\x18\x05 \x01(\x0c\x12\x18\n\x10manager_released\x18\x06 \x01(\x08\x12\x17\n\x0fseller_released\x18\x07 \x01(\x08\x12)\n\x06status\x18\x08 \x01(\x0e\x32\x19.shardora.c2c.protobuf.Status\x12\x30\n\norder_info\x18\t \x01(\x0b\x32\x1c.shardora.c2c.protobuf.OrderInfo\x12\x0f\n\x07reports\x18\n \x03(\x0c\"9\n\x08NewOrder\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\r\n\x05\x62uyer\x18\x03 \x01(\x0c\"c\n\x07NewSell\x12\x15\n\rprotocol_addr\x18\x01 \x01(\x0c\x12\x0e\n\x06seller\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\r\n\x05price\x18\x04 \x01(\x04\x12\x12\n\nreceivable\x18\x05 \x01(\x0c\"3\n\x0b\x42uyerReport\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x14\n\x0creports_info\x18\x02 \x01(\x0c\"\x19\n\x07GetSell\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\"\xec\x01\n\nC2cMessage\x12(\n\x04sell\x18\x01 \x01(\x0b\x32\x1a.shardora.c2c.protobuf.NewSell\x12*\n\x05order\x18\x02 \x01(\x0b\x32\x1b.shardora.c2c.protobuf.NewOrder\x12.\n\x06report\x18\x03 \x01(\x0b\x32\x1e.shardora.c2c.protobuf.BuyerReport\x12*\n\x05sells\x18\x04 \x03(\x0b\x32\x1b.shardora.c2c.protobuf.SellInfo\x12,\n\x08get_sell\x18\x05 \x03(\x0b\x32\x1a.shardora.c2c.protobuf.GetSell*\x8d\x01\n\x06Status\x12\x0c\n\x08kDefault\x10\x00\x12\x0e\n\nkConfirmed\x10\x01\x12\r\n\tkReported\x10\x02\x12\x10\n\x0ckSellWaiting\x10\x03\x12\x0e\n\nkSellValid\x10\x04\x12\x10\n\x0ckSellInvalid\x10\x05\x12\x11\n\rkSellReleased\x10\x06\x12\x0f\n\x0bkSellExists\x10\x07')
 )
 
 _STATUS = _descriptor.EnumDescriptor(
@@ -64,8 +64,8 @@ _STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=913,
-  serialized_end=1054,
+  serialized_start=877,
+  serialized_end=1018,
 )
 _sym_db.RegisterEnumDescriptor(_STATUS)
 
@@ -121,8 +121,8 @@ _ORDERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=43,
-  serialized_end=132,
+  serialized_start=39,
+  serialized_end=124,
 )
 
 
@@ -215,8 +215,8 @@ _SELLINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=135,
-  serialized_end=411,
+  serialized_start=127,
+  serialized_end=395,
 )
 
 
@@ -260,8 +260,8 @@ _NEWORDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=413,
-  serialized_end=470,
+  serialized_start=397,
+  serialized_end=454,
 )
 
 
@@ -319,8 +319,8 @@ _NEWSELL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=472,
-  serialized_end=571,
+  serialized_start=456,
+  serialized_end=555,
 )
 
 
@@ -357,8 +357,8 @@ _BUYERREPORT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=573,
-  serialized_end=624,
+  serialized_start=557,
+  serialized_end=608,
 )
 
 
@@ -388,8 +388,8 @@ _GETSELL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=626,
-  serialized_end=651,
+  serialized_start=610,
+  serialized_end=635,
 )
 
 
@@ -447,8 +447,8 @@ _C2CMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=654,
-  serialized_end=910,
+  serialized_start=638,
+  serialized_end=874,
 )
 
 _ORDERINFO.fields_by_name['status'].enum_type = _STATUS

@@ -81,6 +81,10 @@ public:
         return networks_;
     }
 
+    void set_config_public_ip(const std::string& ip) {
+        config_public_ip_ = ip;
+    }
+
     void set_config_public_port(uint16_t public_port) {
         config_public_port_ = public_port;
     }
@@ -115,6 +119,20 @@ public:
 
     std::string ip_db_path() {
         return ip_db_path_;
+    }
+
+    const std::string& root_path() const {
+        return root_path_;
+    }
+
+    std::string RootPathFile(const std::string& file_name) const;
+
+    const std::string& server_cert_path() const {
+        return server_cert_path_;
+    }
+
+    const std::string& server_key_path() const {
+        return server_key_path_;
     }
 
     uint8_t message_handler_thread_count() const {
@@ -169,6 +187,7 @@ public:
     uint8_t get_thread_index();
 
     void set_global_stoped() {
+        SHARDORA_ERROR("global stop");
         global_stoped_ = true;
     }
 
@@ -189,6 +208,14 @@ public:
     void DecSharedObj(int32_t index) {
 #ifndef NDEBUG
         shared_obj_count_[index].fetch_sub(1);
+#endif
+    }
+
+    int32_t GetSharedObj(int32_t index) const {
+#ifndef NDEBUG
+        return shared_obj_count_[index].load();
+#else
+        return -1;
 #endif
     }
 
@@ -220,6 +247,20 @@ public:
         return hotstuff_thread_count_;
     }
 
+    uint64_t leader_change_init_tm() const {
+        return leader_change_init_tm_;
+    }
+
+    uint32_t now_valid_end_shard() const {
+        return now_valid_end_shard_; 
+    }
+
+    void set_now_valid_end_shard(uint32_t shard_id) {
+        if (now_valid_end_shard_ < shard_id) {
+            now_valid_end_shard_ = shard_id;
+        }
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -245,6 +286,9 @@ private:
     bool missing_node_{ false };
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
+    std::string root_path_ = ".";
+    std::string server_cert_path_;
+    std::string server_key_path_;
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
     uint8_t message_handler_thread_count_ = 8;
     bool for_ck_server_ = false;
@@ -272,7 +316,9 @@ private:
     int32_t test_pool_index_ = -1;
     uint32_t test_tx_tps_ = 1000;
     std::atomic<uint64_t> global_latency_ = 0;
-    uint8_t hotstuff_thread_count_ = 8;
+    uint8_t hotstuff_thread_count_ = 16;
+    uint64_t leader_change_init_tm_ = 0;
+    std::atomic<uint32_t> now_valid_end_shard_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

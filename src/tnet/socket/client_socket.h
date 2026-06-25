@@ -14,9 +14,10 @@ public:
             uint16_t peer_port,
             in_addr_t local_addr,
             uint16_t local_port)
-            : TcpSocket(local_addr, local_port),
-              peer_addr_(peer_addr),
-              peer_port_(peer_port) {
+            : TcpSocket(local_addr, local_port) {
+        ip_ = InAddrToString(peer_addr);
+        peer_addr_ = peer_addr;
+        port_ = peer_port;
     }
 
     virtual ~ClientSocket() {
@@ -31,10 +32,12 @@ public:
         sockaddr_in addr;
         addr.sin_family = AF_INET;
         addr.sin_addr.s_addr = peer_addr_;
-        addr.sin_port = htons(peer_port_);
+        addr.sin_port = htons(port_);
         int con_res = connect(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
         if (con_res < 0) {
             if (errno == EINPROGRESS) {
+                // SHARDORA_ERROR("connect failed on fd [%d] [%s] con_res[%d] errorno[%d]",
+                //     fd_, strerror(errno), con_res, errno);
                 return 1;
             }
 
@@ -51,12 +54,11 @@ public:
     }
 
     uint16_t GetPeerPort() const {
-        return peer_port_;
+        return port_;
     }
 
 private:
     in_addr_t peer_addr_;
-    uint16_t peer_port_{ 0 };
 
     DISALLOW_COPY_AND_ASSIGN(ClientSocket);
 };

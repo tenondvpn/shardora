@@ -28,6 +28,8 @@ public:
     bool InitWithContent(const std::string& content);
     bool DumpConfig(const std::string& conf);
     bool Get(const std::string& field, const std::string& key, std::string& value) const;
+    /** Like Get, but returns false without error logs when field or key is absent. */
+    bool TryGet(const std::string& field, const std::string& key, std::string& value) const;
     bool Get(const std::string& field, const std::string& key, bool& value) const;
     bool Get(const std::string& field, const std::string& key, int8_t& value) const;
     bool Get(const std::string& field, const std::string& key, uint8_t& value) const;

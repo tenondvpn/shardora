@@ -1,16 +1,16 @@
-#pragma once
+﻿#pragma once
 
 #include <functional>
 
 #include "common/log.h"
-#include "common/limit_heap.h"
 #include "common/node_members.h"
 #include "common/hash.h"
+#include "common/limit_heap.h"
 #include "common/utils.h"
 #include "protos/elect.pb.h"
 
 #define ELECT_DEBUG(fmt, ...) SHARDORA_DEBUG("[elect]" fmt, ## __VA_ARGS__)
-#define ELECT_INFO(fmt, ...) SHARDORA_INFO("[elect]" fmt, ## __VA_ARGS__)
+#define ELECT_INFO(fmt, ...) SHARDORA_DEBUG("[elect]" fmt, ## __VA_ARGS__)
 #define ELECT_WARN(fmt, ...) SHARDORA_WARN("[elect]" fmt, ## __VA_ARGS__)
 #define ELECT_ERROR(fmt, ...) SHARDORA_ERROR("[elect]" fmt, ## __VA_ARGS__)
 
@@ -42,6 +42,20 @@ typedef std::function<void(
 inline bool operator<(const HeapItem& lhs, const HeapItem& rhs) {
     return lhs.succ_count < rhs.succ_count;
 }
+
+}  // namespace elect
+
+namespace common {
+
+template <>
+inline uint64_t MinHeapUniqueVal(const elect::HeapItem& val) {
+    return (static_cast<uint64_t>(val.index) << 32u) |
+           static_cast<uint64_t>(val.succ_count);
+}
+
+}  // namespace common
+
+namespace elect {
 
 static const uint32_t kElectBroadcastIgnBloomfilterHop = 1u;
 static const uint32_t kElectBroadcastStopTimes = 2u;

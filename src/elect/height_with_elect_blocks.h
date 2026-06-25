@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <bls/agg_bls.h>
 #include <mutex>
 #include <unordered_map>
@@ -63,7 +64,7 @@ public:
         uint64_t min_height = common::kInvalidUint64;
         uint64_t min_index = 0;
         for (int32_t i = 0; i < 3; ++i) {
-            if (members_ptrs_[network_id][i].load() == nullptr) {
+            if (LoadMembersItem(network_id, i) == nullptr) {
                 auto new_item = std::make_shared<HeightMembersItem>(
                     members_ptr,
                     height);
@@ -73,24 +74,24 @@ public:
                     bls::protobuf::LocalBlsItem bls_item;
                     if (!bls_item.ParseFromString(bls_prikey)) {
                         new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-                        assert(false);
+                        //assert(false);
                     } else {
                         new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
-                        assert(new_item->local_sec_key != libff::alt_bn128_Fr::zero());
+                        //assert(new_item->local_sec_key != libff::alt_bn128_Fr::zero());
                     }
                 } else {
                     new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-                    // assert(false);
+                    // //assert(false);
                 }
                 SHARDORA_DEBUG("0 save bls pk and secret key success.height: %lu, network_id: %u, %d, %d",
                     height, network_id,
                     (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()),
                     (new_item->local_sec_key == libff::alt_bn128_Fr::zero()));
-                members_ptrs_[network_id][i].store(new_item);
+                StoreMembersItem(network_id, i, new_item);
                 return;
             }
 
-            auto members_ptr = members_ptrs_[network_id][i].load();
+            auto members_ptr = LoadMembersItem(network_id, i);
             if (members_ptr->height < min_height) {
                 min_height = members_ptr->height;
                 min_index = i;
@@ -111,27 +112,26 @@ public:
             bls::protobuf::LocalBlsItem bls_item;
             if (!bls_item.ParseFromString(bls_prikey)) {
                 new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-                assert(false);
+                //assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
                 SHARDORA_DEBUG("2 success get local sec key.");
             }
         } else {
             new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-            // assert(false);
+            // //assert(false);
         }
 
-        members_ptrs_[network_id][min_index].store(new_item);
+        StoreMembersItem(network_id, min_index, new_item);
         SHARDORA_DEBUG("1 save bls pk and secret key success.height: %lu, "
             "network_id: %u, local_sec_key: %s, is zero: %d, common pk is zero: %d",
             height, network_id,
             libBLS::ThresholdUtils::fieldElementToString(new_item->local_sec_key).c_str(),
             (new_item->local_sec_key == libff::alt_bn128_Fr::zero()),
             (common_pk == libff::alt_bn128_G2::zero()));
-        assert(common_pk != libff::alt_bn128_G2::zero());
+        //assert(common_pk != libff::alt_bn128_G2::zero());
     }
 
-    // TODO: multi thread problem.
     common::MembersPtr GetMembersPtr(
             std::shared_ptr<security::Security>& security,
             uint64_t height,
@@ -139,7 +139,7 @@ public:
             libff::alt_bn128_G2* common_pk,
             libff::alt_bn128_Fr* local_sec_key) {
         if (height == 0) {
-            assert(false);
+            //assert(false);
             return nullptr;
         }
         
@@ -154,7 +154,7 @@ public:
         }
 
         for (int32_t i = 0; i < 3; ++i) {
-            auto item_ptr = members_ptrs_[network_id][i].load();
+            auto item_ptr = LoadMembersItem(network_id, i);
             if (item_ptr != nullptr && item_ptr->height == height) {
                 if (common_pk != nullptr) {
                     *common_pk = item_ptr->common_bls_publick_key;
@@ -190,7 +190,7 @@ public:
                     bls::protobuf::LocalBlsItem bls_item;
                     if (!bls_item.ParseFromString(bls_prikey)) {
                         iter->second->local_sec_key = libff::alt_bn128_Fr::zero();
-                        assert(false);
+                        //assert(false);
                     } else {
                         iter->second->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
                         SHARDORA_DEBUG("1 success get local sec key.");
@@ -199,7 +199,7 @@ public:
             }
 
             if (iter->second->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
-                assert(false);
+                //assert(false);
                 return nullptr;
             }
 
@@ -219,7 +219,7 @@ public:
         auto shard_members = GetMembers(security, network_id, height, &temp_common_pk);
         if (shard_members == nullptr) {
             SHARDORA_DEBUG("failed get members.");
-            // assert(false);
+            // //assert(false);
             return nullptr;
         }
 
@@ -232,18 +232,17 @@ public:
         if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
             SHARDORA_DEBUG("new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()"
                 " network_id: %d, height: %lu", network_id, height);
-            // assert(false);
+            // //assert(false);
             return shard_members;
         }
 
         height_with_members_[network_id][height] = new_item;
-        CHECK_MEMORY_SIZE(height_with_members_[network_id]);
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
             bls::protobuf::LocalBlsItem bls_item;
             if (!bls_item.ParseFromString(bls_prikey)) {
                 new_item->local_sec_key = libff::alt_bn128_Fr::zero();
-                assert(false);
+                //assert(false);
             } else {
                 new_item->local_sec_key = libff::alt_bn128_Fr(bls_item.local_private_key().c_str());
                 SHARDORA_DEBUG("success get local sec key: %s", bls_item.local_private_key().c_str());
@@ -261,7 +260,6 @@ public:
 
         if (height_with_members_[network_id].size() >= kMaxCacheElectBlockCount) {
             height_with_members_[network_id].erase(height_with_members_[network_id].begin());
-            CHECK_MEMORY_SIZE(height_with_members_[network_id]);
         }
 
         return shard_members;
@@ -278,19 +276,19 @@ private:
                 network_id,
                 height,
                 &view_block)) {
-            SHARDORA_INFO("failed get block with height net: %u, pool: %u, height: %lu",
+            SHARDORA_DEBUG("failed get block with height net: %u, pool: %u, height: %lu",
                 network::kRootCongressNetworkId, network_id, height);
-            //             assert(false);
+            //             //assert(false);
             return nullptr;
         }
 
         auto& block = view_block.block_info();
         if (!block.has_elect_block()) {
-            assert(false);
+            //assert(false);
             return nullptr;
         }
 
-        assert(block.tx_list_size() > 0);
+        //assert(block.tx_list_size() > 0);
         auto& elect_block = block.elect_block();
         if (elect_block.prev_members().has_common_pubkey()) {
             auto& prev_members = elect_block.prev_members();
@@ -303,31 +301,27 @@ private:
     
             BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
             *temp_common_pk = *pkey.getPublicKey();
-            assert(*temp_common_pk != libff::alt_bn128_G2::zero());
+            //assert(*temp_common_pk != libff::alt_bn128_G2::zero());
         } else {
-            // assert(false);
+            // //assert(false);
         }
 
         uint32_t member_index = 0;
         auto shard_members_ptr = std::make_shared<common::Members>();
         auto& in = elect_block.in();
         for (int32_t i = 0; i < in.size(); ++i) {
-            auto id = security->GetAddress(in[i].pubkey());
-            auto agg_bls_pk = bls::Proto2BlsPublicKey(in[i].agg_bls_pk());
-            auto agg_bls_pk_proof = bls::Proto2BlsPopProof(in[i].agg_bls_pk_proof());
+            auto id = security->GetAddressWithPublicKey(in[i].pubkey());
             shard_members_ptr->push_back(std::make_shared<common::BftMember>(
                 elect_block.shard_network_id(),
                 id,
                 in[i].pubkey(),
                 member_index,
-                in[i].pool_idx_mod_num(),
-                *agg_bls_pk,
-                *agg_bls_pk_proof));
+                in[i].pool_idx_mod_num()));
             member_index++;
         }
 
         auto& prev_members = elect_block.prev_members();
-        // assert(prev_members.bls_pubkey_size() == in.size());
+        // //assert(prev_members.bls_pubkey_size() == in.size());
         if (prev_members.bls_pubkey_size() == in.size()) {
             for (uint32_t i = 0; i < prev_members.bls_pubkey_size(); ++i) {
                 std::vector<std::string> pkey_str = {
@@ -339,7 +333,7 @@ private:
                 try {
                     BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
                     shard_members_ptr->at(i)->bls_publick_key = *pkey.getPublicKey();
-                    assert(shard_members_ptr->at(i)->bls_publick_key != libff::alt_bn128_G2::zero());
+                    //assert(shard_members_ptr->at(i)->bls_publick_key != libff::alt_bn128_G2::zero());
                 } catch(...) {
                     SHARDORA_DEBUG("failed get bls public key: %d", i);
                 }
@@ -352,9 +346,20 @@ private:
 
     static const uint32_t kMaxKeepElectBlockCount = 3u;
     static const uint32_t kMaxCacheElectBlockCount = 7u;
+    HeightMembersItemPtr LoadMembersItem(uint32_t network_id, uint32_t index) const {
+        std::lock_guard<std::mutex> lock(members_ptrs_mutex_[network_id][index]);
+        return members_ptrs_[network_id][index];
+    }
+
+    void StoreMembersItem(uint32_t network_id, uint32_t index, const HeightMembersItemPtr& item) {
+        std::lock_guard<std::mutex> lock(members_ptrs_mutex_[network_id][index]);
+        members_ptrs_[network_id][index] = item;
+    }
+
     std::map<uint64_t, std::shared_ptr<HeightMembersItem>, std::less<uint64_t>> height_with_members_[network::kConsensusShardEndNetworkId];
     std::mutex height_with_members_mutex_;
-    std::atomic<HeightMembersItemPtr> members_ptrs_[network::kConsensusShardEndNetworkId][kMaxKeepElectBlockCount];
+    HeightMembersItemPtr members_ptrs_[network::kConsensusShardEndNetworkId][kMaxKeepElectBlockCount] = {};
+    mutable std::mutex members_ptrs_mutex_[network::kConsensusShardEndNetworkId][kMaxKeepElectBlockCount];
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;

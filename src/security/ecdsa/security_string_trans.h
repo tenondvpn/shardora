@@ -19,6 +19,7 @@ class SecurityStringTrans {
 public:
     static SecurityStringTrans* Instance();
     std::shared_ptr<BIGNUM> StringToBignum(const std::string& src);
+    std::shared_ptr<BIGNUM> StringToBignum(const char* src, uint32_t length);
     void BignumToString(
             const std::shared_ptr<BIGNUM>& value,
             std::string& dst);

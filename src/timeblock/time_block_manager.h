@@ -11,6 +11,7 @@
 #include "dht/dht_utils.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/zbft.pb.h"
+#include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/timeblock.pb.h"
 #include "protos/transport.pb.h"
@@ -36,8 +37,15 @@ public:
     }
 
     uint64_t LatestTimestampHeight() {
-        SHARDORA_INFO("latest_time_block_height_ get: %lu", static_cast<int>(latest_time_block_height_));
+        SHARDORA_DEBUG("latest_time_block_height_ get: %lu",
+            static_cast<uint64_t>(latest_time_block_height_));
         return latest_time_block_height_;
+    }
+
+    uint64_t LatestPrevTimestampHeight() {
+        SHARDORA_DEBUG("prev_time_block_height_ get: %lu",
+            static_cast<uint64_t>(prev_time_block_height_));
+        return prev_time_block_height_;
     }
 
     void OnTimeBlock(
@@ -48,6 +56,9 @@ public:
         bool leader, 
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func);
+    bool CheckLeaderTimeblockTxValid(
+        const pools::protobuf::TxMessage& tx_item, 
+        pools::CheckAddrNonceValidFunction tx_valid_func) const;
     bool HasTimeblockTx(
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func);
@@ -61,14 +72,14 @@ private:
 
     bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
-        // SHARDORA_DEBUG("tmblock_tx_ptr CanCallTimeBlockTx now_sec: %lu "
-        //     "latest_time_block_tm_: %lu, latest_tm_block_local_sec_: %lu, %lu, valid0: %d, valid1: %d",
-        //     now_sec, 
-        //     latest_time_block_tm_, 
-        //     latest_tm_block_local_sec_, 
-        //     common::kTimeBlockCreatePeriodSeconds,
-        //     (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds),
-        //     (now_sec >= latest_tm_block_local_sec_ + common::kTimeBlockCreatePeriodSeconds));
+        SHARDORA_DEBUG("tmblock_tx_ptr CanCallTimeBlockTx now_sec: %lu "
+            "latest_time_block_tm_: %lu, latest_tm_block_local_sec_: %lu, %lu, valid0: %d, valid1: %d",
+            now_sec, 
+            (uint64_t)latest_time_block_tm_, 
+            (uint64_t)latest_tm_block_local_sec_, 
+            common::kTimeBlockCreatePeriodSeconds,
+            (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds),
+            (now_sec >= latest_tm_block_local_sec_ + common::kTimeBlockCreatePeriodSeconds));
         if (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds) {
             return true;
         }
@@ -82,6 +93,7 @@ private:
 
 
     std::atomic<uint64_t> latest_time_block_height_ = common::kInvalidUint64;
+    std::atomic<uint64_t> prev_time_block_height_ = common::kInvalidUint64;
     std::atomic<uint64_t> latest_time_block_tm_{ 0 };
     std::atomic<uint64_t> latest_tm_block_local_sec_{ 0 };
 
@@ -91,7 +103,18 @@ private:
     std::shared_ptr<timeblock::protobuf::TimeBlock> timeblock_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::atomic<pools::TxItemPtr> tmblock_tx_ptr_ = nullptr;
+    pools::TxItemPtr LoadTimeblockTx() const {
+        std::lock_guard<std::mutex> lock(tmblock_tx_ptr_mutex_);
+        return tmblock_tx_ptr_;
+    }
+
+    void StoreTimeblockTx(const pools::TxItemPtr& tx_ptr) {
+        std::lock_guard<std::mutex> lock(tmblock_tx_ptr_mutex_);
+        tmblock_tx_ptr_ = tx_ptr;
+    }
+
+    pools::TxItemPtr tmblock_tx_ptr_ = nullptr;
+    mutable std::mutex tmblock_tx_ptr_mutex_;
     pools::CreateConsensusItemFunction create_tm_tx_cb_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;

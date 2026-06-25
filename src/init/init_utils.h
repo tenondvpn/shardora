@@ -15,7 +15,7 @@
 #include "protos/bls.pb.h"
 
 #define INIT_DEBUG(fmt, ...) SHARDORA_DEBUG("[init]" fmt, ## __VA_ARGS__)
-#define INIT_INFO(fmt, ...) SHARDORA_INFO("[init]" fmt, ## __VA_ARGS__)
+#define INIT_INFO(fmt, ...) SHARDORA_DEBUG("[init]" fmt, ## __VA_ARGS__)
 #define INIT_WARN(fmt, ...) SHARDORA_WARN("[init]" fmt, ## __VA_ARGS__)
 #define INIT_ERROR(fmt, ...) SHARDORA_ERROR("[init]" fmt, ## __VA_ARGS__)
 
@@ -26,6 +26,7 @@ namespace init {
 enum InitErrorCode {
     kInitSuccess = 0,
     kInitError = 1,
+    kInitWaitingForPrivateKey = 2,
 };
 
 struct RotatitionVersionInfo {
@@ -66,19 +67,11 @@ struct GenisisNodeInfo {
     libff::alt_bn128_G2 bls_pubkey;
     std::vector<libff::alt_bn128_G2> verification;
     bls::protobuf::JoinElectInfo g2_val;
-    libff::alt_bn128_G2 agg_bls_pk;
-    libff::alt_bn128_G1 agg_bls_pk_proof;
     uint64_t nonce;
 };
 
 typedef std::shared_ptr<GenisisNodeInfo> GenisisNodeInfoPtr;
-typedef std::vector<GenisisNodeInfoPtr> GenisisNodeInfoPtrVector;
 
-// GenisisNetworkType 创世纪网络类型
-enum class GenisisNetworkType {
-    RootNetwork = 0,
-    ShardNetwork,
-};
 
 }  // namespace init
 

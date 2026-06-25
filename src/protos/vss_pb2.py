@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.vss.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x10protos/vss.proto\x12\x15shardora.vss.protobuf\"~\n\nVssMessage\x12\x13\n\x0brandom_hash\x18\x01 \x01(\x04\x12\x0e\n\x06random\x18\x02 \x01(\x04\x12\x14\n\x0cmember_index\x18\x03 \x01(\r\x12\x11\n\ttm_height\x18\x04 \x01(\x04\x12\x14\n\x0c\x65lect_height\x18\x05 \x01(\x04\x12\x0c\n\x04type\x18\x06 \x01(\x05')
+  serialized_pb=_b('\n\x10protos/vss.proto\x12\x11shardora.vss.protobuf\"~\n\nVssMessage\x12\x13\n\x0brandom_hash\x18\x01 \x01(\x04\x12\x0e\n\x06random\x18\x02 \x01(\x04\x12\x14\n\x0cmember_index\x18\x03 \x01(\r\x12\x11\n\ttm_height\x18\x04 \x01(\x04\x12\x14\n\x0c\x65lect_height\x18\x05 \x01(\x04\x12\x0c\n\x04type\x18\x06 \x01(\x05')
 )
 
 
@@ -86,8 +86,8 @@ _VSSMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=43,
-  serialized_end=169,
+  serialized_start=39,
+  serialized_end=165,
 )
 
 DESCRIPTOR.message_types_by_name['VssMessage'] = _VSSMESSAGE

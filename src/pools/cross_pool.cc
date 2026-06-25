@@ -83,6 +83,10 @@ uint32_t CrossPool::SyncMissingBlocks(uint64_t now_tm_ms) {
         for (uint32_t i = 0; i < invalid_heights.size(); ++i) {
             if (prefix_db_->BlockExists(des_sharding_id_, pool_index_, invalid_heights[i])) {
                 height_tree_ptr_->Set(invalid_heights[i]);
+                if (synced_height_ < invalid_heights[i]) {
+                    synced_height_ = invalid_heights[i];
+                }
+                
                 SHARDORA_DEBUG("exists des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
                     "invaid heights size: %u, height: %lu",
                     des_sharding_id_, pool_index_, latest_height_,

@@ -6,7 +6,7 @@
 #include "common/global_info.h"
 
 #define NETWORK_DEBUG(fmt, ...) DEBUG("[network]" fmt, ## __VA_ARGS__)
-#define NETWORK_INFO(fmt, ...) SHARDORA_INFO("[network]" fmt, ## __VA_ARGS__)
+#define NETWORK_INFO(fmt, ...) SHARDORA_DEBUG("[network]" fmt, ## __VA_ARGS__)
 #define NETWORK_WARN(fmt, ...) SHARDORA_WARN("[network]" fmt, ## __VA_ARGS__)
 #define NETWORK_ERROR(fmt, ...) SHARDORA_ERROR("[network]" fmt, ## __VA_ARGS__)
 
@@ -33,8 +33,7 @@ static const uint32_t kUniversalNetworkId = 0u;  // all network join(for find ne
 static const uint32_t kNodeNetworkId = 1u;  // just node id join(for broadcast)
 static const uint32_t kRootCongressNetworkId = 2u;
 static const uint32_t kConsensusShardBeginNetworkId = 3u;  // eq
-// static const uint32_t kConsensusShardEndNetworkId = 6; // less
-static const uint32_t kConsensusShardEndNetworkId = 4u; // less
+static const uint32_t kConsensusShardEndNetworkId = 1024u; // less
 static const uint32_t kConsensusWaitingShardOffset = kConsensusShardEndNetworkId - kRootCongressNetworkId;
 static const uint32_t kRootCongressWaitingNetworkId = kRootCongressNetworkId + kConsensusWaitingShardOffset;
 static const uint32_t kConsensusWaitingShardBeginNetworkId = kRootCongressNetworkId + kConsensusWaitingShardOffset;  // eq
@@ -86,6 +85,10 @@ inline static uint16_t GetLocalConsensusNetworkId() {
     }
 
     return common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset;
+}
+
+inline static bool IsWaitingForElect() {
+    return common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardBeginNetworkId;
 }
 
 }  // namespace network

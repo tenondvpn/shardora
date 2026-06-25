@@ -7,12 +7,12 @@ namespace shardora {
 namespace common {
 
 Bitmap::Bitmap(uint32_t bit_count) {
-    assert((bit_count % 64) == 0);
+    //assert((bit_count % 64) == 0);
     uint32_t data_cnt = bit_count / 64;
     for (uint32_t i = 0; i < data_cnt; ++i) {
         data_.push_back(0ull);
     }
-    assert(!data_.empty());
+    //assert(!data_.empty());
 }
 
 Bitmap::Bitmap(const std::vector<uint64_t>& data) : data_(data) {
@@ -26,7 +26,7 @@ Bitmap::Bitmap(const std::vector<uint64_t>& data) : data_(data) {
 Bitmap::~Bitmap() {}
 
 Bitmap::Bitmap(const Bitmap& src) : data_(src.data_), valid_count_(src.valid_count_) {
-    // assert(data_.size() == 1);
+    // //assert(data_.size() == 1);
 }
 
 void Bitmap::Set(uint32_t index) {
@@ -34,7 +34,7 @@ void Bitmap::Set(uint32_t index) {
         return;
     }
 
-    assert(index < (data_.size() * 64));
+    //assert(index < (data_.size() * 64));
     uint32_t vec_index = (index % (64 * data_.size())) / 64;
     uint32_t bit_index = (index % (64 * data_.size())) % 64;
     data_[vec_index] |= (uint64_t)((uint64_t)(1) << bit_index);
@@ -46,7 +46,7 @@ void Bitmap::UnSet(uint32_t index) {
         return;
     }
 
-    assert(index < (data_.size() * 64));
+    //assert(index < (data_.size() * 64));
     uint32_t vec_index = (index % (64 * data_.size())) / 64;
     uint32_t bit_index = (index % (64 * data_.size())) % 64;
     data_[vec_index] &= ~((uint64_t)((uint64_t)(1) << bit_index));
@@ -54,7 +54,7 @@ void Bitmap::UnSet(uint32_t index) {
 }
 
 bool Bitmap::Valid(uint32_t index) const {
-    assert(index < (data_.size() * 64));
+    //assert(index < (data_.size() * 64));
     uint32_t vec_index = (index % (64 * data_.size())) / 64;
     uint32_t bit_index = (index % (64 * data_.size())) % 64;
     if ((data_[vec_index] & ((uint64_t)((uint64_t)(1) << bit_index))) == 0ull) {

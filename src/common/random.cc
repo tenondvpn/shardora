@@ -28,11 +28,11 @@ uint32_t& RangeSeed() {
     return seed;
 }
 
-static std::mt19937 kRandomNumberGenerator(RangeSeed());
+static thread_local std::mt19937 kRandomNumberGenerator(RangeSeed());
 
 template <typename IntType>
 IntType RandomInt() {
-    static std::uniform_int_distribution<IntType> distribution(
+    static thread_local std::uniform_int_distribution<IntType> distribution(
             (std::numeric_limits<IntType>::min)(),
             (std::numeric_limits<IntType>::max)());
     return distribution(kRandomNumberGenerator);

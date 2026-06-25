@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bls/bls.h>
+#include <bls/bls_sign.h>
 #include <common/bitmap.h>
 #include <common/hash.h>
 #include <common/utils.h>
@@ -153,29 +154,8 @@ private:
             std::vector<std::string> str_hashes,
             const libff::alt_bn128_G1& agg_sig,
             const std::vector<libff::alt_bn128_G2> pks ) {
-        if (str_hashes.size() != pks.size()) {
-            return false;
-        }
-
-        auto right = libff::alt_bn128_GT::one();
-        libff::alt_bn128_G1 aggregated_hash = libff::alt_bn128_G1::zero();
-        for (uint32_t i = 0; i < pks.size(); i++) {
-            auto pk = pks[i];
-            if (!pk.is_well_formed()) {
-                throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, public key is invalid" );
-            }
-
-            if (!libBLS::ThresholdUtils::ValidateKey(pk)) {
-                throw libBLS::ThresholdUtils::IsNotWellFormed( "Error, public key is not member of G2" );
-            }
-
-            auto hash_g1 = libBLS::ThresholdUtils::HashtoG1(common::Encode::HexEncode(str_hashes[i]));
-            aggregated_hash = aggregated_hash + hash_g1;
-            right = right * libff::alt_bn128_ate_reduced_pairing(hash_g1, pks[i]); 
-        }
-
-        return right == libff::alt_bn128_ate_reduced_pairing(agg_sig, libff::alt_bn128_G2::one());
-    }    
+        return BlsSign::AggregateVerifyFast(str_hashes, agg_sig, pks);
+    }
 };
 
 }

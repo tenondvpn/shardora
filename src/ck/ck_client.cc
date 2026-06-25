@@ -7,9 +7,9 @@
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/time_utils.h"
-#include "zjcvm/execution.h"
-#include "zjcvm/zjc_host.h"
-#include "zjcvm/zjcvm_utils.h"
+#include "shardoravm/execution.h"
+#include "shardoravm/shardora_host.h"
+#include "shardoravm/shardoravm_utils.h"
 
 namespace shardora {
 
@@ -210,11 +210,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
             {
                 auto contract = tx.to();
                 auto user = tx.from();
-                prepay_contract->Append(common::Encode::HexEncode(contract));
-                prepay_user->Append(common::Encode::HexEncode(user));
-                prepay_height->Append(block_item->height());
-                prepay_amount->Append(tx.balance());
-                SHARDORA_DEBUG("success add prepayment contract: %s, address: %s, nonce: %lu, balance: %lu",
+                prefund_contract->Append(common::Encode::HexEncode(contract));
+                prefund_user->Append(common::Encode::HexEncode(user));
+                prefund_height->Append(block_item->height());
+                prefund_amount->Append(tx.balance());
+                SHARDORA_DEBUG("success add prefund contract: %s, address: %s, nonce: %lu, balance: %lu",
                     common::Encode::HexEncode(contract).c_str(), 
                     common::Encode::HexEncode(user).c_str(), 
                     tx.nonce(), 
@@ -233,11 +233,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                     auto all = common::Encode::HexDecode(item["m"].get<std::string>());
                     evmc_bytes32 bytes32;
                     memcpy(bytes32.bytes, all.c_str(), 32);
-                    uint64_t a = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    uint64_t a = shardoravm::EvmcBytes32ToUint64(bytes32);
                     c2c_all->Append(a);
                     auto price = common::Encode::HexDecode(item["p"].get<std::string>());
                     memcpy(bytes32.bytes, price.c_str(), 32);
-                    uint64_t p = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    uint64_t p = shardoravm::EvmcBytes32ToUint64(bytes32);
                     c2c_now->Append(p);
                     uint32_t mr = item["mr"].get<bool>();
                     c2c_mc->Append(mr);
@@ -247,15 +247,15 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                     c2c_report->Append(rp);
                     auto order = common::Encode::HexDecode(item["o"].get<std::string>());
                     memcpy(bytes32.bytes, order.c_str(), 32);
-                    uint64_t o = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    uint64_t o = shardoravm::EvmcBytes32ToUint64(bytes32);
                     c2c_order_id->Append(o);
                     auto tmp_height = common::Encode::HexDecode(item["h"].get<std::string>());
                     memcpy(bytes32.bytes, tmp_height.c_str(), 32);
-                    uint64_t h = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    uint64_t h = shardoravm::EvmcBytes32ToUint64(bytes32);
                     c2c_height->Append(h);
                     auto amount = common::Encode::HexDecode(item["bm"].get<std::string>());
                     memcpy(bytes32.bytes, amount.c_str(), 32);
-                    uint64_t am = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    uint64_t am = shardoravm::EvmcBytes32ToUint64(bytes32);
                     c2c_amount->Append(am);
                     c2c_contract_addr->Append(common::Encode::HexEncode(tx.to()));
                 }
@@ -271,11 +271,11 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 if (to_txs.tos(to_tx_idx).to().size() == common::kUnicastAddressLength * 2) {
                     auto contract = to_txs.tos(to_tx_idx).to().substr(0, common::kUnicastAddressLength);
                     auto user = to_txs.tos(to_tx_idx).to().substr(common::kUnicastAddressLength, common::kUnicastAddressLength);
-                    prepay_contract->Append(common::Encode::HexEncode(contract));
-                    prepay_user->Append(common::Encode::HexEncode(user));
-                    prepay_height->Append(block_item->height());
-                    prepay_amount->Append(to_txs.tos(to_tx_idx).balance());
-                    SHARDORA_DEBUG("success add prepayment contract: %s, address: %s, nonce: %lu, balance: %lu",
+                    prefund_contract->Append(common::Encode::HexEncode(contract));
+                    prefund_user->Append(common::Encode::HexEncode(user));
+                    prefund_height->Append(block_item->height());
+                    prefund_amount->Append(to_txs.tos(to_tx_idx).balance());
+                    SHARDORA_DEBUG("success add prefund contract: %s, address: %s, nonce: %lu, balance: %lu",
                         common::Encode::HexEncode(contract).c_str(), 
                         common::Encode::HexEncode(user).c_str(), 
                         tx.nonce(), 
@@ -283,7 +283,7 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
                 }
 
                 if (to_txs.tos(to_tx_idx).to().size() != common::kUnicastAddressLength) {
-                    //assert(false);
+                    ////assert(false);
                     continue;
                 }
                 
@@ -344,14 +344,14 @@ bool ClickHouseClient::HandleNewBlock(const std::shared_ptr<hotstuff::ViewBlock>
     }
 
     ++batch_count_;
-    // SHARDORA_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // SHARDORA_DEBUG("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseTransTableName + " FINAL");
-    // SHARDORA_INFO("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
+    // SHARDORA_DEBUG("%u, add new ck block %u_%u_%lu", idx++, view_block_item->qc().network_id(), view_block_item->qc().pool_index(), block_item->height());
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseBlockTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseAccountKvTableName + " FINAL");
     // ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
-    // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrepaymentTableName + " FINAL");
+    // ck_client.Execute(std::string("optimize TABLE ") + kClickhousePrefundTableName + " FINAL");
 #ifndef NDEBUG
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         SHARDORA_DEBUG("ck success new block coming sharding id: %u_%d_%lu, "
@@ -385,7 +385,7 @@ void ClickHouseClient::FlushToCkWithData() try {
             clickhouse::Block accounts;
             clickhouse::Block account_attrs;
             clickhouse::Block c2cs;
-            clickhouse::Block prepay;
+            clickhouse::Block prefund;
             blocks.AppendColumn("shard_id", block_shard_id);
             blocks.AppendColumn("pool_index", block_pool_index);
             blocks.AppendColumn("height", block_height);
@@ -463,10 +463,10 @@ void ClickHouseClient::FlushToCkWithData() try {
             c2cs.AppendColumn("amount", c2c_amount);
             c2cs.AppendColumn("contract", c2c_contract_addr);
 
-            prepay.AppendColumn("contract", prepay_contract);
-            prepay.AppendColumn("user", prepay_user);
-            prepay.AppendColumn("prepayment", prepay_amount);
-            prepay.AppendColumn("height", prepay_height);
+            prefund.AppendColumn("contract", prefund_contract);
+            prefund.AppendColumn("user", prefund_user);
+            prefund.AppendColumn("prefund", prefund_amount);
+            prefund.AppendColumn("height", prefund_height);
 
             uint32_t idx = 0;
             clickhouse::Client ck_client(clickhouse::ClientOptions().
@@ -479,7 +479,7 @@ void ClickHouseClient::FlushToCkWithData() try {
             ck_client.Insert(kClickhouseAccountTableName, accounts);
             ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
             ck_client.Insert(kClickhouseC2cTableName, c2cs);
-            ck_client.Insert(kClickhousePrepaymentTableName, prepay);
+            ck_client.Insert(kClickhousePrefundTableName, prefund);
         }
 
         HandleBlsMessage();
@@ -493,19 +493,19 @@ void ClickHouseClient::FlushToCkWithData() try {
 }
 
 bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
-    zjcvm::ZjchainHost zjc_host;
-    zjc_host.tx_context_.tx_origin = evmc::address{};
-    zjc_host.tx_context_.block_coinbase = evmc::address{};
-    zjc_host.tx_context_.block_number = 0;
-    zjc_host.tx_context_.block_timestamp = 0;
-    uint64_t chanin_id = 0;
-    zjcvm::Uint64ToEvmcBytes32(
-        zjc_host.tx_context_.chain_id,
+    shardoravm::ShardorahainHost shardora_host;
+    shardora_host.tx_context_.tx_origin = evmc::address{};
+    shardora_host.tx_context_.block_coinbase = evmc::address{};
+    shardora_host.tx_context_.block_number = 0;
+    shardora_host.tx_context_.block_timestamp = 0;
+    uint64_t chanin_id = hotstuff::kGlobalChainId;
+    shardoravm::Uint64ToEvmcBytes32(
+        shardora_host.tx_context_.chain_id,
         chanin_id);
-    zjc_host.contract_mgr_ = contract_mgr_;
-    zjc_host.my_address_ = contract_addr;
-    zjc_host.tx_context_.block_gas_limit = 10000000000lu;
-    // user caller prepayment 's gas
+    shardora_host.contract_mgr_ = contract_mgr_;
+    shardora_host.my_address_ = contract_addr;
+    shardora_host.tx_context_.block_gas_limit = 10000000000lu;
+    // user caller prefund 's gas
     uint64_t from_balance = 10000000000lu;
     auto contract_addr_info = prefix_db_->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
@@ -513,15 +513,15 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
         return false;
     }
     uint64_t to_balance = contract_addr_info->balance();
-    zjc_host.AddTmpAccountBalance(
+    shardora_host.AddTmpAccountBalance(
         from,
         from_balance);
-    zjc_host.AddTmpAccountBalance(
+    shardora_host.AddTmpAccountBalance(
         contract_addr,
         to_balance);
     evmc_result evmc_res = {};
     evmc::Result result{ evmc_res };
-    int exec_res = zjcvm::Execution::Instance()->execute(
+    int exec_res = shardoravm::Execution::Instance()->execute(
         contract_addr_info->bytes_code(),
         common::Encode::HexDecode("cdfd45bb"),
         from,
@@ -530,19 +530,19 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
         0,
         10000000000lu,
         0,
-        zjcvm::kJustCall,
-        zjc_host,
+        shardoravm::kJustCall,
+        shardora_host,
         &result);
-    if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
+    if (exec_res != shardoravm::kShardoravmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + std::to_string(result.status_code);
-        SHARDORA_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_DEBUG("query contract error: %s.", res.c_str());
         return false;
     }
 
     std::string qdata((char*)result.output_data, result.output_size);
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
-    uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
+    uint64_t len = shardoravm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res(qdata.c_str() + 64, len);
     *res = nlohmann::json::parse(http_res);
     SHARDORA_DEBUG("success query contract: %s", res->dump().c_str());
@@ -684,7 +684,7 @@ bool ClickHouseClient::CreateStatisticTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseStatisticTableName + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`time` UInt64 COMMENT 'time' CODEC(LZ4), "
-        "`all_zjc` UInt64 COMMENT 'zjc' CODEC(LZ4), "
+        "`all_shardora` UInt64 COMMENT 'shardora' CODEC(LZ4), "
         "`all_address` UInt32 COMMENT 'address' CODEC(T64, LZ4), "
         "`all_contracts` UInt32 COMMENT 'contracts' CODEC(T64, LZ4), "
         "`all_transactions` UInt32 COMMENT 'transactions' CODEC(LZ4), "
@@ -755,12 +755,12 @@ bool ClickHouseClient::CreateC2cTable() {
     return true;
 }
 
-bool ClickHouseClient::CreatePrepaymentTable() {
-    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhousePrepaymentTableName + " ( "
+bool ClickHouseClient::CreatePrefundTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhousePrefundTableName + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`contract` String COMMENT 'contract' CODEC(LZ4), "
         "`user` String COMMENT 'user' CODEC(LZ4), "
-        "`prepayment` UInt64 COMMENT 'prepayment' CODEC(LZ4), "
+        "`prefund` UInt64 COMMENT 'prefund' CODEC(LZ4), "
         "`height` UInt64 COMMENT 'height' CODEC(LZ4), "
         "`update` DateTime DEFAULT now() COMMENT 'update' "
         ") "
@@ -854,10 +854,10 @@ void ClickHouseClient::ResetColumns() {
     c2c_amount = std::make_shared<clickhouse::ColumnUInt64>();
     c2c_contract_addr = std::make_shared<clickhouse::ColumnString>();
 
-    prepay_contract = std::make_shared<clickhouse::ColumnString>();
-    prepay_user = std::make_shared<clickhouse::ColumnString>();
-    prepay_amount = std::make_shared<clickhouse::ColumnUInt64>();
-    prepay_height = std::make_shared<clickhouse::ColumnUInt64>();
+    prefund_contract = std::make_shared<clickhouse::ColumnString>();
+    prefund_user = std::make_shared<clickhouse::ColumnString>();
+    prefund_amount = std::make_shared<clickhouse::ColumnUInt64>();
+    prefund_height = std::make_shared<clickhouse::ColumnUInt64>();
 }
 
 bool ClickHouseClient::CreateBlsElectInfoTable() {
@@ -1043,7 +1043,7 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     CreateStatisticTable();
     CreatePrivateKeyTable();
     CreateC2cTable();
-    CreatePrepaymentTable();
+    CreatePrefundTable();
     CreateBlsElectInfoTable();
     CreateBlsBlockInfoTable();    
     if (statistic) {
@@ -1062,7 +1062,7 @@ void ClickHouseClient::TickStatistic() {
 }
 
 void ClickHouseClient::Statistic() try {
-    std::string cmd = "select count(*) as cnt from zjc_ck_transaction_table;";
+    std::string cmd = "select count(*) as cnt from shardora_ck_transaction_table;";
     uint32_t all_transactions = 0;
     clickhouse::Client ck_client0(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -1075,7 +1075,7 @@ void ClickHouseClient::Statistic() try {
         }
     });
 
-    cmd = "select count(*) from zjc_ck_account_table;";
+    cmd = "select count(*) from shardora_ck_account_table;";
     uint32_t all_address = 0;
     clickhouse::Client ck_client1(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -1088,7 +1088,7 @@ void ClickHouseClient::Statistic() try {
         }
     });
 
-    cmd = "select sum(balance) from zjc_ck_account_table;";
+    cmd = "select sum(balance) from shardora_ck_account_table;";
     uint64_t sum_balance = 0;
     clickhouse::Client ck_client2(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -1101,7 +1101,7 @@ void ClickHouseClient::Statistic() try {
         }
     });
 
-    cmd = "select count(*) from zjc_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
+    cmd = "select count(*) from shardora_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
     uint32_t all_contracts = 0;
     clickhouse::Client ck_client3(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -1115,7 +1115,7 @@ void ClickHouseClient::Statistic() try {
     });
 
     auto st_time = std::make_shared<clickhouse::ColumnUInt64>();
-    auto st_zjc = std::make_shared<clickhouse::ColumnUInt64>();
+    auto st_shardora = std::make_shared<clickhouse::ColumnUInt64>();
     auto st_address = std::make_shared<clickhouse::ColumnUInt32>();
     auto st_contracts = std::make_shared<clickhouse::ColumnUInt32>();
     auto st_transactions = std::make_shared<clickhouse::ColumnUInt32>();
@@ -1124,7 +1124,7 @@ void ClickHouseClient::Statistic() try {
     auto st_date = std::make_shared<clickhouse::ColumnUInt32>();
     st_time->Append(common::TimeUtils::TimestampSeconds());
     st_date->Append(common::TimeUtils::TimestampDays());
-    st_zjc->Append(sum_balance);
+    st_shardora->Append(sum_balance);
     st_address->Append(all_address);
     st_contracts->Append(all_contracts);
     st_transactions->Append(all_transactions);
@@ -1132,7 +1132,7 @@ void ClickHouseClient::Statistic() try {
     st_wnodes->Append(0);
     clickhouse::Block statistics;
     statistics.AppendColumn("time", st_time);
-    statistics.AppendColumn("all_zjc", st_zjc);
+    statistics.AppendColumn("all_shardora", st_shardora);
     statistics.AppendColumn("all_address", st_address);
     statistics.AppendColumn("all_contracts", st_contracts);
     statistics.AppendColumn("all_transactions", st_transactions);

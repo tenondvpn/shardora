@@ -21,11 +21,11 @@ public:
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     }
 
-
     virtual ~ToTxLocalItem() {}
     virtual int HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
     virtual int TxToBlockTx(
@@ -34,8 +34,9 @@ public:
 
 private:
     void CreateLocalToTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         const pools::protobuf::ToTxMessageItem& to_tx, 
         block::protobuf::ConsensusToTxs& block_to_txs);

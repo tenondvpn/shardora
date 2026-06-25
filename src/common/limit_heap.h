@@ -10,7 +10,7 @@ namespace common {
 
 template<class Type>
 uint64_t MinHeapUniqueVal(const Type& val) {
-    return common::Hash::Hash64(val);
+    return Hash::Hash64(val);
 }
 
 template<>
@@ -65,8 +65,8 @@ public:
 
     inline int32_t push(Type val) {
         if (size_ >= max_size_ && OperaterMinOrMax(val, data_[0])) {
-            SHARDORA_ERROR("min heap push failed![%d] is max heap: %d",
-                OperaterMinOrMax(val, data_[0]));
+            SHARDORA_ERROR("min heap push failed! full and val_lt_root=%d",
+                OperaterMinOrMax(val, data_[0]) ? 1 : 0);
             return -1;
         }
 
@@ -192,7 +192,7 @@ public:
     int32_t size_{ 0 };
     bool unique_{ false };
     std::unordered_set<uint64_t> unique_set_;
-    uint32_t max_size_{ -1 };
+    uint32_t max_size_{ UINT32_MAX };
 };
 
 }  // namespace common

@@ -4,7 +4,7 @@
 #include <protos/hotstuff.pb.h>
 #include <security/ecdsa/ecdsa.h>
 
-namespace shardora {
+namespace seth {
 namespace hotstuff {
 namespace test {
 
@@ -27,7 +27,7 @@ static std::shared_ptr<db::Db> db_ = nullptr;
 static std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 static std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
 static std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-static std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+static std::shared_ptr<consensus::ContractGasPrefund> gas_prefund_ = nullptr;
 static std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
 static std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 static db::DbWriteBatch db_batch;

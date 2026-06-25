@@ -8,7 +8,7 @@
 #include <security/ecdsa/ecdsa.h>
 #include <consensus/hotstuff/tests/test_hotstuff.h>
 
-namespace shardora {
+namespace seth {
 namespace hotstuff {
 namespace test {
 

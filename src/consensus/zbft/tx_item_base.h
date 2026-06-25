@@ -20,15 +20,22 @@ protected:
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr,
         protos::AddressInfoPtr& addr_info)
-        : pools::TxItem(msg_ptr, tx_index, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        : pools::TxItem(msg_ptr, tx_index, addr_info), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {
+        common::GlobalInfo::Instance()->AddSharedObj(13);
+    }
 
-    virtual ~TxItemBase() {}
+    virtual ~TxItemBase() {
+        common::GlobalInfo::Instance()->DecSharedObj(13);
+    }
 
     virtual int HandleTx(
+            uint32_t tx_index,
             view_block::protobuf::ViewBlockItem& view_block,
-            zjcvm::ZjchainHost& zjc_host,
+            shardoravm::ShardorahainHost& shardora_host,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
+        uint32_t status_code = 0;
+        // shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), std::string((char*)&status_code, sizeof(status_code)));
         return consensus::kConsensusSuccess;
     }
 
@@ -43,26 +50,36 @@ protected:
     }
 
     virtual void InitHost(
-            zjcvm::ZjchainHost& zjc_host, 
+            shardoravm::ShardorahainHost& shardora_host, 
             const block::protobuf::BlockTx& tx, 
             uint64_t gas_limit, 
             uint64_t gas_price, 
             view_block::protobuf::ViewBlockItem& view_block) {
-        zjcvm::Uint64ToEvmcBytes32(
-            zjc_host.tx_context_.tx_gas_price,
+        shardoravm::Uint64ToEvmcBytes32(
+            shardora_host.tx_context_.tx_gas_price,
             gas_price);
-        zjc_host.contract_mgr_ = contract_mgr_;
-        zjc_host.my_address_ = tx.to();
-        zjc_host.recorded_selfdestructs_ = nullptr;
-        zjc_host.gas_more_ = 0lu;
-        zjc_host.create_bytes_code_ = "";
-        zjc_host.contract_to_call_dirty_ = false;
-        zjc_host.recorded_logs_.clear();
-        zjc_host.to_account_value_.clear();
-        zjc_host.view_ = view_block.qc().view();
-        zjc_host.tx_context_.block_gas_limit = gas_limit;
-        zjc_host.tx_context_.block_number = view_block.block_info().height();
-        zjc_host.tx_context_.block_timestamp= view_block.block_info().timestamp();
+        shardora_host.contract_mgr_ = contract_mgr_;
+        shardora_host.my_address_ = tx.to();
+        shardora_host.recorded_selfdestructs_ = nullptr;
+        shardora_host.gas_more_ = 0lu;
+        shardora_host.create_bytes_code_ = "";
+        shardora_host.contract_to_call_dirty_ = false;
+        shardora_host.recorded_logs_.clear();
+        shardora_host.to_account_value_.clear();
+        shardora_host.view_ = view_block.qc().view();
+        shardora_host.tx_context_.block_gas_limit = gas_limit;
+        shardora_host.tx_context_.block_number = view_block.block_info().height();
+        shardora_host.tx_context_.block_timestamp = view_block.block_info().timestamp();
+        uint64_t chain_id = hotstuff::kGlobalChainId;
+        shardoravm::Uint64ToEvmcBytes32(
+            shardora_host.tx_context_.chain_id,
+            chain_id);
+        SHARDORA_DEBUG("init host, block number: %lu, timestamp: %lu, gas limit: %lu, "
+            "gas price: %lu, from: %s, to: %s",
+            shardora_host.tx_context_.block_number, shardora_host.tx_context_.block_timestamp,
+            shardora_host.tx_context_.block_gas_limit, gas_price,
+            common::Encode::HexEncode(tx.from()).c_str(),
+            common::Encode::HexEncode(tx.to()).c_str());
     }
 
     bool DefaultTxItem(
@@ -75,12 +92,18 @@ protected:
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
         block_tx->set_unique_hash("");
-        if (tx_info.step() == pools::protobuf::kContractCreate ||
+        if (tx_info.has_tx_hash()) {
+            block_tx->set_tx_hash(tx_info.tx_hash());
+        } else {
+            block_tx->set_tx_hash(pools::GetTxMessageHash(tx_info));
+        }
+
+        if (tx_info.step() == pools::protobuf::kCreateContract ||
             tx_info.step() == pools::protobuf::kCreateLibrary||
-            tx_info.step() == pools::protobuf::kContractGasPrepayment ||
+            tx_info.step() == pools::protobuf::kContractGasPrefund ||
             tx_info.step() == pools::protobuf::kRootCreateAddress) {
-            if (tx_info.has_contract_prepayment()) {
-                block_tx->set_contract_prepayment(tx_info.contract_prepayment());
+            if (tx_info.has_contract_prefund()) {
+                block_tx->set_contract_prefund(tx_info.contract_prefund());
             }
         }
 		
@@ -104,14 +127,14 @@ protected:
     }
 
     int GetTempAccountBalance(
-            zjcvm::ZjchainHost& zjc_host,
+            shardoravm::ShardorahainHost& shardora_host,
             const std::string& id,
             hotstuff::BalanceAndNonceMap& acc_balance_map,
             uint64_t* balance,
             uint64_t* nonce) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            protos::AddressInfoPtr acc_info = zjc_host.view_block_chain_->ChainGetAccountInfo(id);
+            protos::AddressInfoPtr acc_info = shardora_host.view_block_chain_->ChainGetAccountInfo(id);
             if (acc_info == nullptr) {
                 SHARDORA_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;

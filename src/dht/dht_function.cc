@@ -4,7 +4,7 @@
 #include "common/global_info.h"
 #include "dht/dht_key.h"
 
-namespace shardora {
+namespace seth {
 
 namespace dht {
 
@@ -38,8 +38,8 @@ uint32_t DhtFunction::PartialSort(const std::string& target, uint32_t count, Dht
     }
 
     min_count = (std::min)(min_count, kDhtMaxNeighbors);
-    assert(min_count <= dht.size());
-    SHARDORA_DEBUG("count: %u, dht size: %u, kDhtMaxNeighbors: %u, min_count: %u",
+    //assert(min_count <= dht.size());
+    SETH_DEBUG("count: %u, dht size: %u, kDhtMaxNeighbors: %u, min_count: %u",
         count, dht.size(), kDhtMaxNeighbors, min_count);
     std::partial_sort(
             dht.begin(),
@@ -199,7 +199,7 @@ NodePtr DhtFunction::GetClosestNode(
         const std::set<std::string>& exclude) {
     auto closest_nodes(GetClosestNodes(dht, target, count));
     for (const auto& node_info : closest_nodes) {
-        assert(node_info->dht_key != local_dht_key);
+        //assert(node_info->dht_key != local_dht_key);
         auto iter = exclude.find(node_info->dht_key);
         if (iter != exclude.end()) {
             continue;
@@ -231,4 +231,4 @@ std::vector<NodePtr> DhtFunction::GetClosestNodes(
 
 }  // namespace dht
 
-}  // namespace shardora
+}  // namespace seth

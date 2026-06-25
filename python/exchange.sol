@@ -299,4 +299,62 @@ contract Exchange {
         all_bytes[0] = GetItemJson(item_map[hash], true);
         return bytesConcat(all_bytes, validLen + 1);
     }
+
+    // ── State query helpers ───────────────────────────────────────────────
+
+    /// @notice Returns true if an item with the given hash exists.
+    function ItemExists(bytes32 hash) public view returns (bool) {
+        return item_map[hash].exists;
+    }
+
+    /// @notice Returns the total number of items ever created.
+    function TotalItems() public view returns (uint256) {
+        return all_hashes.length;
+    }
+
+    /// @notice Returns the number of items owned by a given address.
+    function OwnerItemCount(address owner) public view returns (uint256) {
+        return owner_with_hash_map[owner].length;
+    }
+
+    /// @notice Returns the number of bids (excluding the placeholder at index 0) for an item.
+    function BuyerCount(bytes32 hash) public view returns (uint256) {
+        require(item_map[hash].exists, "item not found");
+        uint256 len = item_map[hash].buyers.length;
+        return len > 0 ? len - 1 : 0;
+    }
+
+    /// @notice Returns whether a given address has already placed a bid on an item.
+    function HasPurchased(bytes32 hash, address buyer) public view returns (bool) {
+        bytes[] memory all_bytes = new bytes[](2);
+        all_bytes[0] = Bytes32toBytes(hash);
+        all_bytes[1] = toBytes(buyer);
+        bytes memory key = bytesConcat(all_bytes, 2);
+        return purchase_map[key];
+    }
+
+    /// @notice Returns the sell status of an item: 0 = unsold, 1 = sold.
+    function SellStatus(bytes32 hash) public view returns (uint256) {
+        require(item_map[hash].exists, "item not found");
+        return item_map[hash].selled;
+    }
+
+    /// @notice Returns the winning buyer and final price for a sold item.
+    function SellResult(bytes32 hash) public view returns (address buyer, uint256 price) {
+        require(item_map[hash].exists, "item not found");
+        require(item_map[hash].selled == 1, "item not sold yet");
+        return (item_map[hash].buyer, item_map[hash].selled_price);
+    }
+
+    /// @notice Returns the hash at a given index in the global list.
+    function HashAt(uint256 index) public view returns (bytes32) {
+        require(index < all_hashes.length, "index out of range");
+        return all_hashes[index];
+    }
+
+    /// @notice Returns the hash at a given index in an owner's item list.
+    function OwnerHashAt(address owner, uint256 index) public view returns (bytes32) {
+        require(index < owner_with_hash_map[owner].length, "index out of range");
+        return owner_with_hash_map[owner][index];
+    }
 }

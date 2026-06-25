@@ -18,6 +18,13 @@ namespace shardora {
 
 namespace contract {
 
+struct ArsElement {
+    element_t value;
+};
+
+using ArsElementVector = std::vector<ArsElement>;
+using ArsElementVectorPtrList = std::vector<ArsElementVector*>;
+
 class ContractArs : public ContractInterface {
 public:
     ContractArs(const std::string &create_address, const std::string &pairing_param);
@@ -39,27 +46,27 @@ public:
         const std::string &message, 
         element_t &x_i, 
         element_t &y_i,
-        std::vector<element_t> &ring, 
+        ArsElementVector &ring, 
         element_t &delta_prime_i,
         element_t &y_prime_i, 
-        std::vector<element_t> &pi_i);
+        ArsElementVector &pi_i);
     // 聚合签名生成
     void AggreSign(
         const std::vector<std::string> &messages, 
-        std::vector<element_t> &y_primes,
-        std::vector<element_t> &delta_primes, 
-        std::vector<std::vector<element_t>*> &pi_i,
-        std::vector<element_t> &ring, 
+        ArsElementVector &y_primes,
+        ArsElementVector &delta_primes, 
+        ArsElementVectorPtrList &pi_i,
+        ArsElementVector &ring, 
         element_t &agg_signature);
     // 聚合签名验证
     bool AggreVerify(
         const std::vector<std::string> &messages, 
         element_t &agg_signature,
-        std::vector<element_t> &y_primes);
+        ArsElementVector &y_primes);
     // Sigma 证明验证
-    bool VerifyProof(std::vector<element_t> &pi, element_t &y_prime,
+    bool VerifyProof(ArsElementVector &pi, element_t &y_prime,
         element_t &delta_prime, const std::string &message,
-        std::vector<element_t> &ring, element_t &y_i);
+        ArsElementVector &ring, element_t &y_i);
     int GetEncryptUserMessageData(
         const CallParameters& param, 
         const std::string& key, 

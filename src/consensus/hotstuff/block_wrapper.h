@@ -9,6 +9,10 @@
 
 namespace shardora {
 
+namespace bls {
+    class BlsManager;
+}
+
 namespace hotstuff {
 
 class ViewBlockChain;
@@ -20,16 +24,17 @@ public:
     virtual Status Wrap(
             const transport::MessagePtr& msg_ptr, 
             const std::shared_ptr<ViewBlock>& prev_block,
-            const uint32_t& leader_idx,
             view_block::protobuf::ViewBlockItem* view_block,
             hotstuff::protobuf::TxPropose* tx_propose,
-            const bool& no_tx_allowed,
+            bool no_tx_allowed,
             std::shared_ptr<ViewBlockChain>& view_block_chain) = 0;
     virtual void GetTxSyncToLeader(
             uint32_t leader_idx, 
+            uint32_t count,
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
-            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) = 0;
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+            const std::unordered_map<std::string, uint64_t>& leader_nonce_map) = 0;
     virtual bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         pools::CheckAddrNonceValidFunction tx_valid_func) = 0;
@@ -42,6 +47,7 @@ public:
             std::shared_ptr<pools::TxPoolManager>& pools_mgr,
             std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
             std::shared_ptr<block::BlockManager>& block_mgr,
+            std::shared_ptr<bls::BlsManager> bls_mgr,
             const std::shared_ptr<ElectInfo>& elect_info);
     ~BlockWrapper();
 
@@ -52,10 +58,9 @@ public:
     Status Wrap(
         const transport::MessagePtr& msg_ptr, 
         const std::shared_ptr<ViewBlock>& prev_block,
-        const uint32_t& leader_idx,
         view_block::protobuf::ViewBlockItem* view_block,
         hotstuff::protobuf::TxPropose* tx_propose,
-        const bool& no_tx_allowed,
+        bool no_tx_allowed,
         std::shared_ptr<ViewBlockChain>& view_block_chain) override;
 
     // Whether there is a built-in transaction
@@ -64,40 +69,23 @@ public:
         pools::CheckAddrNonceValidFunction tx_valid_func) override;
     void GetTxSyncToLeader(
             uint32_t leader_idx, 
+            uint32_t count,
             std::shared_ptr<ViewBlockChain>& view_block_chain, 
             const std::string& parent_hash,
-            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs) override {
+            ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
+            const std::unordered_map<std::string, uint64_t>& leader_nonce_map) override {
         auto tx_valid_func = [&](
                 const address::protobuf::AddressInfo& addr_info, 
-                pools::protobuf::TxMessage& tx_info) -> bool {
-            if (pools::IsUserTransaction(tx_info.step())) {
-                return view_block_chain->CheckTxNonceValid(
-                    addr_info.addr(), 
-                    tx_info.nonce(), 
-                    parent_hash);
-            }
-            
-            zjcvm::ZjchainHost zjc_host;
-            zjc_host.parent_hash_ = parent_hash;
-            zjc_host.view_block_chain_ = view_block_chain;
-            std::string val;
-            if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-                SHARDORA_DEBUG("not user tx unique hash exists to: %s, unique hash: %s, step: %d",
-                    common::Encode::HexEncode(tx_info.to()).c_str(),
-                    common::Encode::HexEncode(tx_info.key()).c_str(),
-                    (int32_t)tx_info.step());
-                return 1;
-            }
-
-            SHARDORA_DEBUG("not user tx unique hash success to: %s, unique hash: %s",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str());
-            return 0;
+                const pools::protobuf::TxMessage& tx_info,
+                uint64_t* now_nonce) -> int {
+            return CheckTransactionValid(parent_hash, view_block_chain,
+                pools_mgr_,
+                addr_info, tx_info, now_nonce);
         };
 
         txs_pools_->GetTxSyncToLeader(
-            leader_idx, pool_idx_, consensus::kSyncToLeaderTxCount, 
-            txs, tx_valid_func);
+            leader_idx, pool_idx_, count, 
+            txs, tx_valid_func, leader_nonce_map);
     }
 
 private:
@@ -112,6 +100,7 @@ private:
 
   
     uint32_t pool_idx_;
+    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;

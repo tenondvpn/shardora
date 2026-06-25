@@ -75,45 +75,20 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(
         txs_item = GetToTxs(pool_index, "");
         if (txs_item) {
             auto iter = txs_item->txs.begin();
+            uint64_t now_nonce = 0llu;
             if (iter == txs_item->txs.end() || addr_nonce_valid_func(
                     *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
+                    *(*iter)->tx_info,
+                    &now_nonce) != 0) {
+                SHARDORA_DEBUG("GetToTxs nonce validation failed, pool: %u, "
+                    "tx_nonce: %lu, now_nonce: %lu, txs_empty: %d",
+                    pool_index,
+                    (iter != txs_item->txs.end() ? (*iter)->tx_info->nonce() : 0),
+                    now_nonce,
+                    (iter == txs_item->txs.end()));
                 txs_item = nullptr;
             } else {
                 SHARDORA_DEBUG("GetToTxs: %s", common::Encode::HexEncode((*iter)->tx_info->key()).c_str());
-            }
-        }
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (txs_item == nullptr) {
-        // if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        //     if (pool_index == common::kImmutablePoolSize) {
-        //         SHARDORA_DEBUG("now get statistic tx leader now GetStatisticTx pool_index: %d", pool_index);
-        //     }
-        // }
-        
-        txs_item = GetStatisticTx(pool_index, "");
-        SHARDORA_DEBUG("GetStatisticTx: %d", (txs_item != nullptr));
-        if (txs_item) {
-            auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
-                    *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
-                txs_item = nullptr;
-            }
-        }
-    }
-
-    ADD_DEBUG_PROCESS_TIMESTAMP();
-    if (txs_item == nullptr) {
-        txs_item = GetElectTx(pool_index, "");
-        if (txs_item) {
-            auto iter = txs_item->txs.begin();
-            if (iter == txs_item->txs.end() || addr_nonce_valid_func(
-                    *(*iter)->address_info, 
-                    *(*iter)->tx_info) != 0) {
-                txs_item = nullptr;
             }
         }
     }
@@ -137,42 +112,6 @@ bool WaitingTxsPools::HasSingleTx(
     return false;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
-        uint32_t pool_index,
-        const std::string& tx_hash) {
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        return nullptr;
-    }
-
-    if (pool_index == common::kImmutablePoolSize) {
-        return nullptr;
-    }
-
-    auto tx_ptr = block_mgr_->GetElectTx(pool_index, tx_hash);
-    if (tx_ptr != nullptr) {
-        if (tx_hash.empty()) {
-            auto now_tm = common::TimeUtils::TimestampUs();
-            if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
-                return nullptr;
-            }
-
-            tx_ptr->prev_consensus_tm_us = now_tm;
-        }
-
-        auto txs_item = std::make_shared<WaitingTxsItem>();
-        txs_item->pool_index = pool_index;
-        txs_item->txs.push_back(tx_ptr);
-        txs_item->tx_type = pools::protobuf::kConsensusRootElectShard;
-        SHARDORA_DEBUG("single tx success to get elect tx: tx key: %s, nonce: %lu, unique hash: %s",
-            common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
-            tx_ptr->tx_info->nonce(),
-            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
-        return txs_item;
-    }
-
-    return nullptr;
-}
-
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
         uint32_t pool_index, 
         bool leader,
@@ -187,7 +126,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         if (tx_ptr->tx_key.empty()) {
-            assert(false);
+            //assert(false);
             return nullptr;
         }
         
@@ -197,51 +136,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(
             common::Encode::HexEncode(tx_ptr->tx_key).c_str(), 
             tx_ptr->tx_info->nonce(),
             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
-        return txs_item;
-    }
-
-    return nullptr;
-}
-
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(
-        uint32_t pool_index, 
-        const std::string& unqiue_hash) {
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        if (pool_index != common::kImmutablePoolSize) {
-            return nullptr;
-        }
-    } else {
-        if (pool_index != 0) {
-            return nullptr;
-        }
-    }
-
-    bool leader = unqiue_hash.empty();
-    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, unqiue_hash);
-    if (tx_ptr != nullptr) {
-        if (leader) {
-            auto now_tm = common::TimeUtils::TimestampUs();
-            if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
-                SHARDORA_DEBUG("leader failed get statistic tx.");
-                return nullptr;
-            }
-
-            tx_ptr->prev_consensus_tm_us = now_tm;
-        }
-
-        if (tx_ptr->tx_key.empty()) {
-            assert(false);
-            return nullptr;
-        }
-        
-        auto txs_item = std::make_shared<WaitingTxsItem>();
-        txs_item->pool_index = pool_index;
-        txs_item->txs.push_back(tx_ptr);
-        txs_item->tx_type = pools::protobuf::kStatistic;
-        SHARDORA_DEBUG("single tx success get statistic tx %u, %d, tx key: %s, nonce: %lu", 
-            pool_index, leader, 
-            common::Encode::HexEncode(tx_ptr->tx_key).c_str(),
-            tx_ptr->tx_info->nonce());
         return txs_item;
     }
 
@@ -270,7 +164,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(
         return txs_item;
     } else {
         if (leader) {
-            SHARDORA_DEBUG("leader get to tx coming failed 0");
+            SHARDORA_DEBUG("leader get to tx coming failed 0, pool: %u", pool_index);
         }
     }
 

@@ -42,7 +42,7 @@ private:
     bool CreateStatisticTable();
     bool CreatePrivateKeyTable();
     bool CreateC2cTable();
-    bool CreatePrepaymentTable();
+    bool CreatePrefundTable();
     bool CreateBlsElectInfoTable();
     bool CreateBlsBlockInfoTable();    
     void Statistic();
@@ -143,10 +143,10 @@ private:
     std::shared_ptr<clickhouse::ColumnUInt64> c2c_amount;
     std::shared_ptr<clickhouse::ColumnString> c2c_contract_addr;
 
-    std::shared_ptr<clickhouse::ColumnString> prepay_contract;
-    std::shared_ptr<clickhouse::ColumnString> prepay_user;
-    std::shared_ptr<clickhouse::ColumnUInt64> prepay_amount;
-    std::shared_ptr<clickhouse::ColumnUInt64> prepay_height;
+    std::shared_ptr<clickhouse::ColumnString> prefund_contract;
+    std::shared_ptr<clickhouse::ColumnString> prefund_user;
+    std::shared_ptr<clickhouse::ColumnUInt64> prefund_amount;
+    std::shared_ptr<clickhouse::ColumnUInt64> prefund_height;
 
     common::ThreadSafeQueue<std::shared_ptr<BlsElectInfo>> bls_elect_queue_;
     common::ThreadSafeQueue<std::shared_ptr<BlsBlockInfo>> bls_block_queue_;

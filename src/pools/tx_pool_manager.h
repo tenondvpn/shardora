@@ -1,10 +1,16 @@
 #pragma once
 
+#include <atomic>
 #include <bitset>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <functional>
+
+#ifdef SHARDORA_UNITTEST
+#include "common/node_members.h"
+#endif
 
 #include "common/bitmap.h"
 #include "common/thread_safe_queue.h"
@@ -14,6 +20,7 @@
 #include "pools/cross_block_manager.h"
 #include "pools/cross_pool.h"
 #include "pools/root_cross_pool.h"
+#include "pools/to_confirm_latency_tracker.h"
 #include "pools/tx_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
@@ -25,21 +32,27 @@
 
 namespace shardora {
 
+
 namespace block {
     class AccountManager;
 };
 
-namespace pools {
+namespace consensus {
+    class HotstuffManager;
+}
 
+namespace pools {
+    
 class TxPoolManager {
 public:
     TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync,
-        std::shared_ptr<block::AccountManager>& acc_mgr);
+        std::shared_ptr<block::AccountManager>& acc_mgr,
+        std::shared_ptr<consensus::HotstuffManager>& hotstuff_mgr);
     ~TxPoolManager();
-    void HandleMessage(const transport::MessagePtr& msg);
+    void TxPoolHandleMessage(const transport::MessagePtr& msg);
     void GetTxIdempotently(
         transport::MessagePtr msg_ptr, 
         uint32_t pool_index,
@@ -51,7 +64,8 @@ public:
         uint32_t pool_index,
         uint32_t count,
         ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-        pools::CheckAddrNonceValidFunction tx_valid_func);
+        pools::CheckAddrNonceValidFunction tx_valid_func,
+        const std::unordered_map<std::string, uint64_t>& leader_nonce_map);
     void InitCrossPools();
     void BftCheckInvalidGids(
         uint32_t pool_index, 
@@ -62,6 +76,32 @@ public:
         uint32_t pool_index, 
         const pools::TxItemPtr& valid_tx);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& address);
+    void PoolTimerMessage();
+    void OnTxPoolAddTx(
+        int32_t step,
+        const std::string& to,
+        const std::string& tx_value = "");
+    void OnCrossShardToStart(const std::string& des, uint64_t start_timestamp_us);
+
+    uint64_t ToConfirmAvgLatencyUs() const {
+        return to_confirm_latency_tracker_.avg_latency_us();
+    }
+
+    // Callback invoked whenever a tx reaches a terminal status
+    // (anything other than kMessageHandle / kTxAccept).
+    using TxStatusCallback = std::function<void(const std::string&, transport::MessageHandleStatus)>;
+    void SetTxStatusCallback(TxStatusCallback cb) { tx_status_cb_ = std::move(cb); }
+    const TxStatusCallback& GetTxStatusCallback() const { return tx_status_cb_; }
+
+#ifdef SHARDORA_UNITTEST
+    // pools_test: mock HotstuffManager::is_other_leader without linking consensus.
+    static void SetIsOtherLeaderHookForTest(std::function<common::BftMemberPtr(uint32_t pool_index)> fn);
+    static void ClearIsOtherLeaderHookForTest();
+#endif
+
+    bool NewTxValid(uint32_t pool_index, const std::string& addr, uint64_t nonce) {
+        return tx_pool_[pool_index].NewTxValid(addr, nonce);
+    }
 
     void TxOver(uint32_t pool_index, view_block::protobuf::ViewBlockItem& view_block) {
         tx_pool_[pool_index].TxOver(view_block);
@@ -83,7 +123,8 @@ public:
             return;
         }
 
-        if (view_block->qc().pool_index() != common::kImmutablePoolSize) {
+        if (view_block->qc().network_id() >= network::kConsensusShardEndNetworkId ||
+                view_block->qc().pool_index() != common::kGlobalPoolIndex) {
             return;
         }
 
@@ -124,7 +165,7 @@ public:
     }
 
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {
-        assert(type < pools::protobuf::StepType_ARRAYSIZE);
+        //assert(type < pools::protobuf::StepType_ARRAYSIZE);
         item_functions_[type] = func;
     }
 
@@ -136,6 +177,18 @@ public:
         return tx_pool_[pool_index].latest_height();
     }
 
+    uint64_t root_latest_height(uint32_t pool_index) const {
+        return root_cross_pools_[pool_index].latest_height();
+    }
+
+    uint64_t cross_latest_height(uint32_t network_id) const {
+        if (network_id > common::GlobalInfo::Instance()->now_valid_end_shard()) {
+            return common::kInvalidUint64;
+        }
+
+        return cross_pools_[network_id].latest_height();
+    }
+    
     std::string latest_hash(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_hash();
     }
@@ -155,13 +208,12 @@ public:
     }
 #endif
 
-    // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
             std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block,
             db::DbWriteBatch& db_batch) {
         auto* block = &view_block->block_info();
         uint64_t height = block->height();
-        assert(height >= 0);
+        //assert(height >= 0);
         uint32_t sharding_id = view_block->qc().network_id();
         uint32_t pool_index = view_block->qc().pool_index();
         const std::string& hash = view_block->qc().view_block_hash();
@@ -170,7 +222,6 @@ public:
             return;
         }
 
-        // 更新 pool_mgr 全局状态
         if (height > synced_max_heights_[pool_index]) {
             synced_max_heights_[pool_index] = height;
         }
@@ -179,7 +230,6 @@ public:
         pool_info.set_height(height);
         pool_info.set_hash(hash);
         pool_info.set_timestamp(block->timestamp());
-        // 更新对应 pool 的最新状态，主要是高度信息和哈希值
         uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(
             height, hash, view_block->parent_hash(), block->timestamp());
         pool_info.set_synced_height(synced_height);
@@ -191,9 +241,21 @@ public:
             db::DbWriteBatch& db_batch) {
         auto* block = &view_block->block_info();
         uint32_t pool_index = view_block->qc().pool_index();
-        cross_block_mgr_->UpdateMaxHeight(view_block->qc().network_id(), block->height());
+        if (view_block->qc().network_id() != network::kRootCongressNetworkId) {
+            if (view_block->qc().network_id() >= network::kConsensusShardEndNetworkId ||
+                    pool_index != common::kGlobalPoolIndex) {
+                return;
+            }
+
+            cross_block_mgr_->UpdateMaxHeight(view_block->qc().network_id(), block->height());
+        }
+
+        if (view_block->qc().network_id() == network::kRootCongressNetworkId) {
+            root_cross_pools_[pool_index].UpdateLatestInfo(block->height());
+        }
+
         uint64_t height = block->height();
-        assert(height >= 0);
+        //assert(height >= 0);
         uint32_t sharding_id = view_block->qc().network_id();
         const std::string& hash = view_block->qc().view_block_hash();
         pools::protobuf::PoolLatestInfo pool_info;
@@ -203,15 +265,33 @@ public:
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
+    void AddPoolMessage(const transport::MessagePtr& msg_ptr) {
+        auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+        msg_ptr->system_message = true;
+        pools_msg_queue_[thread_idx].push(msg_ptr);
+    }
+
+    bool TxKeyExists(uint32_t pool_index, const std::string& addr, uint64_t nonce, const std::string& key) {
+        return tx_pool_[pool_index].TxKeyExists(addr, nonce, key);
+    }
+
+    bool PoolChainIsFull(uint32_t pool_index, uint64_t height) const {
+        return tx_pool_[pool_index].PoolChainIsFull(height);
+    }
+    
 private:
+    int TmpFirewallCheckMessage(const transport::MessagePtr& msg_ptr);
     void DispatchTx(uint32_t pool_index, const transport::MessagePtr& msg_ptr);
-    void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
-    void HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr);
-    void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
-    void HandleContractExcute(const transport::MessagePtr& msg_ptr);
-    void HandleElectTx(const transport::MessagePtr& msg_ptr);
+    int32_t HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
+    int32_t HandleSetContractPrefund(const transport::MessagePtr& msg_ptr);
+    int32_t HandleContractRefund(const transport::MessagePtr& msg_ptr);
+    int32_t HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
+    int32_t HandleContractExcute(const transport::MessagePtr& msg_ptr);
+    int32_t HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage();
+    void OnConsensusTimerEnter();
+    void OnConsensusTimerLeave();
     void SyncPoolsMaxHeight();
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint64_t now_tm_ms);
@@ -221,11 +301,12 @@ private:
     void SyncCrossPool();
     void FlushHeightTree();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
+    bool ShouldRecordToConfirmStart(const std::string& to) const;
     void GetMinValidTxCount();
-    uint32_t GetTxPoolIndex(const transport::MessagePtr& msg_ptr);
-    void CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32_t tps);
+    void SendTxToOtherNodes(const transport::MessagePtr& msg_ptr);
 
-    static const uint32_t kPopMessageCountEachTime = 64000u;
+    uint32_t GetTxPoolIndex(const transport::MessagePtr& msg_ptr);
+    // void CreateTestTxs(uint32_t pool_begin, uint32_t pool_end, uint32_t tps);
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
     static const uint64_t kSyncPoolsMaxHeightsPeriod = 3000lu;
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
@@ -235,6 +316,8 @@ private:
     double kGrubbsValidFactor = 3.217;  // 90%
     const double kInvalidLeaderRatio = 0.85;
 
+    static const uint32_t kPopMessageCountEachTime = 64000u;
+    TxStatusCallback tx_status_cb_;
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -264,11 +347,15 @@ private:
     uint32_t now_max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
+    std::atomic<uint32_t> consensus_timer_in_flight_{ 0 };
+    std::mutex consensus_timer_shutdown_mutex_;
+    std::condition_variable consensus_timer_cv_;
     common::Tick tools_tick_;
-    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
     uint64_t prev_elect_height_ = common::kInvalidUint64;
     std::atomic<bool> destroy_ = false;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
+    ToConfirmLatencyTracker to_confirm_latency_tracker_;
     uint32_t min_valid_tx_count_ = 1;
     uint64_t min_valid_timestamp_ = 0;
     uint64_t min_timestamp_ = common::kInvalidUint64;
@@ -278,6 +365,7 @@ private:
     std::weak_ptr<block::AccountManager> acc_mgr_;
     std::atomic<uint32_t> now_max_tx_count_ = 0;
     AccountQpsLruMap<102400> account_tx_qps_check_;
+    std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_;
 #ifdef USE_SERVER_TEST_TRANSACTION
     std::shared_ptr<std::thread> test_tx_thread_ = nullptr;
 #endif

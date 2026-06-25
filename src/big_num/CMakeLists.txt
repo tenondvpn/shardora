@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 
 aux_source_directory(./ big_num_src)
 add_library(big_num STATIC ${big_num_src} )

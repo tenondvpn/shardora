@@ -5,7 +5,7 @@
 #include <bls/bls_manager.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 
-namespace shardora {
+namespace seth {
 
 namespace hotstuff {
 
@@ -44,5 +44,5 @@ public:
 
 } // namespace hotstuff
 
-} // namespace shardora
+} // namespace seth
 

@@ -36,7 +36,7 @@ private:
         std::map<std::string, pools::TxItemPtr> invalid_txs;
         ADD_DEBUG_PROCESS_TIMESTAMP();
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, 1, tx_vec, tx_valid_func);
+            pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, common::kMaxTxCount, tx_vec, tx_valid_func);
         } else {
             pools_mgr_->GetTxIdempotently(msg_ptr, pool_index_, common::kMaxTxCount, tx_vec, tx_valid_func);
         }

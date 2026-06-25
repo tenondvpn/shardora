@@ -144,11 +144,16 @@ struct BftMessageInfo {
 
 std::string StatusToString(uint32_t status);
 
+std::string GetTxValueProtoHash(const std::string& key, const std::string& value);
 std::string GetCommitedBlockHash(const std::string& prepare_hash);
 uint32_t NewAccountGetNetworkId(const std::string& addr);
 bool IsRootSingleBlockTx(uint32_t tx_type);
 bool IsShardSingleBlockTx(uint32_t tx_type);
-bool IsShardSuperSingleBlockTx(uint32_t tx_type);
+
+// Header-only: avoids link failures when this TU is not pulled from libconsensus.a alone.
+inline bool IsShardSuperSingleBlockTx(uint32_t tx_type) {
+    return IsShardSingleBlockTx(tx_type);
+}
 
 }  // namespace consensus
 

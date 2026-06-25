@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.network.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x14protos/network.proto\x12\x19shardora.network.protobuf\"7\n\x16GetNetworkNodesRequest\x12\x0e\n\x06net_id\x18\x01 \x01(\r\x12\r\n\x05\x63ount\x18\x02 \x01(\r\"W\n\x08NodeInfo\x12\x13\n\x0bsharding_id\x18\x01 \x01(\x05\x12\x11\n\tpublic_ip\x18\x02 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x03 \x01(\x05\x12\x0e\n\x06pubkey\x18\x04 \x01(\x0c\"M\n\x17GetNetworkNodesResponse\x12\x32\n\x05nodes\x18\x01 \x03(\x0b\x32#.shardora.network.protobuf.NodeInfo\"+\n\x0f\x44ropNodeRequest\x12\n\n\x02ip\x18\x01 \x01(\x0c\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xec\x01\n\x0eNetworkMessage\x12L\n\x11get_net_nodes_req\x18\x01 \x01(\x0b\x32\x31.shardora.network.protobuf.GetNetworkNodesRequest\x12M\n\x11get_net_nodes_res\x18\x02 \x01(\x0b\x32\x32.shardora.network.protobuf.GetNetworkNodesResponse\x12=\n\tdrop_node\x18\x03 \x01(\x0b\x32*.shardora.network.protobuf.DropNodeRequest')
+  serialized_pb=_b('\n\x14protos/network.proto\x12\x15shardora.network.protobuf\"7\n\x16GetNetworkNodesRequest\x12\x0e\n\x06net_id\x18\x01 \x01(\r\x12\r\n\x05\x63ount\x18\x02 \x01(\r\"W\n\x08NodeInfo\x12\x13\n\x0bsharding_id\x18\x01 \x01(\x05\x12\x11\n\tpublic_ip\x18\x02 \x01(\x0c\x12\x13\n\x0bpublic_port\x18\x03 \x01(\x05\x12\x0e\n\x06pubkey\x18\x04 \x01(\x0c\"I\n\x17GetNetworkNodesResponse\x12.\n\x05nodes\x18\x01 \x03(\x0b\x32\x1f.shardora.network.protobuf.NodeInfo\"+\n\x0f\x44ropNodeRequest\x12\n\n\x02ip\x18\x01 \x01(\x0c\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xe0\x01\n\x0eNetworkMessage\x12H\n\x11get_net_nodes_req\x18\x01 \x01(\x0b\x32-.shardora.network.protobuf.GetNetworkNodesRequest\x12I\n\x11get_net_nodes_res\x18\x02 \x01(\x0b\x32..shardora.network.protobuf.GetNetworkNodesResponse\x12\x39\n\tdrop_node\x18\x03 \x01(\x0b\x32&.shardora.network.protobuf.DropNodeRequest')
 )
 
 
@@ -58,8 +58,8 @@ _GETNETWORKNODESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=51,
-  serialized_end=106,
+  serialized_start=47,
+  serialized_end=102,
 )
 
 
@@ -110,8 +110,8 @@ _NODEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=108,
-  serialized_end=195,
+  serialized_start=104,
+  serialized_end=191,
 )
 
 
@@ -141,8 +141,8 @@ _GETNETWORKNODESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=197,
-  serialized_end=274,
+  serialized_start=193,
+  serialized_end=266,
 )
 
 
@@ -179,8 +179,8 @@ _DROPNODEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=276,
-  serialized_end=319,
+  serialized_start=268,
+  serialized_end=311,
 )
 
 
@@ -224,8 +224,8 @@ _NETWORKMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=322,
-  serialized_end=558,
+  serialized_start=314,
+  serialized_end=538,
 )
 
 _GETNETWORKNODESRESPONSE.fields_by_name['nodes'].message_type = _NODEINFO

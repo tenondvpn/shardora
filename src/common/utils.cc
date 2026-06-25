@@ -134,10 +134,36 @@ uint8_t RandomCountry() {
 
 uint32_t GetAddressPoolIndex(const std::string& addr) {
     if (memcmp(addr.c_str(), kRootPoolsAddressPrefix.c_str(), kRootPoolsAddressPrefix.size()) == 0) {
-        return common::kImmutablePoolSize;
+        SHARDORA_DEBUG("success get common::kGlobalPoolIndex: %s, %s, size: %u", 
+            common::Encode::HexEncode(addr).c_str(), 
+            common::Encode::HexEncode(kRootPoolsAddressPrefix).c_str(),
+            kRootPoolsAddressPrefix.size());
+        return common::kGlobalPoolIndex;
     }
 
     return common::Hash::Hash32(addr.substr(0, kUnicastAddressLength)) % common::kImmutablePoolSize;
+}
+
+std::string GetPoolAddress(uint32_t pool_index) {
+    // Generate a deterministic pool address based on pool index
+    // Use a fixed prefix + pool index to create a unique address
+    std::string pool_seed = "POOL_ADDRESS_SEED_" + std::to_string(pool_index);
+    std::string pool_address = common::Hash::Hash256(pool_seed);
+    // Ensure it's the correct length for an address
+    if (pool_address.size() > kUnicastAddressLength) {
+        pool_address = pool_address.substr(0, kUnicastAddressLength);
+    }
+    return pool_address;
+}
+
+std::string GetRootStakePoolAddress() {
+    // Root shard stake pool address - deterministic and fixed
+    static const std::string kRootStakePoolSeed = "ROOT_STAKE_POOL_ADDRESS_SEED";
+    std::string pool_address = common::Hash::Hash256(kRootStakePoolSeed);
+    if (pool_address.size() > kUnicastAddressLength) {
+        pool_address = pool_address.substr(0, kUnicastAddressLength);
+    }
+    return pool_address;
 }
 
 uint32_t GetAddressMemberIndex(const std::string& addr) {
@@ -183,29 +209,20 @@ uint32_t iclock() {
 }
 
 static void SignalCallback(int sig_int) {
+    SHARDORA_ERROR("signal coming: %d", sig_int);
     common::GlobalInfo::Instance()->set_global_stoped();
 }
 
 void SignalRegister() {
 #ifndef _WIN32
     signal(SIGPIPE, SIG_IGN);
-    signal(SIGABRT, SIG_IGN);
     signal(SIGINT, SignalCallback);
     signal(SIGTERM, SignalCallback);
-
-    sigset_t signal_mask;
-    sigemptyset(&signal_mask);
-    sigaddset(&signal_mask, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
 #endif
 }
 
 bool IsVlanIp(const std::string& ip_str)
 {
-    return false;  // TODO: for test
-//     A：10.0.0.0-10.255.255.255
-//     B：172.16.0.0-172.31.255.255
-//     C：192.168.0.0-192.168.255.255
     common::Split<> ip_dot(ip_str.c_str(), '.', ip_str.size());
     if (ip_dot.Count() != 4) {
         return false;
@@ -320,6 +337,95 @@ uint32_t Hash32(const int64_t& key) {
 template<>
 uint32_t Hash32(const int32_t& key) {
     return key;
+}
+
+namespace {
+
+bool StartsWithBytes(const std::string& bytes, size_t offset, const char* value, size_t value_size) {
+    if (bytes.size() - offset < value_size) {
+        return false;
+    }
+
+    return memcmp(bytes.data() + offset, value, value_size) == 0;
+}
+
+bool IsSolidityMetadataFieldStart(const std::string& bytecode, size_t offset) {
+    static const char kIpfs[] = {static_cast<char>(0x64), 'i', 'p', 'f', 's'};
+    static const char kBzzr0[] = {static_cast<char>(0x65), 'b', 'z', 'z', 'r', '0'};
+    static const char kBzzr1[] = {static_cast<char>(0x65), 'b', 'z', 'z', 'r', '1'};
+    static const char kSolc[] = {static_cast<char>(0x64), 's', 'o', 'l', 'c'};
+
+    return StartsWithBytes(bytecode, offset, kIpfs, sizeof(kIpfs)) ||
+        StartsWithBytes(bytecode, offset, kBzzr0, sizeof(kBzzr0)) ||
+        StartsWithBytes(bytecode, offset, kBzzr1, sizeof(kBzzr1)) ||
+        StartsWithBytes(bytecode, offset, kSolc, sizeof(kSolc));
+}
+
+bool IsSolidityMetadataStart(const std::string& bytecode, size_t offset) {
+    if (bytecode.size() - offset < 2) {
+        return false;
+    }
+
+    const auto first = static_cast<unsigned char>(bytecode[offset]);
+    const auto second = static_cast<unsigned char>(bytecode[offset + 1]);
+
+    if (first == 0xfe && second >= 0xa1 && second <= 0xbf) {
+        return IsSolidityMetadataFieldStart(bytecode, offset + 2);
+    }
+
+    // Keep compatibility with existing callers/tests that pass the CBOR map
+    // directly without the preceding INVALID marker.
+    if (first >= 0xa1 && first <= 0xbf) {
+        return IsSolidityMetadataFieldStart(bytecode, offset + 1);
+    }
+
+    return false;
+}
+
+size_t FindSolidityMetadataStart(const std::string& bytecode) {
+    size_t metadata_start = std::string::npos;
+    for (size_t i = 0; i < bytecode.size(); ++i) {
+        if (IsSolidityMetadataStart(bytecode, i)) {
+            metadata_start = i;
+        }
+    }
+
+    return metadata_start;
+}
+
+}  // namespace
+
+ValidationStatus IsContractBytescodeValid(const std::string& bytecode) {
+    if (bytecode.empty()) {
+        return ValidationStatus::EMPTY_BYTECODE;
+    }
+
+    // Creation bytecode contains constructor data, runtime bytecode and compiler
+    // metadata. Keep pre-validation version-neutral: only reject structurally
+    // truncated PUSH immediates and let the configured EVM revision decide opcode
+    // execution validity.
+    const size_t metadata_start = FindSolidityMetadataStart(bytecode);
+    const size_t scan_limit = metadata_start == std::string::npos ? bytecode.size() : metadata_start;
+
+    for (size_t i = 0; i < scan_limit; ++i) {
+        const auto op = static_cast<unsigned char>(bytecode[i]);
+        if (op < 0x60 || op > 0x7f) {
+            continue;
+        }
+
+        const size_t push_size = static_cast<size_t>(op - 0x5f);
+        if (scan_limit - i - 1 < push_size) {
+            if (metadata_start != std::string::npos && bytecode.size() - i - 1 >= push_size) {
+                break;
+            }
+
+            return ValidationStatus::INCOMPLETE_PUSH;
+        }
+
+        i += push_size;
+    }
+
+    return ValidationStatus::SUCCESS;
 }
 
 }  // namespace common

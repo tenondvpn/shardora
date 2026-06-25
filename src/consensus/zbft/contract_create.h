@@ -4,8 +4,8 @@
 #include "consensus/zbft/tx_item_base.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
-#include "zjcvm/zjc_host.h"
-#include "zjcvm/zjcvm_utils.h"
+#include "shardoravm/shardora_host.h"
+#include "shardoravm/shardoravm_utils.h"
 
 namespace shardora {
 
@@ -32,18 +32,19 @@ public:
 
     virtual ~ContractUserCreateCall() {}
     virtual int HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
 
 private:
     int CreateContractCallExcute(
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res);
     int SaveContractCreateInfo(
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         int64_t& contract_balance_add,
         int64_t& caller_balance_add);

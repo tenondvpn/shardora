@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+#include <mutex>
 #include <unordered_map>
 
 #include "common/node_members.h"
@@ -21,6 +23,9 @@ namespace pools {
 class TxPoolManager;
 class ToTxsPools {
 public:
+    // Retained for reference; LeaderCreateToHeights now caps cons_height by
+    // accumulated serialized to_txs size (kMaxProposeMsgBytes/2) instead.
+    static constexpr uint64_t kMaxHeightRangePerBatch = 64;
     ToTxsPools(
         std::shared_ptr<db::Db>& db,
         const std::string& local_id,
@@ -37,6 +42,9 @@ public:
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::ToTxMessage& to_tx);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
+    void ClearLeaderToHeights() {
+        StoreLeaderToHeights(nullptr);
+    }
 
 private:
     void HandleNormalToTx(
@@ -52,7 +60,7 @@ private:
     void HandleCreateContractByRootFrom(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
-    void HandleContractGasPrepayment(
+    void HandleContractGasPrefund(
         const view_block::protobuf::ViewBlockItem& view_block,
         const block::protobuf::BlockTx& tx);
     void HandleRootCreateAddress(
@@ -68,7 +76,7 @@ private:
         const std::string& key,
         const std::string& library_bytes,
         const std::string& from,
-        uint64_t prepayment);
+        uint64_t prefund);
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
@@ -97,6 +105,19 @@ private:
     uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
+    std::shared_ptr<pools::protobuf::ShardToTxItem> LoadLeaderToHeights() const {
+        std::lock_guard<std::mutex> lock(leader_to_heights_mutex_);
+        return leader_to_heights_;
+    }
+
+    void StoreLeaderToHeights(const std::shared_ptr<pools::protobuf::ShardToTxItem>& leader_to_heights) {
+        std::lock_guard<std::mutex> lock(leader_to_heights_mutex_);
+        leader_to_heights_ = leader_to_heights;
+    }
+
+    std::shared_ptr<pools::protobuf::ShardToTxItem> leader_to_heights_ = nullptr;
+    mutable std::mutex leader_to_heights_mutex_;
+    uint64_t leader_to_heights_set_tm_ = 0;
     common::SpinMutex prev_to_heights_mutex_;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
     std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;

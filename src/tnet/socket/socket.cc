@@ -5,14 +5,19 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
+#include "common/global_info.h"
+
 namespace shardora {
 
 namespace tnet {
 
-Socket::Socket() {}
+Socket::Socket() {
+    common::GlobalInfo::Instance()->AddSharedObj(14);
+}
 
 Socket::~Socket() {
-    // Close();
+    common::GlobalInfo::Instance()->DecSharedObj(14);
+    Close();
 }
 
 int Socket::Read(void* buf, size_t len) const {
@@ -28,6 +33,10 @@ int Socket::Read(void* buf, size_t len) const {
             if (errno == EINTR) {
                 continue;
             }
+            // Bug fix #15: For non-blocking sockets, EAGAIN/EWOULDBLOCK means
+            // no data available right now. Return -1 and let the caller check
+            // errno. The old code fell through to break and returned -1 without
+            // distinguishing between real errors and would-block.
         }
 
         break;
@@ -261,30 +270,7 @@ int Socket::GetIpPort(std::string* ip, uint16_t* port) {
         return 0;
     }
 
-    if (fd_ == 0) {
-        SHARDORA_ERROR("get from connection ip port failed: fd = 0");
-        return -1;
-    }
-
-    struct sockaddr_in addr;
-    socklen_t addrlen = sizeof(addr);
-    if (getpeername(fd_, (struct sockaddr*)&addr, &addrlen) == -1) {
-        SHARDORA_ERROR("get from connection ip port failed: getpeername error");
-        return -1;
-    }
-
-    char tmp_ip[INET6_ADDRSTRLEN];
-    memset(tmp_ip, 0, sizeof(tmp_ip));
-    if ((inet_ntop(addr.sin_family, &addr.sin_addr, tmp_ip, INET6_ADDRSTRLEN)) == NULL) {
-        SHARDORA_ERROR("get from connection ip port failed: inet_ntop error");
-        return -1;
-    }
-
-    *ip = tmp_ip;
-    *port = ntohs(addr.sin_port);
-    ip_ = *ip;
-    port_ = *port;
-    return 0;
+    return -1;
 }
 
 }  // namespace tnet

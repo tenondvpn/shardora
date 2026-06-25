@@ -1,13 +1,16 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 
 aux_source_directory(./ tnet_src)
 aux_source_directory(./event event_src)
 aux_source_directory(./socket socket_src)
 aux_source_directory(./utils utils_src)
-add_library(tnet STATIC ${tnet_src} ${event_src} ${socket_src} ${utils_src})
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_library(tnet STATIC ${utils_src})
+else()
+    add_library(tnet STATIC ${tnet_src} ${event_src} ${socket_src} ${utils_src})
+endif()
 
 target_link_libraries(tnet PRIVATE common)
 if (XENABLE_CODE_COVERAGE)
     target_link_libraries(tnet PRIVATE gcov)
 endif()
-

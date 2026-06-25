@@ -20,7 +20,7 @@
 // #include "security/crypto_utils.h"
 // #include "security/security.h"
 // 
-// namespace shardora {
+// namespace seth {
 // 
 // namespace elect {
 // 
@@ -176,7 +176,7 @@
 // 
 //         for (auto iter = in_members.begin(); iter != in_members.end(); ++iter) {
 //             auto index_map_iter = in_index_members.find(iter->first);
-//             assert(index_map_iter != in_index_members.end());
+//             //assert(index_map_iter != in_index_members.end());
 //             elect_pool_manager_.NetworkMemberChange(iter->first, iter->second);
 //         }
 // 
@@ -425,4 +425,4 @@
 // 
 // }  // namespace elect
 // 
-// }  // namespace shardora
+// }  // namespace seth

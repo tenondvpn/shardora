@@ -21,7 +21,7 @@
 #include "protos/pools.pb.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace shardora {
+namespace seth {
 
 namespace consensus {
 
@@ -67,7 +67,7 @@ public:
     static void SetUpTestCase() {
         std::string config_path_ = "./";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
-        std::string log_path = config_path_ + "/zjc.log";
+        std::string log_path = config_path_ + "/seth.log";
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
@@ -167,7 +167,7 @@ public:
             BftManager& bft_mgr,
             const pools::protobuf::TxMessage& tx_info) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
-//         auto from_addr = bft_mgr.security_ptr_->GetAddress(tx_info.pubkey());
+//         auto from_addr = bft_mgr.security_ptr_->GetAddressWithPublicKey(tx_info.pubkey());
 //         msg_ptr->address_info = bft_mgr.account_mgr_->GetAccountInfo(0, from_addr);
 //         ASSERT_TRUE(msg_ptr->address_info->balance() > 0);
         *msg_ptr->header.mutable_tx_proto() = tx_info;
@@ -257,4 +257,4 @@ TEST_F(TestTimeBlock, TestTimeBlock) {
 
 }  // namespace consensus
 
-}  // namespace shardora
+}  // namespace seth

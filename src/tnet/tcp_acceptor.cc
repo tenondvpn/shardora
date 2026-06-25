@@ -73,7 +73,7 @@ bool TcpAcceptor::Start() {
     bool rc = event_loop_.EnableIoEvent(socket_->GetFd(), kEventRead, *this);
     if (rc) {
         stop_ = false;
-        SHARDORA_INFO("enable accept event success");
+        SHARDORA_DEBUG("enable accept event success");
     } else {
         SHARDORA_ERROR("enable accept event failed");
     }
@@ -114,16 +114,13 @@ void TcpAcceptor::Destroy() {
     }
 
     destroy_ = true;
+    // Bug fix #9: Stop the connection check timer to prevent callbacks after destroy.
+    check_conn_tick_.Destroy();
+    
     event_loop_.PostTask(std::bind(&TcpAcceptor::ReleaseByIOThread, this));
-    if (in_check_queue_) {
-        delete in_check_queue_;
-        in_check_queue_ = nullptr;
-    }
-
-    if (out_check_queue_) {
-        delete out_check_queue_;
-        out_check_queue_ = nullptr;
-    }
+    // Bug fix #10: Moved queue deletion to ReleaseByIOThread to avoid
+    // deleting queues while CheckConnectionValid may still be accessing them.
+    // The queues are now cleaned up on the IO thread after all pending tasks complete.
 }
 
 bool TcpAcceptor::SetListenSocket(Socket& socket) {
@@ -142,7 +139,22 @@ EventLoop& TcpAcceptor::GetNextEventLoop() const {
     return *event_loops_[index];
 }
 
-void TcpAcceptor::ReleaseByIOThread() {}
+// Bug fix #11: ReleaseByIOThread was empty - now properly cleans up resources.
+void TcpAcceptor::ReleaseByIOThread() {
+    // Clear connection map to release shared_ptr references
+    conn_map_.clear();
+    waiting_check_queue_.clear();
+    
+    if (in_check_queue_) {
+        delete in_check_queue_;
+        in_check_queue_ = nullptr;
+    }
+
+    if (out_check_queue_) {
+        delete out_check_queue_;
+        out_check_queue_ = nullptr;
+    }
+}
 
 bool TcpAcceptor::OnRead() {
     ListenSocket* listenSocket = dynamic_cast<ListenSocket*>(socket_);
@@ -157,9 +169,13 @@ bool TcpAcceptor::OnRead() {
             break;
         }
 
+        auto svr_socket = std::dynamic_pointer_cast<ServerSocket>(socket);
+        std::string from_ip = InAddrToString(svr_socket->peer_addr());
+        uint16_t from_port = svr_socket->peer_port();
         if (!socket->SetNonBlocking(true)) {
             SHARDORA_ERROR("set nonblocking failed, close socket");
-            socket->Free();
+            // Bug fix #12: socket is a shared_ptr, don't call Free() manually.
+            // Let the shared_ptr destructor handle cleanup.
             continue;
         }
 
@@ -174,12 +190,18 @@ bool TcpAcceptor::OnRead() {
         if (send_buff_size_ != 0 && !socket->SetSoSndBuf(send_buff_size_)) {
             SHARDORA_ERROR("set send buffer size failed");
         }
+
+        // Enable TCP_NODELAY on accepted connections for low-latency consensus.
+        if (!socket->SetTcpNoDelay(true)) {
+            SHARDORA_ERROR("set tcp nodelay failed on accepted socket");
+        }
+
         EventLoop& event_loop = GetNextEventLoop();
         auto conn = CreateTcpServerConnection(event_loop, socket);
         if (conn == nullptr) {
             SHARDORA_ERROR("create connection failed, close socket[%d]",
                 socket->GetFd());
-            socket->Free();
+            // Bug fix #13: Same as above - shared_ptr handles cleanup.
             continue;
         }
 
@@ -191,25 +213,19 @@ bool TcpAcceptor::OnRead() {
         conn->SetPacketEncoder(packet_factory_->CreateEncoder());
         conn->SetPacketDecoder(packet_factory_->CreateDecoder());
         event_loop.PostTask(std::bind(
-                &NewConnectionHandler,
-                std::ref(*conn),
-                std::ref(conn_handler_)));
+            &NewConnectionHandler,
+            std::ref(*conn),
+            std::ref(conn_handler_)));
         event_loop.Wakeup();
-        std::string from_ip;
-        uint16_t from_port;
-        if (socket->GetIpPort(&from_ip, &from_port) != 0) {
-            SHARDORA_ERROR("accept failed %s:%d", from_ip.c_str(), from_port);
-            socket->Free();
-            continue;
-        }
-
-        SHARDORA_INFO("accept success %s:%d", from_ip.c_str(), from_port);
+        SHARDORA_DEBUG("accept success %s:%d", from_ip.c_str(), from_port);
         conn_map_[from_ip + std::to_string(from_port)] = conn;
-        CHECK_MEMORY_SIZE(conn_map_);
-        in_check_queue_->push(conn);
-        while (!destroy_) {
+        if (in_check_queue_) {
+            in_check_queue_->push(conn);
+        }
+        int cleanup_limit = 32;
+        while (!destroy_ && cleanup_limit-- > 0) {
             std::shared_ptr<TcpConnection> out_conn = nullptr;
-            if (!out_check_queue_->pop(&out_conn) || out_conn == nullptr) {
+            if (!out_check_queue_ || !out_check_queue_->pop(&out_conn) || out_conn == nullptr) {
                 break;
             }
 
@@ -217,8 +233,7 @@ bool TcpAcceptor::OnRead() {
             auto iter = conn_map_.find(key);
             if (iter != conn_map_.end()) {
                 conn_map_.erase(iter);
-                CHECK_MEMORY_SIZE(conn_map_);
-                SHARDORA_INFO("remove accept connection: %s", key.c_str());
+                SHARDORA_DEBUG("remove accept connection: %s", key.c_str());
             }
         }
     }
@@ -227,9 +242,14 @@ bool TcpAcceptor::OnRead() {
 }
 
 void TcpAcceptor::CheckConnectionValid() {
+    // Bug fix #14: Check destroy_ and queue validity before accessing.
+    if (destroy_ || in_check_queue_ == nullptr || out_check_queue_ == nullptr) {
+        return;
+    }
+
     while (!destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
-        if (!in_check_queue_->pop(&out_conn) || out_conn == nullptr) {
+        if (!in_check_queue_ || !in_check_queue_->pop(&out_conn) || out_conn == nullptr) {
             break;
         }
 
@@ -243,18 +263,22 @@ void TcpAcceptor::CheckConnectionValid() {
         auto conn = waiting_check_queue_.front();
         waiting_check_queue_.pop_front();
         conn->ShouldReconnect();
-        SHARDORA_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", waiting_check_queue_.size());
+        SHARDORA_DEBUG("ShouldReconnect called now checked stopted conn waiting_check_queue_ size: %u", (unsigned)waiting_check_queue_.size());
         if (conn->CheckStoped()) {
             SHARDORA_DEBUG("checked stopted conn.");
-            out_check_queue_->push(conn);
+            if (out_check_queue_) {
+                out_check_queue_->push(conn);
+            }
         } else {
             waiting_check_queue_.push_back(conn);
         }
     }
 
-    check_conn_tick_.CutOff(
-        10000000, 
-        std::bind(&TcpAcceptor::CheckConnectionValid, this));
+    if (!destroy_) {
+        check_conn_tick_.CutOff(
+            10000000, 
+            std::bind(&TcpAcceptor::CheckConnectionValid, this));
+    }
 }
 
 void TcpAcceptor::OnWrite()

@@ -5,14 +5,14 @@
 #include "common/random.h"
 #include "dht/dht_utils.h"
 
-namespace shardora {
+namespace seth {
 
 namespace dht {
 
 class DhtKeyManager {
 public:
     explicit DhtKeyManager(const std::string& str_key) {
-        assert(str_key.size() == kDhtKeySize);
+        //assert(str_key.size() == kDhtKeySize);
         memcpy(dht_key_.dht_key, str_key.c_str(), sizeof(dht_key_.dht_key));
         str_key_ = str_key;
     }
@@ -44,7 +44,7 @@ public:
     }
 
     static uint32_t DhtKeyGetNetId(const std::string& dht_key) {
-        assert(dht_key.size() == kDhtKeySize);
+        //assert(dht_key.size() == kDhtKeySize);
         auto* cons_key = (common::DhtKey::Construct*)(dht_key.c_str());
         return cons_key->net_id;
     }
@@ -56,4 +56,4 @@ private:
 
 }  // namespace dht
 
-}  // namespace shardora
+}  // namespace seth

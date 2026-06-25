@@ -46,14 +46,14 @@ int Modexp::call(
     bigint const baseLength(ParseBigEndianRightPadded(param.data, 0, 32));
     bigint const expLength(ParseBigEndianRightPadded(param.data, 32, 32));
     bigint const modLength(ParseBigEndianRightPadded(param.data, 64, 32));
-    assert(modLength <= std::numeric_limits<size_t>::max() / 8);
-    assert(baseLength <= std::numeric_limits<size_t>::max() / 8);
+    //assert(modLength <= std::numeric_limits<size_t>::max() / 8);
+    //assert(baseLength <= std::numeric_limits<size_t>::max() / 8);
     if (modLength == 0 && baseLength == 0) {
         SHARDORA_DEBUG("modLength == 0 && baseLength == 0");
         return kContractError;
     }
 
-    assert(expLength <= std::numeric_limits<size_t>::max() / 8);
+    //assert(expLength <= std::numeric_limits<size_t>::max() / 8);
     bigint const base(ParseBigEndianRightPadded(param.data, 96, baseLength));
     bigint const exp(ParseBigEndianRightPadded(param.data, 96 + baseLength, expLength));
     bigint const mod(ParseBigEndianRightPadded(

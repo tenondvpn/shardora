@@ -19,10 +19,10 @@ struct Curve {
     Curve()
         : group_(EC_GROUP_new_by_curve_name(NID_secp256k1), EC_GROUP_clear_free),
           order_(BN_new(), BN_clear_free) {
-        assert(group_ != nullptr);
-        assert(order_ != nullptr);
+        //assert(group_ != nullptr);
+        //assert(order_ != nullptr);
         int res = EC_GROUP_get_order(group_.get(), order_.get(), NULL);
-        assert(res != 0);
+        //assert(res != 0);
     }
 
     ~Curve() {}

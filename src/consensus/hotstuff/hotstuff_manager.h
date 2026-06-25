@@ -7,20 +7,16 @@
 #include "bls/bls_manager.h"
 #include "consensus/consensus.h"
 #include "consensus/hotstuff/elect_info.h"
-#ifdef USE_AGG_BLS
-#include "consensus/hotstuff/agg_crypto.h"
-#else
 #include "consensus/hotstuff/crypto.h"
-#endif
 #include "consensus/hotstuff/pacemaker.h"
 #include "consensus/hotstuff/block_acceptor.h"
 #include "consensus/hotstuff/block_wrapper.h"
 #include <consensus/hotstuff/hotstuff.h>
-#include <consensus/hotstuff/leader_rotation.h>
 #include <consensus/hotstuff/types.h>
 #include <consensus/hotstuff/view_block_chain.h>
 #include <consensus/zbft/contract_call.h>
-#include <consensus/zbft/contract_prepayment.h>
+#include <consensus/zbft/contract_prefund.h>
+#include <consensus/zbft/contract_refund.h>
 #include <consensus/zbft/contract_create.h>
 #include <consensus/zbft/create_library.h>
 #include <consensus/zbft/cross_tx_item.h>
@@ -86,9 +82,11 @@ public:
     void OnTimeBlock(
             uint64_t lastest_time_block_tm,
             uint64_t latest_time_block_height,
-            uint64_t vss_random) {
+            uint64_t vss_random,
+            uint64_t timeblock_addr_nonce) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            chain(i)->OnTimeBlock(lastest_time_block_tm, latest_time_block_height, vss_random);
+            chain(i)->OnTimeBlock(lastest_time_block_tm, latest_time_block_height, vss_random, timeblock_addr_nonce);
+            hotstuff(i)->OnTimeBlock();
         }
     }
     
@@ -111,11 +109,7 @@ public:
     int VerifySyncedViewBlock(const view_block::protobuf::ViewBlockItem& pb_vblock);    
 
     inline std::shared_ptr<Hotstuff> hotstuff(uint32_t pool_idx) const {
-        auto it = pool_hotstuff_.find(pool_idx);
-        if (it == pool_hotstuff_.end()) {
-            return nullptr;
-        }
-        return it->second;
+        return pool_hotstuff_[pool_idx];
     }    
     
     inline std::shared_ptr<Pacemaker> pacemaker(uint32_t pool_idx) const {
@@ -142,15 +136,6 @@ public:
         return hf->acceptor();
     }
 
-#ifdef USE_AGG_BLS
-    inline std::shared_ptr<AggCrypto> crypto(uint32_t pool_idx) const {
-        auto hf = hotstuff(pool_idx);
-        if (!hf) {
-            return nullptr;
-        }
-        return hf->crypto();        
-    }    
-#else
     inline std::shared_ptr<Crypto> crypto(uint32_t pool_idx) const {
         auto hf = hotstuff(pool_idx);
         if (!hf) {
@@ -158,7 +143,6 @@ public:
         }
         return hf->crypto();        
     }
-#endif
     
     inline std::shared_ptr<ElectInfo> elect_info() const {
         return elect_info_;
@@ -176,6 +160,14 @@ public:
         auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
         consensus_add_tx_msgs_[thread_idx].push(msg_ptr);
         pop_tx_con_.notify_one();
+    }
+
+    common::BftMemberPtr is_other_leader(uint32_t pool_index) {
+        return pool_hotstuff_[pool_index]->is_other_leader();
+    }
+
+    common::BftMemberPtr GetLeader(uint32_t pool_index) {
+        return pool_hotstuff_[pool_index]->GetLeader();
     }
 
 private:
@@ -249,11 +241,6 @@ private:
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
-        auto keypair = bls::AggBls::Instance()->GetKeyPair();
-        if (keypair == nullptr || !keypair->IsValid()) {
-            return nullptr;
-        }
-
         return std::make_shared<JoinElectTxItem>(
                 msg_ptr, -1, 
                 account_mgr_, 
@@ -261,9 +248,7 @@ private:
                 prefix_db_, 
                 elect_mgr_, 
                 msg_ptr->address_info,
-                msg_ptr->header.tx_proto().pubkey(),
-                keypair->pk(),
-                keypair->proof());
+                msg_ptr->header.tx_proto().pubkey());
     }
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
@@ -286,8 +271,13 @@ private:
                 msg_ptr->address_info);
     }
 
-    pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractPrepayment>(
+    pools::TxItemPtr CreateContractPrefundTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractPrefund>(
+                db_, msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
+    }
+
+    pools::TxItemPtr CreateContractRefundTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractRefund>(
                 db_, msg_ptr, -1, account_mgr_, security_ptr_, msg_ptr->address_info);
     }
 
@@ -308,7 +298,8 @@ private:
 
     static const uint64_t kHandleTimerPeriodMs = 3000lu;
 
-    std::unordered_map<uint32_t, std::shared_ptr<Hotstuff>> pool_hotstuff_;
+public:
+    std::shared_ptr<Hotstuff> pool_hotstuff_[common::kInvalidPoolIndex] = {nullptr};
     std::shared_ptr<ElectInfo> elect_info_;
     
 
@@ -329,8 +320,8 @@ private:
     uint64_t prev_check_timer_single_tm_ms_[common::kImmutablePoolSize] = {0};
     uint64_t first_timeblock_timestamp_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
-    common::ThreadSafeQueue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
-    std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
+    std::queue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
+    // std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
     std::atomic<bool> destroy_ = false;
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;

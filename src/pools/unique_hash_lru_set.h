@@ -29,8 +29,6 @@ public:
         item_list_.push_front(key);
         item_map_[key] = item_list_.begin();
         index_data_map_[index] = key;
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(item_list_, "list");
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(item_map_, "map");
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);

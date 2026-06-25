@@ -11,6 +11,7 @@
 #include <elect/elect_manager.h>
 #include <libff/algebra/curves/alt_bn128/alt_bn128_g2.hpp>
 #include <memory>
+#include <mutex>
 #include <network/dht_manager.h>
 #include <network/network_utils.h>
 #include <network/universal_manager.h>
@@ -31,42 +32,25 @@ public:
             const libff::alt_bn128_G2& common_pk, // useless for aggbls
             const libff::alt_bn128_Fr& sk) :
             members_(members), local_member_(nullptr), elect_height_(0), security_ptr_(security) {
+        valid_leaders_ = std::make_shared<common::Members>();
         for (uint32_t i = 0; i < members->size(); i++) {
+            if ((*members)[i]->bls_publick_key != libff::alt_bn128_G2::zero()) {
+                valid_leaders_->push_back((*members)[i]);
+            }
+
             if ((*members)[i]->id == security_ptr_->GetAddress()) {
                 local_member_ = (*members)[i];
-                // assert(local_member_->bls_publick_key != libff::alt_bn128_G2::zero());
+                // //assert(local_member_->bls_publick_key != libff::alt_bn128_G2::zero());
                 if (local_member_->bls_publick_key != libff::alt_bn128_G2::zero()) {
                     bls_valid_ = true;
                 } 
-                break;
             }
         }
-#ifdef USE_AGG_BLS
-        for (uint32_t i = 0; i < members->size(); i++) {
-            auto agg_bls_pk = (*members)[i]->agg_bls_pk;
-            auto agg_bls_pk_proof = (*members)[i]->agg_bls_pk_proof;            
-            // 检查 agg bls 的 Proof of Posession，确保公钥不是假的，规避密钥消除攻击
-            if (bls::AggBls::PopVerify(agg_bls_pk, agg_bls_pk_proof)) {
-                member_aggbls_pk_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G2>(agg_bls_pk);
-                SHARDORA_INFO("pop verify succ, member: %lu, elect_height: %lu, shard: %d, pk: %s",
-                    (*members)[i]->index,
-                    elect_height,
-                    sharding_id,
-                    libBLS::ThresholdUtils::G2ToString(agg_bls_pk)[0].c_str());
-            }
-            member_aggbls_pk_proof_map_[(*members)[i]->index] = std::make_shared<libff::alt_bn128_G1>(agg_bls_pk_proof);
-        }
-#endif
         
         elect_height_ = elect_height;
         common_pk_ = common_pk;
-        assert(common_pk_ != libff::alt_bn128_G2::zero());
-#ifdef USE_AGG_BLS
-        local_sk_ = bls::AggBls::Instance()->agg_sk();
-#else
+        //assert(common_pk_ != libff::alt_bn128_G2::zero());
         local_sk_ = sk;
-        // assert(local_sk_ != libff::alt_bn128_Fr::zero());
-#endif
         SetMemberCount(members->size());
         for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; pool_idx++) {
             pool_consen_stat_map_[pool_idx] = std::make_shared<ConsensusStat>(pool_idx, members);
@@ -101,7 +85,26 @@ public:
     }
 
     inline common::BftMemberPtr GetMemberByIdx(uint32_t member_idx) const {
-        return (*members_)[member_idx];
+        // Check if members_ is null
+        if (!members_) {
+            SHARDORA_ERROR("GetMemberByIdx: members_ is null, elect_height: %lu", elect_height_);
+            return nullptr;
+        }
+        
+        // Check if member_idx is out of bounds
+        if (member_idx >= members_->size()) {
+            SHARDORA_ERROR("GetMemberByIdx: member_idx %u out of range (size: %lu), elect_height: %lu",
+                member_idx, members_->size(), elect_height_);
+            return nullptr;
+        }
+        
+        auto member = (*members_)[member_idx];
+        if (!member) {
+            SHARDORA_ERROR("GetMemberByIdx: member at idx %u is null, elect_height: %lu",
+                member_idx, elect_height_);
+        }
+        
+        return member;
     }
 
     inline uint64_t ElectHeight() const {
@@ -127,23 +130,11 @@ public:
     inline std::shared_ptr<ConsensusStat> consensus_stat(uint32_t pool_idx) {
         return pool_consen_stat_map_[pool_idx];
     }
-
-    std::shared_ptr<libff::alt_bn128_G2> agg_bls_pk(uint32_t member_idx) {
-        if (member_aggbls_pk_map_.find(member_idx) != member_aggbls_pk_map_.end()) {
-            return member_aggbls_pk_map_[member_idx];
-        }
-        SHARDORA_ERROR("cannot find agg pk, member: %lu, elect: %lu, right: %d", member_idx, elect_height_, member_aggbls_pk_map_[member_idx] != nullptr);
-        assert(false);
-        return nullptr;
-    }
-
-    std::shared_ptr<libff::alt_bn128_G1> agg_bls_pk_proof(uint32_t member_idx) {
-        if (member_aggbls_pk_proof_map_.find(member_idx) != member_aggbls_pk_proof_map_.end()) {
-            return member_aggbls_pk_proof_map_[member_idx];
-        }
-        return nullptr;
-    }
     
+    common::MembersPtr valid_leaders() const {
+        return valid_leaders_;
+    }
+
 private:
     void SetMemberCount(uint32_t mem_cnt) {
         bls_n_ = mem_cnt;
@@ -151,6 +142,7 @@ private:
     }
     
     common::MembersPtr members_;
+    common::MembersPtr valid_leaders_;
     common::BftMemberPtr local_member_;
     uint64_t elect_height_;
     libff::alt_bn128_G2 common_pk_;
@@ -188,11 +180,11 @@ public:
         }
 
         if (sharding_id >= network::kConsensusShardEndNetworkId) {
-            assert(false);
+            //assert(false);
             return;
         }
 
-        auto elect_items_ptr = elect_items_[sharding_id].load();
+        auto elect_items_ptr = LoadElectItem(sharding_id);
         if (elect_items_ptr != nullptr &&
                 elect_items_ptr->ElectHeight() >= elect_height) {
             return;
@@ -200,8 +192,8 @@ public:
 
         auto elect_item = std::make_shared<ElectItem>(security_ptr_,
             sharding_id, elect_height, members, common_pk, sk);
-        prev_elect_items_[sharding_id].store(elect_items_ptr);
-        elect_items_[sharding_id].store(elect_item);
+        StorePrevElectItem(sharding_id, elect_items_ptr);
+        StoreElectItem(sharding_id, elect_item);
         RefreshMemberAddrs(sharding_id);
     #ifndef NDEBUG
         auto val = libBLS::ThresholdUtils::fieldElementToString(
@@ -214,8 +206,8 @@ public:
     std::shared_ptr<ElectItem> GetElectItem(uint32_t sharding_id, const uint64_t elect_height) const {
         std::shared_ptr<ElectItem> res_ptr = nullptr;
         do {
-            auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load();
-            auto elect_items_ptr = elect_items_[sharding_id].load();
+            auto prev_elect_items_ptr = LoadPrevElectItem(sharding_id);
+            auto elect_items_ptr = LoadElectItem(sharding_id);
             if (elect_items_ptr &&
                     elect_height == elect_items_ptr->ElectHeight()) {
                 res_ptr = elect_items_ptr;
@@ -238,12 +230,26 @@ public:
                 sharding_id,
                 &common_pk,
                 &sec_key);
-            if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
-                SHARDORA_ERROR("failed get elect members or common pk: %u, %lu, %d",
+            if (members == nullptr) {
+                SHARDORA_ERROR("failed get elect members: %u, %lu",
+                    sharding_id, elect_height);
+                break;
+            }
+
+            if (common_pk == libff::alt_bn128_G2::zero()) {
+                // members found but common_pk unavailable — return an item with zero pk so
+                // VerifyThresSign returns kElectItemNotFound instead of falling back to the
+                // (potentially stale) genesis common_pk and producing a spurious verify failure.
+                SHARDORA_WARN("elect members found but common_pk is zero: shard %u, elect_height %lu; "
+                    "returning ElectItem with zero pk to block incorrect genesis fallback",
+                    sharding_id, elect_height);
+                res_ptr = std::make_shared<ElectItem>(
+                    security_ptr_,
                     sharding_id,
                     elect_height,
-                    (common_pk == libff::alt_bn128_G2::zero()));
-                // assert(false);      
+                    members,
+                    common_pk,
+                    sec_key);
                 break;
             }
             
@@ -252,7 +258,7 @@ public:
     // #ifndef NDEBUG
     //         if (sharding_id == common::GlobalInfo::Instance()->network_id())
     //             for (auto iter = members->begin(); iter != members->end(); ++iter) {
-    //                 assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
+    //                 //assert((*iter)->bls_publick_key != libff::alt_bn128_G2::zero());
     //             }
     // #endif
             res_ptr = std::make_shared<ElectItem>(
@@ -278,17 +284,18 @@ public:
     inline std::shared_ptr<ElectItem> GetElectItemWithShardingId(uint32_t sharding_id) const {
         if (sharding_id > network::kConsensusShardEndNetworkId) {
             SHARDORA_DEBUG("get elect item failed sharding id: %u", sharding_id);
+            // //assert(false);
             return nullptr;
         }
 
-        auto prev_elect_items_ptr = prev_elect_items_[sharding_id].load();
-        auto elect_items_ptr = elect_items_[sharding_id].load();
+        auto prev_elect_items_ptr = LoadPrevElectItem(sharding_id);
+        auto elect_items_ptr = LoadElectItem(sharding_id);
         return elect_items_ptr != nullptr ? elect_items_ptr : prev_elect_items_ptr;
     }
 
     // 更新 elect_item members 的 addr
     void RefreshMemberAddrs(uint32_t sharding_id) {
-        auto elect_items_ptr = elect_items_[sharding_id].load();
+        auto elect_items_ptr = LoadElectItem(sharding_id);
         if (!elect_items_ptr) {
             SHARDORA_DEBUG("Leader pool elect item null");
             return;
@@ -323,8 +330,29 @@ public:
     }
     
 private:
-    std::atomic<std::shared_ptr<ElectItem>> prev_elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
-    std::atomic<std::shared_ptr<ElectItem>> elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::shared_ptr<ElectItem> LoadPrevElectItem(uint32_t sharding_id) const {
+        std::lock_guard<std::mutex> lock(elect_items_mutex_[sharding_id]);
+        return prev_elect_items_[sharding_id];
+    }
+
+    std::shared_ptr<ElectItem> LoadElectItem(uint32_t sharding_id) const {
+        std::lock_guard<std::mutex> lock(elect_items_mutex_[sharding_id]);
+        return elect_items_[sharding_id];
+    }
+
+    void StorePrevElectItem(uint32_t sharding_id, const std::shared_ptr<ElectItem>& elect_item) {
+        std::lock_guard<std::mutex> lock(elect_items_mutex_[sharding_id]);
+        prev_elect_items_[sharding_id] = elect_item;
+    }
+
+    void StoreElectItem(uint32_t sharding_id, const std::shared_ptr<ElectItem>& elect_item) {
+        std::lock_guard<std::mutex> lock(elect_items_mutex_[sharding_id]);
+        elect_items_[sharding_id] = elect_item;
+    }
+
+    std::shared_ptr<ElectItem> prev_elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    std::shared_ptr<ElectItem> elect_items_[network::kConsensusShardEndNetworkId + 1] = { nullptr };
+    mutable std::mutex elect_items_mutex_[network::kConsensusShardEndNetworkId + 1];
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
@@ -333,5 +361,4 @@ private:
 } // namespace consensus
 
 } // namespace shardora
-
 

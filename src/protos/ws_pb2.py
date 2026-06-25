@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.ws.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x0fprotos/ws.proto\x12\x14shardora.ws.protobuf\"\xcd\x02\n\tTxMessage\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\r\n\x05nonce\x18\x02 \x01(\x04\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x11\n\tgas_limit\x18\x04 \x01(\x04\x12\x11\n\tgas_price\x18\x05 \x01(\x04\x12\x0b\n\x03key\x18\x06 \x01(\x0c\x12\r\n\x05value\x18\x07 \x01(\x0c\x12\n\n\x02to\x18\x08 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\t \x01(\x04\x12\x39\n\x04step\x18\n \x01(\x0e\x32\x1e.shardora.ws.protobuf.StepType:\x0bkNormalFrom\x12\x1b\n\x13\x63ontract_prepayment\x18\x0b \x01(\x04\x12\x15\n\rcontract_code\x18\x0c \x01(\x0c\x12\x16\n\x0e\x63ontract_input\x18\r \x01(\x0c\x12\r\n\x05signr\x18\x0e \x01(\x0c\x12\r\n\x05signs\x18\x0f \x01(\x0c\x12\r\n\x05signv\x18\x10 \x01(\x0c\"~\n\tOrderInfo\x12\r\n\x05\x62uyer\x18\x01 \x01(\x0c\x12,\n\x06status\x18\x02 \x01(\x0e\x32\x1c.shardora.ws.protobuf.Status\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\x0e\n\x06seller\x18\x04 \x01(\x0c\x12\x14\n\x0c\x63reate_tm_ms\x18\x05 \x01(\x04\"\x8d\x01\n\x0eReceivableInfo\x12/\n\x04type\x18\x01 \x01(\x0e\x32!.shardora.ws.protobuf.ReceiveType\x12\x0c\n\x04name\x18\x02 \x01(\x0c\x12\n\n\x02id\x18\x03 \x01(\x0c\x12\x11\n\tuser_name\x18\x04 \x01(\x0c\x12\r\n\x05other\x18\x05 \x01(\x0c\x12\x0e\n\x06qrcode\x18\x06 \x01(\x0c\"K\n\x0fReceivableArray\x12\x38\n\nreceivable\x18\x01 \x03(\x0b\x32$.shardora.ws.protobuf.ReceivableInfo\"\x99\x04\n\x08SellInfo\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\r\n\x05\x62uyer\x18\x02 \x01(\x0c\x12\x10\n\x08\x63ontract\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\x12\x39\n\nreceivable\x18\x05 \x01(\x0b\x32%.shardora.ws.protobuf.ReceivableArray\x12\x0b\n\x03\x61ll\x18\x06 \x01(\x04\x12\r\n\x05price\x18\x07 \x01(\x04\x12\x10\n\x08mchecked\x18\x08 \x01(\r\x12\x10\n\x08schecked\x18\t \x01(\r\x12\x10\n\x08reported\x18\n \x01(\r\x12\x0f\n\x07orderId\x18\x0b \x01(\x04\x12\x0e\n\x06height\x18\x0c \x01(\x04\x12\x11\n\ttimestamp\x18\r \x01(\x04\x12\x10\n\x08username\x18\x0e \x01(\x0c\x12\x0e\n\x06status\x18\x0f \x01(\x05\x12\x17\n\x0fpurchase_amount\x18\x10 \x01(\x04\x12\x18\n\x10\x63reate_timestamp\x18\x11 \x01(\x04\x12\x12\n\nmin_amount\x18\x12 \x01(\x04\x12\x12\n\nmax_amount\x18\x13 \x01(\x04\x12\x0b\n\x03now\x18\x14 \x01(\x04\x12\x10\n\x08is_order\x18\x15 \x01(\x08\x12,\n\x06\x61ppeal\x18\x16 \x01(\x0b\x32\x1c.shardora.ws.protobuf.Appeal\x12\x0e\n\x06\x63redit\x18\x17 \x01(\x05\x12\x31\n\x0bpeer_appeal\x18\x18 \x01(\x0b\x32\x1c.shardora.ws.protobuf.Appeal\"9\n\x08NewOrder\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\r\n\x05\x62uyer\x18\x03 \x01(\x0c\"S\n\x06\x41ppeal\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\r\n\x05\x62uyer\x18\x02 \x01(\x0c\x12\x0c\n\x04type\x18\x03 \x01(\x05\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\x0c\x12\x0b\n\x03pic\x18\x05 \x01(\x0c\"\x89\x01\n\x07NewSell\x12\x15\n\rprotocol_addr\x18\x01 \x01(\x0c\x12\x0e\n\x06seller\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\r\n\x05price\x18\x04 \x01(\x04\x12\x38\n\nreceivable\x18\x05 \x03(\x0b\x32$.shardora.ws.protobuf.ReceivableInfo\"3\n\x0b\x42uyerReport\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x14\n\x0creports_info\x18\x02 \x01(\x0c\"\x19\n\x07GetSell\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\"\x88\x03\n\nC2cMessage\x12+\n\x04sell\x18\x01 \x01(\x0b\x32\x1d.shardora.ws.protobuf.NewSell\x12-\n\x05order\x18\x02 \x01(\x0b\x32\x1e.shardora.ws.protobuf.NewOrder\x12\x31\n\x06report\x18\x03 \x01(\x0b\x32!.shardora.ws.protobuf.BuyerReport\x12-\n\x05sells\x18\x04 \x03(\x0b\x32\x1e.shardora.ws.protobuf.SellInfo\x12/\n\x08get_sell\x18\x05 \x01(\x0b\x32\x1d.shardora.ws.protobuf.GetSell\x12\x12\n\nprepayment\x18\x06 \x01(\x04\x12\x10\n\x08\x63\x32\x63_addr\x18\x07 \x01(\x0c\x12\x37\n\x0fuser_order_info\x18\x08 \x01(\x0b\x32\x1e.shardora.ws.protobuf.SellInfo\x12,\n\x06\x61ppeal\x18\t \x01(\x0b\x32\x1c.shardora.ws.protobuf.Appeal\"=\n\nStatusInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\x0c\x12\x0e\n\x06msg_id\x18\x03 \x01(\x04\"\xb3\x02\n\x08InitInfo\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x10\n\x08platform\x18\x02 \x01(\x0c\x12\x0f\n\x07version\x18\x03 \x01(\x0c\x12\x0f\n\x07pk_hash\x18\x04 \x01(\x0c\x12\x32\n\x03tag\x18\x05 \x01(\x0e\x32%.shardora.ws.protobuf.InitInfoTagType\x12+\n\x02tx\x18\x06 \x01(\x0b\x32\x1f.shardora.ws.protobuf.TxMessage\x12\x11\n\ttx_height\x18\x07 \x01(\x04\x12-\n\x03\x63\x32\x63\x18\x08 \x01(\x0b\x32 .shardora.ws.protobuf.C2cMessage\x12\x30\n\x06status\x18\t \x01(\x0b\x32 .shardora.ws.protobuf.StatusInfo\x12\x0e\n\x06msg_id\x18\n \x01(\x04\"\x88\x01\n\x08WsTxItem\x12\x0c\n\x04\x66rom\x18\x01 \x01(\x0c\x12\n\n\x02to\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\x0f\n\x07\x62\x61lance\x18\x04 \x01(\x04\x12\x0e\n\x06height\x18\x05 \x01(\x04\x12\x0e\n\x06to_add\x18\x06 \x01(\r\x12\x11\n\ttimestamp\x18\x07 \x01(\x04\x12\x0e\n\x06status\x18\x08 \x01(\x05\"?\n\x10WsTxItemResponse\x12+\n\x03txs\x18\x01 \x03(\x0b\x32\x1e.shardora.ws.protobuf.WsTxItem\"A\n\rBandwidthItem\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x11\n\tbandwidth\x18\x02 \x01(\x04\x12\x11\n\ttimestamp\x18\x03 \x01(\x04\"A\n\rBandwidthInfo\x12\x30\n\x03\x62ws\x18\x01 \x03(\x0b\x32#.shardora.ws.protobuf.BandwidthItem\"\x9d\x01\n\tWsMessage\x12+\n\x03txs\x18\x01 \x03(\x0b\x32\x1e.shardora.ws.protobuf.WsTxItem\x12\x30\n\x03\x62ws\x18\x02 \x03(\x0b\x32#.shardora.ws.protobuf.BandwidthItem\x12\x31\n\tinit_info\x18\x03 \x01(\x0b\x32\x1e.shardora.ws.protobuf.InitInfo*\xf3\x02\n\x08StepType\x12\x0f\n\x0bkNormalFrom\x10\x00\x12\r\n\tkNormalTo\x10\x01\x12\x1c\n\x18kConsensusRootElectShard\x10\x02\x12\x1b\n\x17kConsensusRootTimeBlock\x10\x03\x12!\n\x1dkConsensusCreateGenesisAcount\x10\x04\x12\x16\n\x12kConsensusLocalTos\x10\x05\x12\x13\n\x0fkContractCreate\x10\x06\x12\x1a\n\x16kContractGasPrepayment\x10\x07\x12\x13\n\x0fkContractExcute\x10\x08\x12\x16\n\x12kRootCreateAddress\x10\t\x12#\n\x1fkRootCreateAddressCrossSharding\x10\x0b\x12\x0e\n\nkStatistic\x10\x0c\x12\x0e\n\nkJoinElect\x10\r\x12\x12\n\x0ekCreateLibrary\x10\x0e\x12\n\n\x06kCross\x10\x0f\x12\x0e\n\nkRootCross\x10\x10*\xf2\x02\n\x0fInitInfoTagType\x12\x11\n\rkNoneResponse\x10\x00\x12\x12\n\x0ekResponseNodes\x10\x01\x12\x14\n\x10kResponseBalance\x10\x02\x12\x13\n\x0fkResponseTxList\x10\x03\x12\x1b\n\x17kResponseOutOfBindwidth\x10\x04\x12\x10\n\x0ckTransaction\x10\x05\x12\x0e\n\nkC2cTxList\x10\x06\x12\x14\n\x10kC2cUserSellInfo\x10\x07\x12\x0f\n\x0bkC2cNewSell\x10\x08\x12\x10\n\x0ckC2cNewOrder\x10\t\x12\x0f\n\x0bkC2cConfirm\x10\n\x12\x12\n\x0ekC2cPrepayment\x10\x0b\x12\x14\n\x10kC2cRefreshLocal\x10\x0c\x12\x13\n\x0fkC2cCancelOrder\x10\r\x12\x12\n\x0ekC2cCancelSell\x10\x0e\x12\x16\n\x12kC2cManagerRecover\x10\x0f\x12\x19\n\x15kC2cManagerCancelSell\x10\x10*\x92\x01\n\x0bReceiveType\x12\x0b\n\x07kAlipay\x10\x00\x12\x0e\n\nkWeChatPay\x10\x01\x12\x0b\n\x07kPaypal\x10\x02\x12\r\n\tkBandCard\x10\x03\x12\x0f\n\x0bkCreditCard\x10\x04\x12\x0c\n\x08kBitcoin\x10\x05\x12\x08\n\x04kEth\x10\x06\x12\t\n\x05kUsdt\x10\x07\x12\t\n\x05kUsdc\x10\x08\x12\x0b\n\x07kUnkown\x10\t*\x84\x05\n\x06Status\x12\x0c\n\x08kDefault\x10\x00\x12\x0e\n\nkConfirmed\x10\x01\x12\r\n\tkReported\x10\x02\x12\x10\n\x0ckSellWaiting\x10\x03\x12\x11\n\rkSellReleased\x10\x04\x12\x16\n\x12kSellWaitingCreate\x10\x05\x12\x10\n\x0ckSellCreated\x10\x06\x12\x17\n\x13kSellWaitingConfirm\x10\x07\x12\x10\n\x0ckSellTimeout\x10\x08\x12\x12\n\x0ekOrderCanceled\x10\t\x12\x1b\n\x17kSellUserWaitingRelease\x10\n\x12\x15\n\x11kSellUserReleased\x10\x0b\x12\x1e\n\x1akSellManagerWaitingRelease\x10\x0c\x12\x18\n\x14kSellManagerReleased\x10\r\x12\x13\n\x0fkSellPrepayment\x10\x0e\x12\x1a\n\x16kSellWaitingPrepayment\x10\x0f\x12\x19\n\x15kSellWaitingConfirmTx\x10\x10\x12\x1e\n\x1akSellForceReleaseWaitingTx\x10\x11\x12\x16\n\x12kSellForceReleased\x10\x12\x12\x14\n\x10kReportedByOrder\x10\x13\x12\x1a\n\x16kSellTxPrepaymentError\x10}\x12\x16\n\x12kSellTxCreateError\x10~\x12\x1b\n\x17kSellTxUserReleaseError\x10\x7f\x12\x1f\n\x1akSellTxManagerReleaseError\x10\x80\x01\x12\x1f\n\x1akSellWaitingConfirmTxError\x10\x81\x01\x12$\n\x1fkSellForceReleaseWaitingTxError\x10\x82\x01')
+  serialized_pb=_b('\n\x0fprotos/ws.proto\x12\x10shardora.ws.protobuf\"\xc6\x02\n\tTxMessage\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\r\n\x05nonce\x18\x02 \x01(\x04\x12\x0e\n\x06pubkey\x18\x03 \x01(\x0c\x12\x11\n\tgas_limit\x18\x04 \x01(\x04\x12\x11\n\tgas_price\x18\x05 \x01(\x04\x12\x0b\n\x03key\x18\x06 \x01(\x0c\x12\r\n\x05value\x18\x07 \x01(\x0c\x12\n\n\x02to\x18\x08 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\t \x01(\x04\x12\x35\n\x04step\x18\n \x01(\x0e\x32\x1a.shardora.ws.protobuf.StepType:\x0bkNormalFrom\x12\x18\n\x10\x63ontract_prefund\x18\x0b \x01(\x04\x12\x15\n\rcontract_code\x18\x0c \x01(\x0c\x12\x16\n\x0e\x63ontract_input\x18\r \x01(\x0c\x12\r\n\x05signr\x18\x0e \x01(\x0c\x12\r\n\x05signs\x18\x0f \x01(\x0c\x12\r\n\x05signv\x18\x10 \x01(\x0c\"z\n\tOrderInfo\x12\r\n\x05\x62uyer\x18\x01 \x01(\x0c\x12(\n\x06status\x18\x02 \x01(\x0e\x32\x18.shardora.ws.protobuf.Status\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\x0e\n\x06seller\x18\x04 \x01(\x0c\x12\x14\n\x0c\x63reate_tm_ms\x18\x05 \x01(\x04\"\x89\x01\n\x0eReceivableInfo\x12+\n\x04type\x18\x01 \x01(\x0e\x32\x1d.shardora.ws.protobuf.ReceiveType\x12\x0c\n\x04name\x18\x02 \x01(\x0c\x12\n\n\x02id\x18\x03 \x01(\x0c\x12\x11\n\tuser_name\x18\x04 \x01(\x0c\x12\r\n\x05other\x18\x05 \x01(\x0c\x12\x0e\n\x06qrcode\x18\x06 \x01(\x0c\"G\n\x0fReceivableArray\x12\x34\n\nreceivable\x18\x01 \x03(\x0b\x32 .shardora.ws.protobuf.ReceivableInfo\"\x8d\x04\n\x08SellInfo\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\r\n\x05\x62uyer\x18\x02 \x01(\x0c\x12\x10\n\x08\x63ontract\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\x12\x35\n\nreceivable\x18\x05 \x01(\x0b\x32!.shardora.ws.protobuf.ReceivableArray\x12\x0b\n\x03\x61ll\x18\x06 \x01(\x04\x12\r\n\x05price\x18\x07 \x01(\x04\x12\x10\n\x08mchecked\x18\x08 \x01(\r\x12\x10\n\x08schecked\x18\t \x01(\r\x12\x10\n\x08reported\x18\n \x01(\r\x12\x0f\n\x07orderId\x18\x0b \x01(\x04\x12\x0e\n\x06height\x18\x0c \x01(\x04\x12\x11\n\ttimestamp\x18\r \x01(\x04\x12\x10\n\x08username\x18\x0e \x01(\x0c\x12\x0e\n\x06status\x18\x0f \x01(\x05\x12\x17\n\x0fpurchase_amount\x18\x10 \x01(\x04\x12\x18\n\x10\x63reate_timestamp\x18\x11 \x01(\x04\x12\x12\n\nmin_amount\x18\x12 \x01(\x04\x12\x12\n\nmax_amount\x18\x13 \x01(\x04\x12\x0b\n\x03now\x18\x14 \x01(\x04\x12\x10\n\x08is_order\x18\x15 \x01(\x08\x12(\n\x06\x61ppeal\x18\x16 \x01(\x0b\x32\x18.shardora.ws.protobuf.Appeal\x12\x0e\n\x06\x63redit\x18\x17 \x01(\x05\x12-\n\x0bpeer_appeal\x18\x18 \x01(\x0b\x32\x18.shardora.ws.protobuf.Appeal\"9\n\x08NewOrder\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\r\n\x05\x62uyer\x18\x03 \x01(\x0c\"S\n\x06\x41ppeal\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\r\n\x05\x62uyer\x18\x02 \x01(\x0c\x12\x0c\n\x04type\x18\x03 \x01(\x05\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\x0c\x12\x0b\n\x03pic\x18\x05 \x01(\x0c\"\x85\x01\n\x07NewSell\x12\x15\n\rprotocol_addr\x18\x01 \x01(\x0c\x12\x0e\n\x06seller\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\r\n\x05price\x18\x04 \x01(\x04\x12\x34\n\nreceivable\x18\x05 \x03(\x0b\x32 .shardora.ws.protobuf.ReceivableInfo\"3\n\x0b\x42uyerReport\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\x12\x14\n\x0creports_info\x18\x02 \x01(\x0c\"\x19\n\x07GetSell\x12\x0e\n\x06seller\x18\x01 \x01(\x0c\"\xe9\x02\n\nC2cMessage\x12\'\n\x04sell\x18\x01 \x01(\x0b\x32\x19.shardora.ws.protobuf.NewSell\x12)\n\x05order\x18\x02 \x01(\x0b\x32\x1a.shardora.ws.protobuf.NewOrder\x12-\n\x06report\x18\x03 \x01(\x0b\x32\x1d.shardora.ws.protobuf.BuyerReport\x12)\n\x05sells\x18\x04 \x03(\x0b\x32\x1a.shardora.ws.protobuf.SellInfo\x12+\n\x08get_sell\x18\x05 \x01(\x0b\x32\x19.shardora.ws.protobuf.GetSell\x12\x0f\n\x07prefund\x18\x06 \x01(\x04\x12\x10\n\x08\x63\x32\x63_addr\x18\x07 \x01(\x0c\x12\x33\n\x0fuser_order_info\x18\x08 \x01(\x0b\x32\x1a.shardora.ws.protobuf.SellInfo\x12(\n\x06\x61ppeal\x18\t \x01(\x0b\x32\x18.shardora.ws.protobuf.Appeal\"=\n\nStatusInfo\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\x0c\x12\x0e\n\x06msg_id\x18\x03 \x01(\x04\"\xa3\x02\n\x08InitInfo\x12\x0e\n\x06pubkey\x18\x01 \x01(\x0c\x12\x10\n\x08platform\x18\x02 \x01(\x0c\x12\x0f\n\x07version\x18\x03 \x01(\x0c\x12\x0f\n\x07pk_hash\x18\x04 \x01(\x0c\x12.\n\x03tag\x18\x05 \x01(\x0e\x32!.shardora.ws.protobuf.InitInfoTagType\x12\'\n\x02tx\x18\x06 \x01(\x0b\x32\x1b.shardora.ws.protobuf.TxMessage\x12\x11\n\ttx_height\x18\x07 \x01(\x04\x12)\n\x03\x63\x32\x63\x18\x08 \x01(\x0b\x32\x1c.shardora.ws.protobuf.C2cMessage\x12,\n\x06status\x18\t \x01(\x0b\x32\x1c.shardora.ws.protobuf.StatusInfo\x12\x0e\n\x06msg_id\x18\n \x01(\x04\"\x88\x01\n\x08WsTxItem\x12\x0c\n\x04\x66rom\x18\x01 \x01(\x0c\x12\n\n\x02to\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\x12\x0f\n\x07\x62\x61lance\x18\x04 \x01(\x04\x12\x0e\n\x06height\x18\x05 \x01(\x04\x12\x0e\n\x06to_add\x18\x06 \x01(\r\x12\x11\n\ttimestamp\x18\x07 \x01(\x04\x12\x0e\n\x06status\x18\x08 \x01(\x05\";\n\x10WsTxItemResponse\x12\'\n\x03txs\x18\x01 \x03(\x0b\x32\x1a.shardora.ws.protobuf.WsTxItem\"A\n\rBandwidthItem\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x11\n\tbandwidth\x18\x02 \x01(\x04\x12\x11\n\ttimestamp\x18\x03 \x01(\x04\"=\n\rBandwidthInfo\x12,\n\x03\x62ws\x18\x01 \x03(\x0b\x32\x1f.shardora.ws.protobuf.BandwidthItem\"\x91\x01\n\tWsMessage\x12\'\n\x03txs\x18\x01 \x03(\x0b\x32\x1a.shardora.ws.protobuf.WsTxItem\x12,\n\x03\x62ws\x18\x02 \x03(\x0b\x32\x1f.shardora.ws.protobuf.BandwidthItem\x12-\n\tinit_info\x18\x03 \x01(\x0b\x32\x1a.shardora.ws.protobuf.InitInfo*\xf0\x02\n\x08StepType\x12\x0f\n\x0bkNormalFrom\x10\x00\x12\r\n\tkNormalTo\x10\x01\x12\x1c\n\x18kConsensusRootElectShard\x10\x02\x12\x1b\n\x17kConsensusRootTimeBlock\x10\x03\x12!\n\x1dkConsensusCreateGenesisAcount\x10\x04\x12\x16\n\x12kConsensusLocalTos\x10\x05\x12\x13\n\x0fkCreateContract\x10\x06\x12\x17\n\x13kContractGasPrefund\x10\x07\x12\x13\n\x0fkContractExcute\x10\x08\x12\x16\n\x12kRootCreateAddress\x10\t\x12#\n\x1fkRootCreateAddressCrossSharding\x10\x0b\x12\x0e\n\nkStatistic\x10\x0c\x12\x0e\n\nkJoinElect\x10\r\x12\x12\n\x0ekCreateLibrary\x10\x0e\x12\n\n\x06kCross\x10\x0f\x12\x0e\n\nkRootCross\x10\x10*\xef\x02\n\x0fInitInfoTagType\x12\x11\n\rkNoneResponse\x10\x00\x12\x12\n\x0ekResponseNodes\x10\x01\x12\x14\n\x10kResponseBalance\x10\x02\x12\x13\n\x0fkResponseTxList\x10\x03\x12\x1b\n\x17kResponseOutOfBindwidth\x10\x04\x12\x10\n\x0ckTransaction\x10\x05\x12\x0e\n\nkC2cTxList\x10\x06\x12\x14\n\x10kC2cUserSellInfo\x10\x07\x12\x0f\n\x0bkC2cNewSell\x10\x08\x12\x10\n\x0ckC2cNewOrder\x10\t\x12\x0f\n\x0bkC2cConfirm\x10\n\x12\x0f\n\x0bkC2cPrefund\x10\x0b\x12\x14\n\x10kC2cRefreshLocal\x10\x0c\x12\x13\n\x0fkC2cCancelOrder\x10\r\x12\x12\n\x0ekC2cCancelSell\x10\x0e\x12\x16\n\x12kC2cManagerRecover\x10\x0f\x12\x19\n\x15kC2cManagerCancelSell\x10\x10*\x92\x01\n\x0bReceiveType\x12\x0b\n\x07kAlipay\x10\x00\x12\x0e\n\nkWeChatPay\x10\x01\x12\x0b\n\x07kPaypal\x10\x02\x12\r\n\tkBandCard\x10\x03\x12\x0f\n\x0bkCreditCard\x10\x04\x12\x0c\n\x08kBitcoin\x10\x05\x12\x08\n\x04kEth\x10\x06\x12\t\n\x05kUsdt\x10\x07\x12\t\n\x05kUsdc\x10\x08\x12\x0b\n\x07kUnkown\x10\t*\xfb\x04\n\x06Status\x12\x0c\n\x08kDefault\x10\x00\x12\x0e\n\nkConfirmed\x10\x01\x12\r\n\tkReported\x10\x02\x12\x10\n\x0ckSellWaiting\x10\x03\x12\x11\n\rkSellReleased\x10\x04\x12\x16\n\x12kSellWaitingCreate\x10\x05\x12\x10\n\x0ckSellCreated\x10\x06\x12\x17\n\x13kSellWaitingConfirm\x10\x07\x12\x10\n\x0ckSellTimeout\x10\x08\x12\x12\n\x0ekOrderCanceled\x10\t\x12\x1b\n\x17kSellUserWaitingRelease\x10\n\x12\x15\n\x11kSellUserReleased\x10\x0b\x12\x1e\n\x1akSellManagerWaitingRelease\x10\x0c\x12\x18\n\x14kSellManagerReleased\x10\r\x12\x10\n\x0ckSellPrefund\x10\x0e\x12\x17\n\x13kSellWaitingPrefund\x10\x0f\x12\x19\n\x15kSellWaitingConfirmTx\x10\x10\x12\x1e\n\x1akSellForceReleaseWaitingTx\x10\x11\x12\x16\n\x12kSellForceReleased\x10\x12\x12\x14\n\x10kReportedByOrder\x10\x13\x12\x17\n\x13kSellTxPrefundError\x10}\x12\x16\n\x12kSellTxCreateError\x10~\x12\x1b\n\x17kSellTxUserReleaseError\x10\x7f\x12\x1f\n\x1akSellTxManagerReleaseError\x10\x80\x01\x12\x1f\n\x1akSellWaitingConfirmTxError\x10\x81\x01\x12$\n\x1fkSellForceReleaseWaitingTxError\x10\x82\x01')
 )
 
 _STEPTYPE = _descriptor.EnumDescriptor(
@@ -54,11 +54,11 @@ _STEPTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kContractCreate', index=6, number=6,
+      name='kCreateContract', index=6, number=6,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kContractGasPrepayment', index=7, number=7,
+      name='kContractGasPrefund', index=7, number=7,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -96,8 +96,8 @@ _STEPTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2897,
-  serialized_end=3268,
+  serialized_start=2791,
+  serialized_end=3159,
 )
 _sym_db.RegisterEnumDescriptor(_STEPTYPE)
 
@@ -153,7 +153,7 @@ _INITINFOTAGTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kC2cPrepayment', index=11, number=11,
+      name='kC2cPrefund', index=11, number=11,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -179,8 +179,8 @@ _INITINFOTAGTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3271,
-  serialized_end=3641,
+  serialized_start=3162,
+  serialized_end=3529,
 )
 _sym_db.RegisterEnumDescriptor(_INITINFOTAGTYPE)
 
@@ -234,8 +234,8 @@ _RECEIVETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3644,
-  serialized_end=3790,
+  serialized_start=3532,
+  serialized_end=3678,
 )
 _sym_db.RegisterEnumDescriptor(_RECEIVETYPE)
 
@@ -303,11 +303,11 @@ _STATUS = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kSellPrepayment', index=14, number=14,
+      name='kSellPrefund', index=14, number=14,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kSellWaitingPrepayment', index=15, number=15,
+      name='kSellWaitingPrefund', index=15, number=15,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -327,7 +327,7 @@ _STATUS = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='kSellTxPrepaymentError', index=20, number=125,
+      name='kSellTxPrefundError', index=20, number=125,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -353,8 +353,8 @@ _STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3793,
-  serialized_end=4437,
+  serialized_start=3681,
+  serialized_end=4316,
 )
 _sym_db.RegisterEnumDescriptor(_STATUS)
 
@@ -365,8 +365,8 @@ kConsensusRootElectShard = 2
 kConsensusRootTimeBlock = 3
 kConsensusCreateGenesisAcount = 4
 kConsensusLocalTos = 5
-kContractCreate = 6
-kContractGasPrepayment = 7
+kCreateContract = 6
+kContractGasPrefund = 7
 kContractExcute = 8
 kRootCreateAddress = 9
 kRootCreateAddressCrossSharding = 11
@@ -386,7 +386,7 @@ kC2cUserSellInfo = 7
 kC2cNewSell = 8
 kC2cNewOrder = 9
 kC2cConfirm = 10
-kC2cPrepayment = 11
+kC2cPrefund = 11
 kC2cRefreshLocal = 12
 kC2cCancelOrder = 13
 kC2cCancelSell = 14
@@ -416,13 +416,13 @@ kSellUserWaitingRelease = 10
 kSellUserReleased = 11
 kSellManagerWaitingRelease = 12
 kSellManagerReleased = 13
-kSellPrepayment = 14
-kSellWaitingPrepayment = 15
+kSellPrefund = 14
+kSellWaitingPrefund = 15
 kSellWaitingConfirmTx = 16
 kSellForceReleaseWaitingTx = 17
 kSellForceReleased = 18
 kReportedByOrder = 19
-kSellTxPrepaymentError = 125
+kSellTxPrefundError = 125
 kSellTxCreateError = 126
 kSellTxUserReleaseError = 127
 kSellTxManagerReleaseError = 128
@@ -509,7 +509,7 @@ _TXMESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='contract_prepayment', full_name='shardora.ws.protobuf.TxMessage.contract_prepayment', index=10,
+      name='contract_prefund', full_name='shardora.ws.protobuf.TxMessage.contract_prefund', index=10,
       number=11, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -562,8 +562,8 @@ _TXMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=42,
-  serialized_end=375,
+  serialized_start=38,
+  serialized_end=364,
 )
 
 
@@ -621,8 +621,8 @@ _ORDERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=377,
-  serialized_end=503,
+  serialized_start=366,
+  serialized_end=488,
 )
 
 
@@ -687,8 +687,8 @@ _RECEIVABLEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=506,
-  serialized_end=647,
+  serialized_start=491,
+  serialized_end=628,
 )
 
 
@@ -718,8 +718,8 @@ _RECEIVABLEARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=649,
-  serialized_end=724,
+  serialized_start=630,
+  serialized_end=701,
 )
 
 
@@ -910,8 +910,8 @@ _SELLINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=727,
-  serialized_end=1264,
+  serialized_start=704,
+  serialized_end=1229,
 )
 
 
@@ -955,8 +955,8 @@ _NEWORDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1266,
-  serialized_end=1323,
+  serialized_start=1231,
+  serialized_end=1288,
 )
 
 
@@ -1014,8 +1014,8 @@ _APPEAL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1325,
-  serialized_end=1408,
+  serialized_start=1290,
+  serialized_end=1373,
 )
 
 
@@ -1073,8 +1073,8 @@ _NEWSELL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1411,
-  serialized_end=1548,
+  serialized_start=1376,
+  serialized_end=1509,
 )
 
 
@@ -1111,8 +1111,8 @@ _BUYERREPORT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1550,
-  serialized_end=1601,
+  serialized_start=1511,
+  serialized_end=1562,
 )
 
 
@@ -1142,8 +1142,8 @@ _GETSELL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1603,
-  serialized_end=1628,
+  serialized_start=1564,
+  serialized_end=1589,
 )
 
 
@@ -1190,7 +1190,7 @@ _C2CMESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='prepayment', full_name='shardora.ws.protobuf.C2cMessage.prepayment', index=5,
+      name='prefund', full_name='shardora.ws.protobuf.C2cMessage.prefund', index=5,
       number=6, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -1229,8 +1229,8 @@ _C2CMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1631,
-  serialized_end=2023,
+  serialized_start=1592,
+  serialized_end=1953,
 )
 
 
@@ -1274,8 +1274,8 @@ _STATUSINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2025,
-  serialized_end=2086,
+  serialized_start=1955,
+  serialized_end=2016,
 )
 
 
@@ -1368,8 +1368,8 @@ _INITINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2089,
-  serialized_end=2396,
+  serialized_start=2019,
+  serialized_end=2310,
 )
 
 
@@ -1448,8 +1448,8 @@ _WSTXITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2399,
-  serialized_end=2535,
+  serialized_start=2313,
+  serialized_end=2449,
 )
 
 
@@ -1479,8 +1479,8 @@ _WSTXITEMRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2537,
-  serialized_end=2600,
+  serialized_start=2451,
+  serialized_end=2510,
 )
 
 
@@ -1524,8 +1524,8 @@ _BANDWIDTHITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2602,
-  serialized_end=2667,
+  serialized_start=2512,
+  serialized_end=2577,
 )
 
 
@@ -1555,8 +1555,8 @@ _BANDWIDTHINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2669,
-  serialized_end=2734,
+  serialized_start=2579,
+  serialized_end=2640,
 )
 
 
@@ -1600,8 +1600,8 @@ _WSMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2737,
-  serialized_end=2894,
+  serialized_start=2643,
+  serialized_end=2788,
 )
 
 _TXMESSAGE.fields_by_name['step'].enum_type = _STEPTYPE

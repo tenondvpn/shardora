@@ -21,7 +21,7 @@ public:
         return event_handler_;
     }
 
-    void SetHandler(EventHandler* handler) {
+    void Shardoraandler(EventHandler* handler) {
         event_handler_ = handler;
     }
 

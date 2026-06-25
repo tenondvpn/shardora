@@ -10,6 +10,7 @@
 #include "bls/bls_utils.h"
 #include "bls/dkg_cache.h"
 #include "bls/bls_manager.h"
+#include "broadcast/broadcast_utils.h"
 #include "common/global_info.h"
 #include "db/db.h"
 #include "dht/dht_key.h"
@@ -58,21 +59,16 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage() {
-#ifdef USE_AGG_BLS
-    return;
-#endif
     auto now_tm_us = common::TimeUtils::TimestampUs();
     PopBlsMessage();
-    if (!has_broadcast_verify_ &&
-            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
-            now_tm_us > (begin_time_us_ + ver_offset_)) {
+    if (!has_broadcast_verify_) {
         SHARDORA_WARN("now call send verify g2.");
         BroadcastVerfify();
         has_broadcast_verify_ = true;
     }
 
     if (has_broadcast_verify_ && !has_broadcast_swapkey_ && 
-            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
+            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 5) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
         SHARDORA_WARN("now call send swap sec key.");
         SwapSecKey();
@@ -92,7 +88,7 @@ void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         uint64_t prev_elect_height,
         common::MembersPtr& members,
-        std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
+        std::shared_ptr<TimeBlockItem> latest_timeblock_info) try {
     if (elect_height <= elect_hegiht_) {
         return;
     }
@@ -124,30 +120,29 @@ void BlsDkg::OnNewElectionBlock(
     uint64_t end_tm_point = (latest_timeblock_info->lastest_time_block_tm +
         common::kTimeBlockCreatePeriodSeconds) * 1000000lu;
     begin_time_us_ = common::TimeUtils::TimestampUs();
-    ver_offset_ = 0;
-    swap_offset_ = kDkgPeriodUs * 4;
-    finish_offset_ = kDkgPeriodUs * 7;
+    swap_offset_ = 0;
+    finish_offset_ = kDkgPeriodUs * 5;
     auto bls_period = kTimeBlsPeriodSeconds * 1000l * 1000l;
     if (begin_time_us_ < tmblock_tm && end_tm_point > tmblock_tm) {
         kDkgPeriodUs = (end_tm_point - tmblock_tm) / 10l;
         begin_time_us_ = tmblock_tm;
-        ver_offset_ = 0;
-        swap_offset_ = kDkgPeriodUs * 4;
-        finish_offset_ = kDkgPeriodUs * 7;
+        swap_offset_ = 0;
+        finish_offset_ = kDkgPeriodUs * 5;
     }
 
-    ver_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
-    swap_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
-    finish_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
+    swap_offset_ += (common::Random::RandomUint32() % (3 * kDkgPeriodUs / 1000000lu)) * 1000000lu;
+    finish_offset_ += (common::Random::RandomUint32() % (3 * kDkgPeriodUs /1000000lu)) * 1000000lu;
     SHARDORA_WARN("bls time point now: %lu, time block tm: %lu, begin_time_sec_: %lu, "
-        "kDkgPeriodUs: %lu, ver_offset_: %lu, swap_offset_: %lu, finish_offset_: %lu",
+        "kDkgPeriodUs: %lu, ver_offset_: %lu, swap_offset_: %lu, "
+        "finish_offset_: %lu, elect_hegiht_: %lu",
         common::TimeUtils::TimestampSeconds(),
         latest_timeblock_info->lastest_time_block_tm,
         begin_time_us_,
         kDkgPeriodUs,
         ver_offset_,
         swap_offset_,
-        finish_offset_);
+        finish_offset_,
+        elect_hegiht_);
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;
@@ -155,7 +150,7 @@ void BlsDkg::OnNewElectionBlock(
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
+void BlsDkg::HandleMessage(const transport::MessagePtr msg_ptr) {
     bls_msg_queue_.push(msg_ptr);
     SHARDORA_DEBUG("now add bls message: %lu", msg_ptr->header.hash64());
 }
@@ -172,7 +167,7 @@ void BlsDkg::PopBlsMessage() {
     }
 }
 
-bool BlsDkg::CheckBlsMessageValid(transport::MessagePtr& msg_ptr) {
+bool BlsDkg::CheckBlsMessageValid(transport::MessagePtr msg_ptr) {
     std::string msg_hash;
     if (!IsSignValid(msg_ptr, &msg_hash)) {
         BLS_ERROR("sign verify failed!");
@@ -182,7 +177,7 @@ bool BlsDkg::CheckBlsMessageValid(transport::MessagePtr& msg_ptr) {
     return true;
 }
 
-void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
+void BlsDkg::HandleBlsMessage(const transport::MessagePtr msg_ptr) try {
     if (members_ == nullptr) {
         BLS_ERROR("members_ == nullptr");
         return;
@@ -194,7 +189,7 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     }
 
     auto& header = msg_ptr->header;
-    assert(header.type() == common::kBlsMessage);
+    //assert(header.type() == common::kBlsMessage);
     // must verify message signature, to avoid evil node
     auto& bls_msg = header.bls_proto();
     if (member_count_ <= bls_msg.index()) {
@@ -227,7 +222,27 @@ void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
+bool BlsDkg::IsFinishPeriod() {
+#ifdef SHARDORA_UNITTEST
+    return true;
+#endif
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    SHARDORA_DEBUG("IsFinishPeriod begin_time_us_: %lu, now_tm_us: %lu, "
+        "kDkgPeriodUs: %lu, now_tm_us > (begin_time_us_ + kDkgPeriodUs * 5): %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10): %d",
+        begin_time_us_,
+        now_tm_us,
+        kDkgPeriodUs,
+        (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 5)),
+        (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10)));
+    if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
+        now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 5)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool BlsDkg::IsSignValid(const transport::MessagePtr msg_ptr, std::string* content_to_hash) {
 #ifdef SHARDORA_UNITTEST
     return true;
 #endif // SHARDORA_UNITTEST
@@ -250,23 +265,24 @@ bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* cont
     return true;
 }
 
-void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
+void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr msg_ptr) try {
+    //assert(false);
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (member_count_ <= bls_msg.index()) {
         BLS_ERROR("member_count_ <= bls_msg.index(), %u : %u",
             member_count_, bls_msg.index());
-        assert(false);
+        //assert(false);
         return;
     }
 
 //     if (prefix_db_->ExistsBlsVerifyG2((*members_)[bls_msg.index()]->id)) {
-//         assert(false);
+//         //assert(false);
 //         return;
 //     }
 
     if (!IsVerifyBrdPeriod()) {
-//         assert(false);
+//         //assert(false);
         BLS_DEBUG("invalid verify brd period hash64: %lu, elect height: %lu, member index: %d", 
             msg_ptr->header.hash64(), elect_hegiht_, bls_msg.index());
         return;
@@ -283,7 +299,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
             "bls_msg.verify_brd().verify_vec_size()[%d: %d]",
             1,
             bls_msg.verify_brd().verify_vec_size());
-//         assert(false);
+//         //assert(false);
         return;
     }
 
@@ -357,17 +373,19 @@ void BlsDkg::SendGetSwapKey(int32_t index) {
     SHARDORA_WARN("send get swap key req elect_height: %lu, index: %d", elect_hegiht_, index);
 }
 
-void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
+void BlsDkg::HandleSwapSecKey(const transport::MessagePtr msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
-        //assert(false);
-        BLS_DEBUG("invalid swap key period hash64: %lu, elect height: %lu, member index: %d", 
-            msg_ptr->header.hash64(), elect_hegiht_, bls_msg.index());
+        ////assert(false);
+        BLS_DEBUG("invalid swap key period hash64: %lu, elect height: %lu, "
+            "member index: %d, id: %s", 
+            msg_ptr->header.hash64(), elect_hegiht_, bls_msg.index(),
+            common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str());
         return;
     }
 
-    // if (bls_msg.swap_req().keys_size() == 0) {
+    if (bls_msg.swap_req().keys_size() == 0) {
         // use prev swap keys
         // std::string sec_key;
         // if (!dkg_cache_->GetSwapKey(
@@ -375,98 +393,114 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         //         local_member_index_,
         //         (*members_)[bls_msg.index()]->id,
         //         bls_msg.index(),
-        //         sec_key)) {
+        //         &sec_key)) {
         //     BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
         //         local_member_index_, prev_elect_height_,
         //         local_member_index_, bls_msg.index(), prev_elect_height_);
         //     return;
         // }
 
-        // uint32_t changed_idx = 0;
-        // for_common_pk_g2s_[bls_msg.index()] = GetVerifyG2FromDb(
-        //     bls_msg.index(), &changed_idx);
+        for_common_pk_g2s_[bls_msg.index()] = GetVerifyG2FromDb(bls_msg.index());
         valid_swapkey_set_.insert(bls_msg.index());
         ++valid_sec_key_count_;
         has_swaped_keys_[bls_msg.index()] = true;
-        SHARDORA_DEBUG("use prev swap key elect_hegiht_: %lu, peer elect height: %lu, "
+        SHARDORA_DEBUG("id: %s, use prev swap key elect_hegiht_: %lu, peer elect height: %lu, "
             "min_aggree_member_count_: %u, "
-            "success member: %d, index: %d,  for_common_pk_g2s_: %s",
+            "success member: %d, index: %d,  for_common_pk_g2s_: %s, real data: %s",
+            (*members_)[bls_msg.index()]->id.c_str(),
             elect_hegiht_, bls_msg.elect_height(),
             min_aggree_member_count_,
             local_member_index_, bls_msg.index(),
-            libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str());
-    //     return;
-    // }
+            libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str(),
+            ProtobufToJson(bls_msg).c_str());
+        return;
+    }
 
-//     if (bls_msg.swap_req().keys_size() <= (int32_t)local_member_index_) {
-//         SHARDORA_WARN("swap key size error: %d, %d",
-//             bls_msg.swap_req().keys_size(), local_member_index_);
-//         return;
-//     }
+    if (bls_msg.swap_req().keys_size() <= (int32_t)local_member_index_) {
+        SHARDORA_WARN("swap key size error: %d, %d",
+            bls_msg.swap_req().keys_size(), local_member_index_);
+        return;
+    }
 
-//     std::string msg_hash;
-//     if (!IsSignValid(msg_ptr, &msg_hash)) {
-//         BLS_ERROR("sign verify failed!");
-//         return;
-//     }
+    std::string msg_hash;
+    if (!IsSignValid(msg_ptr, &msg_hash)) {
+        BLS_ERROR("sign verify failed index: %d, id: %s", 
+            bls_msg.index(), common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str());
+        return;
+    }
 
-//     std::string dec_msg;
-//     std::string encrypt_key;
-//     if (security_->GetEcdhKey(
-//             (*members_)[bls_msg.index()]->pubkey,
-//             &encrypt_key) != security::kSecuritySuccess) {
-//         BLS_WARN("invalid ecdh key.");
-//         return;
-//     }
+    std::string dec_msg;
+    std::string encrypt_key;
+    if (security_->GetEcdhKey(
+            (*members_)[bls_msg.index()]->pubkey,
+            &encrypt_key) != security::kSecuritySuccess) {
+        BLS_ERROR("invalid ecdh keyindex: %d, id: %s", 
+            bls_msg.index(), common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str());
+        return;
+    }
 
-//     int res = security_->Decrypt(
-//         bls_msg.swap_req().keys(local_member_index_).sec_key(),
-//         encrypt_key,
-//         &dec_msg);
-//     if (dec_msg.empty()) {
-//         BLS_ERROR("dec_msg.empty()");
-//         return;
-//     }
+    security::RawPrivateKey raw_private_key = std::make_pair(encrypt_key.c_str(), encrypt_key.size());
+    int res = security_->Decrypt(
+        bls_msg.swap_req().keys(local_member_index_).sec_key(),
+        raw_private_key,
+        &dec_msg);
+    if (dec_msg.empty()) {
+        BLS_ERROR("dec_msg.empty index: %d, id: %s", 
+            bls_msg.index(), common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str());
+        return;
+    }
 
-//     std::string sec_key(dec_msg.substr(
-//         0,
-//         bls_msg.swap_req().keys(local_member_index_).sec_key_len()));
-//     if (!IsValidBigInt(sec_key)) {
-//         BLS_ERROR("invalid big int[%s]", sec_key.c_str());
-//         assert(false);
-//         return;
-//     }
+    std::string sec_key(dec_msg.substr(
+        0,
+        bls_msg.swap_req().keys(local_member_index_).sec_key_len()));
+    SHARDORA_DEBUG("id: %s, enc sec: %s dec_msg: %s, sec_key: %s, len: %d, local: %u, peer: %u, peer pk: %s, encrypt_key: %s",
+        common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
+        common::Encode::HexEncode(bls_msg.swap_req().keys(local_member_index_).sec_key()).c_str(),
+        common::Encode::HexEncode(dec_msg).c_str(),
+        common::Encode::HexEncode(sec_key).c_str(),
+        bls_msg.swap_req().keys(local_member_index_).sec_key_len(),
+        local_member_index_, bls_msg.index(),
+        common::Encode::HexEncode((*members_)[bls_msg.index()]->pubkey).c_str(),
+        common::Encode::HexEncode(encrypt_key).c_str());
+    if (!IsValidBigInt(sec_key)) {
+        BLS_ERROR("invalid big int[%s]", sec_key.c_str());
+        // //assert(false);
+        return;
+    }
 
-//     if (has_swaped_keys_[bls_msg.index()]) {
-//         BLS_WARN("has_swaped_keys_  %d.", bls_msg.index());
-//         return;
-//     }
+    if (has_swaped_keys_[bls_msg.index()]) {
+        BLS_ERROR("has_swaped_keys_ index: %d, id: %s", 
+            bls_msg.index(), common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str());
+        return;
+    }
 
-//     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
-//     if (!VerifySekkeyValid(bls_msg.index(), tmp_swap_key)) {
-//         SHARDORA_ERROR("verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
-//             local_member_index_, bls_msg.index(),
-//             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-//             min_aggree_member_count_);
-// //         assert(false);
-//         return;
-//     }
+    auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
+    if (!VerifySekkeyValid(bls_msg.index(), tmp_swap_key)) {
+        SHARDORA_ERROR("id: %s, verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
+            common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
+            local_member_index_, bls_msg.index(),
+            libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
+            min_aggree_member_count_);
+//         //assert(false);
+        return;
+    }
 
-//     SHARDORA_DEBUG("use prev swap key elect_hegiht_: %lu, peer elect height: %lu, "
-//         "min_aggree_member_count_: %u, "
-//         "success member: %d, index: %d, %s, for_common_pk_g2s_: %s",
-//         elect_hegiht_, bls_msg.elect_height(),
-//         min_aggree_member_count_,
-//         local_member_index_, bls_msg.index(),
-//         common::Encode::HexEncode(sec_key).c_str(), 
-//         libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str());
-//     // swap
-//     dkg_cache_->SetSwapKey(
-//         common::GlobalInfo::Instance()->network_id(),
-//         local_member_index_, elect_hegiht_, bls_msg.index(), sec_key);
-//     valid_swapkey_set_.insert(bls_msg.index());
-//     ++valid_sec_key_count_;
-//     has_swaped_keys_[bls_msg.index()] = true;
+    SHARDORA_DEBUG("id: %s, use new swap key elect_hegiht_: %lu, peer elect height: %lu, "
+        "min_aggree_member_count_: %u, "
+        "success member: %d, index: %d, %s, for_common_pk_g2s_: %s",
+        (*members_)[bls_msg.index()]->id.c_str(),
+        elect_hegiht_, bls_msg.elect_height(),
+        min_aggree_member_count_,
+        local_member_index_, bls_msg.index(),
+        common::Encode::HexEncode(sec_key).c_str(), 
+        libBLS::ThresholdUtils::fieldElementToString(for_common_pk_g2s_[bls_msg.index()].X.c0).c_str());
+    // swap
+    dkg_cache_->SetSwapKey(
+        common::GlobalInfo::Instance()->network_id(),
+        local_member_index_, (*members_)[bls_msg.index()]->id, bls_msg.index(), sec_key);
+    valid_swapkey_set_.insert(bls_msg.index());
+    ++valid_sec_key_count_;
+    has_swaped_keys_[bls_msg.index()] = true;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -474,14 +508,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 bool BlsDkg::VerifySekkeyValid(
         uint32_t peer_index,
         const libff::alt_bn128_Fr& seckey) {
-//     bls::protobuf::BlsVerifyValue verify_val;
-//     uint32_t changed_idx = 0;
-//     libff::alt_bn128_G2 new_val = GetVerifyG2FromDb(peer_index, &changed_idx);
-//     if (new_val == libff::alt_bn128_G2::zero()) {
-// //         assert(false);
-//         return false;
-//     }
-
 //     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
 //     if (!prefix_db_->GetVerifiedG2s(
 //             local_member_index_,
@@ -498,7 +524,7 @@ bool BlsDkg::VerifySekkeyValid(
 //             SHARDORA_WARN("failed get verified g2: %u, %s",
 //                 local_member_index_,
 //                 common::Encode::HexEncode((*members_)[peer_index]->id).c_str());
-// //             assert(false);
+// //             //assert(false);
 //             return false;
 //         }
 //     } else {
@@ -509,78 +535,87 @@ bool BlsDkg::VerifySekkeyValid(
 //             (*members_)[0]->net_id);
 //     }
 
-//     bls::protobuf::JoinElectInfo join_info;
-//     if (!prefix_db_->GetNodeVerificationVector((*members_)[peer_index]->id, &join_info)) {
-//         assert(false);
-//         return false;
-//     }
+    libff::alt_bn128_G2 new_val = GetVerifyG2FromDb(peer_index);
+    if (new_val == libff::alt_bn128_G2::zero()) {
+        SHARDORA_ERROR("failed get verify g2 from db, peer_index: %d, "
+            "min_aggree_member_count_: %d, net: %d",
+            peer_index, min_aggree_member_count_, (*members_)[0]->net_id);
+        //assert(false);
+        return false;
+    }
 
-//     if (join_info.g2_req().verify_vec_size() <= (int32_t)changed_idx) {
-//         assert(false);
-//         return false;
-//     }
+    // bls::protobuf::JoinElectInfo join_info;
+    // if (!prefix_db_->GetNodeVerificationVector((*members_)[peer_index]->id, &join_info)) {
+    //     //assert(false);
+    //     return false;
+    // }
 
-//     libff::alt_bn128_G2 old_val;
-//     {
-//         auto& item = join_info.g2_req().verify_vec(changed_idx);
-//         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-//         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-//         auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-//         auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-//         auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-//         auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-//         auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-//         auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-//         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-//         old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+    // if (join_info.g2_req().verify_vec_size() <= (int32_t)changed_idx) {
+    //     //assert(false);
+    //     return false;
+    // }
 
-//         if (changed_idx == 0) {
-//             for_common_pk_g2s_[peer_index] = new_val;
-//         } else {
-//             auto& item = join_info.g2_req().verify_vec(0);
-//             auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-//             auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-//             auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-//             auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-//             auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-//             auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-//             auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-//             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-//             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-//             auto tmp_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-//             for_common_pk_g2s_[peer_index] = tmp_val;
-//         }
-//     }
+    // libff::alt_bn128_G2 old_val;
+    // {
+    //     auto& item = join_info.g2_req().verify_vec(changed_idx);
+    //     auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    //     auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+    //     auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+    //     auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    //     auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+    //     auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+    //     auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    //     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+    //     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+    //     old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 
-//     auto& item = verfy_final_vals.verified_g2();
-//     auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-//     auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-//     auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-//     auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-//     auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-//     auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-//     auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-//     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-//     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-//     auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-//     auto old_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * old_val;
-//     auto new_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * new_val;
-//     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-//     if (all_verified_val != seckey * libff::alt_bn128_G2::one()) {
-//         for_common_pk_g2s_[peer_index] = libff::alt_bn128_G2::zero();
-//         SHARDORA_WARN("failed verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
-//             local_member_index_, 
-//             common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
-//             min_aggree_member_count_, 
-//             (*members_)[0]->net_id);
-//         return false;
-//     }
+    //     if (changed_idx == 0) {
+    //         for_common_pk_g2s_[peer_index] = new_val;
+    //     } else {
+    //         auto& item = join_info.g2_req().verify_vec(0);
+    //         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    //         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+    //         auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+    //         auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    //         auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+    //         auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+    //         auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    //         auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+    //         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+    //         auto tmp_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+    //         for_common_pk_g2s_[peer_index] = tmp_val;
+    //     }
+    // }
 
-//     SHARDORA_WARN("success verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
-//         local_member_index_, 
-//         common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
-//         min_aggree_member_count_, 
-//         (*members_)[0]->net_id);
+    // auto& item = verfy_final_vals.verified_g2();
+    // auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    // auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+    // auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+    // auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    // auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+    // auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+    // auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    // auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+    // auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+    // auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+    // // auto old_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * old_val;
+    // // auto new_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * new_val;
+    // // all_verified_val = all_verified_val - old_g2_val + new_g2_val;
+    // if (all_verified_val != seckey * libff::alt_bn128_G2::one()) {
+    //     for_common_pk_g2s_[peer_index] = libff::alt_bn128_G2::zero();
+    //     SHARDORA_WARN("failed verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+    //         local_member_index_, 
+    //         common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
+    //         min_aggree_member_count_, 
+    //         (*members_)[0]->net_id);
+    //     return false;
+    // }
+
+    SHARDORA_DEBUG("success verified g2 local_member_index_: %d, id: %s, min_aggree_member_count_: %d, net: %d",
+        local_member_index_, 
+        common::Encode::HexEncode((*members_)[peer_index]->id).c_str(), 
+        min_aggree_member_count_, 
+        (*members_)[0]->net_id);
     return true;
 }
 
@@ -622,6 +657,8 @@ bool BlsDkg::CheckRecomputeG2s(
         begin_idx = 0;
     }
 
+    SHARDORA_DEBUG("begin_idx: %d, min_idx: %d, min_aggree_member_count_: %d, id: %s",
+        begin_idx, min_idx, min_aggree_member_count_, common::Encode::HexEncode(id).c_str());
     for (uint32_t i = begin_idx; i < min_aggree_member_count_; ++i) {
         auto& item = join_info.g2_req().verify_vec(i);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
@@ -635,100 +672,89 @@ bool BlsDkg::CheckRecomputeG2s(
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         verify_g2s = verify_g2s + power(libff::alt_bn128_Fr(local_member_index_ + 1), i) * g2;
-        bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verified_g2();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
-        auto verified_val = verfy_final_vals.SerializeAsString();
-        prefix_db_->SaveVerifiedG2s(local_member_index_, id, i + 1, verfy_final_vals);
-        SHARDORA_WARN("success save verified g2: %u, peer: %d, t: %d, %s, %s",
-            local_member_index_,
-            join_info.member_idx(),
-            i + 1,
-            common::Encode::HexEncode(id).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0).c_str());
     }
 
+    bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verified_g2();
+    verify_item.set_x_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0)));
+    verify_item.set_x_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c1)));
+    verify_item.set_y_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Y.c0)));
+    verify_item.set_y_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Y.c1)));
+    verify_item.set_z_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c0)));
+    verify_item.set_z_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
+    auto verified_val = verfy_final_vals.SerializeAsString();
+    prefix_db_->SaveVerifiedG2s(local_member_index_, id, min_aggree_member_count_, verfy_final_vals);
+    SHARDORA_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+        local_member_index_,
+        join_info.member_idx(),
+        min_aggree_member_count_,
+        common::Encode::HexEncode(id).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0).c_str());
     return true;
 }
 
-libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t* changed_idx) {
-    // bls::protobuf::VerifyVecBrdReq req;
-    // auto res = dkg_cache_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
-    // if (!res) {
-    //     SHARDORA_WARN("get verify g2 failed local: %d, %lu, %u",
-    //         local_member_index_, elect_hegiht_, peer_mem_index);
-    //     return libff::alt_bn128_G2::zero();
-    // }
+libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index) {
+    libff::alt_bn128_G2 g2;
+    auto res = dkg_cache_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &g2);
+    if (!res) {
+        SHARDORA_WARN("get verify g2 failed local: %d, %lu, %u",
+            local_member_index_, elect_hegiht_, peer_mem_index);
+        return libff::alt_bn128_G2::zero();
+    }
 
-    // auto& item = req.verify_vec(0);
-    // auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-    // auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-    // auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-    // auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-    // auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-    // auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-    // auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-    // auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-    // auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-    // *changed_idx = req.change_idx();
-    // return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+    return g2;
 }
 
 void BlsDkg::BroadcastVerfify() try {
     if (members_ == nullptr || local_member_index_ >= member_count_) {
         SHARDORA_ERROR("member null or member index invalid!");
-        assert(false);
+        //assert(false);
         return;
     }
 
-    if (!should_change_verfication_g2_) {
-        // std::string sec_key;
-        // if (!prefix_db_->GetSwapKey(
-        //         common::GlobalInfo::Instance()->network_id(),
-        //         local_member_index_,
-        //         prev_elect_height_,
-        //         local_member_index_,
-        //         local_member_index_,
-        //         &sec_key)) {
-        //     BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
-        //         local_member_index_, prev_elect_height_,
-        //         local_member_index_, local_member_index_, prev_elect_height_);
-        //     return;
-        // }
+    // if (!should_change_verfication_g2_) {
+    //     // std::string sec_key;
+    //     // if (!prefix_db_->GetSwapKey(
+    //     //         common::GlobalInfo::Instance()->network_id(),
+    //     //         local_member_index_,
+    //     //         prev_elect_height_,
+    //     //         local_member_index_,
+    //     //         local_member_index_,
+    //     //         &sec_key)) {
+    //     //     BLS_ERROR("get prev swap key failed: %d, %d, %d, %d, %lu",
+    //     //         local_member_index_, prev_elect_height_,
+    //     //         local_member_index_, local_member_index_, prev_elect_height_);
+    //     //     return;
+    //     // }
 
-        // bls::protobuf::LocalPolynomial local_poly;
-        // if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
-        //     SHARDORA_ERROR("failed GetLocalPolynomial: %s",
-        //         common::Encode::HexEncode(security_->GetAddress()).c_str());
-        //     // assert(false);
-        //     return;
-        // }
+    //     // bls::protobuf::LocalPolynomial local_poly;
+    //     // if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
+    //     //     SHARDORA_ERROR("failed GetLocalPolynomial: %s",
+    //     //         common::Encode::HexEncode(security_->GetAddress()).c_str());
+    //     //     // //assert(false);
+    //     //     return;
+    //     // }
 
-        // if (local_poly.polynomial_size() == 0) {
-        //     assert(false);
-        //     return;
-        // }
+    //     // if (local_poly.polynomial_size() == 0) {
+    //     //     //assert(false);
+    //     //     return;
+    //     // }
 
-        // auto local_polynomial = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(0)).c_str());
-        // for_common_pk_g2s_[local_member_index_] = local_polynomial * libff::alt_bn128_G2::one();
-        // prefix_db_->SaveSwapKey(
-        //     common::GlobalInfo::Instance()->network_id(),
-        //     local_member_index_, security_->GetAddress(), local_member_index_, sec_key);
-        valid_swapkey_set_.insert(local_member_index_);
-        ++valid_sec_key_count_;
-        has_swaped_keys_[local_member_index_] = true;
-        return;
-    }
+    //     // auto local_polynomial = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(0)).c_str());
+    //     // for_common_pk_g2s_[local_member_index_] = local_polynomial * libff::alt_bn128_G2::one();
+    //     // prefix_db_->SaveSwapKey(
+    //     //     common::GlobalInfo::Instance()->network_id(),
+    //     //     local_member_index_, security_->GetAddress(), local_member_index_, sec_key);
+    //     valid_swapkey_set_.insert(local_member_index_);
+    //     ++valid_sec_key_count_;
+    //     has_swaped_keys_[local_member_index_] = true;
+    //     return;
+    // }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
@@ -737,22 +763,10 @@ void BlsDkg::BroadcastVerfify() try {
     CreateContribution(member_count_, min_aggree_member_count_);
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
-        assert(false);
+        //assert(false);
         return;
     }
 
-    CreateDkgMessage(msg_ptr);
-    SHARDORA_WARN("brd verify g2 success local net: %u, local: %d,  %s, %s, hash64: %lu",
-        common::GlobalInfo::Instance()->network_id(),
-        local_member_index_,
-        common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str(),
-        msg_ptr->header.hash64());
-#ifdef SHARDORA_UNITTEST
-    ver_brd_msg_ = msg_ptr;
-#else
-    network::Route::Instance()->Send(msg_ptr);
-#endif
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -767,7 +781,7 @@ void BlsDkg::SwapSecKey() try {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto swap_req = bls_msg.mutable_swap_req();
-    if (should_change_verfication_g2_) {
+    // if (should_change_verfication_g2_) {
         for (uint32_t i = 0; i < member_count_; ++i) {
             auto swap_item = swap_req->add_keys();
             swap_item->set_sec_key("");
@@ -791,11 +805,13 @@ void BlsDkg::SwapSecKey() try {
             swap_item->set_sec_key(seckey);
             swap_item->set_sec_key_len(seckey_len);
         }
-    }
+    // }
 
     CreateDkgMessage(msg_ptr);
-    SHARDORA_WARN("success send swap seckey request local member index: %d, local net: %u, hash64: %lu",
-        local_member_index_, common::GlobalInfo::Instance()->network_id(), msg_ptr->header.hash64());
+    SHARDORA_DEBUG("success send swap seckey request local member index: %d, bls index: %u, local net: %u, hash64: %lu",
+        local_member_index_, 
+        msg_ptr->header.bls_proto().index(),
+        common::GlobalInfo::Instance()->network_id(), msg_ptr->header.hash64());
 #ifdef SHARDORA_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     SHARDORA_WARN("success add swap msg");
@@ -820,22 +836,24 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
         return;
     }
 
+    security::RawPrivateKey raw_private_key = std::make_pair(encrypt_key.c_str(), encrypt_key.size());
     int res = security_->Encrypt(
         msg,
-        encrypt_key,
+        raw_private_key,
         seckey);
     if (res != security::kSecuritySuccess) {
         return;
     }
 
+    SHARDORA_DEBUG("msg: %s, succecss encrypt seckey: %s, local: %u, peer: %u, peer pk: %s",
+        msg.c_str(),
+        common::Encode::HexEncode(*seckey).c_str(), local_member_index_, member_idx, 
+        common::Encode::HexEncode((*members_)[member_idx]->pubkey).c_str());
     *seckey_len = msg.size();
 }
-
 void BlsDkg::FinishBroadcast() try {
     SHARDORA_DEBUG("test 0");
-    if (members_ == nullptr ||
-            local_member_index_ >= member_count_ ||
-            valid_sec_key_count_ < min_aggree_member_count_) {
+    if (members_ == nullptr || local_member_index_ >= member_count_ /*|| valid_sec_key_count_ < min_aggree_member_count_*/) {
         BLS_ERROR("elect_height: %lu, valid count error.valid_sec_key_count_: %d,"
             "min_aggree_member_count_: %d, members_ == nullptr: %d, local_member_index_: %d,"
             "member_count_: %d",
@@ -855,13 +873,13 @@ void BlsDkg::FinishBroadcast() try {
     auto& for_common_pk_g2s = dkg_cache_->verify_g2_cache();
     std::vector<libff::alt_bn128_Fr> valid_seck_keys;
     for (size_t i = 0; i < member_count_; ++i) {
-        auto iter = valid_swapkey_set_.find(i);
-        if (iter == valid_swapkey_set_.end()) {
-            valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
-            common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
-            SHARDORA_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
-            continue;
-        }
+        // auto iter = valid_swapkey_set_.find(i);
+        // if (iter == valid_swapkey_set_.end()) {
+        //     valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
+        //     common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
+        //     SHARDORA_WARN("elect_height: %d, invalid swapkey index: %d", elect_hegiht_, i);
+        //     continue;
+        // }
 
         auto& id = (*members_)[i]->id;
         auto g2_iter = for_common_pk_g2s.find(id);
@@ -870,6 +888,7 @@ void BlsDkg::FinishBroadcast() try {
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid all_verification_vector index: %d",
                 elect_hegiht_, i);
+            //assert(false);
             continue;
         }
 
@@ -877,13 +896,14 @@ void BlsDkg::FinishBroadcast() try {
         if (!dkg_cache_->GetSwapKey(
                 common::GlobalInfo::Instance()->network_id(),
                 local_member_index_,
-                (*members_)[i]->id,
+                id,
                 i,
                 &seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             SHARDORA_WARN("elect_height: %d, invalid secret_key_contribution_ index: %d",
                 elect_hegiht_, i);
+            // //assert(false);
             continue;
         }
 
@@ -1027,16 +1047,17 @@ void BlsDkg::BroadcastFinish(const common::Bitmap& bitmap) {
     SHARDORA_DEBUG("test 5 3");
     finish_msg->set_bls_sign_y(sign_y);
 #ifndef SHARDORA_UNITTEST
-    SHARDORA_WARN("success broadcast finish message. t: %d, n: %d, "
+    SHARDORA_DEBUG("success broadcast finish message. t: %d, n: %d, "
         "local seckey: %s, msg hash: %s, pk: %s, hash64: %lu",
         min_aggree_member_count_, member_count_,
         libBLS::ThresholdUtils::fieldElementToString(local_sec_key_).c_str(),
         common::Encode::HexEncode(sign_hash).c_str(), 
         common_pk->x_c0().c_str(), msg_ptr->header.hash64());
     network::Route::Instance()->Send(msg_ptr);
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        bls_mgr_->HandleMessage(msg_ptr);
-    }
+    transport::TcpTransport::Instance()->AddLocalMessage(msg_ptr);
+    // if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    //     bls_mgr_->HandleMessage(msg_ptr);
+    // }
 #endif
     SHARDORA_DEBUG("test 5 4");
     FlushToCk(common_public_key_);
@@ -1068,7 +1089,7 @@ void BlsDkg::FlushToCk(const libff::alt_bn128_G2& common_public_key) {
         info.local_sk = BlsDkg::serializeLocalSk(local_sec_key_);
         info.common_pk = BlsDkg::serializeCommonPk(common_public_key);
         info.swaped_sec_keys = valid_seck_keys_str_;
-        SHARDORA_WARN("success insert bls elect info elect_hegiht_: %lu, "
+        SHARDORA_DEBUG("success insert bls elect info elect_hegiht_: %lu, "
             "local_member_index_: %u, shard_id: %u, local_pri_keys: %s, "
             "local_pub_keys: %s, local_sk: %s, common_pk: %s, swaped_sec_keys: %s", 
             info.elect_height, info.member_idx, info.shard_id, 
@@ -1083,35 +1104,34 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
         SHARDORA_ERROR("failed GetLocalPolynomial: %s",
             common::Encode::HexEncode(security_->GetAddress()).c_str());
-        // assert(false);
+        // //assert(false);
         return;
     }
 
     if (local_poly.polynomial_size() < (int32_t)valid_t) {
-        assert(false);
+        //assert(false);
         return;
     }
 
     std::vector<libff::alt_bn128_Fr> polynomial(valid_t);
-    int32_t change_idx = common::Random::RandomInt32() % valid_t;
-    libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
+    // int32_t change_idx = common::Random::RandomInt32() % valid_t;
     for (uint32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
-        if (change_idx == (int32_t)i) {
-            old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
-            polynomial[i] = libff::alt_bn128_Fr::random_element();
-            while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
-                polynomial[i] = libff::alt_bn128_Fr::random_element();
-            }
-        }
+        // if (change_idx == (int32_t)i) {
+        //     libff::alt_bn128_G2 old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
+        //     polynomial[i] = libff::alt_bn128_Fr::random_element();
+        //     while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
+        //         polynomial[i] = libff::alt_bn128_Fr::random_element();
+        //     }
+        // }
     }
 
-    auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
-    if (change_idx == 0) {
-        for_common_pk_g2s_[local_member_index_] = new_g2;
-    } else {
+    // auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
+    // if (change_idx == 0) {
+    //     for_common_pk_g2s_[local_member_index_] = new_g2;
+    // } else {
         for_common_pk_g2s_[local_member_index_] = polynomial[0] * libff::alt_bn128_G2::one();
-    }
+    // }
 
     auto dkg_instance = std::make_shared<libBLS::Dkg>(valid_t, valid_n);
     local_src_secret_key_contribution_ = dkg_instance->SecretKeyContribution(
@@ -1127,29 +1147,29 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     g2_vec_.push_back(polynomial[0] * libff::alt_bn128_G2::one());
 #endif // SHARDORA_UNITTEST
 
-    bls::protobuf::VerifyVecBrdReq bls_verify_req;
-    bls_verify_req.set_change_idx(change_idx);
-    bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
-    verify_item.set_x_c0(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c0)));
-    verify_item.set_x_c1(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c1)));
-    verify_item.set_y_c0(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c0)));
-    verify_item.set_y_c1(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c1)));
-    verify_item.set_z_c0(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c0)));
-    verify_item.set_z_c1(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c1)));
+    // bls::protobuf::VerifyVecBrdReq bls_verify_req;
+    // bls_verify_req.set_change_idx(change_idx);
+    // bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
+    // verify_item.set_x_c0(common::Encode::HexDecode(
+    //     libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c0)));
+    // verify_item.set_x_c1(common::Encode::HexDecode(
+    //     libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c1)));
+    // verify_item.set_y_c0(common::Encode::HexDecode(
+    //     libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c0)));
+    // verify_item.set_y_c1(common::Encode::HexDecode(
+    //     libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c1)));
+    // verify_item.set_z_c0(common::Encode::HexDecode(
+    //     libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c0)));
+    // verify_item.set_z_c1(common::Encode::HexDecode(
+    //     libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c1)));
     
-    auto str = bls_verify_req.SerializeAsString();
-    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
+    // auto str = bls_verify_req.SerializeAsString();
+    // prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
 }
 
-void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
+void BlsDkg::CreateDkgMessage(transport::MessagePtr msg_ptr) {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -1162,7 +1182,8 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg.set_type(common::kBlsMessage);
-    auto broad_param = msg.mutable_broadcast();
+    auto* broad_param = msg.mutable_broadcast();
+    broadcast::SetDefaultBroadcastParam(broad_param);
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
     transport::TcpTransport::Instance()->SetMessageHash(msg);

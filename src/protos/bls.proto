@@ -28,6 +28,12 @@ message JoinElectBlsInfo {
     optional VerifyVecItem verified_g2 = 1;
 }
 
+enum StakeOperation {
+    STAKE_OP_NONE = 0;      // No stake operation (normal join_elect)
+    STAKE_OP_STAKE = 1;     // Stake operation
+    STAKE_OP_REDEEM = 2;    // Redeem operation
+}
+
 message JoinElectInfo {
     optional uint32 shard_id = 1;
     optional uint32 member_idx = 2;
@@ -36,8 +42,11 @@ message JoinElectInfo {
     optional bytes addr = 5;
     optional uint64 stoke = 6;
     optional bytes public_key = 7;
-    optional elect.protobuf.BlsPublicKey bls_pk = 8;
-    optional elect.protobuf.BlsPopProof bls_proof = 9;
+    optional uint64 stake_amount = 8;  // Amount to stake (in smallest unit, must be multiple of 8 * 10^8)
+    optional uint64 stake_elect_height = 9;  // Elect height when stake was made (updated on each additional stake)
+    optional uint64 total_staked = 10;  // Total staked amount (accumulated from all stakes)
+    optional StakeOperation stake_op = 11 [default = STAKE_OP_NONE];  // Stake operation type
+    optional uint64 stake_timestamp = 12;  // Stake timestamp for lock period calculation
 }
 
 message LocalPolynomial {
@@ -101,6 +110,11 @@ message CheckSwapKeyReq {
     optional uint32 index = 1;
 }
 
+message FinishSyncRequest {
+    optional uint32 network_id = 1;
+    repeated uint32 missing_indices = 2;
+}
+
 message BlsMessage {
     optional VerifyVecBrdReq verify_brd = 1;
     optional SwapSecKeyReq swap_req = 2;
@@ -109,4 +123,5 @@ message BlsMessage {
     optional CheckSwapKeyReq check_swapkey_req = 5;
     optional uint32 index = 6;
     optional uint64 elect_height = 7;
+    optional FinishSyncRequest finish_sync_req = 8;
 }

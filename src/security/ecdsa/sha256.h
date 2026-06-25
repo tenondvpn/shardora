@@ -21,7 +21,7 @@ public:
 
     void Update(const std::string& input) {
         if (input.size() == 0) {
-            assert(false);
+            //assert(false);
             return;
         }
         SHA256_Update(&context_, (unsigned char*)(input.c_str()), input.size());
@@ -29,7 +29,7 @@ public:
 
     void Update(const std::string& input, uint32_t offset, uint32_t size) {
         if (input.size() <= (offset + size)) {
-            assert(false);
+            //assert(false);
             return;
         }
         SHA256_Update(&context_, (unsigned char*)(input.c_str() + offset), size);

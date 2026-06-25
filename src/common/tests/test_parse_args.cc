@@ -4,7 +4,7 @@
 #define protected public
 #include "common/parse_args.h"
 
-namespace shardora {
+namespace seth {
 
 namespace common {
 
@@ -240,4 +240,4 @@ TEST_F(TestParserArgs, AddArgType) {
 
 }  // namespace common
 
-}  // namespace shardora
+}  // namespace seth

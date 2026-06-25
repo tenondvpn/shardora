@@ -11,11 +11,11 @@ class Crypto {
 public:
     static Crypto* Instance();
     int GetEncryptData(
-        const std::string& enc_key,
+        RawPrivateKey enc_key,
         const std::string& message,
         std::string* enc_data);
     int GetDecryptData(
-        const std::string& enc_key,
+        RawPrivateKey enc_key,
         const std::string& crypt_message,
         std::string* dec_data);
 

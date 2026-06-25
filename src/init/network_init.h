@@ -11,7 +11,6 @@
 #include <consensus/hotstuff/crypto.h>
 #include <consensus/hotstuff/elect_info.h>
 #include <consensus/hotstuff/pacemaker.h>
-#include <consensus/hotstuff/hotstuff_syncer.h>
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
@@ -19,6 +18,7 @@
 #include "init/http_handler.h"
 #include "init/init_utils.h"
 // #include "init/ws_server.h"
+#include "init/tx_ws_server.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
@@ -48,14 +48,17 @@ private:
     int InitNetworkSingleton();
     int InitCommand();
     int InitHttpServer();
+    int InitHttpServerForPrivateKeyWait();
+    void WaitForPrivateKeyUpdate();
     int InitSecurity();
     int CheckJoinWaitingPool();
-    int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
+    int GenesisCmd(common::ParserArgs& parser_arg);
     void AddCmds();
     void GetNetworkNodesFromConf(
+        uint32_t end_shard_id,
         uint32_t cons_shard_node_count,
         std::vector<GenisisNodeInfoPtr>&, 
-        std::vector<GenisisNodeInfoPtrVector>&, 
+        std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>&, 
         const std::shared_ptr<db::Db>&);
     void InitAggBlsForGenesis(const std::string& node_id, std::shared_ptr<security::Security>& security_ptr, std::shared_ptr<protos::PrefixDb>&);
     void GetAggBlsSkFromFile(const std::string& node_id, libff::alt_bn128_Fr* agg_bls_sk);
@@ -81,8 +84,14 @@ private:
     int InitWsServer();
     void CreateInitAddress(uint32_t net_id);
     void SendJoinElectTransaction();
+    void SendRedeemStakeTransaction();
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     void HandleNewBlock();
+    void SaveLatestBlock(std::shared_ptr<db::Db> db, uint32_t sharding_id);
+    bool InitLocalNetworkIdWithLatestElectBlock();
+    void SaveCrossBlockToEachShard();
+    void JoinInitNodes();
+    int UpdatePrivateKey(const std::string& new_private_key);
         
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
@@ -102,7 +111,6 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
-    std::shared_ptr<hotstuff::HotstuffSyncer> hotstuff_syncer_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
@@ -118,9 +126,16 @@ private:
     // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
     // WsServer ws_server_;
+    TxWsServer tx_ws_server_;
     common::ThreadSafeQueue<std::shared_ptr<view_block::protobuf::ViewBlockItem>> new_blocks_queue_[common::kMaxThreadCount];
     std::mutex new_blocks_mutex_;
     std::condition_variable new_blocks_cv_;
+    std::atomic<bool> http_private_key_inited_ = false;
+    
+    // Private key waiting mechanism
+    std::mutex private_key_wait_mutex_;
+    std::condition_variable private_key_wait_cv_;
+    std::atomic<bool> private_key_received_{false};
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

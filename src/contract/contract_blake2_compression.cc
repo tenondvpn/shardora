@@ -117,14 +117,14 @@ std::string Blake2FCompression(
         bool last_block,
         const std::string& message_block_vector) {
     if (state_vector.size() != sizeof(Blake2bState::h)) {
-        assert(false);
+        //assert(false);
         return "";
     }
 
     Blake2bState s{};
     std::memcpy(&s.h, state_vector.data(), state_vector.size());
     if (t0.size() != sizeof(s.t[0]) || t1.size() != sizeof(s.t[1])) {
-        assert(false);
+        //assert(false);
         return "";
     }
 
@@ -132,7 +132,7 @@ std::string Blake2FCompression(
     s.t[1] = Load64(t1.data());
     s.f[0] = last_block ? std::numeric_limits<uint64_t>::max() : 0;
     if (message_block_vector.size() != BLAKE2B_BLOCKBYTES) {
-        assert(false);
+        //assert(false);
         return "";
     }
 

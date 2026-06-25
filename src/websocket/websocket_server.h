@@ -11,7 +11,7 @@
 
 #include <websocketpp/server.hpp>
 
-namespace shardora {
+namespace seth {
 
 namespace ws {
 
@@ -46,4 +46,4 @@ private:
 
 };  // namespace tcp
 
-};  // namespace shardora
+};  // namespace seth

@@ -10,7 +10,7 @@
 
 #include "common/split.h"
 #include "common/string_utils.h"
-#include "zjcvm/zjc_host.h"
+#include "shardoravm/shardora_host.h"
 
 namespace shardora {
 
@@ -65,7 +65,7 @@ void PkiClAgka::Simulate(bool honest) {
   auto start = std::chrono::steady_clock::now();
   // Setup();
   auto end = std::chrono::steady_clock::now();
-  // 计算时间差
+  // Calculate time difference
   // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   // std::cout << "Stage1 Setup duration:" << duration.count() << std::endl;
   // std::cout << duration.count() << std::endl;
@@ -223,7 +223,7 @@ int PkiClAgka::PkiExtract(
   std::string tmp_value = sk_str + "," + 
     shardora::common::Encode::HexEncode(s.to_bytes()) + "," + 
     shardora::common::Encode::HexEncode(pk.to_bytes());
-  param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+  param.shardora_host->SaveKeyValue(param.from, tmp_key, tmp_value);
   SHARDORA_DEBUG("success cl pki extract index: %d key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
   return 0;      
 }
@@ -299,7 +299,7 @@ int PkiClAgka::ClExtract(
     shardora::common::Encode::HexEncode(fpk.to_bytes()) + "," +
     shardora::common::Encode::HexEncode(s.to_bytes()) + "," +
     shardora::common::Encode::HexEncode(spk.to_bytes());
-  param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+  param.shardora_host->SaveKeyValue(param.from, tmp_key, tmp_value);
   SHARDORA_DEBUG("success ib extract index: %d, key: %s, value: %s", i, tmp_key.c_str(), tmp_value.c_str());
   return 0;
 }
@@ -380,7 +380,7 @@ int PkiClAgka::EncKeyGen(
   for (int32_t i = 0; i < pki_count; ++i) {
     std::string tmp_key = std::string("cl_pki_extract_") + pki_id + std::to_string(i);
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+    if (param.shardora_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         SHARDORA_DEBUG("get key value error from: %s, tmp key: %s", 
           common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
         return 1;
@@ -400,7 +400,7 @@ int PkiClAgka::EncKeyGen(
   for (int32_t i = 0; i < cl_count; ++i) {
     std::string tmp_key = std::string("cl_cl_extract_") + pki_id + std::to_string(pki_count + i);
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+    if (param.shardora_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         SHARDORA_DEBUG("get key value error from: %s, tmp key: %s", 
             common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
         return 1;
@@ -437,7 +437,7 @@ int PkiClAgka::EncKeyGen(
   std::string tmp_key = std::string("cl_encode_key_") + pki_id;
   std::string tmp_value = shardora::common::Encode::HexEncode(omega.to_bytes()) + "," + 
     shardora::common::Encode::HexEncode(A.to_bytes());
-  param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+  param.shardora_host->SaveKeyValue(param.from, tmp_key, tmp_value);
   SHARDORA_DEBUG("success enc key gen key: %s, value: %s", tmp_key.c_str(), tmp_value.c_str());
   return 0;    
 }
@@ -500,7 +500,7 @@ int PkiClAgka::DecKeyGen(
   for (int32_t i = 0; i < pki_count; ++i) {
     std::string tmp_key = std::string("cl_pki_extract_") + pki_id + std::to_string(i);
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+    if (param.shardora_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         SHARDORA_DEBUG("get key value error from: %s, tmp key: %s", 
           common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
         return 1;
@@ -520,7 +520,7 @@ int PkiClAgka::DecKeyGen(
   for (int32_t i = 0; i < cl_count; ++i) {
     std::string tmp_key = std::string("cl_cl_extract_") + pki_id + std::to_string(pki_count + i);
     std::string val;
-    if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+    if (param.shardora_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
         SHARDORA_DEBUG("get key value error from: %s, tmp key: %s", 
             common::Encode::HexEncode(param.from).c_str(), tmp_key.c_str());
         return 1;
@@ -549,7 +549,7 @@ int PkiClAgka::DecKeyGen(
   for (auto iter = dk_map.begin(); iter != dk_map.end(); ++iter) {
     std::string tmp_key = std::string("cl_decode_key_") + pki_id + std::to_string(iter->first);
     std::string tmp_value = shardora::common::Encode::HexEncode(iter->second.d.to_bytes());
-    param.zjc_host->SaveKeyValue(param.from, tmp_key, tmp_value);
+    param.shardora_host->SaveKeyValue(param.from, tmp_key, tmp_value);
     SHARDORA_DEBUG("success dec key gen index: %d, key: %s, value: %s", iter->first, tmp_key.c_str(), tmp_value.c_str());
   }
 
@@ -616,7 +616,7 @@ int PkiClAgka::Enc(
   std::string plain = lines[1];
   std::string tmp_key = std::string("cl_encode_key_") + pki_id;
   std::string val;
-  if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+  if (param.shardora_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
       return 1;
   }
 
@@ -652,7 +652,7 @@ int PkiClAgka::Enc(
   std::string tvalue = shardora::common::Encode::HexEncode(c1.to_bytes()) + ";" +
       shardora::common::Encode::HexEncode(c2.to_bytes()) + ";" +
       shardora::common::Encode::HexEncode(c3);
-  param.zjc_host->SaveKeyValue(param.from, tkey, tvalue);
+  param.shardora_host->SaveKeyValue(param.from, tkey, tvalue);
   SHARDORA_DEBUG("success enc key: %s, value: %s", tkey.c_str(), tvalue.c_str());
   return 0;
 }
@@ -696,7 +696,7 @@ int PkiClAgka::Dec(
   std::string pki_id = lines[0];
   std::string tmp_key = std::string("cl_enc_data_") + pki_id;
   std::string val;
-  if (param.zjc_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
+  if (param.shardora_host->GetKeyValue(param.from, tmp_key, &val) != 0) {
       SHARDORA_DEBUG("invalid key: %s", tmp_key.c_str());
       return 1;
   }
@@ -721,7 +721,7 @@ int PkiClAgka::Dec(
 
   tmp_key = std::string("cl_decode_key_") + pki_id + std::to_string(index);
   std::string di_str;
-  if (param.zjc_host->GetKeyValue(param.from, tmp_key, &di_str) != 0) {
+  if (param.shardora_host->GetKeyValue(param.from, tmp_key, &di_str) != 0) {
       SHARDORA_DEBUG("invalid di key: %s", tmp_key.c_str());
       return 1;
   }
@@ -747,7 +747,7 @@ PlainText PkiClAgka::Dec(CipherText& cipher, DecodeKey& dk) {
   G2 pair = pair1 * pair2;
   std::string plain = xor_strings(cipher.c3, pp.H4(pair));
   // auto end = std::chrono::steady_clock::now();
-  // 计算时间差
+  // Calculate time difference
   // auto duration =
   //     std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   // std::cout << "duration:" << duration.count() << std::endl;
@@ -771,7 +771,7 @@ void PkiClAgka::init_id_list(const int& n) {
   id_list.resize(n);
   
   for (auto i = 0; i < n; ++i) {  
-        id_list[i] = "Alice_" + std::to_string(i + 1); // 生成不同的字符串  
+        id_list[i] = "Alice_" + std::to_string(i + 1); // Generate different strings  
   }
 }
 
@@ -780,7 +780,7 @@ void PkiClAgka::init_cert_list(const int& n) {
   cert_list.resize(n);
   
   for (auto i = 0; i < n; ++i) {  
-        cert_list[i] = "Cert_" + std::to_string(i + 1); // 生成不同的字符串  
+        cert_list[i] = "Cert_" + std::to_string(i + 1); // Generate different strings  
   }
 }
 
@@ -827,7 +827,7 @@ DecodeKey PkiClAgka::generate_d_for_list(int& index, std::vector<Msg>& msgs) {
   }
 
   DecodeKey res(index, std::move(di));
-  return std::move(res);
+  return res;
 }
 
 void PkiClAgka::output_message_if_(bool no_abort, PlainText& message) {

@@ -20,11 +20,12 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2fsync_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LatestSyncItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncHeightItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncResItem;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncValueRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncValueResponse;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fsync_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_SyncValueRequest;
 }  // namespace protobuf_protos_2fsync_2eproto
 namespace shardora {
 namespace sync {
@@ -49,6 +50,11 @@ class FlushDbItemDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<FlushDbItem>
       _instance;
 } _FlushDbItem_default_instance_;
+class LatestSyncItemDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<LatestSyncItem>
+      _instance;
+} _LatestSyncItem_default_instance_;
 class SyncValueRequestDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<SyncValueRequest>
@@ -130,6 +136,20 @@ static void InitDefaultsFlushDbItem() {
 ::google::protobuf::internal::SCCInfo<0> scc_info_FlushDbItem =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsFlushDbItem}, {}};
 
+static void InitDefaultsLatestSyncItem() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::shardora::sync::protobuf::_LatestSyncItem_default_instance_;
+    new (ptr) ::shardora::sync::protobuf::LatestSyncItem();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::shardora::sync::protobuf::LatestSyncItem::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_LatestSyncItem =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsLatestSyncItem}, {}};
+
 static void InitDefaultsSyncValueRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -141,9 +161,10 @@ static void InitDefaultsSyncValueRequest() {
   ::shardora::sync::protobuf::SyncValueRequest::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_SyncValueRequest =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsSyncValueRequest}, {
-      &protobuf_protos_2fsync_2eproto::scc_info_SyncHeightItem.base,}};
+::google::protobuf::internal::SCCInfo<2> scc_info_SyncValueRequest =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsSyncValueRequest}, {
+      &protobuf_protos_2fsync_2eproto::scc_info_SyncHeightItem.base,
+      &protobuf_protos_2fsync_2eproto::scc_info_LatestSyncItem.base,}};
 
 static void InitDefaultsSyncResItem() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -195,13 +216,14 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_SyncInfo.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncHeightItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_FlushDbItem.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_LatestSyncItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncValueRequest.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncResItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncValueResponse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[8];
+::google::protobuf::Metadata file_level_metadata[9];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncItem, _has_bits_),
@@ -242,6 +264,17 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   0,
   1,
   ~0u,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::LatestSyncItem, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::LatestSyncItem, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::LatestSyncItem, network_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::LatestSyncItem, pool_latest_heights_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::LatestSyncItem, globl_pool_height_),
+  1,
+  ~0u,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -250,9 +283,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueRequest, network_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueRequest, keys_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueRequest, heights_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncValueRequest, latest_sync_item_),
+  1,
+  ~0u,
+  ~0u,
   0,
-  ~0u,
-  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::sync::protobuf::SyncResItem, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -294,10 +329,11 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 9, 15, sizeof(::shardora::sync::protobuf::SyncInfo)},
   { 16, 24, sizeof(::shardora::sync::protobuf::SyncHeightItem)},
   { 27, 35, sizeof(::shardora::sync::protobuf::FlushDbItem)},
-  { 38, 46, sizeof(::shardora::sync::protobuf::SyncValueRequest)},
-  { 49, 60, sizeof(::shardora::sync::protobuf::SyncResItem)},
-  { 66, 73, sizeof(::shardora::sync::protobuf::SyncValueResponse)},
-  { 75, 82, sizeof(::shardora::sync::protobuf::SyncMessage)},
+  { 38, 46, sizeof(::shardora::sync::protobuf::LatestSyncItem)},
+  { 49, 58, sizeof(::shardora::sync::protobuf::SyncValueRequest)},
+  { 62, 73, sizeof(::shardora::sync::protobuf::SyncResItem)},
+  { 79, 86, sizeof(::shardora::sync::protobuf::SyncValueResponse)},
+  { 88, 95, sizeof(::shardora::sync::protobuf::SyncMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -305,6 +341,7 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_SyncInfo_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_SyncHeightItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_FlushDbItem_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_LatestSyncItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_SyncValueRequest_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_SyncResItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::shardora::sync::protobuf::_SyncValueResponse_default_instance_),
@@ -326,34 +363,37 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 8);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 9);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\021protos/sync.proto\022\026shardora.sync.proto"
-      "buf\"&\n\010SyncItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 "
-      "\001(\014\";\n\010SyncInfo\022/\n\005items\030\001 \003(\0132 .shardor"
-      "a.sync.protobuf.SyncItem\"\?\n\016SyncHeightIt"
-      "em\022\020\n\010pool_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\022\013\n\003"
-      "tag\030\003 \001(\r\"I\n\013FlushDbItem\022\025\n\rmax_vec_inde"
-      "x\030\001 \001(\004\022\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003"
-      " \003(\004\"m\n\020SyncValueRequest\022\022\n\nnetwork_id\030\001"
-      " \001(\r\022\014\n\004keys\030\002 \003(\014\0227\n\007heights\030\003 \003(\0132&.sh"
-      "ardora.sync.protobuf.SyncHeightItem\"l\n\013S"
-      "yncResItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\022"
-      "\n\nnetwork_id\030\003 \001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n\006"
-      "height\030\005 \001(\004\022\013\n\003tag\030\006 \001(\r\"Y\n\021SyncValueRe"
-      "sponse\022\022\n\nnetwork_id\030\001 \001(\r\0220\n\003res\030\002 \003(\0132"
-      "#.shardora.sync.protobuf.SyncResItem\"\222\001\n"
-      "\013SyncMessage\022@\n\016sync_value_req\030\001 \001(\0132(.s"
-      "hardora.sync.protobuf.SyncValueRequest\022A"
-      "\n\016sync_value_res\030\002 \001(\0132).shardora.sync.p"
-      "rotobuf.SyncValueResponse"
+      "\n\021protos/sync.proto\022\022shardora.sync.protobuf\""
+      "&\n\010SyncItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\""
+      "7\n\010SyncInfo\022+\n\005items\030\001 \003(\0132\034.shardora.sync.p"
+      "rotobuf.SyncItem\"\?\n\016SyncHeightItem\022\020\n\010po"
+      "ol_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\022\013\n\003tag\030\003 \001("
+      "\r\"I\n\013FlushDbItem\022\025\n\rmax_vec_index\030\001 \001(\004\022"
+      "\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003 \003(\004\"\\\n\016"
+      "LatestSyncItem\022\022\n\nnetwork_id\030\001 \001(\r\022\033\n\023po"
+      "ol_latest_heights\030\002 \003(\004\022\031\n\021globl_pool_he"
+      "ight\030\003 \001(\004\"\247\001\n\020SyncValueRequest\022\022\n\nnetwo"
+      "rk_id\030\001 \001(\r\022\014\n\004keys\030\002 \003(\014\0223\n\007heights\030\003 \003"
+      "(\0132\".shardora.sync.protobuf.SyncHeightItem\022<"
+      "\n\020latest_sync_item\030\004 \001(\0132\".shardora.sync.pro"
+      "tobuf.LatestSyncItem\"l\n\013SyncResItem\022\013\n\003k"
+      "ey\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\022\n\nnetwork_id\030\003 "
+      "\001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n\006height\030\005 \001(\004\022\013\n"
+      "\003tag\030\006 \001(\r\"U\n\021SyncValueResponse\022\022\n\nnetwo"
+      "rk_id\030\001 \001(\r\022,\n\003res\030\002 \003(\0132\037.shardora.sync.pro"
+      "tobuf.SyncResItem\"\212\001\n\013SyncMessage\022<\n\016syn"
+      "c_value_req\030\001 \001(\0132$.shardora.sync.protobuf.S"
+      "yncValueRequest\022=\n\016sync_value_res\030\002 \001(\0132"
+      "%.shardora.sync.protobuf.SyncValueResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 745);
+      descriptor, 878);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/sync.proto", &protobuf_RegisterTypes);
 }
@@ -1537,12 +1577,337 @@ void FlushDbItem::InternalSwap(FlushDbItem* other) {
 
 // ===================================================================
 
+void LatestSyncItem::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int LatestSyncItem::kNetworkIdFieldNumber;
+const int LatestSyncItem::kPoolLatestHeightsFieldNumber;
+const int LatestSyncItem::kGloblPoolHeightFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+LatestSyncItem::LatestSyncItem()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fsync_2eproto::scc_info_LatestSyncItem.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:shardora.sync.protobuf.LatestSyncItem)
+}
+LatestSyncItem::LatestSyncItem(const LatestSyncItem& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      pool_latest_heights_(from.pool_latest_heights_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&globl_pool_height_, &from.globl_pool_height_,
+    static_cast<size_t>(reinterpret_cast<char*>(&network_id_) -
+    reinterpret_cast<char*>(&globl_pool_height_)) + sizeof(network_id_));
+  // @@protoc_insertion_point(copy_constructor:shardora.sync.protobuf.LatestSyncItem)
+}
+
+void LatestSyncItem::SharedCtor() {
+  ::memset(&globl_pool_height_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&network_id_) -
+      reinterpret_cast<char*>(&globl_pool_height_)) + sizeof(network_id_));
+}
+
+LatestSyncItem::~LatestSyncItem() {
+  // @@protoc_insertion_point(destructor:shardora.sync.protobuf.LatestSyncItem)
+  SharedDtor();
+}
+
+void LatestSyncItem::SharedDtor() {
+}
+
+void LatestSyncItem::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* LatestSyncItem::descriptor() {
+  ::protobuf_protos_2fsync_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fsync_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const LatestSyncItem& LatestSyncItem::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fsync_2eproto::scc_info_LatestSyncItem.base);
+  return *internal_default_instance();
+}
+
+
+void LatestSyncItem::Clear() {
+// @@protoc_insertion_point(message_clear_start:shardora.sync.protobuf.LatestSyncItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  pool_latest_heights_.Clear();
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    ::memset(&globl_pool_height_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&network_id_) -
+        reinterpret_cast<char*>(&globl_pool_height_)) + sizeof(network_id_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool LatestSyncItem::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:shardora.sync.protobuf.LatestSyncItem)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 network_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_network_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &network_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated uint64 pool_latest_heights = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 16u, input, this->mutable_pool_latest_heights())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_pool_latest_heights())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 globl_pool_height = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_globl_pool_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &globl_pool_height_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:shardora.sync.protobuf.LatestSyncItem)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:shardora.sync.protobuf.LatestSyncItem)
+  return false;
+#undef DO_
+}
+
+void LatestSyncItem::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:shardora.sync.protobuf.LatestSyncItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 network_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->network_id(), output);
+  }
+
+  // repeated uint64 pool_latest_heights = 2;
+  for (int i = 0, n = this->pool_latest_heights_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
+      2, this->pool_latest_heights(i), output);
+  }
+
+  // optional uint64 globl_pool_height = 3;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->globl_pool_height(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:shardora.sync.protobuf.LatestSyncItem)
+}
+
+::google::protobuf::uint8* LatestSyncItem::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:shardora.sync.protobuf.LatestSyncItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 network_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->network_id(), target);
+  }
+
+  // repeated uint64 pool_latest_heights = 2;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt64ToArray(2, this->pool_latest_heights_, target);
+
+  // optional uint64 globl_pool_height = 3;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->globl_pool_height(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:shardora.sync.protobuf.LatestSyncItem)
+  return target;
+}
+
+size_t LatestSyncItem::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:shardora.sync.protobuf.LatestSyncItem)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated uint64 pool_latest_heights = 2;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt64Size(this->pool_latest_heights_);
+    total_size += 1 *
+                  ::google::protobuf::internal::FromIntSize(this->pool_latest_heights_size());
+    total_size += data_size;
+  }
+
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional uint64 globl_pool_height = 3;
+    if (has_globl_pool_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->globl_pool_height());
+    }
+
+    // optional uint32 network_id = 1;
+    if (has_network_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->network_id());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void LatestSyncItem::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:shardora.sync.protobuf.LatestSyncItem)
+  GOOGLE_DCHECK_NE(&from, this);
+  const LatestSyncItem* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const LatestSyncItem>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:shardora.sync.protobuf.LatestSyncItem)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:shardora.sync.protobuf.LatestSyncItem)
+    MergeFrom(*source);
+  }
+}
+
+void LatestSyncItem::MergeFrom(const LatestSyncItem& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:shardora.sync.protobuf.LatestSyncItem)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  pool_latest_heights_.MergeFrom(from.pool_latest_heights_);
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      globl_pool_height_ = from.globl_pool_height_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      network_id_ = from.network_id_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void LatestSyncItem::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:shardora.sync.protobuf.LatestSyncItem)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void LatestSyncItem::CopyFrom(const LatestSyncItem& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:shardora.sync.protobuf.LatestSyncItem)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool LatestSyncItem::IsInitialized() const {
+  return true;
+}
+
+void LatestSyncItem::Swap(LatestSyncItem* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void LatestSyncItem::InternalSwap(LatestSyncItem* other) {
+  using std::swap;
+  pool_latest_heights_.InternalSwap(&other->pool_latest_heights_);
+  swap(globl_pool_height_, other->globl_pool_height_);
+  swap(network_id_, other->network_id_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata LatestSyncItem::GetMetadata() const {
+  protobuf_protos_2fsync_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fsync_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void SyncValueRequest::InitAsDefaultInstance() {
+  ::shardora::sync::protobuf::_SyncValueRequest_default_instance_._instance.get_mutable()->latest_sync_item_ = const_cast< ::shardora::sync::protobuf::LatestSyncItem*>(
+      ::shardora::sync::protobuf::LatestSyncItem::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int SyncValueRequest::kNetworkIdFieldNumber;
 const int SyncValueRequest::kKeysFieldNumber;
 const int SyncValueRequest::kHeightsFieldNumber;
+const int SyncValueRequest::kLatestSyncItemFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SyncValueRequest::SyncValueRequest()
@@ -1559,12 +1924,19 @@ SyncValueRequest::SyncValueRequest(const SyncValueRequest& from)
       keys_(from.keys_),
       heights_(from.heights_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  if (from.has_latest_sync_item()) {
+    latest_sync_item_ = new ::shardora::sync::protobuf::LatestSyncItem(*from.latest_sync_item_);
+  } else {
+    latest_sync_item_ = NULL;
+  }
   network_id_ = from.network_id_;
   // @@protoc_insertion_point(copy_constructor:shardora.sync.protobuf.SyncValueRequest)
 }
 
 void SyncValueRequest::SharedCtor() {
-  network_id_ = 0u;
+  ::memset(&latest_sync_item_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&network_id_) -
+      reinterpret_cast<char*>(&latest_sync_item_)) + sizeof(network_id_));
 }
 
 SyncValueRequest::~SyncValueRequest() {
@@ -1573,6 +1945,7 @@ SyncValueRequest::~SyncValueRequest() {
 }
 
 void SyncValueRequest::SharedDtor() {
+  if (this != internal_default_instance()) delete latest_sync_item_;
 }
 
 void SyncValueRequest::SetCachedSize(int size) const {
@@ -1597,6 +1970,11 @@ void SyncValueRequest::Clear() {
 
   keys_.Clear();
   heights_.Clear();
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    GOOGLE_DCHECK(latest_sync_item_ != NULL);
+    latest_sync_item_->Clear();
+  }
   network_id_ = 0u;
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1650,6 +2028,18 @@ bool SyncValueRequest::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .shardora.sync.protobuf.LatestSyncItem latest_sync_item = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_latest_sync_item()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1678,7 +2068,7 @@ void SyncValueRequest::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 network_id = 1;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->network_id(), output);
   }
 
@@ -1697,6 +2087,12 @@ void SyncValueRequest::SerializeWithCachedSizes(
       output);
   }
 
+  // optional .shardora.sync.protobuf.LatestSyncItem latest_sync_item = 4;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->_internal_latest_sync_item(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1713,7 +2109,7 @@ void SyncValueRequest::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 network_id = 1;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->network_id(), target);
   }
 
@@ -1729,6 +2125,13 @@ void SyncValueRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         3, this->heights(static_cast<int>(i)), deterministic, target);
+  }
+
+  // optional .shardora.sync.protobuf.LatestSyncItem latest_sync_item = 4;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        4, this->_internal_latest_sync_item(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1767,13 +2170,22 @@ size_t SyncValueRequest::ByteSizeLong() const {
     }
   }
 
-  // optional uint32 network_id = 1;
-  if (has_network_id()) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::UInt32Size(
-        this->network_id());
-  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional .shardora.sync.protobuf.LatestSyncItem latest_sync_item = 4;
+    if (has_latest_sync_item()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *latest_sync_item_);
+    }
 
+    // optional uint32 network_id = 1;
+    if (has_network_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->network_id());
+    }
+
+  }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -1803,8 +2215,15 @@ void SyncValueRequest::MergeFrom(const SyncValueRequest& from) {
 
   keys_.MergeFrom(from.keys_);
   heights_.MergeFrom(from.heights_);
-  if (from.has_network_id()) {
-    set_network_id(from.network_id());
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      mutable_latest_sync_item()->::shardora::sync::protobuf::LatestSyncItem::MergeFrom(from.latest_sync_item());
+    }
+    if (cached_has_bits & 0x00000002u) {
+      network_id_ = from.network_id_;
+    }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -1834,6 +2253,7 @@ void SyncValueRequest::InternalSwap(SyncValueRequest* other) {
   using std::swap;
   keys_.InternalSwap(CastToBase(&other->keys_));
   CastToBase(&heights_)->InternalSwap(CastToBase(&other->heights_));
+  swap(latest_sync_item_, other->latest_sync_item_);
   swap(network_id_, other->network_id_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -2882,6 +3302,9 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::sync::protobuf::SyncHe
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::sync::protobuf::FlushDbItem* Arena::CreateMaybeMessage< ::shardora::sync::protobuf::FlushDbItem >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::sync::protobuf::FlushDbItem >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::sync::protobuf::LatestSyncItem* Arena::CreateMaybeMessage< ::shardora::sync::protobuf::LatestSyncItem >(Arena* arena) {
+  return Arena::CreateInternal< ::shardora::sync::protobuf::LatestSyncItem >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::shardora::sync::protobuf::SyncValueRequest* Arena::CreateMaybeMessage< ::shardora::sync::protobuf::SyncValueRequest >(Arena* arena) {
   return Arena::CreateInternal< ::shardora::sync::protobuf::SyncValueRequest >(arena);

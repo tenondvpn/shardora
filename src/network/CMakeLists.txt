@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 
 aux_source_directory(./ network_src)
 aux_source_directory(./proto proto_src)

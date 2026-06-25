@@ -38,7 +38,6 @@ public:
         auto iter = item_map_.find(key);
         bool finded = (iter != item_map_.end());
         item_map_[key] = val;
-        CHECK_MEMORY_SIZE(item_map_);
         if (finded) {
             return;
         }
@@ -49,7 +48,6 @@ public:
             auto riter = item_map_.find(old_key);
             if (riter != item_map_.end()) {
                 item_map_.erase(riter);
-                CHECK_MEMORY_SIZE(item_map_);
             }
 
             item_queue_.pop_front();

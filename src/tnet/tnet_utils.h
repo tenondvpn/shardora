@@ -35,6 +35,18 @@ typedef std::function<bool(TcpConnection&)> ConnectionHandler;
 typedef std::function<bool(std::shared_ptr<TcpConnection>, Packet&)> PacketHandler;
 typedef std::function<void()> WriteableHandler;
 
+inline static std::string InAddrToString(in_addr_t ip_int) {
+    char buffer[INET_ADDRSTRLEN];
+    struct in_addr addr;
+    addr.s_addr = ip_int;
+    const char* result = inet_ntop(AF_INET, &addr, buffer, sizeof(buffer));
+    if (result == nullptr) {
+        return "";
+    }
+
+    return std::string(buffer);
+}
+
 inline static bool ParseSpec(const std::string& s, in_addr_t* addr, uint16_t* port) {
 #ifndef _WIN32
     common::Split<> split(s.c_str(), ':', s.size());

@@ -6,7 +6,7 @@
 #define private public
 #include "common/fixed_queue.h"
 
-namespace shardora {
+namespace seth {
 
 namespace common {
 
@@ -62,8 +62,47 @@ TEST_F(TestFixedQueue, all) {
     ASSERT_TRUE(queue.IsEmpty());
 }
 
+TEST_F(TestFixedQueue, EmptyFrontRearAndDequeueNoop) {
+    FixedQueue<int, 4> queue;
+    ASSERT_TRUE(queue.IsEmpty());
+    ASSERT_EQ(queue.Size(), 0);
+    ASSERT_EQ(queue.Front(), 0);
+    ASSERT_EQ(queue.Rear(), 0);
+    ASSERT_FALSE(queue.Exists(1));
+
+    queue.Dequeue();  // empty dequeue branch
+    ASSERT_TRUE(queue.IsEmpty());
+    ASSERT_EQ(queue.Size(), 0);
+}
+
+TEST_F(TestFixedQueue, EnqueueWhenFullIsNoopAndWraparoundExistsBranch) {
+    FixedQueue<int, 4> queue;
+    queue.Enqueue(1);
+    queue.Enqueue(2);
+    queue.Enqueue(3);
+    queue.Enqueue(4);
+    ASSERT_TRUE(queue.IsFull());
+    ASSERT_EQ(queue.Rear(), 4);
+
+    queue.Enqueue(5);  // full queue branch: ignored
+    ASSERT_EQ(queue.Size(), 4);
+    ASSERT_EQ(queue.Rear(), 4);
+    ASSERT_FALSE(queue.Exists(5));
+
+    // Create rear_ < front_ wraparound region to hit Exists() final branch.
+    queue.Dequeue();  // remove 1
+    queue.Dequeue();  // remove 2
+    queue.Enqueue(6);
+    queue.Enqueue(7);
+    ASSERT_TRUE(queue.Exists(6));
+    ASSERT_TRUE(queue.Exists(7));
+    ASSERT_TRUE(queue.Exists(3));
+    ASSERT_FALSE(queue.Exists(1));
+    ASSERT_FALSE(queue.Exists(2));
+}
+
 }  // namespace test
 
 }  // namespace common
 
-}  // namespace shardora
+}  // namespace seth

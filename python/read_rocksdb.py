@@ -3,7 +3,7 @@ import os
 import shutil # 用于清理，如果需要的话
 
 # 定义数据库路径
-kRocksDbDataPath = '/root/zjnodes/s3_1/db'
+kRocksDbDataPath = '/root/shardoras/s3_1/db'
 
 import rocksdb
 import logging

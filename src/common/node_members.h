@@ -15,18 +15,14 @@ struct BftMember {
             const std::string& in_id,
             const std::string& pkey,
             uint32_t idx,
-            int32_t pool_mode_num,
-            libff::alt_bn128_G2 agg_bls_pk,
-            libff::alt_bn128_G1 agg_bls_pk_proof)
+            int32_t pool_mode_num)
         : net_id(nid),
           id(in_id),
           pubkey(pkey),
           index(idx),
           public_ip(0),
           public_port(0),
-          pool_index_mod_num(pool_mode_num),
-          agg_bls_pk(agg_bls_pk),
-          agg_bls_pk_proof(agg_bls_pk_proof){}
+          pool_index_mod_num(pool_mode_num){}
 
     uint32_t net_id;
     std::string id;
@@ -41,8 +37,6 @@ struct BftMember {
     libff::alt_bn128_G2 bls_publick_key;
     bool valid_leader{ true };
     std::string peer_ecdh_key;
-    libff::alt_bn128_G2 agg_bls_pk;
-    libff::alt_bn128_G1 agg_bls_pk_proof;
 };
 
 typedef std::shared_ptr<BftMember> BftMemberPtr;

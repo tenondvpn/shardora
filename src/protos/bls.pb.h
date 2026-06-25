@@ -29,6 +29,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 #include "protos/elect.pb.h"
 // @@protoc_insertion_point(includes)
@@ -39,7 +40,7 @@ namespace protobuf_protos_2fbls_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[17];
+  static const ::google::protobuf::internal::ParseTable schema[18];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -70,6 +71,9 @@ extern CheckVerfiyReqDefaultTypeInternal _CheckVerfiyReq_default_instance_;
 class FinishBroadcast;
 class FinishBroadcastDefaultTypeInternal;
 extern FinishBroadcastDefaultTypeInternal _FinishBroadcast_default_instance_;
+class FinishSyncRequest;
+class FinishSyncRequestDefaultTypeInternal;
+extern FinishSyncRequestDefaultTypeInternal _FinishSyncRequest_default_instance_;
 class JoinElectBlsInfo;
 class JoinElectBlsInfoDefaultTypeInternal;
 extern JoinElectBlsInfoDefaultTypeInternal _JoinElectBlsInfo_default_instance_;
@@ -112,6 +116,7 @@ template<> ::shardora::bls::protobuf::BlsVerifyValue* Arena::CreateMaybeMessage<
 template<> ::shardora::bls::protobuf::CheckSwapKeyReq* Arena::CreateMaybeMessage<::shardora::bls::protobuf::CheckSwapKeyReq>(Arena*);
 template<> ::shardora::bls::protobuf::CheckVerfiyReq* Arena::CreateMaybeMessage<::shardora::bls::protobuf::CheckVerfiyReq>(Arena*);
 template<> ::shardora::bls::protobuf::FinishBroadcast* Arena::CreateMaybeMessage<::shardora::bls::protobuf::FinishBroadcast>(Arena*);
+template<> ::shardora::bls::protobuf::FinishSyncRequest* Arena::CreateMaybeMessage<::shardora::bls::protobuf::FinishSyncRequest>(Arena*);
 template<> ::shardora::bls::protobuf::JoinElectBlsInfo* Arena::CreateMaybeMessage<::shardora::bls::protobuf::JoinElectBlsInfo>(Arena*);
 template<> ::shardora::bls::protobuf::JoinElectInfo* Arena::CreateMaybeMessage<::shardora::bls::protobuf::JoinElectInfo>(Arena*);
 template<> ::shardora::bls::protobuf::LocalBlsItem* Arena::CreateMaybeMessage<::shardora::bls::protobuf::LocalBlsItem>(Arena*);
@@ -128,6 +133,26 @@ namespace shardora {
 namespace bls {
 namespace protobuf {
 
+enum StakeOperation {
+  STAKE_OP_NONE = 0,
+  STAKE_OP_STAKE = 1,
+  STAKE_OP_REDEEM = 2
+};
+bool StakeOperation_IsValid(int value);
+const StakeOperation StakeOperation_MIN = STAKE_OP_NONE;
+const StakeOperation StakeOperation_MAX = STAKE_OP_REDEEM;
+const int StakeOperation_ARRAYSIZE = StakeOperation_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* StakeOperation_descriptor();
+inline const ::std::string& StakeOperation_Name(StakeOperation value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    StakeOperation_descriptor(), value);
+}
+inline bool StakeOperation_Parse(
+    const ::std::string& name, StakeOperation* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<StakeOperation>(
+    StakeOperation_descriptor(), name, value);
+}
 // ===================================================================
 
 class VerifyVecItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.bls.protobuf.VerifyVecItem) */ {
@@ -900,30 +925,6 @@ class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::shardora::bls::protobuf::VerifyVecBrdReq* mutable_g2_req();
   void set_allocated_g2_req(::shardora::bls::protobuf::VerifyVecBrdReq* g2_req);
 
-  // optional .shardora.elect.protobuf.BlsPublicKey bls_pk = 8;
-  bool has_bls_pk() const;
-  void clear_bls_pk();
-  static const int kBlsPkFieldNumber = 8;
-  private:
-  const ::shardora::elect::protobuf::BlsPublicKey& _internal_bls_pk() const;
-  public:
-  const ::shardora::elect::protobuf::BlsPublicKey& bls_pk() const;
-  ::shardora::elect::protobuf::BlsPublicKey* release_bls_pk();
-  ::shardora::elect::protobuf::BlsPublicKey* mutable_bls_pk();
-  void set_allocated_bls_pk(::shardora::elect::protobuf::BlsPublicKey* bls_pk);
-
-  // optional .shardora.elect.protobuf.BlsPopProof bls_proof = 9;
-  bool has_bls_proof() const;
-  void clear_bls_proof();
-  static const int kBlsProofFieldNumber = 9;
-  private:
-  const ::shardora::elect::protobuf::BlsPopProof& _internal_bls_proof() const;
-  public:
-  const ::shardora::elect::protobuf::BlsPopProof& bls_proof() const;
-  ::shardora::elect::protobuf::BlsPopProof* release_bls_proof();
-  ::shardora::elect::protobuf::BlsPopProof* mutable_bls_proof();
-  void set_allocated_bls_proof(::shardora::elect::protobuf::BlsPopProof* bls_proof);
-
   // optional uint32 shard_id = 1;
   bool has_shard_id() const;
   void clear_shard_id();
@@ -952,6 +953,41 @@ class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::uint32 change_idx() const;
   void set_change_idx(::google::protobuf::uint32 value);
 
+  // optional .shardora.bls.protobuf.StakeOperation stake_op = 11 [default = STAKE_OP_NONE];
+  bool has_stake_op() const;
+  void clear_stake_op();
+  static const int kStakeOpFieldNumber = 11;
+  ::shardora::bls::protobuf::StakeOperation stake_op() const;
+  void set_stake_op(::shardora::bls::protobuf::StakeOperation value);
+
+  // optional uint64 stake_amount = 8;
+  bool has_stake_amount() const;
+  void clear_stake_amount();
+  static const int kStakeAmountFieldNumber = 8;
+  ::google::protobuf::uint64 stake_amount() const;
+  void set_stake_amount(::google::protobuf::uint64 value);
+
+  // optional uint64 stake_elect_height = 9;
+  bool has_stake_elect_height() const;
+  void clear_stake_elect_height();
+  static const int kStakeElectHeightFieldNumber = 9;
+  ::google::protobuf::uint64 stake_elect_height() const;
+  void set_stake_elect_height(::google::protobuf::uint64 value);
+
+  // optional uint64 total_staked = 10;
+  bool has_total_staked() const;
+  void clear_total_staked();
+  static const int kTotalStakedFieldNumber = 10;
+  ::google::protobuf::uint64 total_staked() const;
+  void set_total_staked(::google::protobuf::uint64 value);
+
+  // optional uint64 stake_timestamp = 12;
+  bool has_stake_timestamp() const;
+  void clear_stake_timestamp();
+  static const int kStakeTimestampFieldNumber = 12;
+  ::google::protobuf::uint64 stake_timestamp() const;
+  void set_stake_timestamp(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.bls.protobuf.JoinElectInfo)
  private:
   void set_has_shard_id();
@@ -968,10 +1004,16 @@ class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
   void clear_has_stoke();
   void set_has_public_key();
   void clear_has_public_key();
-  void set_has_bls_pk();
-  void clear_has_bls_pk();
-  void set_has_bls_proof();
-  void clear_has_bls_proof();
+  void set_has_stake_amount();
+  void clear_has_stake_amount();
+  void set_has_stake_elect_height();
+  void clear_has_stake_elect_height();
+  void set_has_total_staked();
+  void clear_has_total_staked();
+  void set_has_stake_op();
+  void clear_has_stake_op();
+  void set_has_stake_timestamp();
+  void clear_has_stake_timestamp();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -979,12 +1021,15 @@ class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::internal::ArenaStringPtr addr_;
   ::google::protobuf::internal::ArenaStringPtr public_key_;
   ::shardora::bls::protobuf::VerifyVecBrdReq* g2_req_;
-  ::shardora::elect::protobuf::BlsPublicKey* bls_pk_;
-  ::shardora::elect::protobuf::BlsPopProof* bls_proof_;
   ::google::protobuf::uint32 shard_id_;
   ::google::protobuf::uint32 member_idx_;
   ::google::protobuf::uint64 stoke_;
   ::google::protobuf::uint32 change_idx_;
+  int stake_op_;
+  ::google::protobuf::uint64 stake_amount_;
+  ::google::protobuf::uint64 stake_elect_height_;
+  ::google::protobuf::uint64 total_staked_;
+  ::google::protobuf::uint64 stake_timestamp_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2530,6 +2575,133 @@ class CheckSwapKeyReq : public ::google::protobuf::Message /* @@protoc_insertion
 };
 // -------------------------------------------------------------------
 
+class FinishSyncRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.bls.protobuf.FinishSyncRequest) */ {
+ public:
+  FinishSyncRequest();
+  virtual ~FinishSyncRequest();
+
+  FinishSyncRequest(const FinishSyncRequest& from);
+
+  inline FinishSyncRequest& operator=(const FinishSyncRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  FinishSyncRequest(FinishSyncRequest&& from) noexcept
+    : FinishSyncRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline FinishSyncRequest& operator=(FinishSyncRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FinishSyncRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const FinishSyncRequest* internal_default_instance() {
+    return reinterpret_cast<const FinishSyncRequest*>(
+               &_FinishSyncRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  void Swap(FinishSyncRequest* other);
+  friend void swap(FinishSyncRequest& a, FinishSyncRequest& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline FinishSyncRequest* New() const final {
+    return CreateMaybeMessage<FinishSyncRequest>(NULL);
+  }
+
+  FinishSyncRequest* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<FinishSyncRequest>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const FinishSyncRequest& from);
+  void MergeFrom(const FinishSyncRequest& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(FinishSyncRequest* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint32 missing_indices = 2;
+  int missing_indices_size() const;
+  void clear_missing_indices();
+  static const int kMissingIndicesFieldNumber = 2;
+  ::google::protobuf::uint32 missing_indices(int index) const;
+  void set_missing_indices(int index, ::google::protobuf::uint32 value);
+  void add_missing_indices(::google::protobuf::uint32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+      missing_indices() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+      mutable_missing_indices();
+
+  // optional uint32 network_id = 1;
+  bool has_network_id() const;
+  void clear_network_id();
+  static const int kNetworkIdFieldNumber = 1;
+  ::google::protobuf::uint32 network_id() const;
+  void set_network_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:shardora.bls.protobuf.FinishSyncRequest)
+ private:
+  void set_has_network_id();
+  void clear_has_network_id();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > missing_indices_;
+  ::google::protobuf::uint32 network_id_;
+  friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:shardora.bls.protobuf.BlsMessage) */ {
  public:
   BlsMessage();
@@ -2572,7 +2744,7 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_BlsMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   void Swap(BlsMessage* other);
   friend void swap(BlsMessage& a, BlsMessage& b) {
@@ -2684,6 +2856,18 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::bls::protobuf::CheckSwapKeyReq* mutable_check_swapkey_req();
   void set_allocated_check_swapkey_req(::shardora::bls::protobuf::CheckSwapKeyReq* check_swapkey_req);
 
+  // optional .shardora.bls.protobuf.FinishSyncRequest finish_sync_req = 8;
+  bool has_finish_sync_req() const;
+  void clear_finish_sync_req();
+  static const int kFinishSyncReqFieldNumber = 8;
+  private:
+  const ::shardora::bls::protobuf::FinishSyncRequest& _internal_finish_sync_req() const;
+  public:
+  const ::shardora::bls::protobuf::FinishSyncRequest& finish_sync_req() const;
+  ::shardora::bls::protobuf::FinishSyncRequest* release_finish_sync_req();
+  ::shardora::bls::protobuf::FinishSyncRequest* mutable_finish_sync_req();
+  void set_allocated_finish_sync_req(::shardora::bls::protobuf::FinishSyncRequest* finish_sync_req);
+
   // optional uint64 elect_height = 7;
   bool has_elect_height() const;
   void clear_elect_height();
@@ -2714,6 +2898,8 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   void clear_has_index();
   void set_has_elect_height();
   void clear_has_elect_height();
+  void set_has_finish_sync_req();
+  void clear_has_finish_sync_req();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2723,6 +2909,7 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::bls::protobuf::FinishBroadcast* finish_req_;
   ::shardora::bls::protobuf::CheckVerfiyReq* check_verify_req_;
   ::shardora::bls::protobuf::CheckSwapKeyReq* check_swapkey_req_;
+  ::shardora::bls::protobuf::FinishSyncRequest* finish_sync_req_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 index_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
@@ -3528,13 +3715,13 @@ inline void JoinElectBlsInfo::set_allocated_verified_g2(::shardora::bls::protobu
 
 // optional uint32 shard_id = 1;
 inline bool JoinElectInfo::has_shard_id() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void JoinElectInfo::set_has_shard_id() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void JoinElectInfo::clear_has_shard_id() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void JoinElectInfo::clear_shard_id() {
   shard_id_ = 0u;
@@ -3552,13 +3739,13 @@ inline void JoinElectInfo::set_shard_id(::google::protobuf::uint32 value) {
 
 // optional uint32 member_idx = 2;
 inline bool JoinElectInfo::has_member_idx() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void JoinElectInfo::set_has_member_idx() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void JoinElectInfo::clear_has_member_idx() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void JoinElectInfo::clear_member_idx() {
   member_idx_ = 0u;
@@ -3576,13 +3763,13 @@ inline void JoinElectInfo::set_member_idx(::google::protobuf::uint32 value) {
 
 // optional uint32 change_idx = 3;
 inline bool JoinElectInfo::has_change_idx() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void JoinElectInfo::set_has_change_idx() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void JoinElectInfo::clear_has_change_idx() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void JoinElectInfo::clear_change_idx() {
   change_idx_ = 0u;
@@ -3724,13 +3911,13 @@ inline void JoinElectInfo::set_allocated_addr(::std::string* addr) {
 
 // optional uint64 stoke = 6;
 inline bool JoinElectInfo::has_stoke() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void JoinElectInfo::set_has_stoke() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void JoinElectInfo::clear_has_stoke() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void JoinElectInfo::clear_stoke() {
   stoke_ = GOOGLE_ULONGLONG(0);
@@ -3812,112 +3999,125 @@ inline void JoinElectInfo::set_allocated_public_key(::std::string* public_key) {
   // @@protoc_insertion_point(field_set_allocated:shardora.bls.protobuf.JoinElectInfo.public_key)
 }
 
-// optional .shardora.elect.protobuf.BlsPublicKey bls_pk = 8;
-inline bool JoinElectInfo::has_bls_pk() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+// optional uint64 stake_amount = 8;
+inline bool JoinElectInfo::has_stake_amount() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void JoinElectInfo::set_has_bls_pk() {
-  _has_bits_[0] |= 0x00000008u;
+inline void JoinElectInfo::set_has_stake_amount() {
+  _has_bits_[0] |= 0x00000100u;
 }
-inline void JoinElectInfo::clear_has_bls_pk() {
-  _has_bits_[0] &= ~0x00000008u;
+inline void JoinElectInfo::clear_has_stake_amount() {
+  _has_bits_[0] &= ~0x00000100u;
 }
-inline const ::shardora::elect::protobuf::BlsPublicKey& JoinElectInfo::_internal_bls_pk() const {
-  return *bls_pk_;
+inline void JoinElectInfo::clear_stake_amount() {
+  stake_amount_ = GOOGLE_ULONGLONG(0);
+  clear_has_stake_amount();
 }
-inline const ::shardora::elect::protobuf::BlsPublicKey& JoinElectInfo::bls_pk() const {
-  const ::shardora::elect::protobuf::BlsPublicKey* p = bls_pk_;
-  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.bls_pk)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::elect::protobuf::BlsPublicKey*>(
-      &::shardora::elect::protobuf::_BlsPublicKey_default_instance_);
+inline ::google::protobuf::uint64 JoinElectInfo::stake_amount() const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.stake_amount)
+  return stake_amount_;
 }
-inline ::shardora::elect::protobuf::BlsPublicKey* JoinElectInfo::release_bls_pk() {
-  // @@protoc_insertion_point(field_release:shardora.bls.protobuf.JoinElectInfo.bls_pk)
-  clear_has_bls_pk();
-  ::shardora::elect::protobuf::BlsPublicKey* temp = bls_pk_;
-  bls_pk_ = NULL;
-  return temp;
-}
-inline ::shardora::elect::protobuf::BlsPublicKey* JoinElectInfo::mutable_bls_pk() {
-  set_has_bls_pk();
-  if (bls_pk_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::elect::protobuf::BlsPublicKey>(GetArenaNoVirtual());
-    bls_pk_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.bls.protobuf.JoinElectInfo.bls_pk)
-  return bls_pk_;
-}
-inline void JoinElectInfo::set_allocated_bls_pk(::shardora::elect::protobuf::BlsPublicKey* bls_pk) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(bls_pk_);
-  }
-  if (bls_pk) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      bls_pk = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, bls_pk, submessage_arena);
-    }
-    set_has_bls_pk();
-  } else {
-    clear_has_bls_pk();
-  }
-  bls_pk_ = bls_pk;
-  // @@protoc_insertion_point(field_set_allocated:shardora.bls.protobuf.JoinElectInfo.bls_pk)
+inline void JoinElectInfo::set_stake_amount(::google::protobuf::uint64 value) {
+  set_has_stake_amount();
+  stake_amount_ = value;
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.JoinElectInfo.stake_amount)
 }
 
-// optional .shardora.elect.protobuf.BlsPopProof bls_proof = 9;
-inline bool JoinElectInfo::has_bls_proof() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+// optional uint64 stake_elect_height = 9;
+inline bool JoinElectInfo::has_stake_elect_height() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
-inline void JoinElectInfo::set_has_bls_proof() {
-  _has_bits_[0] |= 0x00000010u;
+inline void JoinElectInfo::set_has_stake_elect_height() {
+  _has_bits_[0] |= 0x00000200u;
 }
-inline void JoinElectInfo::clear_has_bls_proof() {
-  _has_bits_[0] &= ~0x00000010u;
+inline void JoinElectInfo::clear_has_stake_elect_height() {
+  _has_bits_[0] &= ~0x00000200u;
 }
-inline const ::shardora::elect::protobuf::BlsPopProof& JoinElectInfo::_internal_bls_proof() const {
-  return *bls_proof_;
+inline void JoinElectInfo::clear_stake_elect_height() {
+  stake_elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_stake_elect_height();
 }
-inline const ::shardora::elect::protobuf::BlsPopProof& JoinElectInfo::bls_proof() const {
-  const ::shardora::elect::protobuf::BlsPopProof* p = bls_proof_;
-  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.bls_proof)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::elect::protobuf::BlsPopProof*>(
-      &::shardora::elect::protobuf::_BlsPopProof_default_instance_);
+inline ::google::protobuf::uint64 JoinElectInfo::stake_elect_height() const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.stake_elect_height)
+  return stake_elect_height_;
 }
-inline ::shardora::elect::protobuf::BlsPopProof* JoinElectInfo::release_bls_proof() {
-  // @@protoc_insertion_point(field_release:shardora.bls.protobuf.JoinElectInfo.bls_proof)
-  clear_has_bls_proof();
-  ::shardora::elect::protobuf::BlsPopProof* temp = bls_proof_;
-  bls_proof_ = NULL;
-  return temp;
+inline void JoinElectInfo::set_stake_elect_height(::google::protobuf::uint64 value) {
+  set_has_stake_elect_height();
+  stake_elect_height_ = value;
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.JoinElectInfo.stake_elect_height)
 }
-inline ::shardora::elect::protobuf::BlsPopProof* JoinElectInfo::mutable_bls_proof() {
-  set_has_bls_proof();
-  if (bls_proof_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::elect::protobuf::BlsPopProof>(GetArenaNoVirtual());
-    bls_proof_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.bls.protobuf.JoinElectInfo.bls_proof)
-  return bls_proof_;
+
+// optional uint64 total_staked = 10;
+inline bool JoinElectInfo::has_total_staked() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
-inline void JoinElectInfo::set_allocated_bls_proof(::shardora::elect::protobuf::BlsPopProof* bls_proof) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(bls_proof_);
-  }
-  if (bls_proof) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      bls_proof = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, bls_proof, submessage_arena);
-    }
-    set_has_bls_proof();
-  } else {
-    clear_has_bls_proof();
-  }
-  bls_proof_ = bls_proof;
-  // @@protoc_insertion_point(field_set_allocated:shardora.bls.protobuf.JoinElectInfo.bls_proof)
+inline void JoinElectInfo::set_has_total_staked() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void JoinElectInfo::clear_has_total_staked() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void JoinElectInfo::clear_total_staked() {
+  total_staked_ = GOOGLE_ULONGLONG(0);
+  clear_has_total_staked();
+}
+inline ::google::protobuf::uint64 JoinElectInfo::total_staked() const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.total_staked)
+  return total_staked_;
+}
+inline void JoinElectInfo::set_total_staked(::google::protobuf::uint64 value) {
+  set_has_total_staked();
+  total_staked_ = value;
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.JoinElectInfo.total_staked)
+}
+
+// optional .shardora.bls.protobuf.StakeOperation stake_op = 11 [default = STAKE_OP_NONE];
+inline bool JoinElectInfo::has_stake_op() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void JoinElectInfo::set_has_stake_op() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void JoinElectInfo::clear_has_stake_op() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void JoinElectInfo::clear_stake_op() {
+  stake_op_ = 0;
+  clear_has_stake_op();
+}
+inline ::shardora::bls::protobuf::StakeOperation JoinElectInfo::stake_op() const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.stake_op)
+  return static_cast< ::shardora::bls::protobuf::StakeOperation >(stake_op_);
+}
+inline void JoinElectInfo::set_stake_op(::shardora::bls::protobuf::StakeOperation value) {
+  //assert(::shardora::bls::protobuf::StakeOperation_IsValid(value));
+  set_has_stake_op();
+  stake_op_ = value;
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.JoinElectInfo.stake_op)
+}
+
+// optional uint64 stake_timestamp = 12;
+inline bool JoinElectInfo::has_stake_timestamp() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void JoinElectInfo::set_has_stake_timestamp() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void JoinElectInfo::clear_has_stake_timestamp() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void JoinElectInfo::clear_stake_timestamp() {
+  stake_timestamp_ = GOOGLE_ULONGLONG(0);
+  clear_has_stake_timestamp();
+}
+inline ::google::protobuf::uint64 JoinElectInfo::stake_timestamp() const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.JoinElectInfo.stake_timestamp)
+  return stake_timestamp_;
+}
+inline void JoinElectInfo::set_stake_timestamp(::google::protobuf::uint64 value) {
+  set_has_stake_timestamp();
+  stake_timestamp_ = value;
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.JoinElectInfo.stake_timestamp)
 }
 
 // -------------------------------------------------------------------
@@ -5157,6 +5357,64 @@ inline void CheckSwapKeyReq::set_index(::google::protobuf::uint32 value) {
 
 // -------------------------------------------------------------------
 
+// FinishSyncRequest
+
+// optional uint32 network_id = 1;
+inline bool FinishSyncRequest::has_network_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FinishSyncRequest::set_has_network_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FinishSyncRequest::clear_has_network_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void FinishSyncRequest::clear_network_id() {
+  network_id_ = 0u;
+  clear_has_network_id();
+}
+inline ::google::protobuf::uint32 FinishSyncRequest::network_id() const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.FinishSyncRequest.network_id)
+  return network_id_;
+}
+inline void FinishSyncRequest::set_network_id(::google::protobuf::uint32 value) {
+  set_has_network_id();
+  network_id_ = value;
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.FinishSyncRequest.network_id)
+}
+
+// repeated uint32 missing_indices = 2;
+inline int FinishSyncRequest::missing_indices_size() const {
+  return missing_indices_.size();
+}
+inline void FinishSyncRequest::clear_missing_indices() {
+  missing_indices_.Clear();
+}
+inline ::google::protobuf::uint32 FinishSyncRequest::missing_indices(int index) const {
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.FinishSyncRequest.missing_indices)
+  return missing_indices_.Get(index);
+}
+inline void FinishSyncRequest::set_missing_indices(int index, ::google::protobuf::uint32 value) {
+  missing_indices_.Set(index, value);
+  // @@protoc_insertion_point(field_set:shardora.bls.protobuf.FinishSyncRequest.missing_indices)
+}
+inline void FinishSyncRequest::add_missing_indices(::google::protobuf::uint32 value) {
+  missing_indices_.Add(value);
+  // @@protoc_insertion_point(field_add:shardora.bls.protobuf.FinishSyncRequest.missing_indices)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+FinishSyncRequest::missing_indices() const {
+  // @@protoc_insertion_point(field_list:shardora.bls.protobuf.FinishSyncRequest.missing_indices)
+  return missing_indices_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+FinishSyncRequest::mutable_missing_indices() {
+  // @@protoc_insertion_point(field_mutable_list:shardora.bls.protobuf.FinishSyncRequest.missing_indices)
+  return &missing_indices_;
+}
+
+// -------------------------------------------------------------------
+
 // BlsMessage
 
 // optional .shardora.bls.protobuf.VerifyVecBrdReq verify_brd = 1;
@@ -5451,13 +5709,13 @@ inline void BlsMessage::set_allocated_check_swapkey_req(::shardora::bls::protobu
 
 // optional uint32 index = 6;
 inline bool BlsMessage::has_index() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void BlsMessage::set_has_index() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void BlsMessage::clear_has_index() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void BlsMessage::clear_index() {
   index_ = 0u;
@@ -5475,13 +5733,13 @@ inline void BlsMessage::set_index(::google::protobuf::uint32 value) {
 
 // optional uint64 elect_height = 7;
 inline bool BlsMessage::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void BlsMessage::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void BlsMessage::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void BlsMessage::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
@@ -5497,9 +5755,69 @@ inline void BlsMessage::set_elect_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:shardora.bls.protobuf.BlsMessage.elect_height)
 }
 
+// optional .shardora.bls.protobuf.FinishSyncRequest finish_sync_req = 8;
+inline bool BlsMessage::has_finish_sync_req() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void BlsMessage::set_has_finish_sync_req() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void BlsMessage::clear_has_finish_sync_req() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void BlsMessage::clear_finish_sync_req() {
+  if (finish_sync_req_ != NULL) finish_sync_req_->Clear();
+  clear_has_finish_sync_req();
+}
+inline const ::shardora::bls::protobuf::FinishSyncRequest& BlsMessage::_internal_finish_sync_req() const {
+  return *finish_sync_req_;
+}
+inline const ::shardora::bls::protobuf::FinishSyncRequest& BlsMessage::finish_sync_req() const {
+  const ::shardora::bls::protobuf::FinishSyncRequest* p = finish_sync_req_;
+  // @@protoc_insertion_point(field_get:shardora.bls.protobuf.BlsMessage.finish_sync_req)
+  return p != NULL ? *p : *reinterpret_cast<const ::shardora::bls::protobuf::FinishSyncRequest*>(
+      &::shardora::bls::protobuf::_FinishSyncRequest_default_instance_);
+}
+inline ::shardora::bls::protobuf::FinishSyncRequest* BlsMessage::release_finish_sync_req() {
+  // @@protoc_insertion_point(field_release:shardora.bls.protobuf.BlsMessage.finish_sync_req)
+  clear_has_finish_sync_req();
+  ::shardora::bls::protobuf::FinishSyncRequest* temp = finish_sync_req_;
+  finish_sync_req_ = NULL;
+  return temp;
+}
+inline ::shardora::bls::protobuf::FinishSyncRequest* BlsMessage::mutable_finish_sync_req() {
+  set_has_finish_sync_req();
+  if (finish_sync_req_ == NULL) {
+    auto* p = CreateMaybeMessage<::shardora::bls::protobuf::FinishSyncRequest>(GetArenaNoVirtual());
+    finish_sync_req_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:shardora.bls.protobuf.BlsMessage.finish_sync_req)
+  return finish_sync_req_;
+}
+inline void BlsMessage::set_allocated_finish_sync_req(::shardora::bls::protobuf::FinishSyncRequest* finish_sync_req) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete finish_sync_req_;
+  }
+  if (finish_sync_req) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      finish_sync_req = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, finish_sync_req, submessage_arena);
+    }
+    set_has_finish_sync_req();
+  } else {
+    clear_has_finish_sync_req();
+  }
+  finish_sync_req_ = finish_sync_req;
+  // @@protoc_insertion_point(field_set_allocated:shardora.bls.protobuf.BlsMessage.finish_sync_req)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -5538,6 +5856,18 @@ inline void BlsMessage::set_elect_height(::google::protobuf::uint64 value) {
 }  // namespace protobuf
 }  // namespace bls
 }  // namespace shardora
+
+namespace google {
+namespace protobuf {
+
+template <> struct is_proto_enum< ::shardora::bls::protobuf::StakeOperation> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::shardora::bls::protobuf::StakeOperation>() {
+  return ::shardora::bls::protobuf::StakeOperation_descriptor();
+}
+
+}  // namespace protobuf
+}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
 

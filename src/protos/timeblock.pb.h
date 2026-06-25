@@ -180,6 +180,13 @@ class TimeBlock : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 vss_random() const;
   void set_vss_random(::google::protobuf::uint64 value);
 
+  // optional uint64 nonce = 4;
+  bool has_nonce() const;
+  void clear_nonce();
+  static const int kNonceFieldNumber = 4;
+  ::google::protobuf::uint64 nonce() const;
+  void set_nonce(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:shardora.timeblock.protobuf.TimeBlock)
  private:
   void set_has_height();
@@ -188,6 +195,8 @@ class TimeBlock : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_timestamp();
   void set_has_vss_random();
   void clear_has_vss_random();
+  void set_has_nonce();
+  void clear_has_nonce();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -195,6 +204,7 @@ class TimeBlock : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint64 timestamp_;
   ::google::protobuf::uint64 vss_random_;
+  ::google::protobuf::uint64 nonce_;
   friend struct ::protobuf_protos_2ftimeblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -278,6 +288,30 @@ inline void TimeBlock::set_vss_random(::google::protobuf::uint64 value) {
   set_has_vss_random();
   vss_random_ = value;
   // @@protoc_insertion_point(field_set:shardora.timeblock.protobuf.TimeBlock.vss_random)
+}
+
+// optional uint64 nonce = 4;
+inline bool TimeBlock::has_nonce() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void TimeBlock::set_has_nonce() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void TimeBlock::clear_has_nonce() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void TimeBlock::clear_nonce() {
+  nonce_ = GOOGLE_ULONGLONG(0);
+  clear_has_nonce();
+}
+inline ::google::protobuf::uint64 TimeBlock::nonce() const {
+  // @@protoc_insertion_point(field_get:shardora.timeblock.protobuf.TimeBlock.nonce)
+  return nonce_;
+}
+inline void TimeBlock::set_nonce(::google::protobuf::uint64 value) {
+  set_has_nonce();
+  nonce_ = value;
+  // @@protoc_insertion_point(field_set:shardora.timeblock.protobuf.TimeBlock.nonce)
 }
 
 #ifdef __GNUC__

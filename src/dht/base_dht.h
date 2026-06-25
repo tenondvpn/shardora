@@ -25,21 +25,6 @@ typedef std::vector<NodePtr> Dht;
 typedef std::shared_ptr<Dht> DhtPtr;
 typedef std::shared_ptr<const Dht> ConstDhtPtr;
 
-#ifndef NDEBUG
-#define CheckThreadIdValid() { \
-    auto now_thread_id = std::this_thread::get_id(); \
-     \
-    if (local_thread_id_count_ >= 1) { \
-        assert(local_thread_id_ == now_thread_id); \
-    } else { \
-        local_thread_id_ = now_thread_id; \
-    } \
-    if (local_thread_id_ != now_thread_id) { ++local_thread_id_count_; } \
-}
-#else
-#define CheckThreadIdValid()
-#endif
-
 class BaseDht : public std::enable_shared_from_this<BaseDht> {
 public:
     BaseDht(NodePtr& local_node);

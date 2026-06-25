@@ -17,7 +17,7 @@
 #include "dht/dht_utils.h"
 #include "protos/block.pb.h"
 
-namespace shardora {
+namespace seth {
 
 namespace ck {
 
@@ -82,8 +82,8 @@ public:
             uint64_t height,
             uint64_t prev_height,
             const std::vector<dht::NodePtr>& genesis_nodes) {
-        auto zjc_block = std::make_shared<block::protobuf::Block>();
-        auto tx_list = zjc_block->mutable_tx_list();
+        auto seth_block = std::make_shared<block::protobuf::Block>();
+        auto tx_list = seth_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
         tx_info->set_type(1);
         tx_info->set_from("from");
@@ -138,10 +138,10 @@ public:
         auto ec_block_attr = tx_info->add_attr();
         ec_block_attr->set_key("key");
         ec_block_attr->set_value(ec_block.SerializeAsString());
-        zjc_block->set_prehash(root_pre_hash);
-        zjc_block->set_version(common::kTransactionVersion);
-        zjc_block->set_pool_index(common::kRootChainPoolIndex);
-        zjc_block->set_height(height);
+        seth_block->set_prehash(root_pre_hash);
+        seth_block->set_version(common::kTransactionVersion);
+        seth_block->set_pool_index(common::kRootChainPoolIndex);
+        seth_block->set_height(height);
         common::Bitmap root_bitmap_(1024);
         for (uint32_t i = 0; i < 1024; ++i) {
             root_bitmap_.Set(i);
@@ -149,12 +149,12 @@ public:
 
         const auto& bitmap_data = root_bitmap_.data();
         for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            zjc_block->add_bitmap(bitmap_data[i]);
+            seth_block->add_bitmap(bitmap_data[i]);
         }
 
-        zjc_block->set_network_id(2);
-        zjc_block->set_hash(block::GetBlockHash(*zjc_block));
-        return zjc_block;
+        seth_block->set_network_id(2);
+        seth_block->set_hash(block::GetBlockHash(*seth_block));
+        return seth_block;
     }
 };
 
@@ -197,4 +197,4 @@ TEST_F(TestCk, All) {
 
 }  // namespace ck
 
-}  // namespace shardora
+}  // namespace seth

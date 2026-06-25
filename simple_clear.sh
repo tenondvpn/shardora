@@ -65,21 +65,21 @@ init() {
 }
 
 make_package() {
-    rm -rf /root/zjnodes/shardora/pkg
-    mkdir /root/zjnodes/shardora/pkg
-    cp /root/zjnodes/shardora/shardora /root/zjnodes/shardora/pkg
-    cp /root/zjnodes/shardora/conf/GeoLite2-City.mmdb /root/zjnodes/shardora/pkg
-    cp /root/zjnodes/shardora/conf/log4cpp.properties /root/zjnodes/shardora/pkg
-    cp /root/shardora/shards3 /root/zjnodes/shardora/pkg
-    cp /root/shardora/root_nodes /root/zjnodes/shardora/pkg/shards2
-    cp /root/shardora/temp_cmd.sh /root/zjnodes/shardora/pkg
-    cp /root/shardora/start_cmd.sh /root/zjnodes/shardora/pkg
-    cp /root/shardora/wondershaper /root/zjnodes/shardora/pkg
-    cp -rf /root/zjnodes/shardora/root_db /root/zjnodes/shardora/pkg/shard_db_2
-    cp -rf /root/zjnodes/shardora/shard_db_3 /root/zjnodes/shardora/pkg
-    cp -rf /root/zjnodes/temp /root/zjnodes/shardora/pkg
-    cp -rf /root/shardora/gdb/* /root/zjnodes/shardora/pkg
-    cd /root/zjnodes/shardora/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1
+    rm -rf /root/shardoras/shardora/pkg
+    mkdir /root/shardoras/shardora/pkg
+    cp /root/shardoras/shardora/shardora /root/shardoras/shardora/pkg
+    cp /root/shardoras/shardora/conf/GeoLite2-City.mmdb /root/shardoras/shardora/pkg
+    cp /root/shardoras/shardora/conf/log4cpp.properties /root/shardoras/shardora/pkg
+    cp /root/shardora/shards3 /root/shardoras/shardora/pkg
+    cp /root/shardora/root_nodes /root/shardoras/shardora/pkg/shards2
+    cp /root/shardora/temp_cmd.sh /root/shardoras/shardora/pkg
+    cp /root/shardora/start_cmd.sh /root/shardoras/shardora/pkg
+    cp /root/shardora/wondershaper /root/shardoras/shardora/pkg
+    cp -rf /root/shardoras/shardora/root_db /root/shardoras/shardora/pkg/shard_db_2
+    cp -rf /root/shardoras/shardora/shard_db_3 /root/shardoras/shardora/pkg
+    cp -rf /root/shardoras/temp /root/shardoras/shardora/pkg
+    cp -rf /root/shardora/gdb/* /root/shardoras/shardora/pkg
+    cd /root/shardoras/shardora/ && tar -zcvf pkg.tar.gz ./pkg > /dev/null 2>&1
 }
 
 get_bootstrap() {
@@ -151,7 +151,7 @@ scp_package() {
     node_ips_array=(${node_ips//,/ })
     run_cmd_count=0
     for ip in "${node_ips_array[@]}"; do 
-        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/zjnodes/shardora/pkg.tar.gz root@$ip:/root &
+        sshpass -p $PASSWORD scp -o ConnectTimeout=10  -o StrictHostKeyChecking=no /root/shardoras/shardora/pkg.tar.gz root@$ip:/root &
         run_cmd_count=$((run_cmd_count + 1))
         if (($run_cmd_count >= 100)); then
             check_cmd_finished

@@ -10,7 +10,7 @@
 #include "network/universal_manager.h"
 #include "network/universal.h"
 
-namespace shardora {
+namespace seth {
 
 namespace network {
 
@@ -43,18 +43,17 @@ void DhtManager::Destroy() {
 
 void DhtManager::RegisterDht(uint32_t net_id, dht::BaseDhtPtr& dht) {
     if (net_id >= kConsensusWaitingShardEndNetworkId) {
-        SHARDORA_ERROR("invalid network id: %u", net_id);
+        SETH_ERROR("invalid network id: %u", net_id);
         return;
     }
 
     if (dhts_[net_id] != nullptr) {
-        SHARDORA_ERROR("dht has registered: %u", net_id);
+        SETH_ERROR("dht has registered: %u", net_id);
         return;
     }
 
     dhts_[net_id] = dht;
     dht_map_[net_id] = dht;
-    CHECK_MEMORY_SIZE(dht_map_);
     dht_map_ptr_ = std::make_shared<std::unordered_map<uint32_t, dht::BaseDhtPtr>>(dht_map_);
 }
 
@@ -67,13 +66,12 @@ void DhtManager::UnRegisterDht(uint32_t net_id) {
         return;
     }
 
-    assert(dhts_[net_id] != nullptr);
+    //assert(dhts_[net_id] != nullptr);
     dhts_[net_id]->Destroy();
     dhts_[net_id] = nullptr;
     auto iter = dht_map_.find(net_id);
     if (iter != dht_map_.end()) {
         dht_map_.erase(iter);
-        CHECK_MEMORY_SIZE(dht_map_);
     }
 
     dht_map_ptr_ = std::make_shared<std::unordered_map<uint32_t, dht::BaseDhtPtr>>(dht_map_);
@@ -103,12 +101,18 @@ void DhtManager::DropNode(const std::string& ip, uint16_t port) {
 }
 
 void DhtManager::Join(const dht::NodePtr& node) {
+    if (node == nullptr) {
+        return;
+    }
     auto dht_map_ptr = dht_map_ptr_;
     for (auto iter = dht_map_ptr->begin(); iter != dht_map_ptr->end(); ++iter) {
+        if (iter->second == nullptr) {
+            continue;
+        }
         iter->second->UniversalJoin(node);
     }
 }
 
 }  // namespace network
 
-}  // namespace shardora
+}  // namespace seth

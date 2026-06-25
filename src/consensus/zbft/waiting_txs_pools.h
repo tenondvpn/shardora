@@ -35,8 +35,9 @@ public:
             uint32_t pool_index,
             uint32_t count,
             ::google::protobuf::RepeatedPtrField<pools::protobuf::TxMessage>* txs,
-            pools::CheckAddrNonceValidFunction tx_valid_func) {
-        pool_mgr_->GetTxSyncToLeader(leader_idx, pool_index, count, txs, tx_valid_func);
+            pools::CheckAddrNonceValidFunction tx_valid_func,
+            const std::unordered_map<std::string, uint64_t>& leader_nonce_map) {
+        pool_mgr_->GetTxSyncToLeader(leader_idx, pool_index, count, txs, tx_valid_func, leader_nonce_map);
     }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxsIdempotently(
@@ -44,12 +45,10 @@ public:
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func);
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, const std::string& tx_hash);
-    std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(
         uint32_t pool_index, 
         bool leader,
         pools::CheckAddrNonceValidFunction addr_nonce_valid_func);
-    std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 

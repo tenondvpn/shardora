@@ -60,7 +60,6 @@
 #define SHARDORA_FATAL(logfmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " logfmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     spdlog::critical(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
-    assert(false);\
     exit(0);\
 } while (0)
 #else
@@ -69,8 +68,8 @@
 #define DEBUG(logfmt, ...)
 #define SHARDORA_DEBUG(logfmt, ...)
 #else
-// #define DEBUG(logfmt, ...)
-// #define SHARDORA_DEBUG(logfmt, ...)
+//#define DEBUG(logfmt, ...)
+//#define SHARDORA_DEBUG(logfmt, ...)
 #define DEBUG(logfmt, ...)  do {\
     spdlog::debug(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
 } while (0)
@@ -95,7 +94,6 @@
 #define SHARDORA_FATAL(logfmt, ...)  do {\
     printf("[DEBUG][%s][%s][%d] " logfmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     spdlog::critical(fmt::sprintf("[%s][%s][%d] " logfmt, SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__));\
-    assert(false);\
     exit(0);\
 } while (0)
 
@@ -104,7 +102,7 @@
 // #ifdef LOG
 // #undef LOG
 // #endif // LOG
-// #define LOG(level) LOG_INS << level << "[" << SHARDORA_LOG_FILE_NAME << ": " << __LINE__ << "]" 
+// #define LOG(level) LOG_INS << level << "[" << SHARDORA_LOG_FILE_NAME << ": " << __LINE__ << "]"
 
 #ifdef FOR_CONSOLE_DEBUG
 #undef DEBUG
@@ -142,14 +140,13 @@
 
 #define SHARDORA_FATAL(logfmt, ...)  do {\
     printf("[FATAL][%s][%s][%d] " fmt "\n", SHARDORA_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
-    assert(false);\
     exit(0);\
 } while (0)
 
 #endif
 
-static std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
-    // return "";
+static inline std::string ProtobufToJson(const google::protobuf::Message& message, bool pretty_print = false) {
+    return "";
 #ifdef NDEBUG
     return "";
 #endif

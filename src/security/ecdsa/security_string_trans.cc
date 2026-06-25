@@ -12,6 +12,13 @@ SecurityStringTrans* SecurityStringTrans::Instance() {
     return &ins;
 }
 
+std::shared_ptr<BIGNUM> SecurityStringTrans::StringToBignum(const char* src, uint32_t length) {
+    common::AutoSpinLock guard(bitnum_mutex_);
+    return std::shared_ptr<BIGNUM>(
+            BN_bin2bn((unsigned char*)(src), length, NULL),
+            BN_clear_free);
+}
+
 std::shared_ptr<BIGNUM> SecurityStringTrans::StringToBignum(const std::string& src) {
     if (src.empty()) {
         return nullptr;

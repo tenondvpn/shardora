@@ -111,7 +111,7 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay, des_shard_id, keypair) {
+function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prefund, des_shard_id, keypair) {
 	var public_key = keypair["pk"];
 	var private_key = keypair["sk"];
 	
@@ -142,14 +142,14 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
 
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    var prefund_buf = new Buffer(8);
+    var big = ~~(prefund / MAX_UINT32)
+    var low = (prefund % MAX_UINT32) - big
+    prefund_buf.writeUInt32LE(big, 4)
+    prefund_buf.writeUInt32LE(low, 0)
 
     var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), Buffer.from(input, 'hex'), prepay_buf]);
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), Buffer.from(input, 'hex'), prefund_buf]);
     var kechash = keccak256(message_buf)
 
     var digest = Secp256k1.uint256(kechash, 16)
@@ -178,14 +178,14 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
         'attrs_size': 4,
         "bytes_code": contract_bytes,
         "input": input,
-        "pepay": prepay,
+        "prefund": prefund,
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
     }
 }
 
-function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type, des_shard_id, keypair) {
+function create_tx(to, amount, gas_limit, gas_price, prefund, tx_type, des_shard_id, keypair) {
 	var public_key = keypair["pk"];
 	var private_key = keypair["sk"];
 	
@@ -214,14 +214,14 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type, des_shard_
     var low = (tx_type % MAX_UINT32) - big
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    var prefund_buf = new Buffer(8);
+    var big = ~~(prefund / MAX_UINT32)
+    var low = (prefund % MAX_UINT32) - big
+    prefund_buf.writeUInt32LE(big, 4)
+    prefund_buf.writeUInt32LE(low, 0)
 
     var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prefund_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     const sig = Secp256k1.ecsign(private_key, digest)
@@ -241,7 +241,7 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type, des_shard_
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
-        'pepay': prepay
+        'prefund': prefund
     }
 }
 

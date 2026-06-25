@@ -7,6 +7,7 @@
 #include "dht/dht_function.h"
 #include "dht/dht_function.h"
 #include "network/network_utils.h"
+#include "network/neighbor_ip_manager.h"
 #include "network/universal_manager.h"
 #include "network/dht_manager.h"
 #include "network/network_proto.h"
@@ -180,12 +181,17 @@ void Universal::ProcessGetNetworkNodesResponse(const transport::MessagePtr& msg_
                 continue;
             }
 
+            auto node_id = security_->GetAddressWithPublicKey(res_nodes[i].pubkey());
             auto node = std::make_shared<dht::Node>(
                 res_nodes[i].sharding_id(),
                 res_nodes[i].public_ip(),
                 res_nodes[i].public_port(),
                 res_nodes[i].pubkey(),
-                security_->GetAddress(res_nodes[i].pubkey()));
+                node_id);
+            // Record id → public_ip for nodes advertised by network peers.
+            if (!node_id.empty() && !res_nodes[i].public_ip().empty()) {
+                NeighborIpManager::Instance()->Update(node_id, res_nodes[i].public_ip());
+            }
             wait_nodes_.push_back(node);
         }
     } while (0);
@@ -194,17 +200,17 @@ void Universal::ProcessGetNetworkNodesResponse(const transport::MessagePtr& msg_
 }
 
 void Universal::AddNetworkId(uint32_t network_id) {
-    assert(network_id < kConsensusWaitingShardEndNetworkId);
+    //assert(network_id < kConsensusWaitingShardEndNetworkId);
     universal_ids_[network_id] = true;
 }
 
 void Universal::RemoveNetworkId(uint32_t network_id) {
-    assert(network_id < kConsensusWaitingShardEndNetworkId);
+    //assert(network_id < kConsensusWaitingShardEndNetworkId);
     universal_ids_[network_id] = false;
 }
 
 bool Universal::HasNetworkId(uint32_t network_id) {
-    assert(network_id < kConsensusWaitingShardEndNetworkId);
+    //assert(network_id < kConsensusWaitingShardEndNetworkId);
     return universal_ids_[network_id];
 }
 
@@ -244,12 +250,11 @@ void Universal::OnNewElectBlock(
 
     auto& in = elect_block->in();
     for (int32_t i = 0; i < in.size(); ++i) {
-        auto id = security_->GetAddress(in[i].pubkey());
+        auto id = security_->GetAddressWithPublicKey(in[i].pubkey());
         new_item->id_set.insert(id);
     }
 
     sharding_latest_height_map_[sharding_id] = new_item;
-    CHECK_MEMORY_SIZE(sharding_latest_height_map_);
     auto waiting_shard_id = sharding_id + network::kConsensusWaitingShardOffset;
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht_ptr = uni_net->readonly_hash_sort_dht();

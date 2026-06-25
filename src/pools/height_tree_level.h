@@ -24,6 +24,7 @@ public:
     void PrintTree();
     void FlushToDb(db::DbWriteBatch& db_batch);
     void GetTreeData(std::vector<uint64_t>* data_vec);
+    bool HasMissingHeights() const;
 
 private:
     typedef std::unordered_map<uint64_t, LeafHeightTreePtr> TreeNodeMap;

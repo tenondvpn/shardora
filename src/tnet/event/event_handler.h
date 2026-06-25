@@ -39,7 +39,8 @@ public:
         }
 
         auto now_ms = common::TimeUtils::TimestampMs();
-        if (should_stop_timeout_ms_ > 0 && now_ms >= should_stop_timeout_ms_ + 120000lu) {
+        auto timeout_ms = should_stop_timeout_ms_.load(std::memory_order_relaxed);
+        if (timeout_ms > 0 && now_ms >= timeout_ms + 120000lu) {
             stoped_ = true;
         }
 
@@ -48,7 +49,7 @@ public:
 
     void ShouldStop() {
         should_stop_ = true;
-        should_stop_timeout_ms_ = common::TimeUtils::TimestampMs();
+        should_stop_timeout_ms_.store(common::TimeUtils::TimestampMs(), std::memory_order_relaxed);
     }
 
     void Stop() {
@@ -58,10 +59,14 @@ public:
 
 private:
     
-    int32_t event_type_{ 0 };
+    // Bug fix #20: event_type_ accessed from epoll thread and IO threads without
+    // synchronization. Made atomic to prevent torn reads/writes.
+    std::atomic<int32_t> event_type_{ 0 };
     std::atomic<bool> should_stop_ = false;
     std::atomic<bool> stoped_ = false;
-    uint64_t should_stop_timeout_ms_ = 0;
+    // Bug fix #21: should_stop_timeout_ms_ was a plain uint64_t written by one
+    // thread and read by another (CheckStoped). Made atomic.
+    std::atomic<uint64_t> should_stop_timeout_ms_{ 0 };
 
 };
 

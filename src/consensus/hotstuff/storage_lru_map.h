@@ -20,7 +20,7 @@ public:
     ~StorageLruMap() {}
 
     void insert(const std::string& key, const block::protobuf::KeyValueInfo& value) {
-        auto kv_pair_ptr = std::make_shared<std::pair<std::string, std::string>>(
+        auto kv_pair_ptr = std::make_shared<std::pair<std::string, block::protobuf::KeyValueInfo>>(
             std::make_pair(key, value));
         uint32_t index = common::Hash::Hash32(key) % kBucketSize;
         if (item_map_.count(key)) {
@@ -32,8 +32,6 @@ public:
         item_list_.push_front(key);
         item_map_[key] = item_list_.begin();
         index_data_map_[index] = kv_pair_ptr;
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(item_list_, "list");
-        CHECK_MEMORY_SIZE_WITH_MESSAGE(item_map_, "map");
         if (item_list_.size() > kBucketSize) {
             std::string& last = item_list_.back();
             item_map_.erase(last);

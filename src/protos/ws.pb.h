@@ -139,8 +139,8 @@ enum StepType {
   kConsensusRootTimeBlock = 3,
   kConsensusCreateGenesisAcount = 4,
   kConsensusLocalTos = 5,
-  kContractCreate = 6,
-  kContractGasPrepayment = 7,
+  kCreateContract = 6,
+  kContractGasPrefund = 7,
   kContractExcute = 8,
   kRootCreateAddress = 9,
   kRootCreateAddressCrossSharding = 11,
@@ -177,7 +177,7 @@ enum InitInfoTagType {
   kC2cNewSell = 8,
   kC2cNewOrder = 9,
   kC2cConfirm = 10,
-  kC2cPrepayment = 11,
+  kC2cPrefund = 11,
   kC2cRefreshLocal = 12,
   kC2cCancelOrder = 13,
   kC2cCancelSell = 14,
@@ -241,13 +241,13 @@ enum Status {
   kSellUserReleased = 11,
   kSellManagerWaitingRelease = 12,
   kSellManagerReleased = 13,
-  kSellPrepayment = 14,
-  kSellWaitingPrepayment = 15,
+  kSellPrefund = 14,
+  kSellWaitingPrefund = 15,
   kSellWaitingConfirmTx = 16,
   kSellForceReleaseWaitingTx = 17,
   kSellForceReleased = 18,
   kReportedByOrder = 19,
-  kSellTxPrepaymentError = 125,
+  kSellTxPrefundError = 125,
   kSellTxCreateError = 126,
   kSellTxUserReleaseError = 127,
   kSellTxManagerReleaseError = 128,
@@ -542,12 +542,12 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 amount() const;
   void set_amount(::google::protobuf::uint64 value);
 
-  // optional uint64 contract_prepayment = 11;
-  bool has_contract_prepayment() const;
-  void clear_contract_prepayment();
-  static const int kContractPrepaymentFieldNumber = 11;
-  ::google::protobuf::uint64 contract_prepayment() const;
-  void set_contract_prepayment(::google::protobuf::uint64 value);
+  // optional uint64 contract_prefund = 11;
+  bool has_contract_prefund() const;
+  void clear_contract_prefund();
+  static const int kContractPrefundFieldNumber = 11;
+  ::google::protobuf::uint64 contract_prefund() const;
+  void set_contract_prefund(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.ws.protobuf.TxMessage)
  private:
@@ -571,8 +571,8 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_amount();
   void set_has_step();
   void clear_has_step();
-  void set_has_contract_prepayment();
-  void clear_has_contract_prepayment();
+  void set_has_contract_prefund();
+  void clear_has_contract_prefund();
   void set_has_contract_code();
   void clear_has_contract_code();
   void set_has_contract_input();
@@ -602,7 +602,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint32 version_;
   int step_;
   ::google::protobuf::uint64 amount_;
-  ::google::protobuf::uint64 contract_prepayment_;
+  ::google::protobuf::uint64 contract_prefund_;
   friend struct ::protobuf_protos_2fws_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2453,12 +2453,12 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::ws::protobuf::Appeal* mutable_appeal();
   void set_allocated_appeal(::shardora::ws::protobuf::Appeal* appeal);
 
-  // optional uint64 prepayment = 6;
-  bool has_prepayment() const;
-  void clear_prepayment();
-  static const int kPrepaymentFieldNumber = 6;
-  ::google::protobuf::uint64 prepayment() const;
-  void set_prepayment(::google::protobuf::uint64 value);
+  // optional uint64 prefund = 6;
+  bool has_prefund() const;
+  void clear_prefund();
+  static const int kPrefundFieldNumber = 6;
+  ::google::protobuf::uint64 prefund() const;
+  void set_prefund(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:shardora.ws.protobuf.C2cMessage)
  private:
@@ -2470,8 +2470,8 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   void clear_has_report();
   void set_has_get_sell();
   void clear_has_get_sell();
-  void set_has_prepayment();
-  void clear_has_prepayment();
+  void set_has_prefund();
+  void clear_has_prefund();
   void set_has_c2c_addr();
   void clear_has_c2c_addr();
   void set_has_user_order_info();
@@ -2490,7 +2490,7 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::shardora::ws::protobuf::GetSell* get_sell_;
   ::shardora::ws::protobuf::SellInfo* user_order_info_;
   ::shardora::ws::protobuf::Appeal* appeal_;
-  ::google::protobuf::uint64 prepayment_;
+  ::google::protobuf::uint64 prefund_;
   friend struct ::protobuf_protos_2fws_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -4021,34 +4021,34 @@ inline ::shardora::ws::protobuf::StepType TxMessage::step() const {
   return static_cast< ::shardora::ws::protobuf::StepType >(step_);
 }
 inline void TxMessage::set_step(::shardora::ws::protobuf::StepType value) {
-  assert(::shardora::ws::protobuf::StepType_IsValid(value));
+  //assert(::shardora::ws::protobuf::StepType_IsValid(value));
   set_has_step();
   step_ = value;
   // @@protoc_insertion_point(field_set:shardora.ws.protobuf.TxMessage.step)
 }
 
-// optional uint64 contract_prepayment = 11;
-inline bool TxMessage::has_contract_prepayment() const {
+// optional uint64 contract_prefund = 11;
+inline bool TxMessage::has_contract_prefund() const {
   return (_has_bits_[0] & 0x00008000u) != 0;
 }
-inline void TxMessage::set_has_contract_prepayment() {
+inline void TxMessage::set_has_contract_prefund() {
   _has_bits_[0] |= 0x00008000u;
 }
-inline void TxMessage::clear_has_contract_prepayment() {
+inline void TxMessage::clear_has_contract_prefund() {
   _has_bits_[0] &= ~0x00008000u;
 }
-inline void TxMessage::clear_contract_prepayment() {
-  contract_prepayment_ = GOOGLE_ULONGLONG(0);
-  clear_has_contract_prepayment();
+inline void TxMessage::clear_contract_prefund() {
+  contract_prefund_ = GOOGLE_ULONGLONG(0);
+  clear_has_contract_prefund();
 }
-inline ::google::protobuf::uint64 TxMessage::contract_prepayment() const {
-  // @@protoc_insertion_point(field_get:shardora.ws.protobuf.TxMessage.contract_prepayment)
-  return contract_prepayment_;
+inline ::google::protobuf::uint64 TxMessage::contract_prefund() const {
+  // @@protoc_insertion_point(field_get:shardora.ws.protobuf.TxMessage.contract_prefund)
+  return contract_prefund_;
 }
-inline void TxMessage::set_contract_prepayment(::google::protobuf::uint64 value) {
-  set_has_contract_prepayment();
-  contract_prepayment_ = value;
-  // @@protoc_insertion_point(field_set:shardora.ws.protobuf.TxMessage.contract_prepayment)
+inline void TxMessage::set_contract_prefund(::google::protobuf::uint64 value) {
+  set_has_contract_prefund();
+  contract_prefund_ = value;
+  // @@protoc_insertion_point(field_set:shardora.ws.protobuf.TxMessage.contract_prefund)
 }
 
 // optional bytes contract_code = 12;
@@ -4470,7 +4470,7 @@ inline ::shardora::ws::protobuf::Status OrderInfo::status() const {
   return static_cast< ::shardora::ws::protobuf::Status >(status_);
 }
 inline void OrderInfo::set_status(::shardora::ws::protobuf::Status value) {
-  assert(::shardora::ws::protobuf::Status_IsValid(value));
+  //assert(::shardora::ws::protobuf::Status_IsValid(value));
   set_has_status();
   status_ = value;
   // @@protoc_insertion_point(field_set:shardora.ws.protobuf.OrderInfo.status)
@@ -4613,7 +4613,7 @@ inline ::shardora::ws::protobuf::ReceiveType ReceivableInfo::type() const {
   return static_cast< ::shardora::ws::protobuf::ReceiveType >(type_);
 }
 inline void ReceivableInfo::set_type(::shardora::ws::protobuf::ReceiveType value) {
-  assert(::shardora::ws::protobuf::ReceiveType_IsValid(value));
+  //assert(::shardora::ws::protobuf::ReceiveType_IsValid(value));
   set_has_type();
   type_ = value;
   // @@protoc_insertion_point(field_set:shardora.ws.protobuf.ReceivableInfo.type)
@@ -6971,28 +6971,28 @@ inline void C2cMessage::set_allocated_get_sell(::shardora::ws::protobuf::GetSell
   // @@protoc_insertion_point(field_set_allocated:shardora.ws.protobuf.C2cMessage.get_sell)
 }
 
-// optional uint64 prepayment = 6;
-inline bool C2cMessage::has_prepayment() const {
+// optional uint64 prefund = 6;
+inline bool C2cMessage::has_prefund() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void C2cMessage::set_has_prepayment() {
+inline void C2cMessage::set_has_prefund() {
   _has_bits_[0] |= 0x00000080u;
 }
-inline void C2cMessage::clear_has_prepayment() {
+inline void C2cMessage::clear_has_prefund() {
   _has_bits_[0] &= ~0x00000080u;
 }
-inline void C2cMessage::clear_prepayment() {
-  prepayment_ = GOOGLE_ULONGLONG(0);
-  clear_has_prepayment();
+inline void C2cMessage::clear_prefund() {
+  prefund_ = GOOGLE_ULONGLONG(0);
+  clear_has_prefund();
 }
-inline ::google::protobuf::uint64 C2cMessage::prepayment() const {
-  // @@protoc_insertion_point(field_get:shardora.ws.protobuf.C2cMessage.prepayment)
-  return prepayment_;
+inline ::google::protobuf::uint64 C2cMessage::prefund() const {
+  // @@protoc_insertion_point(field_get:shardora.ws.protobuf.C2cMessage.prefund)
+  return prefund_;
 }
-inline void C2cMessage::set_prepayment(::google::protobuf::uint64 value) {
-  set_has_prepayment();
-  prepayment_ = value;
-  // @@protoc_insertion_point(field_set:shardora.ws.protobuf.C2cMessage.prepayment)
+inline void C2cMessage::set_prefund(::google::protobuf::uint64 value) {
+  set_has_prefund();
+  prefund_ = value;
+  // @@protoc_insertion_point(field_set:shardora.ws.protobuf.C2cMessage.prefund)
 }
 
 // optional bytes c2c_addr = 7;
@@ -7582,7 +7582,7 @@ inline ::shardora::ws::protobuf::InitInfoTagType InitInfo::tag() const {
   return static_cast< ::shardora::ws::protobuf::InitInfoTagType >(tag_);
 }
 inline void InitInfo::set_tag(::shardora::ws::protobuf::InitInfoTagType value) {
-  assert(::shardora::ws::protobuf::InitInfoTagType_IsValid(value));
+  //assert(::shardora::ws::protobuf::InitInfoTagType_IsValid(value));
   set_has_tag();
   tag_ = value;
   // @@protoc_insertion_point(field_set:shardora.ws.protobuf.InitInfo.tag)

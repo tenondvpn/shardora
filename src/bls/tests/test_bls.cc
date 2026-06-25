@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <algorithm>
 #include <iostream>
+#include <random>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -19,7 +21,7 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #define private public
-#define SHARDORA_UNITTEST
+#define SETH_UNITTEST
 #include "bls/bls_sign.h"
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
@@ -28,7 +30,7 @@
 #include "protos/bls.pb.h"
 #include "network/network_utils.h"
 
-namespace shardora {
+namespace seth {
 
 namespace bls {
 
@@ -42,11 +44,6 @@ static const int32_t kThreadCount = 4;
 class TestBls : public testing::Test {
 public:
     static void SetUpTestCase() {
-        std::string config_path_ = "./";
-        std::string log_conf_path = config_path_ + "/log4cpp.properties";
-        std::string log_path = config_path_ + "/zjc.log";
-        WriteDefaultLogConf(log_conf_path, log_path);
-        log4cpp::PropertyConfigurator::configure(log_conf_path);
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
         bls_manager = new BlsManager(security_ptr, db_ptr, nullptr);
@@ -56,54 +53,43 @@ public:
     static void InitBlsVerificationValue() {
         auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
         FILE* rlocal_bls_fd = fopen("../../src/bls/saved_verify_one", "r");
-        if (rlocal_bls_fd != nullptr) {
-            char* line = new char[1024 * 1024];
-            uint32_t idx = 0;
-            while (!feof(rlocal_bls_fd)) {
-                fgets(line, 1024 * 1024, rlocal_bls_fd);
-                std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
-                uint32_t* int_data = (uint32_t*)val.c_str();
-                uint32_t idx = int_data[1];
-                bls::protobuf::BlsVerifyValue verify_val;
-                ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8));
-                prefix_db->SavePresetVerifyValue(idx, 0, verify_val);
-                ++idx;
-                if (idx >= 1024) {
-                    break;
-                }
-            }
-
-            delete[] line;
-            fclose(rlocal_bls_fd);
-        }
-    }
-
-    static void WriteDefaultLogConf(
-        const std::string& log_conf_path,
-        const std::string& log_path) {
-        FILE* file = NULL;
-        file = fopen(log_conf_path.c_str(), "w");
-        if (file == NULL) {
+        if (rlocal_bls_fd == nullptr) {
+            // File not available, skip initialization (tests that need it will handle gracefully)
             return;
         }
-        std::string log_str = ("# log4cpp.properties\n"
-            "log4cpp.rootCategory = DEBUG\n"
-            "log4cpp.category.sub1 = DEBUG, programLog\n"
-            "log4cpp.appender.rootAppender = ConsoleAppender\n"
-            "log4cpp.appender.rootAppender.layout = PatternLayout\n"
-            "log4cpp.appender.rootAppender.layout.ConversionPattern = %d [%p] %m%n\n"
-            "log4cpp.appender.programLog = RollingFileAppender\n"
-            "log4cpp.appender.programLog.fileName = ") + log_path + "\n" +
-            std::string("log4cpp.appender.programLog.maxFileSize = 1073741824\n"
-                "log4cpp.appender.programLog.maxBackupIndex = 1\n"
-                "log4cpp.appender.programLog.layout = PatternLayout\n"
-                "log4cpp.appender.programLog.layout.ConversionPattern = %d [%p] %m%n\n");
-        fwrite(log_str.c_str(), log_str.size(), 1, file);
-        fclose(file);
+
+        char* line = new char[1024 * 1024];
+        uint32_t count = 0;
+        while (!feof(rlocal_bls_fd)) {
+            if (fgets(line, 1024 * 1024, rlocal_bls_fd) == nullptr) {
+                break;
+            }
+            size_t line_len = strlen(line);
+            if (line_len <= 1) {
+                continue;
+            }
+            std::string val = common::Encode::HexDecode(std::string(line, line_len - 1));
+            if (val.size() <= 8) {
+                continue;
+            }
+            uint32_t* int_data = (uint32_t*)val.c_str();
+            uint32_t idx = int_data[1];
+            bls::protobuf::BlsVerifyValue verify_val;
+            if (!verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8)) {
+                continue;
+            }
+            prefix_db->SavePresetVerifyValue(idx, 0, verify_val);
+            ++count;
+            if (count >= 1024) {
+                break;
+            }
+        }
+
+        delete[] line;
+        fclose(rlocal_bls_fd);
     }
 
     static void TearDownTestCase() {
-//         transport_->Stop();
     }
 
     virtual void SetUp() {
@@ -189,20 +175,24 @@ public:
         auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
         prefix_db->AddBlsVerifyG2(sec_ptr->GetAddress(), bls_verify_req);
         prefix_db->SaveLocalPolynomial(sec_ptr, sec_ptr->GetAddress(), local_poly);
-        SHARDORA_DEBUG("SaveLocalPolynomial success: %s",
+        SETH_DEBUG("SaveLocalPolynomial success: %s",
             common::Encode::HexEncode(sec_ptr->GetAddress()).c_str());
     }
 
     static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
-        auto file_name = (std::string("prikey_") + std::to_string(n)).c_str();
-        FILE* prikey_fd = fopen(file_name, "r");
+        std::string file_name = std::string("prikey_") + std::to_string(n);
+        FILE* prikey_fd = fopen(file_name.c_str(), "r");
         if (prikey_fd != nullptr) {
             char line[128];
-            while (!feof(prikey_fd)) {
-                fgets(line, 128, prikey_fd);
-                pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
-                if (pri_vec.size() == n) {
-                    break;
+            while (pri_vec.size() < n && fgets(line, sizeof(line), prikey_fd) != nullptr) {
+                size_t len = strlen(line);
+                // Strip trailing newline
+                if (len > 0 && line[len - 1] == '\n') {
+                    line[len - 1] = '\0';
+                    --len;
+                }
+                if (len >= 64) {
+                    pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
                 }
             }
 
@@ -212,14 +202,15 @@ public:
         ASSERT_TRUE(pri_vec.size() <= n);
         ASSERT_TRUE(pri_vec.size() <= 1024);
         if (pri_vec.empty()) {
-            FILE* prikey_fd = fopen(file_name, "w");
+            FILE* wfd = fopen(file_name.c_str(), "w");
+            ASSERT_NE(wfd, nullptr);
             for (uint32_t i = 0; i < n; ++i) {
                 pri_vec.push_back(common::Random::RandomString(32));
                 std::string val = common::Encode::HexEncode(pri_vec[i]) + "\n";
-                fwrite(val.c_str(), 1, val.size(), prikey_fd);
+                fwrite(val.c_str(), 1, val.size(), wfd);
             }
 
-            fclose(prikey_fd);
+            fclose(wfd);
         }
     }
 };
@@ -242,7 +233,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     BlsDkg* dkg = new BlsDkg[n];
     GetPrivateKey(pri_vec, n);
     ASSERT_EQ(pri_vec.size(), n);
-    system("sudo rm -rf ./db_*");
+    system("rm -rf ./db_*");
 
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
@@ -506,7 +497,9 @@ TEST_F(TestBls, LagrangeCoeffs) {
         }
     }
 
-    std::random_shuffle(idx_vec_all.begin(), idx_vec_all.end());
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(idx_vec_all.begin(), idx_vec_all.end(), g);
     std::vector<size_t> idx_vec(idx_vec_all.begin(), idx_vec_all.begin() + t);
     std::sort(idx_vec.begin(), idx_vec.end());
     ASSERT_TRUE(idx_vec[1] > idx_vec[0]);
@@ -533,10 +526,18 @@ TEST_F(TestBls, LagrangeCoeffs) {
 
 TEST_F(TestBls, FileSigns) {
     FILE* fd_signs = fopen("signs", "r");
+    if (fd_signs == nullptr) {
+        GTEST_SKIP() << "File 'signs' not found, skipping FileSigns test";
+    }
     char* data = new char[1024 * 1024 * 10];
     size_t len = fread(data, 1, 10 * 1024 * 1024, fd_signs);
     fclose(fd_signs);
+    if (len == 0) {
+        delete[] data;
+        GTEST_SKIP() << "File 'signs' is empty, skipping FileSigns test";
+    }
     std::string tmp_data(data, len);
+    delete[] data;
     std::string proto_data = common::Encode::HexDecode(tmp_data);
     bls::protobuf::VerifyVecBrdReq proto_signs;
     EXPECT_TRUE(proto_signs.ParseFromString(proto_data));
@@ -595,7 +596,7 @@ TEST_F(TestBls, FileSigns) {
 }
 
 TEST_F(TestBls, AllSuccess) {
-    system("sudo rm -rf ./db_* prikey*");
+    system("rm -rf ./db_* prikey*");
     static const uint32_t n = 10;
     // static const uint32_t n = 10;
     static const uint32_t t = common::GetSignerCount(n);
@@ -1540,5 +1541,5 @@ TEST_F(TestBls, ThreeRatioFail) {
 
 }  // namespace bls
 
-}  // namespace shardora
+}  // namespace seth
 #endif

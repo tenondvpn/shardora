@@ -2,12 +2,14 @@
 
 #include <functional>
 
+#include <evmc/evmc.h>
+
 #include "contract/contract_utils.h"
 
 namespace shardora {
 
-namespace zjcvm {
-    class ZjchainHost;
+namespace shardoravm {
+    class ShardorahainHost;
 }
 
 namespace contract {
@@ -33,7 +35,10 @@ struct CallParameters {
     uint64_t gas;
     std::string data;
     OnOpFunc on_op;
-    zjcvm::ZjchainHost* zjc_host;
+    evmc_bytes32 create2_salt;
+    const uint8_t* code;
+    size_t code_size;
+    shardoravm::ShardorahainHost* shardora_host;
 };
 
 }  // namespace contact

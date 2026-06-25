@@ -12,12 +12,12 @@
 #include "common/log.h"
 #include "protos/dht.pb.h"
 
-#define DHT_DEBUG(fmt, ...) SHARDORA_DEBUG("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_INFO(fmt, ...) SHARDORA_INFO("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_WARN(fmt, ...) SHARDORA_WARN("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_ERROR(fmt, ...) SHARDORA_ERROR("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_DEBUG(fmt, ...) SETH_DEBUG("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_INFO(fmt, ...) SETH_DEBUG("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_WARN(fmt, ...) SETH_WARN("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_ERROR(fmt, ...) SETH_ERROR("[dht]" fmt, ## __VA_ARGS__)
 
-namespace shardora {
+namespace seth {
 
 namespace dht {
 
@@ -65,6 +65,7 @@ enum NodeJoinWay : int32_t {
     kJoinFromConnect,
     kJoinFromDetection,
     kJoinFromUniversal,
+    kJoinFromInit,
 };
 
 static const uint32_t kDhtNearestNodesCount = 16u;
@@ -76,7 +77,6 @@ static const uint32_t kRefreshNeighborsDefaultCount = 32u;
 static const uint32_t kRefreshNeighborsBloomfilterBitCount = 4096u;
 static const uint32_t kRefreshNeighborsBloomfilterHashCount = 11u;
 static const uint32_t kHeartbeatDefaultAliveTimes = 3u;
-
 struct Node {
     uint64_t id_hash{ 0 };
     uint64_t dht_key_hash{ 0 };
@@ -116,4 +116,4 @@ int DefaultDhtSignCallback(
 
 }  // namespace dht
 
-}  // namespace shardora
+}  // namespace seth

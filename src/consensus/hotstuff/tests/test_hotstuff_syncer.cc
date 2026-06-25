@@ -7,7 +7,7 @@
 #include <transport/transport_utils.h>
 #include <vss/vss_manager.h>
 
-namespace shardora {
+namespace seth {
 
 namespace hotstuff {
 
@@ -33,7 +33,7 @@ static std::shared_ptr<db::Db> db_ = nullptr;
 static std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 static std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
 static std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-static std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
+static std::shared_ptr<consensus::ContractGasPrefund> gas_prefund_ = nullptr;
 static std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
 static std::shared_ptr<BlockAcceptor> block_acceptor_ = nullptr;
 static std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
@@ -62,7 +62,7 @@ protected:
         
         vss_mgr_ = std::make_shared<vss::VssManager>(security_);
         contract_mgr_ = std::make_shared<contract::ContractManager>();
-        gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(db_);
+        gas_prefund_ = std::make_shared<consensus::ContractGasPrefund>(db_);
         tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
         bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
         elect_mgr_ = std::make_shared<elect::ElectManager>(
@@ -77,7 +77,7 @@ protected:
         hotstuff_mgr_ = std::make_shared<consensus::HotstuffManager>();
         hotstuff_mgr_->Init(
                 contract_mgr_,
-                gas_prepayment_,
+                gas_prefund_,
                 vss_mgr_,
                 account_mgr_,
                 block_mgr_,
@@ -190,5 +190,5 @@ TEST_F(TestViewBlockChainSyncer, TestProcessResponse) {
 
 } // namespace consensus
 
-} // namespace shardora
+} // namespace seth
 

@@ -31,7 +31,7 @@
 //     int StartWebsocket();
 //     void NewTxClient(websocketpp::connection_hdl hdl, const std::string& msg);
 //     void NewBandwidthMessage(websocketpp::connection_hdl hdl, const std::string& msg);
-//     void C2cPrepayment(websocketpp::connection_hdl hdl, const std::string& msg);
+//     void C2cPrefund(websocketpp::connection_hdl hdl, const std::string& msg);
 //     void C2cNewSell(websocketpp::connection_hdl hdl, const std::string& msg);
 //     void C2cCancelSell(websocketpp::connection_hdl hdl, const std::string& msg);
 //     void C2cManagerCancelSell(websocketpp::connection_hdl hdl, const std::string& encode_msg);
@@ -52,10 +52,10 @@
 //     int CreateTransactionWithAttr(
 //         const ws::protobuf::TxMessage& tx_info,
 //         transport::protobuf::OldHeader& msg);
-//     int GetContractPrepayment(const std::string& hex_id, uint64_t* prepayment);
+//     int GetContractPrefund(const std::string& hex_id, uint64_t* prefund);
 //     void GetTxs(ws::protobuf::WsMessage& ws_tx_res);
 //     void GetAllTxs();
-//     void GetPrepayment(ws::protobuf::WsMessage& ws_tx_res);
+//     void GetPrefund(ws::protobuf::WsMessage& ws_tx_res);
 //     void GetC2cs(ws::protobuf::WsMessage& ws_tx_res);
 //     int GetAllC2cs();
 //     void GetAllBalance();
@@ -70,8 +70,8 @@
 //         return min_c2c_sellout_amount_;
 //     }
 
-//     uint64_t min_c2c_prepayment() const {
-//         return min_c2c_prepayment_;
+//     uint64_t min_c2c_prefund() const {
+//         return min_c2c_prefund_;
 //     }
 
 //     const std::string& c2c_contract_addr() const {
@@ -93,7 +93,7 @@
 //     struct UserInfoItem {
 //         std::string id;
 //         uint64_t balance;
-//         uint64_t prepayment;
+//         uint64_t prefund;
 //     };
 
 //     ws::WebSocketServer ws_server_;
@@ -110,15 +110,15 @@
 //     common::ThreadSafeQueue<std::shared_ptr<ws::protobuf::SellInfo>> update_c2c_queue_;
 //     std::shared_ptr<security::Security> security_ = nullptr;
 //     std::unordered_map<std::string, uint64_t> user_balance_;
-//     std::unordered_map<std::string, uint64_t> contract_prepayment_;
-//     uint64_t latest_prepayment_height_ = 0;
+//     std::unordered_map<std::string, uint64_t> contract_prefund_;
+//     uint64_t latest_prefund_height_ = 0;
 //     transport::MultiThreadHandler* net_handler_ = nullptr;
 //     uint64_t max_c2c_height_ = 0;
 //     common::LimitHashMap<uint64_t, std::shared_ptr<ws::protobuf::StatusInfo>, 1024> status_map_;
 //     common::ThreadSafeQueue<std::shared_ptr<UserInfoItem>> user_info_queue_;
 //     uint64_t valid_free_bandwidth_ = 1024llu * 1024llu * 100llu;
 //     uint64_t min_c2c_sellout_amount_ = 10000lu;
-//     uint64_t min_c2c_prepayment_ = 20000000lu;
+//     uint64_t min_c2c_prefund_ = 20000000lu;
 //     std::string c2c_contract_addr_;
 //     std::string chain_ips_ = "127.0.0.1:13001";
 //     uint64_t c2c_timeout_ms_ = 10000lu;

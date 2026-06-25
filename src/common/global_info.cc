@@ -8,11 +8,24 @@
 #include "common/time_utils.h"
 #include "transport/transport_utils.h"
 
+#include <cstdlib>
+
 namespace shardora {
 
 namespace common {
 
 static const std::string kAccountAddress("");
+
+namespace {
+
+std::string NormalizePath(std::string path) {
+    while (path.size() > 1 && (path.back() == '/' || path.back() == '\\')) {
+        path.pop_back();
+    }
+    return path.empty() ? "." : path;
+}
+
+}  // namespace
 
 GlobalInfo* GlobalInfo::Instance() {
     static GlobalInfo ins;
@@ -36,11 +49,11 @@ void GlobalInfo::Timer() {
             shared_obj_max_count_[i] = count;
         }
 
-        SHARDORA_INFO("index %d get all shared object count now: %d, max: %d", 
+        SHARDORA_DEBUG("index %d get all shared object count now: %d, max: %d", 
             i, count, shared_obj_max_count_[i]);
     }
 
-    tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
+    tick_ptr_->CutOff(20000000lu, std::bind(&GlobalInfo::Timer, this));
 }
 
 int GlobalInfo::Init(const common::Config& config) {
@@ -79,6 +92,16 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("shardora", "node_tag", node_tag_);
     ip_db_path_ = "./conf/GeoLite2-City.mmdb";
     config.Get("shardora", "ip_db_path", ip_db_path_);
+    const char* env_root_path = std::getenv("SHARDORA_ROOT");
+    if (env_root_path != nullptr && env_root_path[0] != '\0') {
+        root_path_ = env_root_path;
+    }
+    config.Get("shardora", "root_path", root_path_);
+    root_path_ = NormalizePath(root_path_);
+    server_cert_path_ = RootPathFile("server-cert.pem");
+    server_key_path_ = RootPathFile("server-key.pem");
+    config.Get("shardora", "server_cert_path", server_cert_path_);
+    config.Get("shardora", "server_key_path", server_key_path_);
     config.Get("shardora", "missing_node", missing_node_);
     config.Get("shardora", "ck_port", ck_port_);
     config.Get("shardora", "ck_host", ck_host_);
@@ -89,6 +112,7 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("shardora", "each_tx_pool_max_txs", each_tx_pool_max_txs_);
     config.Get("shardora", "test_pool_index", test_pool_index_);
     config.Get("shardora", "test_tx_tps", test_tx_tps_);
+    config.Get("shardora", "leader_change_init_tm", leader_change_init_tm_);
 
     if (each_tx_pool_max_txs_ < 10240) {
         each_tx_pool_max_txs_ = 10240;
@@ -97,10 +121,18 @@ int GlobalInfo::Init(const common::Config& config) {
     return kCommonSuccess;
 }
 
+std::string GlobalInfo::RootPathFile(const std::string& file_name) const {
+    if (file_name.empty()) {
+        return root_path_;
+    }
+    if (file_name.front() == '/' || file_name.front() == '\\') {
+        return file_name;
+    }
+    return root_path_ + "/" + file_name;
+}
+
 uint8_t GlobalInfo::get_thread_index() {
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     auto now_thread_id_tmp = std::this_thread::get_id();
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     uint32_t now_thread_id = *(uint32_t*)&now_thread_id_tmp;
     uint8_t thread_idx = 0;
     if (should_check_thread_all_valid_) {
@@ -127,7 +159,6 @@ uint8_t GlobalInfo::get_thread_index() {
         thread_idx = iter->second;
     }
 
-    ADD_DEBUG_PROCESS_TIMESTAMP();
     return thread_idx;
 }
 

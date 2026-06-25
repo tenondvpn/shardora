@@ -64,7 +64,7 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prefund) {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -95,11 +95,11 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
 
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    var prefund_buf = new Buffer(8);
+    var big = ~~(prefund / MAX_UINT32)
+    var low = (prefund % MAX_UINT32) - big
+    prefund_buf.writeUInt32LE(big, 4)
+    prefund_buf.writeUInt32LE(low, 0)
 
     var message_buf = Buffer.concat([
         Buffer.from(gid, 'hex'), 
@@ -108,7 +108,7 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, 
         Buffer.from(contract_bytes, 'hex'), 
         Buffer.from(input, 'hex'), 
-        prepay_buf]);
+        prefund_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     var sig = Secp256k1.ecsign(from_private_key, digest)
@@ -138,14 +138,14 @@ function param_contract(str_prikey, tx_type, gid, to, amount, gas_limit, gas_pri
         'attrs_size': 4,
         "bytes_code": contract_bytes,
         "input": input,
-        "pepay": prepay,
+        "prefund": prefund,
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
     }
 }
 
-function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type) {
+function create_tx(str_prikey, to, amount, gas_limit, gas_price, prefund, tx_type) {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -174,14 +174,14 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
     var low = (tx_type % MAX_UINT32) - big
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    var prefund_buf = new Buffer(8);
+    var big = ~~(prefund / MAX_UINT32)
+    var low = (prefund % MAX_UINT32) - big
+    prefund_buf.writeUInt32LE(big, 4)
+    prefund_buf.writeUInt32LE(low, 0)
 
     var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf]);
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prefund_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     var sig = Secp256k1.ecsign(from_private_key, digest)
@@ -201,7 +201,7 @@ function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
-        'pepay': prepay
+        'prefund': prefund
     }
 }
 
@@ -298,17 +298,17 @@ function QueryContract(str_prikey, input) {
     QueryPostCode('/query_contract', data);
 }
 
-function Prepayment(str_prikey, prepay) {
+function Prefund(str_prikey, prefund) {
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
-    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prepay, 7);
+    var data = create_tx(str_prikey, contract_address, 0, 100000, 1, prefund, 7);
     PostCode(data);
 }
 
-async function SetManagerPrepayment(contract_address) {
-    // 为管理账户设置prepayment
-    Prepayment("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 1000000000000);
-    Prepayment("748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 1000000000000);
-    Prepayment("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 1000000000000);
+async function SetManagerPrefund(contract_address) {
+    // 为管理账户设置prefund
+    Prefund("20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5", 1000000000000);
+    Prefund("748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05", 1000000000000);
+    Prefund("b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5", 1000000000000);
     var account1 = web3.eth.accounts.privateKeyToAccount(
         '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
     var account2 = web3.eth.accounts.privateKeyToAccount(
@@ -321,7 +321,7 @@ async function SetManagerPrepayment(contract_address) {
     check_accounts_str += "'" + account3.address.toString('hex').toLowerCase().substring(2) + "',"; 
     var check_count = 3;
     for (var i = 10; i < kTestSellerCount; ++i) {
-        Prepayment('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
+        Prefund('b546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString(), 1000000000000);
         var account4 = web3.eth.accounts.privateKeyToAccount(
             '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1' + i.toString());
         if (i == 29) {
@@ -333,7 +333,7 @@ async function SetManagerPrepayment(contract_address) {
         ++check_count;
     }
 
-    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from zjc_ck_prepayment_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from seth_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -342,11 +342,11 @@ async function SetManagerPrepayment(contract_address) {
         try {
             const {stdout, stderr} = await execPromise(cmd);
             if (stdout.trim() == check_count.toString()) {
-                console.error(`contract prepayment success: ${stdout}`);
+                console.error(`contract prefund success: ${stdout}`);
                 break;
             }
 
-            console.log(`contract prepayment failed error: ${stderr} count: ${stdout}`);
+            console.log(`contract prefund failed error: ${stderr} count: ${stdout}`);
         } catch (error) {
             console.log(error);
         }
@@ -356,7 +356,7 @@ async function SetManagerPrepayment(contract_address) {
     }
 
     if (try_times >= 30) {
-        console.error(`contract prepayment failed!`);
+        console.error(`contract prefund failed!`);
         return;
     }
 }
@@ -421,7 +421,7 @@ function InitC2cEnv() {
                 var contract_address = new_contract(
                     "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
                     out_lines[3] + cons_codes.substring(2));
-                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM zjc_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
+                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM seth_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
                 const execPromise = util.promisify(exec);
@@ -449,7 +449,7 @@ function InitC2cEnv() {
                 }
 
                 // 检查转账成功
-                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select id, balance from zjc_ck_account_table where id in  ('${account1.address.toString('hex').toLowerCase().substring(2)}',  '${account2.address.toString('hex').toLowerCase().substring(2)}',  '${account3.address.toString('hex').toLowerCase().substring(2)}',  '${account4.address.toString('hex').toLowerCase().substring(2)}' ${append_address});"`;
+                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select id, balance from seth_ck_account_table where id in  ('${account1.address.toString('hex').toLowerCase().substring(2)}',  '${account2.address.toString('hex').toLowerCase().substring(2)}',  '${account3.address.toString('hex').toLowerCase().substring(2)}',  '${account4.address.toString('hex').toLowerCase().substring(2)}' ${append_address});"`;
                 var try_times = 0;
                 while (try_times < 30) {
                     try {
@@ -489,7 +489,7 @@ function InitC2cEnv() {
                 }
 
                 // 预设值合约调用币，并等待成功
-                SetManagerPrepayment(contract_address);
+                SetManagerPrefund(contract_address);
             }
         }
       });
@@ -505,22 +505,22 @@ async function CreateNewSeller(str_prikey) {
 
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
-    var old_prepayment = 0;
+    var old_prefund = 0;
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    console.error(`get old prepayment success: ${stdout}`);
-                    old_prepayment = parseInt(stdout, 10)
+                    console.error(`get old prefund success: ${stdout}`);
+                    old_prefund = parseInt(stdout, 10)
                     break;
                 }
 
-                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get old prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -530,7 +530,7 @@ async function CreateNewSeller(str_prikey) {
         }
 
         if (try_times >= 30) {
-            console.error(`get old prepayment failed!`);
+            console.error(`get old prefund failed!`);
             return;
         }
     }
@@ -549,26 +549,26 @@ async function CreateNewSeller(str_prikey) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    var new_prepayment = parseInt(stdout, 10)
-                    if (old_prepayment - new_prepayment >= sell_amount) {
-                        console.error(`get new prepayment success: ${stdout.trim()}, sell_amount: ${sell_amount}`);
+                    var new_prefund = parseInt(stdout, 10)
+                    if (old_prefund - new_prefund >= sell_amount) {
+                        console.error(`get new prefund success: ${stdout.trim()}, sell_amount: ${sell_amount}`);
                         break;
                     }
 
-                    if (old_prepayment > new_prepayment) {
-                        console.error(`get new prepayment failed: ${stdout.trim()}, sell_amount: ${sell_amount}`);
+                    if (old_prefund > new_prefund) {
+                        console.error(`get new prefund failed: ${stdout.trim()}, sell_amount: ${sell_amount}`);
                         break;
                     }
                 }
 
-                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get new prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -578,7 +578,7 @@ async function CreateNewSeller(str_prikey) {
         }
 
         if (try_times >= 30) {
-            console.error(`get new prepayment failed!`);
+            console.error(`get new prefund failed!`);
             return;
         }
     }
@@ -596,23 +596,23 @@ async function ConfirmToBuyer(str_prikey, to, amount) {
 
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
-    var old_prepayment = 0;
+    var old_prefund = 0;
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    console.error(`get old prepayment success: ${stdout}`);
-                    old_prepayment = parseInt(stdout, 10)
+                    console.error(`get old prefund success: ${stdout}`);
+                    old_prefund = parseInt(stdout, 10)
                     break;
                 }
 
-                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get old prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -622,7 +622,7 @@ async function ConfirmToBuyer(str_prikey, to, amount) {
         }
 
         if (try_times >= 30) {
-            console.error(`get old prepayment failed!`);
+            console.error(`get old prefund failed!`);
             return;
         }
     }
@@ -640,26 +640,26 @@ async function ConfirmToBuyer(str_prikey, to, amount) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    var new_prepayment = parseInt(stdout, 10)
-                    if (old_prepayment - new_prepayment >= amount) {
-                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                    var new_prefund = parseInt(stdout, 10)
+                    if (old_prefund - new_prefund >= amount) {
+                        console.error(`get new prefund success: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
 
-                    if (old_prepayment > new_prepayment) {
-                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                    if (old_prefund > new_prefund) {
+                        console.error(`get new prefund failed: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
                 }
 
-                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get new prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -669,7 +669,7 @@ async function ConfirmToBuyer(str_prikey, to, amount) {
         }
 
         if (try_times >= 30) {
-            console.error(`get new prepayment failed!`);
+            console.error(`get new prefund failed!`);
             return;
         }
     }
@@ -687,23 +687,23 @@ async function SellerRelease(str_prikey) {
 
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
-    var old_prepayment = 0;
+    var old_prefund = 0;
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    console.error(`get old prepayment success: ${stdout}`);
-                    old_prepayment = parseInt(stdout, 10)
+                    console.error(`get old prefund success: ${stdout}`);
+                    old_prefund = parseInt(stdout, 10)
                     break;
                 }
 
-                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get old prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -713,7 +713,7 @@ async function SellerRelease(str_prikey) {
         }
 
         if (try_times >= 30) {
-            console.error(`get old prepayment failed!`);
+            console.error(`get old prefund failed!`);
             return;
         }
     }
@@ -728,7 +728,7 @@ async function SellerRelease(str_prikey) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         var amount = 0;
         while (try_times < 30) {
@@ -736,19 +736,19 @@ async function SellerRelease(str_prikey) {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    var new_prepayment = parseInt(stdout, 10)
-                    if (old_prepayment - new_prepayment >= amount) {
-                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                    var new_prefund = parseInt(stdout, 10)
+                    if (old_prefund - new_prefund >= amount) {
+                        console.error(`get new prefund success: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
 
-                    if (old_prepayment > new_prepayment) {
-                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                    if (old_prefund > new_prefund) {
+                        console.error(`get new prefund failed: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
                 }
 
-                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get new prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -758,7 +758,7 @@ async function SellerRelease(str_prikey) {
         }
 
         if (try_times >= 30) {
-            console.error(`get new prepayment failed!`);
+            console.error(`get new prefund failed!`);
             return;
         }
     }
@@ -776,23 +776,23 @@ async function ManagerRelease(str_prikey, cancel_seller) {
 
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
-    var old_prepayment = 0;
+    var old_prefund = 0;
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    console.error(`get old prepayment success: ${stdout}`);
-                    old_prepayment = parseInt(stdout, 10)
+                    console.error(`get old prefund success: ${stdout}`);
+                    old_prefund = parseInt(stdout, 10)
                     break;
                 }
 
-                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get old prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -802,7 +802,7 @@ async function ManagerRelease(str_prikey, cancel_seller) {
         }
 
         if (try_times >= 30) {
-            console.error(`get old prepayment failed!`);
+            console.error(`get old prefund failed!`);
             return;
         }
     }
@@ -820,7 +820,7 @@ async function ManagerRelease(str_prikey, cancel_seller) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         var amount = 0;
         while (try_times < 30) {
@@ -828,19 +828,19 @@ async function ManagerRelease(str_prikey, cancel_seller) {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    var new_prepayment = parseInt(stdout, 10)
-                    if (old_prepayment - new_prepayment >= amount) {
-                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                    var new_prefund = parseInt(stdout, 10)
+                    if (old_prefund - new_prefund >= amount) {
+                        console.error(`get new prefund success: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
 
-                    if (old_prepayment > new_prepayment) {
-                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                    if (old_prefund > new_prefund) {
+                        console.error(`get new prefund failed: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
                 }
 
-                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get new prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -850,7 +850,7 @@ async function ManagerRelease(str_prikey, cancel_seller) {
         }
 
         if (try_times >= 30) {
-            console.error(`get new prepayment failed!`);
+            console.error(`get new prefund failed!`);
             return;
         }
     }
@@ -868,23 +868,23 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
 
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
-    var old_prepayment = 0;
+    var old_prefund = 0;
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    console.error(`get old prepayment success: ${stdout}`);
-                    old_prepayment = parseInt(stdout, 10)
+                    console.error(`get old prefund success: ${stdout}`);
+                    old_prefund = parseInt(stdout, 10)
                     break;
                 }
 
-                console.log(`${cmd} get old prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get old prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -894,7 +894,7 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
         }
 
         if (try_times >= 30) {
-            console.error(`get old prepayment failed!`);
+            console.error(`get old prefund failed!`);
             return;
         }
     }
@@ -912,7 +912,7 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prepayment from zjc_ck_prepayment_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         var amount = 0;
         while (try_times < 30) {
@@ -920,19 +920,19 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
             // wait for exec to complete
                 const {stdout, stderr} = await execPromise(cmd);
                 if (stdout.trim() != "") {
-                    var new_prepayment = parseInt(stdout, 10)
-                    if (old_prepayment - new_prepayment >= amount) {
-                        console.error(`get new prepayment success: ${stdout.trim()}, amount: ${amount}`);
+                    var new_prefund = parseInt(stdout, 10)
+                    if (old_prefund - new_prefund >= amount) {
+                        console.error(`get new prefund success: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
 
-                    if (old_prepayment > new_prepayment) {
-                        console.error(`get new prepayment failed: ${stdout.trim()}, amount: ${amount}`);
+                    if (old_prefund > new_prefund) {
+                        console.error(`get new prefund failed: ${stdout.trim()}, amount: ${amount}`);
                         break;
                     }
                 }
 
-                console.log(`${cmd} get new prepayment error: ${stderr} count: ${stdout}`);
+                console.log(`${cmd} get new prefund error: ${stderr} count: ${stdout}`);
             } catch (error) {
                 console.log(error);
             }
@@ -942,7 +942,7 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
         }
 
         if (try_times >= 30) {
-            console.error(`get new prepayment failed!`);
+            console.error(`get new prefund failed!`);
             return;
         }
     }

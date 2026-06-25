@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.view_block.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x17protos/view_block.proto\x12\x1cshardora.view_block.protobuf\x1a\x12protos/block.proto\"\xee\x01\n\x06QcItem\x12\x0e\n\x06sign_x\x18\x01 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x02 \x01(\x0c\x12\x0e\n\x06sign_z\x18\x03 \x01(\x0c\x12\x0c\n\x04view\x18\x04 \x01(\x04\x12\x17\n\x0fview_block_hash\x18\x05 \x01(\x0c\x12\x14\n\x0c\x65lect_height\x18\x06 \x01(\x04\x12\x12\n\nleader_idx\x18\x07 \x01(\r\x12\x12\n\nnetwork_id\x18\x08 \x01(\r\x12\x12\n\npool_index\x18\t \x01(\r\x12;\n\x07\x61gg_sig\x18\n \x01(\x0b\x32*.shardora.view_block.protobuf.AggregateSig\"\xe8\x01\n\rViewBlockItem\x12\x13\n\x0bparent_hash\x18\x01 \x01(\x0c\x12\x32\n\nblock_info\x18\x02 \x01(\x0b\x32\x1e.shardora.block.protobuf.Block\x12\x30\n\x02qc\x18\x03 \x01(\x0b\x32$.shardora.view_block.protobuf.QcItem\x12M\n\x12leader_consen_stat\x18\x04 \x01(\x0b\x32\x31.shardora.view_block.protobuf.MemberConsensusStat\x12\r\n\x05\x64\x65\x62ug\x18\x05 \x01(\x0c\"9\n\x13MemberConsensusStat\x12\x10\n\x08succ_num\x18\x01 \x01(\r\x12\x10\n\x08\x66\x61il_num\x18\x02 \x01(\r\"T\n\x0c\x41ggregateSig\x12\x0e\n\x06sign_x\x18\x01 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x02 \x01(\x0c\x12\x0e\n\x06sign_z\x18\x03 \x01(\x0c\x12\x14\n\x0cparticipants\x18\x04 \x03(\r\"\xfc\x01\n\x14ViewBlockSyncRequest\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x10\n\x08pool_idx\x18\x02 \x01(\r\x12\x19\n\x11view_block_hashes\x18\x03 \x03(\x0c\x12\x14\n\x0chigh_qc_view\x18\x04 \x01(\x04\x12\x14\n\x0chigh_tc_view\x18\x05 \x01(\x04\x12\x10\n\x08max_view\x18\x06 \x01(\x04\x12#\n\x1blatest_committed_block_hash\x18\x07 \x01(\x0c\x12@\n\x0bview_blocks\x18\x08 \x03(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\"\xe2\x02\n\x15ViewBlockSyncResponse\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x10\n\x08pool_idx\x18\x02 \x01(\r\x12\x45\n\x10view_block_items\x18\x03 \x03(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\x12\x44\n\x0fhigh_view_block\x18\x04 \x01(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\x12\x35\n\x07high_tc\x18\x05 \x01(\x0b\x32$.shardora.view_block.protobuf.QcItem\x12\x12\n\nquery_hash\x18\x06 \x01(\x0c\x12K\n\x16latest_committed_block\x18\x07 \x01(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\"V\n\x1aSingleViewBlockSyncRequest\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x10\n\x08pool_idx\x18\x02 \x01(\r\x12\x12\n\nquery_hash\x18\x03 \x01(\x0c\"\xb7\x02\n\x14ViewBlockSyncMessage\x12J\n\x0eview_block_req\x18\x01 \x01(\x0b\x32\x32.shardora.view_block.protobuf.ViewBlockSyncRequest\x12K\n\x0eview_block_res\x18\x02 \x01(\x0b\x32\x33.shardora.view_block.protobuf.ViewBlockSyncResponse\x12L\n\nsingle_req\x18\x03 \x01(\x0b\x32\x38.shardora.view_block.protobuf.SingleViewBlockSyncRequest\x12\x16\n\x0e\x63reate_time_us\x18\x04 \x01(\r\x12\x0e\n\x06src_ip\x18\x05 \x01(\x0c\x12\x10\n\x08src_port\x18\x06 \x01(\r\"\xd6\x02\n\x0eTimeoutMessage\x12\x11\n\tmember_id\x18\x01 \x01(\r\x12\x0c\n\x04view\x18\x02 \x01(\x04\x12\x0e\n\x06sign_x\x18\x03 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x04 \x01(\x0c\x12\x11\n\tview_hash\x18\x05 \x01(\x0c\x12\x14\n\x0c\x65lect_height\x18\x06 \x01(\x04\x12\x10\n\x08pool_idx\x18\x07 \x01(\r\x12\x12\n\nleader_idx\x18\x08 \x01(\r\x12<\n\x08view_sig\x18\t \x01(\x0b\x32*.shardora.view_block.protobuf.AggregateSig\x12\x35\n\x07high_qc\x18\n \x01(\x0b\x32$.shardora.view_block.protobuf.QcItem\x12?\n\x0bhigh_qc_sig\x18\x0b \x01(\x0b\x32*.shardora.view_block.protobuf.AggregateSig')
+  serialized_pb=_b('\n\x17protos/view_block.proto\x12\x18shardora.view_block.protobuf\x1a\x12protos/block.proto\"\xc4\x01\n\x06QcItem\x12\x0e\n\x06sign_x\x18\x01 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x02 \x01(\x0c\x12\x0e\n\x06sign_z\x18\x03 \x01(\x0c\x12\x0c\n\x04view\x18\x04 \x01(\x04\x12\x17\n\x0fview_block_hash\x18\x05 \x01(\x0c\x12\x14\n\x0c\x65lect_height\x18\x06 \x01(\x04\x12\x12\n\nleader_idx\x18\x07 \x01(\r\x12\x12\n\nnetwork_id\x18\x08 \x01(\r\x12\x12\n\npool_index\x18\t \x01(\r\x12\x11\n\ttm_height\x18\n \x01(\x04\"\xdc\x01\n\rViewBlockItem\x12\x13\n\x0bparent_hash\x18\x01 \x01(\x0c\x12.\n\nblock_info\x18\x02 \x01(\x0b\x32\x1a.shardora.block.protobuf.Block\x12,\n\x02qc\x18\x03 \x01(\x0b\x32 .shardora.view_block.protobuf.QcItem\x12I\n\x12leader_consen_stat\x18\x04 \x01(\x0b\x32-.shardora.view_block.protobuf.MemberConsensusStat\x12\r\n\x05\x64\x65\x62ug\x18\x05 \x01(\x0c\"9\n\x13MemberConsensusStat\x12\x10\n\x08succ_num\x18\x01 \x01(\r\x12\x10\n\x08\x66\x61il_num\x18\x02 \x01(\r\"T\n\x0c\x41ggregateSig\x12\x0e\n\x06sign_x\x18\x01 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x02 \x01(\x0c\x12\x0e\n\x06sign_z\x18\x03 \x01(\x0c\x12\x14\n\x0cparticipants\x18\x04 \x03(\r\"\xf8\x01\n\x14ViewBlockSyncRequest\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x10\n\x08pool_idx\x18\x02 \x01(\r\x12\x19\n\x11view_block_hashes\x18\x03 \x03(\x0c\x12\x14\n\x0chigh_qc_view\x18\x04 \x01(\x04\x12\x14\n\x0chigh_tc_view\x18\x05 \x01(\x04\x12\x10\n\x08max_view\x18\x06 \x01(\x04\x12#\n\x1blatest_committed_block_hash\x18\x07 \x01(\x0c\x12<\n\x0bview_blocks\x18\x08 \x03(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\"\xd2\x02\n\x15ViewBlockSyncResponse\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x10\n\x08pool_idx\x18\x02 \x01(\r\x12\x41\n\x10view_block_items\x18\x03 \x03(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\x12@\n\x0fhigh_view_block\x18\x04 \x01(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\x12\x31\n\x07high_tc\x18\x05 \x01(\x0b\x32 .shardora.view_block.protobuf.QcItem\x12\x12\n\nquery_hash\x18\x06 \x01(\x0c\x12G\n\x16latest_committed_block\x18\x07 \x01(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\"V\n\x1aSingleViewBlockSyncRequest\x12\x12\n\nnetwork_id\x18\x01 \x01(\r\x12\x10\n\x08pool_idx\x18\x02 \x01(\r\x12\x12\n\nquery_hash\x18\x03 \x01(\x0c\"\xab\x02\n\x14ViewBlockSyncMessage\x12\x46\n\x0eview_block_req\x18\x01 \x01(\x0b\x32..shardora.view_block.protobuf.ViewBlockSyncRequest\x12G\n\x0eview_block_res\x18\x02 \x01(\x0b\x32/.shardora.view_block.protobuf.ViewBlockSyncResponse\x12H\n\nsingle_req\x18\x03 \x01(\x0b\x32\x34.shardora.view_block.protobuf.SingleViewBlockSyncRequest\x12\x16\n\x0e\x63reate_time_us\x18\x04 \x01(\r\x12\x0e\n\x06src_ip\x18\x05 \x01(\x0c\x12\x10\n\x08src_port\x18\x06 \x01(\r\"\xca\x02\n\x0eTimeoutMessage\x12\x11\n\tmember_id\x18\x01 \x01(\r\x12\x0c\n\x04view\x18\x02 \x01(\x04\x12\x0e\n\x06sign_x\x18\x03 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x04 \x01(\x0c\x12\x11\n\tview_hash\x18\x05 \x01(\x0c\x12\x14\n\x0c\x65lect_height\x18\x06 \x01(\x04\x12\x10\n\x08pool_idx\x18\x07 \x01(\r\x12\x12\n\nleader_idx\x18\x08 \x01(\r\x12\x38\n\x08view_sig\x18\t \x01(\x0b\x32&.shardora.view_block.protobuf.AggregateSig\x12\x31\n\x07high_qc\x18\n \x01(\x0b\x32 .shardora.view_block.protobuf.QcItem\x12;\n\x0bhigh_qc_sig\x18\x0b \x01(\x0b\x32&.shardora.view_block.protobuf.AggregateSig')
   ,
   dependencies=[protos_dot_block__pb2.DESCRIPTOR,])
 
@@ -98,9 +98,9 @@ _QCITEM = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='agg_sig', full_name='shardora.view_block.protobuf.QcItem.agg_sig', index=9,
-      number=10, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='tm_height', full_name='shardora.view_block.protobuf.QcItem.tm_height', index=9,
+      number=10, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -116,8 +116,8 @@ _QCITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=78,
-  serialized_end=316,
+  serialized_start=74,
+  serialized_end=270,
 )
 
 
@@ -175,8 +175,8 @@ _VIEWBLOCKITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=319,
-  serialized_end=551,
+  serialized_start=273,
+  serialized_end=493,
 )
 
 
@@ -213,8 +213,8 @@ _MEMBERCONSENSUSSTAT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=553,
-  serialized_end=610,
+  serialized_start=495,
+  serialized_end=552,
 )
 
 
@@ -265,8 +265,8 @@ _AGGREGATESIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=612,
-  serialized_end=696,
+  serialized_start=554,
+  serialized_end=638,
 )
 
 
@@ -345,8 +345,8 @@ _VIEWBLOCKSYNCREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=699,
-  serialized_end=951,
+  serialized_start=641,
+  serialized_end=889,
 )
 
 
@@ -418,8 +418,8 @@ _VIEWBLOCKSYNCRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=954,
-  serialized_end=1308,
+  serialized_start=892,
+  serialized_end=1230,
 )
 
 
@@ -463,8 +463,8 @@ _SINGLEVIEWBLOCKSYNCREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1310,
-  serialized_end=1396,
+  serialized_start=1232,
+  serialized_end=1318,
 )
 
 
@@ -529,8 +529,8 @@ _VIEWBLOCKSYNCMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1399,
-  serialized_end=1710,
+  serialized_start=1321,
+  serialized_end=1620,
 )
 
 
@@ -630,11 +630,10 @@ _TIMEOUTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1713,
-  serialized_end=2055,
+  serialized_start=1623,
+  serialized_end=1953,
 )
 
-_QCITEM.fields_by_name['agg_sig'].message_type = _AGGREGATESIG
 _VIEWBLOCKITEM.fields_by_name['block_info'].message_type = protos_dot_block__pb2._BLOCK
 _VIEWBLOCKITEM.fields_by_name['qc'].message_type = _QCITEM
 _VIEWBLOCKITEM.fields_by_name['leader_consen_stat'].message_type = _MEMBERCONSENSUSSTAT

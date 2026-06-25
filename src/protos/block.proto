@@ -23,6 +23,12 @@ message TxLog {
     repeated bytes topics = 2;
 }
 
+message TxHashStatus {
+    optional int32 status = 1;
+    optional bytes output = 2;
+    repeated TxLog events = 3;
+}
+
 message BlockTx {
     optional uint64 nonce = 1;
     optional bytes from = 2;
@@ -36,7 +42,7 @@ message BlockTx {
     optional uint32 status = 10;
     // repeated StorageItem storages = 11;
     // repeated TransferItem contract_txs = 12;
-    optional uint64 contract_prepayment = 13;
+    optional uint64 contract_prefund = 13;
     optional bytes contract_code = 14;
     optional bytes contract_input = 15;
     repeated TxLog events = 16;
@@ -44,6 +50,8 @@ message BlockTx {
     optional bytes unique_hash = 18;
     optional bytes key = 19;
     optional bytes value = 20;
+    optional bytes tx_hash = 21;
+    optional bytes output = 22;
 }
 
 message KeyValueInfo {
@@ -86,6 +94,8 @@ message Block {
     optional uint64 all_gas = 22;
     repeated bls.protobuf.JoinElectInfo joins = 23;
     optional pools.protobuf.PoolStatisticTxInfo pool_st_info = 24;
+    repeated bytes unique_hashs = 25;
+    optional uint64 chain_id = 26;
 }
 
 message GetTxBlockRequest {

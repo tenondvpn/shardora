@@ -17,14 +17,9 @@
 #include "protos/elect.pb.h"
 #include "protos/pools.pb.h"
 #include "protos/tx_storage_key.h"
+#include "security/ecdsa/secp256k1.h"
 #include "transport/processor.h"
-
-#include "zjcvm/execution.h"
-#include <common/log.h>
-#include <common/utils.h>
-#include <protos/pools.pb.h>
-#include <protos/tx_storage_key.h>
-#include "db/db_utils.h"
+#include "shardoravm/execution.h"
 
 namespace shardora {
 
@@ -41,6 +36,8 @@ BlockManager::BlockManager(
 }
 
 BlockManager::~BlockManager() {
+    destroy_ = true;
+    wait_con_.notify_all();
     if (handle_consensus_block_thread_) {
         handle_consensus_block_thread_->join();
     }
@@ -65,6 +62,8 @@ int BlockManager::Init(
     pools_mgr_ = pools_mgr;
     new_block_callback_ = new_block_callback;
     statistic_mgr_ = statistic_mgr;
+    
+
     security_ = security;
     contract_mgr_ = contract_mgr;
     hotstuff_mgr_ = hotstuff_mgr;
@@ -72,6 +71,14 @@ int BlockManager::Init(
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_, account_mgr_);
     consensus_block_queues_ = new common::ThreadSafeQueue<std::shared_ptr<hotstuff::ViewBlockInfo>>[common::kMaxThreadCount];
+    pools::protobuf::PoolStatisticTxInfo statistic_info;
+    if (prefix_db_->GetLatestPoolStatisticTag(
+            common::GlobalInfo::Instance()->network_id(), 
+            &statistic_info)) {
+        latest_statistic_height_ = statistic_info.height();
+        timeblock_height_pq_.push(statistic_info.height());
+        SHARDORA_DEBUG("latest statisticed height: %lu", statistic_info.height());
+    }
 
     bool genesis = false;
     pop_tx_tick_.CutOff(200000lu, std::bind(&BlockManager::PopTxTicker, this));
@@ -96,22 +103,23 @@ void BlockManager::ConsensusAddBlock(
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     auto block_item = block_item_info->view_block;
     consensus_block_queues_[thread_idx].push(block_item_info);
-    SHARDORA_DEBUG("add new block thread: %d, size: %u, %u_%u_%lu", 
+    SHARDORA_DEBUG("success add view block add new block thread: %d, size: %u, %u_%u_%lu_%lu", 
         thread_idx, consensus_block_queues_[thread_idx].size(),
         block_item->qc().network_id(),
         block_item->qc().pool_index(),
+        block_item->block_info().height(),
         block_item->qc().view());
 }
 
 void BlockManager::HandleAllConsensusBlocks() {
     common::GlobalInfo::Instance()->get_thread_index();
-    while (!common::GlobalInfo::Instance()->global_stoped()) {
+    while (!destroy_) {
         auto now_tm = common::TimeUtils::TimestampUs();
         bool no_sleep = true;
         while (no_sleep) {
             no_sleep = false;
             for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
-                int32_t count = 0;
+                uint32_t count = 0;
                 while (count++ < kEachTimeHandleBlocksCount) {
                     std::shared_ptr<hotstuff::ViewBlockInfo> view_block_info_ptr = nullptr;
                     consensus_block_queues_[i].pop(&view_block_info_ptr);
@@ -153,6 +161,20 @@ void BlockManager::HandleAllConsensusBlocks() {
                 }
             }
 
+            uint32_t pending_queues = 0;
+            size_t pending_blocks = 0;
+            for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+                auto queue_size = consensus_block_queues_[i].size();
+                if (queue_size > 0) {
+                    ++pending_queues;
+                    pending_blocks += queue_size;
+                }
+            }
+            if (pending_blocks > 0) {
+                SHARDORA_DEBUG("consensus block backlog: queues: %u, blocks: %lu",
+                    pending_queues, pending_blocks);
+            }
+
             // auto btime = common::TimeUtils::TimestampMs();
             // auto st = db_->Put(db_batch);
             // if (!st.ok()) {
@@ -165,7 +187,7 @@ void BlockManager::HandleAllConsensusBlocks() {
         }
         
         if (prev_create_statistic_tx_tm_us_ < now_tm) {
-            prev_create_statistic_tx_tm_us_ = now_tm + 10000000lu;
+            prev_create_statistic_tx_tm_us_ = now_tm + 10000000llu;
             CreateStatisticTx();
         }
 
@@ -183,13 +205,16 @@ void BlockManager::HandleStatisticTx(const view_block::protobuf::ViewBlockItem& 
 
     auto& elect_statistic = view_block.block_info().elect_statistic();
     if (elect_statistic.sharding_id() == net_id) {
-        auto iter = shard_statistics_map_.find(elect_statistic.height_info().tm_height());
-        if (iter != shard_statistics_map_.end()) {
-            SHARDORA_DEBUG("success remove shard statistic block tm height: %lu", iter->first);
-            shard_statistics_map_.erase(iter);
-            CHECK_MEMORY_SIZE(shard_statistics_map_);
-            auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
-            shard_statistics_map_ptr_queue_.push(tmp_ptr);
+        if (latest_statistic_height_ < elect_statistic.statistic_height()) {
+            latest_statistic_height_ = elect_statistic.statistic_height();
+        }
+
+        while (!timeblock_height_pq_.empty() && 
+                timeblock_height_pq_.top() < elect_statistic.height_info().tm_height()) {
+            SHARDORA_DEBUG("success pop tm height: %lu, statistic tm height: %lu, "
+                "statistic height: %lu", timeblock_height_pq_.top(), elect_statistic.height_info().tm_height(),
+                elect_statistic.statistic_height());
+            timeblock_height_pq_.pop();
         }
     }
 
@@ -240,36 +265,38 @@ void BlockManager::ConsensusShardHandleRootCreateAddress(
 void BlockManager::HandleNormalToTx(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr) {
     auto& view_block = *view_block_ptr;
     if (view_block.block_info().normal_to().to_tx_arr_size() <= 0) {
-        SHARDORA_DEBUG("0 handle normale to message coming: %u_%u_%lu, des: %u, %s", 
+        SHARDORA_DEBUG("0 handle normale to message coming: %u_%u_%lu_%lu, des: %u, %s", 
             view_block.qc().network_id(), 
             view_block.qc().pool_index(), 
             view_block.qc().view(), 
+            view_block.block_info().height(), 
             0, 
             ProtobufToJson(view_block).c_str());
         return;
     }
 
-    SHARDORA_DEBUG("handle normale to message coming: %u_%u_%lu, des: %u, %s", 
+    SHARDORA_DEBUG("handle normale to message coming: %u_%u_%lu_%lu, des: %u, %s", 
         view_block.qc().network_id(), 
         view_block.qc().pool_index(), 
+        view_block.block_info().height(), 
         view_block.qc().view(), 
         view_block.block_info().normal_to().to_tx_arr(0).des_shard(), 
         ProtobufToJson(view_block).c_str());
     if (network::IsSameToLocalShard(view_block.qc().network_id())) {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-        latest_to_block_ptr_[tmp_latest_to_block_ptr_index].store(view_block_ptr);
+        StoreLatestToBlock(tmp_latest_to_block_ptr_index, view_block_ptr);
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
         SHARDORA_DEBUG("success set latest to block ptr: %lu, tm: %lu", 
             view_block.block_info().height(), view_block.block_info().timestamp());
     }
 
     if (!view_block.block_info().has_normal_to()) {
-        assert(false);
+        //assert(false);
         return;
     }
 
     auto& to_txs = view_block.block_info().normal_to();
-    for (uint32_t i = 0; i < to_txs.to_tx_arr_size(); ++i) {
+    for (int32_t i = 0; i < to_txs.to_tx_arr_size(); ++i) {
         if (to_txs.to_tx_arr(i).des_shard() != common::GlobalInfo::Instance()->network_id()) {
             SHARDORA_WARN("sharding invalid: %u, %u",
                 to_txs.to_heights().sharding_id(),
@@ -289,34 +316,28 @@ void BlockManager::RootHandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs) {
     auto& block = view_block.block_info();
-    // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        SHARDORA_DEBUG("to tx new address %s, amount: %lu, prepayment: %lu, nonce: %lu",
+        SHARDORA_DEBUG("to tx new address %s, amount: %lu, prefund: %lu, nonce: %lu",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
-            tos_item.prepayment(),
+            tos_item.prefund(),
             0);
 
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        // if (tos_item.sharding_id() >= network::kConsensusShardBeginNetworkId &&
-        //         tos_item.sharding_id() < network::kConsensusShardEndNetworkId) {
-        //     char data[4];
-        //     uint32_t* uint_data = (uint32_t*)data;
-        //     uint_data[0] = tos_item.sharding_id();
-        // }
-        
         auto pool_index = common::GetAddressPoolIndex(tos_item.des().substr(0, common::kUnicastAddressLength));
-        msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
+        msg_ptr->address_info = account_mgr_->pools_address_info(
+            pools::protobuf::kRootCreateAddress, 
+            pool_index);
         tx->set_pubkey("");
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_nonce(++step_with_nonce_[tx->step()]);
-        tx->set_value(tos_item.SerializeAsString());
+        tx->set_nonce(++step_with_nonce_[pool_index][tx->step()]);
+        tx->set_value(SerializeDeterministic(tos_item));
         auto unique_hash = common::Hash::keccak256(
             tx->to() + "_" +
             std::to_string(block.height()) + "_" +
@@ -328,20 +349,20 @@ void BlockManager::RootHandleNormalToTx(
             0,
             common::Encode::HexEncode(unique_hash).c_str(),
             common::Encode::HexEncode(tx->contract_code()).c_str());
-        pools_mgr_->HandleMessage(msg_ptr);
+        pools_mgr_->AddPoolMessage(msg_ptr);
     }
 }
 
-// TODO refactor needed!
 void BlockManager::HandleNormalToTx(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
-    SHARDORA_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d", 
+    SHARDORA_DEBUG("0 handle local to to_txs.tos_size(): %u, addr: %s, nonce: %lu, step: %d, %s", 
         to_txs.tos_size(),
         "",
         0,
-        0);
+        0,
+        ProtobufToJson(to_txs).c_str());
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto to_tx = to_txs.tos(i);
         if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
@@ -355,15 +376,15 @@ void BlockManager::HandleNormalToTx(
 void BlockManager::AddNewBlock(
         const std::shared_ptr<hotstuff::ViewBlockInfo>& view_block_info) {
     auto view_block_item = view_block_info->view_block;
-    assert(!view_block_item->qc().sign_x().empty());
+    //assert(!view_block_item->qc().sign_x().empty());
     auto* block_item = &view_block_item->block_info();
-    // TODO: check all block saved success
     auto btime = common::TimeUtils::TimestampMs();
-    SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu,"
+    SHARDORA_DEBUG("new block coming sharding id: %u_%d_%lu, view: %u_%u_%lu_%lu,"
         "tx size: %u, hash: %s, prehash: %s, elect height: %lu, tm height: %lu, %s, ck_client_: %d",
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         block_item->height(),
+        view_block_item->qc().view(),
         view_block_item->qc().network_id(),
         view_block_item->qc().pool_index(),
         view_block_item->qc().view(),
@@ -374,9 +395,9 @@ void BlockManager::AddNewBlock(
         block_item->timeblock_height(),
         ProtobufToJson(*view_block_item).c_str(),
         (ck_client_ != nullptr));
-    assert(view_block_item->qc().elect_height() >= 1);
+    //assert(view_block_item->qc().elect_height() >= 1);
     account_mgr_->AddNewBlock(*view_block_item);
-    // 当前节点和 block 分配的 shard 不同，要跨分片交易
+    // Current node and block assigned shard are different, need cross-shard transaction
     if (!network::IsSameToLocalShard(view_block_item->qc().network_id())) {
         pools_mgr_->OnNewCrossBlock(view_block_item);
         SHARDORA_DEBUG("new cross block coming: %u, %u, %lu",
@@ -411,14 +432,19 @@ void BlockManager::AddNewBlock(
 
     if (block_item->has_timer_block()) {
         auto vss_random = block_item->timer_block().vss_random();
-        CallTimeBlock(block_item->timer_block().timestamp(), block_item->height(), vss_random);
-        SHARDORA_INFO("new time block called height: %lu, tm: %lu", block_item->height(), vss_random);
+        CallTimeBlock(
+            block_item->timer_block().timestamp(), 
+            block_item->height(), 
+            vss_random, 
+            block_item->timer_block().nonce());
+        SHARDORA_DEBUG("new time block called height: %lu, tm: %lu", block_item->height(), vss_random);
     }
 
     if (block_item->cross_shard_to_array_size() > 0) {
-        SHARDORA_DEBUG("now handle root cross %u_%u_%lu, local net: %d,  block: %s",
+        SHARDORA_DEBUG("now handle root cross %u_%u_%lu_%lu, local net: %d,  block: %s",
             view_block_item->qc().network_id(),
             view_block_item->qc().pool_index(),
+            view_block_item->block_info().height(),
             view_block_item->qc().view(),
             common::GlobalInfo::Instance()->network_id(),
             ProtobufToJson(*block_item).c_str());
@@ -441,21 +467,29 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
     for (int32_t i = 0; i < block_item.cross_shard_to_array_size(); ++i) {
         // dispatch to txs to tx pool
         auto to_tx = block_item.cross_shard_to_array(i);
+        SHARDORA_DEBUG("handle root cross shard to tx: %s, des: %s, "
+            "des shard: %u, local: %u, amount: %lu, prefund: %lu",
+            ProtobufToJson(to_tx).c_str(),
+            common::Encode::HexEncode(to_tx.des()).c_str(),
+            to_tx.des_sharding_id(),
+            common::GlobalInfo::Instance()->network_id(),
+            to_tx.amount(), to_tx.prefund());
         if (to_tx.des_sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
         }
 
-        CreateLocalToTx(view_block, to_tx);
+        CreateLocalToTx(view_block, to_tx, true);
     }
 }
 
 void BlockManager::CreateLocalToTx(
-        const view_block::protobuf::ViewBlockItem& view_block, 
-        const pools::protobuf::ToTxMessageItem& to_tx_item) {
+        const view_block::protobuf::ViewBlockItem& view_block,
+        const pools::protobuf::ToTxMessageItem& to_tx_item,
+        bool record_cross_shard_start) {
     if (to_tx_item.des().size() != common::kUnicastAddressLength && 
             to_tx_item.des().size() != common::kPreypamentAddressLength) {
         SHARDORA_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
-        assert(false);
+        //assert(false);
         return;
     }
 
@@ -469,7 +503,9 @@ void BlockManager::CreateLocalToTx(
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
+    msg_ptr->address_info = account_mgr_->pools_address_info(
+        pools::protobuf::kConsensusLocalTos, 
+        pool_index);
     auto tx = msg_ptr->header.mutable_tx_proto();
     std::string uinique_tx_str = common::Hash::keccak256(
         view_block.qc().view_block_hash() +
@@ -477,16 +513,30 @@ void BlockManager::CreateLocalToTx(
         view_block.qc().sign_y() +
         to_tx_item.des());
     tx->set_key(uinique_tx_str);
-    tx->set_value(to_tx_item.SerializeAsString());
+    tx->set_value(SerializeDeterministic(to_tx_item));
     tx->set_pubkey("");
     tx->set_to(msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kConsensusLocalTos);
     tx->set_gas_limit(0);
-    tx->set_amount(0); // 具体 amount 在 kv 中
+    tx->set_amount(0); // Specific amount is in kv
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(++step_with_nonce_[tx->step()]);
-    pools_mgr_->HandleMessage(msg_ptr);
-    SHARDORA_DEBUG("success add local transfer tx tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
+    tx->set_nonce(++step_with_nonce_[pool_index][tx->step()]);
+    if (record_cross_shard_start) {
+        uint64_t start_us = view_block.block_info().timestamp();
+        if (start_us > 0) {
+            start_us *= 1000;
+        } else {
+            start_us = common::TimeUtils::TimestampUs();
+        }
+        pools_mgr_->OnCrossShardToStart(to_tx_item.des(), start_us);
+    }
+    pools_mgr_->AddPoolMessage(msg_ptr);
+    SHARDORA_DEBUG("pool_index: %d, to pool addr: %s, success add local transfer tx %s, %lu "
+        "tos hash: %s, nonce: %lu, src to tx nonce: %lu, val: %s",
+        pool_index,
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+        common::Encode::HexEncode(to_tx_item.des()).c_str(),
+        to_tx_item.amount(),
         common::Encode::HexEncode(uinique_tx_str).c_str(),
         msg_ptr->address_info->nonce(),
         0,
@@ -521,7 +571,7 @@ void BlockManager::AddMiningToken(
             continue;
         }
 
-        auto id = security_->GetAddress(elect_block.in(i).pubkey());
+        auto id = security_->GetAddressWithPublicKey(elect_block.in(i).pubkey());
         protos::AddressInfoPtr account_info = account_mgr_->GetAccountInfo(id);
         if (account_info == nullptr ||
                 account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
@@ -544,43 +594,6 @@ void BlockManager::AddMiningToken(
             common::Encode::HexEncode(id).c_str(), elect_block.in(i).mining_amount());
         CreateLocalToTx(view_block, to_item);
     }
-
-    // for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
-    //     std::string str_for_hash;
-    //     str_for_hash.reserve(iter->second.tos_size() * 48);
-    //     for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
-    //         str_for_hash.append(iter->second.tos(i).des());
-    //         uint32_t pool_idx = iter->second.tos(i).pool_index();
-    //         str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
-    //         uint64_t amount = iter->second.tos(i).amount();
-    //         str_for_hash.append((char*)&amount, sizeof(amount));
-    //     }
-
-    //     auto val = iter->second.SerializeAsString();
-    //     auto tos_hash = common::Hash::keccak256(str_for_hash);
-    //     prefix_db_->SaveTemporaryKv(tos_hash, val);
-    //     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    //     msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
-    //     auto tx = msg_ptr->header.mutable_tx_proto();
-    //     std::string uinique_tx_str = common::Hash::keccak256(
-    //         view_block.qc().view_block_hash() +
-    //         view_block.qc().sign_x() + 
-    //         view_block.qc().sign_y() +
-    //         msg_ptr->address_info->addr());
-    //     tx->set_key(uinique_tx_str);
-    //     tx->set_value(val);
-    //     tx->set_pubkey("");
-    //     tx->set_to(msg_ptr->address_info->addr());
-    //     tx->set_step(pools::protobuf::kConsensusLocalTos);
-    //     tx->set_gas_limit(0);
-    //     tx->set_amount(0);
-    //     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    //     tx->set_nonce(0);
-    //     pools_mgr_->HandleMessage(msg_ptr);
-    //     SHARDORA_DEBUG("mining success create kConsensusLocalTos %s nonce: %lu",
-    //         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
-    //         tx->nonce());
-    // }
 }
 
 void BlockManager::LoadLatestBlocks() {
@@ -601,10 +614,12 @@ void BlockManager::LoadLatestBlocks() {
                 new_block_callback_(tmblock_ptr);
             }
 
-            CallTimeBlock(tmblock.timestamp(), tmblock.height(), tmblock.vss_random());
+            CallTimeBlock(tmblock.timestamp(), tmblock.height(), tmblock.vss_random(), tmblock.nonce());
         } else {
             SHARDORA_FATAL("load latest timeblock failed!");
         }
+    } else {
+        //assert(false);
     }
 
     for (uint32_t load_idx = 0; load_idx < 2; ++load_idx) {
@@ -659,8 +674,7 @@ void BlockManager::LoadLatestBlocks() {
     auto& block = *latest_to_tx_block;
     if (prefix_db_->GetLatestToBlock(&block)) {
         auto tmp_latest_to_block_ptr_index = (latest_to_block_ptr_index_ + 1) % 2;
-        latest_to_block_ptr_[tmp_latest_to_block_ptr_index].store(
-            latest_to_tx_block);
+        StoreLatestToBlock(tmp_latest_to_block_ptr_index, latest_to_tx_block);
         latest_to_block_ptr_index_ = tmp_latest_to_block_ptr_index;
         SHARDORA_DEBUG("success set latest to block ptr: %lu, tm: %lu",
             latest_to_tx_block->block_info().height(), latest_to_tx_block->block_info().timestamp());
@@ -682,18 +696,21 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::CreateStatisticTx() {
-#ifndef NDEBUG
-    static auto now_thread_id_tmp = std::this_thread::get_id();
-    auto tmp_thread_id_tmp = std::this_thread::get_id();
-    assert(now_thread_id_tmp == tmp_thread_id_tmp);
-#endif
-    if (create_statistic_tx_cb_ == nullptr) {
-        SHARDORA_DEBUG("create_statistic_tx_cb_ == nullptr");
+    // if (create_statistic_tx_cb_ == nullptr) {
+    //     SHARDORA_DEBUG("create_statistic_tx_cb_ == nullptr");
+    //     return;
+    // }
+
+    if (timeblock_height_pq_.size() < 2) {
+        SHARDORA_DEBUG("timeblock_height_pq_ size less than 2");
         return;
     }
 
     pools::protobuf::ElectStatistic elect_statistic;
-    uint64_t timeblock_height = prev_timeblock_height_;
+    uint64_t timeblock_height = timeblock_height_pq_.top();
+    timeblock_height_pq_.pop();
+    uint64_t des_timeblock_height = timeblock_height_pq_.top();
+    timeblock_height_pq_.push(timeblock_height);
     SHARDORA_DEBUG("StatisticWithHeights called!");
 
     // Some nodes will receive statistic block ahead of timeblock.
@@ -712,52 +729,58 @@ void BlockManager::CreateStatisticTx() {
         return;
     }
 
-    // 对应 timeblock_height 的 elect_statistic 已经收集，不会进行重复收集
-    MarkDoneTimeblockHeightStatistic(timeblock_height);
-
-    // TODO: fix invalid hash
     auto unique_hash = common::Hash::keccak256(
         std::string("create_statistic_tx_") + 
         std::to_string(elect_statistic.sharding_id()) + "_" +
         std::to_string(elect_statistic.statistic_height()));
-    SHARDORA_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, statistic: %s", 
+    SHARDORA_DEBUG("success create statistic message hash: %s, timeblock_height: %lu, "
+        "statistic: %s, timeblock nonce: %lu, des nonce: %lu, "
+        "elect_statistic.statistic_height() != des_timeblock_height: %lu, %lu", 
         common::Encode::HexEncode(unique_hash).c_str(), 
-        timeblock_height, ProtobufToJson(elect_statistic).c_str());
+        timeblock_height, ProtobufToJson(elect_statistic).c_str(),
+        timeblock_height_with_nonce_[timeblock_height],
+        timeblock_height_with_nonce_[elect_statistic.statistic_height()],
+        elect_statistic.statistic_height(), des_timeblock_height);
     if (!unique_hash.empty()) {
-        auto tm_statistic_iter = shard_statistics_map_.find(timeblock_height);
-        if (tm_statistic_iter == shard_statistics_map_.end()) {
-            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-            auto* tx = new_msg_ptr->header.mutable_tx_proto();
-            tx->set_key(unique_hash);
-            tx->set_value(elect_statistic.SerializeAsString());
-            tx->set_pubkey("");
-            tx->set_step(pools::protobuf::kStatistic);
-            tx->set_gas_limit(0);
-            tx->set_amount(0);
-            tx->set_gas_price(common::kBuildinTransactionGasPrice);
-            new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
-            tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
-            auto tx_ptr = std::make_shared<BlockTxsItem>();
-            tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
-            tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
-            tx_ptr->tx_hash = unique_hash;
-            tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
-            tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
-            SHARDORA_DEBUG("success add statistic tx: %s, statistic elect height: %lu, "
-                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
-                "nonce: %lu, timeblock_height: %lu",
-                common::Encode::HexEncode(unique_hash).c_str(),
-                0,
-                "", tx_ptr->timeout,
-                0, common::TimeUtils::TimestampMs(),
-                tx->nonce(),
-                timeblock_height);
-            shard_statistics_map_[timeblock_height] = tx_ptr;
-            CHECK_MEMORY_SIZE(shard_statistics_map_);
-
-            auto tmp_ptr = std::make_shared<StatisticMap>(shard_statistics_map_);
-            shard_statistics_map_ptr_queue_.push(tmp_ptr);
+        if (elect_statistic.statistic_height() != des_timeblock_height) {
+            return;
         }
+
+        MarkDoneTimeblockHeightStatistic(timeblock_height);
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto* tx = new_msg_ptr->header.mutable_tx_proto();
+        tx->set_key(unique_hash);
+        tx->set_value(SerializeDeterministic(elect_statistic));
+        tx->set_pubkey("");
+        tx->set_step(pools::protobuf::kStatistic);
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_nonce(timeblock_height_with_nonce_[elect_statistic.statistic_height()]);
+        // auto tx_ptr = std::make_shared<BlockTxsItem>();
+        new_msg_ptr->address_info = account_mgr_->pools_address_info(
+            pools::protobuf::kStatistic, 
+            common::kGlobalPoolIndex);
+        if (new_msg_ptr->address_info->nonce() >= tx->nonce()) {
+            SHARDORA_WARN("statistic tx already exist, hash: %s, nonce: %lu, addr: %s",
+                common::Encode::HexEncode(unique_hash).c_str(),
+                new_msg_ptr->address_info->nonce(),
+                common::Encode::HexEncode(new_msg_ptr->address_info->addr()).c_str());
+            return;
+        }
+
+        tx->set_to(new_msg_ptr->address_info->addr());
+        pools_mgr_->AddPoolMessage(new_msg_ptr);
+        SHARDORA_DEBUG("success add statistic tx: %s, statistic elect height: %lu, "
+            "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, "
+            "nonce: %lu, timeblock_height: %lu, statistic_addr: %s",
+            common::Encode::HexEncode(unique_hash).c_str(),
+            0,
+            "", (common::TimeUtils::TimestampMs() + kStatisticTimeoutMs),
+            0, common::TimeUtils::TimestampMs(),
+            tx->nonce(),
+            timeblock_height,
+            common::Encode::HexEncode(new_msg_ptr->address_info->addr()).c_str());
     }
 }
 
@@ -766,62 +789,35 @@ void BlockManager::HandleStatisticBlock(
         const view_block::protobuf::ViewBlockItem& view_block,
         const pools::protobuf::ElectStatistic& elect_statistic) {
     auto& block = view_block.block_info();
-    if (create_elect_tx_cb_ == nullptr) {
-        SHARDORA_DEBUG("create_elect_tx_cb_ == nullptr");
-        return;
-    }
-
-    if (elect_statistic.statistics_size() <= 0) {
-        return;
-    }
-
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return;
     }
-#ifdef NDEBUG
-    for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
-        SHARDORA_DEBUG("sharding: %u, new elect node: %s, balance: %lu, shard: %u, pos: %u", 
-            elect_statistic.sharding_id(), 
-            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
-            elect_statistic.join_elect_nodes(i).stoke(),
-            elect_statistic.join_elect_nodes(i).shard(),
-            elect_statistic.join_elect_nodes(i).elect_pos());
-    }
 
-    assert(view_block.qc().network_id() == elect_statistic.sharding_id());
-    SHARDORA_DEBUG("success handle statistic block net: %u, sharding: %u, "
-        "pool: %u, height: %lu, elect height: %lu",
-        view_block.qc().network_id(), elect_statistic.sharding_id(), view_block.qc().pool_index(), 
-        block.timeblock_height(), elect_statistic.statistics(elect_statistic.statistics_size() - 1).elect_height());
-#endif
     // create elect transaction now for block.network_id
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-    new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(
+        pools::protobuf::kConsensusRootElectShard, 
+        elect_statistic.sharding_id());
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     std::string unique_hash = common::Hash::keccak256(
         std::string("root_create_elect_tx_") + 
         std::to_string(elect_statistic.sharding_id()) + "_" +
-        std::to_string(block.timeblock_height()));
+        std::to_string(elect_statistic.nonce() + 1));
     tx->set_key(unique_hash);
-    tx->set_value(elect_statistic.SerializeAsString());
+    tx->set_value(SerializeDeterministic(elect_statistic));
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kConsensusRootElectShard);
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(++step_with_nonce_[tx->step()]);
-    auto shard_elect_tx = std::make_shared<BlockTxsItem>();
-    shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
-    shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
-    shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
-    shard_elect_tx->stop_consensus_timeout = shard_elect_tx->timeout + kStopConsensusTimeoutMs;
-    shard_elect_tx_[view_block.qc().network_id()].store(shard_elect_tx);
+    tx->set_nonce(elect_statistic.nonce() + 1);
+    pools_mgr_->AddPoolMessage(new_msg_ptr);
     SHARDORA_DEBUG("success add elect tx: %u, %lu, nonce: %lu, tx key: %s, "
         "statistic elect height: %lu, unique hash: %s",
         view_block.qc().network_id(), block.timeblock_height(),
         tx->nonce(),
-        common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_key).c_str(),
+        common::Encode::HexEncode(tx->key()).c_str(),
         0,
         common::Encode::HexEncode(unique_hash).c_str());
 }
@@ -830,6 +826,7 @@ pools::TxItemPtr BlockManager::GetToTx(
         uint32_t pool_index, 
         const std::string& heights_str) {
     if (network::IsSameToLocalShard(network::kRootCongressNetworkId)) {
+        SHARDORA_DEBUG("GetToTx rejected: is root congress shard");
         return nullptr;
     }
 
@@ -837,19 +834,24 @@ pools::TxItemPtr BlockManager::GetToTx(
         return nullptr;
     }
 
+    static const uint64_t kGetToTxCooldownMs = 10000lu;
     pools::protobuf::ShardToTxItem heights;
     if (heights_str.empty()) {
         auto cur_time = common::TimeUtils::TimestampMs();
         if (leader_prev_get_to_tx_tm_ > cur_time) {
+            SHARDORA_DEBUG("GetToTx rejected: cooldown active, remaining: %lu ms",
+                leader_prev_get_to_tx_tm_ - cur_time);
             return nullptr;
         }
 
         SHARDORA_DEBUG("now leader get to to tx.");
-        leader_prev_get_to_tx_tm_ = cur_time + 3000lu;
-        auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load();
+        leader_prev_get_to_tx_tm_ = cur_time + kGetToTxCooldownMs;
+        auto latest_to_block_ptr = LoadLatestToBlock(latest_to_block_ptr_index_);
         if (latest_to_block_ptr != nullptr &&
-                latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
-            SHARDORA_DEBUG("now leader get to to tx timestamp error");
+                latest_to_block_ptr->block_info().timestamp() + kGetToTxCooldownMs >= cur_time) {
+            SHARDORA_DEBUG("now leader get to to tx timestamp error, block_tm: %lu, cur: %lu, diff: %ld",
+                latest_to_block_ptr->block_info().timestamp(), cur_time,
+                (int64_t)(cur_time - latest_to_block_ptr->block_info().timestamp()));
             return nullptr;
         }
 
@@ -859,7 +861,7 @@ pools::TxItemPtr BlockManager::GetToTx(
         }
     } else {
         if (!heights.ParseFromString(heights_str)) {
-            assert(false);
+            //assert(false);
             return nullptr;
         }
     }
@@ -867,14 +869,15 @@ pools::TxItemPtr BlockManager::GetToTx(
     heights.set_sharding_id(network::GetLocalConsensusNetworkId());
     auto tx_ptr = HandleToTxsMessage(heights);
     if (tx_ptr != nullptr) {
-        // heights_str_map_[height_hash] = tx_ptr;
-        // CHECK_MEMORY_SIZE(heights_str_map_);
         SHARDORA_DEBUG("success get to tx tx info: %s, nonce: %lu, val: %s, heights: %s",
             ProtobufToJson(*tx_ptr->tx_info).c_str(),
             tx_ptr->tx_info->nonce(), 
             "common::Encode::HexEncode(tx_ptr->tx_info.value()).c_str()",
             ProtobufToJson(heights).c_str());
     } else {
+        // HandleToTxsMessage failed, clear the cached heights so next attempt
+        // can recompute fresh heights
+        to_txs_pool_->ClearLeaderToHeights();
         SHARDORA_DEBUG("failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
     }
 
@@ -887,51 +890,100 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
         return nullptr;
     }
 
-    pools::protobuf::AllToTxMessage all_to_txs;
-    pools::protobuf::ShardToTxItem prev_heights;
-    for (uint32_t sharding_id = network::kRootCongressNetworkId;
-            sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
-        auto& to_tx = *all_to_txs.add_to_tx_arr();
-        if (to_txs_pool_->CreateToTxWithHeights(
-                sharding_id,
-                0,
-                &prev_heights,
-                heights,
-                to_tx) != pools::kPoolsSuccess) {
-            all_to_txs.mutable_to_tx_arr()->RemoveLast();
-            SHARDORA_DEBUG("1 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
+    // Size limit: 75% of propose limit to leave room for block headers/signatures
+    static const size_t kMaxToTxValueBytes = common::kMaxProposeMsgBytes * 3 / 4;
+    static const int kMaxReduceAttempts = 8;
+    
+    pools::protobuf::ShardToTxItem cur_heights = heights;
+    
+    for (int attempt = 0; attempt <= kMaxReduceAttempts; ++attempt) {
+        pools::protobuf::AllToTxMessage all_to_txs;
+        pools::protobuf::ShardToTxItem prev_heights;
+        for (uint32_t sharding_id = network::kRootCongressNetworkId;
+                sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
+            auto& to_tx = *all_to_txs.add_to_tx_arr();
+            if (to_txs_pool_->CreateToTxWithHeights(
+                    sharding_id,
+                    0,
+                    &prev_heights,
+                    cur_heights,
+                    to_tx) != pools::kPoolsSuccess) {
+                all_to_txs.mutable_to_tx_arr()->RemoveLast();
+                SHARDORA_DEBUG("1 failed get to tx for shard: %u, heights: %s",
+                    sharding_id, ProtobufToJson(cur_heights).c_str());
+            }
         }
-    }
 
-    if (all_to_txs.to_tx_arr_size() == 0) {
-        SHARDORA_DEBUG("2 failed get to tx tx info: %s", ProtobufToJson(heights).c_str());
-        return nullptr;
+        if (all_to_txs.to_tx_arr_size() == 0) {
+            SHARDORA_DEBUG("2 failed get to tx tx info, all shards failed, max_shard: %u, heights: %s",
+                max_consensus_sharding_id_.load(), ProtobufToJson(cur_heights).c_str());
+            return nullptr;
+        }
+        
+        *all_to_txs.mutable_to_heights() = cur_heights;
+        auto serialized_value = SerializeDeterministic(all_to_txs);
+        
+        if (serialized_value.size() > kMaxToTxValueBytes) {
+            // Too large — halve the height range for each pool and retry
+            bool any_reduced = false;
+            pools::protobuf::ShardToTxItem reduced;
+            for (int32_t i = 0; i < cur_heights.heights_size(); ++i) {
+                uint64_t prev_h = (i < prev_heights.heights_size()) ? prev_heights.heights(i) : 0;
+                uint64_t cur_h = cur_heights.heights(i);
+                if (cur_h > prev_h + 1) {
+                    reduced.add_heights(prev_h + (cur_h - prev_h) / 2);
+                    any_reduced = true;
+                } else {
+                    reduced.add_heights(cur_h);
+                }
+            }
+            
+            if (!any_reduced) {
+                SHARDORA_WARN("HandleToTxsMessage: cannot reduce further, size %zu > limit %zu",
+                    serialized_value.size(), kMaxToTxValueBytes);
+                to_txs_pool_->ClearLeaderToHeights();
+                return nullptr;
+            }
+            
+            SHARDORA_WARN("HandleToTxsMessage: size %zu > limit %zu, reducing heights (attempt %d)",
+                serialized_value.size(), kMaxToTxValueBytes, attempt + 1);
+            reduced.set_sharding_id(cur_heights.sharding_id());
+            cur_heights = reduced;
+            continue;
+        }
+        
+        // Size OK — create the transaction
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        new_msg_ptr->address_info = account_mgr_->pools_address_info(
+            pools::protobuf::kNormalTo, 
+            common::kImmutablePoolSize);
+        auto* tx = new_msg_ptr->header.mutable_tx_proto();
+        std::string unique_str;
+        for (int32_t i = 0; i < prev_heights.heights_size(); ++i) {
+            unique_str += std::to_string(prev_heights.heights(i)) + "_";
+        }
+
+        tx->set_key(common::Hash::keccak256(unique_str));
+        tx->set_value(serialized_value);
+        tx->set_pubkey("");
+        tx->set_to(new_msg_ptr->address_info->addr());
+        tx->set_step(pools::protobuf::kNormalTo);
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_nonce(new_msg_ptr->address_info->nonce() + 1);
+        auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
+        tx_ptr->time_valid += kToValidTimeout;
+        SHARDORA_DEBUG("success get to tx unique hash: %s, heights: %s, value_size: %zu",
+            common::Encode::HexEncode(tx->key()).c_str(), 
+            ProtobufToJson(prev_heights).c_str(),
+            serialized_value.size());
+        return tx_ptr;
     }
     
-    *all_to_txs.mutable_to_heights() = heights;
-    auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-    new_msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
-    auto* tx = new_msg_ptr->header.mutable_tx_proto();
-    std::string unique_str;
-    for (uint32_t i = 0; i < prev_heights.heights_size(); ++i) {
-        unique_str += std::to_string(prev_heights.heights(i)) + "_";
-    }
-
-    tx->set_key(common::Hash::keccak256(unique_str));
-    tx->set_value(all_to_txs.SerializeAsString());
-    tx->set_pubkey("");
-    tx->set_to(new_msg_ptr->address_info->addr());
-    tx->set_step(pools::protobuf::kNormalTo);
-    tx->set_gas_limit(0);
-    tx->set_amount(0);
-    tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_nonce(++step_with_nonce_[tx->step()]);
-    auto tx_ptr = create_to_tx_cb_(new_msg_ptr);
-    tx_ptr->time_valid += kToValidTimeout;
-    SHARDORA_DEBUG("success get to tx unique hash: %s, heights: %s",
-        common::Encode::HexEncode(tx->key()).c_str(), 
-        ProtobufToJson(prev_heights).c_str());
-    return tx_ptr;
+    SHARDORA_WARN("HandleToTxsMessage: exhausted reduce attempts");
+    to_txs_pool_->ClearLeaderToHeights();
+    return nullptr;
 }
 
 bool BlockManager::HasSingleTx(
@@ -944,19 +996,6 @@ bool BlockManager::HasSingleTx(
         return true;
     }
 
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (HasStatisticTx(pool_index, tx_valid_func)) {
-    //     // SHARDORA_DEBUG("success check has statistic tx.");
-    //     return true;
-    // }
-
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
-    // if (HasElectTx(pool_index, tx_valid_func)) {
-    //     // SHARDORA_DEBUG("success check has elect tx.");
-    //     return true;
-    // }
-
-    // ADD_DEBUG_PROCESS_TIMESTAMP();
     return false;
 }
 
@@ -970,8 +1009,7 @@ void BlockManager::PopTxTicker() {
         }
 
         auto valid_got_latest_statistic_map_ptr_index_tmp = (valid_got_latest_statistic_map_ptr_index_ + 1) % 2;
-        got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_tmp].store(
-            static_tmp_map);
+        StoreLatestStatisticMap(valid_got_latest_statistic_map_ptr_index_tmp, static_tmp_map);
         valid_got_latest_statistic_map_ptr_index_ = valid_got_latest_statistic_map_ptr_index_tmp;
     }
 
@@ -987,230 +1025,17 @@ bool BlockManager::HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFuncti
         return false;
     }
 
-    auto cur_time = common::TimeUtils::TimestampMs();
-    auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load();
-    if (latest_to_block_ptr != nullptr &&
-            latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
-        SHARDORA_DEBUG("invalid latest_to_block_ptr: %d", (latest_to_block_ptr != nullptr));
-        return false;
-    }
+    // auto cur_time = common::TimeUtils::TimestampMs();
+    // auto latest_to_block_ptr = latest_to_block_ptr_[latest_to_block_ptr_index_].load();
+    // if (latest_to_block_ptr != nullptr &&
+    //         latest_to_block_ptr->block_info().timestamp() + 10000lu >= cur_time) {
+    //     SHARDORA_DEBUG("HasToTx: blocked by 10s cooldown, block_tm: %lu, cur: %lu, diff: %ld",
+    //         latest_to_block_ptr->block_info().timestamp(), cur_time,
+    //         (int64_t)(cur_time - latest_to_block_ptr->block_info().timestamp()));
+    //     return false;
+    // }
 
     return true;
-}
-
-bool BlockManager::HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func) {
-    if (pool_index != common::kImmutablePoolSize) {
-        return false;
-    }
-
-    auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_].load();
-    if (statistic_map_ptr == nullptr) {
-        return false;
-    }
-
-    if (statistic_map_ptr->empty()) {
-        return false;
-    }
-
-    auto iter = statistic_map_ptr->begin();
-    auto shard_statistic_tx = iter->second;
-    if (shard_statistic_tx == nullptr) {
-        SHARDORA_DEBUG("shard_statistic_tx == nullptr");
-        return false;
-    }
-
-    if (shard_statistic_tx != nullptr) {
-        auto now_tm = common::TimeUtils::TimestampUs();
-        if (iter->first >= latest_timeblock_height_) {
-            return false;
-        }
-
-        if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
-            return false;
-        }
-
-        if (tx_valid_func(
-                *iter->second->tx_ptr->address_info, 
-                *iter->second->tx_ptr->tx_info) != 0) {
-            return false;
-        }
-
-        // SHARDORA_DEBUG("has statistic %u, tx nonce: %lu", 
-        //     pool_index, 
-        //     common::Encode::HexEncode(iter->second->tx_ptr->tx_info.gid()).c_str());
-        return true;
-    }
-
-    return false;
-}
-
-bool BlockManager::HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func) {
-    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
-        if (i % common::kImmutablePoolSize != pool_index) {
-            continue;
-        }
-
-        auto shard_elect_tx = shard_elect_tx_[i].load();
-        if (shard_elect_tx == nullptr) {
-            continue;
-        }
-
-        if (tx_valid_func(
-                *shard_elect_tx->tx_ptr->address_info, 
-                *shard_elect_tx->tx_ptr->tx_info) != 0) {
-            return false;
-        }
-        
-        SHARDORA_DEBUG("has elect %u, tx nonce: %lu", 
-            pool_index, 
-            shard_elect_tx->tx_ptr->tx_info->nonce());
-        return true;
-    }
-
-    return false;
-}
-
-pools::TxItemPtr BlockManager::GetStatisticTx(
-        uint32_t pool_index, 
-        const std::string& unqiue_hash) {
-    bool leader = unqiue_hash.empty();
-    while (shard_statistics_map_ptr_queue_.size() > 0) {
-        std::this_thread::sleep_for(std::chrono::microseconds(50000ull));
-    }
-
-    auto statistic_map_ptr = got_latest_statistic_map_ptr_[valid_got_latest_statistic_map_ptr_index_].load(
-        std::memory_order_acquire);;
-    if (statistic_map_ptr == nullptr) {
-        SHARDORA_DEBUG("statistic_map_ptr == nullptr");
-        return nullptr;
-    }
-
-    if (statistic_map_ptr->empty()) {
-        SHARDORA_DEBUG("statistic_map_ptr->empty()");
-        return nullptr;
-    }
-
-    std::shared_ptr<BlockTxsItem> shard_statistic_tx = nullptr;
-    auto iter = statistic_map_ptr->begin();
-    for (; iter != statistic_map_ptr->end(); ++iter) {
-        if (leader) {
-            shard_statistic_tx = iter->second;
-            break;
-        }
-
-        if (iter->second->tx_ptr->tx_info->key() == unqiue_hash) {
-            shard_statistic_tx = iter->second;
-            break;
-        }
-    }
-
-    if (shard_statistic_tx == nullptr) {
-        SHARDORA_DEBUG("shard_statistic_tx == nullptr, unqiue_hash: %s, is leader: %d",
-            common::Encode::HexEncode(unqiue_hash).c_str(),
-            leader);
-        if (pool_index == common::kImmutablePoolSize) {
-            // assert(false); // 长时间压测下，有的节点 pool: 16 找不到 statistic tx 导致共识卡死
-        }
-        return nullptr;
-    }
-
-    static uint64_t prev_get_tx_tm = common::TimeUtils::TimestampMs();
-    auto now_tx_tm = common::TimeUtils::TimestampMs();
-    if (now_tx_tm > prev_get_tx_tm + 10000) {
-        prev_get_tx_tm = now_tx_tm;
-    }
-
-    if (shard_statistic_tx != nullptr) {
-        auto now_tm = common::TimeUtils::TimestampUs();
-        if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            SHARDORA_DEBUG("leader get tx failed: %lu, %lu", shard_statistic_tx->tx_ptr->time_valid, now_tm);
-            return nullptr;
-        }
-
-        if (iter->first >= latest_timeblock_height_) {
-            if (leader) {
-                SHARDORA_DEBUG("iter->first >= latest_timeblock_height_: %lu, %lu",
-                    iter->first, latest_timeblock_height_);
-            }
-
-            return nullptr;
-        }
-
-        if (prev_timeblock_tm_sec_ + (common::kRotationPeriod / (1000lu * 1000lu)) > (now_tm / 1000000lu)) {
-            static uint64_t prev_get_tx_tm1 = common::TimeUtils::TimestampMs();
-            if (now_tx_tm > prev_get_tx_tm1 + 10000) {
-                SHARDORA_DEBUG("failed get statistic tx: %lu, %lu, %lu", 
-                    prev_timeblock_tm_sec_, 
-                    (common::kRotationPeriod / 1000000lu), 
-                    (now_tm / 1000000lu));
-                prev_get_tx_tm1 = now_tx_tm;
-            }
-            
-            return nullptr;
-        }
-
-        if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            SHARDORA_DEBUG("time_valid invalid!");
-            return nullptr;
-        }
-
-        shard_statistic_tx->tx_ptr->address_info =
-            account_mgr_->pools_address_info(pool_index);
-        auto& tx = shard_statistic_tx->tx_ptr->tx_info;
-        tx->set_to(shard_statistic_tx->tx_ptr->address_info->addr());
-        SHARDORA_INFO("success get statistic tx hash: %s, prev_timeblock_tm_sec_: %lu, "
-            "height: %lu, latest time block height: %lu, is leader: %d",
-            common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str(),
-            prev_timeblock_tm_sec_, iter->first, latest_timeblock_height_,
-            leader);
-        return shard_statistic_tx->tx_ptr;
-    }
-
-    if (leader) {
-        SHARDORA_DEBUG("failed get statistic tx");
-    }
-    return nullptr;
-}
-
-pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
-    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
-        if (i % common::kImmutablePoolSize != pool_index) {
-            continue;
-        }
-
-        auto shard_elect_tx = shard_elect_tx_[i].load();
-        if (shard_elect_tx == nullptr) {
-            SHARDORA_DEBUG("0 failed get elect tx pool index: %u, tx hash: %s",
-                pool_index, common::Encode::HexEncode(tx_hash).c_str());
-            continue;
-        }
-
-        if (!tx_hash.empty()) {
-            if (shard_elect_tx->tx_ptr->tx_info->key() == tx_hash) {
-                SHARDORA_DEBUG("0 success get elect tx pool index: %u, tx hash: %s",
-                    pool_index, common::Encode::HexEncode(tx_hash).c_str());
-                return shard_elect_tx->tx_ptr;
-            }
-
-            SHARDORA_DEBUG("1 failed get elect tx pool index: %u, tx hash: %s",
-                pool_index, common::Encode::HexEncode(tx_hash).c_str());
-            continue;
-        }
-
-        auto now_tm = common::TimeUtils::TimestampUs();
-        if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
-            SHARDORA_DEBUG("2 failed get elect tx pool index: %u, tx hash: %s",
-                pool_index, common::Encode::HexEncode(tx_hash).c_str());
-            continue;
-        }
-
-        SHARDORA_DEBUG("1 success get elect tx pool index: %u, unique hash: %s",
-            pool_index, 
-            common::Encode::HexEncode(shard_elect_tx->tx_ptr->tx_info->key()).c_str());
-        return shard_elect_tx->tx_ptr;
-    }
-
-    return nullptr;
 }
 
 bool BlockManager::ShouldStopConsensus() {
@@ -1220,19 +1045,26 @@ bool BlockManager::ShouldStopConsensus() {
 void BlockManager::CallTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
-        uint64_t vss_random) {
-    SHARDORA_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu",
-        latest_timeblock_height_, latest_time_block_height, lastest_time_block_tm);
-    if (latest_timeblock_height_ >= latest_time_block_height) {
+        uint64_t vss_random,
+        uint64_t nonce) {
+    SHARDORA_DEBUG("new timeblock coming: %lu, %lu, lastest_time_block_tm: %lu, "
+        "nonce: %lu, latest_timeblock_tm_sec_: %lu, now top: %lu",
+        latest_timeblock_height_, latest_time_block_height, 
+        lastest_time_block_tm, nonce, latest_timeblock_tm_sec_, 
+        timeblock_height_pq_.empty() ? 0 : timeblock_height_pq_.top());
+    if (latest_time_block_height > latest_statistic_height_) {
+        timeblock_height_pq_.push(latest_time_block_height);
+    }
+    
+    timeblock_height_with_nonce_[latest_time_block_height] = nonce;
+    if (latest_timeblock_tm_sec_ >= lastest_time_block_tm) {
         return;
     }
 
-    prev_timeblock_height_ = latest_timeblock_height_;
     latest_timeblock_height_ = latest_time_block_height;
     prev_timeblock_tm_sec_ = latest_timeblock_tm_sec_;
     latest_timeblock_tm_sec_ = lastest_time_block_tm;
-    SHARDORA_DEBUG("success update timeblock height: %lu, %lu, tm: %lu, %lu",
-        prev_timeblock_height_, latest_timeblock_height_,
+    SHARDORA_DEBUG("success update timeblock height: %lu, tm: %lu, %lu", latest_timeblock_height_,
         prev_timeblock_tm_sec_, latest_timeblock_tm_sec_);
 
     if (statistic_mgr_) {

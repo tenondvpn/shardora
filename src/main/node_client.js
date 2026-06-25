@@ -88,7 +88,7 @@ function QueryContract(input) {
     QueryPostCode('/query_contract', data);
 }
 
-function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay, prikey) {
+function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prefund, prikey) {
     // 私钥
     const privateKeyBuf = Secp256k1.uint256(prikey, 16)
     var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
@@ -122,14 +122,14 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
 
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    var prefund_buf = new Buffer(8);
+    var big = ~~(prefund / MAX_UINT32)
+    var low = (prefund % MAX_UINT32) - big
+    prefund_buf.writeUInt32LE(big, 4)
+    prefund_buf.writeUInt32LE(low, 0)
 
     var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), Buffer.from(input, 'hex'), prepay_buf]);
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), Buffer.from(input, 'hex'), prefund_buf]);
 
     // 签名
     var kechash = keccak256(message_buf)
@@ -152,7 +152,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
         'attrs_size': 4,
         "bytes_code": contract_bytes,
         "input": input,
-        "pepay": prepay,
+        "prefund": prefund,
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
@@ -269,8 +269,8 @@ function call_contract(input, prikey, amount) {
     PostCode(data);
 }
 
-// 设置预付费 prepayment > 0
-function prepay_contract(prikey, prepayment) {
+// 设置预付费 prefund > 0
+function prefund_contract(prikey, prefund) {
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
@@ -282,7 +282,7 @@ function prepay_contract(prikey, prepayment) {
         1,
         "",
         "",
-        prepayment,
+        prefund,
         prikey);
     PostCode(data);
 }
@@ -325,7 +325,7 @@ if (args[0] == 4) {
 }
 
 if (args[0] == 5) {
-    prepay_contract(prikey, 1000);
+    prefund_contract(prikey, 1000);
 }
 
 if (args[0] == 6) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -22,48 +23,72 @@ public:
     ~AccountLruMap() {}
 
     void insert(AccountPtr value) {
-        auto& key = value->addr();
-        if (item_map_.count(key)) {
-            item_list_.erase(item_map_[key]);
-            item_map_.erase(key);
+        std::lock_guard<std::mutex> lock(mutex_);
+        const auto& key = value->addr();
+        auto it = value_map_.find(key);
+        if (it != value_map_.end()) {
+            // Key exists: remove from LRU list and update value.
+            auto map_it = item_map_.find(key);
+            if (map_it != item_map_.end()) {
+                item_list_.erase(map_it->second);
+                item_map_.erase(map_it);
+            }
+            value_map_.erase(it);
         }
 
         item_list_.push_front(key);
         item_map_[key] = item_list_.begin();
-        uint32_t index = common::Hash::Hash32(key) % kBucketSize;
-        {
-            common::AutoSpinLock spinlock(spin_mutex_);
-            index_data_map_[index] = value;
-        }
+        value_map_[key] = value;
 
         if (item_list_.size() > kBucketSize) {
-            std::string& last = item_list_.back();
+            const std::string& last = item_list_.back();
             item_map_.erase(last);
+            value_map_.erase(last);
             item_list_.pop_back();
         }
+
     }
 
     AccountPtr get(const std::string& key) {
-        uint32_t index = common::Hash::Hash32(key) % kBucketSize;
-        AccountPtr item_ptr = nullptr;
-        {
-            common::AutoSpinLock spinlock(spin_mutex_);
-            item_ptr = index_data_map_[index];
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = value_map_.find(key);
+        if (it != value_map_.end()) {
+            return it->second;
         }
-        
-        if (item_ptr != nullptr && item_ptr->addr() == key) {
-            return item_ptr;
-        }
-        
         return nullptr;
+    }
+
+    // Atomic get-or-insert: returns existing value for key, or inserts
+    // the provided value and returns it.  Avoids the TOCTOU window
+    // between a separate get() + insert() pair that lets multiple
+    // threads race through the DB-lookup path for the same key.
+    AccountPtr get_or_insert(const std::string& key, AccountPtr value) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = value_map_.find(key);
+        if (it != value_map_.end()) {
+            return it->second;
+        }
+
+        // Not present — insert the caller-supplied value.
+        item_list_.push_front(key);
+        item_map_[key] = item_list_.begin();
+        value_map_[key] = value;
+
+        if (item_list_.size() > kBucketSize) {
+            const std::string& last = item_list_.back();
+            item_map_.erase(last);
+            value_map_.erase(last);
+            item_list_.pop_back();
+        }
+
+        return value;
     }
 
 private:
     std::list<std::string> item_list_;
     std::unordered_map<std::string, typename std::list<std::string>::iterator> item_map_;
-    AccountPtr index_data_map_[kBucketSize] = { nullptr };
-    common::SpinMutex spin_mutex_;
-
+    std::unordered_map<std::string, AccountPtr> value_map_;
+    std::mutex mutex_;
 };
 
 };  // namespace block

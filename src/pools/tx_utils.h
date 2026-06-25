@@ -1,7 +1,10 @@
 #pragma once
 
 #include <deque>
+#include <string>
 #include <protos/elect.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 #include "common/bitmap.h"
 #include "common/encode.h"
@@ -12,12 +15,13 @@
 #include "common/utils.h"
 #include "consensus/hotstuff/hotstuff_utils.h"
 #include "db/db.h"
+#include "protos/block.pb.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "network/network_utils.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
-#include "zjcvm/zjc_host.h"
+#include "shardoravm/shardora_host.h"
 
 namespace shardora {
 
@@ -45,7 +49,7 @@ enum PoolsErrorCode {
 };
 
 static inline std::string GetTxKey(const std::string& addr, uint64_t nonce) {
-    assert(addr.size() == common::kUnicastAddressLength || addr.size() == common::kPreypamentAddressLength);
+    //assert(addr.size() == common::kUnicastAddressLength || addr.size() == common::kPreypamentAddressLength);
     std::string data;
     data.resize(addr.size() + 8);
     memcpy(data.data(), addr.c_str(), addr.size());
@@ -111,7 +115,7 @@ struct StatisticMemberInfoItem {
 };
 
 struct AccoutPoceInfoItem {
-    uint64_t consensus_gap; // 边缘化程度 P
+    uint64_t consensus_gap; // Marginalization degree P (tenure time)
     uint64_t credit;
 };
 
@@ -203,12 +207,13 @@ static inline bool operator==(const struct CrossItem & X,const struct CrossItem 
 struct CrossItemRecordHash {
     size_t operator()(const struct CrossItem& item) const {
         char data[sizeof(CrossItem)];
-        uint32_t* u32_arr = (uint32_t*)data;
+        uint32_t* u32_arr = reinterpret_cast<uint32_t*>(data);
         u32_arr[0] = item.src_shard;
         u32_arr[1] = item.src_pool;
-        u32_arr[2] = static_cast<uint32_t>(item.height && 0xFFFFFFFFu);
-        u32_arr[3] = static_cast<uint32_t>((item.height >> 32) && 0xFFFFFFFFu);
-        return std::hash<std::string>()(data);
+        u32_arr[2] = static_cast<uint32_t>(item.height & 0xFFFFFFFFu);
+        u32_arr[3] = static_cast<uint32_t>((item.height >> 32) & 0xFFFFFFFFu);
+        const std::string blob(data, sizeof(data));
+        return std::hash<std::string>()(blob);
     }
 };
 
@@ -257,9 +262,9 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         message.append(tx_info.contract_input());
     }
 
-    if (tx_info.has_contract_prepayment()) {
-        uint64_t prepay = tx_info.contract_prepayment();
-        message.append(std::string((char*)&prepay, sizeof(prepay)));
+    if (tx_info.has_contract_prefund()) {
+        uint64_t prefund = tx_info.contract_prefund();
+        message.append(std::string((char*)&prefund, sizeof(prefund)));
     }
 
     if (tx_info.has_key()) {
@@ -269,23 +274,29 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    // SHARDORA_DEBUG("gid: %s, pk: %s, to: %s, amount: %lu, gas limit: %lu, gas price: %lu, "
-    //     "step: %d, contract code: %s, input: %s, prepayment: %lu, key: %s, value: %s", 
-    //     common::Encode::HexEncode(tx_info.gid()).c_str(),
-    //     common::Encode::HexEncode(tx_info.pubkey()).c_str(),
-    //     common::Encode::HexEncode(tx_info.to()).c_str(),
-    //     tx_info.amount(),
-    //     tx_info.gas_limit(),
-    //     tx_info.gas_price(),
-    //     tx_info.step(),
-    //     common::Encode::HexEncode(tx_info.contract_code()).c_str(),
-    //     common::Encode::HexEncode(tx_info.contract_input()).c_str(),
-    //     tx_info.contract_prepayment(),
-    //     common::Encode::HexEncode(tx_info.key()).c_str(),
-    //     common::Encode::HexEncode(tx_info.value()).c_str());
+    std::string tx_hash;
+    if (tx_info.pubkey().size() == 64u) {
+        tx_hash = common::Hash::sm3(message);
+    } else {
+        tx_hash = common::Hash::keccak256(message);
+    }
 
-    // SHARDORA_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
-    return common::Hash::keccak256(message);
+    SHARDORA_DEBUG("get tx message hash: %s, nonce: %lu, pk: %s, to: %s, amount: %lu, gas limit: %lu, price: %lu, step: %lu, contract code: %s, input: %s, prefund: %lu, key: %s, value: %s, msg: %s", 
+        common::Encode::HexEncode(tx_hash).c_str(),
+        nonce,
+        common::Encode::HexEncode(tx_info.pubkey()).c_str(),
+        common::Encode::HexEncode(tx_info.to()).c_str(),
+        amount,
+        gas_limit,
+        gas_price,
+        (uint64_t)tx_info.step(),
+        tx_info.has_contract_code() ? common::Encode::HexEncode(tx_info.contract_code()).c_str() : "",
+        tx_info.has_contract_input() ? common::Encode::HexEncode(tx_info.contract_input()).c_str() : "",
+        tx_info.has_contract_prefund() ? tx_info.contract_prefund() : 0,
+        tx_info.has_key() ? common::Encode::HexEncode(tx_info.key()).c_str() : "",
+        tx_info.has_value() ? common::Encode::HexEncode(tx_info.value()).c_str() : "",
+        common::Encode::HexEncode(message).c_str());
+    return tx_hash;
 }
 
 static inline bool IsRootNode() {
@@ -299,16 +310,17 @@ static inline bool IsRootNode() {
 }
 
 static inline bool IsUserTransaction(uint32_t step) {
-    if (step != pools::protobuf::kNormalFrom && 
-            step != pools::protobuf::kContractCreate && 
-            step != pools::protobuf::kContractExcute && 
-            step != pools::protobuf::kContractGasPrepayment && 
-            step != pools::protobuf::kJoinElect && 
+    if (step != pools::protobuf::kNormalFrom &&
+            step != pools::protobuf::kCreateContract &&
+            step != pools::protobuf::kContractExcute &&
+            step != pools::protobuf::kContractGasPrefund &&
+            step != pools::protobuf::kContractRefund &&
+            step != pools::protobuf::kJoinElect &&
             step != pools::protobuf::kCreateLibrary) {
         return false;
     }
 
-    return true;   
+    return true;
 }
 
 static inline bool IsTxUseFromAddress(uint32_t step) {
@@ -320,19 +332,34 @@ static inline bool IsTxUseFromAddress(uint32_t step) {
         case pools::protobuf::kConsensusRootTimeBlock:
         case pools::protobuf::kConsensusCreateGenesisAcount:
         case pools::protobuf::kContractExcute:
+        case pools::protobuf::kContractRefund:
         case pools::protobuf::kStatistic:
-        case pools::protobuf::kContractCreate:
-        case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kPoolStatisticTag:
             return false;
+        case pools::protobuf::kCreateContract:
+        case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kNormalFrom:
-        case pools::protobuf::kContractGasPrepayment:
+        case pools::protobuf::kContractGasPrefund:
             return true;
         default:
-            assert(false);
+            //assert(false);
             return false;
     }
+}
+
+// Must match tx_map_ key used in TxPool (address_info->addr()).
+static inline std::string GetBlockTxPoolAddr(const block::protobuf::BlockTx& tx_info) {
+    if (tx_info.step() == pools::protobuf::kContractExcute ||
+            tx_info.step() == pools::protobuf::kContractRefund) {
+        return tx_info.to() + tx_info.from();
+    }
+
+    if (IsTxUseFromAddress(tx_info.step())) {
+        return tx_info.from();
+    }
+
+    return tx_info.to();
 }
 
 class TxItem {
@@ -343,7 +370,8 @@ public:
             address_info(addr_info),
             is_consensus_add_tx(false),
             tx_info_index(tx_info_idx),
-            synced_leaders_(common::kEachShardMaxNodeCount) {
+            synced_leaders_(common::kEachShardMaxNodeCount),
+            sign_verified(false) {
         msg_ptr = msgp;
         tx_info = nullptr;
         if (tx_info_index < 0) {
@@ -363,12 +391,11 @@ public:
                     tx_info = msg_ptr->header.mutable_hotstuff()->mutable_vote_msg()->mutable_txs(tx_info_idx);
                 }
             } else {
-                assert(false)
-;            }
+            }
         }
 
         if (tx_info == nullptr) {
-            assert(false);
+            //assert(false);
             return;
         }
 
@@ -383,8 +410,9 @@ public:
     }
 
     virtual int HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) = 0;
     virtual int TxToBlockTx(
@@ -402,11 +430,16 @@ public:
     bool is_consensus_add_tx;
     int32_t tx_info_index;
     common::Bitmap synced_leaders_;
+    bool sign_verified;
+    uint64_t elect_height = 0llu;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
-typedef std::function<int(const address::protobuf::AddressInfo& addr, pools::protobuf::TxMessage&)> CheckAddrNonceValidFunction;
+typedef std::function<int(
+    const address::protobuf::AddressInfo& addr, 
+    const pools::protobuf::TxMessage&, 
+    uint64_t* now_nonce)> CheckAddrNonceValidFunction;
 
 };  // namespace pools
 

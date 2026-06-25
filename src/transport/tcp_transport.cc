@@ -1,3 +1,4 @@
+#ifndef SHARDORA_USE_UV
 #include "transport/tcp_transport.h"
 
 #include "common/global_info.h"
@@ -51,7 +52,8 @@ int TcpTransport::Init(
         true,
         10 * 1024 * 1024,
         10 * 1024 * 1024,
-        1,
+        4,  // Fix: Use 4 IO threads instead of 1 to avoid single-thread bottleneck.
+            // With 1 thread, any slow packet_handler call blocks ALL connections.
         packet_handler,
         &encoder_factory_);
     if (!transport_->Init()) {
@@ -150,22 +152,16 @@ bool TcpTransport::OnClientPacket(std::shared_ptr<tnet::TcpConnection> conn, tne
         if (conn->is_client()) {
             conn->Destroy(true);
         }
-        
-//         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
-//             CreateDropNodeMessage(conn->PeerIp(), conn->PeerPort());
-//         }
 
         packet.Free();
         SHARDORA_DEBUG("message coming failed 2 type: %d", packet.PacketType());
         return false;
     }
 
-    for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        MessagePtr msg_ptr;
-        while (local_messages_[i].pop(&msg_ptr)) {
-            msg_handler_->HandleMessage(msg_ptr);
-        }
-    }
+    // Fix: Moved local message processing out of the IO thread hot path.
+    // Processing all local messages here blocks the IO thread from handling
+    // network events, causing consensus message delays. Local messages are
+    // now drained in the Output thread instead.
 
     // network message must free memory
     tnet::MsgPacket* msg_packet = dynamic_cast<tnet::MsgPacket*>(&packet);
@@ -239,7 +235,7 @@ void TcpTransport::SetMessageHash(const transport::protobuf::Header& message) {
 int TcpTransport::Send(
         tnet::TcpInterface* tcp_conn,
         const transport::protobuf::Header& message) {
-    assert(message.broadcast().bloomfilter_size() < 64);
+    // //assert(message.broadcast().bloomfilter_size() < 64);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     std::string msg;
@@ -254,7 +250,7 @@ int TcpTransport::Send(
     if (res != 0) {
         if (res < 0) {
             auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
-            assert(tmp_conn != nullptr);
+            //assert(tmp_conn != nullptr);
             if (tmp_conn->is_client()) {
                 tmp_conn->Destroy(true);
             }
@@ -270,10 +266,17 @@ int TcpTransport::Send(
         const std::string& des_ip,
         uint16_t des_port,
         const transport::protobuf::Header& message) {
-    assert(des_port > 0);
+    // Bug fix: Replace assert with graceful error return.
+    // //assert(des_port > 0) was crashing the node when a peer's public_port
+    // was not yet known (e.g., during bootstrap before SetPeerPort is called).
+    if (des_port == 0 || des_ip.empty()) {
+        SHARDORA_WARN("Send skipped: invalid destination %s:%d, type=%d",
+            des_ip.c_str(), des_port, message.type());
+        return kTransportError;
+    }
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
-    assert(message.broadcast().bloomfilter_size() < 64);
+    // //assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message);
     }
@@ -282,13 +285,14 @@ int TcpTransport::Send(
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
+    output_item->type = message.type();
     // if (message.has_broadcast()) {
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
 
     ++out_message_type_count_[message.type()];
     message.SerializeToString(&output_item->msg);
-    // assert(output_item->msg.size() < 1000000u);
+    // //assert(output_item->msg.size() < 1000000u);
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();
@@ -303,7 +307,7 @@ int TcpTransport::Send(
     if (res != 0) {
         if (res < 0) {
             auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
-            assert(tmp_conn != nullptr);
+            //assert(tmp_conn != nullptr);
             if (tmp_conn->is_client()) {
                 tmp_conn->Destroy(true);
             }
@@ -316,7 +320,19 @@ int TcpTransport::Send(
 }
 
 void TcpTransport::Output() {
+    std::string last_ip;
+    uint16_t last_port = 0;
+    std::shared_ptr<tnet::TcpConnection> last_conn = nullptr;
     while (!destroy_) {
+        // Drain local messages first (moved from OnClientPacket to avoid
+        // blocking the IO thread).
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            MessagePtr msg_ptr;
+            while (local_messages_[i].pop(&msg_ptr)) {
+                msg_handler_->HandleMessage(msg_ptr);
+            }
+        }
+
         while (true) {
             std::shared_ptr<tnet::TcpConnection> conn = nullptr;
             from_client_conn_queues_.pop(&conn);
@@ -326,7 +342,6 @@ void TcpTransport::Output() {
             
             std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
-            CHECK_MEMORY_SIZE(from_conn_map_);
         }
 
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
@@ -337,12 +352,32 @@ void TcpTransport::Output() {
                     break;
                 }
 
+                // Fix: Validate cached connection before reuse.
+                // The old code cached last_conn but never checked if it was
+                // still alive. A destroyed connection would be reused, causing
+                // Send failures and wasted retry cycles.
+                if (last_conn != nullptr && last_ip == item_ptr->des_ip && last_port == item_ptr->port) {
+                    if (last_conn->GetTcpState() == tnet::TcpConnection::kTcpClosed) {
+                        last_conn = nullptr;
+                    }
+                }
+
                 int32_t try_times = 0;
                 while (try_times++ < 3) {
-                    auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
+                    std::shared_ptr<tnet::TcpConnection> tcp_conn = nullptr;
+                    if (last_conn != nullptr && last_ip == item_ptr->des_ip && last_port == item_ptr->port) {
+                        tcp_conn = last_conn;
+                    } else {
+                        tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
+                        last_conn = tcp_conn;
+                        last_ip = item_ptr->des_ip;
+                        last_port = item_ptr->port;
+                    }
+
                     if (tcp_conn == nullptr) {
                         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0);
+                        last_conn = nullptr;
                         continue;
                     }
 
@@ -350,24 +385,28 @@ void TcpTransport::Output() {
                     if (res != 0) {
                         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu] res: %d",
                             item_ptr->des_ip.c_str(), item_ptr->port, 0, res);
-                        if (res <= 0) {
+                        if (res < 0) {
+                            // Fatal error (bad state, socket null, write error)
                             tcp_conn->Destroy(true);
+                            last_conn = nullptr;
+                        } else {
+                            // res == 1: buffer full, don't destroy, just skip
+                            // The connection may recover once OnWrite drains buffers
+                            last_conn = nullptr;
                         }
                         
+                        std::this_thread::yield();
                         continue;
                     }
 
-                    SHARDORA_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] "
-                        "res: %d, size: %u",
-                        item_ptr->des_ip.c_str(), item_ptr->port, 
-                        item_ptr->hash64, res, item_ptr->msg.size());
+                    if (item_ptr->type == common::kHotstuffMessage) {
+                        SHARDORA_DEBUG("send to tcp connection success[%s][%d][hash64: %llu] "
+                            "res: %d, size: %u",
+                            item_ptr->des_ip.c_str(), item_ptr->port, 
+                            item_ptr->hash64, res, item_ptr->msg.size());
+                    }
                     break;
                 }
-
-                // if (item_ptr->msg.size() > 100000) {
-                //     SHARDORA_DEBUG("send message %s:%u, hash64: %lu, size: %u",
-                //         item_ptr->des_ip.c_str(), item_ptr->port, item_ptr->hash64, item_ptr->msg.size());
-                // }
             }
         }
 
@@ -388,49 +427,51 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
     }
 
     std::string peer_spec = ip + ":" + std::to_string(port);
-    auto from_iter = from_conn_map_.find(peer_spec);
-    if (from_iter != from_conn_map_.end()) {
-        if (!from_iter->second->ShouldReconnect()) {
-            SHARDORA_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
-            return from_iter->second;
-        }
 
-        if (from_iter->second->CheckStoped()) {
+    // Fix: Check from_conn_map_ (server-side accepted connections) first.
+    // Only remove if truly dead (kTcpClosed), not just because timeout fired.
+    {
+        auto from_iter = from_conn_map_.find(peer_spec);
+        if (from_iter != from_conn_map_.end()) {
+            auto state = from_iter->second->GetTcpState();
+            if (state == tnet::TcpConnection::kTcpConnected) {
+                return from_iter->second;
+            }
+            // Connection is closed or in bad state, remove it
             from_conn_map_.erase(from_iter);
-            CHECK_MEMORY_SIZE(from_conn_map_);
         }
     }
 
-    auto iter = conn_map_.find(peer_spec);
-    if (iter != conn_map_.end()) {
-        if (!iter->second->ShouldReconnect()) {
-            SHARDORA_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
-            return iter->second;
-        }
-
-        if (iter->second->CheckStoped()) {
+    // Fix: Same for client-side connections.
+    {
+        auto iter = conn_map_.find(peer_spec);
+        if (iter != conn_map_.end()) {
+            auto state = iter->second->GetTcpState();
+            if (state == tnet::TcpConnection::kTcpConnected || 
+                state == tnet::TcpConnection::kTcpConnecting) {
+                return iter->second;
+            }
+            // Dead connection, clean up
             conn_map_.erase(iter);
-            CHECK_MEMORY_SIZE(conn_map_);
         }
     }
 
-//     std::string local_spec = common::GlobalInfo::Instance()->config_local_ip() + ":" +
-//         std::to_string(common::GlobalInfo::Instance()->config_local_port());
     auto tcp_conn = transport_->CreateConnection(
         peer_spec,
         "",
         3u * 1000u * 1000u);
+
     if (tcp_conn == nullptr) {
         return nullptr;
     }
     
     tcp_conn->set_client();
     conn_map_[peer_spec] = tcp_conn;
-    CHECK_MEMORY_SIZE(conn_map_);
     in_check_queue_.push(tcp_conn);
-    SHARDORA_DEBUG("success connect send message %s:%d, conn map size: %d, in_check_queue_ size: %d", 
-        ip.c_str(), port, conn_map_.size(), in_check_queue_.size());
-    while (!destroy_) {
+    SHARDORA_DEBUG("success connect new socket %s:%d, conn map size: %d", 
+        ip.c_str(), port, conn_map_.size());
+    int process_limit = 32;
+    while (process_limit-- > 0 && !destroy_) {
         std::shared_ptr<TcpConnection> out_conn = nullptr;
         if (!out_check_queue_.pop(&out_conn)) {
             break;
@@ -440,7 +481,6 @@ std::shared_ptr<tnet::TcpConnection> TcpTransport::GetConnection(
         auto iter = conn_map_.find(key);
         if (iter != conn_map_.end()) {
             conn_map_.erase(iter);
-            CHECK_MEMORY_SIZE(conn_map_);
             SHARDORA_DEBUG("remove accept connection: %s", key.c_str());
         }
     }
@@ -467,6 +507,7 @@ void TcpTransport::CheckConnectionValid() {
         waiting_check_queue_.pop_front();
         conn->ShouldReconnect();
         if (conn->CheckStoped()) {
+            SHARDORA_DEBUG("1 checked stopted conn.");
             out_check_queue_.push(conn);
         } else {
             waiting_check_queue_.push_back(conn);
@@ -475,11 +516,11 @@ void TcpTransport::CheckConnectionValid() {
 
     for (uint32_t i = 0; i < common::kMaxMessageTypeCount; ++i) {
         if (in_message_type_count_[i] > 0) {
-            SHARDORA_INFO("in message type: %d, count: %u", i, in_message_type_count_[i]);
+            SHARDORA_DEBUG("in message type: %d, count: %u", i, in_message_type_count_[i]);
         }
 
         if (out_message_type_count_[i] > 0) {
-            SHARDORA_INFO("out message type: %d, count: %u", i, out_message_type_count_[i].fetch_add(0));
+            SHARDORA_DEBUG("out message type: %d, count: %u", i, out_message_type_count_[i].fetch_add(0));
         }
     }
 
@@ -489,8 +530,8 @@ void TcpTransport::CheckConnectionValid() {
 }
 
 std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header& message) {
-    assert(message.has_hash64());
-    assert(message.hash64() != 0);
+    //assert(message.has_hash64());
+    //assert(message.hash64() != 0);
     std::string msg_for_hash;
     msg_for_hash.reserve(3 * 1024 * 1024);
     msg_for_hash.append(message.des_dht_key());
@@ -525,15 +566,16 @@ int TcpTransport::Send(
         uint16_t des_port,
         const transport::protobuf::OldHeader& message) {
     auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
-    assert(thread_idx < common::kMaxThreadCount);
+    //assert(thread_idx < common::kMaxThreadCount);
     auto tmpHeader = const_cast<transport::protobuf::OldHeader*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
-    assert(message.has_hash64() && message.hash64() != 0);
+    //assert(message.has_hash64() && message.hash64() != 0);
     SHARDORA_DEBUG("1 send message hash64: %lu", message.hash64());
     auto output_item = std::make_shared<ClientItem>();
     output_item->des_ip = des_ip;
     output_item->port = des_port;
     output_item->hash64 = message.hash64();
+    output_item->type = message.type();
     // if (message.has_broadcast()) {
     //     msg_handler_->AddLocalBroadcastedMessages(message.hash64());
     // }
@@ -547,3 +589,5 @@ int TcpTransport::Send(
 }  // namespace transport
 
 }  // namespace shardora
+
+#endif

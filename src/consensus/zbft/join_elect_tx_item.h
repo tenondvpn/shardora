@@ -19,30 +19,48 @@ public:
             std::shared_ptr<protos::PrefixDb>& prefix_db,
             std::shared_ptr<elect::ElectManager>& elect_mgr,
             protos::AddressInfoPtr& addr_info,
-            const std::string& from_pk,
-            const libff::alt_bn128_G2& from_agg_bls_pk,
-            const libff::alt_bn128_G1& from_agg_bls_pk_proof)
+            const std::string& from_pk)
     : TxItemBase(msg_ptr, tx_index, account_mgr, sec_ptr, addr_info), 
       prefix_db_(prefix_db), 
       elect_mgr_(elect_mgr), 
-      from_pk_(from_pk),
-      from_agg_bls_pk_(from_agg_bls_pk),
-      from_agg_bls_pk_proof_(from_agg_bls_pk_proof){
+      from_pk_(from_pk) {
     }
 
     virtual ~JoinElectTxItem() {}
     virtual int HandleTx(
-            view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost& zjc_host,
+        uint32_t tx_index,
+        view_block::protobuf::ViewBlockItem& view_block,
+        shardoravm::ShardorahainHost& shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
 
 private:
+    int HandleStakeOperation(
+        uint32_t tx_index,
+        view_block::protobuf::ViewBlockItem& view_block,
+        shardoravm::ShardorahainHost& shardora_host,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        block::protobuf::BlockTx& block_tx,
+        bls::protobuf::JoinElectInfo& join_info,
+        const std::string& from,
+        uint64_t& from_balance,
+        uint64_t gas_used,
+        uint64_t store_gas);
+    
+    int HandleRedeemOperation(
+        uint32_t tx_index,
+        view_block::protobuf::ViewBlockItem& view_block,
+        shardoravm::ShardorahainHost& shardora_host,
+        hotstuff::BalanceAndNonceMap& acc_balance_map,
+        block::protobuf::BlockTx& block_tx,
+        bls::protobuf::JoinElectInfo& join_info,
+        const std::string& from,
+        uint64_t& from_balance,
+        uint64_t gas_used);
+
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     std::string from_pk_;
-    libff::alt_bn128_G2 from_agg_bls_pk_;
-    libff::alt_bn128_G1 from_agg_bls_pk_proof_;
 
     DISALLOW_COPY_AND_ASSIGN(JoinElectTxItem);
 };

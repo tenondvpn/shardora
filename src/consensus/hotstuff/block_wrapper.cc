@@ -4,7 +4,7 @@
 #include <common/utils.h>
 #include <consensus/hotstuff/block_wrapper.h>
 #include <consensus/hotstuff/view_block_chain.h>
-#include "zjcvm/zjc_host.h"
+#include "shardoravm/shardora_host.h"
 
 namespace shardora {
 namespace hotstuff {
@@ -14,9 +14,14 @@ BlockWrapper::BlockWrapper(
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<bls::BlsManager> bls_mgr,
         const std::shared_ptr<ElectInfo>& elect_info) :
-    pool_idx_(pool_idx), pools_mgr_(pools_mgr), tm_block_mgr_(tm_block_mgr),
-    block_mgr_(block_mgr), elect_info_(elect_info) {
+    pool_idx_(pool_idx),
+    bls_mgr_(bls_mgr),
+    pools_mgr_(pools_mgr),
+    tm_block_mgr_(tm_block_mgr),
+    block_mgr_(block_mgr),
+    elect_info_(elect_info) {
     txs_pools_ = std::make_shared<consensus::WaitingTxsPools>(pools_mgr, block_mgr, tm_block_mgr);
 }
 
@@ -26,11 +31,11 @@ BlockWrapper::~BlockWrapper(){};
 Status BlockWrapper::Wrap(
         const transport::MessagePtr& msg_ptr, 
         const std::shared_ptr<ViewBlock>& prev_view_block,
-        const uint32_t& leader_idx,
         view_block::protobuf::ViewBlockItem* view_block,
         hotstuff::protobuf::TxPropose* tx_propose,
-        const bool& no_tx_allowed,
+        bool no_tx_allowed,
         std::shared_ptr<ViewBlockChain>& view_block_chain) {
+    auto wrap_begin_ms = common::TimeUtils::TimestampMs();
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto* prev_block = &prev_view_block->block_info();
     if (!prev_block) {
@@ -41,6 +46,8 @@ Status BlockWrapper::Wrap(
     auto* block = view_block->mutable_block_info();
     block->set_version(common::kTransactionVersion);
     block->set_consistency_random(0);
+    block->set_chain_id(kGlobalChainId);
+    block->set_all_gas(0);
     block->set_height(prev_block->height()+1);
     SHARDORA_DEBUG("propose block net: %u, pool: %u, set height: %lu, pre height: %lu",
         view_block->qc().network_id(), view_block->qc().pool_index(), 
@@ -50,43 +57,42 @@ Status BlockWrapper::Wrap(
         return Status::kInvalidArgument;
     }
 
-    uint64_t cur_time = common::TimeUtils::TimestampMs();
-    block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
+    // uint64_t cur_time = common::TimeUtils::TimestampMs();
+    // block->set_timestamp(prev_block->timestamp() > cur_time ? prev_block->timestamp() + 1 : cur_time);
     // Package transactions
     ADD_DEBUG_PROCESS_TIMESTAMP();
     std::shared_ptr<consensus::WaitingTxsItem> txs_ptr = nullptr;
-    // SHARDORA_INFO("pool: %d, txs count, all: %lu, valid: %lu, leader: %lu",
-    //     pool_idx_, pools_mgr_->all_tx_size(pool_idx_), pools_mgr_->tx_size(pool_idx_), leader_idx);
+    const auto& parent_hash = prev_view_block->qc().view_block_hash();
+    BalanceAndNonceMap merged_balance_map;
+    view_block_chain->MergeAllPrevBalanceMap(parent_hash, merged_balance_map);
     auto tx_valid_func = [&](
             const address::protobuf::AddressInfo& addr_info, 
-            pools::protobuf::TxMessage& tx_info) -> int {
-        if (pools::IsUserTransaction(tx_info.step())) {
-            return view_block_chain->CheckTxNonceValid(
-                addr_info.addr(), 
-                tx_info.nonce(), 
-                prev_view_block->qc().view_block_hash());
-        }
-        
-        zjcvm::ZjchainHost zjc_host;
-        zjc_host.parent_hash_ = prev_view_block->qc().view_block_hash();
-        zjc_host.view_block_chain_ = view_block_chain;
-        std::string val;
-        if (zjc_host.GetKeyValue(tx_info.to(), tx_info.key(), &val) == zjcvm::kZjcvmSuccess) {
-            SHARDORA_DEBUG("not user tx unique hash exists: to: %s, unique hash: %s, step: %d",
-                common::Encode::HexEncode(tx_info.to()).c_str(),
-                common::Encode::HexEncode(tx_info.key()).c_str(),
-                (int32_t)tx_info.step());
-            return 1;
-        }
-
-        SHARDORA_INFO("not user tx unique hash success to: %s, unique hash: %s, parent_hash: %s",
-            common::Encode::HexEncode(tx_info.to()).c_str(),
-            common::Encode::HexEncode(tx_info.key()).c_str(),
-            common::Encode::HexEncode(zjc_host.parent_hash_).c_str());
-        return 0;
+            const pools::protobuf::TxMessage& tx_info,
+            uint64_t* now_nonce) -> int {
+        return CheckTransactionValid(
+            parent_hash,
+            view_block_chain, 
+            pools_mgr_,
+            addr_info, 
+            tx_info,
+            now_nonce,
+            &merged_balance_map);
     };
 
+    auto get_txs_begin_ms = common::TimeUtils::TimestampMs();
     Status s = LeaderGetTxsIdempotently(msg_ptr, txs_ptr, tx_valid_func);
+    auto get_txs_end_ms = common::TimeUtils::TimestampMs();
+    if (get_txs_end_ms - get_txs_begin_ms >= 100lu) {
+        SHARDORA_DEBUG("pool: %d, leader get txs use time: %lu ms, merged accounts: %zu, "
+            "selected: %zu, %u_%u_%lu",
+            pool_idx_,
+            (get_txs_end_ms - get_txs_begin_ms),
+            merged_balance_map.size(),
+            (txs_ptr != nullptr ? txs_ptr->txs.size() : 0),
+            view_block->qc().network_id(),
+            view_block->qc().pool_index(),
+            view_block->qc().view());
+    }
     if (s != Status::kSuccess && !no_tx_allowed) {
         // Allow 3 consecutive empty transaction blocks
         SHARDORA_DEBUG("leader get txs failed check is empty block allowd: %d, "
@@ -109,19 +115,45 @@ Status BlockWrapper::Wrap(
         (txs_ptr != nullptr ? txs_ptr->txs.size() : 0));
     view_block->set_parent_hash(prev_view_block->qc().view_block_hash());
     if (txs_ptr) {
+        // Hard limit: stop adding txs once the propose message would exceed the limit.
+        // This prevents receivers from dropping the message due to the packet size limit.
+        int current_size = 0;
+        uint64_t proposed_gas = 0;
+
         for (auto it = txs_ptr->txs.begin(); it != txs_ptr->txs.end(); it++) {
+            auto& tx = *((*it)->tx_info);
+            auto tx_gas_limit = tx.gas_limit();
+            if (!consensus::CanAddBlockGas(proposed_gas, tx_gas_limit)) {
+                SHARDORA_WARN("pool: %d, block gas limit reached: current=%lu, tx_gas_limit=%lu, "
+                    "limit=%lu, stopping at %d/%zu txs",
+                    pool_idx_, proposed_gas, tx_gas_limit, consensus::kBlockMaxGasLimit,
+                    tx_propose->txs_size(), txs_ptr->txs.size());
+                break;
+            }
+
+            int tx_size = (*it)->tx_info->ByteSizeLong();
+            if (current_size + tx_size > common::kMaxProposeMsgBytes) {
+                SHARDORA_WARN("pool: %d, propose msg size limit reached: current=%d bytes, "
+                    "tx_size=%d, limit=%d — stopping at %d/%zu txs",
+                    pool_idx_, current_size, tx_size, common::kMaxProposeMsgBytes,
+                    tx_propose->txs_size(), txs_ptr->txs.size());
+                break;
+            }
             auto* tx_info = tx_propose->add_txs();
             *tx_info = *((*it)->tx_info);
-            // ADD_TX_DEBUG_INFO(tx_info);
-            // SHARDORA_DEBUG("add tx pool: %d, prehash: %s, height: %lu, "
-            //     "step: %d, to: %s, nonce: %lu, tx info: %s",
-            //     view_block->qc().pool_index(),
-            //     common::Encode::HexEncode(view_block->parent_hash()).c_str(),
-            //     block->height(),
-            //     tx_info->step(),
-            //     common::Encode::HexEncode(tx_info->to()).c_str(),
-            //     tx_info->nonce(),
-            //     "ProtobufToJson(*tx_info).c_str()");
+            current_size += tx_size;
+            proposed_gas += tx_gas_limit;
+            if (tx_info->step() == pools::protobuf::kConsensusRootElectShard) {
+                pools::protobuf::ElectStatistic elect_statistic;
+                if (elect_statistic.ParseFromString(tx_info->value())) {
+                    auto* elect_block = elect_statistic.mutable_elect_block();
+                    elect_block->set_shard_network_id(elect_statistic.sharding_id());
+                    bls_mgr_->AddBlsConsensusInfo(*elect_block);
+                    tx_info->set_value(SerializeDeterministic(elect_statistic));
+                    // Update size estimate after elect block inflation.
+                    current_size += tx_info->ByteSizeLong() - tx_size;
+                }
+            }
         }
 
         tx_propose->set_tx_type(txs_ptr->tx_type);
@@ -134,8 +166,27 @@ Status BlockWrapper::Wrap(
     }
     
     view_block->mutable_qc()->set_elect_height(elect_item->ElectHeight());
-    view_block->mutable_qc()->set_leader_idx(leader_idx);
     block->set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+    {
+        auto wrap_end_ms = common::TimeUtils::TimestampMs();
+    }
+#ifndef NDEBUG
+    for (int32_t ti = 0; ti < tx_propose->txs_size(); ++ti) {
+        auto& packed_tx = tx_propose->txs(ti);
+        SHARDORA_DEBUG("[TX_PACKED] pool: %d, tx[%d/%d]: to=%s, nonce=%lu, "
+            "step=%d, amount=%lu, view=%lu",
+            pool_idx_, ti, tx_propose->txs_size(),
+            common::Encode::HexEncode(packed_tx.to()).c_str(),
+            packed_tx.nonce(),
+            (int)packed_tx.step(),
+            packed_tx.amount(),
+            view_block->qc().view());
+    }
+#endif
+    if (tx_propose->txs_size() > 0) {
+        SHARDORA_DEBUG("[TX_PACKED] pool: %d, packed tx count: %d, view: %lu",
+            pool_idx_, tx_propose->txs_size(), view_block->qc().view());
+    }
     SHARDORA_DEBUG("====3 success propose block net: %u, pool: %u, set height: %lu, pre height: %lu, "
         "elect height: %lu, timeblock height: %lu, hash: %s, parent hash: %s, %u_%u_%lu",
         view_block->qc().network_id(), view_block->qc().pool_index(),

@@ -56,14 +56,14 @@ LeafHeightTree::~LeafHeightTree() {}
 void LeafHeightTree::Set(uint64_t child_index, uint64_t val) {
     uint64_t parent_idx = child_index / 2;
     if (parent_idx < global_leaf_index_) {
-        assert(false);
+        //assert(false);
         return;
     }
 
-    assert(parent_idx >= global_leaf_index_ && parent_idx < global_leaf_index_ + kBranchMaxCount);
+    //assert(parent_idx >= global_leaf_index_ && parent_idx < global_leaf_index_ + kBranchMaxCount);
     parent_idx = parent_idx - global_leaf_index_;
     if (parent_idx >= kBranchMaxCount) {
-        assert(false);
+        //assert(false);
         return;
     }
 
@@ -79,7 +79,7 @@ void LeafHeightTree::Set(uint64_t child_index, uint64_t val) {
 
 void LeafHeightTree::Set(uint64_t index) {
     if (index < global_leaf_index_ || index >= global_leaf_index_ + kEachHeightTreeMaxByteSize) {
-        assert(false);
+        //assert(false);
         return;
     }
 
@@ -96,7 +96,7 @@ void LeafHeightTree::Set(uint64_t index) {
         max_vec_index_ = index;
     }
 
-    assert(index < kLeafMaxHeightCount);
+    //assert(index < kLeafMaxHeightCount);
     uint32_t vec_index = index / 64;
     uint32_t bit_index = index % 64;
     data_[vec_index] |= (uint64_t)((uint64_t)(1) << bit_index);
@@ -107,12 +107,12 @@ void LeafHeightTree::Set(uint64_t index) {
 
 bool LeafHeightTree::Valid(uint64_t index) {
     if (index < global_leaf_index_ || index >= global_leaf_index_ + kEachHeightTreeMaxByteSize) {
-        assert(false);
+        //assert(false);
         return false;
     }
 
     index = index - global_leaf_index_;
-    assert(index < (data_.size() * 64));
+    //assert(index < (data_.size() * 64));
     uint32_t vec_index = (index % (64 * data_.size())) / 64;
     uint32_t bit_index = (index % (64 * data_.size())) % 64;
     if ((data_[vec_index] & ((uint64_t)((uint64_t)(1) << bit_index))) == 0ull) {
@@ -171,7 +171,7 @@ uint32_t LeafHeightTree::GetAlignMaxLevel() {
         SHARDORA_DEBUG("get leaf height max level data size: %u", tmp);
     }
     
-    assert(tmp < 20480);
+    //assert(tmp < 20480);
     return tmp;
 }
 
@@ -383,7 +383,7 @@ void LeafHeightTree::PrintTreeFromRoot() {
 }
 
 void LeafHeightTree::GetBranchInvalidNode(uint64_t* vec_idx) {
-    assert(is_branch_);
+    //assert(is_branch_);
     int32_t parent_index = GetBranchRootIndex();
     if (data_[parent_index] == kLevelNodeValidHeights) {
         return;

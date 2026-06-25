@@ -4,8 +4,8 @@
 #include "consensus/zbft/tx_item_base.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
-#include "zjcvm/zjc_host.h"
-#include "zjcvm/zjcvm_utils.h"
+#include "shardoravm/shardora_host.h"
+#include "shardoravm/shardoravm_utils.h"
 
 namespace shardora {
 
@@ -32,8 +32,9 @@ public:
 
     virtual ~ContractCall() {}
     virtual int HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& block,
-        zjcvm::ZjchainHost& zjchost,
+        shardoravm::ShardorahainHost& shardorahost,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
 
@@ -41,19 +42,15 @@ private:
     int ContractExcute(
         protos::AddressInfoPtr& contract_info,
         uint64_t contract_balance,
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
         uint64_t gas_limit,
         evmc::Result* out_res);
     int SaveContractCreateInfo(
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::BlockTx& tx,
+        hotstuff::BalanceAndNonceMap& dep_contract_balance_map,
         int64_t& contract_balance_add);
-    void GetTempPerpaymentBalance(
-        const view_block::protobuf::ViewBlockItem& block,
-        const block::protobuf::BlockTx& block_tx,
-        hotstuff::BalanceAndNonceMap& acc_balance_map,
-        uint64_t* balance);
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::map<std::string, std::shared_ptr<pools::protobuf::ToTxMessageItem>> cross_to_map_;

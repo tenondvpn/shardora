@@ -94,16 +94,6 @@ public:
             return;
         }
 
-        // auto net_id = common::GlobalInfo::Instance()->network_id();
-        // if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
-        //         net_id < network::kConsensusWaitingShardEndNetworkId) {
-        //     net_id -= network::kConsensusWaitingShardOffset;
-        // }
-
-        // if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
-        //     return;
-        // }
-
         for (; prev_synced_height_ < to_sync_max_height_ &&
                 (prev_synced_height_ < synced_height_ + 64);
                 ++prev_synced_height_) {
@@ -173,8 +163,7 @@ protected:
     uint64_t synced_height_ = 0;
     uint64_t prev_synced_height_ = 0;
     uint64_t to_sync_max_height_ = 0;
-    
-std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(CrossPool);
 };

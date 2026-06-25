@@ -104,7 +104,7 @@ private:
                 local_sharding_id,
                 sharding_id,
                 prev_checked_height,
-                static_cast<int>(cross_synced_max_heights_[sharding_id]));
+                static_cast<uint64_t>(cross_synced_max_heights_[sharding_id]));
             return;
         }
 
@@ -118,11 +118,11 @@ private:
                     &view_block)) {
                 SHARDORA_DEBUG("failed get block net: %u, pool: %u, height: %lu, max height: %lu",
                     sharding_id, common::kImmutablePoolSize, check_height,
-                    static_cast<int>(cross_synced_max_heights_[sharding_id]));
+                    static_cast<uint64_t>(cross_synced_max_heights_[sharding_id]));
                 if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64) {
                     uint32_t count = 0;
                     for (uint64_t h = check_height; h <= cross_synced_max_heights_[sharding_id] && ++count < 64; ++h) {
-                        // TODO 目前创世块也会进入这个逻辑，导致创世块数据生成报错，临时注释
+                        // TODO Currently genesis block also enters this logic, causing genesis block data generation error, temporarily commented out
                         if (!kv_sync_) {
                             continue;
                         }

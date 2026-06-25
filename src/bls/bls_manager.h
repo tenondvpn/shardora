@@ -1,6 +1,8 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 
 #include "common/bitmap.h"
@@ -33,6 +35,10 @@ public:
         const libff::alt_bn128_G1& sign,
         const libff::alt_bn128_G1& g1_hash,
         std::string* verify_hash) = 0;
+    virtual int VerifyFast(
+        const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G1& g1_hash,
+        const libff::alt_bn128_G2& pkey) = 0;
     virtual int GetVerifyHash(
             uint32_t t,
             uint32_t n,
@@ -91,6 +97,10 @@ public:
         const libff::alt_bn128_G1& sign,
         const libff::alt_bn128_G1& g1_hash,
         std::string* verify_hash);
+    int VerifyFast(
+        const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G1& g1_hash,
+        const libff::alt_bn128_G2& pkey);
     int GetVerifyHash(
         uint32_t t,
         uint32_t n,
@@ -104,6 +114,7 @@ public:
         std::string* verify_hash);
     int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
+    int CheckBlsConsensusInfo(const elect::protobuf::ElectBlock& ec_block);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     int FirewallCheckMessage(transport::MessagePtr& msg_ptr);
     std::shared_ptr<security::Security> security() {
@@ -113,6 +124,9 @@ public:
 
 private:
     void HandleFinish(const transport::MessagePtr& msg_ptr);
+    void HandleFinishSyncRequest(const transport::MessagePtr& msg_ptr);
+    void SyncFinishMessageToNeighbors(uint32_t network_id);
+    void BatchVerifyFinishItems();
     void CheckAggSignValid(
         uint32_t t,
         uint32_t n,
@@ -138,14 +152,37 @@ private:
         elect::protobuf::PrevMembers* prev_members);
     void PopFinishMessage();
     int CheckFinishMessageValid(const transport::MessagePtr& msg_ptr);
+    void TimerMessage();
 
-    std::atomic<std::shared_ptr<bls::BlsDkg>> waiting_bls_{ nullptr };
+    std::shared_ptr<bls::BlsDkg> LoadWaitingBls() const {
+        std::lock_guard<std::mutex> lock(waiting_bls_mutex_);
+        return waiting_bls_;
+    }
+
+    void StoreWaitingBls(const std::shared_ptr<bls::BlsDkg>& waiting_bls) {
+        std::lock_guard<std::mutex> lock(waiting_bls_mutex_);
+        waiting_bls_ = waiting_bls;
+    }
+
+    std::shared_ptr<TimeBlockItem> LoadLatestTimeblockInfo() const {
+        std::lock_guard<std::mutex> lock(latest_timeblock_info_mutex_);
+        return latest_timeblock_info_;
+    }
+
+    void StoreLatestTimeblockInfo(const std::shared_ptr<TimeBlockItem>& timeblock_info) {
+        std::lock_guard<std::mutex> lock(latest_timeblock_info_mutex_);
+        latest_timeblock_info_ = timeblock_info;
+    }
+
+    std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
+    mutable std::mutex waiting_bls_mutex_;
     uint64_t max_height_{ common::kInvalidUint64 };
     std::unordered_map<uint32_t, BlsFinishItemPtr> finish_networks_map_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
+    mutable std::mutex latest_timeblock_info_mutex_;
     uint64_t latest_elect_height_ = 0;
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
     common::Tick bls_tick_;

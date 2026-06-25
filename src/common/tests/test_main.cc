@@ -7,9 +7,9 @@ int main(int argc, char *argv[]) {
     testing::GTEST_FLAG(output) = "xml:";
     testing::InitGoogleTest(&argc, argv);
     ::testing::InitGoogleMock(&argc, argv);
-    shardora::common::Config conf;
-    conf.Init("../conf/zjchain.conf");
-    shardora::common::GlobalInfo::Instance()->Init(conf);
+    seth::common::Config conf;
+    conf.Init("../conf/sethhain.conf");
+    seth::common::GlobalInfo::Instance()->Init(conf);
     int ret = RUN_ALL_TESTS();
     return ret;
 }

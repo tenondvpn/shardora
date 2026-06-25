@@ -43,7 +43,7 @@ public:
         valid_ = true;
     }
 
-    void SetHash(const std::string& id, uint64_t hash_num) {
+    void Shardoraash(const std::string& id, uint64_t hash_num) {
         // owner has came
         if (valid_ || is_local_ || !owner_id_.empty()) {
             return;

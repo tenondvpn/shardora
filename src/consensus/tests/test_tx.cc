@@ -22,7 +22,7 @@
 #include "protos/pools.pb.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace shardora {
+namespace seth {
 
 namespace consensus {
 
@@ -109,7 +109,7 @@ public:
     static void SetUpTestCase() {
         std::string config_path_ = "./";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
-        std::string log_path = config_path_ + "/zjc.log";
+        std::string log_path = config_path_ + "/seth.log";
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
@@ -198,7 +198,7 @@ public:
             BftManager& bft_mgr,
             const pools::protobuf::TxMessage& tx_info) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto from_addr = bft_mgr.security_ptr_->GetAddress(tx_info.pubkey());
+        auto from_addr = bft_mgr.security_ptr_->GetAddressWithPublicKey(tx_info.pubkey());
         msg_ptr->address_info = bft_mgr.account_mgr_->GetAccountInfo(0, from_addr);
         ASSERT_TRUE(msg_ptr->address_info->balance() > 0);
         *msg_ptr->header.mutable_tx_proto() = tx_info;
@@ -498,14 +498,14 @@ TEST_F(TestTx, TestMoreTx) {
         auto tm0 = common::TimeUtils::TimestampUs();
         transport::MessagePtr prepare_msg_ptr = nullptr;
         if (backup_bft_mgr0.now_msg_[0] == nullptr) {
-            SHARDORA_DEBUG("now leader start.");
+            SETH_DEBUG("now leader start.");
             leader_bft_mgr.now_msg_[0] = nullptr;
             leader_bft_mgr.Start(0, prepare_msg_ptr);
             if (leader_bft_mgr.now_msg_[0] == nullptr) {
                 break;
             }
         } else {
-            SHARDORA_DEBUG("now leader pipeline start prepare gid: %s, precommit gid: %s, commit gid: %s",
+            SETH_DEBUG("now leader pipeline start prepare gid: %s, precommit gid: %s, commit gid: %s",
                 common::Encode::HexEncode(
                     backup_bft_mgr0.now_msg_[0]->header.zbft().prepare_gid()).c_str(),
                 common::Encode::HexEncode(
@@ -524,7 +524,7 @@ TEST_F(TestTx, TestMoreTx) {
             leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_[0]);
         }
 
-        SHARDORA_DEBUG("now backup prepare start.");
+        SETH_DEBUG("now backup prepare start.");
         ASSERT_TRUE(leader_bft_mgr.now_msg_[0] != nullptr);
         auto tm = common::TimeUtils::TimestampUs();
         times[0] += tm - tm0;
@@ -532,7 +532,7 @@ TEST_F(TestTx, TestMoreTx) {
         leader_bft_mgr.now_msg_[0]->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_[0]);
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_[0]);
-        SHARDORA_DEBUG("now backup prepare end.");
+        SETH_DEBUG("now backup prepare end.");
         if (backup_bft_mgr0.now_msg_[0] == nullptr) {
             break;
         }
@@ -544,20 +544,20 @@ TEST_F(TestTx, TestMoreTx) {
 
         backup_bft_mgr0.now_msg_[0]->thread_idx = 0;
         backup_bft_mgr1.now_msg_[0]->thread_idx = 0;
-        SHARDORA_DEBUG("now leader precommit.");
+        SETH_DEBUG("now leader precommit.");
         leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_[0]);
         leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_[0]);
         tm = common::TimeUtils::TimestampUs();
         times[2] += tm - tm0;
         tm0 = tm;
-        SHARDORA_DEBUG("leader precommit end.");
-        SHARDORA_DEBUG("now backup precommit.");
+        SETH_DEBUG("leader precommit end.");
+        SETH_DEBUG("now backup precommit.");
         // 2. precommit
         ASSERT_TRUE(leader_bft_mgr.now_msg_[0] != nullptr);
         leader_bft_mgr.now_msg_[0]->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_[0]);
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_[0]);
-        SHARDORA_DEBUG("backup precommit end.");
+        SETH_DEBUG("backup precommit end.");
         if (backup_bft_mgr0.now_msg_[0] == nullptr) {
             break;
         }
@@ -736,7 +736,7 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     backup_bft_mgr0.now_msg_[0]->thread_idx = 0;
     backup_bft_mgr1.now_msg_[0]->thread_idx = 0;
 
-    SHARDORA_DEBUG("leader 0");
+    SETH_DEBUG("leader 0");
     auto leader_ptr = leader_bft_mgr.GetBft(0, bft_ptr->gid(), true);
     ASSERT_TRUE(leader_ptr != nullptr);
     leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_[0]);
@@ -746,7 +746,7 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     ASSERT_TRUE(leader_bft_mgr.now_msg_[0] != nullptr);
     leader_bft_mgr.now_msg_[0]->thread_idx = 0;
 
-    SHARDORA_DEBUG("backup 0");
+    SETH_DEBUG("backup 0");
     auto b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
     ASSERT_TRUE(b0_ptr == nullptr);
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_[0]);
@@ -804,7 +804,7 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     // precommit
     ASSERT_TRUE(leader_bft_mgr.now_msg_[0] != nullptr);
     leader_bft_mgr.now_msg_[0]->thread_idx = 0;
-    SHARDORA_DEBUG("backup 0");
+    SETH_DEBUG("backup 0");
     auto b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
     ASSERT_TRUE(b0_ptr != nullptr);
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_[0]);
@@ -885,4 +885,4 @@ TEST_F(TestTx, TestTxTwoPrepareEvil) {
 
 }  // namespace consensus
 
-}  // namespace shardora
+}  // namespace seth

@@ -43,7 +43,9 @@ public:
     std::vector<unsigned char> toBytes() const { return std::vector<unsigned char>(reinterpret_cast<unsigned char const*>(m_data), reinterpret_cast<unsigned char const*>(m_data) + m_count * sizeof(_T)); }
     std::string toString() const { return std::string((char const*)m_data, ((char const*)m_data) + m_count * sizeof(_T)); }
 
-    template <class _T2> explicit operator vector_ref<_T2>() const { assert(m_count * sizeof(_T) / sizeof(_T2) * sizeof(_T2) / sizeof(_T) == m_count); return vector_ref<_T2>(reinterpret_cast<_T2*>(m_data), m_count * sizeof(_T) / sizeof(_T2)); }
+    template <class _T2> explicit operator vector_ref<_T2>() const {
+        return vector_ref<_T2>(reinterpret_cast<_T2*>(m_data), m_count * sizeof(_T) / sizeof(_T2));
+    }
     operator vector_ref<_T const>() const { return vector_ref<_T const>(m_data, m_count); }
 
     _T* data() const { return m_data; }
@@ -93,8 +95,8 @@ public:
     _T const* begin() const { return m_data; }
     _T const* end() const { return m_data + m_count; }
 
-    _T& operator[](size_t _i) { assert(m_data); assert(_i < m_count); return m_data[_i]; }
-    _T const& operator[](size_t _i) const { assert(m_data); assert(_i < m_count); return m_data[_i]; }
+    _T& operator[](size_t _i) { return m_data[_i]; }
+    _T const& operator[](size_t _i) const { return m_data[_i]; }
 
     bool operator==(vector_ref<_T> const& _cmp) const { return m_data == _cmp.m_data && m_count == _cmp.m_count; }
     bool operator!=(vector_ref<_T> const& _cmp) const { return !operator==(_cmp); }

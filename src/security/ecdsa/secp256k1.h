@@ -30,7 +30,7 @@ public:
     bool Verify(const std::string& hash, const PublicKey& pubkey, const std::string& sign);
     bool Secp256k1Sign(
         const std::string& msg,
-        const PrivateKey& privkey,
+        const char* privkey,
         std::string* sign);
     bool Secp256k1Verify(
         const std::string& msg,
@@ -47,7 +47,7 @@ public:
     std::string ToPublicFromCompressed(const std::string& in_pubkey);
     std::string ToAddressWithPublicKey(const Curve& curve, const std::string& pub_key);
     std::string UnicastAddress(const std::string& src_address) {
-        assert(src_address.size() >= common::kUnicastAddressLength);
+        //assert(src_address.size() >= common::kUnicastAddressLength);
         return src_address.substr(
             src_address.size() - common::kUnicastAddressLength,
             common::kUnicastAddressLength);

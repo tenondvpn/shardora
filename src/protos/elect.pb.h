@@ -1114,30 +1114,6 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
-  // optional .shardora.elect.protobuf.BlsPublicKey agg_bls_pk = 6;
-  bool has_agg_bls_pk() const;
-  void clear_agg_bls_pk();
-  static const int kAggBlsPkFieldNumber = 6;
-  private:
-  const ::shardora::elect::protobuf::BlsPublicKey& _internal_agg_bls_pk() const;
-  public:
-  const ::shardora::elect::protobuf::BlsPublicKey& agg_bls_pk() const;
-  ::shardora::elect::protobuf::BlsPublicKey* release_agg_bls_pk();
-  ::shardora::elect::protobuf::BlsPublicKey* mutable_agg_bls_pk();
-  void set_allocated_agg_bls_pk(::shardora::elect::protobuf::BlsPublicKey* agg_bls_pk);
-
-  // optional .shardora.elect.protobuf.BlsPopProof agg_bls_pk_proof = 7;
-  bool has_agg_bls_pk_proof() const;
-  void clear_agg_bls_pk_proof();
-  static const int kAggBlsPkProofFieldNumber = 7;
-  private:
-  const ::shardora::elect::protobuf::BlsPopProof& _internal_agg_bls_pk_proof() const;
-  public:
-  const ::shardora::elect::protobuf::BlsPopProof& agg_bls_pk_proof() const;
-  ::shardora::elect::protobuf::BlsPopProof* release_agg_bls_pk_proof();
-  ::shardora::elect::protobuf::BlsPopProof* mutable_agg_bls_pk_proof();
-  void set_allocated_agg_bls_pk_proof(::shardora::elect::protobuf::BlsPopProof* agg_bls_pk_proof);
-
   // optional uint64 mining_amount = 3;
   bool has_mining_amount() const;
   void clear_mining_amount();
@@ -1178,17 +1154,11 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_fts_value();
   void set_has_consensus_gap();
   void clear_has_consensus_gap();
-  void set_has_agg_bls_pk();
-  void clear_has_agg_bls_pk();
-  void set_has_agg_bls_pk_proof();
-  void clear_has_agg_bls_pk_proof();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
-  ::shardora::elect::protobuf::BlsPublicKey* agg_bls_pk_;
-  ::shardora::elect::protobuf::BlsPopProof* agg_bls_pk_proof_;
   ::google::protobuf::uint64 mining_amount_;
   ::google::protobuf::uint64 fts_value_;
   ::google::protobuf::uint64 consensus_gap_;
@@ -3950,13 +3920,13 @@ inline void member::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional int32 pool_idx_mod_num = 2;
 inline bool member::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void member::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void member::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void member::clear_pool_idx_mod_num() {
   pool_idx_mod_num_ = 0;
@@ -3974,13 +3944,13 @@ inline void member::set_pool_idx_mod_num(::google::protobuf::int32 value) {
 
 // optional uint64 mining_amount = 3;
 inline bool member::has_mining_amount() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void member::set_has_mining_amount() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void member::clear_has_mining_amount() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void member::clear_mining_amount() {
   mining_amount_ = GOOGLE_ULONGLONG(0);
@@ -3998,13 +3968,13 @@ inline void member::set_mining_amount(::google::protobuf::uint64 value) {
 
 // optional uint64 fts_value = 4;
 inline bool member::has_fts_value() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void member::set_has_fts_value() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void member::clear_has_fts_value() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void member::clear_fts_value() {
   fts_value_ = GOOGLE_ULONGLONG(0);
@@ -4022,13 +3992,13 @@ inline void member::set_fts_value(::google::protobuf::uint64 value) {
 
 // optional uint64 consensus_gap = 5;
 inline bool member::has_consensus_gap() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void member::set_has_consensus_gap() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void member::clear_has_consensus_gap() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void member::clear_consensus_gap() {
   consensus_gap_ = GOOGLE_ULONGLONG(0);
@@ -4042,122 +4012,6 @@ inline void member::set_consensus_gap(::google::protobuf::uint64 value) {
   set_has_consensus_gap();
   consensus_gap_ = value;
   // @@protoc_insertion_point(field_set:shardora.elect.protobuf.member.consensus_gap)
-}
-
-// optional .shardora.elect.protobuf.BlsPublicKey agg_bls_pk = 6;
-inline bool member::has_agg_bls_pk() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void member::set_has_agg_bls_pk() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void member::clear_has_agg_bls_pk() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void member::clear_agg_bls_pk() {
-  if (agg_bls_pk_ != NULL) agg_bls_pk_->Clear();
-  clear_has_agg_bls_pk();
-}
-inline const ::shardora::elect::protobuf::BlsPublicKey& member::_internal_agg_bls_pk() const {
-  return *agg_bls_pk_;
-}
-inline const ::shardora::elect::protobuf::BlsPublicKey& member::agg_bls_pk() const {
-  const ::shardora::elect::protobuf::BlsPublicKey* p = agg_bls_pk_;
-  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.member.agg_bls_pk)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::elect::protobuf::BlsPublicKey*>(
-      &::shardora::elect::protobuf::_BlsPublicKey_default_instance_);
-}
-inline ::shardora::elect::protobuf::BlsPublicKey* member::release_agg_bls_pk() {
-  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.member.agg_bls_pk)
-  clear_has_agg_bls_pk();
-  ::shardora::elect::protobuf::BlsPublicKey* temp = agg_bls_pk_;
-  agg_bls_pk_ = NULL;
-  return temp;
-}
-inline ::shardora::elect::protobuf::BlsPublicKey* member::mutable_agg_bls_pk() {
-  set_has_agg_bls_pk();
-  if (agg_bls_pk_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::elect::protobuf::BlsPublicKey>(GetArenaNoVirtual());
-    agg_bls_pk_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.member.agg_bls_pk)
-  return agg_bls_pk_;
-}
-inline void member::set_allocated_agg_bls_pk(::shardora::elect::protobuf::BlsPublicKey* agg_bls_pk) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete agg_bls_pk_;
-  }
-  if (agg_bls_pk) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      agg_bls_pk = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, agg_bls_pk, submessage_arena);
-    }
-    set_has_agg_bls_pk();
-  } else {
-    clear_has_agg_bls_pk();
-  }
-  agg_bls_pk_ = agg_bls_pk;
-  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.member.agg_bls_pk)
-}
-
-// optional .shardora.elect.protobuf.BlsPopProof agg_bls_pk_proof = 7;
-inline bool member::has_agg_bls_pk_proof() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void member::set_has_agg_bls_pk_proof() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void member::clear_has_agg_bls_pk_proof() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void member::clear_agg_bls_pk_proof() {
-  if (agg_bls_pk_proof_ != NULL) agg_bls_pk_proof_->Clear();
-  clear_has_agg_bls_pk_proof();
-}
-inline const ::shardora::elect::protobuf::BlsPopProof& member::_internal_agg_bls_pk_proof() const {
-  return *agg_bls_pk_proof_;
-}
-inline const ::shardora::elect::protobuf::BlsPopProof& member::agg_bls_pk_proof() const {
-  const ::shardora::elect::protobuf::BlsPopProof* p = agg_bls_pk_proof_;
-  // @@protoc_insertion_point(field_get:shardora.elect.protobuf.member.agg_bls_pk_proof)
-  return p != NULL ? *p : *reinterpret_cast<const ::shardora::elect::protobuf::BlsPopProof*>(
-      &::shardora::elect::protobuf::_BlsPopProof_default_instance_);
-}
-inline ::shardora::elect::protobuf::BlsPopProof* member::release_agg_bls_pk_proof() {
-  // @@protoc_insertion_point(field_release:shardora.elect.protobuf.member.agg_bls_pk_proof)
-  clear_has_agg_bls_pk_proof();
-  ::shardora::elect::protobuf::BlsPopProof* temp = agg_bls_pk_proof_;
-  agg_bls_pk_proof_ = NULL;
-  return temp;
-}
-inline ::shardora::elect::protobuf::BlsPopProof* member::mutable_agg_bls_pk_proof() {
-  set_has_agg_bls_pk_proof();
-  if (agg_bls_pk_proof_ == NULL) {
-    auto* p = CreateMaybeMessage<::shardora::elect::protobuf::BlsPopProof>(GetArenaNoVirtual());
-    agg_bls_pk_proof_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:shardora.elect.protobuf.member.agg_bls_pk_proof)
-  return agg_bls_pk_proof_;
-}
-inline void member::set_allocated_agg_bls_pk_proof(::shardora::elect::protobuf::BlsPopProof* agg_bls_pk_proof) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete agg_bls_pk_proof_;
-  }
-  if (agg_bls_pk_proof) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      agg_bls_pk_proof = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, agg_bls_pk_proof, submessage_arena);
-    }
-    set_has_agg_bls_pk_proof();
-  } else {
-    clear_has_agg_bls_pk_proof();
-  }
-  agg_bls_pk_proof_ = agg_bls_pk_proof;
-  // @@protoc_insertion_point(field_set_allocated:shardora.elect.protobuf.member.agg_bls_pk_proof)
 }
 
 // -------------------------------------------------------------------

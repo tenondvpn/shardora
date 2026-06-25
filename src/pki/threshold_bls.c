@@ -11,23 +11,23 @@
 typedef struct {
     pairing_ptr pairing;
     element_t g1, g2;
-    element_t *sk_shares;          // 私钥份额 sk_i
-    element_t *pk_shares_1;        // 公钥份额 pk_i,1 ∈ G1
-    element_t *pk_shares_2;        // 公钥份额 pk_i,2 ∈ G2  
-    element_t apk_1, apk_2;        // 聚合公钥
-    element_t msk;                 // 主私钥 (用于验证)
-    int n;                         // 参与方数量
-    int t;                         // 门限值
+    element_t *sk_shares;          // Private key shares sk_i
+    element_t *pk_shares_1;        // Public key shares pk_i,1 ∈ G1
+    element_t *pk_shares_2;        // Public key shares pk_i,2 ∈ G2  
+    element_t apk_1, apk_2;        // Aggregated public key
+    element_t msk;                 // Master secret key (for verification)
+    int n;                         // Number of participants
+    int t;                         // Threshold value
 } ThresholdBLS;
 
 typedef struct {
-    element_t sigma;               // 部分签名 σ_i ∈ G1
-    element_t R1, R2;              // DLEQ证明组件
-    element_t z;                   // DLEQ证明响应
+    element_t sigma;               // Partial signature σ_i ∈ G1
+    element_t R1, R2;              // DLEQ proof components
+    element_t z;                   // DLEQ proof response
     int participant_id;
 } PartialSignature;
 
-// 打印分隔线
+// Print separator line
 void print_separator(const char* pattern, int length) {
     for (int i = 0; i < length; i++) {
         printf("%s", pattern);
@@ -35,7 +35,7 @@ void print_separator(const char* pattern, int length) {
     printf("\n");
 }
 
-// 哈希函数模拟
+// Hash function simulation
 void hash_to_G1(element_t out, const char *msg, pairing_t pairing) {
     element_from_hash(out, (void*)msg, strlen(msg));
 }
@@ -48,19 +48,19 @@ void hash_to_Zr(element_t out, const char *msg, pairing_t pairing) {
     element_clear(temp);
 }
 
-// 初始化阈值BLS系统
+// Initialize threshold BLS system
 void threshold_bls_init(ThresholdBLS *tbls, int n, int t, pairing_t pairing) {
     tbls->n = n;
     tbls->t = t;
     tbls->pairing = pairing;
     
-    // 初始化生成元
+    // Initialize generators
     element_init_G1(tbls->g1, pairing);
     element_init_G2(tbls->g2, pairing);
     element_random(tbls->g1);
     element_random(tbls->g2);
     
-    // 初始化密钥份额数组
+    // Initialize key share arrays
     tbls->sk_shares = (element_t*)malloc(n * sizeof(element_t));
     tbls->pk_shares_1 = (element_t*)malloc(n * sizeof(element_t));
     tbls->pk_shares_2 = (element_t*)malloc(n * sizeof(element_t));
@@ -71,7 +71,7 @@ void threshold_bls_init(ThresholdBLS *tbls, int n, int t, pairing_t pairing) {
         element_init_G2(tbls->pk_shares_2[i], pairing);
     }
     
-    // 初始化聚合公钥和主私钥
+    // Initialize aggregated public key and master secret key
     element_init_G1(tbls->apk_1, pairing);
     element_init_G2(tbls->apk_2, pairing);
     element_init_Zr(tbls->msk, pairing);
@@ -79,7 +79,7 @@ void threshold_bls_init(ThresholdBLS *tbls, int n, int t, pairing_t pairing) {
     printf("Threshold BLS system initialized with n=%d, t=%d\n", n, t);
 }
 
-// 清理资源
+// Clean up resources
 void threshold_bls_clear(ThresholdBLS *tbls) {
     for (int i = 0; i < tbls->n; i++) {
         element_clear(tbls->sk_shares[i]);
@@ -97,25 +97,25 @@ void threshold_bls_clear(ThresholdBLS *tbls) {
     element_clear(tbls->msk);
 }
 
-// 模拟DKG过程生成密钥份额
+// Simulate DKG process to generate key shares
 void simulate_dkg(ThresholdBLS *tbls) {
     printf("\n=== Simulating Distributed Key Generation ===\n");
     
-    // 模拟Shamir秘密共享
+    // Simulate Shamir secret sharing
     element_t coefficients[tbls->t];
     for (int i = 0; i < tbls->t; i++) {
         element_init_Zr(coefficients[i], tbls->pairing);
         element_random(coefficients[i]);
     }
     
-    // 计算主私钥 (常数项)
+    // Calculate master secret key (constant term)
     element_set(tbls->msk, coefficients[0]);
     
-    // 为每个参与方计算份额
+    // Calculate shares for each participant
     for (int i = 0; i < tbls->n; i++) {
-        int participant_id = i + 1;  // ID从1开始
+        int participant_id = i + 1;  // ID starts from 1
         
-        // 计算多项式在点participant_id的值
+        // Calculate polynomial value at point participant_id
         element_t share, term, power, exponent;
         element_init_Zr(share, tbls->pairing);
         element_init_Zr(term, tbls->pairing);
@@ -134,7 +134,7 @@ void simulate_dkg(ThresholdBLS *tbls) {
         
         element_set(tbls->sk_shares[i], share);
         
-        // 计算公钥份额
+        // Calculate public key shares
         element_mul_zn(tbls->pk_shares_1[i], tbls->g1, tbls->sk_shares[i]);
         element_mul_zn(tbls->pk_shares_2[i], tbls->g2, tbls->sk_shares[i]);
         
@@ -147,30 +147,27 @@ void simulate_dkg(ThresholdBLS *tbls) {
         element_printf("%B\n", tbls->sk_shares[i]);
     }
     
-    // 清理系数
+    // Clean up coefficients
     for (int i = 0; i < tbls->t; i++) {
         element_clear(coefficients[i]);
     }
 }
 
-// 聚合公钥
+// Aggregate public keys
 void aggregate_keys(ThresholdBLS *tbls) {
     printf("\n=== Aggregating Public Keys ===\n");
     
-    element_set0(tbls->apk_1);
-    element_set0(tbls->apk_2);
-    
-    for (int i = 0; i < tbls->n; i++) {
-        element_add(tbls->apk_1, tbls->apk_1, tbls->pk_shares_1[i]);
-        element_add(tbls->apk_2, tbls->apk_2, tbls->pk_shares_2[i]);
-    }
+    // In threshold BLS, the aggregated public key is computed from the master secret key
+    // apk_1 = msk * g1, apk_2 = msk * g2
+    element_mul_zn(tbls->apk_1, tbls->g1, tbls->msk);
+    element_mul_zn(tbls->apk_2, tbls->g2, tbls->msk);
     
     printf("Aggregated public key computed:\n");
     element_printf("apk_1 = %B\n", tbls->apk_1);
     element_printf("apk_2 = %B\n", tbls->apk_2);
 }
 
-// 计算Lagrange系数
+// Compute Lagrange coefficients
 void compute_lagrange_coeff(element_t *coeffs, int *participants, int k, pairing_t pairing) {
     for (int i = 0; i < k; i++) {
         element_t numerator, denominator, term, zero, diff;
@@ -207,7 +204,7 @@ void compute_lagrange_coeff(element_t *coeffs, int *participants, int k, pairing
     }
 }
 
-// 生成部分签名和DLEQ证明
+// Generate partial signature and DLEQ proof
 void partial_sign(ThresholdBLS *tbls, PartialSignature *psig, int participant_id, 
                   const char *message, double *time_spent) {
     clock_t start = clock();
@@ -216,38 +213,38 @@ void partial_sign(ThresholdBLS *tbls, PartialSignature *psig, int participant_id
     
     psig->participant_id = participant_id;
     
-    // 初始化元素
+    // Initialize elements
     element_init_G1(psig->sigma, tbls->pairing);
     element_init_G1(psig->R1, tbls->pairing);
     element_init_G1(psig->R2, tbls->pairing);
     element_init_Zr(psig->z, tbls->pairing);
     
-    // 获取参与方的私钥份额
+    // Get participant's private key share
     element_t sk_share;
     element_init_Zr(sk_share, tbls->pairing);
     element_set(sk_share, tbls->sk_shares[participant_id-1]);
     
-    // 1. 生成部分签名 σ_i = sk_i * H(msg)
+    // 1. Generate partial signature σ_i = sk_i * H(msg)
     element_t H_msg;
     element_init_G1(H_msg, tbls->pairing);
     hash_to_G1(H_msg, message, tbls->pairing);
     
     element_mul_zn(psig->sigma, H_msg, sk_share);
     
-    // 2. 生成DLEQ证明 π = ProveDLEQ(g1, msg, pk_i,1, σ_i, sk_i)
+    // 2. Generate DLEQ proof π = ProveDLEQ(g1, msg, pk_i,1, σ_i, sk_i)
     element_t r, c;
     element_init_Zr(r, tbls->pairing);
     element_init_Zr(c, tbls->pairing);
     
-    // 选择随机数 r
+    // Select random number r
     element_random(r);
     
-    // 计算 R1 = r * g1, R2 = r * H(msg)
+    // Calculate R1 = r * g1, R2 = r * H(msg)
     element_mul_zn(psig->R1, tbls->g1, r);
     element_mul_zn(psig->R2, H_msg, r);
     
-    // 计算挑战 c = H(g1, H(msg), pk_i,1, σ_i, R1, R2)
-    // 简化处理：使用字符串拼接作为哈希输入
+    // Calculate challenge c = H(g1, H(msg), pk_i,1, σ_i, R1, R2)
+    // Simplified handling: use string concatenation as hash input
     char challenge_data[1024];
     unsigned char r1_bytes[1024], r2_bytes[1024];
     int r1_len = element_to_bytes(r1_bytes, psig->R1);
@@ -257,14 +254,14 @@ void partial_sign(ThresholdBLS *tbls, PartialSignature *psig, int participant_id
              message, participant_id, r1_len, r2_len);
     hash_to_Zr(c, challenge_data, tbls->pairing);
     
-    // 计算响应 z = r + c * sk_i
+    // Calculate response z = r + c * sk_i
     element_mul(psig->z, c, sk_share);
     element_add(psig->z, psig->z, r);
     
     printf("Partial signature generated:\n");
     element_printf("σ_%d = %B\n", participant_id, psig->sigma);
     
-    // 清理临时变量
+    // Clean up temporary variables
     element_clear(sk_share);
     element_clear(H_msg);
     element_clear(r);
@@ -273,7 +270,7 @@ void partial_sign(ThresholdBLS *tbls, PartialSignature *psig, int participant_id
     *time_spent = ((double)(clock() - start)) / CLOCKS_PER_SEC * 1000.0;
 }
 
-// 验证DLEQ证明
+// Verify DLEQ proof
 int verify_dleq_proof(ThresholdBLS *tbls, PartialSignature *psig, const char *message) {
     printf("\n=== Verifying DLEQ Proof for Participant %d ===\n", psig->participant_id);
     
@@ -285,7 +282,7 @@ int verify_dleq_proof(ThresholdBLS *tbls, PartialSignature *psig, const char *me
     element_init_G1(right2, tbls->pairing);
     element_init_G1(temp, tbls->pairing);
     
-    // 重新计算挑战 c
+    // Recalculate challenge c
     char challenge_data[1024];
     unsigned char r1_bytes[1024], r2_bytes[1024];
     int r1_len = element_to_bytes(r1_bytes, psig->R1);
@@ -295,13 +292,13 @@ int verify_dleq_proof(ThresholdBLS *tbls, PartialSignature *psig, const char *me
              message, psig->participant_id, r1_len, r2_len);
     hash_to_Zr(c, challenge_data, tbls->pairing);
     
-    // 验证第一个方程: z * g1 == R1 + c * pk_i,1
+    // Verify first equation: z * g1 == R1 + c * pk_i,1
     element_mul_zn(left1, tbls->g1, psig->z);
     
     element_mul_zn(temp, tbls->pk_shares_1[psig->participant_id-1], c);
     element_add(right1, psig->R1, temp);
     
-    // 验证第二个方程: z * H(msg) == R2 + c * σ_i
+    // Verify second equation: z * H(msg) == R2 + c * σ_i
     element_t H_msg;
     element_init_G1(H_msg, tbls->pairing);
     hash_to_G1(H_msg, message, tbls->pairing);
@@ -329,7 +326,7 @@ int verify_dleq_proof(ThresholdBLS *tbls, PartialSignature *psig, const char *me
     return valid1 && valid2;
 }
 
-// 组合签名
+// Combine signatures
 void combine_signatures(ThresholdBLS *tbls, element_t final_sigma, 
                        PartialSignature **psigs, int k, const char *message,
                        double *time_spent) {
@@ -340,20 +337,20 @@ void combine_signatures(ThresholdBLS *tbls, element_t final_sigma,
     element_init_G1(final_sigma, tbls->pairing);
     element_set0(final_sigma);
     
-    // 提取参与方ID
+    // Extract participant IDs
     int participants[k];
     for (int i = 0; i < k; i++) {
         participants[i] = psigs[i]->participant_id;
     }
     
-    // 计算Lagrange系数
+    // Calculate Lagrange coefficients
     element_t lagrange_coeffs[k];
     for (int i = 0; i < k; i++) {
         element_init_Zr(lagrange_coeffs[i], tbls->pairing);
     }
     compute_lagrange_coeff(lagrange_coeffs, participants, k, tbls->pairing);
     
-    // 应用Lagrange插值: σ = Σ L_i * σ_i
+    // Apply Lagrange interpolation: σ = Σ L_i * σ_i
     element_t temp;
     element_init_G1(temp, tbls->pairing);
     
@@ -368,7 +365,7 @@ void combine_signatures(ThresholdBLS *tbls, element_t final_sigma,
     printf("Final combined signature:\n");
     element_printf("σ = %B\n", final_sigma);
     
-    // 清理
+    // Clean up
     element_clear(temp);
     for (int i = 0; i < k; i++) {
         element_clear(lagrange_coeffs[i]);
@@ -377,56 +374,34 @@ void combine_signatures(ThresholdBLS *tbls, element_t final_sigma,
     *time_spent = ((double)(clock() - start)) / CLOCKS_PER_SEC * 1000.0;
 }
 
-// 验证最终签名
+// Verify final signature
 int verify_signature(ThresholdBLS *tbls, element_t sigma, const char *message, double *time_spent) {
     clock_t start = clock();
     
     printf("\n=== Verifying Final Signature ===\n");
     
-    element_t t_val, left1, left2, temp1, temp2;
     element_t H_msg;
     element_t pair_left, pair_right;
     
-    element_init_Zr(t_val, tbls->pairing);
-    element_init_G1(left1, tbls->pairing);
-    element_init_G1(left2, tbls->pairing);
-    element_init_G1(temp1, tbls->pairing);
-    element_init_G1(temp2, tbls->pairing);
     element_init_G1(H_msg, tbls->pairing);
     element_init_GT(pair_left, tbls->pairing);
     element_init_GT(pair_right, tbls->pairing);
     
-    // 随机选择 t
-    element_random(t_val);
-    
-    // 计算 H_msg
+    // Calculate H_msg
     hash_to_G1(H_msg, message, tbls->pairing);
     
-    // 计算左边: σ + t * apk_1
-    element_mul_zn(temp1, tbls->apk_1, t_val);  // t * apk_1
-    element_add(left1, sigma, temp1);           // σ + t * apk_1
+    // Standard BLS signature verification: e(σ, g_2) = e(H_msg, apk_2)
+    // Calculate pairing: e(σ, g_2)
+    pairing_apply(pair_left, sigma, tbls->g2, tbls->pairing);
     
-    // 计算右边基准: H_msg + t * g1
-    element_mul_zn(temp2, tbls->g1, t_val);     // t * g1
-    element_add(left2, H_msg, temp2);           // H_msg + t * g1
-    
-    // 计算配对: e(σ + t·apk_1, g_2)
-    pairing_apply(pair_left, left1, tbls->g2, tbls->pairing);
-    
-    // 计算配对: e(H_msg + t·g_1, apk_2)
-    pairing_apply(pair_right, left2, tbls->apk_2, tbls->pairing);
+    // Calculate pairing: e(H_msg, apk_2)
+    pairing_apply(pair_right, H_msg, tbls->apk_2, tbls->pairing);
     
     int valid = !element_cmp(pair_left, pair_right);
     
     printf("Signature Verification: %s\n", valid ? "VALID" : "INVALID");
-    element_printf("t = %B\n", t_val);
     
-    // 清理
-    element_clear(t_val);
-    element_clear(left1);
-    element_clear(left2);
-    element_clear(temp1);
-    element_clear(temp2);
+    // Clean up
     element_clear(H_msg);
     element_clear(pair_left);
     element_clear(pair_right);
@@ -436,7 +411,7 @@ int verify_signature(ThresholdBLS *tbls, element_t sigma, const char *message, d
     return valid;
 }
 
-// 性能测试
+// Performance test
 void performance_test(ThresholdBLS *tbls, const char *message) {
     printf("\n");
     print_separator("=", 60);
@@ -444,9 +419,9 @@ void performance_test(ThresholdBLS *tbls, const char *message) {
     print_separator("=", 60);
     
     double total_time = 0.0;
-    double times[4] = {0}; // 存储各阶段时间
+    double times[4] = {0}; // Store time for each stage
     
-    // 测试部分签名生成
+    // Test partial signature generation
     printf("1. Partial Signature Generation:\n");
     PartialSignature psigs[tbls->t];
     for (int i = 0; i < tbls->t; i++) {
@@ -455,9 +430,9 @@ void performance_test(ThresholdBLS *tbls, const char *message) {
         times[0] += time_used;
         printf("   Participant %d: %.3f ms\n", i+1, time_used);
     }
-    times[0] /= tbls->t; // 平均时间
+    times[0] /= tbls->t; // Average time
     
-    // 测试DLEQ证明验证
+    // Test DLEQ proof verification
     printf("\n2. DLEQ Proof Verification:\n");
     clock_t start = clock();
     for (int i = 0; i < tbls->t; i++) {
@@ -466,7 +441,7 @@ void performance_test(ThresholdBLS *tbls, const char *message) {
     times[1] = ((double)(clock() - start)) / CLOCKS_PER_SEC * 1000.0;
     printf("   Total time: %.3f ms\n", times[1]);
     
-    // 测试签名组合
+    // Test signature combination
     printf("\n3. Signature Combination:\n");
     PartialSignature *psig_ptrs[tbls->t];
     for (int i = 0; i < tbls->t; i++) {
@@ -476,11 +451,11 @@ void performance_test(ThresholdBLS *tbls, const char *message) {
     element_t final_sigma;
     combine_signatures(tbls, final_sigma, psig_ptrs, tbls->t, message, &times[2]);
     
-    // 测试签名验证
+    // Test signature verification
     printf("\n4. Final Signature Verification:\n");
     int valid = verify_signature(tbls, final_sigma, message, &times[3]);
     
-    // 输出性能结果
+    // Output performance results
     printf("\n");
     print_separator("-", 60);
     printf("PERFORMANCE SUMMARY\n");
@@ -496,7 +471,7 @@ void performance_test(ThresholdBLS *tbls, const char *message) {
            times[0]*tbls->t + times[1] + times[2] + times[3]);
     printf("\nSignature Valid: %s\n", valid ? "YES" : "NO");
     
-    // 清理
+    // Clean up
     element_clear(final_sigma);
     for (int i = 0; i < tbls->t; i++) {
         element_clear(psigs[i].sigma);
@@ -507,16 +482,16 @@ void performance_test(ThresholdBLS *tbls, const char *message) {
 }
 
 int main(int argc, char **argv) {
-    // 初始化PBC配对
+    // Initialize PBC pairing
     pairing_t pairing;
     
-    // 使用默认参数初始化配对
+    // Initialize pairing with default parameters
     char param[1024];
     size_t count = 0;
     
-    // 生成配对参数
+    // Generate pairing parameters
     if (argc > 1) {
-        // 从文件读取配对参数
+        // Read pairing parameters from file
         FILE *fp = fopen(argv[1], "r");
         if (fp) {
             count = fread(param, 1, sizeof(param)-1, fp);
@@ -525,7 +500,7 @@ int main(int argc, char **argv) {
     }
     
     if (count == 0) {
-        // 使用内置参数
+        // Use built-in parameters
         snprintf(param, sizeof(param), 
             "type a\n"
             "q 8780710799663312522437781984754049815806883199414208211028653399266475630880222957078625179422662221423155858769582317459277713367317481324925129998224791\n"
@@ -543,26 +518,26 @@ int main(int argc, char **argv) {
         printf("Warning: Using asymmetric pairing\n");
     }
     
-    // 创建阈值BLS系统
+    // Create threshold BLS system
     ThresholdBLS tbls;
-    int n = 5;  // 总参与方数
-    int t = 3;  // 门限值
+    int n = 5;  // Total number of participants
+    int t = 3;  // Threshold value
     
     threshold_bls_init(&tbls, n, t, pairing);
     
-    // 模拟DKG过程
+    // Simulate DKG process
     simulate_dkg(&tbls);
     
-    // 聚合公钥
+    // Aggregate public keys
     aggregate_keys(&tbls);
     
-    // 测试消息
+    // Test message
     const char *test_message = "Hello Threshold BLS!";
     
-    // 运行性能测试
+    // Run performance test
     performance_test(&tbls, test_message);
     
-    // 清理资源
+    // Clean up resources
     threshold_bls_clear(&tbls);
     pairing_clear(pairing);
     

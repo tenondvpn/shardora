@@ -3,7 +3,7 @@
 #include "security/security.h"
 #include "dht/dht_key.h"
 
-namespace shardora {
+namespace seth {
 
 namespace dht {
 
@@ -31,7 +31,6 @@ void DhtProto::CreateBootstrapResponse(
     msg.set_src_sharding_id(local_sharding_id);
     msg.set_des_dht_key(des_dht_key);
     msg.set_type(common::kDhtMessage);
-    // TODO(tt): add sign
     auto* res_dht_msg = msg.mutable_dht_proto();
     auto* bootstrap_res = res_dht_msg->mutable_bootstrap_res();
     bootstrap_res->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());
@@ -58,7 +57,7 @@ void DhtProto::CreateRefreshNeighborsRequest(
             kRefreshNeighborsBloomfilterBitCount,
             kRefreshNeighborsBloomfilterHashCount };
     for (auto iter = dht.begin(); iter != dht.end(); ++iter) {
-        // SHARDORA_DEBUG("---1 hash: %lu id:%s shard:%u dht_key_hash:%lu", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id, (*iter)->dht_key_hash);
+        // SETH_DEBUG("---1 hash: %lu id:%s shard:%u dht_key_hash:%lu", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id, (*iter)->dht_key_hash);
         // bloomfilter.Add(common::Hash::Hash64((*iter)->id));
         bloomfilter.Add((*iter)->dht_key_hash);
     }
@@ -129,10 +128,6 @@ int32_t DhtProto::CreateConnectRequest(
     msg.set_type(common::kDhtMessage);
     auto* dht_msg = msg.mutable_dht_proto();
     auto connect_req = dht_msg->mutable_connect_req();
-    if (common::IsVlanIp(local_node->public_ip)) {
-        return kDhtError;
-    }
-
     connect_req->set_is_response(response);
     connect_req->set_pubkey(local_node->pubkey_str);
     connect_req->set_public_ip(common::GlobalInfo::Instance()->config_public_ip());
@@ -143,5 +138,5 @@ int32_t DhtProto::CreateConnectRequest(
 
 }  // namespace dht
 
-}  //namespace shardora
+}  //namespace seth
 

@@ -10,8 +10,8 @@ enum StepType {
 	kConsensusRootTimeBlock = 3;  // create time block
 	kConsensusCreateGenesisAcount = 4;
 	kConsensusLocalTos = 5;
-	kContractCreate = 6;
-	kContractGasPrepayment = 7;
+	kCreateContract = 6;
+	kContractGasPrefund = 7;
 	kContractExcute = 8;
 	kRootCreateAddress = 9;
 	kRootCreateAddressCrossSharding = 11;
@@ -34,7 +34,7 @@ enum InitInfoTagType {
 	kC2cNewSell = 8;
 	kC2cNewOrder = 9;
 	kC2cConfirm = 10;
-	kC2cPrepayment = 11;
+	kC2cPrefund = 11;
 	kC2cRefreshLocal = 12;
 	kC2cCancelOrder = 13;
 	kC2cCancelSell = 14;
@@ -66,7 +66,7 @@ message TxMessage {
 	optional bytes to = 8;
 	optional uint64 amount = 9;
 	optional StepType step = 10 [default=kNormalFrom];
-	optional uint64 contract_prepayment = 11;
+	optional uint64 contract_prefund = 11;
 	optional bytes contract_code = 12;
 	optional bytes contract_input = 13;
 	optional bytes signr = 14;
@@ -89,13 +89,13 @@ enum Status {
 	kSellUserReleased = 11;
 	kSellManagerWaitingRelease = 12;
 	kSellManagerReleased = 13;
-	kSellPrepayment = 14;
-	kSellWaitingPrepayment = 15;
+	kSellPrefund = 14;
+	kSellWaitingPrefund = 15;
 	kSellWaitingConfirmTx = 16;
 	kSellForceReleaseWaitingTx = 17;
 	kSellForceReleased = 18;
 	kReportedByOrder = 19;
-	kSellTxPrepaymentError = 125;
+	kSellTxPrefundError = 125;
 	kSellTxCreateError = 126;
 	kSellTxUserReleaseError = 127;
 	kSellTxManagerReleaseError = 128;
@@ -188,7 +188,7 @@ message C2cMessage {
 	optional BuyerReport report = 3;
 	repeated SellInfo sells = 4;
 	optional GetSell get_sell = 5;
-	optional uint64 prepayment = 6;
+	optional uint64 prefund = 6;
 	optional bytes c2c_addr = 7;
 	optional SellInfo user_order_info = 8;
 	optional Appeal appeal = 9;

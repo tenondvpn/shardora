@@ -1,6 +1,7 @@
 #pragma once
 
-#include <libbls/tools/utils.h>
+#include <bls/bls_sign.h>
+#include <vector>
 #include <libbls/bls/bls.h>
 #include <libbls/bls/BLSPublicKey.h>
 
@@ -25,6 +26,16 @@ public:
         const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash);
+    // Fast path: single final exponentiation via double Miller loop.
+    static int VerifyFast(
+        const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G1& g1_hash,
+        const libff::alt_bn128_G2& pkey);
+    // Fast path for multi-message aggregate verify: one final exponentiation.
+    static bool AggregateVerifyFast(
+        const std::vector<std::string>& str_hashes,
+        const libff::alt_bn128_G1& agg_sig,
+        const std::vector<libff::alt_bn128_G2>& pks);
     static int GetVerifyHash(
         uint32_t t,
         uint32_t n,

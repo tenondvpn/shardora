@@ -1130,7 +1130,7 @@ inline ::shardora::pools::protobuf::StepType TxBft::tx_type() const {
   return static_cast< ::shardora::pools::protobuf::StepType >(tx_type_);
 }
 inline void TxBft::set_tx_type(::shardora::pools::protobuf::StepType value) {
-  assert(::shardora::pools::protobuf::StepType_IsValid(value));
+  //assert(::shardora::pools::protobuf::StepType_IsValid(value));
   set_has_tx_type();
   tx_type_ = value;
   // @@protoc_insertion_point(field_set:shardora.zbft.protobuf.TxBft.tx_type)

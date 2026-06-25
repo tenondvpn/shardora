@@ -17,16 +17,19 @@ public:
     }
 
 private:
+    static constexpr size_t kMapSize =
+        static_cast<size_t>((std::numeric_limits<uint16_t>::max)()) + 1u;
+
     U16BitCount() {
         memset(u16_bit_count_map_, 0, sizeof(u16_bit_count_map_));
-        for (int i = 0; i < (std::numeric_limits<uint16_t>::max)(); ++i) {
-            u16_bit_count_map_[i] = (i & 1) + u16_bit_count_map_[i / 2];
+        for (size_t i = 0; i < kMapSize; ++i) {
+            u16_bit_count_map_[i] = static_cast<uint32_t>((i & 1u) + u16_bit_count_map_[i >> 1u]);
         }
     }
 
     ~U16BitCount() {}
 
-    uint32_t u16_bit_count_map_[(std::numeric_limits<uint16_t>::max)()];
+    uint32_t u16_bit_count_map_[kMapSize];
 };
 
 };  // namespace common

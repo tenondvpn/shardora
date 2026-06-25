@@ -7,7 +7,9 @@
 #include <termios.h> 
 #include <unistd.h>
 
-#include <iostream>
+#include <fstream>   // For ifstream and ofstream
+#include <sstream>   // For stringstream
+#include <iostream>  // For std::cout
 #include <memory>
 #include <thread>
 
@@ -25,6 +27,7 @@
 #include "network/route.h"
 #include "network/network_utils.h"
 #include "init/init_utils.h"
+#include "security/ecdsa/sodium_private_key.h"
 
 namespace shardora {
 
@@ -44,11 +47,14 @@ bool Command::Init(bool first_node, bool show_cmd, bool period_tick) {
 }
 
 int clear_icanon(void) {
+    if (!isatty(STDIN_FILENO)) {
+        return 1;
+    }
+
     struct termios settings;
     int result;
     result = tcgetattr(STDIN_FILENO, &settings);
     if (result < 0) {
-        perror("error in tcgetattr");
         return 0;
     }
 
@@ -62,14 +68,16 @@ int clear_icanon(void) {
 }
 
 void Command::Run() {
+    if (!show_cmd_) {
+        while (!destroy_) {
+            std::this_thread::sleep_for(std::chrono::microseconds(200000ll));
+        }
+        return;
+    }
+
     Help();
     clear_icanon();
     while (!destroy_) {
-        if (!show_cmd_) {
-            std::this_thread::sleep_for(std::chrono::microseconds(200000ll));
-            continue;
-        }
-
         std::cout << std::endl << std::endl << "cmd > ";
         std::string cmdline;
         std::getline(std::cin, cmdline);
@@ -115,7 +123,7 @@ void Command::ProcessCommand(const std::string& cmdline) {
 }
 
 void Command::AddCommand(const std::string& cmd_name, CommandFunction cmd_func) {
-    assert(cmd_func);
+    //assert(cmd_func);
     auto it = cmd_map_.find(cmd_name);
     if (it != cmd_map_.end()) {
         INIT_WARN("command(%s) exist and ignore new one", cmd_name.c_str());
@@ -156,7 +164,7 @@ void Command::PrintDht(uint32_t network_id) {
         << ", " << node->public_ip << ":" << node->public_port << std::endl;
     for (auto iter = readonly_dht->begin(); iter != readonly_dht->end(); ++iter) {
         auto node = *iter;
-        assert(node != nullptr);
+        //assert(node != nullptr);
         std::cout << common::Encode::HexSubstr(node->id)
             << ", " << node->dht_key_hash
             << ", " << common::Encode::HexSubstr(node->dht_key)

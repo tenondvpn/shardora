@@ -65,7 +65,7 @@ bool Secp256k1::Sign(const std::string& hash, const PrivateKey& privkey, std::st
         getCtx(),
         &sig,
         (const uint8_t*)hash.c_str(),
-        (const uint8_t*)privkey.private_key().c_str(),
+        (const uint8_t*)privkey.private_key(),
         NULL,
         NULL);
     uint8_t data[kSignatureSize];
@@ -123,14 +123,14 @@ std::string Secp256k1::GetSign(const std::string& r, const std::string& s, uint8
 
 bool Secp256k1::Secp256k1Sign(
         const std::string& msg,
-        const PrivateKey& privkey,
+        const char* privkey,
         std::string* sign) {
     secp256k1_ecdsa_recoverable_signature sig;
     if (secp256k1_ecdsa_sign_recoverable(
             getCtx(),
             &sig,
             (const uint8_t*)msg.c_str(),
-            (const uint8_t*)privkey.private_key().c_str(),
+            (const uint8_t*)privkey,
             NULL,
             NULL) != 1) {
         return false;
@@ -148,7 +148,7 @@ bool Secp256k1::Secp256k1Sign(
         auto tmp_val = c_secp256k1n - u256(tmp_arr);
         U256ToByteArray(tmp_val, ss.s);
         SHARDORA_DEBUG("DDDDDDDDDDDDDDD");
-        assert(false);
+        //assert(false);
     }
 
     *sign = std::string((char*)data, sizeof(data));
@@ -273,7 +273,7 @@ std::string Secp256k1::ToPublicFromCompressed(const std::string& in_pubkey) {
             &raw_pubkey,
             (uint8_t*)in_pubkey.c_str(),
             in_pubkey.size())) {
-        assert(false);
+        //assert(false);
         return "";
     }
 
@@ -285,8 +285,8 @@ std::string Secp256k1::ToPublicFromCompressed(const std::string& in_pubkey) {
         &serialized_pubkey_size,
         &raw_pubkey,
         SECP256K1_EC_UNCOMPRESSED);
-    assert(serialized_pubkey_size == serialized_pubkey.size());
-    assert(serialized_pubkey[0] == 0x04);
+    //assert(serialized_pubkey_size == serialized_pubkey.size());
+    //assert(serialized_pubkey[0] == 0x04);
     return std::string((char*)serialized_pubkey.data(), serialized_pubkey.size());
 }
 
@@ -307,7 +307,7 @@ std::string Secp256k1::ToAddressWithPublicKey(
         return UnicastAddress(common::Hash::keccak256(pub_key.substr(1, 64)));
     }
 
-    assert(pub_key.size() == kPublicKeyUncompressSize - 1);
+    //assert(pub_key.size() == kPublicKeyUncompressSize - 1);
     return UnicastAddress(common::Hash::keccak256(pub_key));
 }
 

@@ -4,7 +4,6 @@
 
 #include "contract/call_parameters.h"
 #include "pki/def.h"
-#include "protos/prefix_db.h"
 
 namespace shardora {
 

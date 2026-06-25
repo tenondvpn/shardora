@@ -37,10 +37,9 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     if (last_view >= v_block->qc().view()) {
         return Status::kSuccess;
     }
+
     leader_last_commit_views_[v_block->qc().leader_idx()] =
         v_block->qc().view();
-
-
     // SetMemberConsensusStat(
     //     v_block->qc().leader_idx(), 
     //     v_block->leader_consen_stat());
@@ -51,8 +50,6 @@ Status ConsensusStat::Commit(const std::shared_ptr<ViewBlock> &v_block) {
     //     ret += std::to_string(idx) + ": " + std::to_string(all_consen_stats[idx]->succ_num) + ", ";
     // }
     // SHARDORA_DEBUG("pool: %d get all stat: %s", ret.c_str());
-    
-    
     return Status::kSuccess;
 }
 

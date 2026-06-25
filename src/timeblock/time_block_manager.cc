@@ -48,19 +48,19 @@ void TimeBlockManager::CreateTimeBlockTx() {
     }
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->address_info = account_mgr_->pools_address_info(common::kImmutablePoolSize);
-    assert(msg_ptr->address_info != nullptr);
-    assert(!msg_ptr->address_info->addr().empty());
+    msg_ptr->address_info = account_mgr_->pools_address_info(
+        pools::protobuf::kConsensusRootTimeBlock, 
+        common::kGlobalPoolIndex);
+    //assert(msg_ptr->address_info != nullptr);
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
     tx_info.set_to(msg_ptr->address_info->addr());
-    tx_info.set_nonce(msg_ptr->address_info->nonce() + 1);
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tmblock_tx_ptr_.store(create_tm_tx_cb_(msg_ptr));
-    SHARDORA_INFO("success create timeblock tx key: %s",
+    StoreTimeblockTx(create_tm_tx_cb_(msg_ptr));
+    SHARDORA_DEBUG("success create timeblock tx key: %s",
         common::Encode::HexEncode(pools::GetTxKey(
             msg_ptr->address_info->addr(), 
             msg_ptr->address_info->nonce())).c_str());
@@ -74,7 +74,7 @@ bool TimeBlockManager::HasTimeblockTx(
         return false;
     }
     
-    auto tmblock_tx_ptr = tmblock_tx_ptr_.load();
+    auto tmblock_tx_ptr = LoadTimeblockTx();
     if (tmblock_tx_ptr != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         // if (tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us) {
@@ -86,7 +86,8 @@ bool TimeBlockManager::HasTimeblockTx(
             return false;
         }
 
-        if (tx_valid_func(*tmblock_tx_ptr->address_info, *tmblock_tx_ptr->tx_info) != 0) {
+        uint64_t now_nonce = 0ll;
+        if (tx_valid_func(*tmblock_tx_ptr->address_info, *tmblock_tx_ptr->tx_info, &now_nonce) != 0) {
             return false;
         }
         
@@ -96,15 +97,75 @@ bool TimeBlockManager::HasTimeblockTx(
     return false;
 }
 
+bool TimeBlockManager::CheckLeaderTimeblockTxValid(
+        const pools::protobuf::TxMessage& tx_item, 
+        pools::CheckAddrNonceValidFunction tx_valid_func) const {
+    if (!CanCallTimeBlockTx()) {
+        SHARDORA_DEBUG("CanCallTimeBlockTx leader: %s", ProtobufToJson(tx_item).c_str());
+        return false;
+    }
+    
+    timeblock::protobuf::TimeBlock timer_block;
+    if (!timer_block.ParseFromString(tx_item.value())) {
+        SHARDORA_WARN("Failed to parse TimeBlock from tx value");
+        return false;
+    }
+
+    uint64_t now_tm_sec = common::TimeUtils::TimestampSeconds();
+    uint64_t new_time_block_tm = latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds;
+    while (new_time_block_tm < now_tm_sec && now_tm_sec - new_time_block_tm >= 30lu) {
+        new_time_block_tm += common::kTimeBlockCreatePeriodSeconds;
+    }
+
+    auto tm_hash = common::Hash::keccak256(std::to_string(new_time_block_tm));
+    if (tx_item.key() != tm_hash) {
+        SHARDORA_WARN("TimeBlock key mismatch, expected: %s, actual: %s",
+            common::Encode::HexEncode(tm_hash).c_str(),
+            common::Encode::HexEncode(tx_item.key()).c_str());
+        return false;
+    }
+
+    if (timer_block.timestamp() != new_time_block_tm && latest_time_block_height_ != 0) {
+        SHARDORA_WARN("TimeBlock timestamp mismatch, expected: %lu, actual: %lu",
+            new_time_block_tm, timer_block.timestamp());
+        return false;
+    }
+
+    if (vss_mgr_->GetConsensusFinalRandom() != timer_block.vss_random()) {
+        SHARDORA_WARN("TimeBlock vss_random mismatch, expected: %lu, actual: %lu",
+            vss_mgr_->GetConsensusFinalRandom(), timer_block.vss_random());
+        return false;
+    }
+
+    auto account_info = account_mgr_->pools_address_info(
+        pools::protobuf::kConsensusRootTimeBlock, 
+        common::kGlobalPoolIndex);
+    if (account_info->nonce() + 1 != timer_block.nonce()) {
+        SHARDORA_WARN("TimeBlock nonce mismatch, expected: %lu, actual: %lu",
+            account_info->nonce(), timer_block.nonce());
+        return false;
+    }
+
+    uint64_t now_nonce = 0ll;
+    if (tx_valid_func(*account_info, tx_item, &now_nonce) != 0) {
+        SHARDORA_DEBUG("tx_valid_func failed, now_nonce: %lu, account_info nonce: %lu", 
+            now_nonce, 
+            account_info->nonce());
+        return false;
+    }
+
+    return true;
+}
+
 pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         bool leader, 
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func) {
-    auto tmblock_tx_ptr = tmblock_tx_ptr_.load();
+    auto tmblock_tx_ptr = LoadTimeblockTx();
     if (tmblock_tx_ptr != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (leader && tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-            // SHARDORA_DEBUG("tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
+            SHARDORA_DEBUG("tmblock_tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm_us, is leader: %d", leader);
             return nullptr;
         }
 
@@ -112,7 +173,6 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
             SHARDORA_DEBUG("CanCallTimeBlockTx leader: %d", leader);
             return nullptr;
         }
-
 
         auto& tx_info = tmblock_tx_ptr->tx_info;
         uint64_t now_tm_sec = now_tm_us / 1000000lu;
@@ -124,11 +184,19 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(
         timeblock::protobuf::TimeBlock timer_block;
         timer_block.set_timestamp(new_time_block_tm);
         timer_block.set_vss_random(vss_mgr_->GetConsensusFinalRandom());
-        tx_info->set_value(timer_block.SerializeAsString());
-        auto account_info = account_mgr_->pools_address_info(pool_index);
+        auto account_info = account_mgr_->pools_address_info(
+            pools::protobuf::kConsensusRootTimeBlock, 
+            common::kGlobalPoolIndex);
+        timer_block.set_nonce(account_info->nonce() + 1);
+        tx_info->set_value(SerializeDeterministic(timer_block));
         tx_info->set_to(account_info->addr());
-        tx_info->set_key(common::Hash::keccak256(tx_info->value()));
-        if (tx_valid_func(*account_info, *tx_info) != 0) {
+        tx_info->set_key(common::Hash::keccak256(std::to_string(new_time_block_tm)));
+        tx_info->set_nonce(account_info->nonce() + 1);
+        uint64_t now_nonce = 0ll;
+        if (tx_valid_func(*account_info, *tx_info, &now_nonce) != 0) {
+            SHARDORA_DEBUG("tx_valid_func failed, now_nonce: %lu, account_info nonce: %lu", 
+                now_nonce, 
+                account_info->nonce());
             return nullptr;
         }
 
@@ -148,16 +216,21 @@ void TimeBlockManager::OnTimeBlock(
         uint64_t vss_random) {
     if (latest_time_block_height_ != common::kInvalidUint64 &&
             latest_time_block_height_ >= latest_time_block_height) {
+        if (latest_time_block_height > prev_time_block_height_) {
+            prev_time_block_height_ = latest_time_block_height;
+        }
+        
         return;
     }
 
-    SHARDORA_INFO("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
+    SHARDORA_DEBUG("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
         latest_time_block_height,
-        static_cast<int>(latest_time_block_height_),
+        static_cast<uint64_t>(latest_time_block_height_),
         latest_time_block_tm,
-        static_cast<int>(latest_time_block_tm_),
+        static_cast<uint64_t>(latest_time_block_tm_),
         vss_random);
-    assert(vss_random != 0);
+    //assert(vss_random != 0);
+    prev_time_block_height_ = latest_time_block_height;
     latest_time_block_height_ = latest_time_block_height;
     latest_time_block_tm_ = latest_time_block_tm;
     latest_tm_block_local_sec_ = common::TimeUtils::TimestampSeconds();

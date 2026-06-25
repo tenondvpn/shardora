@@ -1,10 +1,12 @@
 #pragma once
 
+#include <atomic>
+#include <condition_variable>
 #include <deque>
-#include <thread>
 #include <memory>
 #include <mutex>
-#include <condition_variable>
+#include <queue>
+#include <thread>
 
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
@@ -13,6 +15,7 @@
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
+#include "common/unique_min_priority_queue.h"
 #include "contract/contract_manager.h"
 #include "db/db.h"
 #include "network/network_utils.h"
@@ -44,15 +47,11 @@ public:
     BlockManager(transport::MultiThreadHandler& net_handler_, std::shared_ptr<ck::ClickHouseClient> ck_client);
     ~BlockManager();
 
-    // TODO: not thread thafe
     bool HasSingleTx(
         const transport::MessagePtr& msg_ptr,
         uint32_t pool_index, 
         pools::CheckAddrNonceValidFunction tx_valid_func);
-    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, const std::string&);
-    pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     pools::TxItemPtr GetToTx(uint32_t pool_index, const std::string& tx_hash);
-
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
@@ -81,24 +80,15 @@ public:
         create_to_tx_cb_ = func;
     }
 
-    void SetCreateStatisticTxFunction(pools::CreateConsensusItemFunction func) {
-        create_statistic_tx_cb_ = func;
-    }
-
-    void SetCreateElectTxFunction(pools::CreateConsensusItemFunction func) {
-        create_elect_tx_cb_ = func;
-    }
-
 private:
     void CallTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
-        uint64_t vss_random);
+        uint64_t vss_random,
+        uint64_t nonce);
     void CallNewElectBlock(uint32_t sharding_id);
     typedef std::map<uint64_t, std::shared_ptr<BlockTxsItem>, std::greater<uint64_t>> StatisticMap;
     bool HasToTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
-    bool HasStatisticTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
-    bool HasElectTx(uint32_t pool_index, pools::CheckAddrNonceValidFunction tx_valid_func);
     void HandleAllNewBlock();
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     pools::TxItemPtr HandleToTxsMessage(
@@ -130,10 +120,15 @@ private:
     void CreateStatisticTx();
     void PopTxTicker();
     void CreateLocalToTx(
-        const view_block::protobuf::ViewBlockItem& view_block, 
-        const pools::protobuf::ToTxMessageItem& to_tx);
+        const view_block::protobuf::ViewBlockItem& view_block,
+        const pools::protobuf::ToTxMessageItem& to_tx,
+        bool record_cross_shard_start = false);
 
     inline bool IsTimeblockHeightStatisticDone(uint64_t timeblock_height) {
+        if (latest_statistic_timeblock_height_ == common::kInvalidUint64) {
+            return false;
+        }
+
         return latest_statistic_timeblock_height_ >= timeblock_height;
     }
 
@@ -161,10 +156,7 @@ private:
     uint64_t prev_create_to_tx_ms_ = 0;
     uint64_t prev_retry_create_statistic_tx_ms_ = 0;
     std::atomic<uint32_t> max_consensus_sharding_id_ = 3;
-    std::atomic<std::shared_ptr<BlockTxsItem>> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
-    pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
-    pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
@@ -173,34 +165,56 @@ private:
     uint64_t latest_timeblock_height_ = 0;
     uint64_t prev_timeblock_tm_sec_ = 0;
     uint64_t latest_timeblock_tm_sec_ = 0;
-    uint64_t prev_timeblock_height_ = 0;
+    uint64_t latest_statistic_height_ = 0;
+    common::UniqueMinPriorityQueue<uint64_t> timeblock_height_pq_;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
-    StatisticMap shard_statistics_map_;
     common::ThreadSafeQueue<std::shared_ptr<StatisticMap>> shard_statistics_map_ptr_queue_;
-    std::atomic<std::shared_ptr<StatisticMap>> got_latest_statistic_map_ptr_[2] = { nullptr };
+    std::shared_ptr<StatisticMap> LoadLatestStatisticMap(uint32_t index) const {
+        std::lock_guard<std::mutex> lock(got_latest_statistic_map_mutex_[index]);
+        return got_latest_statistic_map_ptr_[index];
+    }
+
+    void StoreLatestStatisticMap(uint32_t index, const std::shared_ptr<StatisticMap>& statistic_map) {
+        std::lock_guard<std::mutex> lock(got_latest_statistic_map_mutex_[index]);
+        got_latest_statistic_map_ptr_[index] = statistic_map;
+    }
+
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> LoadLatestToBlock(uint32_t index) const {
+        std::lock_guard<std::mutex> lock(latest_to_block_mutex_[index]);
+        return latest_to_block_ptr_[index];
+    }
+
+    void StoreLatestToBlock(uint32_t index, const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block) {
+        std::lock_guard<std::mutex> lock(latest_to_block_mutex_[index]);
+        latest_to_block_ptr_[index] = view_block;
+    }
+
+    std::shared_ptr<StatisticMap> got_latest_statistic_map_ptr_[2] = { nullptr };
+    mutable std::mutex got_latest_statistic_map_mutex_[2];
     uint32_t valid_got_latest_statistic_map_ptr_index_ = 0;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::HotstuffManager> hotstuff_mgr_ = nullptr;
     uint64_t prev_create_statistic_tx_tm_us_ = 0;
     uint64_t prev_timer_ms_ = 0;
     common::Tick pop_tx_tick_;
-    std::atomic<std::shared_ptr<view_block::protobuf::ViewBlockItem>> latest_to_block_ptr_[2] = { nullptr };
+    std::shared_ptr<view_block::protobuf::ViewBlockItem> latest_to_block_ptr_[2] = { nullptr };
+    mutable std::mutex latest_to_block_mutex_[2];
     uint32_t latest_to_block_ptr_index_ = 0;
     std::map<std::string, pools::TxItemPtr> heights_str_map_;
     uint32_t leader_prev_get_to_tx_tm_ = 0;
     std::shared_ptr<std::thread> handle_consensus_block_thread_;
     std::mutex wait_mutex_;
     std::condition_variable wait_con_;
-    uint64_t latest_statistic_timeblock_height_ = 0; // memorize the latest timeblock height that has gathered statistic
-
-    uint64_t step_with_nonce_[128] = { 0llu };
+    uint64_t latest_statistic_timeblock_height_ = common::kInvalidUint64; // memorize the latest timeblock height that has gathered statistic
+    std::atomic<bool> destroy_ = false;
+    std::atomic<uint64_t> step_with_nonce_[common::kInvalidPoolIndex][128] = { 0llu };
+    std::unordered_map<uint64_t, uint64_t> timeblock_height_with_nonce_;
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
 
 }  // namespace block
 
 }  // namespace shardora
-

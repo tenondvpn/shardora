@@ -25,6 +25,8 @@ public:
             : TcpSocket(local_addr, local_port),
               peer_addr_(peer_addr),
               peer_port_(peer_port) {
+        ip_ = InAddrToString(peer_addr_);
+        port_ = peer_port_;
         SetFd(fd);
     }
 

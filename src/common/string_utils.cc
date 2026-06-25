@@ -393,15 +393,15 @@ bool StringUtil::IsNumeric(const std::string& str) {
 }
 
 void StringUtil::Trim(std::string& str) {
-    if (str.empty()) {
+    static const char kWhitespace[] = " \t\n\r\f\v";
+    const auto start = str.find_first_not_of(kWhitespace);
+    if (start == std::string::npos) {
+        str.clear();
         return;
     }
-    str.erase(0, str.find_first_not_of(" "));
-    str.erase(str.find_last_not_of(" ") + 1);
-    str.erase(0, str.find_first_not_of("\t"));
-    str.erase(str.find_last_not_of("\t") + 1);
-    str.erase(0, str.find_first_not_of("\n"));
-    str.erase(str.find_last_not_of("\n") + 1);
+    const auto end = str.find_last_not_of(kWhitespace);
+    str.erase(end + 1);
+    str.erase(0, start);
 }
 
 }  // namespace common

@@ -38,22 +38,22 @@ void DkgCache::Init(uint32_t local_index, common::Members& members, uint32_t net
     }
 }
 
-// void DkgCache::SetSwapKey(
-//         uint32_t network_id,
-//         uint32_t local_member_index,
-//         const std::string& id,
-//         uint32_t from_member_index,
-//         const std::string& secret_key_str) {
-//     prefix_db_->SaveSwapKey(
-//         network_id,
-//         local_member_index,
-//         id,
-//         from_member_index,
-//         secret_key_str);
+void DkgCache::SetSwapKey(
+        uint32_t network_id,
+        uint32_t local_member_index,
+        const std::string& id,
+        uint32_t from_member_index,
+        const std::string& secret_key_str) {
+    prefix_db_->SaveSwapKey(
+        network_id,
+        local_member_index,
+        id,
+        from_member_index,
+        secret_key_str);
 
-//     SwapKeyCacheKey key{elect_height, from_member_index, local_member_index, network_id};
-//     swap_keys_cache_[key] = secret_key_str;
-// }
+    SwapKeyCacheKey key{id, from_member_index, local_member_index, network_id};
+    swap_keys_cache_[key] = secret_key_str;
+}
 
 bool DkgCache::GetSwapKey(
         uint32_t network_id,
@@ -88,8 +88,9 @@ bool DkgCache::GetSwapKey(
     }
 
     if (secret_key_str != nullptr) {
-        *secret_key_str = iter->second;
+        *secret_key_str = tmp_secret_key_str;
     }
+    
     swap_keys_cache_[key] = tmp_secret_key_str;
     return true;
 }

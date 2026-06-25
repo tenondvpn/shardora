@@ -2,6 +2,7 @@
 
 #include "network/route.h"
 #include "network/universal_manager.h"
+#include "contract/contract_create2.h"
 #include "contract/contract_ecrecover.h"
 #include "contract/contract_sha256.h"
 #include "contract/contract_ripemd160.h"
@@ -21,6 +22,7 @@ ContractManager::ContractManager() {}
 ContractManager::~ContractManager() {}
 
 void ContractManager::Init(std::shared_ptr<security::Security>& secptr) {
+    auto create2 = std::make_shared<ContractCreate2>("");
     auto ecrecover = std::make_shared<Ecrecover>("", secptr);
     auto contract_sha256 = std::make_shared<ContractSha256>("");
     auto contract_rip160 = std::make_shared<Ripemd160>("");
@@ -30,6 +32,7 @@ void ContractManager::Init(std::shared_ptr<security::Security>& secptr) {
     auto alt_mul = std::make_shared<ContractAltBn128G1Mul>("");
     auto alt_product = std::make_shared<ContractaltBn128PairingProduct>("");
     auto blake2 = std::make_shared<Blake2Compression>("");
+    contract_map_[kContractCreate2] = create2;
     contract_map_[kContractEcrecover] = ecrecover;
     contract_map_[kContractSha256] = contract_sha256;
     contract_map_[kContractRipemd160] = contract_rip160;

@@ -13,7 +13,7 @@
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
 #include "transport/transport_utils.h"
-#include "zjcvm/zjc_host.h"
+#include "shardoravm/shardora_host.h"
 
 namespace shardora {
 
@@ -22,11 +22,14 @@ namespace hotstuff {
 using Breakpoint = int;
 using BalanceAndNonceMap = std::unordered_map<std::string, std::shared_ptr<address::protobuf::AddressInfo>>;
 using BalanceAndNonceMapPtr = std::shared_ptr<BalanceAndNonceMap>;
+// Maps address → max nonce already known by the leader (from current propose block).
+// Used by GetTxSyncToLeader to skip already-known nonces and search forward.
+using LeaderNonceMap = std::unordered_map<std::string, uint64_t>;
 
 class ProposeMsgWrapper {
 public:
     ProposeMsgWrapper() {
-        assert(false);
+        //assert(false);
     }
 
     ~ProposeMsgWrapper() {
@@ -37,7 +40,8 @@ public:
     transport::MessagePtr msg_ptr;
     std::shared_ptr<ViewBlock> view_block_ptr;
     BalanceAndNonceMapPtr acc_balance_and_nonce_map_ptr;
-    std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
+    std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr;
+    std::shared_ptr<LeaderNonceMap> leader_nonce_map; // built during addTxsToPool, used in vote step
     Breakpoint breakpoint; // 断点位置
     int tried_times;
     common::BftMemberPtr leader;
@@ -92,18 +96,24 @@ public:
     ViewBlockStatus status;
     std::shared_ptr<QC> qc;
     BalanceAndNonceMapPtr acc_balance_map_ptr;
-    std::shared_ptr<zjcvm::ZjchainHost> zjc_host_ptr;
-    bool valid;
+    std::shared_ptr<shardoravm::ShardorahainHost> shardora_host_ptr;
+    std::atomic<bool> valid;
+    uint64_t b_tm_ms;
 
     ViewBlockInfo() : 
-        view_block(nullptr), 
-        status(ViewBlockStatus::Unknown), 
-        qc(nullptr),
-        valid(false) {
-            common::GlobalInfo::Instance()->AddSharedObj(3);
+            view_block(nullptr), 
+            status(ViewBlockStatus::Unknown), 
+            qc(nullptr),
+            valid(false) {
+        b_tm_ms = common::TimeUtils::TimestampMs();
+        common::GlobalInfo::Instance()->AddSharedObj(3);
     }
 
     ~ViewBlockInfo() {
+        SHARDORA_DEBUG("success add view block remove %u_%u_%lu", 
+            view_block ? view_block->qc().network_id() : 0,
+            view_block ? view_block->qc().pool_index() : 0,
+            view_block ? view_block->qc().view() : 0);
         common::GlobalInfo::Instance()->DecSharedObj(3);
     }
 };

@@ -90,7 +90,6 @@ double Lof::PointDistEuclidean(const Point& l, const Point& r) {
 
     double res = std::sqrt(sum / (double)dimension);
     dist_map_[key] = res;
-    CHECK_MEMORY_SIZE(dist_map_);
     return res;
 }
 

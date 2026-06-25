@@ -24,14 +24,15 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
     }
 
     std::string bootstrap_net;
-    config.Get("shardora", "bootstrap_net", bootstrap_net) ;
-    bootstrap += ',' + bootstrap_net;
+    if (config.TryGet("shardora", "bootstrap_net", bootstrap_net) && !bootstrap_net.empty()) {
+        bootstrap += ',' + bootstrap_net;
+    }
 
     common::Split<2048> boot_spliter(bootstrap.c_str(), ',');
     std::set<std::string> boot_set;
     for (uint32_t i = 0; i < boot_spliter.Count(); ++i) {
         boot_set.insert(boot_spliter[i]);
-        if (boot_set.size() >= 32) {
+        if (boot_set.size() >= 16) {
             break;
         }
     }
@@ -46,14 +47,14 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
     common::Split<2048> split(bootstrap.c_str(), ',', bootstrap.size());
     for (uint32_t i = 0; i < split.Count(); ++i) {
         common::Split<> field_split(split[i], ':', split.SubLen(i));
-        if (field_split.Count() != 3) {
+        if (field_split.Count() != 4) {
             continue;
         }
 
         std::string pubkey = common::Encode::HexDecode(
             std::string(field_split[0], field_split.SubLen(0)));
         if (pubkey.size() != security::kPublicCompressKeySize) {
-            SHARDORA_INFO("invalid public key: %s", split[i]);
+            SHARDORA_DEBUG("invalid public key: %s", split[i]);
             continue;
         }
 
@@ -71,13 +72,13 @@ int Bootstrap::Init(common::Config& config, std::shared_ptr<security::Security>&
             std::string(field_split[1], field_split.SubLen(1)),
             port,
             pubkey,
-            security->GetAddress(pubkey)));
+            security->GetAddressWithPublicKey(pubkey)));
         node_bootstrap_.push_back(std::make_shared<shardora::dht::Node>(
             kNodeNetworkId,
             std::string(field_split[1], field_split.SubLen(1)),
             port,
             pubkey,
-            security->GetAddress(pubkey)));
+            security->GetAddressWithPublicKey(pubkey)));
     }
 
     if (root_bootstrap_.empty() || node_bootstrap_.empty()) {

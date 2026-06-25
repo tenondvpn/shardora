@@ -57,9 +57,9 @@ public:
         uint64_t elect_height,
         uint64_t prev_elect_height,
         common::MembersPtr& members,
-        std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
-    void HandleMessage(const transport::MessagePtr& header);
-    bool CheckBlsMessageValid(transport::MessagePtr& msg_ptr);
+        std::shared_ptr<TimeBlockItem> latest_timeblock_info);
+    void HandleMessage(const transport::MessagePtr header);
+    bool CheckBlsMessageValid(transport::MessagePtr msg_ptr);
     void Destroy();
     void TimerMessage();
     void FlushToCk(const libff::alt_bn128_G2& common_public_key);
@@ -83,6 +83,14 @@ public:
         return member_count_;
     }
 
+    uint64_t begin_time_us() const {
+        return begin_time_us_;
+    }
+
+    int64_t dkg_period_us() const {
+        return kDkgPeriodUs;
+    }
+
     static std::string serializeCommonPk(const libff::alt_bn128_G2& common_pk) {
         std::string pk;
         pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0) + ",";
@@ -90,29 +98,31 @@ public:
         pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c0) + ",";
         pk += libBLS::ThresholdUtils::fieldElementToString(common_pk.Y.c1);
         return pk;
-    }        
+    }
+
+    bool IsFinishPeriod();
 
 private:
-    void HandleVerifyBroadcast(const transport::MessagePtr& header);
-    void HandleSwapSecKey(const transport::MessagePtr& header);
-    bool IsSignValid(const transport::MessagePtr& msg_ptr, std::string* msg_hash);
+    void HandleVerifyBroadcast(const transport::MessagePtr header);
+    void HandleSwapSecKey(const transport::MessagePtr header);
+    bool IsSignValid(const transport::MessagePtr msg_ptr, std::string* msg_hash);
     void BroadcastVerfify();
     void SwapSecKey();
     void FinishBroadcast();
     void CreateContribution(uint32_t valid_n, uint32_t valid_t);
-    void CreateDkgMessage(transport::MessagePtr& msg_ptr);
+    void CreateDkgMessage(transport::MessagePtr msg_ptr);
     void BroadcastFinish(const common::Bitmap& bitmap);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
     void CheckVerifyAllValid();
     void SendGetVerifyInfo(int32_t index);
     void CheckSwapKeyAllValid();
     void SendGetSwapKey(int32_t index);
-    libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
+    libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index);
     void DumpLocalPrivateKey(const std::vector<libff::alt_bn128_Fr>& valid_seck_keys);
     bool VerifySekkeyValid(uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
     bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
     void PopBlsMessage();
-    void HandleBlsMessage(const transport::MessagePtr& msg_ptr);
+    void HandleBlsMessage(const transport::MessagePtr msg_ptr);
 
     bool IsVerifyBrdPeriod() {
 #ifdef SHARDORA_UNITTEST
@@ -129,7 +139,6 @@ private:
             return true;
         }
 
-        return true;
         return false;
     }
 
@@ -139,39 +148,16 @@ private:
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
        SHARDORA_DEBUG("IsSwapKeyPeriod begin_time_us_: %lu, now_tm_us: %lu, "
-            "kDkgPeriodUs: %lu, now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4): %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7): %d",
+            "kDkgPeriodUs: %lu, now_tm_us > 0: %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 5): %d",
             begin_time_us_,
             now_tm_us,
             kDkgPeriodUs,
-            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)),
-            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7)));
-        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
-                now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)) {
+            0,
+            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 5)));
+        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 5)) {
             return true;
         }
 
-        return true;
-        return false;
-    }
-
-    bool IsFinishPeriod() {
-#ifdef SHARDORA_UNITTEST
-        return true;
-#endif
-        auto now_tm_us = common::TimeUtils::TimestampUs();
-        SHARDORA_DEBUG("IsFinishPeriod begin_time_us_: %lu, now_tm_us: %lu, "
-            "kDkgPeriodUs: %lu, now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4): %d, now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7): %d",
-            begin_time_us_,
-            now_tm_us,
-            kDkgPeriodUs,
-            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7)),
-            (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10)));
-        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
-            now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 7)) {
-            return true;
-        }
-
-        return true;
         return false;
     }
 

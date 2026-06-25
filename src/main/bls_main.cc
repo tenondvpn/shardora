@@ -47,7 +47,7 @@ public:
     static void Init() {
         std::string config_path_ = "./";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
-        std::string log_path = config_path_ + "/zjc.log";
+        std::string log_path = config_path_ + "/shardora.log";
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         db_ptr = std::make_shared<db::Db>();
@@ -569,7 +569,7 @@ public:
             dkg[i].FinishBroadcast(0);
             if (!dkg[i].finished_) {
                 std::cout << "not finished " << i << std::endl;
-                assert(false);
+                //assert(false);
                 exit(0);
             }
         }

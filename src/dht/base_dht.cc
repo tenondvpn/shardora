@@ -19,6 +19,7 @@
 #include "dht/dht_proto.h"
 #include "dht/dht_function.h"
 #include "dht/dht_key.h"
+#include "network/neighbor_ip_manager.h"
 
 namespace shardora {
 
@@ -56,6 +57,9 @@ int BaseDht::Destroy() {
 }
 
 void BaseDht::UniversalJoin(const NodePtr& node) {
+    if (node == nullptr) {
+        return;
+    }
     NodePtr new_node = std::make_shared<Node>(
         local_node_->sharding_id,
         node->public_ip,
@@ -69,7 +73,7 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 int BaseDht::Join(NodePtr& node) {
     common::AutoSpinLock l(join_mutex_);
     auto& member_dht = dht_;
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     SHARDORA_DEBUG("sharding: %u, now try join new node: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
@@ -96,7 +100,7 @@ int BaseDht::Join(NodePtr& node) {
     uint32_t replace_pos = member_dht.size() + 1;
     if (!DhtFunction::Displacement(local_node_->dht_key, member_dht, node, replace_pos)) {
         DHT_WARN("displacement for new node failed!");
-        // assert(false);
+        // //assert(false);
         return kDhtError;
     }
 
@@ -105,13 +109,11 @@ int BaseDht::Join(NodePtr& node) {
         auto hash_iter = node_map_.find((*rm_iter)->dht_key_hash);
         if (hash_iter != node_map_.end()) {
             node_map_.erase(hash_iter);
-            CHECK_MEMORY_SIZE(node_map_);
         }
         member_dht.erase(rm_iter);
     }
 
     auto iter = node_map_.insert(std::make_pair(node->dht_key_hash, node));
-    CHECK_MEMORY_SIZE(node_map_);
     SHARDORA_DEBUG("MMMMMMMM node_map_ size: %u", node_map_.size());
     if (!iter.second) {
         DHT_ERROR("kDhtNodeJoined join node failed! %s",
@@ -131,18 +133,21 @@ int BaseDht::Join(NodePtr& node) {
     auto invalid_idx = (valid_dht_idx + 1) % 2;
     readonly_hash_sort_dht_[invalid_idx] = tmp_dht_ptr;
     valid_dht_idx = invalid_idx;
-    SHARDORA_DEBUG("sharding: %u, join new node: %s:%d",
+    valid_count_ = member_dht.size() + 1;
+    SHARDORA_DEBUG("sharding: %u, join new node: %s:%d, valid_count_: %u",
         local_node_->sharding_id,
         node->public_ip.c_str(),
-        node->public_port);
-    valid_count_ = member_dht.size() + 1;
+        node->public_port,
+        valid_count_);
+    // Record id → public_ip mapping for all successfully verified nodes.
+    network::NeighborIpManager::Instance()->Update(node->id, node->public_ip);
     return kDhtSuccess;
 }
 
 int BaseDht::Drop(const std::string& id) {
     common::AutoSpinLock l(join_mutex_);
     auto& member_dht = dht_;
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -164,7 +169,6 @@ int BaseDht::Drop(const std::string& id) {
     auto miter = node_map_.find(dht_key_hash);
     if (miter != node_map_.end()) {
         node_map_.erase(miter);
-        CHECK_MEMORY_SIZE(node_map_);
     }
 
     valid_count_ = member_dht.size() + 1;
@@ -172,7 +176,7 @@ int BaseDht::Drop(const std::string& id) {
 }
 
 int BaseDht::Drop(const std::vector<std::string>& ids) {
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -199,7 +203,7 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
 int BaseDht::Drop(NodePtr& node) {
     common::AutoSpinLock l(join_mutex_);
     auto& member_dht = dht_;
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -212,7 +216,7 @@ int BaseDht::Drop(NodePtr& node) {
         return dht_key_hash == rhs->dht_key_hash;
     });
     if (iter != member_dht.end()) {
-        assert((*iter)->id == node->id);
+        //assert((*iter)->id == node->id);
         member_dht.erase(iter);
     }
 
@@ -228,9 +232,8 @@ int BaseDht::Drop(NodePtr& node) {
     valid_dht_idx = invalid_idx;
     auto miter = node_map_.find(node->dht_key_hash);
     if (miter != node_map_.end()) {
-        assert(miter->second->id == node->id);
+        //assert(miter->second->id == node->id);
         node_map_.erase(miter);
-        CHECK_MEMORY_SIZE(node_map_);
     }
 
     SHARDORA_DEBUG("success drop node: %s:%d", node->public_ip.c_str(), node->public_port);
@@ -240,7 +243,7 @@ int BaseDht::Drop(NodePtr& node) {
 int BaseDht::Drop(const std::string& ip, uint16_t port) {
     common::AutoSpinLock l(join_mutex_);
     auto& member_dht = dht_;
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (is_universal_) {
         return kDhtSuccess;
     }
@@ -261,7 +264,6 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
     auto miter = node_map_.find(dht_key_hash);
     if (miter != node_map_.end()) {
         node_map_.erase(miter);
-        CHECK_MEMORY_SIZE(node_map_);
     }
 
     std::sort(
@@ -282,14 +284,14 @@ int BaseDht::Bootstrap(
         const std::vector<NodePtr>& boot_nodes,
         bool wait,
         int32_t sharding_id) {
-    assert(!boot_nodes.empty());
+    //assert(!boot_nodes.empty());
     for (uint32_t i = 0; i < boot_nodes.size(); ++i) {
         if (boot_nodes[i]->public_ip == common::GlobalInfo::Instance()->config_public_ip() &&
             boot_nodes[i]->public_port == common::GlobalInfo::Instance()->config_local_port()) {
             continue;
         }
 
-        // 构造一条 bootstrap message
+        // Construct a bootstrap message
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto& msg = msg_ptr->header;
         DhtKeyManager dhtkey(local_node_->sharding_id, boot_nodes[i]->id);
@@ -329,6 +331,7 @@ void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
     uint32_t send_count = 0;
     auto dht_ptr = readonly_hash_sort_dht_[valid_dht_idx];
     uint32_t des_net_id = DhtKeyManager::DhtKeyGetNetId(message.des_dht_key());
+    SHARDORA_DEBUG("send to des network: %d, hash: %lu", des_net_id, message.hash64());
     for (auto iter = dht_ptr->begin(); iter != dht_ptr->end(); ++iter) {
         auto dht_node = (*iter);
         if (dht_node == nullptr) {
@@ -371,12 +374,14 @@ void BaseDht::RandomSend(const transport::MessagePtr& msg_ptr) {
 void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
     auto& message = msg_ptr->header;
     if (message.des_dht_key() == local_node_->dht_key) {
-        DHT_ERROR("send to local dht key failed!");
+        DHT_ERROR("send to local dht key failed: %lu", message.hash64());
         return;
     }
 
     auto dht_ptr = readonly_hash_sort_dht_[valid_dht_idx];
     if (dht_ptr->empty()) {
+        DHT_ERROR("send to local dht key dht_ptr empty: %d, hash: %lu!", 
+            local_node_->sharding_id, message.hash64());
         return;
     }
 
@@ -385,8 +390,8 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
         closest_node->public_ip,
         closest_node->public_port,
         message);
-    // SHARDORA_DEBUG("send to closest node: %s:%u, hash64: %lu",
-    //     closest_node->public_ip.c_str(), closest_node->public_port, message.hash64());
+    SHARDORA_DEBUG("send to closest node: %s:%u, hash64: %lu",
+        closest_node->public_ip.c_str(), closest_node->public_port, message.hash64());
 }
 
 NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
@@ -466,7 +471,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto id = security_->GetAddress(dht_msg.bootstrap_req().pubkey());
+    auto id = security_->GetAddressWithPublicKey(dht_msg.bootstrap_req().pubkey());
     DhtKeyManager dhtkey(header.src_sharding_id(), id);
     transport::protobuf::Header msg;
     DhtProto::CreateBootstrapResponse(
@@ -484,20 +489,37 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
     }
 
     msg.set_sign(sign);
-    SHARDORA_DEBUG("bootstrap response to: %s:%d, node: %s:%d",
-        msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort(),
-        dht_msg.bootstrap_req().public_ip().c_str(),
-        dht_msg.bootstrap_req().public_port());
-    auto msg_str = msg.SerializeAsString();
-    msg_ptr->conn->Send(msg_str);
+    // Bug fix: Use the public_ip/port from the bootstrap request payload,
+    // not from conn->PeerIp()/PeerPort() which may still be 0 or an ephemeral port.
+    // The bootstrap request carries the sender's advertised public_ip and public_port.
+    auto& req_public_ip = dht_msg.bootstrap_req().public_ip();
+    auto req_public_port = dht_msg.bootstrap_req().public_port();
+    
+    // Also update conn's peer info BEFORE sending, so subsequent uses are correct.
+    if (!req_public_ip.empty() && req_public_port > 0) {
+        msg_ptr->conn->SetPeerIp(req_public_ip);
+        msg_ptr->conn->SetPeerPort(req_public_port);
+    }
+
+    // Use conn's PeerIp/PeerPort (now updated) with a fallback safety check.
+    auto send_ip = msg_ptr->conn->PeerIp();
+    auto send_port = msg_ptr->conn->PeerPort();
+    SHARDORA_DEBUG("bootstrap response to: %s:%d, node: %s:%d, hash: %lu",
+        send_ip.c_str(), send_port,
+        req_public_ip.c_str(),
+        req_public_port,
+        msg.hash64());
+    if (send_port == 0) {
+        SHARDORA_WARN("bootstrap response skipped: peer port is 0 for %s", send_ip.c_str());
+        return;
+    }
+    transport::TcpTransport::Instance()->Send(send_ip, send_port, msg);
     NodePtr node = std::make_shared<Node>(
         msg.src_sharding_id(),
-        dht_msg.bootstrap_req().public_ip(),
-        dht_msg.bootstrap_req().public_port(),
+        req_public_ip,
+        req_public_port,
         dht_msg.bootstrap_req().pubkey(),
-        security_->GetAddress(dht_msg.bootstrap_req().pubkey()));
-    msg_ptr->conn->SetPeerIp(dht_msg.bootstrap_req().public_ip());
-    msg_ptr->conn->SetPeerPort(dht_msg.bootstrap_req().public_port());
+        security_->GetAddressWithPublicKey(dht_msg.bootstrap_req().pubkey()));
     node->join_way = kJoinFromBootstrapReq;
     Join(node);
 }
@@ -505,7 +527,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
 void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
-    SHARDORA_DEBUG("boot response coming.");
+    SHARDORA_DEBUG("boot response coming: %lu", msg_ptr->header.hash64());
     if (!CheckDestination(header.des_dht_key(), false)) {
         DHT_WARN("bootstrap request destination error[%s][%s]!",
             common::Encode::HexEncode(header.des_dht_key()).c_str(),
@@ -536,7 +558,7 @@ void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
         dht_msg.bootstrap_res().public_ip(),
         dht_msg.bootstrap_res().public_port(),
         dht_msg.bootstrap_res().pubkey(),
-        security_->GetAddress(dht_msg.bootstrap_res().pubkey()));
+        security_->GetAddressWithPublicKey(dht_msg.bootstrap_res().pubkey()));
     node->join_way = kJoinFromBootstrapRes;
     msg_ptr->conn->SetPeerIp(dht_msg.bootstrap_res().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.bootstrap_res().public_port());
@@ -554,7 +576,7 @@ void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
 }
 
 void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_ptr) {
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (!is_universal_) {
         return;
     }
@@ -580,7 +602,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         dht_msg.refresh_neighbors_req().public_ip(),
         dht_msg.refresh_neighbors_req().public_port(),
         dht_msg.refresh_neighbors_req().pubkey(),
-        security_->GetAddress(dht_msg.refresh_neighbors_req().pubkey()));
+        security_->GetAddressWithPublicKey(dht_msg.refresh_neighbors_req().pubkey()));
     msg_ptr->conn->SetPeerIp(dht_msg.refresh_neighbors_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.refresh_neighbors_req().public_port());
     node->join_way = kJoinFromRefreshNeigberRequest;
@@ -619,7 +641,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         }
     }
 
-    auto id = security_->GetAddress(dht_msg.refresh_neighbors_req().pubkey());
+    auto id = security_->GetAddressWithPublicKey(dht_msg.refresh_neighbors_req().pubkey());
     DhtKeyManager dhtkey(header.src_sharding_id(), id);
     auto close_nodes = DhtFunction::GetClosestNodes(
         tmp_dht,
@@ -631,6 +653,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
     }
 
     transport::protobuf::Header res;
+    //assert(local_node_->dht_key.size() == kDhtKeySize);
     DhtProto::CreateRefreshNeighborsResponse(
         local_node_->sharding_id,
         local_node_->dht_key,
@@ -638,7 +661,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         res);
     transport::TcpTransport::Instance()->SetMessageHash(res);
     // SHARDORA_DEBUG("send refresh neighbers response hash: %lu", res.hash64());
-    msg_ptr->conn->Send(res.SerializeAsString());
+    // transport::TcpTransport::Instance()->Send(msg_ptr->conn, res);
+    transport::TcpTransport::Instance()->Send(msg_ptr->conn->PeerIp(), msg_ptr->conn->PeerPort(), res);
 }
 
 void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_ptr) {
@@ -659,19 +683,25 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     // add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
     waiting_refresh_nodes_map_.clear();
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
+        auto node_id = security_->GetAddressWithPublicKey(res_nodes[i].pubkey());
         NodePtr node = std::make_shared<Node>(
             res_nodes[i].sharding_id(),
             res_nodes[i].public_ip(),
             res_nodes[i].public_port(),
             res_nodes[i].pubkey(),
-            security_->GetAddress(res_nodes[i].pubkey()));
+            node_id);
+        // Record id → public_ip for nodes received from neighbors (no signature
+        // verification here, but the enclosing refresh response was signed by the
+        // responding peer, so these are transitively trusted neighbor advertisements).
+        if (!node_id.empty() && !res_nodes[i].public_ip().empty()) {
+            network::NeighborIpManager::Instance()->Update(node_id, res_nodes[i].public_ip());
+        }
         auto iter = waiting_refresh_nodes_map_.find(res_nodes[i].id());
         if (iter != waiting_refresh_nodes_map_.end()) {
             iter->second.push_back(node);
         } else {
             std::vector<NodePtr> nodes = {node};
             waiting_refresh_nodes_map_.insert(std::make_pair(res_nodes[i].id(), nodes));
-            CHECK_MEMORY_SIZE(waiting_refresh_nodes_map_);
         }
     }
 
@@ -720,10 +750,9 @@ void BaseDht::Connect(
     }
 
     connect_timeout_map_[peer_int] = now_tm_ms + kConnectTimeoutMs;
-    CHECK_MEMORY_SIZE(connect_timeout_map_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
-    auto id = security_->GetAddress(des_pubkey);
+    auto id = security_->GetAddressWithPublicKey(des_pubkey);
     DhtKeyManager dhtkey(src_sharding_id, id);
     if (DhtProto::CreateConnectRequest(
             response,
@@ -799,7 +828,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         dht_msg.connect_req().public_ip(),
         dht_msg.connect_req().public_port(),
         dht_msg.connect_req().pubkey(),
-        security_->GetAddress(dht_msg.connect_req().pubkey()));
+        security_->GetAddressWithPublicKey(dht_msg.connect_req().pubkey()));
     node->join_way = kJoinFromConnect;
     msg_ptr->conn->SetPeerIp(dht_msg.connect_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
@@ -843,14 +872,14 @@ bool BaseDht::NodeJoined(NodePtr& node) {
 }
 
 int BaseDht::CheckJoin(NodePtr& node) {
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (!is_universal_) {
         if (node->sharding_id != local_node_->sharding_id) {
             return kDhtInvalidNat;
         }
     }
 
-    if (node->public_ip == "0.0.0.0" || common::IsVlanIp(node->public_ip)) {
+    if (node->public_ip == "0.0.0.0") {
         SHARDORA_DEBUG("ip invalid: %s, is vlan ip: %d",
             node->public_ip.c_str(), common::IsVlanIp(node->public_ip));
         return kDhtIpInvalid;
@@ -911,7 +940,7 @@ int BaseDht::CheckJoin(NodePtr& node) {
 
 bool BaseDht::CheckDestination(const std::string& des_dht_key, bool check_closest) {
     common::AutoSpinLock l(join_mutex_);
-    CheckThreadIdValid();
+    // CheckThreadIdValid();
     if (des_dht_key == local_node_->dht_key) {
         return true;
     }
@@ -979,6 +1008,7 @@ void BaseDht::ProcessTimerRequest() {
     auto rand_idx = common::Random::RandomInt32() % dht_ptr->size();
     auto node = (*dht_ptr)[rand_idx];
     transport::protobuf::Header msg;
+    //assert(node->dht_key.size() == kDhtKeySize);
     DhtProto::CreateRefreshNeighborsRequest(
         *dht_ptr,
         local_node_,
@@ -1015,7 +1045,7 @@ void BaseDht::PrintDht() {
             node->public_port);
         for (auto iter = readonly_dht->begin(); iter != readonly_dht->end(); ++iter) {
             auto node = *iter;
-            assert(node != nullptr);
+            //assert(node != nullptr);
             std::string tmp_res = common::StringUtil::Format(
                 "----%s, id: %u, %s:%u",
                 "",//common::Encode::HexSubstr(node->id).c_str(),

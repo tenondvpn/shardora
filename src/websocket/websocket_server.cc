@@ -1,10 +1,42 @@
 #include "websocket/websocket_server.h"
 
-#include <evhtp/internal.h>
+#include <boost/asio/ip/address_v4.hpp>
+#include <stdexcept>
+#include <string>
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 #include "common/global_info.h"
 
-namespace shardora {
+namespace {
+
+boost::asio::ip::address_v4 ParseListenIpv4(std::string const& ip) {
+#ifdef _WIN32
+    IN_ADDR addr{};
+    if (InetPtonA(AF_INET, ip.c_str(), &addr) != 1) {
+        throw std::runtime_error("invalid IPv4 for websocket listen: " + ip);
+    }
+    return boost::asio::ip::address_v4{ntohl(addr.S_un.S_addr)};
+#else
+    in_addr addr{};
+    if (inet_pton(AF_INET, ip.c_str(), &addr) != 1) {
+        throw std::runtime_error("invalid IPv4 for websocket listen: " + ip);
+    }
+    return boost::asio::ip::address_v4{ntohl(addr.s_addr)};
+#endif
+}
+
+}  // namespace
+
+namespace seth {
 
 namespace ws {
 
@@ -33,7 +65,7 @@ int32_t WebSocketServer::Init(const char* ip, uint16_t port, WebsocketCloseCallb
         websocketpp::lib::placeholders::_2));
     return 0;
 } catch (std::exception& e) {
-    SHARDORA_ERROR("catch error: %s", e.what());
+    SETH_ERROR("catch error: %s", e.what());
     return 1;
 }
 
@@ -57,13 +89,13 @@ void WebSocketServer::Run() {
     auto thread_index = common::GlobalInfo::Instance()->get_thread_index();
     try {
         server_.listen(websocketpp::lib::asio::ip::tcp::endpoint(
-            boost::asio::ip::address_v4::from_string(ws_ip_.c_str()),
+            ParseListenIpv4(ws_ip_),
             ws_port_));
         server_.start_accept();
         server_.run();
     } catch (const std::exception & e) {
-        SHARDORA_ERROR("start websocket server failed: %s, ip port: %s:%d", e.what(), ws_ip_.c_str(), ws_port_);
-        assert(false);
+        SETH_ERROR("start websocket server failed: %s, ip port: %s:%d", e.what(), ws_ip_.c_str(), ws_port_);
+        //assert(false);
         exit(1);
     }
 }
@@ -105,4 +137,4 @@ void WebSocketServer::Stop() {
 
 };  // namespace ws
 
-};  // namespace shardora
+};  // namespace seth

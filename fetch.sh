@@ -22,16 +22,16 @@ fi
 if [[ "${fromip}" == "127.0.0.1" ]]; then
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
-		sed -i "s/${fromip}/${newip}/g" "${datadir}/zjnodes/${service}/conf/shardora.conf"
+		sed -i "s/${fromip}/${newip}/g" "${datadir}/shardoras/${service}/conf/shardora.conf"
 	done
 else
-	rm -rf "${datadir}"/zjnodes
+	rm -rf "${datadir}"/shardoras
 	rm -rf "${datadir}"/deploy
-	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":"${datadir}"/zjnodes "${datadir}"/zjnodes
+	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":"${datadir}"/shardoras "${datadir}"/shardoras
 	sshpass -p $pass scp -o StrictHostKeyChecking=no -r root@"${fromip}":"$datadir"/deploy "${datadir}"/deploy
 	
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
-		sed -i "/bootstrap/!s/${fromip}/${newip}/g" "${datadir}/zjnodes/${service}/conf/shardora.conf"
+		sed -i "/bootstrap/!s/${fromip}/${newip}/g" "${datadir}/shardoras/${service}/conf/shardora.conf"
 	done
 fi

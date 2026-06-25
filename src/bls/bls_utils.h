@@ -18,7 +18,7 @@
 #include "protos/elect.pb.h"
 
 #define BLS_DEBUG(fmt, ...) SHARDORA_DEBUG("[bls]" fmt, ## __VA_ARGS__)
-#define BLS_INFO(fmt, ...) SHARDORA_INFO("[bls]" fmt, ## __VA_ARGS__)
+#define BLS_INFO(fmt, ...) SHARDORA_DEBUG("[bls]" fmt, ## __VA_ARGS__)
 #define BLS_WARN(fmt, ...) SHARDORA_WARN("[bls]" fmt, ## __VA_ARGS__)
 #define BLS_ERROR(fmt, ...) SHARDORA_ERROR("[bls]" fmt, ## __VA_ARGS__)
 
@@ -42,7 +42,7 @@ struct MaxBlsMemberItem {
 
 class BlsFinishItem {
 public:
-    BlsFinishItem() : max_finish_count(0), success_verified(false) {
+    BlsFinishItem() : max_finish_count(0), success_verified(false), last_verify_time_ms(0) {
         memset(verified, 0, sizeof(verified));
     }
 
@@ -59,6 +59,10 @@ public:
     std::vector<size_t> verified_valid_index;
     bool verified[common::kEachShardMaxNodeCount];
     bool success_verified;
+    // Members that arrived after the threshold was reached but have not yet
+    // been individually verified.  Drained by BatchVerifyFinishItems().
+    std::vector<uint32_t> pending_verify_indices;
+    uint64_t last_verify_time_ms;
 };
 
 typedef std::shared_ptr<BlsFinishItem> BlsFinishItemPtr;
@@ -127,15 +131,26 @@ static std::shared_ptr<libff::alt_bn128_G1> Proto2BlsPopProof(
     auto proof = std::make_shared<libff::alt_bn128_G1>();
 
     try {
+        // libff::alt_bn128_Fq(const char*) parses decimal via bigint and
+        // asserts on invalid characters — it does not throw. Validate first.
         if (proof_proto.sign_x() != "") {
+            if (!IsValidBigInt(proof_proto.sign_x())) {
+                return nullptr;
+            }
             proof->X = libff::alt_bn128_Fq(proof_proto.sign_x().c_str());
         }
         if (proof_proto.sign_y() != "") {
+            if (!IsValidBigInt(proof_proto.sign_y())) {
+                return nullptr;
+            }
             proof->Y = libff::alt_bn128_Fq(proof_proto.sign_y().c_str());
         }
         if (proof_proto.sign_z() != "") {
+            if (!IsValidBigInt(proof_proto.sign_z())) {
+                return nullptr;
+            }
             proof->Z = libff::alt_bn128_Fq(proof_proto.sign_z().c_str());
-        }        
+        }
     } catch (...) {
         return nullptr;
     }

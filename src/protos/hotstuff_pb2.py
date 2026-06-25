@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.hotstuff.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x15protos/hotstuff.proto\x12\x1ashardora.hotstuff.protobuf\x1a\x17protos/view_block.proto\x1a\x12protos/pools.proto\"}\n\tTxPropose\x12?\n\x07tx_type\x18\x01 \x01(\x0e\x32!.shardora.pools.protobuf.StepType:\x0bkNormalFrom\x12/\n\x03txs\x18\x02 \x03(\x0b\x32\".shardora.pools.protobuf.TxMessage\"\x8b\x03\n\x0fHotstuffMessage\x12\x0c\n\x04type\x18\x01 \x01(\r\x12\x37\n\x07pro_msg\x18\x02 \x01(\x0b\x32&.shardora.hotstuff.protobuf.ProposeMsg\x12\x35\n\x08vote_msg\x18\x03 \x01(\x0b\x32#.shardora.hotstuff.protobuf.VoteMsg\x12;\n\x0bnewview_msg\x18\x04 \x01(\x0b\x32&.shardora.hotstuff.protobuf.NewViewMsg\x12I\n\x13pre_reset_timer_msg\x18\x05 \x01(\x0b\x32,.shardora.hotstuff.protobuf.PreResetTimerMsg\x12\x42\n\x0freset_timer_msg\x18\x06 \x01(\x0b\x32).shardora.hotstuff.protobuf.ResetTimerMsg\x12\x0e\n\x06net_id\x18\x07 \x01(\r\x12\x1e\n\npool_index\x18\x08 \x01(\r:\n4294967295\"\x92\x01\n\nNewViewMsg\x12\x30\n\x02tc\x18\x01 \x01(\x0b\x32$.shardora.view_block.protobuf.QcItem\x12<\n\x07qc_view\x18\x02 \x01(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\"\xcf\x01\n\nProposeMsg\x12\x14\n\x0c\x65lect_height\x18\x01 \x01(\x04\x12>\n\tview_item\x18\x02 \x01(\x0b\x32+.shardora.view_block.protobuf.ViewBlockItem\x12\x30\n\x02tc\x18\x03 \x01(\x0b\x32$.shardora.view_block.protobuf.QcItem\x12\x39\n\ntx_propose\x18\x04 \x01(\x0b\x32%.shardora.hotstuff.protobuf.TxPropose\"\x81\x02\n\x07VoteMsg\x12\x13\n\x0breplica_idx\x18\x01 \x01(\r\x12\x17\n\x0fview_block_hash\x18\x02 \x01(\x0c\x12\x0c\n\x04view\x18\x03 \x01(\x04\x12\x14\n\x0c\x65lect_height\x18\x04 \x01(\x04\x12\x0e\n\x06sign_x\x18\x05 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x06 \x01(\x0c\x12?\n\x0bpartial_sig\x18\x07 \x01(\x0b\x32*.shardora.view_block.protobuf.AggregateSig\x12/\n\x03txs\x18\x08 \x03(\x0b\x32\".shardora.pools.protobuf.TxMessage\x12\x12\n\nleader_idx\x18\t \x01(\r\"o\n\x10PreResetTimerMsg\x12\x13\n\x0breplica_idx\x18\x01 \x01(\r\x12/\n\x03txs\x18\x02 \x03(\x0b\x32\".shardora.pools.protobuf.TxMessage\x12\x15\n\rhas_single_tx\x18\x03 \x01(\x08\"#\n\rResetTimerMsg\x12\x12\n\nleader_idx\x18\x01 \x01(\r')
+  serialized_pb=_b('\n\x15protos/hotstuff.proto\x12\x16shardora.hotstuff.protobuf\x1a\x17protos/view_block.proto\x1a\x12protos/pools.proto\"u\n\tTxPropose\x12;\n\x07tx_type\x18\x01 \x01(\x0e\x32\x1d.shardora.pools.protobuf.StepType:\x0bkNormalFrom\x12+\n\x03txs\x18\x02 \x03(\x0b\x32\x1e.shardora.pools.protobuf.TxMessage\"\xf7\x02\n\x0fHotstuffMessage\x12\x0c\n\x04type\x18\x01 \x01(\r\x12\x33\n\x07pro_msg\x18\x02 \x01(\x0b\x32\".shardora.hotstuff.protobuf.ProposeMsg\x12\x31\n\x08vote_msg\x18\x03 \x01(\x0b\x32\x1f.shardora.hotstuff.protobuf.VoteMsg\x12\x37\n\x0bnewview_msg\x18\x04 \x01(\x0b\x32\".shardora.hotstuff.protobuf.NewViewMsg\x12\x45\n\x13pre_reset_timer_msg\x18\x05 \x01(\x0b\x32(.shardora.hotstuff.protobuf.PreResetTimerMsg\x12>\n\x0freset_timer_msg\x18\x06 \x01(\x0b\x32%.shardora.hotstuff.protobuf.ResetTimerMsg\x12\x0e\n\x06net_id\x18\x07 \x01(\r\x12\x1e\n\npool_index\x18\x08 \x01(\r:\n4294967295\"\x8a\x01\n\nNewViewMsg\x12,\n\x02tc\x18\x01 \x01(\x0b\x32 .shardora.view_block.protobuf.QcItem\x12\x38\n\x07qc_view\x18\x02 \x01(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\"\xc3\x01\n\nProposeMsg\x12\x14\n\x0c\x65lect_height\x18\x01 \x01(\x04\x12:\n\tview_item\x18\x02 \x01(\x0b\x32\'.shardora.view_block.protobuf.ViewBlockItem\x12,\n\x02tc\x18\x03 \x01(\x0b\x32 .shardora.view_block.protobuf.QcItem\x12\x35\n\ntx_propose\x18\x04 \x01(\x0b\x32!.shardora.hotstuff.protobuf.TxPropose\"\x8c\x02\n\x07VoteMsg\x12\x13\n\x0breplica_idx\x18\x01 \x01(\r\x12\x17\n\x0fview_block_hash\x18\x02 \x01(\x0c\x12\x0c\n\x04view\x18\x03 \x01(\x04\x12\x14\n\x0c\x65lect_height\x18\x04 \x01(\x04\x12\x0e\n\x06sign_x\x18\x05 \x01(\x0c\x12\x0e\n\x06sign_y\x18\x06 \x01(\x0c\x12;\n\x0bpartial_sig\x18\x07 \x01(\x0b\x32&.shardora.view_block.protobuf.AggregateSig\x12+\n\x03txs\x18\x08 \x03(\x0b\x32\x1e.shardora.pools.protobuf.TxMessage\x12\x12\n\nleader_idx\x18\t \x01(\r\x12\x11\n\ttm_height\x18\n \x01(\x04\"k\n\x10PreResetTimerMsg\x12\x13\n\x0breplica_idx\x18\x01 \x01(\r\x12+\n\x03txs\x18\x02 \x03(\x0b\x32\x1e.shardora.pools.protobuf.TxMessage\x12\x15\n\rhas_single_tx\x18\x03 \x01(\x08\"#\n\rResetTimerMsg\x12\x12\n\nleader_idx\x18\x01 \x01(\r')
   ,
   dependencies=[protos_dot_view__block__pb2.DESCRIPTOR,protos_dot_pools__pb2.DESCRIPTOR,])
 
@@ -61,8 +61,8 @@ _TXPROPOSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=98,
-  serialized_end=223,
+  serialized_start=94,
+  serialized_end=211,
 )
 
 
@@ -141,8 +141,8 @@ _HOTSTUFFMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=226,
-  serialized_end=621,
+  serialized_start=214,
+  serialized_end=589,
 )
 
 
@@ -186,8 +186,8 @@ _NEWVIEWMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=624,
-  serialized_end=770,
+  serialized_start=592,
+  serialized_end=730,
 )
 
 
@@ -238,8 +238,8 @@ _PROPOSEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=773,
-  serialized_end=980,
+  serialized_start=733,
+  serialized_end=928,
 )
 
 
@@ -313,6 +313,13 @@ _VOTEMSG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='tm_height', full_name='shardora.hotstuff.protobuf.VoteMsg.tm_height', index=9,
+      number=10, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -325,8 +332,8 @@ _VOTEMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=983,
-  serialized_end=1240,
+  serialized_start=931,
+  serialized_end=1199,
 )
 
 
@@ -370,8 +377,8 @@ _PRERESETTIMERMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1242,
-  serialized_end=1353,
+  serialized_start=1201,
+  serialized_end=1308,
 )
 
 
@@ -401,8 +408,8 @@ _RESETTIMERMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1355,
-  serialized_end=1390,
+  serialized_start=1310,
+  serialized_end=1345,
 )
 
 _TXPROPOSE.fields_by_name['tx_type'].enum_type = protos_dot_pools__pb2._STEPTYPE

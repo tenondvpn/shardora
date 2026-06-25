@@ -60,12 +60,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, timestamp_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, vss_random_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::timeblock::protobuf::TimeBlock, nonce_),
   0,
   1,
   2,
+  3,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, sizeof(::shardora::timeblock::protobuf::TimeBlock)},
+  { 0, 9, sizeof(::shardora::timeblock::protobuf::TimeBlock)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -93,13 +95,13 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\026protos/timeblock.proto\022\033shardora.timeb"
-      "lock.protobuf\"B\n\tTimeBlock\022\016\n\006height\030\001 \001"
-      "(\004\022\021\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001("
-      "\004"
+      "\n\026protos/timeblock.proto\022\027shardora.timeblock"
+      ".protobuf\"Q\n\tTimeBlock\022\016\n\006height\030\001 \001(\004\022\021"
+      "\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001(\004\022\r\n"
+      "\005nonce\030\004 \001(\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 121);
+      descriptor, 132);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/timeblock.proto", &protobuf_RegisterTypes);
 }
@@ -127,6 +129,7 @@ void TimeBlock::InitAsDefaultInstance() {
 const int TimeBlock::kHeightFieldNumber;
 const int TimeBlock::kTimestampFieldNumber;
 const int TimeBlock::kVssRandomFieldNumber;
+const int TimeBlock::kNonceFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 TimeBlock::TimeBlock()
@@ -142,15 +145,15 @@ TimeBlock::TimeBlock(const TimeBlock& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&height_, &from.height_,
-    static_cast<size_t>(reinterpret_cast<char*>(&vss_random_) -
-    reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
+    static_cast<size_t>(reinterpret_cast<char*>(&nonce_) -
+    reinterpret_cast<char*>(&height_)) + sizeof(nonce_));
   // @@protoc_insertion_point(copy_constructor:shardora.timeblock.protobuf.TimeBlock)
 }
 
 void TimeBlock::SharedCtor() {
   ::memset(&height_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&vss_random_) -
-      reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
+      reinterpret_cast<char*>(&nonce_) -
+      reinterpret_cast<char*>(&height_)) + sizeof(nonce_));
 }
 
 TimeBlock::~TimeBlock() {
@@ -182,10 +185,10 @@ void TimeBlock::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 15u) {
     ::memset(&height_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&vss_random_) -
-        reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
+        reinterpret_cast<char*>(&nonce_) -
+        reinterpret_cast<char*>(&height_)) + sizeof(nonce_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -243,6 +246,20 @@ bool TimeBlock::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 nonce = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_nonce();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &nonce_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -285,6 +302,11 @@ void TimeBlock::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->vss_random(), output);
   }
 
+  // optional uint64 nonce = 4;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->nonce(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -315,6 +337,11 @@ void TimeBlock::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->vss_random(), target);
   }
 
+  // optional uint64 nonce = 4;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->nonce(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -332,7 +359,7 @@ size_t TimeBlock::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 7u) {
+  if (_has_bits_[0 / 32] & 15u) {
     // optional uint64 height = 1;
     if (has_height()) {
       total_size += 1 +
@@ -352,6 +379,13 @@ size_t TimeBlock::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->vss_random());
+    }
+
+    // optional uint64 nonce = 4;
+    if (has_nonce()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->nonce());
     }
 
   }
@@ -383,7 +417,7 @@ void TimeBlock::MergeFrom(const TimeBlock& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 15u) {
     if (cached_has_bits & 0x00000001u) {
       height_ = from.height_;
     }
@@ -392,6 +426,9 @@ void TimeBlock::MergeFrom(const TimeBlock& from) {
     }
     if (cached_has_bits & 0x00000004u) {
       vss_random_ = from.vss_random_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      nonce_ = from.nonce_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -424,6 +461,7 @@ void TimeBlock::InternalSwap(TimeBlock* other) {
   swap(height_, other->height_);
   swap(timestamp_, other->timestamp_);
   swap(vss_random_, other->vss_random_);
+  swap(nonce_, other->nonce_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

@@ -20,7 +20,7 @@ mkdir shardora
 cp -rf ./*.sh ./shardora/
 mkdir -p ./shardora/cbuild_$TARGET
 cp -rf cbuild_$TARGET/shardora ./shardora/cbuild_$TARGET
-cp -rf zjnodes_* ./shardora/
+cp -rf shardoras_* ./shardora/
 cp -rf ./shards* ./shardora/
 cp -rf ./root_nodes ./shardora/
 cp -rf ./gdb ./shardora/

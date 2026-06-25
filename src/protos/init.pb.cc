@@ -21,7 +21,7 @@
 
 namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LocalPolynomial;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_JoinElectInfo;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectInfo;
 }  // namespace protobuf_protos_2fbls_2eproto
 namespace protobuf_protos_2finit_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAddressInfoRequest;
@@ -251,29 +251,29 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\021protos/init.proto\022\026shardora.init.proto"
-      "buf\032\020protos/bls.proto\032\027protos/view_block"
-      ".proto\"#\n\025GetAddressInfoRequest\022\n\n\002id\030\001 "
-      "\001(\014\"Y\n\026GetAddressInfoResponse\022\?\n\nview_bl"
-      "ock\030\001 \001(\0132+.shardora.view_block.protobuf"
-      ".ViewBlockItem\"\205\001\n\022InvalidLeaderPools\022\r\n"
-      "\005pools\030\001 \003(\005\022\024\n\014elect_height\030\002 \001(\004\022\024\n\014me"
-      "mber_index\030\003 \001(\r\022\017\n\007mod_num\030\004 \001(\005\022\022\n\nlea"
-      "der_idx\030\005 \001(\r\022\017\n\007version\030\006 \001(\r\"\357\001\n\022Genes"
-      "isInitBlsInfo\022\016\n\006height\030\001 \001(\004\022\020\n\010shard_i"
-      "d\030\002 \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014bls_enc_data\030\004 \001("
-      "\014\022\020\n\010bls_hash\030\005 \001(\014\0227\n\tjoin_info\030\006 \001(\0132$"
-      ".shardora.bls.protobuf.JoinElectInfo\022:\n\n"
-      "local_poly\030\007 \001(\0132&.shardora.bls.protobuf"
-      ".LocalPolynomial\022\016\n\006prikey\030\010 \001(\014\"\313\001\n\013Ini"
-      "tMessage\022\?\n\010addr_req\030\001 \001(\0132-.shardora.in"
-      "it.protobuf.GetAddressInfoRequest\022@\n\010add"
-      "r_res\030\002 \001(\0132..shardora.init.protobuf.Get"
-      "AddressInfoResponse\0229\n\005pools\030\003 \001(\0132*.sha"
-      "rdora.init.protobuf.InvalidLeaderPools"
+      "\n\021protos/init.proto\022\022shardora.init.protobuf\032"
+      "\020protos/bls.proto\032\027protos/view_block.pro"
+      "to\"#\n\025GetAddressInfoRequest\022\n\n\002id\030\001 \001(\014\""
+      "U\n\026GetAddressInfoResponse\022;\n\nview_block\030"
+      "\001 \001(\0132\'.shardora.view_block.protobuf.ViewBlo"
+      "ckItem\"\205\001\n\022InvalidLeaderPools\022\r\n\005pools\030\001"
+      " \003(\005\022\024\n\014elect_height\030\002 \001(\004\022\024\n\014member_ind"
+      "ex\030\003 \001(\r\022\017\n\007mod_num\030\004 \001(\005\022\022\n\nleader_idx\030"
+      "\005 \001(\r\022\017\n\007version\030\006 \001(\r\"\347\001\n\022GenesisInitBl"
+      "sInfo\022\016\n\006height\030\001 \001(\004\022\020\n\010shard_id\030\002 \001(\r\022"
+      "\n\n\002id\030\003 \001(\014\022\024\n\014bls_enc_data\030\004 \001(\014\022\020\n\010bls"
+      "_hash\030\005 \001(\014\0223\n\tjoin_info\030\006 \001(\0132 .shardora.bl"
+      "s.protobuf.JoinElectInfo\0226\n\nlocal_poly\030\007"
+      " \001(\0132\".shardora.bls.protobuf.LocalPolynomial"
+      "\022\016\n\006prikey\030\010 \001(\014\"\277\001\n\013InitMessage\022;\n\010addr"
+      "_req\030\001 \001(\0132).shardora.init.protobuf.GetAddre"
+      "ssInfoRequest\022<\n\010addr_res\030\002 \001(\0132*.shardora.i"
+      "nit.protobuf.GetAddressInfoResponse\0225\n\005p"
+      "ools\030\003 \001(\0132&.shardora.init.protobuf.InvalidL"
+      "eaderPools"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 798);
+      descriptor, 770);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();

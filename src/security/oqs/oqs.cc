@@ -1,6 +1,7 @@
 #include "security/oqs/oqs.h"
 
 #include <gmssl/sm2_recover.h>
+#include <stdexcept>
 
 #include "common/encode.h"
 #include "common/log.h"
@@ -15,7 +16,7 @@ int Oqs::SetPrivateKey(const std::string& prikey) {
         OQS_SIG_free(sig_ptr_);
     }
     
-    sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
+    sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_ml_dsa_44);
     auto rc = OQS_SIG_keypair(sig_ptr_, public_key_, secret_key_);
     if (rc != OQS_SUCCESS) {
         SHARDORA_ERROR("Keypair generation failed");
@@ -37,7 +38,7 @@ int Oqs::SetPrivateKey(const std::string& prikey, const std::string& pubkey) {
         OQS_SIG_free(sig_ptr_);
     }
 
-    sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
+    sig_ptr_ = OQS_SIG_new(OQS_SIG_alg_ml_dsa_44);
     memcpy(secret_key_, prikey.c_str(), prikey.size());
     memcpy(public_key_, pubkey.c_str(), pubkey.size());
     str_pk_ = std::string((char*)public_key_, sizeof(public_key_));
@@ -59,7 +60,7 @@ int Oqs::Sign(const std::string &hash, std::string *sign) {
 }
 
 int Oqs::Verify(const std::string& hash, const std::string& str_pk, const std::string& sign) {
-    auto sig_ptr = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
+    auto sig_ptr = OQS_SIG_new(OQS_SIG_alg_ml_dsa_44);
     auto rc = OQS_SIG_verify(
         sig_ptr, 
         (uint8_t*)hash.c_str(), 
@@ -76,15 +77,13 @@ int Oqs::Verify(const std::string& hash, const std::string& str_pk, const std::s
 }
 
 std::string Oqs::GetSign(const std::string& r, const std::string& s, uint8_t v) {
-    SHARDORA_FATAL("invalid!");
-    return "";
+    throw std::logic_error("Oqs::GetSign not implemented");
 }
 
 std::string Oqs::Recover(
         const std::string& sign,
         const std::string& hash) {
-    SHARDORA_FATAL("invalid!");
-    return "";
+    throw std::logic_error("Oqs::Recover not implemented");
 }
 
 const std::string& Oqs::GetAddress() const {
@@ -103,24 +102,20 @@ const std::string& Oqs::GetPublicKeyUnCompressed() const {
     return str_pk_;
 }
 
-int Oqs::Encrypt(const std::string& msg, const std::string& key, std::string* out) {
-    SHARDORA_FATAL("invalid!");
-    return -1;
+int Oqs::Encrypt(const std::string& msg, RawPrivateKey key, std::string* out) {
+    throw std::logic_error("Oqs::Encrypt not implemented");
 }
 
-int Oqs::Decrypt(const std::string& msg, const std::string& key, std::string* out) {
-    SHARDORA_FATAL("invalid!");
-    return -1;
+int Oqs::Decrypt(const std::string& msg, RawPrivateKey key, std::string* out) {
+    throw std::logic_error("Oqs::Decrypt not implemented");
 }
 
 bool Oqs::IsValidPublicKey(const std::string& pubkey) {
-    SHARDORA_FATAL("invalid!");
-    return false;
+    throw std::logic_error("Oqs::IsValidPublicKey not implemented");
 }
 
 std::string Oqs::UnicastAddress(const std::string& src_address) {
-    SHARDORA_FATAL("invalid");
-    return "";
+    throw std::logic_error("Oqs::UnicastAddress not implemented");
 }
 
 }  // namespace security

@@ -1,5 +1,7 @@
 #include "transport/msg_decoder.h"
 
+#include "common/utils.h"
+
 namespace shardora {
 
 namespace transport {
@@ -29,9 +31,9 @@ bool MsgDecoder::GetPacketLen(const char* buf, size_t len, size_t& pos) {
         }
     } else {
         size_t header_left = sizeof(tnet::PacketHeader) - tmp_str_.size();
-        if (len < header_left) {
+        if ((len - pos) < header_left) {
             tmp_str_.append(buf + pos, len - pos);
-            pos += len;
+            pos = len;
             return true;
         } else {
             tmp_str_.append(buf + pos, header_left);

@@ -32,7 +32,7 @@ static const double ViewDurationMaxTimeoutMs = 60000;
 static const double ViewDurationMultiplier = 1.3; // The cost of causing a freeze after a large election is high. Once it gets stuck, the recovery time is long (e.g., inconsistent leaders). If it is too small, the CPU will not be able to come down for a long time when there are no transactions.
 
 
-enum class Status : int {
+enum Status : int {
   kSuccess = 0,
   kError = 1,
   kNotFound = 2,
@@ -49,6 +49,7 @@ enum class Status : int {
   kLackOfParentBlock = 13,
   kNotExpectHash = 14,
   kInvalidOpposedCount = 15,
+  kLeaderInvalid = 16,
 };
 
 enum WaitingBlockType {
@@ -62,6 +63,17 @@ HashStr GetTCMsgHash(const view_block::protobuf::QcItem &tc_item);
 bool IsQcTcValid(const view_block::protobuf::QcItem& qc_item);
 // HashStr GetViewBlockHash(const view_block::protobuf::ViewBlockItem&
 // view_block_item);
+
+namespace {
+// libff bigint(const char*) asserts unless the string is decimal digits only.
+inline bool IsLibffDecimalFieldString(const std::string& s) {
+    if (s.empty()) return false;
+    for (unsigned char c : s) {
+        if (c < '0' || c > '9') return false;
+    }
+    return true;
+}
+} // namespace
 
 // Both aggregated and unaggregated signatures share the same structure.
 struct AggregateSignature {
@@ -100,20 +112,40 @@ struct AggregateSignature {
         sig_ = libff::alt_bn128_G1::zero();
         participants_.clear();
         try {
-            if (agg_sig_proto.sign_x() != "") {
-                sig_.X = libff::alt_bn128_Fq(agg_sig_proto.sign_x().c_str());
+            const std::string& sx = agg_sig_proto.sign_x();
+            if (!sx.empty()) {
+                if (!IsLibffDecimalFieldString(sx)) {
+                    SHARDORA_ERROR("load from proto failed, invalid sign_x");
+                    sig_ = libff::alt_bn128_G1::zero();
+                    return false;
+                }
+                sig_.X = libff::alt_bn128_Fq(sx.c_str());
             }
-            if (agg_sig_proto.sign_y() != "") {
-                sig_.Y = libff::alt_bn128_Fq(agg_sig_proto.sign_y().c_str());
+            const std::string& sy = agg_sig_proto.sign_y();
+            if (!sy.empty()) {
+                if (!IsLibffDecimalFieldString(sy)) {
+                    SHARDORA_ERROR("load from proto failed, invalid sign_y");
+                    sig_ = libff::alt_bn128_G1::zero();
+                    return false;
+                }
+                sig_.Y = libff::alt_bn128_Fq(sy.c_str());
             }
-            if (agg_sig_proto.sign_z() != "") {
-                sig_.Z = libff::alt_bn128_Fq(agg_sig_proto.sign_z().c_str());
+            const std::string& sz = agg_sig_proto.sign_z();
+            if (!sz.empty()) {
+                if (!IsLibffDecimalFieldString(sz)) {
+                    SHARDORA_ERROR("load from proto failed, invalid sign_z");
+                    sig_ = libff::alt_bn128_G1::zero();
+                    return false;
+                }
+                sig_.Z = libff::alt_bn128_Fq(sz.c_str());
             }
         } catch (const std::exception& e) {   
             SHARDORA_ERROR("load from proto failed, err: %s", e.what());
+            sig_ = libff::alt_bn128_G1::zero();
             return false;
         } catch (...) {
             SHARDORA_ERROR("load from proto failed, unknown err");
+            sig_ = libff::alt_bn128_G1::zero();
             return false;
         }
 
@@ -162,20 +194,6 @@ struct MemberConsensusStat {
 using ViewBlock = view_block::protobuf::ViewBlockItem;
 using QC = view_block::protobuf::QcItem;
 using TC = QC;
-
-inline static void CreateTc(
-        uint32_t network_id, 
-        uint32_t pool_index, 
-        uint64_t view, 
-        uint64_t elect_height, 
-        uint32_t leader_idx, 
-        TC* tc) {
-    tc->set_network_id(network_id);
-    tc->set_pool_index(pool_index);
-    tc->set_view(view);
-    tc->set_elect_height(elect_height);
-    tc->set_leader_idx(leader_idx);
-}
 
 // For Fast HotStuff.
 struct AggregateQC {

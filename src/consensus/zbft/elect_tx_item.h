@@ -25,8 +25,6 @@ struct ElectNodeInfo {
     int32_t leader_mod_index;
     uint64_t mining_token;
     uint64_t consensus_gap;
-    libff::alt_bn128_G2 agg_bls_pk; // agg bls 公钥
-    libff::alt_bn128_G1 agg_bls_pk_proof; // agg bls pk 的 pop proof
 };
 
 typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
@@ -59,14 +57,15 @@ public:
         const pools::protobuf::TxMessage& tx_info,
         block::protobuf::BlockTx* block_tx);
     virtual int HandleTx(
+        uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        zjcvm::ZjchainHost &zjc_host,
+        shardoravm::ShardorahainHost &shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx &block_tx);
 
 private:
     int processElect(
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         view_block::protobuf::ViewBlockItem& view_block,
         shardora::block::protobuf::BlockTx &block_tx);
 
@@ -101,7 +100,7 @@ private:
         std::vector<NodeDetailPtr> &elect_nodes,
         uint64_t *max_fts_val);
     int CreateNewElect(
-        zjcvm::ZjchainHost& zjc_host,
+        shardoravm::ShardorahainHost& shardora_host,
         block::protobuf::Block &block,
         const std::vector<NodeDetailPtr> &elect_nodes,
         uint64_t gas_for_root,
@@ -112,6 +111,23 @@ private:
         uint64_t all_gas_amount,
         uint64_t *gas_for_root);
     uint64_t GetMiningMaxCount(uint64_t max_tx_count);
+    
+    // New economic model functions (Dynamic Sharding Reward System)
+    uint64_t GetCurrentEpochNumber();
+    uint64_t CalculateBaseReward(uint64_t epoch_number);
+    uint64_t CalculateTxBonus(uint64_t shard_reward, uint64_t max_tx_count);
+    uint64_t CalculateTotalEpochReward(uint32_t shard_id, uint64_t max_tx_count);
+    void ApplyBurnMechanism(uint64_t total_gas, uint64_t* gas_to_distribute, uint64_t* gas_to_burn);
+    
+    // Dynamic sharding reward functions
+    uint32_t GetShardGeneration(uint32_t shard_id);
+    uint32_t GetActiveShardCount();
+    double CalculateTotalWeight(uint32_t active_shard_count);
+    double CalculateEarlyBonus(uint32_t active_shard_count);
+    uint64_t CalculateShardReward(
+        uint32_t shard_id,
+        uint64_t total_base_reward,
+        uint32_t active_shard_count);
     void GetIndexNodes(
         uint32_t index,
         uint32_t min_area_weight,
@@ -129,6 +145,8 @@ private:
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;
     static const uint32_t kFtsMinDoubleNodeCount = 256u;
+    // Area penalty coefficient: values > 1 reduce the effective IP weight (apply as division)
+    static const double kAreaPenaltyCoefficient;
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
@@ -151,7 +169,7 @@ private:
     common::MembersPtr elect_members_ = nullptr;
     std::shared_ptr<hotstuff::ViewBlockChain> view_block_chain_ = nullptr;
     pools::protobuf::ElectStatistic elect_statistic_;
-    elect::protobuf::ElectBlock elect_block_;
+    elect::protobuf::ElectBlock* elect_block_;
     
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

@@ -23,7 +23,7 @@
 #include "protos/view_block.pb.h"
 
 #define BLOCK_DEBUG(fmt, ...) SHARDORA_DEBUG("[block]" fmt, ## __VA_ARGS__)
-#define BLOCK_INFO(fmt, ...) SHARDORA_INFO("[block]" fmt, ## __VA_ARGS__)
+#define BLOCK_INFO(fmt, ...) SHARDORA_DEBUG("[block]" fmt, ## __VA_ARGS__)
 #define BLOCK_WARN(fmt, ...) SHARDORA_WARN("[block]" fmt, ## __VA_ARGS__)
 #define BLOCK_ERROR(fmt, ...) SHARDORA_ERROR("[block]" fmt, ## __VA_ARGS__)
 

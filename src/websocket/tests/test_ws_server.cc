@@ -8,7 +8,7 @@
 
 std::condition_variable cond;
 std::mutex con_m;
-shardora::ws::WebSocketServer ws_server_;
+seth::ws::WebSocketServer ws_server_;
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 client c;
 void run_cb() {
@@ -31,7 +31,7 @@ void CloseCallback(websocketpp::connection_hdl hdl) {
     std::cout << "client closed" << std::endl;
 }
 
-namespace shardora {
+namespace seth {
 
 namespace ws {
 
@@ -94,4 +94,4 @@ TEST_F(TestWsServer, InitAndPop) {
 
 }  // namespace http
 
-}  // namespace shardora
+}  // namespace seth

@@ -16,7 +16,7 @@
 
 // #define HOTSTUFF_TEST 1
 
-namespace shardora {
+namespace seth {
 
 namespace hotstuff {
 
@@ -263,5 +263,5 @@ TEST_F(TestCrypto, GetElectItem) {
 
 } // namespace hotstuff
 
-} // namespace shardora
+} // namespace seth
 

@@ -5,22 +5,23 @@ import "protos/elect.proto";
 package shardora.pools.protobuf;
 
 enum StepType {
-    kNormalFrom = 0;  // 用户直接转账
-    kNormalTo = 1;  // 统计后的跨分片确认交易（from方统计交易）
-    kConsensusRootElectShard = 2;  // shard consensus network election，ROOT网络选举交易
-    kConsensusRootTimeBlock = 3;  // create time block，时间块交易
-    kConsensusCreateGenesisAcount = 4;  //  床上账号交易
-    kConsensusLocalTos = 5;  // 跨分片确认交易（to方累计交易）
-    kContractCreate = 6;  // 创建合约交易
-    kContractGasPrepayment = 7;  // 为调用合约设置预付费
-    kContractExcute = 8;  // 执行合约
-    kRootCreateAddress = 9;  // root网络创建新地址
-    kStatistic = 12;  // 统计交易
-    kJoinElect = 13;  // 新节点参与选举的交易
-    kCreateLibrary = 14; // 创建合约公共库的交易
-    kCross = 15;  // 避免跨分片块缺失的交易
-    kRootCross = 16;  // root避免跨分片块缺失的交易
-    kPoolStatisticTag = 18;  // 此轮交易池统计结束标记块
+    kNormalFrom = 0;  // User direct transfer
+    kNormalTo = 1;  // Post-statistical cross-shard confirmation transaction (statistical transaction from the 'from' side)
+    kConsensusRootElectShard = 2;  // shard consensus network election, ROOT network election transaction
+    kConsensusRootTimeBlock = 3;  // create time block, time block transaction
+    kConsensusCreateGenesisAcount = 4;  // Genesis account transaction
+    kConsensusLocalTos = 5;  // Cross-shard confirmation transaction (cumulative transaction from the 'to' side)
+    kCreateContract = 6;  // Contract creation transaction
+    kContractGasPrefund = 7;  // Set prefund for contract calls
+    kContractExcute = 8;  // Execute contract
+    kRootCreateAddress = 9;  // Create new address in root network
+    kStatistic = 12;  // Statistical transaction
+    kJoinElect = 13;  // Transaction for new nodes participating in elections
+    kCreateLibrary = 14; // Transaction for creating public contract libraries
+    kCross = 15;  // Transaction to prevent missing cross-shard blocks
+    kRootCross = 16;  // Root transaction to prevent missing cross-shard blocks
+    kPoolStatisticTag = 17;  // Final marker block for this round of transaction pool statistics
+    kContractRefund = 18;
 }
 
 message ToTxHeights {
@@ -41,7 +42,7 @@ message ToTxMessageItem {
     optional bytes elect_join_g2_value = 6;
     optional bytes library_bytes = 8;
     optional bytes from = 9;
-    optional uint64 prepayment = 10;
+    optional uint64 prefund = 10;
     optional uint32 des_sharding_id = 11;
 }
 
@@ -123,6 +124,8 @@ message PoolStatisticItem {
     repeated uint64 gas_sum =5;
     repeated uint64 credit =6;
     repeated uint64 consensus_gap = 7;
+    // Average pairwise Haversine distance (km) among shard members in this epoch.
+    optional uint64 avg_geo_distance = 8;
 }
 
 message JoinElectNode {
@@ -133,8 +136,6 @@ message JoinElectNode {
     optional AreaInfo area_point = 5;
     optional uint64 credit =6;
     optional uint64 consensus_gap = 7;
-    optional elect.protobuf.BlsPublicKey agg_bls_pk = 8;
-    optional elect.protobuf.BlsPopProof agg_bls_pk_proof = 9;
 }
 
 message ElectStatistic {
@@ -145,6 +146,8 @@ message ElectStatistic {
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
     optional uint64 statistic_height = 7;
+    optional uint64 nonce = 8;
+    optional elect.protobuf.ElectBlock elect_block = 9;
 }
 
 message SyncPoolsMaxHeight {
@@ -169,10 +172,16 @@ message TxMessage {
     optional bytes to = 8;
     optional uint64 amount = 9;
     optional StepType step = 10 [default=kNormalFrom];
-    optional uint64 contract_prepayment = 11;
+    optional uint64 contract_prefund = 11;
     optional bytes contract_code = 12;
     optional bytes contract_input = 13;
     optional bytes sign = 14;
     repeated TxDelayTestInfo tx_debug = 15;
     optional uint64 tx_debug_timeout_seconds = 16;
+    optional bytes tx_hash = 17;
+    // When set, this tx was submitted via eth_sendRawTransaction.
+    // Contains the original RLP-encoded signed transaction bytes.
+    // Signature verification uses the ETH signing hash (EIP-155)
+    // instead of the Shardora-native hash format.
+    optional bytes eth_raw_tx = 18;
 }

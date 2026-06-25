@@ -6,7 +6,7 @@
 #define private public
 #include "common/tick.h"
 
-namespace shardora {
+namespace seth {
 
 namespace common {
 
@@ -119,4 +119,4 @@ TEST_F(TestTick, All) {
 
 }  // namespace common
 
-}  // namespace shardora
+}  // namespace seth

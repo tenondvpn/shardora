@@ -17,7 +17,7 @@
 #include "protos/pools.pb.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace shardora {
+namespace seth {
 
 namespace consensus {
 
@@ -62,9 +62,9 @@ public:
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./wtxp_db");
         std::string config_path_ = "./";
-        std::string conf_path = config_path_ + "/zjc.conf";
+        std::string conf_path = config_path_ + "/seth.conf";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
-        std::string log_path = config_path_ + "/zjc.log";
+        std::string log_path = config_path_ + "/seth.log";
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         security = std::make_shared<security::Ecdsa>();
@@ -153,4 +153,4 @@ TEST_F(TestWaitingTxsPools, GetValidTxs) {
 
 }  // namespace consensus
 
-}  // namespace shardora
+}  // namespace seth

@@ -12,7 +12,7 @@ namespace shardora {
 namespace security {
 
 int Aes::Encrypt(char* str_in, int len, char* key, int key_len, char* out) {
-    assert(key_len == 16 || key_len == 24 || key_len == 32);
+    //assert(key_len == 16 || key_len == 24 || key_len == 32);
     if (!str_in || !key || !out || len <= 0 || key_len <= 0) {
         return kSecurityError;
     }
@@ -29,7 +29,7 @@ int Aes::Encrypt(char* str_in, int len, char* key, int key_len, char* out) {
 }
 
 int Aes::Decrypt(char* str_in, int len, char* key, int key_len, char* out) {
-    assert(key_len == 16 || key_len == 24 || key_len == 32);
+    //assert(key_len == 16 || key_len == 24 || key_len == 32);
     if (!str_in || !key || !out || len <= 0 || key_len <= 0) {
         return kSecurityError;
     }
@@ -47,7 +47,7 @@ int Aes::Decrypt(char* str_in, int len, char* key, int key_len, char* out) {
 }
 
 int Aes::CfbEncrypt(char* str_in, int len, char* key, int key_len, char* out) {
-    assert(key_len == 16 || key_len == 24 || key_len == 32);
+    //assert(key_len == 16 || key_len == 24 || key_len == 32);
     if (!str_in || !key || !out || len <= 0 || key_len <= 0) {
         return kSecurityError;
     }
@@ -64,7 +64,7 @@ int Aes::CfbEncrypt(char* str_in, int len, char* key, int key_len, char* out) {
 }
 
 int Aes::CfbDecrypt(char* str_in, int len, char* key, int key_len, char* out) {
-    assert(key_len == 16 || key_len == 24 || key_len == 32);
+    //assert(key_len == 16 || key_len == 24 || key_len == 32);
     if (!str_in || !key || !out || len <= 0 || key_len <= 0) {
         return kSecurityError;
     }

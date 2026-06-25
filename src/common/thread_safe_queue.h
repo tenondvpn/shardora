@@ -23,13 +23,11 @@ public:
     void push(T e) {
         rw_queue_.enqueue(e);
         auto& tmp_item = *this;
-        CHECK_MEMORY_SIZE(tmp_item);
     }
 
     bool pop(T* e) {
         bool res = rw_queue_.try_dequeue(*e);
         auto& tmp_item = *this;
-        CHECK_MEMORY_SIZE(tmp_item);
         return res;
     }
 

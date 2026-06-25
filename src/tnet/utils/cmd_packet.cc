@@ -61,7 +61,7 @@ CmdPacket& CmdPacketFactory::Create(int type) {
         case CmdPacket::CT_TCP_NEW_CONNECTION:
             return TcpNewConnectionPacket;
         default:
-            assert(false);
+            //assert(false);
             break;
     }
 

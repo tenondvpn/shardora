@@ -2,7 +2,7 @@
 
 #include "common/global_info.h"
 
-namespace shardora {
+namespace seth {
 
 namespace ws {
 
@@ -56,8 +56,8 @@ int WebSocketClient::Send(
         const std::string& type,
         const char* msg,
         size_t len) {
-    assert(con != nullptr);
-    assert(type.size() < std::numeric_limits<char>::max());
+    //assert(con != nullptr);
+    //assert(type.size() < std::numeric_limits<char>::max());
     std::shared_ptr<char> send_buf(new char[len + type.size() + 1], [](char* p) { delete[]p; });
     char* data = send_buf.get();
     data[0] = type.size();
@@ -92,4 +92,4 @@ void WebSocketClient::Stop() {
 
 };  // namespace tcp
 
-};  // namespace shardora
+};  // namespace seth

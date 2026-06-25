@@ -35,7 +35,13 @@ public:
             return;
         }
 
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+        const auto now = std::chrono::high_resolution_clock::now();
+        double duration = std::chrono::duration<double, std::milli>(now - startTime).count();
+        // Integer ms truncates to 0 on same-millisecond samples and collapses `mean` to 0 on
+        // the first Welford step; sub-ms resolution plus a tiny floor covers same-tick pairs.
+        if (duration <= 0.0) {
+            duration = 0.001; // 1µs expressed in ms
+        }
         count++;
 
         if (count % limit == 0) {
@@ -75,13 +81,19 @@ public:
             dev = std::sqrt(m2_temp / c);
         }
 
-        double duration = mean + dev * conf;
-        if (max > 0 && duration > max) {
-            duration = max;
+        double duration_ms = mean + dev * conf;
+        if (max > 0 && duration_ms > max) {
+            duration_ms = max;
         }
 
-        // SHARDORA_DEBUG("pool: %d duration is %.2f ms", pool_idx_, duration);
-        return static_cast<uint64_t>(duration) * 1000; // to us
+        // SHARDORA_DEBUG("pool: %d duration is %.2f ms", pool_idx_, duration_ms);
+        double us_d = std::max(0.0, duration_ms * 1000.0); // ms → µs
+        uint64_t us = static_cast<uint64_t>(std::llround(us_d));
+        // After at least one successful view, never report 0 µs (rounding / FP / pathological m2).
+        if (count > 0 && us == 0) {
+            us = 1;
+        }
+        return us;
     }
 
 private:

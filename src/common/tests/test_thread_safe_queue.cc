@@ -7,7 +7,7 @@
 #define private public
 #include "common/thread_safe_queue.h"
 
-namespace shardora {
+namespace seth {
 
 namespace common {
 
@@ -63,4 +63,4 @@ TEST_F(TestThreadSafeQueue, Hash32) {
 
 }  // namespace common
 
-}  // namespace shardora
+}  // namespace seth

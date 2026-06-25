@@ -89,7 +89,7 @@
     if (base === 'hex') {
       base = 16;
     }
-    assert(base === (base | 0) && base >= 2 && base <= 36);
+    //assert(base === (base | 0) && base >= 2 && base <= 36);
 
     number = number.toString().replace(/\s+/g, '');
     var start = 0;
@@ -125,7 +125,7 @@
       ];
       this.length = 2;
     } else {
-      assert(number < 0x20000000000000); // 2 ^ 53 (unsafe)
+      //assert(number < 0x20000000000000); // 2 ^ 53 (unsafe)
       this.words = [
         number & 0x3ffffff,
         (number / 0x4000000) & 0x3ffffff,
@@ -142,7 +142,7 @@
 
   BN.prototype._initArray = function _initArray (number, base, endian) {
     // Perhaps a Uint8Array
-    assert(typeof number.length === 'number');
+    //assert(typeof number.length === 'number');
     if (number.length <= 0) {
       this.words = [0];
       this.length = 1;
@@ -195,7 +195,7 @@
     } else if (c >= 97 && c <= 102) {
       return c - 87;
     } else {
-      assert(false, 'Invalid character in ' + string);
+      //assert(false, 'Invalid character in ' + string);
     }
   }
 
@@ -271,7 +271,7 @@
       } else {
         b = c;
       }
-      assert(c >= 0 && b < mul, 'Invalid character');
+      //assert(c >= 0 && b < mul, 'Invalid character');
       r += b;
     }
     return r;
@@ -533,7 +533,7 @@
       return out;
     }
 
-    assert(false, 'Base should be between 2 and 36');
+    //assert(false, 'Base should be between 2 and 36');
   };
 
   BN.prototype.toNumber = function toNumber () {
@@ -544,7 +544,7 @@
       // NOTE: at this stage it is known that the top bit is set
       ret += 0x10000000000000 + (this.words[1] * 0x4000000);
     } else if (this.length > 2) {
-      assert(false, 'Number can only safely store up to 53 bits');
+      //assert(false, 'Number can only safely store up to 53 bits');
     }
     return (this.negative !== 0) ? -ret : ret;
   };
@@ -575,8 +575,8 @@
 
     var byteLength = this.byteLength();
     var reqLength = length || Math.max(1, byteLength);
-    assert(byteLength <= reqLength, 'byte array longer than desired length');
-    assert(reqLength > 0, 'Requested array length <= 0');
+    //assert(byteLength <= reqLength, 'byte array longer than desired length');
+    //assert(reqLength > 0, 'Requested array length <= 0');
 
     var res = allocate(ArrayType, reqLength);
     var postfix = endian === 'le' ? 'LE' : 'BE';
@@ -794,7 +794,7 @@
   };
 
   BN.prototype.ior = function ior (num) {
-    assert((this.negative | num.negative) === 0);
+    //assert((this.negative | num.negative) === 0);
     return this.iuor(num);
   };
 
@@ -829,7 +829,7 @@
   };
 
   BN.prototype.iand = function iand (num) {
-    assert((this.negative | num.negative) === 0);
+    //assert((this.negative | num.negative) === 0);
     return this.iuand(num);
   };
 
@@ -873,7 +873,7 @@
   };
 
   BN.prototype.ixor = function ixor (num) {
-    assert((this.negative | num.negative) === 0);
+    //assert((this.negative | num.negative) === 0);
     return this.iuxor(num);
   };
 
@@ -890,7 +890,7 @@
 
   // Not ``this`` with ``width`` bitwidth
   BN.prototype.inotn = function inotn (width) {
-    assert(typeof width === 'number' && width >= 0);
+    //assert(typeof width === 'number' && width >= 0);
 
     var bytesNeeded = Math.ceil(width / 26) | 0;
     var bitsLeft = width % 26;
@@ -922,7 +922,7 @@
 
   // Set `bit` of `this`
   BN.prototype.setn = function setn (bit, val) {
-    assert(typeof bit === 'number' && bit >= 0);
+    //assert(typeof bit === 'number' && bit >= 0);
 
     var off = (bit / 26) | 0;
     var wbit = bit % 26;
@@ -1913,8 +1913,8 @@
       rws[i] = 0;
     }
 
-    assert(carry === 0);
-    assert((carry & ~0x1fff) === 0);
+    //assert(carry === 0);
+    //assert((carry & ~0x1fff) === 0);
   };
 
   FFTM.prototype.stub = function stub (N) {
@@ -1989,8 +1989,8 @@
     var isNegNum = num < 0;
     if (isNegNum) num = -num;
 
-    assert(typeof num === 'number');
-    assert(num < 0x4000000);
+    //assert(typeof num === 'number');
+    //assert(num < 0x4000000);
 
     // Carry
     var carry = 0;
@@ -2050,7 +2050,7 @@
 
   // Shift-left in-place
   BN.prototype.iushln = function iushln (bits) {
-    assert(typeof bits === 'number' && bits >= 0);
+    //assert(typeof bits === 'number' && bits >= 0);
     var r = bits % 26;
     var s = (bits - r) / 26;
     var carryMask = (0x3ffffff >>> (26 - r)) << (26 - r);
@@ -2089,7 +2089,7 @@
 
   BN.prototype.ishln = function ishln (bits) {
     // TODO(indutny): implement me
-    assert(this.negative === 0);
+    //assert(this.negative === 0);
     return this.iushln(bits);
   };
 
@@ -2097,7 +2097,7 @@
   // NOTE: `hint` is a lowest bit before trailing zeroes
   // NOTE: if `extended` is present - it will be filled with destroyed bits
   BN.prototype.iushrn = function iushrn (bits, hint, extended) {
-    assert(typeof bits === 'number' && bits >= 0);
+    //assert(typeof bits === 'number' && bits >= 0);
     var h;
     if (hint) {
       h = (hint - (hint % 26)) / 26;
@@ -2155,7 +2155,7 @@
 
   BN.prototype.ishrn = function ishrn (bits, hint, extended) {
     // TODO(indutny): implement me
-    assert(this.negative === 0);
+    //assert(this.negative === 0);
     return this.iushrn(bits, hint, extended);
   };
 
@@ -2179,7 +2179,7 @@
 
   // Test if n bit is set
   BN.prototype.testn = function testn (bit) {
-    assert(typeof bit === 'number' && bit >= 0);
+    //assert(typeof bit === 'number' && bit >= 0);
     var r = bit % 26;
     var s = (bit - r) / 26;
     var q = 1 << r;
@@ -2195,11 +2195,11 @@
 
   // Return only lowers bits of number (in-place)
   BN.prototype.imaskn = function imaskn (bits) {
-    assert(typeof bits === 'number' && bits >= 0);
+    //assert(typeof bits === 'number' && bits >= 0);
     var r = bits % 26;
     var s = (bits - r) / 26;
 
-    assert(this.negative === 0, 'imaskn works only with positive numbers');
+    //assert(this.negative === 0, 'imaskn works only with positive numbers');
 
     if (this.length <= s) {
       return this;
@@ -2225,8 +2225,8 @@
 
   // Add plain number `num` to `this`
   BN.prototype.iaddn = function iaddn (num) {
-    assert(typeof num === 'number');
-    assert(num < 0x4000000);
+    //assert(typeof num === 'number');
+    //assert(num < 0x4000000);
     if (num < 0) return this.isubn(-num);
 
     // Possible sign change
@@ -2266,8 +2266,8 @@
 
   // Subtract plain number `num` from `this`
   BN.prototype.isubn = function isubn (num) {
-    assert(typeof num === 'number');
-    assert(num < 0x4000000);
+    //assert(typeof num === 'number');
+    //assert(num < 0x4000000);
     if (num < 0) return this.iaddn(-num);
 
     if (this.negative !== 0) {
@@ -2335,7 +2335,7 @@
     if (carry === 0) return this._strip();
 
     // Subtraction overflow
-    assert(carry === -1);
+    //assert(carry === -1);
     carry = 0;
     for (i = 0; i < this.length; i++) {
       w = -(this.words[i] | 0) + carry;
@@ -2426,7 +2426,7 @@
   //       request both div & mod
   //       2) `positive` is true if unsigned mod is requested
   BN.prototype.divmod = function divmod (num, mode, positive) {
-    assert(!num.isZero());
+    //assert(!num.isZero());
 
     if (this.isZero()) {
       return {
@@ -2558,7 +2558,7 @@
     var isNegNum = num < 0;
     if (isNegNum) num = -num;
 
-    assert(num <= 0x3ffffff);
+    //assert(num <= 0x3ffffff);
     var p = (1 << 26) % num;
 
     var acc = 0;
@@ -2579,7 +2579,7 @@
     var isNegNum = num < 0;
     if (isNegNum) num = -num;
 
-    assert(num <= 0x3ffffff);
+    //assert(num <= 0x3ffffff);
 
     var carry = 0;
     for (var i = this.length - 1; i >= 0; i--) {
@@ -2597,8 +2597,8 @@
   };
 
   BN.prototype.egcd = function egcd (p) {
-    assert(p.negative === 0);
-    assert(!p.isZero());
+    //assert(p.negative === 0);
+    //assert(!p.isZero());
 
     var x = this;
     var y = p.clone();
@@ -2679,8 +2679,8 @@
   // above, designated to invert members of the
   // _prime_ fields F(p) at a maximal speed
   BN.prototype._invmp = function _invmp (p) {
-    assert(p.negative === 0);
-    assert(!p.isZero());
+    //assert(p.negative === 0);
+    //assert(!p.isZero());
 
     var a = this;
     var b = p.clone();
@@ -2803,7 +2803,7 @@
 
   // Increment at the bit position in-line
   BN.prototype.bincn = function bincn (bit) {
-    assert(typeof bit === 'number');
+    //assert(typeof bit === 'number');
     var r = bit % 26;
     var s = (bit - r) / 26;
     var q = 1 << r;
@@ -2851,7 +2851,7 @@
         num = -num;
       }
 
-      assert(num <= 0x3ffffff, 'Number is too big');
+      //assert(num <= 0x3ffffff, 'Number is too big');
 
       var w = this.words[0] | 0;
       res = w === num ? 0 : w < num ? -1 : 1;
@@ -2944,13 +2944,13 @@
   };
 
   BN.prototype.toRed = function toRed (ctx) {
-    assert(!this.red, 'Already a number in reduction context');
-    assert(this.negative === 0, 'red works only with positives');
+    //assert(!this.red, 'Already a number in reduction context');
+    //assert(this.negative === 0, 'red works only with positives');
     return ctx.convertTo(this)._forceRed(ctx);
   };
 
   BN.prototype.fromRed = function fromRed () {
-    assert(this.red, 'fromRed works only with numbers in reduction context');
+    //assert(this.red, 'fromRed works only with numbers in reduction context');
     return this.red.convertFrom(this);
   };
 
@@ -2960,81 +2960,81 @@
   };
 
   BN.prototype.forceRed = function forceRed (ctx) {
-    assert(!this.red, 'Already a number in reduction context');
+    //assert(!this.red, 'Already a number in reduction context');
     return this._forceRed(ctx);
   };
 
   BN.prototype.redAdd = function redAdd (num) {
-    assert(this.red, 'redAdd works only with red numbers');
+    //assert(this.red, 'redAdd works only with red numbers');
     return this.red.add(this, num);
   };
 
   BN.prototype.redIAdd = function redIAdd (num) {
-    assert(this.red, 'redIAdd works only with red numbers');
+    //assert(this.red, 'redIAdd works only with red numbers');
     return this.red.iadd(this, num);
   };
 
   BN.prototype.redSub = function redSub (num) {
-    assert(this.red, 'redSub works only with red numbers');
+    //assert(this.red, 'redSub works only with red numbers');
     return this.red.sub(this, num);
   };
 
   BN.prototype.redISub = function redISub (num) {
-    assert(this.red, 'redISub works only with red numbers');
+    //assert(this.red, 'redISub works only with red numbers');
     return this.red.isub(this, num);
   };
 
   BN.prototype.redShl = function redShl (num) {
-    assert(this.red, 'redShl works only with red numbers');
+    //assert(this.red, 'redShl works only with red numbers');
     return this.red.shl(this, num);
   };
 
   BN.prototype.redMul = function redMul (num) {
-    assert(this.red, 'redMul works only with red numbers');
+    //assert(this.red, 'redMul works only with red numbers');
     this.red._verify2(this, num);
     return this.red.mul(this, num);
   };
 
   BN.prototype.redIMul = function redIMul (num) {
-    assert(this.red, 'redMul works only with red numbers');
+    //assert(this.red, 'redMul works only with red numbers');
     this.red._verify2(this, num);
     return this.red.imul(this, num);
   };
 
   BN.prototype.redSqr = function redSqr () {
-    assert(this.red, 'redSqr works only with red numbers');
+    //assert(this.red, 'redSqr works only with red numbers');
     this.red._verify1(this);
     return this.red.sqr(this);
   };
 
   BN.prototype.redISqr = function redISqr () {
-    assert(this.red, 'redISqr works only with red numbers');
+    //assert(this.red, 'redISqr works only with red numbers');
     this.red._verify1(this);
     return this.red.isqr(this);
   };
 
   // Square root over p
   BN.prototype.redSqrt = function redSqrt () {
-    assert(this.red, 'redSqrt works only with red numbers');
+    //assert(this.red, 'redSqrt works only with red numbers');
     this.red._verify1(this);
     return this.red.sqrt(this);
   };
 
   BN.prototype.redInvm = function redInvm () {
-    assert(this.red, 'redInvm works only with red numbers');
+    //assert(this.red, 'redInvm works only with red numbers');
     this.red._verify1(this);
     return this.red.invm(this);
   };
 
   // Return negative clone of `this` % `red modulo`
   BN.prototype.redNeg = function redNeg () {
-    assert(this.red, 'redNeg works only with red numbers');
+    //assert(this.red, 'redNeg works only with red numbers');
     this.red._verify1(this);
     return this.red.neg(this);
   };
 
   BN.prototype.redPow = function redPow (num) {
-    assert(this.red && !num.red, 'redPow(normalNum)');
+    //assert(this.red && !num.red, 'redPow(normalNum)');
     this.red._verify1(this);
     return this.red.pow(this, num);
   };
@@ -3244,20 +3244,20 @@
       this.m = prime.p;
       this.prime = prime;
     } else {
-      assert(m.gtn(1), 'modulus must be greater than 1');
+      //assert(m.gtn(1), 'modulus must be greater than 1');
       this.m = m;
       this.prime = null;
     }
   }
 
   Red.prototype._verify1 = function _verify1 (a) {
-    assert(a.negative === 0, 'red works only with positives');
-    assert(a.red, 'red works only with red numbers');
+    //assert(a.negative === 0, 'red works only with positives');
+    //assert(a.red, 'red works only with red numbers');
   };
 
   Red.prototype._verify2 = function _verify2 (a, b) {
-    assert((a.negative | b.negative) === 0, 'red works only with positives');
-    assert(a.red && a.red === b.red,
+    //assert((a.negative | b.negative) === 0, 'red works only with positives');
+    //assert(a.red && a.red === b.red,
       'red works only with red numbers');
   };
 
@@ -3343,7 +3343,7 @@
     if (a.isZero()) return a.clone();
 
     var mod3 = this.m.andln(3);
-    assert(mod3 % 2 === 1);
+    //assert(mod3 % 2 === 1);
 
     // Fast case
     if (mod3 === 3) {
@@ -3360,7 +3360,7 @@
       s++;
       q.iushrn(1);
     }
-    assert(!q.isZero());
+    //assert(!q.isZero());
 
     var one = new BN(1).toRed(this);
     var nOne = one.redNeg();
@@ -3384,7 +3384,7 @@
       for (var i = 0; tmp.cmp(one) !== 0; i++) {
         tmp = tmp.redSqr();
       }
-      assert(i < m);
+      //assert(i < m);
       var b = this.pow(c, new BN(1).iushln(m - i - 1));
 
       r = r.redMul(b);

@@ -44,7 +44,7 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, tx_type, key="", value="") {
+async function create_tx(str_prikey, to, amount, gas_limit, gas_price, prefund, tx_type, key="", value="") {
     var privateKeyBuf = Secp256k1.uint256(str_prikey, 16)
     var from_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -73,16 +73,16 @@ async function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, t
     var low = (tx_type % MAX_UINT32) - big
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
-    var prepay_buf = new Buffer(8);
-    var big = ~~(prepay / MAX_UINT32)
-    var low = (prepay % MAX_UINT32) - big
-    prepay_buf.writeUInt32LE(big, 4)
-    prepay_buf.writeUInt32LE(low, 0)
+    var prefund_buf = new Buffer(8);
+    var big = ~~(prefund / MAX_UINT32)
+    var low = (prefund % MAX_UINT32) - big
+    prefund_buf.writeUInt32LE(big, 4)
+    prefund_buf.writeUInt32LE(low, 0)
 
     var buffer_array = [Buffer.from(gid, 'hex'),
         Buffer.from(frompk, 'hex'),
         Buffer.from(to, 'hex'),
-        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prepay_buf];
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf, prefund_buf];
     if (key != null && key != "") {
         buffer_array.push(Buffer.from(key));
         if (value != null && value != "") {
@@ -111,7 +111,7 @@ async function create_tx(str_prikey, to, amount, gas_limit, gas_price, prepay, t
         'sign_r': sigR.toString(16),
         'sign_s': sigS.toString(16),
         'sign_v': sig.v,
-        'pepay': prepay
+        'prefund': prefund
     }
 
     var post_data = querystring.stringify(data);
@@ -192,7 +192,7 @@ function GetCode(path) {
 }
 
 function get_all_nodes_bls_info(args) {
-    PostCode('/zjchain/get_all_nodes_bls_info/', {
+    PostCode('/sethhain/get_all_nodes_bls_info/', {
         'elect_height': parseInt(args[1]),
         'offset': parseInt(args[2]),
         'step': parseInt(args[3]),
@@ -200,7 +200,7 @@ function get_all_nodes_bls_info(args) {
 }
 
 function get_tx_list(args) {
-    PostCode('/zjchain/transactions/', {
+    PostCode('/sethhain/transactions/', {
         'search': "",
         'height': -1,
         'shard': -1,
@@ -211,11 +211,11 @@ function get_tx_list(args) {
 }
 
 function get_address_info(args) {
-    GetCode('/zjchain/get_balance/' + args[1] + "/");
+    GetCode('/sethhain/get_balance/' + args[1] + "/");
 }
 
 function get_accounts(args) {
-    PostCode('/zjchain/accounts/', {
+    PostCode('/sethhain/accounts/', {
         'search': "",
         'shard': -1,
         'pool': -1,
@@ -225,11 +225,11 @@ function get_accounts(args) {
 }
 
 function get_block_detail(args) {
-    GetCode('/zjchain/get_block_detail/' + args[1] + "/");
+    GetCode('/sethhain/get_block_detail/' + args[1] + "/");
 }
 function get_confirm_tx_list(args) {
     if (args[1] == "1") {
-        PostCode('/zjchain/transactions/', {
+        PostCode('/sethhain/transactions/', {
             'search': "",
             'height': -1,
             'shard': -1,
@@ -240,7 +240,7 @@ function get_confirm_tx_list(args) {
         return;
     }
 
-    PostCode('/zjchain/transactions/', {
+    PostCode('/sethhain/transactions/', {
         'search': "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138",
         'height': -1,
         'shard': -1,
@@ -251,13 +251,13 @@ function get_confirm_tx_list(args) {
 }
 
 function penc_create_sec_keys(args) {
-    PostCode('/zjchain/penc_create_sec_keys/', {
+    PostCode('/sethhain/penc_create_sec_keys/', {
         "content": "content",
     });
 }
 
 function penc_get_sec_keys(id) {
-    PostCode('/zjchain/penc_get_sec_keys/', {
+    PostCode('/sethhain/penc_get_sec_keys/', {
         "id": id,
     });
 }
@@ -289,21 +289,21 @@ async function wait_get_penc_sec_keys() {
 }
 
 function penc_share_new_data(id, content) {
-    PostCode('/zjchain/penc_share_new_data/', {
+    PostCode('/sethhain/penc_share_new_data/', {
         "id": id,
         "content": content
     });
 }
 
 function penc_vote(id, content) {
-    PostCode('/zjchain/penc_vote/', {
+    PostCode('/sethhain/penc_vote/', {
         "id": id,
         "group_info": content
     });
 }
 
 function penc_get_share_data(id, encdata) {
-    PostCode('/zjchain/penc_get_share_data/', {
+    PostCode('/sethhain/penc_get_share_data/', {
         "id": id,
         "seckey": "",
         "encdata": encdata,
@@ -311,18 +311,18 @@ function penc_get_share_data(id, encdata) {
 }
 
 function penc_transactions(type) {
-    PostCode('/zjchain/penc_transactions/', {
+    PostCode('/sethhain/penc_transactions/', {
         "search": "48e1eab96c9e759daa3aff82b40e77cd615a41d0",
         "type": type
     });
 }
 
 function ars_create_sec_keys() {
-    PostCode('/zjchain/ars_create_sec_keys/', {});
+    PostCode('/sethhain/ars_create_sec_keys/', {});
 }
 
 function ars_create_new_vote(username, addr, now_credit, add_credit) {
-    PostCode('/zjchain/ars_create_new_vote/', {
+    PostCode('/sethhain/ars_create_new_vote/', {
         "username": username,
         "addr": addr,
         "now_credit": parseInt(now_credit),
@@ -331,7 +331,7 @@ function ars_create_new_vote(username, addr, now_credit, add_credit) {
 }
 
 function ars_vote(id, index, group_info) {
-    PostCode('/zjchain/ars_vote/', {
+    PostCode('/sethhain/ars_vote/', {
         "id": id,
         "index": index,
         "group_info": group_info
@@ -339,7 +339,7 @@ function ars_vote(id, index, group_info) {
 }
 
 function ars_transactions(type) {
-    PostCode('/zjchain/ars_transactions/', {
+    PostCode('/sethhain/ars_transactions/', {
         "type": type,
     });
 }

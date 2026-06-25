@@ -5,7 +5,7 @@
 #include "bls/agg_bls.h"
 #define private public
 
-namespace shardora {
+namespace seth {
 
 namespace bls {
 
@@ -110,5 +110,5 @@ TEST_F(TestAggBls, AggregateVerify) {
 
 } // namespace bls
 
-} // namespace shardora
+} // namespace seth
         

@@ -5,17 +5,18 @@
 #include <unordered_map>
 #include <vector>
 
-#include <dkg/dkg.h>
 #include <nlohmann/json.hpp>
 
 #include "common/bitmap.h"
 #include "common/utils.h"
 #include "db/db.h"
 #include "dht/dht_utils.h"
-#include "init/init_utils.h"
+#include "dkg/dkg.h"
+#include "network/network_utils.h"
 #include "protos/block.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/init.pb.h"
+#include "init/init_utils.h"
 
 namespace shardora {
 
@@ -38,15 +39,39 @@ public:
         std::shared_ptr<db::Db>& db);
     ~GenesisBlockInit();
     int CreateGenesisBlocks(
-        const GenisisNetworkType& net_type,
+        uint32_t network_id,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
-        const std::set<uint32_t>& valid_net_ids_set);
+        const std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards);
 
 private:
+    void InitPool() {
+        using AddressInfoPtr = std::shared_ptr<address::protobuf::AddressInfo>;
+        pool_address_info_ = new AddressInfoPtr**[network::kConsensusShardEndNetworkId];
+        for (int i = 0; i < network::kConsensusShardEndNetworkId; ++i) {
+            pool_address_info_[i] = new AddressInfoPtr*[pools::protobuf::kPoolStatisticTag + 1];
+            for (int j = 0; j <= pools::protobuf::kPoolStatisticTag; ++j) {
+                pool_address_info_[i][j] = new AddressInfoPtr[common::kInvalidPoolIndex];
+            }
+        }
+    }
+
+    void FreePool() {
+        if (pool_address_info_ == nullptr) return;
+
+        for (int i = 0; i < network::kConsensusShardEndNetworkId; ++i) {
+            for (int j = 0; j <= pools::protobuf::kPoolStatisticTag; ++j) {
+                delete[] pool_address_info_[i][j];
+            }
+            delete[] pool_address_info_[i];
+        }
+        delete[] pool_address_info_;
+        pool_address_info_ = nullptr;
+    }
+
+
     int CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards);
+        const std::map<uint32_t, std::vector<GenisisNodeInfoPtr>>& cons_genesis_nodes_of_shards);
     int CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
@@ -60,7 +85,7 @@ private:
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
         uint64_t* init_heights,
-        hotstuff::View* pool_latest_view); // 节点对应的余额
+        hotstuff::View* pool_latest_view); // Balance corresponding to the node
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
     const std::map<uint32_t, std::string> GetGenesisAccount(uint32_t net_id);
     void InitShardGenesisAccount();
@@ -134,8 +159,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
     nlohmann::json bls_pk_json_;
-    std::shared_ptr<address::protobuf::AddressInfo> immutable_pool_address_info_;
-    std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize];
+    std::shared_ptr<address::protobuf::AddressInfo>*** pool_address_info_;
     std::unordered_map<std::string, uint64_t> genesis_acount_balance_map_;
     
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
@@ -144,7 +168,8 @@ private:
 bool CheckRecomputeG2s(uint32_t local_member_index, uint32_t valid_t,
                        const std::string &id,
                        const std::shared_ptr<protos::PrefixDb> &prefix_db,
-                       bls::protobuf::JoinElectBlsInfo &verfy_final_vals);
+                       bls::protobuf::JoinElectBlsInfo &verfy_final_vals,
+                        const bls::protobuf::JoinElectInfo& join_info);
 void ComputeG2ForNode(const std::string &prikey, uint32_t k,
                       const std::shared_ptr<protos::PrefixDb> &prefix_db,
                       const std::vector<std::string> &prikeys);

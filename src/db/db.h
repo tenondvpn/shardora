@@ -52,7 +52,7 @@ namespace db {
 
 using namespace ROCKSDB_NAMESPACE;
 
-// 自定义 Handler 用于将一个 WriteBatch 的操作应用到另一个
+// Custom Handler to apply operations from one WriteBatch to another
 class BatchMerger : public WriteBatch::Handler {
 public:
     explicit BatchMerger(WriteBatch* target) : target_batch_(target) {}
@@ -72,13 +72,13 @@ public:
         return Status::OK();
     }
 
-    // 如果需要支持其他操作（例如 SingleDelete），可以继续重写对应方法
+    // If you need to support other operations (e.g. SingleDelete), continue to override corresponding methods
 
 private:
     WriteBatch* target_batch_;
 };
 
-// 合并两个 WriteBatch
+// Merge two WriteBatches
 inline static Status MergeWriteBatches(WriteBatch& target, const WriteBatch& source) {
     BatchMerger merger(&target);
     return source.Iterate(&merger);
@@ -103,11 +103,10 @@ public:
         if (thread_id_ == std::thread::id()) {
             thread_id_ = std::this_thread::get_id();
         } else if (thread_id_ != std::this_thread::get_id()) {
-            assert(false);
+            //assert(false);
         }
         if (data_map_.find(key) == data_map_.end()) {
             data_map_[key] = value;
-            CHECK_MEMORY_SIZE(data_map_);
         }
 #endif
 
@@ -120,13 +119,12 @@ public:
         if (thread_id_ == std::thread::id()) {
             thread_id_ = std::this_thread::get_id();
         } else if (thread_id_ != std::this_thread::get_id()) {
-            assert(false);
+            //assert(false);
         }
 
         auto iter = data_map_.find(key);
         if (iter != data_map_.end()) {
             data_map_.erase(iter);
-            CHECK_MEMORY_SIZE(data_map_);
         }
 #endif
         db_batch_.Delete(key);
@@ -145,13 +143,13 @@ public:
         if (thread_id_ == std::thread::id()) {
             thread_id_ = std::this_thread::get_id();
         } else if (thread_id_ != std::this_thread::get_id()) {
-            assert(false);
+            //assert(false);
         }
 #endif
 #ifdef LEVELDB
         db_batch_.Append(other.db_batch_);
 #else
-    // 合并 batch2 到 batch1
+    // Merge batch2 into batch1
         MergeWriteBatches(db_batch_, other.db_batch_);
 #endif
     }

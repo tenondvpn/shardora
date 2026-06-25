@@ -26,6 +26,22 @@ int Ecdsa::SetPrivateKey(const std::string& prikey) {
     return kSecuritySuccess;
 }
 
+int Ecdsa::SetPrivateKey(const char* prikey, uint32_t length) {
+    private_key_ptr_ = prikey;
+    private_key_length_ = length;
+    prikey_ = std::make_shared<PrivateKey>(private_key_ptr_, private_key_length_);
+    if (pubkey_.FromPrivateKey(curve_, *prikey_.get()) != kSecuritySuccess) {
+        return kSecurityError;
+    }
+
+    if (ecdh_key_.Init(&curve_, prikey_.get(), &pubkey_) != kSecuritySuccess) {
+        return kSecurityError;
+    }
+
+    str_addr_ = Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey_.str_pubkey());
+    return kSecuritySuccess;
+}
+
 int Ecdsa::Sign(const std::string &hash, std::string *sign) {
 #ifdef USE_SERVER_TEST_TRANSACTION
     *sign = "1";
@@ -38,8 +54,14 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
     // std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
     return kSecuritySuccess;
 #else
-    if (!Secp256k1::Instance()->Secp256k1Sign(hash, *prikey_.get(), sign)) {
-        return kSecurityError;
+    if (private_key_ptr_ != nullptr) {
+        if (!Secp256k1::Instance()->Secp256k1Sign(hash, private_key_ptr_, sign)) {
+            return kSecurityError;
+        }
+    } else {
+        if (!Secp256k1::Instance()->Secp256k1Sign(hash, prikey_->private_key(), sign)) {
+            return kSecurityError;
+        }
     }
     
     CRYPTO_DEBUG("signed hash: %s, sign: %s",
@@ -102,14 +124,14 @@ const std::string& Ecdsa::GetPublicKeyUnCompressed() const {
     return pubkey_.str_pubkey_uncompressed();
 }
 
-int Ecdsa::Encrypt(const std::string& msg, const std::string& key, std::string* out) {
+int Ecdsa::Encrypt(const std::string& msg, RawPrivateKey key, std::string* out) {
     return security::Crypto::Instance()->GetEncryptData(
         key,
         msg,
         out);
 }
 
-int Ecdsa::Decrypt(const std::string& msg, const std::string& key, std::string* out) {
+int Ecdsa::Decrypt(const std::string& msg, RawPrivateKey key, std::string* out) {
     return security::Crypto::Instance()->GetDecryptData(
         key,
         msg,

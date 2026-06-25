@@ -56,6 +56,9 @@ public:
     int StatisticWithHeights(
         pools::protobuf::ElectStatistic &elect_statistic,
         uint64_t statisticed_timeblock_height);
+    uint64_t latest_statisticed_height() const {
+        return latest_statisticed_height_;
+    }
 
 
   private:
@@ -87,10 +90,9 @@ public:
         bool is_root);
     void CreateStatisticTransaction(uint64_t timeblock_height);
     // void HandleStatisticBlock(const block::protobuf::Block &block);
-    void HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
+    bool HandleStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem> &block_ptr);
     std::string getLeaderIdFromBlock(const view_block::protobuf::ViewBlockItem &block);
     bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
-    void cleanUpBlocks(PoolBlocksInfo& pool_blocks_info);
     void ThreadToStatistic(const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     void ThreadCallback();
 
@@ -107,7 +109,6 @@ public:
     std::set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    std::atomic<uint64_t> now_elect_height_ = 0;
     std::atomic<uint64_t> prepare_elect_height_ = 0;
     std::shared_ptr<security::Security> secptr_ = nullptr;
     common::Tick tick_to_statistic_;
@@ -125,6 +126,7 @@ public:
     std::mutex thread_wait_mutex_;
     std::atomic<bool> destroy_ = false;
     std::map<uint64_t, std::map<uint32_t, uint64_t>> pool_statistic_height_with_block_height_map_;
+    std::atomic<bool> inited_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

@@ -32,7 +32,6 @@
 //     prefix_db_->GetAllOrder(&orders);
 //     for (auto iter = orders.begin(); iter != orders.end(); ++iter) {
 //         order_map_[(*iter)->buyer()] = *iter;
-//         CHECK_MEMORY_SIZE(order_map_);
 //         SHARDORA_DEBUG("success init get order: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
 //             common::Encode::HexEncode((*iter)->seller()).c_str(), 
 //             common::Encode::HexEncode((*iter)->buyer()).c_str(),
@@ -43,7 +42,6 @@
 
 //     for (auto iter = sells.begin(); iter != sells.end(); ++iter) {
 //         sell_map_[(*iter)->seller()] = *iter;
-//         CHECK_MEMORY_SIZE(sell_map_);
 //         SHARDORA_DEBUG("success init get sell: %s, buyer: %s, all: %lu, price: %lu, status: %d", 
 //             common::Encode::HexEncode((*iter)->seller()).c_str(), 
 //             common::Encode::HexEncode((*iter)->buyer()).c_str(),
@@ -67,11 +65,11 @@
 //     ws::protobuf::WsMessage ws_tx_res;
 //     GetTxs(ws_tx_res);
 //     GetC2cs(ws_tx_res);
-//     GetPrepayment(ws_tx_res);
+//     GetPrefund(ws_tx_res);
 //     CheckC2cStatus(ws_tx_res);
 //     if (ws_tx_res.txs_size() > 0 || ws_tx_res.has_init_info()) {
 //         // std::lock_guard<std::mutex> g(refresh_hdls_mutex_);
-//         SHARDORA_INFO("success broadcast ws message: %d, %d", ws_tx_res.txs_size(), refresh_hdls_.size());
+//         SHARDORA_DEBUG("success broadcast ws message: %d, %d", ws_tx_res.txs_size(), refresh_hdls_.size());
 //         std::string msg = common::Encode::HexEncode(ws_tx_res.SerializeAsString());
 //         for (auto iter = refresh_hdls_.begin(); iter != refresh_hdls_.end(); ++iter) {
 //             websocketpp::connection_hdl hdl = *iter;
@@ -87,7 +85,7 @@
 // void WsServer::GetAllTxs() {
 //     uint32_t got_count = 0;
 //     do {
-//         std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
+//         std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from shardora_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
 //         uint32_t all_transactions = 0;
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
@@ -96,7 +94,7 @@
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //             ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//                 SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//                 SHARDORA_DEBUG("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //                 if (ck_block.GetRowCount() > got_count) {
 //                     got_count = ck_block.GetRowCount();
 //                 }
@@ -122,10 +120,9 @@
 //                     auto type = ck_block[8]->As<clickhouse::ColumnUInt32>()->At(i);
 //                     if (type != ws::protobuf::kContractExcute) {
 //                         user_balance_[user_info->id] = user_info->balance;
-//                         CHECK_MEMORY_SIZE(user_balance_);
 //                     }
 
-//                     SHARDORA_INFO("new tx coming: %s, %s, %lu, realid: %s", 
+//                     SHARDORA_DEBUG("new tx coming: %s, %s, %lu, realid: %s", 
 //                         from_str.c_str(), to_str.c_str(), user_info->balance, common::Encode::HexEncode(user_info->id).c_str());
 //                 }
 //             });
@@ -136,7 +133,7 @@
 // }
 
 // void WsServer::GetTxs(ws::protobuf::WsMessage& ws_tx_res) {
-//     std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from zjc_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
+//     std::string cmd = "select  \"from\", to, amount, balance, height, to_add, timestamp, status, type from shardora_ck_transaction_table where shard_id = 3 and type != 8 and balance > 0 and timestamp > " + std::to_string(latest_timestamp_) + " limit 1000;";
 //     uint32_t all_transactions = 0;
 //     try {
 //         clickhouse::Client ck_client0(clickhouse::ClientOptions().
@@ -145,7 +142,7 @@
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //         ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//             SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//             SHARDORA_DEBUG("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //             for (uint32_t i = 0; i < ck_block.GetRowCount(); ++i) {
 //                 auto* ws_item = ws_tx_res.add_txs();
 //                 std::string from_str(ck_block[0]->As<clickhouse::ColumnString>()->At(i));
@@ -177,7 +174,7 @@
 //                     user_info_queue_.push(user_info);
 //                 }
 
-//                 SHARDORA_INFO("new tx coming: %s, %s, %lu, %lu, realid: %s", 
+//                 SHARDORA_DEBUG("new tx coming: %s, %s, %lu, %lu, realid: %s", 
 //                     from_str.c_str(), to_str.c_str(), ws_item->amount(), 
 //                     ws_item->balance(), common::Encode::HexEncode(user_info->id).c_str());
 //             }
@@ -187,10 +184,10 @@
 //     }
 // }
 
-// void WsServer::GetPrepayment(ws::protobuf::WsMessage& ws_tx_res) {
-//     std::string cmd = "select user, prepayment, height from zjc_ck_prepayment_table where contract = '" + 
+// void WsServer::GetPrefund(ws::protobuf::WsMessage& ws_tx_res) {
+//     std::string cmd = "select user, prefund, height from shardora_ck_prefund_table where contract = '" + 
 //         c2c_contract_addr() + 
-//         "' and height > " + std::to_string(latest_prepayment_height_) + " limit 1000;";
+//         "' and height > " + std::to_string(latest_prefund_height_) + " limit 1000;";
 //     try {
 //         clickhouse::Client ck_client0(clickhouse::ClientOptions().
 //             SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -198,27 +195,27 @@
 //             SetUser(common::GlobalInfo::Instance()->ck_user()).
 //             SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //         ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//             SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//             SHARDORA_DEBUG("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //             for (uint32_t i = 0; i < ck_block.GetRowCount(); ++i) {
 //                 std::string user = common::Encode::HexDecode(std::string(ck_block[0]->As<clickhouse::ColumnString>()->At(i)));
-//                 auto prepayment = ck_block[1]->As<clickhouse::ColumnUInt64>()->At(i);
+//                 auto prefund = ck_block[1]->As<clickhouse::ColumnUInt64>()->At(i);
 //                 auto height = ck_block[2]->As<clickhouse::ColumnUInt64>()->At(i);
-//                 if (latest_prepayment_height_ < height) {
-//                     latest_prepayment_height_ = height;
+//                 if (latest_prefund_height_ < height) {
+//                     latest_prefund_height_ = height;
 //                 }
 
 //                 auto user_info = std::make_shared<UserInfoItem>();
 //                 user_info->id = user;
-//                 user_info->prepayment = prepayment;
+//                 user_info->prefund = prefund;
 //                 user_info_queue_.push(user_info);
 //                 {
 //                     std::lock_guard g(sell_map_mutex_);
 //                     auto iter = sell_map_.find(user_info->id);
 //                     if (iter != sell_map_.end()) {
-//                         if (iter->second->status() == ws::protobuf::kSellWaitingPrepayment ||
-//                                 iter->second->status() == ws::protobuf::kSellTxPrepaymentError) {
-//                             if (iter->second->all() <= prepayment) {
-//                                 iter->second->set_status(ws::protobuf::kSellPrepayment);
+//                         if (iter->second->status() == ws::protobuf::kSellWaitingPrefund ||
+//                                 iter->second->status() == ws::protobuf::kSellTxPrefundError) {
+//                             if (iter->second->all() <= prefund) {
+//                                 iter->second->set_status(ws::protobuf::kSellPrefund);
 //                                 prefix_db_->SaveSellout(user, *iter->second);
 //                                 auto* sellinfo = ws_tx_res.mutable_init_info()->mutable_c2c()->add_sells();
 //                                 *sellinfo = *iter->second;
@@ -227,8 +224,8 @@
 //                     }
 //                 }
 
-//                 SHARDORA_INFO("new prepayment coming: %s, %lu, %lu", 
-//                     common::Encode::HexEncode(user_info->id).c_str(), prepayment, height);
+//                 SHARDORA_DEBUG("new prefund coming: %s, %lu, %lu", 
+//                     common::Encode::HexEncode(user_info->id).c_str(), prefund, height);
 //             }
 //         });
 //     } catch (std::exception& e) {
@@ -240,10 +237,10 @@
 //     uint32_t got_count = 0;
 //     int status = 0;
 //     do {
-//         std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from zjc_ck_c2c_table where contract='" + 
+//         std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from shardora_ck_c2c_table where contract='" + 
 //             c2c_contract_addr() + "' and height > " + std::to_string(max_c2c_height_) +  " order by height asc limit 1000;";
 //         uint32_t all_transactions = 0;
-//         SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), 0);
+//         SHARDORA_DEBUG("run cmd: %s, get count: %d", cmd.c_str(), 0);
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
 //                 SetHost(common::GlobalInfo::Instance()->ck_host()).
@@ -251,7 +248,7 @@
 //                 SetUser(common::GlobalInfo::Instance()->ck_user()).
 //                 SetPassword(common::GlobalInfo::Instance()->ck_pass()));
 //             ck_client0.Select(cmd, [&](const clickhouse::Block& ck_block) {
-//                 SHARDORA_INFO("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
+//                 SHARDORA_DEBUG("run cmd: %s, get count: %d", cmd.c_str(), ck_block.GetRowCount());
 //                 for (uint32_t i = 0; i < ck_block.GetRowCount(); ++i) {
 //                     std::string user(ck_block[0]->As<clickhouse::ColumnString>()->At(i));
 //                     std::string encode_buyer(ck_block[1]->As<clickhouse::ColumnString>()->At(i));
@@ -274,7 +271,7 @@
 //                         continue;
 //                     }
 
-//                     SHARDORA_INFO("get all c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
+//                     SHARDORA_DEBUG("get all c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
 //                         user.c_str(), encode_buyer.c_str(), amount, height, iter->second->height(), iter->second->status(), max_c2c_height_);
 //                     auto order_iter = order_map_.find(buyer);
 //                     if (iter->second->height() > height) {
@@ -394,21 +391,21 @@
 //             continue;
 //         }
 
-//         if (old_status >= ws::protobuf::kSellTxPrepaymentError) {
+//         if (old_status >= ws::protobuf::kSellTxPrefundError) {
 //             continue;
 //         }
 
 //         // if (old_status == ws::protobuf::kSellReleased && iter->second->seller() == common::Encode::HexDecode("4d20fc0bb62f67fb29ec13036ce3a84ddebc10e7")) {
-//         //     iter->second->set_status(ws::protobuf::kSellWaitingPrepayment);
+//         //     iter->second->set_status(ws::protobuf::kSellWaitingPrefund);
 //         //     iter->second->set_timestamp(now_tm);
 //         // }
 
-//         if (old_status == ws::protobuf::kSellWaitingPrepayment) {
+//         if (old_status == ws::protobuf::kSellWaitingPrefund) {
 //             if (iter->second->timestamp() + 4 * c2c_timeout_ms() > now_tm) {
 //                 continue;
 //             }
 
-//             iter->second->set_status(ws::protobuf::kSellTxPrepaymentError);
+//             iter->second->set_status(ws::protobuf::kSellTxPrefundError);
 //         }
 
 //         if (old_status == ws::protobuf::kSellWaitingCreate) {
@@ -462,7 +459,7 @@
 // }
 
 // void WsServer::GetC2cs(ws::protobuf::WsMessage& ws_tx_res) {
-//     std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from zjc_ck_c2c_table where contract='" + 
+//     std::string cmd = "select seller, buyer, amount, receivable, all, now, mchecked, schecked, reported, orderId, height from shardora_ck_c2c_table where contract='" + 
 //         c2c_contract_addr() + "' and height > " + std::to_string(max_c2c_height_) +  " limit 1000;";
 //     uint32_t all_transactions = 0;
 //     SHARDORA_DEBUG("get c2c run cmd: %s", cmd.c_str());
@@ -506,7 +503,7 @@
 //                     }
 //                 }
 
-//                 SHARDORA_INFO("get c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
+//                 SHARDORA_DEBUG("get c2c seller: %s, buyer: %s, amount: %lu, height: %lu, exists height: %lu, status: %d, max height: %lu", 
 //                     user.c_str(), encode_buyer.c_str(), amount, height, sellptr->height(), sellptr->status(), max_c2c_height_);
 //                 if (sellptr->height() >= height) {
 //                     SHARDORA_ERROR("local sell info height error: %s %lu, %lu!", user.c_str(), sellptr->height(), height);
@@ -597,7 +594,7 @@
 
 //                 auto* sellinfo = ws_tx_res.mutable_init_info()->mutable_c2c()->add_sells();
 //                 *sellinfo = *sellptr;
-//                 SHARDORA_INFO("get sell info seller: %s, buyer: %s, status: %d", 
+//                 SHARDORA_DEBUG("get sell info seller: %s, buyer: %s, status: %d", 
 //                     user.c_str(), encode_buyer.c_str(), sellptr->status());
 //             }
 //         });
@@ -609,7 +606,7 @@
 // void WsServer::GetAllBalance() {
 //     while (true) {
 //         int32_t get_count = 0;
-//         std::string cmd = "select id, balance from zjc_ck_account_table limit 10000;";
+//         std::string cmd = "select id, balance from shardora_ck_account_table limit 10000;";
 //         uint32_t all_transactions = 0;
 //         try {
 //             clickhouse::Client ck_client0(clickhouse::ClientOptions().
@@ -625,8 +622,7 @@
 //                         std::string id = common::Encode::HexDecode(from_str);
 //                         uint64_t balance = ck_block[1]->As<clickhouse::ColumnUInt64>()->At(i);
 //                         user_balance_[id] = balance;
-//                         CHECK_MEMORY_SIZE(user_balance_);
-//                         SHARDORA_INFO("get balance: %s, balance: %lu", from_str.c_str(), balance);
+//                         SHARDORA_DEBUG("get balance: %s, balance: %lu", from_str.c_str(), balance);
 //                     }
 //                 }
 //             });
@@ -665,7 +661,6 @@
 //         if (all_bw > valid_free_bandwidth()) {
 //             if (iter == invalid_users_.end()) {
 //                 invalid_users_[bw.id()] = true;
-//                 CHECK_MEMORY_SIZE(invalid_users_);
 //             }
 
 //             auto res_item = bw_res.add_bws();
@@ -674,11 +669,10 @@
 //         } else {
 //             if (iter != invalid_users_.end()) {
 //                 invalid_users_.erase(iter);
-//                 CHECK_MEMORY_SIZE(invalid_users_);
 //             }
 //         }
         
-//         SHARDORA_INFO("bandwidth message handle success %s: %lu", common::Encode::HexEncode(bw.id()).c_str(), all_bw);
+//         SHARDORA_DEBUG("bandwidth message handle success %s: %lu", common::Encode::HexEncode(bw.id()).c_str(), all_bw);
 //     }
     
 //     if (bw_res.bws_size() > 0) {
@@ -722,9 +716,9 @@
 //         message.append(tx_info.contract_input());
 //     }
 
-//     if (tx_info.has_contract_prepayment()) {
-//         uint64_t prepay = tx_info.contract_prepayment();
-//         message.append(std::string((char*)&prepay, sizeof(prepay)));
+//     if (tx_info.has_contract_prefund()) {
+//         uint64_t prefund = tx_info.contract_prefund();
+//         message.append(std::string((char*)&prefund, sizeof(prefund)));
 //     }
 
 //     if (tx_info.has_key()) {
@@ -785,8 +779,8 @@
 //         new_tx->set_contract_input(tx_info.contract_input());
 //     }
 
-//     if (tx_info.contract_prepayment() > 0) {
-//         new_tx->set_contract_prepayment(tx_info.contract_prepayment());
+//     if (tx_info.contract_prefund() > 0) {
+//         new_tx->set_contract_prefund(tx_info.contract_prefund());
 //     }
 
 //     int32_t tmp_sign_v = tx_info.signv()[0];
@@ -849,23 +843,23 @@
 
 //     PopUserInfo();
 //     auto seller = security_->GetAddress(tx.pubkey());
-//     auto prepayment_iter = contract_prepayment_.find(seller);
-//     if (prepayment_iter == contract_prepayment_.end()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("new c2c sell invalid amount prepayment not exists: %s.", 
+//     auto prefund_iter = contract_prefund_.find(seller);
+//     if (prefund_iter == contract_prefund_.end()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("new c2c sell invalid amount prefund not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
-//     if (tx.amount() + 10000000lu > prepayment_iter->second) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("new c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//     if (tx.amount() + 10000000lu > prefund_iter->second) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("new c2c sell invalid amount: %lu, prefund: %lu", tx.amount(), prefund_iter->second);
 //         return;
 //     }
 
-//     if (prepayment_iter->second < min_c2c_prepayment()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prepayment");
-//         SHARDORA_DEBUG("new c2c sell invalid prepayment.");
+//     if (prefund_iter->second < min_c2c_prefund()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prefund");
+//         SHARDORA_DEBUG("new c2c sell invalid prefund.");
 //         return;
 //     }
 
@@ -885,7 +879,7 @@
 //         return;
 //     }
 
-//     if (sell_ptr->status() != ws::protobuf::kSellPrepayment && 
+//     if (sell_ptr->status() != ws::protobuf::kSellPrefund && 
 //             sell_ptr->status() != ws::protobuf::kSellTxCreateError) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid sell, status invalid");
 //         SHARDORA_DEBUG("new c2c sell invalid sell, status invalid");
@@ -928,7 +922,7 @@
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingCreate, "ok");
-//     SHARDORA_INFO("create new sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("create new sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1023,20 +1017,18 @@
 //         user_info_queue_.pop(&user_info);
 //         if (user_info->balance > 0) {
 //             user_balance_[user_info->id] = user_info->balance;
-//             CHECK_MEMORY_SIZE(user_balance_);
 //         }
 
-//         if (user_info->prepayment > 0) {
-//             contract_prepayment_[user_info->id] = user_info->prepayment;
-//             CHECK_MEMORY_SIZE(contract_prepayment_);
+//         if (user_info->prefund > 0) {
+//             contract_prefund_[user_info->id] = user_info->prefund;
 //         }
 
 //         SHARDORA_DEBUG("update balance %s, %lu, %lu", 
-//             common::Encode::HexEncode(user_info->id).c_str(), user_info->balance, user_info->prepayment);
+//             common::Encode::HexEncode(user_info->id).c_str(), user_info->balance, user_info->prefund);
 //     }
 // }
 
-// void WsServer::C2cPrepayment(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
+// void WsServer::C2cPrefund(websocketpp::connection_hdl hdl, const std::string& encode_msg) {
 //     SHARDORA_DEBUG("new c2c sell comming.");
 //     auto msg = common::Encode::HexDecode(encode_msg);
 //     ws::protobuf::InitInfo c2c_msg;
@@ -1066,9 +1058,9 @@
 //         return;
 //     }
 
-//     if (tx.contract_prepayment() < min_c2c_prepayment()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prepayment");
-//         SHARDORA_DEBUG("new c2c sell invalid prepayment.");
+//     if (tx.contract_prefund() < min_c2c_prefund()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prefund");
+//         SHARDORA_DEBUG("new c2c sell invalid prefund.");
 //         return;
 //     }
 
@@ -1081,9 +1073,9 @@
 //         return;
 //     }
 
-//     if (tx.contract_prepayment() > biter->second) {
+//     if (tx.contract_prefund() > biter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid balance");
-//         SHARDORA_DEBUG("new c2c sell invalid balance: %lu, %lu", tx.contract_prepayment(), biter->second);
+//         SHARDORA_DEBUG("new c2c sell invalid balance: %lu, %lu", tx.contract_prefund(), biter->second);
 //         return;
 //     }
 
@@ -1132,9 +1124,9 @@
 //     sell_ptr->set_contract(tx.to());
 //     sell_ptr->set_username(tmp_sell.username());
 //     sell_ptr->set_seller(seller);
-//     sell_ptr->set_all(tx.contract_prepayment());
+//     sell_ptr->set_all(tx.contract_prefund());
 //     sell_ptr->set_price(tmp_sell.price());
-//     sell_ptr->set_status(ws::protobuf::kSellWaitingPrepayment);
+//     sell_ptr->set_status(ws::protobuf::kSellWaitingPrefund);
 //     sell_ptr->set_create_timestamp(common::TimeUtils::TimestampMs());
 //     auto* receivable = sell_ptr->mutable_receivable();
 //     *receivable = tmp_sell.receivable();
@@ -1148,9 +1140,9 @@
 //         return;
 //     }
 
-//     if (tx.amount() + 1000000llu > tx.contract_prepayment()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prepayment!");
-//         SHARDORA_DEBUG("new c2c sell invalid sell, invalid prepayment.");
+//     if (tx.amount() + 1000000llu > tx.contract_prefund()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid prefund!");
+//         SHARDORA_DEBUG("new c2c sell invalid sell, invalid prefund.");
 //         return;
 //     }
 
@@ -1180,11 +1172,10 @@
 //     {
 //         std::lock_guard<std::mutex> g(sell_map_mutex_);
 //         sell_map_[seller] = sell_ptr;
-//         CHECK_MEMORY_SIZE(sell_map_);
 //     }
     
-//     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingPrepayment, "ok");
-//     SHARDORA_INFO("create new sell success create tm: %lu, seller: %s, username: %s, all: %lu, price: %lu, receivable size: %d",
+//     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingPrefund, "ok");
+//     SHARDORA_DEBUG("create new sell success create tm: %lu, seller: %s, username: %s, all: %lu, price: %lu, receivable size: %d",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1219,17 +1210,17 @@
 //     auto& tx = c2c_msg.tx();
 //     PopUserInfo();
 //     auto seller = security_->GetAddress(tx.pubkey());
-//     auto prepayment_iter = contract_prepayment_.find(seller);
-//     if (prepayment_iter == contract_prepayment_.end()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("cancel c2c sell invalid amount prepayment not exists: %s.", 
+//     auto prefund_iter = contract_prefund_.find(seller);
+//     if (prefund_iter == contract_prefund_.end()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("cancel c2c sell invalid amount prefund not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
-//     if (1000000lu > prepayment_iter->second) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("cancel c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//     if (1000000lu > prefund_iter->second) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("cancel c2c sell invalid amount: %lu, prefund: %lu", tx.amount(), prefund_iter->second);
 //         return;
 //     }
 
@@ -1291,7 +1282,7 @@
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellUserWaitingRelease, "ok");
-//     SHARDORA_INFO("cancelsell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("cancelsell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1325,17 +1316,17 @@
 //     auto& tx = c2c_msg.tx();
 //     PopUserInfo();
 //     auto seller = c2c_msg.c2c().sell().seller();
-//     auto prepayment_iter = contract_prepayment_.find(seller);
-//     if (prepayment_iter == contract_prepayment_.end()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("manager cancel c2c sell invalid amount prepayment not exists: %s.", 
+//     auto prefund_iter = contract_prefund_.find(seller);
+//     if (prefund_iter == contract_prefund_.end()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid amount prefund not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
-//     if (1000000lu > prepayment_iter->second) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("manager cancel c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//     if (1000000lu > prefund_iter->second) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("manager cancel c2c sell invalid amount: %lu, prefund: %lu", tx.amount(), prefund_iter->second);
 //         return;
 //     }
 
@@ -1396,7 +1387,7 @@
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellManagerWaitingRelease, "ok");
-//     SHARDORA_INFO("manager cancel sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("manager cancel sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1445,7 +1436,7 @@
 
 //     if (tx.amount() + consensus::kTransferGas > biter->second) {
 //         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid balance");
-//         SHARDORA_DEBUG("new transaction invalid balance: %lu, %lu", tx.contract_prepayment(), biter->second);
+//         SHARDORA_DEBUG("new transaction invalid balance: %lu, %lu", tx.contract_prefund(), biter->second);
 //         return;
 //     }
 
@@ -1482,7 +1473,7 @@
 //     }
 
 //     C2cResponse(hdl, c2c_msg.msg_id(), 0, "ok");
-//     SHARDORA_INFO("create transaction success create from: %s, amount: %lu",
+//     SHARDORA_DEBUG("create transaction success create from: %s, amount: %lu",
 //         common::Encode::HexEncode(from_address).c_str(), 
 //         tx.amount());    
 // }
@@ -1566,7 +1557,6 @@
 //     {
 //         std::lock_guard<std::mutex> g(sell_map_mutex_);
 //         order_map_[c2c_msg.c2c().order().buyer()] = order_ptr;
-//         CHECK_MEMORY_SIZE(order_map_);
 //     }
 //     ws::protobuf::WsMessage ws_msg;
 //     auto* sell_info = ws_msg.mutable_init_info()->mutable_c2c()->add_sells();
@@ -1578,7 +1568,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     SHARDORA_INFO("purchase sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("purchase sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -1673,7 +1663,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     SHARDORA_INFO("cancel order sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("cancel order sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -1716,10 +1706,10 @@
 //         return;
 //     }
 
-//     auto prepayment_iter = contract_prepayment_.find(seller);
-//     if (prepayment_iter == contract_prepayment_.end()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("confirm order invalid amount prepayment not exists: %s.", 
+//     auto prefund_iter = contract_prefund_.find(seller);
+//     if (prefund_iter == contract_prefund_.end()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("confirm order invalid amount prefund not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
@@ -1731,9 +1721,9 @@
 //     }
 
 //     auto confirm_amount = c2c_msg.c2c().order().amount();
-//     if (100000lu > prepayment_iter->second) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("confirm order invalid amount: %lu, prepayment: %lu", 100000lu, prepayment_iter->second);
+//     if (100000lu > prefund_iter->second) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("confirm order invalid amount: %lu, prefund: %lu", 100000lu, prefund_iter->second);
 //         return;
 //     }
 
@@ -1801,7 +1791,7 @@
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirmTx, "ok");
-//     SHARDORA_INFO("confirm order success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("confirm order success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1835,17 +1825,17 @@
 //     auto& tx = c2c_msg.tx();
 //     PopUserInfo();
 //     auto seller = c2c_msg.c2c().sell().seller();
-//     auto prepayment_iter = contract_prepayment_.find(seller);
-//     if (prepayment_iter == contract_prepayment_.end()) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("manager cancel force c2c sell invalid amount prepayment not exists: %s.", 
+//     auto prefund_iter = contract_prefund_.find(seller);
+//     if (prefund_iter == contract_prefund_.end()) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid amount prefund not exists: %s.", 
 //             common::Encode::HexEncode(seller).c_str());
 //         return;
 //     }
 
-//     if (1000000lu > prepayment_iter->second) {
-//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prepayment.");
-//         SHARDORA_DEBUG("manager cancel force c2c sell invalid amount: %lu, prepayment: %lu", tx.amount(), prepayment_iter->second);
+//     if (1000000lu > prefund_iter->second) {
+//         C2cResponse(hdl, c2c_msg.msg_id(), -1, "invalid amount and prefund.");
+//         SHARDORA_DEBUG("manager cancel force c2c sell invalid amount: %lu, prefund: %lu", tx.amount(), prefund_iter->second);
 //         return;
 //     }
 
@@ -1907,7 +1897,7 @@
 
 //     prefix_db_->SaveSellout(seller, *sell_ptr);
 //     C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellForceReleaseWaitingTx, "ok");
-//     SHARDORA_INFO("manager cancel force sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("manager cancel force sell success create tm: %lu, seller: %s, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         sell_ptr->username().c_str(),
@@ -1993,7 +1983,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     SHARDORA_INFO("manager reset sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("manager reset sell success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -2120,7 +2110,7 @@
 //     }
 
 //     // C2cResponse(hdl, c2c_msg.msg_id(), ws::protobuf::kSellWaitingConfirm, "ok");
-//     SHARDORA_INFO("user appeal success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
+//     SHARDORA_DEBUG("user appeal success create tm: %lu, seller: %s, buyer: %s, amount: %lu, username: %s, all; %lu, price : %lu",
 //         sell_ptr->create_timestamp(), 
 //         common::Encode::HexEncode(seller).c_str(), 
 //         common::Encode::HexEncode(sell_ptr->buyer()).c_str(), 
@@ -2162,8 +2152,8 @@
 //         "mgrcancelsellforce", 
 //         std::bind(&WsServer::C2cManagerCancelForceSell, this, std::placeholders::_1, std::placeholders::_2));
 //     ws_server_.RegisterCallback(
-//         "prepayment", 
-//         std::bind(&WsServer::C2cPrepayment, this, std::placeholders::_1, std::placeholders::_2));
+//         "prefund", 
+//         std::bind(&WsServer::C2cPrefund, this, std::placeholders::_1, std::placeholders::_2));
 //     ws_server_.RegisterCallback(
 //         "status", 
 //         std::bind(&WsServer::C2cStatus, this, std::placeholders::_1, std::placeholders::_2));

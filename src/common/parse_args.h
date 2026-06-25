@@ -24,6 +24,7 @@ public:
     int Parse(const std::string& paras, std::string& err_pos);
     int Get(const std::string& key, int& value);
     int Get(const std::string& key, uint16_t& value);
+    int Get(const std::string& key, uint32_t& value);
     int Get(const std::string& key, std::string& value);
     bool Has(const std::string& key) const;
 

@@ -161,18 +161,18 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\025protos/contract.proto\022\032shardora.contra"
-      "ct.protobuf\"6\n\017GetAttrByKeyReq\022\021\n\tcall_a"
-      "ddr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\"J\n\017GetAttrBy"
-      "KeyRes\022\021\n\tcall_addr\030\001 \001(\014\022\020\n\010attr_key\030\002 "
-      "\001(\014\022\022\n\nattr_value\030\003 \001(\014\"\227\001\n\017ContractMess"
-      "age\022A\n\014get_attr_req\030\001 \001(\0132+.shardora.con"
-      "tract.protobuf.GetAttrByKeyReq\022A\n\014get_at"
-      "tr_res\030\002 \001(\0132+.shardora.contract.protobu"
-      "f.GetAttrByKeyRes"
+      "\n\025protos/contract.proto\022\026shardora.contract.p"
+      "rotobuf\"6\n\017GetAttrByKeyReq\022\021\n\tcall_addr\030"
+      "\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\"J\n\017GetAttrByKeyR"
+      "es\022\021\n\tcall_addr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022"
+      "\022\n\nattr_value\030\003 \001(\014\"\217\001\n\017ContractMessage\022"
+      "=\n\014get_attr_req\030\001 \001(\0132\'.shardora.contract.pr"
+      "otobuf.GetAttrByKeyReq\022=\n\014get_attr_res\030\002"
+      " \001(\0132\'.shardora.contract.protobuf.GetAttrByK"
+      "eyRes"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 337);
+      descriptor, 325);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/contract.proto", &protobuf_RegisterTypes);
 }
