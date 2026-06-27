@@ -536,7 +536,7 @@ require_installed_file "$SRC_PATH/third_party/lib/libgmssl.a"
 if [ ! -d "$SRC_PATH/third_party/include/gperftools" ]; then
     cd $SRC_PATH
     ensure_submodule_file third_party/gperftools autogen.sh
-    cd third_party/gperftools/ && checkout_if_available d9a5d38 && ./autogen.sh && ./configure --prefix=$SRC_PATH/third_party/ && make -j${nproc} && make install
+    cd third_party/gperftools/ && checkout_if_available d9a5d38 && ./autogen.sh && ./configure --prefix=$SRC_PATH/third_party/ --disable-libunwind && make -j${nproc} && make install
 fi
 require_installed_file "$SRC_PATH/third_party/include/gperftools/tcmalloc.h"
 require_installed_file "$SRC_PATH/third_party/lib/libtcmalloc.a"

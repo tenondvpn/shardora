@@ -20,6 +20,62 @@ for ip in "${node_ips_array[@]}"; do
 done
 node_hash=$(printf "%d%d" "$nodes_count" "$each_nodes_count" | md5sum | cut -d ' ' -f1)
 
+is_container_env() {
+    [ -f /.dockerenv ] || [ "${SHARDORA_IN_CONTAINER:-0}" = "1" ]
+}
+
+run_privileged() {
+    if is_container_env || ! command -v sudo >/dev/null 2>&1; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
+ensure_nodes_shardora_conf() {
+    local conf_dir="/root/nodes/shardora/conf"
+    if [ -e "$conf_dir" ] && [ ! -d "$conf_dir" ]; then
+        rm -f "$conf_dir"
+    fi
+    mkdir -p "$conf_dir" /root/nodes/shardora/log
+    if [ -f "$CODE_PATH/nodes_local/shardora/conf/shardora.conf" ]; then
+        cp -f "$CODE_PATH/nodes_local/shardora/conf/shardora.conf" "$conf_dir/"
+    fi
+    if [ -f "$CODE_PATH/nodes_local/shardora/conf/GeoLite2-City.mmdb" ]; then
+        cp -f "$CODE_PATH/nodes_local/shardora/conf/GeoLite2-City.mmdb" "$conf_dir/"
+    fi
+    if [ -f "$CODE_PATH/nodes_local/shardora/conf/log4cpp.properties" ]; then
+        cp -f "$CODE_PATH/nodes_local/shardora/conf/log4cpp.properties" "$conf_dir/"
+    fi
+    if [ ! -f "$conf_dir/shardora.conf" ]; then
+        echo "ERROR: missing $conf_dir/shardora.conf" >&2
+        exit 1
+    fi
+}
+
+seed_repo_shard_files() {
+    mkdir -p /root/shardora
+    if [ -f "$CODE_PATH/shards3" ] && [ ! -f /root/shardora/shards3 ]; then
+        cp -f "$CODE_PATH/shards3" /root/shardora/shards3
+    fi
+    if [ -f "$CODE_PATH/root_nodes" ] && [ ! -f /root/shardora/shards2 ]; then
+        cp -f "$CODE_PATH/root_nodes" /root/shardora/shards2
+    elif [ ! -f /root/shardora/shards2 ] && [ -f /root/shardora/shards3 ] && [ -n "${nodes_count:-}" ]; then
+        head -n "$nodes_count" /root/shardora/shards3 > /root/shardora/shards2
+    fi
+}
+
+shardora_genesis_bin() {
+    local bin="/root/nodes/shardora/shardora"
+    if [ ! -x "$bin" ]; then
+        bin="/root/shardora/cbuild_${TARGET}/shardora"
+    fi
+    if [ ! -x "$bin" ]; then
+        bin="$CODE_PATH/cbuild_${TARGET}/shardora"
+    fi
+    echo "$bin"
+}
+
 record_remote_failure() {
     echo "$1" >> "$REMOTE_FAIL_FILE"
 }
@@ -87,7 +143,11 @@ wait_remote_pids() {
     #fi
 }
 
-bash cmd.sh $2 "sudo tc qdisc del dev eth0 root 2>/dev/null || true; pkill -9 shardora 2>/dev/null || true; systemctl list-units --type=service --all 'shardora@*' --no-legend 2>/dev/null | awk '{print \$1}' | while read -r u; do [ -n \"\$u\" ] && systemctl stop \"\$u\" 2>/dev/null; [ -n \"\$u\" ] && systemctl disable \"\$u\" 2>/dev/null; done; systemctl daemon-reload; systemctl reset-failed"
+if is_container_env; then
+    bash cmd.sh $2 "pkill -9 shardora 2>/dev/null || true; tc qdisc del dev eth0 root 2>/dev/null || true"
+else
+    bash cmd.sh $2 "sudo tc qdisc del dev eth0 root 2>/dev/null || true; pkill -9 shardora 2>/dev/null || true; systemctl list-units --type=service --all 'shardora@*' --no-legend 2>/dev/null | awk '{print \$1}' | while read -r u; do [ -n \"\$u\" ] && systemctl stop \"\$u\" 2>/dev/null; [ -n \"\$u\" ] && systemctl disable \"\$u\" 2>/dev/null; done; systemctl daemon-reload; systemctl reset-failed"
+fi
 init() {
     tmp_ips=(${node_ips//-/ })
     tmp_ips_len=(${#tmp_ips[*]})
@@ -162,31 +222,33 @@ init() {
         rm -rf ./pkgs
     fi
 
-    killall -9 shardora
-    killall -9 txcli
+    killall -9 shardora 2>/dev/null || true
+    killall -9 txcli 2>/dev/null || true
 
     bash build.sh shardora $TARGET
-    sudo rm -rf /root/nodes
-    sudo cp -rf ./nodes_local /root/nodes
-    rm -rf /root/nodes/*/shardora /root/nodes/*/core* /root/nodes/*/log/* /root/nodes/*/*db*
+    run_privileged rm -rf /root/nodes
+    run_privileged cp -rf ./nodes_local /root/nodes
+    rm -rf /root/nodes/*/shardora /root/nodes/*/core* /root/nodes/*/log/* /root/nodes/*/*db* 2>/dev/null || true
 
-    cp -rf ./nodes_local/shardora/conf/GeoLite2-City.mmdb /root/nodes/shardora
-    cp -rf ./nodes_local/shardora/conf/log4cpp.properties /root/nodes/shardora/conf
-    mkdir -p /root/nodes/shardora/log
-
-
-    sudo cp -rf ./cbuild_$TARGET/shardora /root/nodes/shardora
+    ensure_nodes_shardora_conf
+    run_privileged cp -f "./cbuild_$TARGET/shardora" /root/nodes/shardora/shardora
+    chmod +x /root/nodes/shardora/shardora
     if [[ "$each_nodes_count" -eq "" ]]; then
         each_nodes_count=4
     fi
 
 
     nodes_count=$(($nodes_count - $each_nodes_count + $FIRST_NODE_COUNT))
-    shard3_node_count=`wc -l /root/shardora/shards3 | awk -F' ' '{print $1}'`
+    seed_repo_shard_files
+    shard3_node_count=0
+    if [ -f /root/shardora/shards3 ]; then
+        shard3_node_count=$(wc -l < /root/shardora/shards3 | tr -d ' ')
+    fi
     if [ "$shard3_node_count" != "$nodes_count" ]; then
         echo "new shard nodes file will create."
         rm -rf /root/shardora/shards*
         rm -rf /root/shardora/init_accounts*
+        seed_repo_shard_files
     fi
 
     echo "node count: " $nodes_count
@@ -267,10 +329,9 @@ copy_pkg_account_files() {
 }
 
 refresh_genesis_databases() {
-    local genesis_bin="/root/nodes/shardora/shardora"
-    if [ ! -x "$genesis_bin" ]; then
-        genesis_bin="/root/shardora/cbuild_${TARGET}/shardora"
-    fi
+    ensure_nodes_shardora_conf
+    local genesis_bin
+    genesis_bin="$(shardora_genesis_bin)"
     if [ ! -x "$genesis_bin" ]; then
         echo "ERROR: shardora binary not found for genesis refresh" >&2
         exit 1
@@ -359,20 +420,25 @@ make_package() {
         cp -rf /root/nodes/shardora/shard_db_3 /root/nodes/shardora/pkg/
     else
         refresh_genesis_databases
-        cd /root/nodes/shardora && ./shardora -C
-        cd /root/shardora/cbuild_$TARGET && make txcli
+        local genesis_bin
+        genesis_bin="$(shardora_genesis_bin)"
+        cd /root/nodes/shardora && "$genesis_bin" -C
+        cd /root/shardora/cbuild_$TARGET && make txcli -j$(nproc 2>/dev/null || echo 4)
 
-        mkdir /root/nodes/shardora/pkg
+        mkdir -p /root/nodes/shardora/pkg
         cp /root/nodes/shardora/shardora /root/nodes/shardora/pkg
+        cp /root/shardora/cbuild_$TARGET/txcli /root/nodes/shardora/pkg/txcli
         cp /root/nodes/shardora/conf/GeoLite2-City.mmdb /root/nodes/shardora/pkg
         cp /root/nodes/shardora/conf/log4cpp.properties /root/nodes/shardora/pkg
         copy_pkg_account_files
         cp /root/shardora/temp_cmd.sh /root/nodes/shardora/pkg
         cp /root/shardora/start_cmd.sh /root/nodes/shardora/pkg
         cp -rf /root/nodes/shardora/shard_db_2 /root/nodes/shardora/pkg/shard_db_2
-        cp -rf /root/nodes/shardora/shard_db_3 /root/nodes/shardora/pkg
+        cp -rf /root/nodes/shardora/shard_db_3 /root/nodes/shardora/pkg/
         cp -rf /root/nodes/temp /root/nodes/shardora/pkg
-        cp -rf /root/shardora/gdb/* /root/nodes/shardora/pkg
+        if [ -d /root/shardora/gdb ]; then
+            cp -rf /root/shardora/gdb/* /root/nodes/shardora/pkg
+        fi
         cp -rf /root/nodes/shardora/pkg /root/shardora/pkgs/$node_hash
     fi
 
@@ -531,7 +597,7 @@ EOF
 }
 
 
-killall -9 sshpass
+killall -9 sshpass 2>/dev/null || true
 init
 make_package
 clear_command

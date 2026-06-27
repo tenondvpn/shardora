@@ -74,7 +74,7 @@ cd $SRC_PATH
 cd third_party/ethash && git checkout 83bd5ad && cmake -S . -B build_release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && mkdir -p $SRC_PATH/third_party/include/ethash && cp -rnf ../include/ethash/* $SRC_PATH/third_party/include/ethash && cp -rnf ./lib/keccak/libkeccak.a ./lib/ethash/libethash.a ./lib/global_context/libethash-global-context.a $SRC_PATH/third_party/lib
 
 cd $SRC_PATH
-cd third_party/gperftools/ && git checkout d9a5d38 && ./autogen.sh && ./configure --prefix=$SRC_PATH/third_party/ && make -j${nproc} && make install
+cd third_party/gperftools/ && git checkout d9a5d38 && ./autogen.sh && ./configure --prefix=$SRC_PATH/third_party/ --disable-libunwind && make -j${nproc} && make install
 
 cd $SRC_PATH
 cd third_party/gmssl && git checkout d655c06 && git checkout . && sed -i '385i\add_compile_definitions(_GNU_SOURCE)' CMakeLists.txt && sed -i '19i\#include <gmssl/sm2.h>' ./include/gmssl/sm2_recover.h && cmake -S . -B build_release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -D_DEFAULT_SOURCE=ON -DENABLE_SM2_EXTS=on -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
