@@ -8,7 +8,7 @@
 #include "dht/dht_utils.h"
 #include "dht/base_dht.h"
 
-namespace seth {
+namespace shardora {
 
 namespace dht {
 
@@ -56,4 +56,4 @@ private:
 
 }  // namespace dht
 
-}  // namespace seth
+}  // namespace shardora

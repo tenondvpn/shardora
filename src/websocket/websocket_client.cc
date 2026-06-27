@@ -2,7 +2,7 @@
 
 #include "common/global_info.h"
 
-namespace seth {
+namespace shardora {
 
 namespace ws {
 
@@ -92,4 +92,4 @@ void WebSocketClient::Stop() {
 
 };  // namespace tcp
 
-};  // namespace seth
+};  // namespace shardora

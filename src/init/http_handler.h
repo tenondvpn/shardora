@@ -15,7 +15,7 @@
 #include "transport/multi_thread.h"
 #include "transport/transport_utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace hotstuff {
     class ViewBlockChain;
@@ -121,4 +121,4 @@ private:
 
 };  // namespace init
 
-};  // namespace seth
+};  // namespace shardora

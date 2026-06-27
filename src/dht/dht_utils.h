@@ -12,12 +12,12 @@
 #include "common/log.h"
 #include "protos/dht.pb.h"
 
-#define DHT_DEBUG(fmt, ...) SETH_DEBUG("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_INFO(fmt, ...) SETH_DEBUG("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_WARN(fmt, ...) SETH_WARN("[dht]" fmt, ## __VA_ARGS__)
-#define DHT_ERROR(fmt, ...) SETH_ERROR("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_DEBUG(fmt, ...) SHARDORA_DEBUG("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_INFO(fmt, ...) SHARDORA_DEBUG("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_WARN(fmt, ...) SHARDORA_WARN("[dht]" fmt, ## __VA_ARGS__)
+#define DHT_ERROR(fmt, ...) SHARDORA_ERROR("[dht]" fmt, ## __VA_ARGS__)
 
-namespace seth {
+namespace shardora {
 
 namespace dht {
 
@@ -116,4 +116,4 @@ int DefaultDhtSignCallback(
 
 }  // namespace dht
 
-}  // namespace seth
+}  // namespace shardora

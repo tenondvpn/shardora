@@ -3,7 +3,7 @@
 #include "security/security.h"
 #include "dht/dht_key.h"
 
-namespace seth {
+namespace shardora {
 
 namespace dht {
 
@@ -57,7 +57,7 @@ void DhtProto::CreateRefreshNeighborsRequest(
             kRefreshNeighborsBloomfilterBitCount,
             kRefreshNeighborsBloomfilterHashCount };
     for (auto iter = dht.begin(); iter != dht.end(); ++iter) {
-        // SETH_DEBUG("---1 hash: %lu id:%s shard:%u dht_key_hash:%lu", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id, (*iter)->dht_key_hash);
+        // SHARDORA_DEBUG("---1 hash: %lu id:%s shard:%u dht_key_hash:%lu", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id, (*iter)->dht_key_hash);
         // bloomfilter.Add(common::Hash::Hash64((*iter)->id));
         bloomfilter.Add((*iter)->dht_key_hash);
     }
@@ -138,5 +138,5 @@ int32_t DhtProto::CreateConnectRequest(
 
 }  // namespace dht
 
-}  //namespace seth
+}  // namespace shardora
 

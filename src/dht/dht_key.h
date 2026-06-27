@@ -5,7 +5,7 @@
 #include "common/random.h"
 #include "dht/dht_utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace dht {
 
@@ -56,4 +56,4 @@ private:
 
 }  // namespace dht
 
-}  // namespace seth
+}  // namespace shardora

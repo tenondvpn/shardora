@@ -198,7 +198,7 @@ CipherText ContractCpabe::encrypt(const PublicKey &publicKey, const std::string 
 
     // 清理
     BN_CTX_free(ctx);
-    return std::move(cipher);
+    return cipher;
 }
 
 // 解密函数
@@ -314,6 +314,7 @@ int ContractCpabe::encrypt(
     fwrite(des_str.c_str(), 1, des_str.size(), fd);
     fclose(fd);
     std::cout << "cipher text: " << cipher3.to_string() << std::endl;
+    return 0;
 }
 
 int ContractCpabe::decrypt(
@@ -334,7 +335,7 @@ int ContractCpabe::decrypt(
     initialize_keys(splits[0], splits[1], publicKey, masterKey);
     UserPrivateKey userPrivateKey;
     auto prikey_splits = common::Split<>(splits[2], ',');
-    for (auto i = 0; i < prikey_splits.Count(); ++i) {
+    for (uint32_t i = 0; i < prikey_splits.Count(); ++i) {
         auto tmp_splits = common::Split<>(prikey_splits[i], ':');
         if (tmp_splits.Count() < 2) {
             break;

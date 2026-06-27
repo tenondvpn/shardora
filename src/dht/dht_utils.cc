@@ -3,7 +3,7 @@
 #include "protos/dht.pb.h"
 #include "dht/dht_key.h"
 
-namespace seth {
+namespace shardora {
 
 namespace dht {
 
@@ -79,4 +79,4 @@ int DefaultDhtSignCallback(
 
 }  // namespace dht
 
-}  // namespace seth
+}  // namespace shardora

@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "websocket/websocket_utils.h"
-namespace seth {
+namespace shardora {
 
 namespace ws {
 
@@ -28,4 +28,4 @@ private:
 
 };  // namespace tcp
 
-};  // namespace seth
+};  // namespace shardora

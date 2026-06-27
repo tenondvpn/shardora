@@ -36,7 +36,7 @@ boost::asio::ip::address_v4 ParseListenIpv4(std::string const& ip) {
 
 }  // namespace
 
-namespace seth {
+namespace shardora {
 
 namespace ws {
 
@@ -65,7 +65,7 @@ int32_t WebSocketServer::Init(const char* ip, uint16_t port, WebsocketCloseCallb
         websocketpp::lib::placeholders::_2));
     return 0;
 } catch (std::exception& e) {
-    SETH_ERROR("catch error: %s", e.what());
+    SHARDORA_ERROR("catch error: %s", e.what());
     return 1;
 }
 
@@ -94,7 +94,7 @@ void WebSocketServer::Run() {
         server_.start_accept();
         server_.run();
     } catch (const std::exception & e) {
-        SETH_ERROR("start websocket server failed: %s, ip port: %s:%d", e.what(), ws_ip_.c_str(), ws_port_);
+        SHARDORA_ERROR("start websocket server failed: %s, ip port: %s:%d", e.what(), ws_ip_.c_str(), ws_port_);
         //assert(false);
         exit(1);
     }
@@ -137,4 +137,4 @@ void WebSocketServer::Stop() {
 
 };  // namespace ws
 
-};  // namespace seth
+};  // namespace shardora

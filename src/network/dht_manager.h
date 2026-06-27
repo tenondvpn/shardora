@@ -7,7 +7,7 @@
 #include "common/tick.h"
 #include "dht/base_dht.h"
 
-namespace seth {
+namespace shardora {
 
 namespace network {
 
@@ -47,4 +47,4 @@ private:
 
 }  // namespace network
 
-}  // namespace seth
+}  // namespace shardora

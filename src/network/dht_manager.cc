@@ -10,7 +10,7 @@
 #include "network/universal_manager.h"
 #include "network/universal.h"
 
-namespace seth {
+namespace shardora {
 
 namespace network {
 
@@ -43,12 +43,12 @@ void DhtManager::Destroy() {
 
 void DhtManager::RegisterDht(uint32_t net_id, dht::BaseDhtPtr& dht) {
     if (net_id >= kConsensusWaitingShardEndNetworkId) {
-        SETH_ERROR("invalid network id: %u", net_id);
+        SHARDORA_ERROR("invalid network id: %u", net_id);
         return;
     }
 
     if (dhts_[net_id] != nullptr) {
-        SETH_ERROR("dht has registered: %u", net_id);
+        SHARDORA_ERROR("dht has registered: %u", net_id);
         return;
     }
 
@@ -115,4 +115,4 @@ void DhtManager::Join(const dht::NodePtr& node) {
 
 }  // namespace network
 
-}  // namespace seth
+}  // namespace shardora

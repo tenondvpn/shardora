@@ -12,7 +12,7 @@
 
 #include "common/utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace ws {
 
@@ -29,4 +29,4 @@ static const std::string kInvalidMessage = "kInvalidMessage";
 
 };  // namespace tcp
 
-};  // namespace seth
+};  // namespace shardora

@@ -30,13 +30,13 @@
 #include "security/ecdsa/ecdsa.h"
 #include "security/ecdsa/secp256k1.h"
 #include "transport/tcp_transport.h"
-#include "sethvm/execution.h"
-#include "sethvm/seth_host.h"
-#include "sethvm/sethvm_utils.h"
+#include "shardoravm/execution.h"
+#include "shardoravm/shardora_host.h"
+#include "shardoravm/shardoravm_utils.h"
 
 #include <google/protobuf/util/json_util.h>
 
-namespace seth {
+namespace shardora {
 
 namespace init {
 
@@ -113,21 +113,21 @@ static int CreateOqsTransactionWithAttr(
     security::Oqs oqs;
     auto from = oqs.GetAddress(from_pk);
     if (from.empty()) {
-        SETH_INFO("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
+        SHARDORA_INFO("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
         return kAccountNotExists;
     }
 
     if (from == to) {
-        SETH_INFO("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
+        SHARDORA_INFO("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
         return kFromEqualToInvalid;
     }
 
     if (from.size() != 20 || to.size() != 20) {
-        SETH_INFO("failed get address size error: %lu, %lu", from.size(), to.size());
+        SHARDORA_INFO("failed get address size error: %lu, %lu", from.size(), to.size());
         return kAccountNotExists;
     }
 
-    SETH_INFO("OQS transaction from: %s, to: %s, nonce: %lu",
+    SHARDORA_INFO("OQS transaction from: %s, to: %s, nonce: %lu",
         common::Encode::HexEncode(from).c_str(),
         common::Encode::HexEncode(to).c_str(),
         nonce);
@@ -145,7 +145,7 @@ static int CreateOqsTransactionWithAttr(
     auto step = req.get_param_value("type");
     uint32_t step_val = 0;
     if (!step.empty() && !common::StringUtil::ToUint32(step, &step_val)) {
-        SETH_ERROR("invalid step parameter: %s", step.c_str());
+        SHARDORA_ERROR("invalid step parameter: %s", step.c_str());
         return kHttpError;
     }
 
@@ -155,7 +155,7 @@ static int CreateOqsTransactionWithAttr(
         contract_bytes = common::Encode::HexDecode(contract_bytes_hex);
         if (step_val == pools::protobuf::kCreateLibrary || step_val == pools::protobuf::kCreateContract) {
             if (common::IsContractBytescodeValid(contract_bytes) != common::ValidationStatus::SUCCESS) {
-                SETH_INFO("create contract not has valid code: %s", common::Encode::HexEncode(contract_bytes).c_str());
+                SHARDORA_INFO("create contract not has valid code: %s", common::Encode::HexEncode(contract_bytes).c_str());
                 return kHttpError;
             }
         }
@@ -190,21 +190,21 @@ static int CreateOqsTransactionWithAttr(
     if (!prefund.empty()) {
         uint64_t prefund_val = 0;
         if (!common::StringUtil::ToUint64(prefund, &prefund_val)) {
-            SETH_WARN("get prefund failed %s", prefund.c_str());
+            SHARDORA_WARN("get prefund failed %s", prefund.c_str());
             return kSignatureInvalid;
         }
         new_tx->set_contract_prefund(prefund_val);
     }
 
     if (sign.empty()) {
-        SETH_ERROR("OQS Signature is empty!");
+        SHARDORA_ERROR("OQS Signature is empty!");
         return kSignatureInvalid;
     }
 
     try {
         auto tx_hash = pools::GetTxMessageHash(*new_tx);
         if (oqs.Verify(tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-            SETH_ERROR("OQS verify signature failed! tx_hash: %s, pk: %s, sign: %s",
+            SHARDORA_ERROR("OQS verify signature failed! tx_hash: %s, pk: %s, sign: %s",
                 common::Encode::HexEncode(tx_hash).c_str(),
                 common::Encode::HexEncode(from_pk).c_str(),
                 common::Encode::HexEncode(sign).c_str());
@@ -213,7 +213,7 @@ static int CreateOqsTransactionWithAttr(
 
         new_tx->set_sign(sign);
     } catch (const std::exception& e) {
-        SETH_ERROR("exception during oqs transaction creation: %s", e.what());
+        SHARDORA_ERROR("exception during oqs transaction creation: %s", e.what());
         return kSignatureInvalid;
     }
 
@@ -227,7 +227,7 @@ static void OqsHttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
         return;
     }
 
-    SETH_INFO("OQS http transaction request received.");
+    SHARDORA_INFO("OQS http transaction request received.");
     
     auto from_pk_hex = req.get_param_value("pubkey");
     auto to_hex = req.get_param_value("to");
@@ -299,7 +299,7 @@ static void OqsHttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
     }
 
     http_res.set_content("ok", "text/plain");
-    SETH_INFO("OQS transaction successfully processed and broadcasted.");
+    SHARDORA_INFO("OQS transaction successfully processed and broadcasted.");
 }
 
 static int CreateGmTransactionWithAttr(
@@ -316,7 +316,7 @@ static int CreateGmTransactionWithAttr(
     security::GmSsl gm;
     auto from = gm.GetAddress(from_pk);
     if (from.empty()) {
-        SETH_INFO("failed get gm address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
+        SHARDORA_INFO("failed get gm address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
         return kAccountNotExists;
     }
 
@@ -328,7 +328,7 @@ static int CreateGmTransactionWithAttr(
         return kAccountNotExists;
     }
 
-    SETH_INFO("GmSSL transaction from: %s, to: %s, nonce: %lu",
+    SHARDORA_INFO("GmSSL transaction from: %s, to: %s, nonce: %lu",
         common::Encode::HexEncode(from).c_str(),
         common::Encode::HexEncode(to).c_str(),
         nonce);
@@ -346,7 +346,7 @@ static int CreateGmTransactionWithAttr(
     auto step = req.get_param_value("type");
     uint32_t step_val = 0;
     if (!step.empty() && !common::StringUtil::ToUint32(step, &step_val)) {
-        SETH_ERROR("invalid step parameter: %s", step.c_str());
+        SHARDORA_ERROR("invalid step parameter: %s", step.c_str());
         return kHttpError;
     }
 
@@ -356,7 +356,7 @@ static int CreateGmTransactionWithAttr(
         contract_bytes = common::Encode::HexDecode(contract_bytes_hex);
         if (step_val == pools::protobuf::kCreateLibrary || step_val == pools::protobuf::kCreateContract) {
             if (common::IsContractBytescodeValid(contract_bytes) != common::ValidationStatus::SUCCESS) {
-                SETH_ERROR("create contract not has valid code: %s", common::Encode::HexEncode(contract_bytes).c_str());
+                SHARDORA_ERROR("create contract not has valid code: %s", common::Encode::HexEncode(contract_bytes).c_str());
                 return kHttpError;
             }
         }
@@ -394,14 +394,14 @@ static int CreateGmTransactionWithAttr(
     }
 
     if (sign.empty()) {
-        SETH_ERROR("GmSSL Signature is empty!");
+        SHARDORA_ERROR("GmSSL Signature is empty!");
         return kSignatureInvalid;
     }
 
     try {
         auto tx_hash = pools::GetTxMessageHash(*new_tx);
         if (gm.Verify(tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-            SETH_ERROR("GmSSL verify signature failed! hash: %s", 
+            SHARDORA_ERROR("GmSSL verify signature failed! hash: %s", 
                 common::Encode::HexEncode(tx_hash).c_str());
             return kSignatureInvalid;
         }
@@ -421,7 +421,7 @@ static void GmHttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
         return;
     }
 
-    SETH_INFO("GmSSL http transaction request received.");
+    SHARDORA_INFO("GmSSL http transaction request received.");
     
     auto from_pk_hex = req.get_param_value("pubkey");
     auto to_hex = req.get_param_value("to");
@@ -482,7 +482,7 @@ static void GmHttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
     }
 
     http_res.set_content("ok", "text/plain");
-    SETH_INFO("GmSSL transaction successfully processed.");
+    SHARDORA_INFO("GmSSL transaction successfully processed.");
 }
 
 static int CreateTransactionWithAttr(
@@ -500,23 +500,23 @@ static int CreateTransactionWithAttr(
         transport::protobuf::Header& msg) {
     auto from = http_handler->security_ptr()->GetAddressWithPublicKey(from_pk);
     if (from.empty()) {
-        SETH_INFO("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
+        SHARDORA_INFO("failed get address from pk: %s", common::Encode::HexEncode(from_pk).c_str());
         return kAccountNotExists;
     }
 
     if (from == to) {
-        SETH_INFO("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
+        SHARDORA_INFO("failed get address from == to: %s", common::Encode::HexEncode(from).c_str());
         return kFromEqualToInvalid;
     }
 
     if (from.size() != 20 || to.size() != 20) {
-        SETH_INFO("failed get address size error: %s, %s",
+        SHARDORA_INFO("failed get address size error: %s, %s",
             common::Encode::HexEncode(from).c_str(), 
             common::Encode::HexEncode(to).c_str());
         return kAccountNotExists;
     }
 
-    SETH_INFO("from: %s, to: %s, nonce: %lu",
+    SHARDORA_INFO("from: %s, to: %s, nonce: %lu",
         common::Encode::HexEncode(from).c_str(),
         common::Encode::HexEncode(to).c_str(),
         nonce);
@@ -531,7 +531,7 @@ static int CreateTransactionWithAttr(
     auto step = req.get_param_value("type");
     uint32_t step_val = 0;
     if (!common::StringUtil::ToUint32(step, &step_val)) {
-        SETH_ERROR("invalid step parameter: %s", step.c_str());
+        SHARDORA_ERROR("invalid step parameter: %s", step.c_str());
         return kHttpError;
     }
 
@@ -539,7 +539,7 @@ static int CreateTransactionWithAttr(
     if (step_val == pools::protobuf::kCreateLibrary || step_val == pools::protobuf::kCreateContract) {
         contract_bytes = common::Encode::HexDecode(contract_bytes);
         if (common::IsContractBytescodeValid(contract_bytes) != common::ValidationStatus::SUCCESS) {
-            SETH_INFO("create contract not has valid contract code: %s",
+            SHARDORA_INFO("create contract not has valid contract code: %s",
                 common::Encode::HexEncode(contract_bytes).c_str());
             return kHttpError;
         }
@@ -574,7 +574,7 @@ static int CreateTransactionWithAttr(
     if (!prefund.empty()) {
         uint64_t prefund_val = 0;
         if (!common::StringUtil::ToUint64(prefund, &prefund_val)) {
-            SETH_WARN("get prefund failed %s", prefund);
+            SHARDORA_WARN("get prefund failed %s", prefund);
             return kSignatureInvalid;
         }
 
@@ -582,7 +582,7 @@ static int CreateTransactionWithAttr(
     }
 
     if (sign_r.empty() || sign_s.empty()) {
-        SETH_ERROR("Missing signature components! r_len: %lu, s_len: %lu", 
+        SHARDORA_ERROR("Missing signature components! r_len: %lu, s_len: %lu", 
             sign_r.size(), sign_s.size());
         return kSignatureInvalid;
     }
@@ -594,27 +594,27 @@ static int CreateTransactionWithAttr(
     sign.push_back(static_cast<char>(sign_v));
 
     if (sign.size() != 65) {
-        SETH_ERROR("Invalid signature length constructed: %lu. (r: %lu, s: %lu)", 
+        SHARDORA_ERROR("Invalid signature length constructed: %lu. (r: %lu, s: %lu)", 
             sign.size(), sign_r.size(), sign_s.size());
         return kSignatureInvalid;
     }
 
     if (from_pk.empty()) {
-        SETH_ERROR("Public key is empty in Verify!");
+        SHARDORA_ERROR("Public key is empty in Verify!");
         return kSignatureInvalid;
     }
     
-    SETH_INFO("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());
+    SHARDORA_INFO("now call get tx hash: %s", ProtobufToJson(*new_tx).c_str());
     try {
         auto tx_hash = pools::GetTxMessageHash(*new_tx);
-        SETH_INFO("new tx hash: %s, tx: %s", 
+        SHARDORA_INFO("new tx hash: %s, tx: %s", 
             common::Encode::HexEncode(tx_hash).c_str(), ProtobufToJson(*new_tx).c_str());
         if (http_handler->security_ptr()->Verify(
                 tx_hash, from_pk, sign) != security::kSecuritySuccess) {
             sign[64] = sign_v == 0 ? 1 : 0;
             if (http_handler->security_ptr()->Verify(
                     tx_hash, from_pk, sign) != security::kSecuritySuccess) {
-                SETH_ERROR("verify signature failed tx_hash: %s, "
+                SHARDORA_ERROR("verify signature failed tx_hash: %s, "
                     "sign_r: %s, sign_s: %s, sign_v: %d, pk: %s, hash64: %lu",
                     common::Encode::HexEncode(tx_hash).c_str(),
                     common::Encode::HexEncode(sign_r).c_str(),
@@ -628,7 +628,7 @@ static int CreateTransactionWithAttr(
 
         new_tx->set_sign(sign);
     } catch (const std::exception& e) {
-        SETH_ERROR("exception when create transaction: %s", e.what());
+        SHARDORA_ERROR("exception when create transaction: %s", e.what());
         return kSignatureInvalid;
     }
     return kHttpSuccess;
@@ -654,7 +654,7 @@ static void HttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
         return;
     }
 
-    SETH_INFO("http transaction coming.");
+    SHARDORA_INFO("http transaction coming.");
     auto nonce_str = req.get_param_value("nonce");
     auto frompk = req.get_param_value("pubkey");
     auto to = req.get_param_value("to");
@@ -739,7 +739,7 @@ static void HttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
     }
 
     auto thread_index = -1;
-    SETH_INFO("http handler success get http server thread index: %d, address: %s", 
+    SHARDORA_INFO("http handler success get http server thread index: %d, address: %s", 
         thread_index, 
         common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddressWithPublicKey(common::Encode::HexDecode(frompk))).c_str());
@@ -754,7 +754,7 @@ static void HttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
     }
     
     msg_ptr->header.set_hash64(common::Random::RandomUint64());
-    SETH_INFO("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
+    SHARDORA_INFO("http handler success get http server thread index: %d, address: %s, hash64: %lu", 
         thread_index, 
         common::Encode::HexEncode(
             http_handler->security_ptr()->GetAddressWithPublicKey(common::Encode::HexDecode(frompk))).c_str(),
@@ -768,7 +768,7 @@ static void HttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
         http_handler->tx_msg_map().Put(msg_ptr->msg_hash, msg_ptr);
     }
 
-    SETH_INFO("http transaction success %s, %s, nonce: %lu, txhash: %s", 
+    SHARDORA_INFO("http transaction success %s, %s, nonce: %lu, txhash: %s", 
         common::Encode::HexEncode(
         http_handler->security_ptr()->GetAddressWithPublicKey(common::Encode::HexDecode(frompk))).c_str(), 
         to, nonce,
@@ -776,7 +776,7 @@ static void HttpTransaction(const UWSRequest& req, UWSResponse& http_res) {
 }
 
 static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("query contract coming.");
+    SHARDORA_INFO("query contract coming.");
     auto tmp_contract_addr = req.get_param_value("address");
     auto tmp_input = req.get_param_value("input");
     auto tmp_from = req.get_param_value("from");
@@ -797,7 +797,7 @@ static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
 
     // if (!addr_info) {
     //     std::string res = "get from prefund failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
-    //     SETH_INFO("query contract param error: %s.", res.c_str());
+    //     SHARDORA_INFO("query contract param error: %s.", res.c_str());
     //     http_res.set_content(res, "text/plain");
     //     return;
     // }
@@ -807,35 +807,35 @@ static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         http_res.set_content(res, "text/plain");
-        SETH_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
-    sethvm::SethhainHost seth_host;
-    seth_host.tx_context_.tx_origin = evmc::address{};
-    seth_host.tx_context_.block_coinbase = evmc::address{};
-    seth_host.tx_context_.block_number = 0;
-    seth_host.tx_context_.block_timestamp = 0;
+    shardoravm::ShardorahainHost shardora_host;
+    shardora_host.tx_context_.tx_origin = evmc::address{};
+    shardora_host.tx_context_.block_coinbase = evmc::address{};
+    shardora_host.tx_context_.block_number = 0;
+    shardora_host.tx_context_.block_timestamp = 0;
     uint64_t chanin_id = hotstuff::kGlobalChainId;
-    sethvm::Uint64ToEvmcBytes32(
-        seth_host.tx_context_.chain_id,
+    shardoravm::Uint64ToEvmcBytes32(
+        shardora_host.tx_context_.chain_id,
         chanin_id);
-    seth_host.contract_mgr_ = contract_mgr;
-    seth_host.my_address_ = contract_addr;
-    seth_host.tx_context_.block_gas_limit = prefund;
-    seth_host.view_block_chain_ = http_handler->view_block_chain();
+    shardora_host.contract_mgr_ = contract_mgr;
+    shardora_host.my_address_ = contract_addr;
+    shardora_host.tx_context_.block_gas_limit = prefund;
+    shardora_host.view_block_chain_ = http_handler->view_block_chain();
     // user caller prefund 's gas
     uint64_t from_balance = prefund;
     uint64_t to_balance = contract_addr_info->balance();
-    seth_host.AddTmpAccountBalance(
+    shardora_host.AddTmpAccountBalance(
         from,
         from_balance);
-    seth_host.AddTmpAccountBalance(
+    shardora_host.AddTmpAccountBalance(
         contract_addr,
         to_balance);
     evmc_result evmc_res = {};
     evmc::Result result{ evmc_res };
-    int exec_res = sethvm::Execution::Instance()->execute(
+    int exec_res = shardoravm::Execution::Instance()->execute(
         contract_addr_info->bytes_code(),
         input,
         from,
@@ -844,20 +844,20 @@ static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
         0,
         prefund,
         0,
-        sethvm::kJustCall,
-        seth_host,
+        shardoravm::kJustCall,
+        shardora_host,
         &result);
-    if (exec_res != sethvm::kSethvmSuccess || result.status_code != EVMC_SUCCESS) {
+    if (exec_res != shardoravm::kShardoravmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + 
             std::to_string(result.status_code) + 
             ", exec_res: " + std::to_string(exec_res);
         http_res.set_content(res, "text/plain");
-        SETH_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_INFO("query contract error: %s.", res.c_str());
         return;
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
-    SETH_INFO("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    SHARDORA_INFO("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     if (result.output_size < 64) {
         auto res = common::Encode::HexEncode(qdata); 
         http_res.set_content(res, "text/plain");
@@ -865,10 +865,10 @@ static void QueryContract(const UWSRequest& req, UWSResponse& http_res) {
     }
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
-    uint64_t len = sethvm::EvmcBytes32ToUint64(len_bytes);
+    uint64_t len = shardoravm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res_str(qdata.c_str() + 64, len);
     http_res.set_content(http_res_str, "text/plain");
-    SETH_INFO("query contract success data: %s", http_res_str.c_str());
+    SHARDORA_INFO("query contract success data: %s", http_res_str.c_str());
 }
 
 /**
@@ -910,7 +910,7 @@ static std::string EncodeEvmError(const std::string& msg) {
 }
 
 static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("query contract coming.");
+    SHARDORA_INFO("query contract coming.");
     auto tmp_contract_addr = req.get_param_value("address");
     auto tmp_input = req.get_param_value("input");
     auto tmp_from = req.get_param_value("from");
@@ -932,7 +932,7 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
     // if (!addr_info) {
     //     std::string res = "get from prefund failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
     //     http_res.set_content(res, "text/plain");
-    //     SETH_INFO("query contract param error: %s.", res.c_str());
+    //     SHARDORA_INFO("query contract param error: %s.", res.c_str());
     //     return;
     // }
 
@@ -941,42 +941,42 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         http_res.set_content(EncodeEvmError(res), "text/plain");
-        SETH_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
     if (contract_addr_info->destructed()) {
         std::string res = "get contract addr destructed!";
         http_res.set_content(EncodeEvmError(res), "text/plain");
-        SETH_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
-    sethvm::SethhainHost seth_host;
-    seth_host.tx_context_.tx_origin = evmc::address{};
-    seth_host.tx_context_.block_coinbase = evmc::address{};
-    seth_host.tx_context_.block_number = 0;
-    seth_host.tx_context_.block_timestamp = 0;
+    shardoravm::ShardorahainHost shardora_host;
+    shardora_host.tx_context_.tx_origin = evmc::address{};
+    shardora_host.tx_context_.block_coinbase = evmc::address{};
+    shardora_host.tx_context_.block_number = 0;
+    shardora_host.tx_context_.block_timestamp = 0;
     uint64_t chanin_id = hotstuff::kGlobalChainId;
-    sethvm::Uint64ToEvmcBytes32(
-        seth_host.tx_context_.chain_id,
+    shardoravm::Uint64ToEvmcBytes32(
+        shardora_host.tx_context_.chain_id,
         chanin_id);
-    seth_host.contract_mgr_ = contract_mgr;
-    seth_host.my_address_ = contract_addr;
-    seth_host.tx_context_.block_gas_limit = prefund;
+    shardora_host.contract_mgr_ = contract_mgr;
+    shardora_host.my_address_ = contract_addr;
+    shardora_host.tx_context_.block_gas_limit = prefund;
     // user caller prefund 's gas
     uint64_t from_balance = prefund;
     uint64_t to_balance = contract_addr_info->balance();
-    seth_host.view_block_chain_ = http_handler->view_block_chain();
-    seth_host.AddTmpAccountBalance(
+    shardora_host.view_block_chain_ = http_handler->view_block_chain();
+    shardora_host.AddTmpAccountBalance(
         from,
         from_balance);
-    seth_host.AddTmpAccountBalance(
+    shardora_host.AddTmpAccountBalance(
         contract_addr,
         to_balance);
     evmc_result evmc_res = {};
     evmc::Result result{ evmc_res };
-    int exec_res = sethvm::Execution::Instance()->execute(
+    int exec_res = shardoravm::Execution::Instance()->execute(
         contract_addr_info->bytes_code(),
         input,
         from,
@@ -985,21 +985,21 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
         0,
         999999999999lu,
         0,
-        sethvm::kJustCall,
-        seth_host,
+        shardoravm::kJustCall,
+        shardora_host,
         &result);
-    if (exec_res != sethvm::kSethvmSuccess || result.status_code != EVMC_SUCCESS) {
+    if (exec_res != shardoravm::kShardoravmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + 
             std::to_string(result.status_code) + 
             ", exec_res: " + std::to_string(exec_res);
         http_res.set_content(EncodeEvmError(res), "text/plain");
-        SETH_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_INFO("query contract error: %s.", res.c_str());
         return;
     }
 	
     std::string qdata((char*)result.output_data, result.output_size);
     auto hex_data = common::Encode::HexEncode(qdata);
-    // SETH_INFO("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
+    // SHARDORA_INFO("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
     // if (result.output_size < 64) {
     //     auto res = common::Encode::HexEncode(qdata); 
     //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -1008,10 +1008,10 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
     // }
     // evmc_bytes32 len_bytes;
     // memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
-    // uint64_t len = sethvm::EvmcBytes32ToUint64(len_bytes);
+    // uint64_t len = shardoravm::EvmcBytes32ToUint64(len_bytes);
     // std::string http_res(qdata.c_str() + 64, len);
     http_res.set_content(hex_data, "text/plain");
-    SETH_INFO("query contract success data: %s", hex_data.c_str());
+    SHARDORA_INFO("query contract success data: %s", hex_data.c_str());
 }
 
 // Returns leader routing table: pool_index -> {ip, port} for the local shard.
@@ -1058,16 +1058,16 @@ static void QueryLeaders(const UWSRequest& req, UWSResponse& http_res) {
 
     res_json["pool_count"] = common::kImmutablePoolSize;
     http_res.set_content(res_json.dump(), "application/json");
-    SETH_INFO("query_leaders: %s", res_json.dump().c_str());
+    SHARDORA_INFO("query_leaders: %s", res_json.dump().c_str());
 }
 
 static void QueryAccount(const UWSRequest& req, UWSResponse& http_res) {
     auto tmp_addr = req.get_param_value("address");
-    SETH_INFO("coming query account: %s", tmp_addr.c_str());
+    SHARDORA_INFO("coming query account: %s", tmp_addr.c_str());
     if (tmp_addr.empty()) {
         std::string res = common::StringUtil::Format("param address is null");
         http_res.set_content(res, "text/plain");
-        SETH_INFO("%s", res.c_str());
+        SHARDORA_INFO("%s", res.c_str());
         return;
     }
 
@@ -1081,7 +1081,7 @@ static void QueryAccount(const UWSRequest& req, UWSResponse& http_res) {
     if (addr_info == nullptr) {
         std::string res = "get address failed from cache: " + tmp_addr;
         http_res.set_content(res, "text/plain");
-        SETH_INFO("%s", res.c_str());
+        SHARDORA_INFO("%s", res.c_str());
         return;
     }
 
@@ -1090,12 +1090,12 @@ static void QueryAccount(const UWSRequest& req, UWSResponse& http_res) {
     if (!st.ok()) {
         std::string res = "json parse failed: " + addr;
         http_res.set_content(res, "text/plain");
-        SETH_INFO("%s", res.c_str());
+        SHARDORA_INFO("%s", res.c_str());
         return;
     }
 
     http_res.set_content(json_str, "text/plain");
-    SETH_INFO("%s", json_str.c_str());
+    SHARDORA_INFO("%s", json_str.c_str());
 }
 
 // Batch query multiple accounts at once.
@@ -1159,7 +1159,7 @@ static void BatchQueryAccounts(const UWSRequest& req, UWSResponse& http_res) {
         // For prepayment addresses (40 bytes = contract + user), also try
         // looking up by the first 20 bytes (contract address) pool.
         if (addr_info == nullptr && addr.length() == common::kPreypamentAddressLength) {
-            SETH_INFO("batch_query: prepayment addr not found: %s (len=%u)",
+            SHARDORA_INFO("batch_query: prepayment addr not found: %s (len=%u)",
                 hex_addr.c_str(), (uint32_t)addr.length());
         }
 
@@ -1202,7 +1202,7 @@ static void BatchQueryAccounts(const UWSRequest& req, UWSResponse& http_res) {
         details += " | ... +" + std::to_string(accounts_json.size() - 20) + " more";
     }
 
-    SETH_WARN("batch_query_accounts: requested=%u found=%u not_found=%u "
+    SHARDORA_WARN("batch_query_accounts: requested=%u found=%u not_found=%u "
         "prefix_db=%u acc_mgr=%u resp_bytes=%zu details=[%s]",
         addrs_splits.Count(),
         (uint32_t)accounts_json.size(),
@@ -1220,7 +1220,7 @@ static void BatchQueryAccounts(const UWSRequest& req, UWSResponse& http_res) {
         if (not_found_json.size() > 5) {
             nf_list += ",... +" + std::to_string(not_found_json.size() - 5) + " more";
         }
-        SETH_WARN("batch_query not_found addrs: [%s]", nf_list.c_str());
+        SHARDORA_WARN("batch_query not_found addrs: [%s]", nf_list.c_str());
     }
 }
 
@@ -1296,12 +1296,12 @@ static void QueryAccountTxs(const UWSRequest& req, UWSResponse& http_res) {
     res_json["offset"] = offset;
     res_json["transactions"] = txs_json;
     http_res.set_content(res_json.dump(), "application/json");
-    SETH_INFO("query_account_txs: address=%s, limit=%u, offset=%u, count=%u",
+    SHARDORA_INFO("query_account_txs: address=%s, limit=%u, offset=%u, count=%u",
         hex_addr.c_str(), limit, offset, static_cast<uint32_t>(txs.size()));
 }
 
 static void AccountsValid(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("query account.");
+    SHARDORA_INFO("query account.");
     auto balance = req.get_param_value("balance");
     uint64_t balance_val = 0;
     if (!common::StringUtil::ToUint64(balance, &balance_val)) {
@@ -1341,9 +1341,9 @@ static void AccountsValid(const UWSRequest& req, UWSResponse& http_res) {
 
         if (addr_info != nullptr && addr_info->balance() >= balance_val) {
             res_json["addrs"][invalid_addr_index++] = addrs_splits[i];
-            SETH_INFO("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+            SHARDORA_INFO("valid addr: %s, balance: %lu", addrs_splits[i], addr_info->balance());
         } else {
-            SETH_INFO("invalid addr: %s, balance: %lu",
+            SHARDORA_INFO("invalid addr: %s, balance: %lu",
                 addrs_splits[i], 
                 (addr_info ? addr_info->balance() : 0));
         }
@@ -1354,7 +1354,7 @@ static void AccountsValid(const UWSRequest& req, UWSResponse& http_res) {
 }
 
 static void GetBlockWithGid(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("query account.");
+    SHARDORA_INFO("query account.");
     auto addr = req.get_param_value("addr");
     if (addr.empty()) {
         std::string res = std::string("addr not exists.");
@@ -1390,12 +1390,12 @@ static void GetBlockWithGid(const UWSRequest& req, UWSResponse& http_res) {
     }
        
     auto json_str = res_json.dump();
-    SETH_INFO("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
+    SHARDORA_INFO("success get addr: %s, nonce: %lu, res: %s", addr, tmp_nonce, json_str.c_str());
     http_res.set_content(res_json, "text/plain");
 }
 
 static void PrefundsValid(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("query account.");
+    SHARDORA_INFO("query account.");
     auto balance = req.get_param_value("balance");
     if (balance.empty()) {
         std::string res = std::string("balance not exists.");
@@ -1448,9 +1448,9 @@ static void PrefundsValid(const UWSRequest& req, UWSResponse& http_res) {
 
         if (addr_info != nullptr && addr_info->balance() >= balance_val) {
             res_json["prefunds"][invalid_addr_index++] = addrs_splits[i];
-            SETH_INFO("valid prefund: %s, balance: %lu", addrs_splits[i], addr_info->balance());
+            SHARDORA_INFO("valid prefund: %s, balance: %lu", addrs_splits[i], addr_info->balance());
         } else {
-            SETH_INFO("invalid prefund: %s, balance: %lu",
+            SHARDORA_INFO("invalid prefund: %s, balance: %lu",
                 addrs_splits[i], 
                 (addr_info ? addr_info->balance() : 0));
         }
@@ -1480,11 +1480,11 @@ static void GidsValid(const UWSRequest& req, UWSResponse& http_res) {
             continue;
         }
 
-        SETH_INFO("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
+        SHARDORA_INFO("now get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         auto res = false; //prefix_db->JustCheckCommitedGidExists(gid);
         if (res) {
             res_json["gids"][invalid_addr_index++] = addrs_splits[i];
-            SETH_INFO("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
+            SHARDORA_INFO("success get tx gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
 
@@ -1527,15 +1527,15 @@ static void GetProxyReencInfo(const UWSRequest& req, UWSResponse& http_res) {
     auto bls_pk_json = res_json["value"];
     res_json["status"] = 0;
     res_json["msg"] = "success";
-    SETH_WARN("GetProxyReencInfo 4.");
+    SHARDORA_WARN("GetProxyReencInfo 4.");
     for (uint32_t i = 0; i < count; ++i) {
         auto private_key = proxy_id + "_" + std::string("init_prikey_") + std::to_string(i);
         std::string prikey;
-        sethvm::Execution::Instance()->GetStorage(contract_str, private_key, &prikey);
+        shardoravm::Execution::Instance()->GetStorage(contract_str, private_key, &prikey);
         auto public_key = proxy_id + "_" + std::string("init_pubkey_") + std::to_string(i);
         std::string pubkey;
-        sethvm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
-        SETH_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
+        shardoravm::Execution::Instance()->GetStorage(contract_str, public_key, &pubkey);
+        SHARDORA_WARN("contract_reencryption get member private and public key: %s, %s sk: %s, pk: %s",
             common::Encode::HexEncode(private_key).c_str(), 
             common::Encode::HexEncode(public_key).c_str(), 
             common::Encode::HexEncode(prikey).c_str(),
@@ -1553,11 +1553,11 @@ static void GetProxyReencInfo(const UWSRequest& req, UWSResponse& http_res) {
 
 
 static void GetSecAndEncData(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("http transaction coming.");
+    SHARDORA_INFO("http transaction coming.");
     contract::ContractReEncryption prox_renc;
-    sethvm::SethhainHost seth_host;
+    shardoravm::ShardorahainHost shardora_host;
     contract::CallParameters param;
-    param.seth_host = &seth_host;
+    param.shardora_host = &shardora_host;
     auto data = req.get_param_value("data");
     if (data.empty()) {
         std::string res = common::StringUtil::Format("param data is null");
@@ -1582,7 +1582,7 @@ static void GetSecAndEncData(const UWSRequest& req, UWSResponse& http_res) {
     std::string sec_data;
     auto raw_key = std::make_pair(seckey.c_str(), seckey.size());
     secptr->Encrypt(data, raw_key, &sec_data);
-    SETH_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+    SHARDORA_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         test_data.c_str(), 
         common::Encode::HexEncode(test_data).c_str(),
         common::Encode::HexEncode(m.toString()).c_str(), 
@@ -1599,12 +1599,12 @@ static void GetSecAndEncData(const UWSRequest& req, UWSResponse& http_res) {
 }
 
 static void ProxDecryption(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_WARN("ProxDecryption coming 0.");
+    SHARDORA_WARN("ProxDecryption coming 0.");
     contract::ContractReEncryption prox_renc;
-    sethvm::SethhainHost seth_host;
+    shardoravm::ShardorahainHost shardora_host;
     contract::CallParameters param;
     param.from = common::Encode::HexDecode("48e1eab96c9e759daa3aff82b40e77cd615a41d0");
-    param.seth_host = &seth_host;
+    param.shardora_host = &shardora_host;
     auto id = req.get_param_value("id");
     if (id.empty()) {
         std::string res = common::StringUtil::Format("param data is null");
@@ -1612,7 +1612,7 @@ static void ProxDecryption(const UWSRequest& req, UWSResponse& http_res) {
         return;
     }
 
-    SETH_WARN("ProxDecryption coming 2.");
+    SHARDORA_WARN("ProxDecryption coming 2.");
     std::string res_data;
     prox_renc.Decryption(param, "", std::string(id) + ";", &res_data);
     std::string hash256 = common::Hash::Hash256(res_data);
@@ -1633,7 +1633,7 @@ static void ProxDecryption(const UWSRequest& req, UWSResponse& http_res) {
     std::string dec_data;
     auto raw_key = std::make_pair(hash256.c_str(), hash256.size());
     secptr->Decrypt(kv_info.value(), raw_key, &dec_data);
-    SETH_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
+    SHARDORA_WARN("get m data src data: %s, hex data: %s, m: %s, hash sec: %s, sec data: %s", 
         dec_data.c_str(), 
         common::Encode::HexEncode(dec_data).c_str(),
         common::Encode::HexEncode(res_data).c_str(), 
@@ -1646,13 +1646,13 @@ static void ProxDecryption(const UWSRequest& req, UWSResponse& http_res) {
     res_json["encdata"] = common::Encode::HexEncode(kv_info.value());
     res_json["decdata"] = std::string(dec_data.c_str());
     auto json_str = res_json.dump();
-    SETH_WARN("ProxDecryption coming 3.");
+    SHARDORA_WARN("ProxDecryption coming 3.");
     http_res.set_content(json_str, "text/plain");
-    SETH_WARN("ProxDecryption coming 4.");
+    SHARDORA_WARN("ProxDecryption coming 4.");
 }
 
 static void ArsCreateSecKeys(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_WARN("ArsCreateSecKeys coming 0.");
+    SHARDORA_WARN("ArsCreateSecKeys coming 0.");
     auto keys = req.get_param_value("keys");
     if (keys.empty()) {
         std::string res = common::StringUtil::Format("param keys is null");
@@ -1704,16 +1704,16 @@ static void ArsCreateSecKeys(const UWSRequest& req, UWSResponse& http_res) {
     }
 
     auto json_str = res_json.dump();
-    SETH_WARN("ArsCreateSecKeys coming 3.");
+    SHARDORA_WARN("ArsCreateSecKeys coming 3.");
     http_res.set_content(json_str, "text/plain");
-    SETH_WARN("ArsCreateSecKeys coming 4.");
+    SHARDORA_WARN("ArsCreateSecKeys coming 4.");
 }
 
 static void QueryInit(const UWSRequest& req, UWSResponse& http_res) {
     auto thread_index = 0;//common::GlobalInfo::Instance()->get_thread_index();
     std::string res = "ok";
     http_res.set_content(res, "text/plain");
-    SETH_INFO("sunccess init http ser: %d", thread_index);
+    SHARDORA_INFO("sunccess init http ser: %d", thread_index);
 }
 
 static void GetBlocks(const UWSRequest& req, UWSResponse& http_res) {
@@ -1870,7 +1870,7 @@ static void GetBlockWithHash(const UWSRequest& req, UWSResponse& http_res) {
             try {
                 res_json["blocks"].push_back(nlohmann::json::parse(HttpProtobufToJson(view_block)));
             } catch (...) {
-                SETH_ERROR("Parse block json failed for hash: %s", block_hash.c_str());
+                SHARDORA_ERROR("Parse block json failed for hash: %s", block_hash.c_str());
             }
         }
     }
@@ -1934,13 +1934,13 @@ static void TransactionReceipt(const UWSRequest& req, UWSResponse& http_res) {
         }
     }
     
-    SETH_INFO("transaction receipt query, tx hash: %s, res: %s", 
+    SHARDORA_INFO("transaction receipt query, tx hash: %s, res: %s", 
         req.get_param_value("tx_hash").c_str(), res_json.dump().c_str());
     http_res.set_content(res_json.dump(), "application/json");
 }
 
 static void UpdatePrivateKey(const UWSRequest& req, UWSResponse& http_res) {
-    SETH_INFO("Update private key request received.");
+    SHARDORA_INFO("Update private key request received.");
     
     nlohmann::json res_json;
     res_json["status"] = 1;
@@ -1951,7 +1951,7 @@ static void UpdatePrivateKey(const UWSRequest& req, UWSResponse& http_res) {
     if (private_key_hex.empty()) {
         res_json["msg"] = "private_key parameter is required";
         http_res.set_content(res_json.dump(), "application/json");
-        SETH_ERROR("Update private key failed: private_key parameter is empty");
+        SHARDORA_ERROR("Update private key failed: private_key parameter is empty");
         return;
     }
     
@@ -1960,7 +1960,7 @@ static void UpdatePrivateKey(const UWSRequest& req, UWSResponse& http_res) {
     if (private_key.empty()) {
         res_json["msg"] = "invalid private_key format (must be hex)";
         http_res.set_content(res_json.dump(), "application/json");
-        SETH_ERROR("Update private key failed: invalid hex format");
+        SHARDORA_ERROR("Update private key failed: invalid hex format");
         return;
     }
     
@@ -1968,7 +1968,7 @@ static void UpdatePrivateKey(const UWSRequest& req, UWSResponse& http_res) {
     if (!http_handler->private_key_update_callback_) {
         res_json["msg"] = "private key update callback not set";
         http_res.set_content(res_json.dump(), "application/json");
-        SETH_ERROR("Update private key failed: callback not set");
+        SHARDORA_ERROR("Update private key failed: callback not set");
         return;
     }
     
@@ -1976,10 +1976,10 @@ static void UpdatePrivateKey(const UWSRequest& req, UWSResponse& http_res) {
     if (result == 0) {
         res_json["status"] = 0;
         res_json["msg"] = "success";
-        SETH_INFO("Private key updated successfully");
+        SHARDORA_INFO("Private key updated successfully");
     } else {
         res_json["msg"] = "failed to update private key";
-        SETH_ERROR("Update private key failed: callback returned error %d", result);
+        SHARDORA_ERROR("Update private key failed: callback returned error %d", result);
     }
     
     http_res.set_content(res_json.dump(), "application/json");
@@ -1997,14 +1997,14 @@ HttpHandler::~HttpHandler() {
 }
 
 // ── MetaMask / Ethereum JSON-RPC helpers ─────────────────────────────────────
-// Chain ID for Seth — matches hotstuff::kGlobalChainId / kGlobalChainIdValue.
-static constexpr uint64_t kSethChainId = hotstuff::kGlobalChainIdValue;
+// Chain ID for Shardora — matches hotstuff::kGlobalChainId / kGlobalChainIdValue.
+static constexpr uint64_t kShardoraChainId = hotstuff::kGlobalChainIdValue;
 
 static inline std::string EthAddr(const std::string& raw20) {
     return "0x" + common::Encode::HexEncode(raw20);
 }
 
-static inline std::string SethAddr(const std::string& eth_addr) {
+static inline std::string ShardoraAddr(const std::string& eth_addr) {
     std::string s = eth_addr;
     if (s.size() >= 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) s = s.substr(2);
     return common::Encode::HexDecode(s);
@@ -2051,7 +2051,7 @@ static bool DecodeEthRawTx(
     if (p[0] == 0x02) {
         // EIP-1559 (Type 2) transaction
         // Format: 0x02 || RLP([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, v, r, s])
-        SETH_INFO("DecodeEthRawTx: EIP-1559 (Type 2) transaction detected");
+        SHARDORA_INFO("DecodeEthRawTx: EIP-1559 (Type 2) transaction detected");
         p++; len--;  // Skip type byte
         
         // Decode outer RLP list
@@ -2118,18 +2118,18 @@ static bool DecodeEthRawTx(
 
         // Decode EIP-1559 fields: chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, v, r, s
         std::string s_chainid, s_nonce, s_maxpriority, s_maxfee, s_gaslimit, s_to, s_value, s_data, s_accesslist, s_v, s_r, s_s;
-        if (!decode_item(p, len, s_chainid))      { SETH_WARN("EIP-1559 RLP decode failed at: chainId"); return false; }
-        if (!decode_item(p, len, s_nonce))        { SETH_WARN("EIP-1559 RLP decode failed at: nonce"); return false; }
-        if (!decode_item(p, len, s_maxpriority))  { SETH_WARN("EIP-1559 RLP decode failed at: maxPriorityFeePerGas"); return false; }
-        if (!decode_item(p, len, s_maxfee))       { SETH_WARN("EIP-1559 RLP decode failed at: maxFeePerGas"); return false; }
-        if (!decode_item(p, len, s_gaslimit))     { SETH_WARN("EIP-1559 RLP decode failed at: gasLimit"); return false; }
-        if (!decode_item(p, len, s_to))           { SETH_WARN("EIP-1559 RLP decode failed at: to"); return false; }
-        if (!decode_item(p, len, s_value))        { SETH_WARN("EIP-1559 RLP decode failed at: value"); return false; }
-        if (!decode_item(p, len, s_data))         { SETH_WARN("EIP-1559 RLP decode failed at: data"); return false; }
-        if (!decode_item(p, len, s_accesslist))   { SETH_WARN("EIP-1559 RLP decode failed at: accessList"); return false; }
-        if (!decode_item(p, len, s_v))            { SETH_WARN("EIP-1559 RLP decode failed at: v"); return false; }
-        if (!decode_item(p, len, s_r))            { SETH_WARN("EIP-1559 RLP decode failed at: r"); return false; }
-        if (!decode_item(p, len, s_s))            { SETH_WARN("EIP-1559 RLP decode failed at: s"); return false; }
+        if (!decode_item(p, len, s_chainid))      { SHARDORA_WARN("EIP-1559 RLP decode failed at: chainId"); return false; }
+        if (!decode_item(p, len, s_nonce))        { SHARDORA_WARN("EIP-1559 RLP decode failed at: nonce"); return false; }
+        if (!decode_item(p, len, s_maxpriority))  { SHARDORA_WARN("EIP-1559 RLP decode failed at: maxPriorityFeePerGas"); return false; }
+        if (!decode_item(p, len, s_maxfee))       { SHARDORA_WARN("EIP-1559 RLP decode failed at: maxFeePerGas"); return false; }
+        if (!decode_item(p, len, s_gaslimit))     { SHARDORA_WARN("EIP-1559 RLP decode failed at: gasLimit"); return false; }
+        if (!decode_item(p, len, s_to))           { SHARDORA_WARN("EIP-1559 RLP decode failed at: to"); return false; }
+        if (!decode_item(p, len, s_value))        { SHARDORA_WARN("EIP-1559 RLP decode failed at: value"); return false; }
+        if (!decode_item(p, len, s_data))         { SHARDORA_WARN("EIP-1559 RLP decode failed at: data"); return false; }
+        if (!decode_item(p, len, s_accesslist))   { SHARDORA_WARN("EIP-1559 RLP decode failed at: accessList"); return false; }
+        if (!decode_item(p, len, s_v))            { SHARDORA_WARN("EIP-1559 RLP decode failed at: v"); return false; }
+        if (!decode_item(p, len, s_r))            { SHARDORA_WARN("EIP-1559 RLP decode failed at: r"); return false; }
+        if (!decode_item(p, len, s_s))            { SHARDORA_WARN("EIP-1559 RLP decode failed at: s"); return false; }
 
         nonce     = be_to_u64(s_nonce);
         gas_price = be_to_u64(s_maxfee);  // Use maxFeePerGas as gas_price
@@ -2156,9 +2156,9 @@ static bool DecodeEthRawTx(
         r = std::string(32 - std::min<size_t>(s_r.size(), 32), '\0') + s_r.substr(s_r.size() > 32 ? s_r.size() - 32 : 0);
         s = std::string(32 - std::min<size_t>(s_s.size(), 32), '\0') + s_s.substr(s_s.size() > 32 ? s_s.size() - 32 : 0);
 
-        SETH_INFO("EIP-1559 decoded: nonce=%lu, maxFeePerGas=%lu, gasLimit=%lu, value=%lu, v=%u",
+        SHARDORA_INFO("EIP-1559 decoded: nonce=%lu, maxFeePerGas=%lu, gasLimit=%lu, value=%lu, v=%u",
                   nonce, gas_price, gas_limit, value, v_byte);
-        SETH_INFO("EIP-1559 signature: r=%s, s=%s",
+        SHARDORA_INFO("EIP-1559 signature: r=%s, s=%s",
                   common::Encode::HexEncode(r).c_str(),
                   common::Encode::HexEncode(s).c_str());
         return true;
@@ -2166,11 +2166,11 @@ static bool DecodeEthRawTx(
     
     // Legacy transaction (starts with 0xc0..0xff = RLP list)
     if (p[0] < 0xc0) {
-        SETH_WARN("DecodeEthRawTx: unsupported transaction type=0x%02x", p[0]);
+        SHARDORA_WARN("DecodeEthRawTx: unsupported transaction type=0x%02x", p[0]);
         return false;
     }
     
-    SETH_INFO("DecodeEthRawTx: Legacy transaction detected");
+    SHARDORA_INFO("DecodeEthRawTx: Legacy transaction detected");
 
     // Outer list
     size_t list_len = 0;
@@ -2220,15 +2220,15 @@ static bool DecodeEthRawTx(
     };
 
     std::string s_nonce, s_gasprice, s_gaslimit, s_to, s_value, s_data, s_v, s_r, s_s;
-    if (!decode_item(p, len, s_nonce))    { SETH_WARN("RLP decode failed at: nonce"); return false; }
-    if (!decode_item(p, len, s_gasprice)) { SETH_WARN("RLP decode failed at: gasprice"); return false; }
-    if (!decode_item(p, len, s_gaslimit)) { SETH_WARN("RLP decode failed at: gaslimit"); return false; }
-    if (!decode_item(p, len, s_to))       { SETH_WARN("RLP decode failed at: to"); return false; }
-    if (!decode_item(p, len, s_value))    { SETH_WARN("RLP decode failed at: value"); return false; }
-    if (!decode_item(p, len, s_data))     { SETH_WARN("RLP decode failed at: data"); return false; }
-    if (!decode_item(p, len, s_v))        { SETH_WARN("RLP decode failed at: v"); return false; }
-    if (!decode_item(p, len, s_r))        { SETH_WARN("RLP decode failed at: r"); return false; }
-    if (!decode_item(p, len, s_s))        { SETH_WARN("RLP decode failed at: s"); return false; }
+    if (!decode_item(p, len, s_nonce))    { SHARDORA_WARN("RLP decode failed at: nonce"); return false; }
+    if (!decode_item(p, len, s_gasprice)) { SHARDORA_WARN("RLP decode failed at: gasprice"); return false; }
+    if (!decode_item(p, len, s_gaslimit)) { SHARDORA_WARN("RLP decode failed at: gaslimit"); return false; }
+    if (!decode_item(p, len, s_to))       { SHARDORA_WARN("RLP decode failed at: to"); return false; }
+    if (!decode_item(p, len, s_value))    { SHARDORA_WARN("RLP decode failed at: value"); return false; }
+    if (!decode_item(p, len, s_data))     { SHARDORA_WARN("RLP decode failed at: data"); return false; }
+    if (!decode_item(p, len, s_v))        { SHARDORA_WARN("RLP decode failed at: v"); return false; }
+    if (!decode_item(p, len, s_r))        { SHARDORA_WARN("RLP decode failed at: r"); return false; }
+    if (!decode_item(p, len, s_s))        { SHARDORA_WARN("RLP decode failed at: s"); return false; }
 
     nonce     = be_to_u64(s_nonce);
     gas_price = be_to_u64(s_gasprice);
@@ -2276,22 +2276,22 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
 
     // ── net_version ──────────────────────────────────────────────────────────
     if (method == "net_version") {
-        http_res.set_content(RpcOk(id, std::to_string(kSethChainId)).dump(), "application/json");
+        http_res.set_content(RpcOk(id, std::to_string(kShardoraChainId)).dump(), "application/json");
         return;
     }
 
     // ── eth_chainId ──────────────────────────────────────────────────────────
     if (method == "eth_chainId") {
-        http_res.set_content(RpcOk(id, ToHex64(kSethChainId)).dump(), "application/json");
+        http_res.set_content(RpcOk(id, ToHex64(kShardoraChainId)).dump(), "application/json");
         return;
     }
 
-    // ── seth_getChainInfo ────────────────────────────────────────────────────
+    // ── shardora_getChainInfo ────────────────────────────────────────────────────
     // Returns basic chain information: chainId, maxShardId, poolSize
-    if (method == "seth_getChainInfo") {
+    if (method == "shardora_getChainInfo") {
         nlohmann::json chain_info;
-        chain_info["chainId"] = kSethChainId;
-        chain_info["chainIdHex"] = ToHex64(kSethChainId);
+        chain_info["chainId"] = kShardoraChainId;
+        chain_info["chainIdHex"] = ToHex64(kShardoraChainId);
         // Use current valid end shard instead of static max
         uint32_t current_max_shard = common::GlobalInfo::Instance()->now_valid_end_shard();
         chain_info["maxShardId"] = current_max_shard;
@@ -2336,7 +2336,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             http_res.set_content(RpcErr(id, -32602, "missing params").dump(), "application/json");
             return;
         }
-        std::string addr = SethAddr(params[0].get<std::string>());
+        std::string addr = ShardoraAddr(params[0].get<std::string>());
         auto addr_info = http_handler->acc_mgr()->GetAccountInfo(addr);
         if (!addr_info) addr_info = prefix_db->GetAddressInfo(addr);
         uint64_t balance = addr_info ? addr_info->balance() : 0;
@@ -2350,7 +2350,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             http_res.set_content(RpcErr(id, -32602, "missing params").dump(), "application/json");
             return;
         }
-        std::string addr = SethAddr(params[0].get<std::string>());
+        std::string addr = ShardoraAddr(params[0].get<std::string>());
         auto addr_info = http_handler->acc_mgr()->GetAccountInfo(addr);
         if (!addr_info) addr_info = prefix_db->GetAddressInfo(addr);
         uint64_t nonce = addr_info ? addr_info->nonce() : 0;
@@ -2364,7 +2364,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             http_res.set_content(RpcErr(id, -32602, "missing params").dump(), "application/json");
             return;
         }
-        std::string addr = SethAddr(params[0].get<std::string>());
+        std::string addr = ShardoraAddr(params[0].get<std::string>());
         auto addr_info = prefix_db->GetAddressInfo(addr);
         if (addr_info && !addr_info->bytes_code().empty()) {
             http_res.set_content(
@@ -2387,10 +2387,10 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         std::string data_hex = tx_obj.value("data", std::string("0x"));
         std::string from_eth = tx_obj.value("from", std::string(""));
 
-        std::string contract_addr = SethAddr(to_eth);
+        std::string contract_addr = ShardoraAddr(to_eth);
         std::string input = common::Encode::HexDecode(
             data_hex.size() >= 2 && data_hex[0] == '0' ? data_hex.substr(2) : data_hex);
-        std::string from = from_eth.empty() ? std::string(20, '\0') : SethAddr(from_eth);
+        std::string from = from_eth.empty() ? std::string(20, '\0') : ShardoraAddr(from_eth);
 
         auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
         if (!contract_addr_info || contract_addr_info->bytes_code().empty()) {
@@ -2398,23 +2398,23 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             return;
         }
 
-        sethvm::SethhainHost seth_host;
-        seth_host.tx_context_.block_gas_limit = 9999999999lu;
+        shardoravm::ShardorahainHost shardora_host;
+        shardora_host.tx_context_.block_gas_limit = 9999999999lu;
         uint64_t chain_id = hotstuff::kGlobalChainId;
-        sethvm::Uint64ToEvmcBytes32(seth_host.tx_context_.chain_id, chain_id);
-        seth_host.contract_mgr_ = contract_mgr;
-        seth_host.my_address_ = contract_addr;
-        seth_host.view_block_chain_ = http_handler->view_block_chain();
-        seth_host.AddTmpAccountBalance(from, 9999999999lu);
-        seth_host.AddTmpAccountBalance(contract_addr, contract_addr_info->balance());
+        shardoravm::Uint64ToEvmcBytes32(shardora_host.tx_context_.chain_id, chain_id);
+        shardora_host.contract_mgr_ = contract_mgr;
+        shardora_host.my_address_ = contract_addr;
+        shardora_host.view_block_chain_ = http_handler->view_block_chain();
+        shardora_host.AddTmpAccountBalance(from, 9999999999lu);
+        shardora_host.AddTmpAccountBalance(contract_addr, contract_addr_info->balance());
 
         evmc_result evmc_res = {};
         evmc::Result result{evmc_res};
-        int exec_res = sethvm::Execution::Instance()->execute(
+        int exec_res = shardoravm::Execution::Instance()->execute(
             contract_addr_info->bytes_code(), input, from, contract_addr, from,
-            0, 9999999999lu, 0, sethvm::kJustCall, seth_host, &result);
+            0, 9999999999lu, 0, shardoravm::kJustCall, shardora_host, &result);
 
-        if (exec_res != sethvm::kSethvmSuccess || result.status_code != EVMC_SUCCESS) {
+        if (exec_res != shardoravm::kShardoravmSuccess || result.status_code != EVMC_SUCCESS) {
             http_res.set_content(
                 RpcErr(id, 3, "execution reverted: " + std::to_string(result.status_code)).dump(),
                 "application/json");
@@ -2439,7 +2439,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         }
         std::string raw_bytes = common::Encode::HexDecode(raw_hex);
         if (raw_bytes.empty()) {
-            SETH_WARN("eth_sendRawTransaction: HexDecode failed, raw_hex_len=%zu", raw_hex.size());
+            SHARDORA_WARN("eth_sendRawTransaction: HexDecode failed, raw_hex_len=%zu", raw_hex.size());
             http_res.set_content(RpcErr(id, -32602, "invalid hex encoding").dump(), "application/json");
             return;
         }
@@ -2448,7 +2448,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         std::string to, data, r, s;
         uint8_t v_byte = 0;
         if (!DecodeEthRawTx(raw_bytes, nonce, to, value, gas_limit, gas_price, data, v_byte, r, s, &max_priority_fee)) {
-            SETH_WARN("eth_sendRawTransaction: DecodeEthRawTx failed, raw_hex_len=%zu, first_byte=0x%02x",
+            SHARDORA_WARN("eth_sendRawTransaction: DecodeEthRawTx failed, raw_hex_len=%zu, first_byte=0x%02x",
                 raw_bytes.size(), raw_bytes.empty() ? 0 : (uint8_t)raw_bytes[0]);
             http_res.set_content(RpcErr(id, -32602, "invalid raw transaction").dump(), "application/json");
             return;
@@ -2508,7 +2508,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             // EIP-1559 (Type 2) signing hash
             // signing_hash = keccak256(0x02 || RLP([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList]))
             std::string payload;
-            payload += rlp_encode_uint(kSethChainId);
+            payload += rlp_encode_uint(kShardoraChainId);
             payload += rlp_encode_uint(nonce);
             payload += rlp_encode_uint(max_priority_fee);  // maxPriorityFeePerGas
             payload += rlp_encode_uint(gas_price);  // maxFeePerGas
@@ -2524,7 +2524,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             signing_hash = common::Hash::keccak256(type_and_rlp);
             signing_rlp_for_debug = type_and_rlp;  // Store for logging
             
-            SETH_INFO("EIP-1559 signing: type_and_rlp_hex=%s, signing_hash=%s",
+            SHARDORA_INFO("EIP-1559 signing: type_and_rlp_hex=%s, signing_hash=%s",
                       common::Encode::HexEncode(type_and_rlp).c_str(),
                       common::Encode::HexEncode(signing_hash).c_str());
         } else {
@@ -2536,36 +2536,36 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             payload += rlp_encode_bytes(to);          // empty = contract creation
             payload += rlp_encode_uint(value);
             payload += rlp_encode_bytes(data);
-            payload += rlp_encode_uint(kSethChainId); // EIP-155: chain_id
+            payload += rlp_encode_uint(kShardoraChainId); // EIP-155: chain_id
             payload += rlp_encode_uint(0);            // v = 0
             payload += rlp_encode_uint(0);            // r = 0
             std::string signing_rlp = rlp_list(payload);
             signing_hash = common::Hash::keccak256(signing_rlp);
             signing_rlp_for_debug = signing_rlp;  // Store for logging
         }
-        SETH_WARN("eth_sendRawTransaction: signing_rlp_hex=%s, signing_hash=%s, "
+        SHARDORA_WARN("eth_sendRawTransaction: signing_rlp_hex=%s, signing_hash=%s, "
             "nonce=%lu, gas_price=%lu, gas_limit=%lu, value=%lu, to_hex=%s, data_len=%zu, "
             "chain_id=%lu, v_byte=%u, is_eip1559=%d",
             common::Encode::HexEncode(signing_rlp_for_debug).c_str(),
             common::Encode::HexEncode(signing_hash).c_str(),
             nonce, gas_price, gas_limit, value,
             common::Encode::HexEncode(to).c_str(),
-            data.size(), kSethChainId, v_byte, is_eip1559 ? 1 : 0);
+            data.size(), kShardoraChainId, v_byte, is_eip1559 ? 1 : 0);
 
-        SETH_INFO("eth_sendRawTransaction: signature for recovery: r=%s, s=%s, v=%u",
+        SHARDORA_INFO("eth_sendRawTransaction: signature for recovery: r=%s, s=%s, v=%u",
                   common::Encode::HexEncode(r).c_str(),
                   common::Encode::HexEncode(s).c_str(),
                   v_byte);
 
         // Recover uncompressed public key (64 bytes, no prefix).
-        // Build Seth-format signature: r (32 bytes) || s (32 bytes) || v (1 byte)
+        // Build Shardora-format signature: r (32 bytes) || s (32 bytes) || v (1 byte)
         std::string sign_for_recover;
         sign_for_recover.reserve(65);
         sign_for_recover.append(r);
         sign_for_recover.append(s);
         sign_for_recover.push_back(static_cast<char>(v_byte));
         
-        SETH_WARN("eth_sendRawTransaction: trying recovery with v=%u, r=%s, s=%s, hash=%s",
+        SHARDORA_WARN("eth_sendRawTransaction: trying recovery with v=%u, r=%s, s=%s, hash=%s",
                   v_byte,
                   common::Encode::HexEncode(r).c_str(),
                   common::Encode::HexEncode(s).c_str(),
@@ -2574,7 +2574,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         std::string pubkey = security::Secp256k1::Instance()->Recover(
             sign_for_recover, signing_hash, false);
         
-        SETH_WARN("eth_sendRawTransaction: recovery with v=%u resulted in pubkey=%s (len=%zu)",
+        SHARDORA_WARN("eth_sendRawTransaction: recovery with v=%u resulted in pubkey=%s (len=%zu)",
                   v_byte,
                   pubkey.empty() ? "EMPTY" : common::Encode::HexEncode(pubkey).c_str(),
                   pubkey.size());
@@ -2585,24 +2585,24 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         std::string pubkey_flipped = security::Secp256k1::Instance()->Recover(
             sign_for_recover, signing_hash, false);
         
-        SETH_WARN("eth_sendRawTransaction: recovery with v=%u resulted in pubkey=%s (len=%zu)",
+        SHARDORA_WARN("eth_sendRawTransaction: recovery with v=%u resulted in pubkey=%s (len=%zu)",
                   flipped_v,
                   pubkey_flipped.empty() ? "EMPTY" : common::Encode::HexEncode(pubkey_flipped).c_str(),
                   pubkey_flipped.size());
         
         // Use the flipped v if original failed
         if (pubkey.empty() || pubkey.size() != 64) {
-            SETH_WARN("eth_sendRawTransaction: using flipped v=%u", flipped_v);
+            SHARDORA_WARN("eth_sendRawTransaction: using flipped v=%u", flipped_v);
             pubkey = pubkey_flipped;
         }
         
         if (pubkey.empty() || pubkey.size() != 64) {
-            SETH_WARN("eth_sendRawTransaction: failed to recover pubkey with both v values");
+            SHARDORA_WARN("eth_sendRawTransaction: failed to recover pubkey with both v values");
             http_res.set_content(RpcErr(id, -32602, "signature recovery failed").dump(), "application/json");
             return;
         }
         
-        SETH_INFO("eth_sendRawTransaction: recovery succeeded, pubkey=%s",
+        SHARDORA_INFO("eth_sendRawTransaction: recovery succeeded, pubkey=%s",
                   common::Encode::HexEncode(pubkey).c_str());
 
         // Prepend 0x04 uncompressed prefix so GetAddressWithPublicKey routes
@@ -2611,7 +2611,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
 
         // Derive sender address from recovered pubkey
         std::string sender_addr = http_handler->security_ptr()->GetAddressWithPublicKey(pubkey_with_prefix);
-        SETH_WARN("eth_sendRawTransaction: pubkey_len=%zu, pubkey_hex=%s, sender=%s",
+        SHARDORA_WARN("eth_sendRawTransaction: pubkey_len=%zu, pubkey_hex=%s, sender=%s",
             pubkey.size(), common::Encode::HexEncode(pubkey).c_str(),
             common::Encode::HexEncode(sender_addr).c_str());
         if (sender_addr.empty() || sender_addr.size() != 20) {
@@ -2620,7 +2620,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         }
         // ── End pubkey recovery ───────────────────────────────────────────────
 
-        // ── Auto-infer Seth step type from ETH transaction fields ──────────
+        // ── Auto-infer Shardora step type from ETH transaction fields ──────────
         // ETH transactions don't carry a "step" field. We infer it:
         //
         //   to empty  + data non-empty  → kCreateContract (6)
@@ -2649,7 +2649,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
                 // Target is an EOA or unknown address — treat data as memo,
                 // send as plain transfer.
                 step = pools::protobuf::kNormalFrom;  // 0
-                SETH_INFO("eth_sendRawTransaction: to=%s has no bytecode, "
+                SHARDORA_INFO("eth_sendRawTransaction: to=%s has no bytecode, "
                     "treating as plain transfer with data (memo)",
                     common::Encode::HexEncode(to).c_str());
             }
@@ -2661,7 +2661,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             return;
         }
 
-        SETH_INFO("eth_sendRawTransaction: inferred step=%u (%s), to=%s, data_len=%zu",
+        SHARDORA_INFO("eth_sendRawTransaction: inferred step=%u (%s), to=%s, data_len=%zu",
             step,
             step == 6 ? "CreateContract" : step == 8 ? "ContractExcute" : "NormalFrom",
             to.empty() ? "(empty)" : common::Encode::HexEncode(to).c_str(),
@@ -2683,7 +2683,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             }
 
             to = security::GetContractAddress(sender_addr, nonce_str);
-            SETH_INFO("eth_sendRawTransaction: contract deploy (CREATE), sender=%s, nonce=%lu, "
+            SHARDORA_INFO("eth_sendRawTransaction: contract deploy (CREATE), sender=%s, nonce=%lu, "
                 "contract_addr=%s",
                 common::Encode::HexEncode(sender_addr).c_str(), nonce,
                 common::Encode::HexEncode(to).c_str());
@@ -2714,7 +2714,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
 
         if (step == pools::protobuf::kContractExcute) new_tx->set_contract_input(data);
 
-        // Seth signature: r || s || v
+        // Shardora signature: r || s || v
         std::string sign;
         sign.reserve(65);
         sign.append(r);
@@ -2723,7 +2723,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         new_tx->set_sign(sign);
 
         // Store original RLP bytes so the pool manager can verify using
-        // the ETH signing hash instead of the Seth-native hash.
+        // the ETH signing hash instead of the Shardora-native hash.
         new_tx->set_eth_raw_tx(raw_bytes);
 
         auto tx_hash = pools::GetTxMessageHash(*new_tx);
@@ -2740,7 +2740,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             // For transactions from eth_sendRawTransaction (EIP-1559 or legacy),
             // auto-create address info to allow Ethereum-style transactions where
             // addresses don't need pre-registration.
-            SETH_WARN("Auto-registering sender from raw transaction: %s (pubkey: %s)", 
+            SHARDORA_WARN("Auto-registering sender from raw transaction: %s (pubkey: %s)", 
                       common::Encode::HexEncode(sender_addr).c_str(),
                       common::Encode::HexEncode(pubkey).c_str());
             
@@ -2783,7 +2783,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
         http_handler->net_handler()->NewHttpServer(msg_ptr);
 
         std::string tx_hash_hex = "0x" + common::Encode::HexEncode(tx_hash);
-        SETH_INFO("eth_sendRawTransaction: tx_hash=%s, step=%u, from=%s, to=%s, value=%lu, "
+        SHARDORA_INFO("eth_sendRawTransaction: tx_hash=%s, step=%u, from=%s, to=%s, value=%lu, "
             "handle_status=%d",
             tx_hash_hex.c_str(), step,
             common::Encode::HexEncode(sender_addr).c_str(),
@@ -2866,7 +2866,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
     }
 
     // ── Unsupported method ────────────────────────────────────────────────────
-    SETH_INFO("eth_rpc: unsupported method: %s", method.c_str());
+    SHARDORA_INFO("eth_rpc: unsupported method: %s", method.c_str());
     http_res.set_content(
         RpcErr(id, -32601, "Method not found: " + method).dump(), "application/json");
 }
@@ -2874,7 +2874,7 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
 // ── End MetaMask / Ethereum JSON-RPC ─────────────────────────────────────────
 
 void HttpHandler::Run() {
-    SETH_INFO("HTTPS server starting on %s:%d", http_ip_.c_str(), http_port_);
+    SHARDORA_INFO("HTTPS server starting on %s:%d", http_ip_.c_str(), http_port_);
 
     auto safeHandler = [](auto handler, const char* endpoint) {
         return [handler, endpoint](auto *res, auto *req) {
@@ -2900,11 +2900,11 @@ void HttpHandler::Run() {
                         }
                     }
                 } catch (const std::exception& e) {
-                    SETH_ERROR("Exception in %s: %s", endpoint, e.what());
+                    SHARDORA_ERROR("Exception in %s: %s", endpoint, e.what());
                     auto a = weak_alive.lock();
                     if (a && *a) { res->writeStatus("500 Internal Server Error")->end("Internal server error"); *a = false; }
                 } catch (...) {
-                    SETH_ERROR("Unknown exception in %s", endpoint);
+                    SHARDORA_ERROR("Unknown exception in %s", endpoint);
                     auto a = weak_alive.lock();
                     if (a && *a) { res->writeStatus("500 Internal Server Error")->end("Internal server error"); *a = false; }
                 }
@@ -2943,14 +2943,14 @@ void HttpHandler::Run() {
     ).get("/eth", safeHandler(EthJsonRpc, "/eth")
     ).listen("0.0.0.0", http_port_, [this](auto *listen_socket) {
         if (listen_socket) {
-            SETH_INFO("HTTPS server listening on 0.0.0.0:%d", http_port_);
+            SHARDORA_INFO("HTTPS server listening on 0.0.0.0:%d", http_port_);
             running_ = true;
         } else {
-            SETH_ERROR("Failed to listen on 0.0.0.0:%d", http_port_);
+            SHARDORA_ERROR("Failed to listen on 0.0.0.0:%d", http_port_);
         }
     }).run();
     
-    SETH_INFO("HTTPS server stopped");
+    SHARDORA_INFO("HTTPS server stopped");
 }
 
 void HttpHandler::Init(
@@ -3002,7 +3002,7 @@ void HttpHandler::Init(
         std::ifstream f(path);
         if (f.good()) {
             cert_file_ = path;
-            SETH_INFO("Found certificate file: %s", path.c_str());
+            SHARDORA_INFO("Found certificate file: %s", path.c_str());
             break;
         }
     }
@@ -3012,13 +3012,13 @@ void HttpHandler::Init(
         std::ifstream f(path);
         if (f.good()) {
             key_file_ = path;
-            SETH_INFO("Found key file: %s", path.c_str());
+            SHARDORA_INFO("Found key file: %s", path.c_str());
             break;
         }
     }
     
     if (cert_file_.empty() || key_file_.empty()) {
-        SETH_ERROR("Certificate or key file not found! cert: %s, key: %s", 
+        SHARDORA_ERROR("Certificate or key file not found! cert: %s, key: %s", 
                    cert_file_.c_str(), key_file_.c_str());
     }
 
@@ -3027,4 +3027,4 @@ void HttpHandler::Init(
 
 };  // namespace init
 
-};  // namespace seth
+};  // namespace shardora
