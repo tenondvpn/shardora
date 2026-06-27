@@ -4,7 +4,7 @@
 #include <protos/hotstuff.pb.h>
 #include <security/ecdsa/ecdsa.h>
 
-namespace seth {
+namespace shardora {
 namespace hotstuff {
 namespace test {
 

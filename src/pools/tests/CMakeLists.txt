@@ -46,7 +46,7 @@ set(pools_test_src
 add_executable(pools_test ${pools_test_src})
 
 if (XENABLE_CODE_COVERAGE)
-    target_compile_definitions(pools_test PRIVATE SETH_UNITTEST)
+    target_compile_definitions(pools_test PRIVATE SHARDORA_UNITTEST)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")

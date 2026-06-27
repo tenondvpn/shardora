@@ -6,7 +6,7 @@
 #define private public
 #include "common/encode.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -254,4 +254,4 @@ TEST_F(TestEncode, HexSubstrEightBytes) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

@@ -11,7 +11,7 @@
 #include "broadcast/filter_broadcast.h"
 #include "transport/multi_thread.h"
 
-namespace seth {
+namespace shardora {
 
 namespace broadcast {
 
@@ -171,4 +171,4 @@ TEST_F(TestFilterBroadcast, BroadcastingOverlap) {
 
 }  // namespace broadcast
 
-}  // namespace seth
+}  // namespace shardora

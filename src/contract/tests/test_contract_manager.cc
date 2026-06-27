@@ -6,7 +6,7 @@
 #include "common/encode.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace seth {
+namespace shardora {
 
 namespace contract {
 
@@ -259,4 +259,4 @@ TEST_F(TestContractManager, ModexpGasPriceMonotonicByModLen) {
 
 }  // namespace contract
 
-}  // namespace seth
+}  // namespace shardora

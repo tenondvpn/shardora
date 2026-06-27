@@ -8,7 +8,7 @@
 #include "common/bloom_filter.h"
 #include "common/random.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -197,4 +197,4 @@ TEST_F(TestBloomFilter, EqualityWithSelfAndDifferentHashCount) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

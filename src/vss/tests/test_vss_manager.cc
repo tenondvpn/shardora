@@ -17,7 +17,7 @@
 #include "vss/vss_utils.h"
 #include "vss/random_num.h"
 
-namespace seth {
+namespace shardora {
 
 namespace vss {
 
@@ -321,4 +321,4 @@ TEST_F(TestVssManager, XorCommutativity) {
 
 }  // namespace vss
 
-}  // namespace seth
+}  // namespace shardora

@@ -5,7 +5,7 @@
 #define private public
 #include "common/config.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -192,4 +192,4 @@ TEST_F(TestConfig, Set) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

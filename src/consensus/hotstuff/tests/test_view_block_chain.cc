@@ -5,7 +5,7 @@
 #include <memory>
 #include <protos/block.pb.h>
 
-namespace seth {
+namespace shardora {
 
 namespace hotstuff {
 
@@ -242,5 +242,5 @@ TEST_F(TestViewBlockChain, TestPruneTo_ForksAndHistory) {
 
 } // namespace consensus
 
-} // namespace seth
+} // namespace shardora
 

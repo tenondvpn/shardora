@@ -21,7 +21,7 @@
 #include "protos/pools.pb.h"
 #include "security/ecdsa/ecdsa.h"
 
-namespace seth {
+namespace shardora {
 
 namespace consensus {
 
@@ -67,7 +67,7 @@ public:
     static void SetUpTestCase() {
         std::string config_path_ = "./";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
-        std::string log_path = config_path_ + "/seth.log";
+        std::string log_path = config_path_ + "/shardora.log";
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
@@ -257,4 +257,4 @@ TEST_F(TestTimeBlock, TestTimeBlock) {
 
 }  // namespace consensus
 
-}  // namespace seth
+}  // namespace shardora

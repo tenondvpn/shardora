@@ -9,7 +9,7 @@
 #include "security/ecdsa/ecdsa.h"
 #include "security/ecdsa/secp256k1.h"
 
-namespace seth {
+namespace shardora {
 
 namespace security {
 
@@ -75,8 +75,8 @@ TEST_F(TestEcdsa, TestAll) {
 }
 
 TEST_F(TestEcdsa, TestBench) {
-    if (std::getenv("SETH_ENABLE_BENCH") == nullptr) {
-        GTEST_SKIP() << "benchmark disabled (set SETH_ENABLE_BENCH=1 to enable)";
+    if (std::getenv("SHARDORA_ENABLE_BENCH") == nullptr) {
+        GTEST_SKIP() << "benchmark disabled (set SHARDORA_ENABLE_BENCH=1 to enable)";
     }
 
     auto test_prikey = common::Random::RandomString(32);
@@ -141,4 +141,4 @@ TEST_F(TestEcdsa, TestBench) {
 
 }  // namespace security
 
-}  // namespace seth
+}  // namespace shardora

@@ -18,7 +18,7 @@ using ROCKSDB_NAMESPACE::Status;
 using ROCKSDB_NAMESPACE::WriteBatch;
 using ROCKSDB_NAMESPACE::WriteOptions;
 
-namespace seth {
+namespace shardora {
 
 namespace db {
 
@@ -30,7 +30,7 @@ public:
     static void TearDownTestCase() {}
 
     virtual void SetUp() {
-        db_path_ = "/tmp/seth_rocksdb_direct_test";
+        db_path_ = "/tmp/shardora_rocksdb_direct_test";
         std::filesystem::remove_all(db_path_);
     }
 
@@ -131,4 +131,4 @@ TEST_F(TestDbDirect, RocksDBIterator) {
 
 }  // namespace db
 
-}  // namespace seth
+}  // namespace shardora

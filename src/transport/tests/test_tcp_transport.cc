@@ -14,7 +14,7 @@
 #include "transport/multi_thread.h"
 #include "transport/processor.h"
 
-namespace seth {
+namespace shardora {
 
 namespace tcp {
 
@@ -111,4 +111,4 @@ TEST_F(TestTcpTransport, TestServer) {
 
 }  // namespace tcp
 
-}  // namespace seth
+}  // namespace shardora

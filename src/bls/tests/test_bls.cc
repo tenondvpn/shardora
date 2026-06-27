@@ -21,7 +21,7 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #define private public
-#define SETH_UNITTEST
+#define SHARDORA_UNITTEST
 #include "bls/bls_sign.h"
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
@@ -30,7 +30,7 @@
 #include "protos/bls.pb.h"
 #include "network/network_utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace bls {
 
@@ -175,7 +175,7 @@ public:
         auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
         prefix_db->AddBlsVerifyG2(sec_ptr->GetAddress(), bls_verify_req);
         prefix_db->SaveLocalPolynomial(sec_ptr, sec_ptr->GetAddress(), local_poly);
-        SETH_DEBUG("SaveLocalPolynomial success: %s",
+        SHARDORA_DEBUG("SaveLocalPolynomial success: %s",
             common::Encode::HexEncode(sec_ptr->GetAddress()).c_str());
     }
 
@@ -1541,5 +1541,5 @@ TEST_F(TestBls, ThreeRatioFail) {
 
 }  // namespace bls
 
-}  // namespace seth
+}  // namespace shardora
 #endif

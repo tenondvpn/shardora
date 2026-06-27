@@ -17,7 +17,7 @@ add_dependencies(bls_test bls)
 target_link_libraries(bls_test PRIVATE bls network gtest gtest_main gmock gmock_main network
     consensus
     sync
-    sethvm
+    shardoravm
     block
     vss
     ck

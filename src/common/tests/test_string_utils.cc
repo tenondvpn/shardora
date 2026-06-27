@@ -9,7 +9,7 @@
 
 #include "common/string_utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -468,4 +468,4 @@ TEST_F(TestStringUtils, ToDoubleLargeFinite) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

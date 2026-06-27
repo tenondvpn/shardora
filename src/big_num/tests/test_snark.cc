@@ -12,7 +12,7 @@
 #define private public
 #include "big_num/snark.h"
 
-namespace seth {
+namespace shardora {
 
 namespace bignum {
 
@@ -270,4 +270,4 @@ TEST_F(TestSnark, PairingZeroPoints) {
 
 }  // namespace bignum
 
-}  // namespace seth
+}  // namespace shardora

@@ -10,7 +10,7 @@
 #define private public
 #include "common/utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -288,7 +288,7 @@ TEST_F(TestUtils, ConstantsSanity) {
     ASSERT_EQ(kImmutablePoolSize, 32u);
     ASSERT_EQ(kGlobalPoolIndex, 32u);
     ASSERT_EQ(kInvalidPoolIndex, 33u);
-    ASSERT_EQ(kSethMiniTransportUnit, 100000000llu);
+    ASSERT_EQ(kShardoraMiniTransportUnit, 100000000llu);
     ASSERT_EQ(kUnicastAddressLength, 20u);
     ASSERT_GT(kMaxTxCount, 0u);
     ASSERT_GT(kEachShardMinNodeCount, 0u);
@@ -597,4 +597,4 @@ TEST_F(TestUtils, IsFileExistNonExistent) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

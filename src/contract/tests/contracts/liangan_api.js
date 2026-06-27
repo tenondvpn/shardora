@@ -192,7 +192,7 @@ function GetCode(path) {
 }
 
 function get_all_nodes_bls_info(args) {
-    PostCode('/sethhain/get_all_nodes_bls_info/', {
+    PostCode('/shardorachain/get_all_nodes_bls_info/', {
         'elect_height': parseInt(args[1]),
         'offset': parseInt(args[2]),
         'step': parseInt(args[3]),
@@ -200,7 +200,7 @@ function get_all_nodes_bls_info(args) {
 }
 
 function get_tx_list(args) {
-    PostCode('/sethhain/transactions/', {
+    PostCode('/shardorachain/transactions/', {
         'search': "",
         'height': -1,
         'shard': -1,
@@ -211,11 +211,11 @@ function get_tx_list(args) {
 }
 
 function get_address_info(args) {
-    GetCode('/sethhain/get_balance/' + args[1] + "/");
+    GetCode('/shardorachain/get_balance/' + args[1] + "/");
 }
 
 function get_accounts(args) {
-    PostCode('/sethhain/accounts/', {
+    PostCode('/shardorachain/accounts/', {
         'search': "",
         'shard': -1,
         'pool': -1,
@@ -225,11 +225,11 @@ function get_accounts(args) {
 }
 
 function get_block_detail(args) {
-    GetCode('/sethhain/get_block_detail/' + args[1] + "/");
+    GetCode('/shardorachain/get_block_detail/' + args[1] + "/");
 }
 function get_confirm_tx_list(args) {
     if (args[1] == "1") {
-        PostCode('/sethhain/transactions/', {
+        PostCode('/shardorachain/transactions/', {
             'search': "",
             'height': -1,
             'shard': -1,
@@ -240,7 +240,7 @@ function get_confirm_tx_list(args) {
         return;
     }
 
-    PostCode('/sethhain/transactions/', {
+    PostCode('/shardorachain/transactions/', {
         'search': "a0793c84fb3133c0df1b9a6ccccbbfe5e7545138",
         'height': -1,
         'shard': -1,
@@ -251,13 +251,13 @@ function get_confirm_tx_list(args) {
 }
 
 function penc_create_sec_keys(args) {
-    PostCode('/sethhain/penc_create_sec_keys/', {
+    PostCode('/shardorachain/penc_create_sec_keys/', {
         "content": "content",
     });
 }
 
 function penc_get_sec_keys(id) {
-    PostCode('/sethhain/penc_get_sec_keys/', {
+    PostCode('/shardorachain/penc_get_sec_keys/', {
         "id": id,
     });
 }
@@ -289,21 +289,21 @@ async function wait_get_penc_sec_keys() {
 }
 
 function penc_share_new_data(id, content) {
-    PostCode('/sethhain/penc_share_new_data/', {
+    PostCode('/shardorachain/penc_share_new_data/', {
         "id": id,
         "content": content
     });
 }
 
 function penc_vote(id, content) {
-    PostCode('/sethhain/penc_vote/', {
+    PostCode('/shardorachain/penc_vote/', {
         "id": id,
         "group_info": content
     });
 }
 
 function penc_get_share_data(id, encdata) {
-    PostCode('/sethhain/penc_get_share_data/', {
+    PostCode('/shardorachain/penc_get_share_data/', {
         "id": id,
         "seckey": "",
         "encdata": encdata,
@@ -311,18 +311,18 @@ function penc_get_share_data(id, encdata) {
 }
 
 function penc_transactions(type) {
-    PostCode('/sethhain/penc_transactions/', {
+    PostCode('/shardorachain/penc_transactions/', {
         "search": "48e1eab96c9e759daa3aff82b40e77cd615a41d0",
         "type": type
     });
 }
 
 function ars_create_sec_keys() {
-    PostCode('/sethhain/ars_create_sec_keys/', {});
+    PostCode('/shardorachain/ars_create_sec_keys/', {});
 }
 
 function ars_create_new_vote(username, addr, now_credit, add_credit) {
-    PostCode('/sethhain/ars_create_new_vote/', {
+    PostCode('/shardorachain/ars_create_new_vote/', {
         "username": username,
         "addr": addr,
         "now_credit": parseInt(now_credit),
@@ -331,7 +331,7 @@ function ars_create_new_vote(username, addr, now_credit, add_credit) {
 }
 
 function ars_vote(id, index, group_info) {
-    PostCode('/sethhain/ars_vote/', {
+    PostCode('/shardorachain/ars_vote/', {
         "id": id,
         "index": index,
         "group_info": group_info
@@ -339,7 +339,7 @@ function ars_vote(id, index, group_info) {
 }
 
 function ars_transactions(type) {
-    PostCode('/sethhain/ars_transactions/', {
+    PostCode('/shardorachain/ars_transactions/', {
         "type": type,
     });
 }

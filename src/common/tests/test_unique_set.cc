@@ -6,7 +6,7 @@
 #define private public
 #include "common/unique_set.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -91,4 +91,4 @@ TEST_F(TestUniqueSet, ReinsertAfterEviction) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

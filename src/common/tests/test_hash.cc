@@ -7,7 +7,7 @@
 #include "common/hash.h"
 #include "common/encode.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -134,4 +134,4 @@ TEST_F(TestHash, HashValueInvalidLength) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

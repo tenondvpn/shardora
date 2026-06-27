@@ -317,7 +317,7 @@ async function transaction(str_prikey, to, amount) {
     var check_accounts_str = "";
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
     var check_count = 1;
-    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(*) from seth_ck_account_table where id='${to}' and balance >= ${amount};"`;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(*) from shardora_ck_account_table where id='${to}' and balance >= ${amount};"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -346,7 +346,7 @@ async function transaction(str_prikey, to, amount) {
 }
 
 async function check_transaction(check_count, check_accounts_str, amount) {
-    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(id)) from seth_ck_account_table where id in (${check_accounts_str}) and balance >= ${amount};"`;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(id)) from shardora_ck_account_table where id in (${check_accounts_str}) and balance >= ${amount};"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -382,7 +382,7 @@ async function SetManagerPrefund(contract_address, prikey) {
     var check_accounts_str = "";
     check_accounts_str += "'" + account1.address.toString('hex').toLowerCase().substring(2) + "'"; 
     var check_count = 1;
-    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from seth_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from shardora_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -412,7 +412,7 @@ async function SetManagerPrefund(contract_address, prikey) {
 
 async function CheckPrefund(check_count, contract_address, check_accounts_str) {
     // 为管理账户设置prefund
-    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from seth_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    var cmd = `clickhouse-client --host ${node_host} --port 9000 -q "select count(distinct(user)) from shardora_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -460,7 +460,7 @@ function InitC2cEnv(key, value) {
                 new_contract(
                     "cefc2c33064ea7691aee3e5e4f7842935d26f3ad790d81cf015e79b78958e848", 
                     out_lines[3]);
-                var contract_cmd = `clickhouse-client --host ${node_host} --port 9000 -q  "SELECT to FROM seth_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
+                var contract_cmd = `clickhouse-client --host ${node_host} --port 9000 -q  "SELECT to FROM shardora_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
                 const execPromise = util.promisify(exec);

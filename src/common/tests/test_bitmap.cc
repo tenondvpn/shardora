@@ -7,7 +7,7 @@
 #include "common/bitmap.h"
 #include "common/random.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -199,4 +199,4 @@ TEST_F(TestBitmap, DataAccessor) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

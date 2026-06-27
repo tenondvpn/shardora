@@ -3,7 +3,7 @@ do
     echo $i
     ps -ef | grep s3_2 | awk -F' ' '{print $2}' | xargs kill -9
     sleep 3
-    cd /root/seths/s3_2 && nohup ./sethhain -f 0 -g 0 s3_2 root &
+    cd /root/shardoras/s3_2 && nohup ./shardorachain -f 0 -g 0 s3_2 root &
     sleep_time=`expr $RANDOM % 160 + 10`
     echo "sleep time: $sleep_time"
     sleep $sleep_time

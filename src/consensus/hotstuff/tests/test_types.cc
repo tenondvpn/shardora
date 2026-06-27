@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <protos/view_block.pb.h>
 
-namespace seth {
+namespace shardora {
 
 namespace hotstuff {
 
@@ -101,5 +101,5 @@ TEST_F(TestTypes, ViewBlock2Proto) {
 
 } // namespace hotstuff
 
-} // namespace seth
+} // namespace shardora
 

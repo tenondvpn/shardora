@@ -12,7 +12,7 @@
 #define private public
 #include "db/db.h"
 
-namespace seth {
+namespace shardora {
 
 namespace db {
 
@@ -24,7 +24,7 @@ public:
     static void TearDownTestCase() {}
 
     virtual void SetUp() {
-        db_path_ = "/tmp/seth_db_test_" + std::to_string(test_counter_++);
+        db_path_ = "/tmp/shardora_db_test_" + std::to_string(test_counter_++);
         db_ = std::make_shared<Db>();
         ASSERT_TRUE(db_->Init(db_path_));
     }
@@ -298,4 +298,4 @@ TEST_F(TestDb, BinaryKeyAndValue) {
 
 }  // namespace db
 
-}  // namespace seth
+}  // namespace shardora

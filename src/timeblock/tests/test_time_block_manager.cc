@@ -13,7 +13,7 @@
 #include "timeblock/time_block_manager.h"
 #include "timeblock/time_block_utils.h"
 
-namespace seth {
+namespace shardora {
 
 namespace timeblock {
 
@@ -211,4 +211,4 @@ TEST_F(TestTimeBlockManager, OnTimeBlockNonSequentialHeights) {
 
 }  // namespace timeblock
 
-}  // namespace seth
+}  // namespace shardora

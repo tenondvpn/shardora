@@ -8,7 +8,7 @@
 #include "common/limit_heap.h"
 #include "common/random.h"
 
-namespace seth {
+namespace shardora {
 
 namespace common {
 
@@ -251,4 +251,4 @@ TEST_F(TestLimitHeap, AdjustDownChoosesRightChildBranch) {
 
 }  // namespace common
 
-}  // namespace seth
+}  // namespace shardora

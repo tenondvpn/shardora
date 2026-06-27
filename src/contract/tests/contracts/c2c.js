@@ -333,7 +333,7 @@ async function SetManagerPrefund(contract_address) {
         ++check_count;
     }
 
-    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from seth_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
+    var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q "select count(distinct(user)) from shardora_ck_prefund_table where contract='${contract_address}' and user in (${check_accounts_str});"`;
     const { exec } = require('child_process');
     const execPromise = util.promisify(exec);
     // 检查合约是否创建成功
@@ -421,7 +421,7 @@ function InitC2cEnv() {
                 var contract_address = new_contract(
                     "863cc3200dd93e1743f63c49f1bd3d19d0f4cba330dbba53e69706cc671a568f", 
                     out_lines[3] + cons_codes.substring(2));
-                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM seth_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
+                var contract_cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "SELECT to FROM shardora_ck_account_key_value_table where type = 6 and key in ('5f5f6b437265617465436f6e74726163744279746573436f6465',  '5f5f6b437265617465436f6e74726163744279746573436f6465') and to='${contract_address}' limit 1;"`
                 var try_times = 0;
                 // 检查合约是否创建成功
                 const execPromise = util.promisify(exec);
@@ -449,7 +449,7 @@ function InitC2cEnv() {
                 }
 
                 // 检查转账成功
-                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select id, balance from seth_ck_account_table where id in  ('${account1.address.toString('hex').toLowerCase().substring(2)}',  '${account2.address.toString('hex').toLowerCase().substring(2)}',  '${account3.address.toString('hex').toLowerCase().substring(2)}',  '${account4.address.toString('hex').toLowerCase().substring(2)}' ${append_address});"`;
+                var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select id, balance from shardora_ck_account_table where id in  ('${account1.address.toString('hex').toLowerCase().substring(2)}',  '${account2.address.toString('hex').toLowerCase().substring(2)}',  '${account3.address.toString('hex').toLowerCase().substring(2)}',  '${account4.address.toString('hex').toLowerCase().substring(2)}' ${append_address});"`;
                 var try_times = 0;
                 while (try_times < 30) {
                     try {
@@ -508,7 +508,7 @@ async function CreateNewSeller(str_prikey) {
     var old_prefund = 0;
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -549,7 +549,7 @@ async function CreateNewSeller(str_prikey) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -600,7 +600,7 @@ async function ConfirmToBuyer(str_prikey, to, amount) {
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -640,7 +640,7 @@ async function ConfirmToBuyer(str_prikey, to, amount) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -691,7 +691,7 @@ async function SellerRelease(str_prikey) {
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -728,7 +728,7 @@ async function SellerRelease(str_prikey) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         var amount = 0;
         while (try_times < 30) {
@@ -780,7 +780,7 @@ async function ManagerRelease(str_prikey, cancel_seller) {
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -820,7 +820,7 @@ async function ManagerRelease(str_prikey, cancel_seller) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         var amount = 0;
         while (try_times < 30) {
@@ -872,7 +872,7 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
     {
     
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         while (try_times < 30) {
             try {
@@ -912,7 +912,7 @@ async function ManagerReleaseForce(str_prikey, cancel_seller) {
 
     {
         var contract_address = fs.readFileSync('contract_address', 'utf-8');
-        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from seth_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
+        var cmd = `clickhouse-client --host 82.156.224.174 --port 9000 -q  "select prefund from shardora_ck_prefund_table where  contract='${contract_address}' and user='${address}' order by height desc limit 1;"`;
         var try_times = 0;
         var amount = 0;
         while (try_times < 30) {

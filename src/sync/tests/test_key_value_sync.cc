@@ -16,7 +16,7 @@
 #define private public
 #include "sync/key_value_sync.h"
 
-namespace seth {
+namespace shardora {
 
 namespace sync {
 
@@ -294,4 +294,4 @@ TEST_F(TestKeyValueSync, SyncItemTagValues) {
 
 }  // namespace sync
 
-}  // namespace seth
+}  // namespace shardora
