@@ -8285,8 +8285,192 @@ contract AMMPool {
         }
 
         // ─────────────────────────────────────────────────────────────────
+        // Phase 5: Distribute tokens to users via crossTransfer
+        // CrossShardToken._baseInit() already minted 1_000_000 ether to the
+        // deployer (tx.origin).  Here we distribute 10000 ether to each of
+        // max(2, users/kTokens*2) randomly chosen users, then verify
+        // balanceOf > 0 on each user's shard after 60s cross-shard delivery.
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n[Phase 5] Distribute tokens to users...\n";
+
+        // Encode uint256 from a 128-bit value (supports amounts up to 2^128)
+        auto encodeUint256u128 = [](__uint128_t val) -> std::string {
+            std::string res(64, '0');
+            for (int j = 63; j >= 0 && val > (__uint128_t)0; --j) {
+                res[j] = "0123456789abcdef"[(uint8_t)(val & 0xF)];
+                val >>= 4;
+            }
+            return res;
+        };
+        // Encode uint32 as 32-byte ABI word
+        auto encodeUint32ABI = [](uint32_t val) -> std::string {
+            std::string res(64, '0');
+            for (int j = 63; j >= 0 && val > 0u; --j) {
+                res[j] = "0123456789abcdef"[val & 0xF];
+                val >>= 4;
+            }
+            return res;
+        };
+
+        // ABI selectors
+        const std::string kXferSel =
+            utils::keccak256Str("crossTransfer(address,uint256,uint32,uint32)").substr(0, 8);
+        const std::string kBalOfSel =
+            utils::keccak256Str("balanceOf(address)").substr(0, 8);
+
+        // 10000 ether = 10000 * 10^18 (fits in 128 bits, exceeds uint64_t)
+        const __uint128_t kPerAmt5 =
+            (__uint128_t)1000000000000000000ULL * 10000ULL;
+
+        // Number of recipients per token: max(2, floor(users/kTokens)*2)
+        const uint32_t kRcpt5 =
+            std::max(2u, (uint32_t)(users8.size() / kTokens) * 2u);
+
+        // Build per-token recipient lists (random, wraps if users < kRcpt5*kTokens)
+        std::vector<std::vector<uint32_t>> rcpt5(kTokens);
+        {
+            std::vector<uint32_t> idxs(users8.size());
+            for (uint32_t i = 0; i < (uint32_t)idxs.size(); ++i) idxs[i] = i;
+            for (uint32_t i = (uint32_t)idxs.size(); i > 1u; --i) {
+                uint32_t j = common::Random::RandomUint32() % i;
+                std::swap(idxs[i - 1], idxs[j]);
+            }
+            for (uint32_t ti = 0; ti < kTokens; ++ti) {
+                rcpt5[ti].reserve(kRcpt5);
+                for (uint32_t r = 0; r < kRcpt5; ++r)
+                    rcpt5[ti].push_back(
+                        idxs[(ti * kRcpt5 + r) % (uint32_t)idxs.size()]);
+            }
+        }
+        std::cout << "  Recipients per token: " << kRcpt5
+                  << "  per-user amount: 10000 ether (10^22 wei)\n";
+
+        // ── Send crossTransfer TXs (one thread per token) ─────────────────
+        std::atomic<uint32_t> xok5{0}, xfail5{0};
+        {
+            std::vector<std::thread> xth5;
+            for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+                xth5.emplace_back([&, ti]() {
+                    auto& td = tdeps8[ti];
+                    std::string pk_hex = common::Encode::HexEncode(td.prikey);
+
+                    ShardoraSDK dsdk(eps8[td.signer_shard].ip,
+                                     eps8[td.signer_shard].http);
+                    int64_t nonce = dsdk.fetchNonce(td.addr_hex);
+                    if (nonce < 0) {
+                        xfail5.fetch_add((uint32_t)rcpt5[ti].size());
+                        return;
+                    }
+
+                    std::cout << "  [token" << ti << "] contract="
+                              << td.contract_addr_hex << " s" << td.signer_shard
+                              << "  → " << rcpt5[ti].size() << " TXs\n";
+
+                    for (uint32_t ri = 0;
+                         ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
+                        auto& u = users8[rcpt5[ti][ri]];
+                        // ABI: crossTransfer(address,uint256,uint32,uint32)
+                        std::string calldata =
+                            kXferSel
+                            + encodeAddr32(u.addr_hex)
+                            + encodeUint256u128(kPerAmt5)
+                            + encodeUint32ABI(u.shard_id)
+                            + encodeUint32ABI(u.pool_idx);
+
+                        auto r = dsdk.callContractWithNonce(
+                            pk_hex, td.contract_addr_hex,
+                            calldata, nonce + (int64_t)ri);
+                        if (r.contains("status") && r["status"] == 0) {
+                            xok5.fetch_add(1);
+                        } else {
+                            std::cerr << "  [token" << ti << "] → "
+                                      << u.addr_hex
+                                      << " fail: " << r.value("msg", "?") << "\n";
+                            xfail5.fetch_add(1);
+                        }
+                    }
+                });
+            }
+            for (auto& t : xth5) t.join();
+        }
+        std::cout << "  crossTransfer sends: " << xok5.load()
+                  << " ok  " << xfail5.load() << " fail\n";
+        if (xok5.load() == 0) {
+            std::cerr << "  FATAL: Phase 5: no transfers succeeded. Aborting.\n";
+            transport::TcpTransport::Instance()->Stop();
+            return 1;
+        }
+
+        // ── Phase 5 verify: wait 60s for cross-shard delivery then check ──
+        std::cout << "\n[Phase 5 verify] Waiting 60s for cross-shard delivery...\n";
+        for (int ws = 0; ws < 60 && !global_stop; ++ws) {
+            usleep(1000000);
+            if (ws % 10 == 9)
+                std::cout << "  " << (ws + 1) << "s elapsed\n";
+        }
+        if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
+
+        std::cout << "[Phase 5 verify] Querying balanceOf on user shards...\n";
+        std::atomic<uint32_t> bok5{0}, bfail5{0};
+        std::mutex bmx5;
+        {
+            std::vector<std::thread> bth5;
+            for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+                bth5.emplace_back([&, ti]() {
+                    auto& td = tdeps8[ti];
+                    std::string pk_hex = common::Encode::HexEncode(td.prikey);
+
+                    for (uint32_t ri = 0;
+                         ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
+                        auto& u = users8[rcpt5[ti][ri]];
+                        // Query on user's shard (CrossShardBase clone stores
+                        // balances per-shard after systemExecuteCrossTransfer)
+                        ShardoraSDK qsdk(eps8[u.shard_id].ip,
+                                         eps8[u.shard_id].http);
+                        bool found = false;
+                        // Up to 3 retries with 5s gap (cross-shard can be slow)
+                        for (int rd = 0; rd < 3 && !found && !global_stop; ++rd) {
+                            auto res = qsdk.queryFunctionSolidity(
+                                pk_hex, td.contract_addr_hex,
+                                "balanceOf",
+                                {"address"}, {u.addr_hex},
+                                {"uint256"});
+                            if (res.contains("status") && res["status"] == 0) {
+                                std::string rv = res.value("return_value", "");
+                                for (char c : rv)
+                                    if (c != '0') { found = true; break; }
+                            }
+                            if (!found && rd < 2) usleep(5000000);
+                        }
+
+                        if (found) {
+                            bok5.fetch_add(1);
+                        } else {
+                            std::lock_guard<std::mutex> lk(bmx5);
+                            std::cout << "  FAIL: token" << ti
+                                      << " user " << u.addr_hex
+                                      << " s" << u.shard_id << " balance=0\n";
+                            bfail5.fetch_add(1);
+                        }
+                    }
+                });
+            }
+            for (auto& t : bth5) t.join();
+        }
+
+        const uint32_t total5 = kTokens * kRcpt5;
+        if (bfail5.load() > 0) {
+            std::cerr << "  FATAL: Phase 5: " << bfail5.load()
+                      << "/" << total5 << " token balances unconfirmed.\n";
+            transport::TcpTransport::Instance()->Stop();
+            return 1;
+        }
+        std::cout << "  Phase 5: all " << total5
+                  << " user token balances confirmed OK\n";
+
+        // ─────────────────────────────────────────────────────────────────
         std::cout << "\n" << std::string(70, '=') << "\n";
-        std::cout << "  Mode 8 Complete (Phase 0-4)\n";
+        std::cout << "  Mode 8 Complete (Phase 0-5)\n";
         std::cout << "  Users:           " << users8.size() << "\n";
         std::cout << "  Token contracts: " << kTokens << "\n";
         for (uint32_t i = 0; i < kTokens; ++i)

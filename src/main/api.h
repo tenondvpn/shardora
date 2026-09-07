@@ -701,6 +701,22 @@ public:
         } catch (const std::exception& e) { return {{"status", 1}, {"msg", e.what()}}; }
     }
 
+    // Call a deployed contract (step=kContractExcute=8) with a pre-supplied nonce.
+    // current_nonce is the last confirmed nonce; internally uses current_nonce+1.
+    json callContractWithNonce(const std::string& private_key,
+                               const std::string& contract_addr,
+                               const std::string& input_hex,
+                               int64_t current_nonce) {
+        try {
+            if (client.transfer(private_key, contract_addr, 0, current_nonce, 8,
+                                "", input_hex))
+                return {{"status", 0}, {"msg", "ok"}};
+            return {{"status", 1}, {"msg", "call failed"}};
+        } catch (const std::exception& e) {
+            return {{"status", 1}, {"msg", e.what()}};
+        }
+    }
+
     // Set prefund for a user on a contract via HTTP.
     // current_nonce is the last confirmed nonce; internally uses nonce+1.
     bool setPrefund(const std::string& user_prikey_hex, const std::string& contract_addr_hex,
