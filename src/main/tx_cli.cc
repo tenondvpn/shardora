@@ -7255,17 +7255,18 @@ contract Exchange {
         return 0;
     }
 
-    // ── Mode 8: CrossShardBase Token AMM — Step 1 (Accounts + Fund) ──────
+    // ── Mode 8: CrossShardBase Token AMM ─────────────────────────────────
     // Usage: txcli 8 <funder_shard> <ip> <port>
     //        [users=100] [tokens=5] [amm_pairs=3] [rounds=10] [tps=0]
     //        [ip3:port3] [ip4:port4] [ip5:port5] [ip6:port6]
     //
-    // Step 1 covers Phase 0-2:
     //   Phase 0: Compile CrossShardToken + AMMPool
     //   Phase 1: Generate user / token-deployer / AMM-deployer accounts
     //   Phase 2: Fund all accounts from genesis funders (raw TCP, bulk)
     //   Phase 2a: Wait for funder nonces to confirm on-chain
-    //   Phase 2b: Spot-check balances on each shard
+    //   Phase 2b: Verify all funded accounts (full batch check per shard)
+    //   Phase 3: Deploy CrossShardToken (one per token deployer, on its own shard)
+    //   Phase 4: Deploy AMMPool (one per amm deployer, constructor args = token pair)
     if (argv[1][0] == '8') {
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stderr, NULL, _IONBF, 0);
@@ -7676,6 +7677,7 @@ contract AMMPool {
             uint32_t    signer_shard;
             uint32_t    token_a;   // index into tdeps8
             uint32_t    token_b;
+            std::string contract_addr_hex;  // filled in after Phase 4 deploy
         };
         std::vector<AmmDeployer8> adeps8(kAmmPairs);
 
@@ -8030,13 +8032,257 @@ contract AMMPool {
         }
 
         // ─────────────────────────────────────────────────────────────────
+        // Phase 3: Deploy CrossShardToken contracts
+        // Each token deployer sends one kCreateContract tx to its pre-chosen
+        // contract address on its target shard.  Constructor: (sys, base) where
+        // sys = SYSTEM_EXECUTOR_ADDRESS (fixed constant), base = contract_addr.
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n[Phase 3] Deploy CrossShardToken contracts (" << kTokens << " tokens)...\n";
+
+        // SYSTEM_EXECUTOR_ADDRESS constant from CrossShardBase (20 bytes, hex)
+        const std::string kSysExec = "53595354454d5f4558454355544f525f56310000";
+
+        // ABI-encode constructor(address sys, address base): two address args, each 32 bytes (left-padded)
+        auto encodeAddr32 = [](const std::string& hex40) -> std::string {
+            // left-pad 40-char hex address to 64 chars
+            return std::string(24, '0') + hex40;
+        };
+
+        {
+            const uint64_t kTokenDeployPrefund = 5000000000ULL;
+            std::vector<std::thread> tth3;
+            std::atomic<uint32_t> tok_ok{0}, tok_fail{0};
+
+            for (uint32_t i = 0; i < kTokens; ++i) {
+                tth3.emplace_back([&, i]() {
+                    auto& td = tdeps8[i];
+                    // constructor args: (sys, base = contract_addr)
+                    std::string ctor_args = encodeAddr32(kSysExec)
+                                          + encodeAddr32(td.contract_addr_hex);
+                    std::string full_code = token_bytecode8 + ctor_args;
+
+                    ShardoraSDK dsdk(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
+                    // pre-fetch nonce so we send with the correct nonce
+                    int64_t nonce = dsdk.fetchNonce(td.addr_hex);
+                    if (nonce < 0) { ++tok_fail; return; }
+
+                    auto r = dsdk.deployToAddressWithNonce(
+                        common::Encode::HexEncode(td.prikey),
+                        full_code,
+                        td.contract_addr_hex,
+                        kTokenDeployPrefund,
+                        nonce);
+                    if (r.contains("status") && r["status"] == 0) {
+                        ++tok_ok;
+                    } else {
+                        std::cerr << "  [token" << i << "] deploy failed: "
+                                  << r.value("msg", "?") << "\n";
+                        ++tok_fail;
+                    }
+                });
+            }
+            for (auto& t : tth3) t.join();
+            std::cout << "  Token deploy sends: " << tok_ok.load() << " ok  "
+                      << tok_fail.load() << " fail\n";
+        }
+
+        // Phase 3 verify: wait for all token contract addresses to appear on-chain
+        std::cout << "\n[Phase 3 verify] Wait for token contracts on-chain (max 300s)...\n";
+        {
+            std::map<uint32_t, std::vector<std::string>> shard_token_addrs;
+            for (uint32_t i = 0; i < kTokens; ++i)
+                shard_token_addrs[tdeps8[i].contract_shard].push_back(tdeps8[i].contract_addr_hex);
+
+            std::vector<std::thread> vth3;
+            std::mutex vmx3;
+            std::atomic<uint32_t> confirmed_tokens{0};
+            std::atomic<uint32_t> failed_tokens{0};
+
+            for (auto& [s, addrs] : shard_token_addrs) {
+                vth3.emplace_back([&, s, addrs]() {
+                    ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
+                    std::vector<std::string> pending = addrs;
+                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
+                        auto r = vsdk.batchQueryAccounts(pending);
+                        std::vector<std::string> still;
+                        if (r.contains("accounts")) {
+                            for (auto& a : pending) {
+                                if (r["accounts"].contains(a)) {
+                                    confirmed_tokens.fetch_add(1);
+                                } else {
+                                    still.push_back(a);
+                                }
+                            }
+                        } else { still = pending; }
+                        pending = still;
+                        if (!pending.empty() && rd % 30 == 0) {
+                            std::lock_guard<std::mutex> lk(vmx3);
+                            std::cout << "  Shard " << s << ": " << (addrs.size() - pending.size())
+                                      << "/" << addrs.size() << " token contracts confirmed [" << rd << "s]\n";
+                        }
+                        if (!pending.empty()) usleep(1000000);
+                    }
+                    std::lock_guard<std::mutex> lk(vmx3);
+                    if (pending.empty()) {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " token contracts confirmed OK\n";
+                    } else {
+                        std::cout << "  Shard " << s << ": FAILED " << pending.size()
+                                  << "/" << addrs.size() << " token contracts not found after 300s:\n";
+                        for (auto& a : pending) std::cout << "    " << a << "\n";
+                        failed_tokens.fetch_add((uint32_t)pending.size());
+                    }
+                });
+            }
+            for (auto& t : vth3) t.join();
+
+            if (failed_tokens.load() > 0) {
+                std::cerr << "  FATAL: Phase 3: " << failed_tokens.load()
+                          << " token contracts not confirmed. Aborting.\n";
+                transport::TcpTransport::Instance()->Stop();
+                return 1;
+            }
+            std::cout << "  Phase 3: all " << kTokens << " token contracts deployed OK\n";
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 4: Deploy AMMPool contracts
+        // Each AMM deployer sends one kCreateContract tx with a randomly-
+        // chosen contract address (any shard). Constructor: (tokenA, tokenB)
+        // where tokenA/tokenB are the deployed CrossShardToken contract addrs.
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n[Phase 4] Deploy AMMPool contracts (" << kAmmPairs << " pools)...\n";
+
+        {
+            const uint64_t kAmmDeployPrefund = 5000000000ULL;
+            std::vector<std::thread> tth4;
+            std::atomic<uint32_t> amm_ok{0}, amm_fail{0};
+
+            for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                tth4.emplace_back([&, k]() {
+                    auto& ad = adeps8[k];
+                    // constructor(address tokenA, address tokenB)
+                    const std::string& tA_addr = tdeps8[ad.token_a].contract_addr_hex;
+                    const std::string& tB_addr = tdeps8[ad.token_b].contract_addr_hex;
+                    std::string ctor_args = encodeAddr32(tA_addr) + encodeAddr32(tB_addr);
+                    std::string full_code = amm_bytecode8 + ctor_args;
+
+                    // pick a contract address on any shard (use deployer's shard for locality)
+                    std::string to_address;
+                    for (int attempt = 0; attempt < 50000 && !global_stop; ++attempt) {
+                        // derive a candidate address from bytecode + salt
+                        std::string salt = ad.prikey + std::to_string(attempt) +
+                            std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
+                        std::string cand = utils::keccak256Str(amm_bytecode8 + salt).substr(24);
+                        // any valid 40-char address is acceptable
+                        if (!cand.empty()) { to_address = cand; break; }
+                    }
+                    if (to_address.empty()) { ++amm_fail; return; }
+
+                    ad.contract_addr_hex = to_address;  // store for later
+
+                    ShardoraSDK dsdk(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                    int64_t nonce = dsdk.fetchNonce(ad.addr_hex);
+                    if (nonce < 0) { ++amm_fail; return; }
+
+                    auto r = dsdk.deployToAddressWithNonce(
+                        common::Encode::HexEncode(ad.prikey),
+                        full_code,
+                        to_address,
+                        kAmmDeployPrefund,
+                        nonce);
+                    if (r.contains("status") && r["status"] == 0) {
+                        ++amm_ok;
+                    } else {
+                        std::cerr << "  [amm" << k << "] deploy failed: "
+                                  << r.value("msg", "?") << "\n";
+                        ++amm_fail;
+                    }
+                });
+            }
+            for (auto& t : tth4) t.join();
+            std::cout << "  AMM deploy sends: " << amm_ok.load() << " ok  "
+                      << amm_fail.load() << " fail\n";
+        }
+
+        // Phase 4 verify: wait for AMM contract addresses on-chain
+        std::cout << "\n[Phase 4 verify] Wait for AMM contracts on-chain (max 300s)...\n";
+        {
+            // Group by whichever shard the contract address landed on
+            std::map<uint32_t, std::vector<std::pair<uint32_t,std::string>>> shard_amm;  // shard -> [(idx, addr)]
+            for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                if (adeps8[k].contract_addr_hex.empty()) continue;
+                std::string raw = common::Encode::HexDecode(adeps8[k].contract_addr_hex);
+                uint64_t h = common::Hash::Hash64(raw.substr(0, common::kUnicastAddressLength));
+                uint32_t s = (uint32_t)(h % kNumShards8) + network::kConsensusShardBeginNetworkId;
+                shard_amm[s].push_back({k, adeps8[k].contract_addr_hex});
+            }
+
+            std::vector<std::thread> vth4;
+            std::mutex vmx4;
+            std::atomic<uint32_t> confirmed_amm{0};
+            std::atomic<uint32_t> failed_amm{0};
+
+            for (auto& [s, pairs] : shard_amm) {
+                vth4.emplace_back([&, s, pairs]() {
+                    ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
+                    std::vector<std::string> addrs, pending;
+                    for (auto& [idx, a] : pairs) addrs.push_back(a);
+                    pending = addrs;
+
+                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
+                        auto r = vsdk.batchQueryAccounts(pending);
+                        std::vector<std::string> still;
+                        if (r.contains("accounts")) {
+                            for (auto& a : pending) {
+                                if (r["accounts"].contains(a)) confirmed_amm.fetch_add(1);
+                                else still.push_back(a);
+                            }
+                        } else { still = pending; }
+                        pending = still;
+                        if (!pending.empty() && rd % 30 == 0) {
+                            std::lock_guard<std::mutex> lk(vmx4);
+                            std::cout << "  Shard " << s << ": " << (addrs.size() - pending.size())
+                                      << "/" << addrs.size() << " AMM contracts confirmed [" << rd << "s]\n";
+                        }
+                        if (!pending.empty()) usleep(1000000);
+                    }
+                    std::lock_guard<std::mutex> lk(vmx4);
+                    if (pending.empty()) {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " AMM contracts confirmed OK\n";
+                    } else {
+                        std::cout << "  Shard " << s << ": FAILED " << pending.size()
+                                  << "/" << addrs.size() << " AMM contracts not found after 300s:\n";
+                        for (auto& a : pending) std::cout << "    " << a << "\n";
+                        failed_amm.fetch_add((uint32_t)pending.size());
+                    }
+                });
+            }
+            for (auto& t : vth4) t.join();
+
+            if (failed_amm.load() > 0) {
+                std::cerr << "  FATAL: Phase 4: " << failed_amm.load()
+                          << " AMM contracts not confirmed. Aborting.\n";
+                transport::TcpTransport::Instance()->Stop();
+                return 1;
+            }
+            std::cout << "  Phase 4: all " << kAmmPairs << " AMM contracts deployed OK\n";
+        }
+
+        // ─────────────────────────────────────────────────────────────────
         std::cout << "\n" << std::string(70, '=') << "\n";
-        std::cout << "  Mode 8 Step 1 Complete\n";
-        std::cout << "  Users:          " << users8.size() << "\n";
-        std::cout << "  Token deployers: " << kTokens << "\n";
-        std::cout << "  AMM deployers:   " << kAmmPairs << "\n";
-        std::cout << "  Fund: " << fund_ok8.load() << " ok  " << fund_fail8.load() << " fail\n";
-        std::cout << "  Next: implement Phase 3 (deploy CrossShardBase tokens)\n";
+        std::cout << "  Mode 8 Complete (Phase 0-4)\n";
+        std::cout << "  Users:           " << users8.size() << "\n";
+        std::cout << "  Token contracts: " << kTokens << "\n";
+        for (uint32_t i = 0; i < kTokens; ++i)
+            std::cout << "    [token" << i << "] " << tdeps8[i].contract_addr_hex
+                      << " s" << tdeps8[i].contract_shard << "\n";
+        std::cout << "  AMM contracts:   " << kAmmPairs << "\n";
+        for (uint32_t k = 0; k < kAmmPairs; ++k)
+            std::cout << "    [amm" << k << "] " << adeps8[k].contract_addr_hex
+                      << "  pair=(token" << adeps8[k].token_a
+                      << ",token" << adeps8[k].token_b << ")\n";
         std::cout << std::string(70, '=') << "\n";
 
         transport::TcpTransport::Instance()->Stop();
