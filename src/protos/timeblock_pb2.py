@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.timeblock.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x16protos/timeblock.proto\x12\x17shardora.timeblock.protobuf\"Q\n\tTimeBlock\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x11\n\ttimestamp\x18\x02 \x01(\x04\x12\x12\n\nvss_random\x18\x03 \x01(\x04\x12\r\n\x05nonce\x18\x04 \x01(\x04')
+  serialized_pb=_b('\n\x16protos/timeblock.proto\x12\x1bshardora.timeblock.protobuf\"Q\n\tTimeBlock\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x11\n\ttimestamp\x18\x02 \x01(\x04\x12\x12\n\nvss_random\x18\x03 \x01(\x04\x12\r\n\x05nonce\x18\x04 \x01(\x04')
 )
 
 
@@ -72,8 +72,8 @@ _TIMEBLOCK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=51,
-  serialized_end=132,
+  serialized_start=55,
+  serialized_end=136,
 )
 
 DESCRIPTOR.message_types_by_name['TimeBlock'] = _TIMEBLOCK

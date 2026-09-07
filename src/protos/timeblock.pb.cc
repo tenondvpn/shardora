@@ -95,13 +95,13 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\026protos/timeblock.proto\022\027shardora.timeblock"
-      ".protobuf\"Q\n\tTimeBlock\022\016\n\006height\030\001 \001(\004\022\021"
-      "\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001(\004\022\r\n"
-      "\005nonce\030\004 \001(\004"
+      "\n\026protos/timeblock.proto\022\033shardora.timeb"
+      "lock.protobuf\"Q\n\tTimeBlock\022\016\n\006height\030\001 \001"
+      "(\004\022\021\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001("
+      "\004\022\r\n\005nonce\030\004 \001(\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 132);
+      descriptor, 136);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/timeblock.proto", &protobuf_RegisterTypes);
 }

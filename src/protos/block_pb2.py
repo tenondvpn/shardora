@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='shardora.block.protobuf',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x12protos/block.proto\x12\x13shardora.block.protobuf\x1a\x14protos/address.proto\x1a\x10protos/bls.proto\x1a\x12protos/elect.proto\x1a\x12protos/pools.proto\x1a\x16protos/timeblock.proto\")\n\x0bStorageItem\x12\x0b\n\x03key\x18\x01 \x01(\x0c\x12\r\n\x05value\x18\x02 \x01(\x0c\"8\n\x0cTransferItem\x12\x0c\n\x04\x66rom\x18\x01 \x01(\x0c\x12\n\n\x02to\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\"%\n\x05TxLog\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x0e\n\x06topics\x18\x02 \x03(\x0c\"Z\n\x0cTxHashStatus\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06output\x18\x02 \x01(\x0c\x12*\n\x06\x65vents\x18\x03 \x03(\x0b\x32\x1a.shardora.block.protobuf.TxLog\"\xc7\x03\n\x07\x42lockTx\x12\r\n\x05nonce\x18\x01 \x01(\x04\x12\x0c\n\x04\x66rom\x18\x02 \x01(\x0c\x12\n\n\x02to\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\x12\x11\n\tgas_limit\x18\x05 \x01(\x04\x12\x10\n\x08gas_used\x18\x06 \x01(\x04\x12\x11\n\tgas_price\x18\x07 \x01(\x04\x12\x0f\n\x07\x62\x61lance\x18\x08 \x01(\x04\x12+\n\x04step\x18\t \x01(\x0e\x32\x1d.shardora.pools.protobuf.StepType\x12\x0e\n\x06status\x18\n \x01(\r\x12\x18\n\x10\x63ontract_prefund\x18\r \x01(\x04\x12\x15\n\rcontract_code\x18\x0e \x01(\x0c\x12\x16\n\x0e\x63ontract_input\x18\x0f \x01(\x0c\x12*\n\x06\x65vents\x18\x10 \x03(\x0b\x32\x1a.shardora.block.protobuf.TxLog\x12\x36\n\x08tx_debug\x18\x11 \x03(\x0b\x32$.shardora.pools.protobuf.TxDelayTestInfo\x12\x13\n\x0bunique_hash\x18\x12 \x01(\x0c\x12\x0b\n\x03key\x18\x13 \x01(\x0c\x12\r\n\x05value\x18\x14 \x01(\x0c\x12\x0f\n\x07tx_hash\x18\x15 \x01(\x0c\x12\x0e\n\x06output\x18\x16 \x01(\x0c\"H\n\x0cKeyValueInfo\x12\x0c\n\x04\x61\x64\x64r\x18\x01 \x01(\x0c\x12\x0b\n\x03key\x18\x02 \x01(\x0c\x12\r\n\x05value\x18\x03 \x01(\x0c\x12\x0e\n\x06height\x18\x04 \x01(\x04\"W\n\x12\x43onsensusToTxsItem\x12\n\n\x02to\x18\x01 \x01(\x0c\x12\x0f\n\x07\x62\x61lance\x18\x02 \x01(\x04\x12\x15\n\rcontract_from\x18\x03 \x01(\x0c\x12\r\n\x05nonce\x18\x04 \x01(\x04\"F\n\x0e\x43onsensusToTxs\x12\x34\n\x03tos\x18\x01 \x03(\x0b\x32\'.shardora.block.protobuf.ConsensusToTxsItem\"J\n\x13\x43rossShardCloneInfo\x12\x19\n\x11\x62\x61se_root_address\x18\x01 \x01(\x0c\x12\x18\n\x10runtime_bytecode\x18\x02 \x01(\x0c\"\x9f\x08\n\x05\x42lock\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x1a\n\x12\x63onsistency_random\x18\x03 \x01(\x04\x12\x18\n\x10timeblock_height\x18\x04 \x01(\x04\x12-\n\x07tx_list\x18\x05 \x03(\x0b\x32\x1c.shardora.block.protobuf.BlockTx\x12\x11\n\ttimestamp\x18\x06 \x01(\x04\x12#\n\x1b\x63hange_leader_invalid_hashs\x18\x07 \x03(\x0c\x12:\n\x0fkey_value_array\x18\x08 \x03(\x0b\x32!.shardora.block.protobuf.KeyValueInfo\x12\x37\n\x0c\x63ontract_txs\x18\t \x03(\x0b\x32!.shardora.block.protobuf.TransferItem\x12\x39\n\raddress_array\x18\n \x03(\x0b\x32\".shardora.address.protobuf.AddressInfo\x12<\n\x0f\x65lect_statistic\x18\x0b \x01(\x0b\x32#.shardora.pools.protobuf.ElectStatistic\x12\x34\n\x0b\x65lect_block\x18\x0c \x01(\x0b\x32\x1f.shardora.elect.protobuf.ElectBlock\x12\x39\n\x10prev_elect_block\x18\r \x01(\x0b\x32\x1f.shardora.elect.protobuf.ElectBlock\x12\x35\n\x08local_to\x18\x0e \x01(\x0b\x32#.shardora.block.protobuf.ConsensusToTxs\x12\x37\n\x0btimer_block\x18\x10 \x01(\x0b\x32\".shardora.timeblock.protobuf.TimeBlock\x12\x36\n\tnormal_to\x18\x12 \x01(\x0b\x32#.shardora.pools.protobuf.AllToTxMessage\x12\x42\n\x14\x63ross_shard_to_array\x18\x13 \x03(\x0b\x32$.shardora.pools.protobuf.ToTxMessageItem\x12\x1d\n\x15pool_statistic_height\x18\x15 \x01(\x04\x12\x0f\n\x07\x61ll_gas\x18\x16 \x01(\x04\x12/\n\x05joins\x18\x17 \x03(\x0b\x32 .shardora.bls.protobuf.JoinElectInfo\x12>\n\x0cpool_st_info\x18\x18 \x01(\x0b\x32(.shardora.pools.protobuf.PoolStatisticTxInfo\x12\x14\n\x0cunique_hashs\x18\x19 \x03(\x0c\x12\x10\n\x08\x63hain_id\x18\x1a \x01(\x04\x12\x44\n\x12\x63lone_deploy_array\x18\x1b \x03(\x0b\x32(.shardora.block.protobuf.CrossShardCloneInfo\"n\n\x11GetTxBlockRequest\x12\x0e\n\x06tx_gid\x18\x01 \x01(\x0c\x12\x12\n\nblock_hash\x18\x02 \x01(\x0c\x12\x0c\n\x04\x66rom\x18\x03 \x01(\x08\x12\x0e\n\x06height\x18\x04 \x01(\x04\x12\x17\n\x0f\x61\x63\x63ount_address\x18\x05 \x01(\x0c\"#\n\x12GetTxBlockResponse\x12\r\n\x05\x62lock\x18\x01 \x01(\x0c\"J\n\x14\x41\x63\x63ountHeightRequest\x12\x14\n\x0c\x61\x63\x63ount_addr\x18\x01 \x01(\x0c\x12\r\n\x05index\x18\x02 \x01(\x03\x12\r\n\x05\x63ount\x18\x03 \x01(\x05\"L\n\x15\x41\x63\x63ountHeightResponse\x12\x0f\n\x07heights\x18\x01 \x03(\x04\x12\x14\n\x0c\x61\x63\x63ount_addr\x18\x02 \x01(\x0c\x12\x0c\n\x04type\x18\x03 \x01(\x0c\"G\n\x12\x41\x63\x63ountAttrRequest\x12\x0f\n\x07\x61\x63\x63ount\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\x12\x0e\n\x06height\x18\x03 \x01(\x04\"W\n\x13\x41\x63\x63ountAttrResponse\x12\x0f\n\x07\x61\x63\x63ount\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\x12\x0e\n\x06height\x18\x03 \x01(\x04\x12\r\n\x05\x62lock\x18\x04 \x01(\x0c\"h\n\x15UpdateVpnCountRequest\x12\x14\n\x0c\x61\x63\x63ount_hash\x18\x01 \x01(\x04\x12\n\n\x02ip\x18\x02 \x01(\x0c\x12\x0e\n\x06old_ip\x18\x03 \x01(\x0c\x12\x0b\n\x03uid\x18\x04 \x01(\x0c\x12\x10\n\x08just_set\x18\x05 \x01(\x08\")\n\x0cVpnCountItem\x12\n\n\x02ip\x18\x01 \x01(\x0c\x12\r\n\x05\x63ount\x18\x02 \x01(\r\"N\n\x16UpdateVpnCountResponse\x12\x34\n\tvpn_nodes\x18\x01 \x03(\x0b\x32!.shardora.block.protobuf.VpnCountItem\"e\n\x19GetAccountInitInfoRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\x04\x12\x0e\n\x06net_id\x18\x04 \x01(\x04\x12\r\n\x05index\x18\x05 \x01(\x04\"|\n\x1aGetAccountInitInfoResponse\x12\x0f\n\x07\x62\x61lance\x18\x01 \x01(\x04\x12.\n\nblock_list\x18\x02 \x03(\x0b\x32\x1a.shardora.block.protobuf.Block\x12\n\n\x02id\x18\x03 \x01(\x0c\x12\x11\n\tmax_index\x18\x04 \x01(\x04\"0\n\x16UpdateVpnActiveRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\n\n\x02ip\x18\x02 \x01(\x0c\">\n\x0f\x41\x64RewardRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x12\n\nreward_key\x18\x02 \x01(\x0c\x12\x0b\n\x03gid\x18\x03 \x01(\x0c\"V\n\x12\x45lectStatisticInfo\x12\x14\n\x0c\x65lect_height\x18\x01 \x01(\x04\x12\x15\n\rsucc_tx_count\x18\x02 \x03(\r\x12\x13\n\x0blof_leaders\x18\x03 \x03(\r\"\x81\x01\n\rStatisticInfo\x12\x18\n\x10timeblock_height\x18\x01 \x01(\x04\x12\x14\n\x0c\x61ll_tx_count\x18\x02 \x01(\r\x12@\n\x0f\x65lect_statistic\x18\x03 \x03(\x0b\x32\'.shardora.block.protobuf.ElectStatisticInfo\"+\n\x18RefreshPoolHeightRequest\x12\x0f\n\x07heights\x18\x01 \x03(\x04\",\n\x19RefreshPoolHeightResponse\x12\x0f\n\x07heights\x18\x01 \x03(\x04\"$\n\x16GetAccountShardRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\"6\n\x16GetAccountShardReponse\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x10\n\x08shard_id\x18\x02 \x01(\r\"D\n\x17\x43rossShardingTosMessage\x12)\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x1a.shardora.block.protobuf.Block\"J\n\x1d\x43rossShardingStatisticMessage\x12)\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x1a.shardora.block.protobuf.Block\">\n\x11\x45lectBlockMessage\x12)\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x1a.shardora.block.protobuf.Block\"S\n\x10ShardToTxMessage\x12\x12\n\nleader_idx\x18\x02 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\x12\x15\n\rleader_to_idx\x18\x04 \x01(\x05\"\x8e\x01\n\x12StatisticTxMessage\x12\x37\n\tstatistic\x18\x01 \x01(\x0b\x32$.shardora.pools.protobuf.StatisticTxItem\x12\x12\n\nleader_idx\x18\x02 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\x12\x15\n\rleader_to_idx\x18\x04 \x01(\x05\"\xac\t\n\x0c\x42lockMessage\x12\x39\n\tblock_req\x18\x01 \x01(\x0b\x32&.shardora.block.protobuf.GetTxBlockRequest\x12:\n\tblock_res\x18\x02 \x01(\x0b\x32\'.shardora.block.protobuf.GetTxBlockResponse\x12=\n\nheight_req\x18\x03 \x01(\x0b\x32).shardora.block.protobuf.AccountHeightRequest\x12>\n\nheight_res\x18\x04 \x01(\x0b\x32*.shardora.block.protobuf.AccountHeightResponse\x12=\n\x0c\x61\x63\x63_attr_req\x18\x05 \x01(\x0b\x32\'.shardora.block.protobuf.AccountAttrRequest\x12>\n\x0c\x61\x63\x63_attr_res\x18\x06 \x01(\x0b\x32(.shardora.block.protobuf.AccountAttrResponse\x12>\n\nup_vpn_req\x18\x07 \x01(\x0b\x32*.shardora.block.protobuf.UpdateVpnCountRequest\x12?\n\nup_vpn_res\x18\x08 \x01(\x0b\x32+.shardora.block.protobuf.UpdateVpnCountResponse\x12H\n\x10\x61\x63\x63ount_init_req\x18\t \x01(\x0b\x32..shardora.block.protobuf.GetAccountInitInfoRequest\x12I\n\x10\x61\x63\x63ount_init_res\x18\n \x01(\x0b\x32/.shardora.block.protobuf.GetAccountInitInfoResponse\x12\x43\n\x0evpn_active_req\x18\x0b \x01(\x0b\x32+.shardora.block.protobuf.UpdateVpnActiveRequest\x12;\n\rad_reward_req\x18\x0c \x01(\x0b\x32$.shardora.block.protobuf.AdRewardRequest\x12\x46\n\x0fref_heights_req\x18\r \x01(\x0b\x32-.shardora.block.protobuf.RefreshPoolHeightRequest\x12G\n\x0fref_heights_res\x18\x0e \x01(\x0b\x32..shardora.block.protobuf.RefreshPoolHeightResponse\x12\x42\n\racc_shard_req\x18\x0f \x01(\x0b\x32+.shardora.block.protobuf.GetAccountShardRequest\x12\x42\n\racc_shard_res\x18\x10 \x01(\x0b\x32+.shardora.block.protobuf.GetAccountShardReponse\x12\x37\n\x08shard_to\x18\x11 \x01(\x0b\x32%.shardora.block.protobuf.ShardToTxMessage\x12=\n\x0cstatistic_tx\x18\x12 \x01(\x0b\x32\'.shardora.block.protobuf.StatisticTxMessage')
+  serialized_pb=_b('\n\x12protos/block.proto\x12\x17shardora.block.protobuf\x1a\x14protos/address.proto\x1a\x10protos/bls.proto\x1a\x12protos/elect.proto\x1a\x12protos/pools.proto\x1a\x16protos/timeblock.proto\")\n\x0bStorageItem\x12\x0b\n\x03key\x18\x01 \x01(\x0c\x12\r\n\x05value\x18\x02 \x01(\x0c\"8\n\x0cTransferItem\x12\x0c\n\x04\x66rom\x18\x01 \x01(\x0c\x12\n\n\x02to\x18\x02 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x04\"%\n\x05TxLog\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x0e\n\x06topics\x18\x02 \x03(\x0c\"^\n\x0cTxHashStatus\x12\x0e\n\x06status\x18\x01 \x01(\x05\x12\x0e\n\x06output\x18\x02 \x01(\x0c\x12.\n\x06\x65vents\x18\x03 \x03(\x0b\x32\x1e.shardora.block.protobuf.TxLog\"\xd3\x03\n\x07\x42lockTx\x12\r\n\x05nonce\x18\x01 \x01(\x04\x12\x0c\n\x04\x66rom\x18\x02 \x01(\x0c\x12\n\n\x02to\x18\x03 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\x12\x11\n\tgas_limit\x18\x05 \x01(\x04\x12\x10\n\x08gas_used\x18\x06 \x01(\x04\x12\x11\n\tgas_price\x18\x07 \x01(\x04\x12\x0f\n\x07\x62\x61lance\x18\x08 \x01(\x04\x12/\n\x04step\x18\t \x01(\x0e\x32!.shardora.pools.protobuf.StepType\x12\x0e\n\x06status\x18\n \x01(\r\x12\x18\n\x10\x63ontract_prefund\x18\r \x01(\x04\x12\x15\n\rcontract_code\x18\x0e \x01(\x0c\x12\x16\n\x0e\x63ontract_input\x18\x0f \x01(\x0c\x12.\n\x06\x65vents\x18\x10 \x03(\x0b\x32\x1e.shardora.block.protobuf.TxLog\x12:\n\x08tx_debug\x18\x11 \x03(\x0b\x32(.shardora.pools.protobuf.TxDelayTestInfo\x12\x13\n\x0bunique_hash\x18\x12 \x01(\x0c\x12\x0b\n\x03key\x18\x13 \x01(\x0c\x12\r\n\x05value\x18\x14 \x01(\x0c\x12\x0f\n\x07tx_hash\x18\x15 \x01(\x0c\x12\x0e\n\x06output\x18\x16 \x01(\x0c\"H\n\x0cKeyValueInfo\x12\x0c\n\x04\x61\x64\x64r\x18\x01 \x01(\x0c\x12\x0b\n\x03key\x18\x02 \x01(\x0c\x12\r\n\x05value\x18\x03 \x01(\x0c\x12\x0e\n\x06height\x18\x04 \x01(\x04\"W\n\x12\x43onsensusToTxsItem\x12\n\n\x02to\x18\x01 \x01(\x0c\x12\x0f\n\x07\x62\x61lance\x18\x02 \x01(\x04\x12\x15\n\rcontract_from\x18\x03 \x01(\x0c\x12\r\n\x05nonce\x18\x04 \x01(\x04\"J\n\x0e\x43onsensusToTxs\x12\x38\n\x03tos\x18\x01 \x03(\x0b\x32+.shardora.block.protobuf.ConsensusToTxsItem\"J\n\x13\x43rossShardCloneInfo\x12\x19\n\x11\x62\x61se_root_address\x18\x01 \x01(\x0c\x12\x18\n\x10runtime_bytecode\x18\x02 \x01(\x0c\"\xd7\x08\n\x05\x42lock\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x1a\n\x12\x63onsistency_random\x18\x03 \x01(\x04\x12\x18\n\x10timeblock_height\x18\x04 \x01(\x04\x12\x31\n\x07tx_list\x18\x05 \x03(\x0b\x32 .shardora.block.protobuf.BlockTx\x12\x11\n\ttimestamp\x18\x06 \x01(\x04\x12#\n\x1b\x63hange_leader_invalid_hashs\x18\x07 \x03(\x0c\x12>\n\x0fkey_value_array\x18\x08 \x03(\x0b\x32%.shardora.block.protobuf.KeyValueInfo\x12;\n\x0c\x63ontract_txs\x18\t \x03(\x0b\x32%.shardora.block.protobuf.TransferItem\x12=\n\raddress_array\x18\n \x03(\x0b\x32&.shardora.address.protobuf.AddressInfo\x12@\n\x0f\x65lect_statistic\x18\x0b \x01(\x0b\x32\'.shardora.pools.protobuf.ElectStatistic\x12\x38\n\x0b\x65lect_block\x18\x0c \x01(\x0b\x32#.shardora.elect.protobuf.ElectBlock\x12=\n\x10prev_elect_block\x18\r \x01(\x0b\x32#.shardora.elect.protobuf.ElectBlock\x12\x39\n\x08local_to\x18\x0e \x01(\x0b\x32\'.shardora.block.protobuf.ConsensusToTxs\x12;\n\x0btimer_block\x18\x10 \x01(\x0b\x32&.shardora.timeblock.protobuf.TimeBlock\x12:\n\tnormal_to\x18\x12 \x01(\x0b\x32\'.shardora.pools.protobuf.AllToTxMessage\x12\x46\n\x14\x63ross_shard_to_array\x18\x13 \x03(\x0b\x32(.shardora.pools.protobuf.ToTxMessageItem\x12\x1d\n\x15pool_statistic_height\x18\x15 \x01(\x04\x12\x0f\n\x07\x61ll_gas\x18\x16 \x01(\x04\x12\x33\n\x05joins\x18\x17 \x03(\x0b\x32$.shardora.bls.protobuf.JoinElectInfo\x12\x42\n\x0cpool_st_info\x18\x18 \x01(\x0b\x32,.shardora.pools.protobuf.PoolStatisticTxInfo\x12\x14\n\x0cunique_hashs\x18\x19 \x03(\x0c\x12\x10\n\x08\x63hain_id\x18\x1a \x01(\x04\x12H\n\x12\x63lone_deploy_array\x18\x1b \x03(\x0b\x32,.shardora.block.protobuf.CrossShardCloneInfo\"n\n\x11GetTxBlockRequest\x12\x0e\n\x06tx_gid\x18\x01 \x01(\x0c\x12\x12\n\nblock_hash\x18\x02 \x01(\x0c\x12\x0c\n\x04\x66rom\x18\x03 \x01(\x08\x12\x0e\n\x06height\x18\x04 \x01(\x04\x12\x17\n\x0f\x61\x63\x63ount_address\x18\x05 \x01(\x0c\"#\n\x12GetTxBlockResponse\x12\r\n\x05\x62lock\x18\x01 \x01(\x0c\"J\n\x14\x41\x63\x63ountHeightRequest\x12\x14\n\x0c\x61\x63\x63ount_addr\x18\x01 \x01(\x0c\x12\r\n\x05index\x18\x02 \x01(\x03\x12\r\n\x05\x63ount\x18\x03 \x01(\x05\"L\n\x15\x41\x63\x63ountHeightResponse\x12\x0f\n\x07heights\x18\x01 \x03(\x04\x12\x14\n\x0c\x61\x63\x63ount_addr\x18\x02 \x01(\x0c\x12\x0c\n\x04type\x18\x03 \x01(\x0c\"G\n\x12\x41\x63\x63ountAttrRequest\x12\x0f\n\x07\x61\x63\x63ount\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\x12\x0e\n\x06height\x18\x03 \x01(\x04\"W\n\x13\x41\x63\x63ountAttrResponse\x12\x0f\n\x07\x61\x63\x63ount\x18\x01 \x01(\x0c\x12\x10\n\x08\x61ttr_key\x18\x02 \x01(\x0c\x12\x0e\n\x06height\x18\x03 \x01(\x04\x12\r\n\x05\x62lock\x18\x04 \x01(\x0c\"h\n\x15UpdateVpnCountRequest\x12\x14\n\x0c\x61\x63\x63ount_hash\x18\x01 \x01(\x04\x12\n\n\x02ip\x18\x02 \x01(\x0c\x12\x0e\n\x06old_ip\x18\x03 \x01(\x0c\x12\x0b\n\x03uid\x18\x04 \x01(\x0c\x12\x10\n\x08just_set\x18\x05 \x01(\x08\")\n\x0cVpnCountItem\x12\n\n\x02ip\x18\x01 \x01(\x0c\x12\r\n\x05\x63ount\x18\x02 \x01(\r\"R\n\x16UpdateVpnCountResponse\x12\x38\n\tvpn_nodes\x18\x01 \x03(\x0b\x32%.shardora.block.protobuf.VpnCountItem\"e\n\x19GetAccountInitInfoRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\r\n\x05\x63ount\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\x04\x12\x0e\n\x06net_id\x18\x04 \x01(\x04\x12\r\n\x05index\x18\x05 \x01(\x04\"\x80\x01\n\x1aGetAccountInitInfoResponse\x12\x0f\n\x07\x62\x61lance\x18\x01 \x01(\x04\x12\x32\n\nblock_list\x18\x02 \x03(\x0b\x32\x1e.shardora.block.protobuf.Block\x12\n\n\x02id\x18\x03 \x01(\x0c\x12\x11\n\tmax_index\x18\x04 \x01(\x04\"0\n\x16UpdateVpnActiveRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\n\n\x02ip\x18\x02 \x01(\x0c\">\n\x0f\x41\x64RewardRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x12\n\nreward_key\x18\x02 \x01(\x0c\x12\x0b\n\x03gid\x18\x03 \x01(\x0c\"V\n\x12\x45lectStatisticInfo\x12\x14\n\x0c\x65lect_height\x18\x01 \x01(\x04\x12\x15\n\rsucc_tx_count\x18\x02 \x03(\r\x12\x13\n\x0blof_leaders\x18\x03 \x03(\r\"\x85\x01\n\rStatisticInfo\x12\x18\n\x10timeblock_height\x18\x01 \x01(\x04\x12\x14\n\x0c\x61ll_tx_count\x18\x02 \x01(\r\x12\x44\n\x0f\x65lect_statistic\x18\x03 \x03(\x0b\x32+.shardora.block.protobuf.ElectStatisticInfo\"+\n\x18RefreshPoolHeightRequest\x12\x0f\n\x07heights\x18\x01 \x03(\x04\",\n\x19RefreshPoolHeightResponse\x12\x0f\n\x07heights\x18\x01 \x03(\x04\"$\n\x16GetAccountShardRequest\x12\n\n\x02id\x18\x01 \x01(\x0c\"6\n\x16GetAccountShardReponse\x12\n\n\x02id\x18\x01 \x01(\x0c\x12\x10\n\x08shard_id\x18\x02 \x01(\r\"H\n\x17\x43rossShardingTosMessage\x12-\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x1e.shardora.block.protobuf.Block\"N\n\x1d\x43rossShardingStatisticMessage\x12-\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x1e.shardora.block.protobuf.Block\"B\n\x11\x45lectBlockMessage\x12-\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x1e.shardora.block.protobuf.Block\"S\n\x10ShardToTxMessage\x12\x12\n\nleader_idx\x18\x02 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\x12\x15\n\rleader_to_idx\x18\x04 \x01(\x05\"\x92\x01\n\x12StatisticTxMessage\x12;\n\tstatistic\x18\x01 \x01(\x0b\x32(.shardora.pools.protobuf.StatisticTxItem\x12\x12\n\nleader_idx\x18\x02 \x01(\r\x12\x14\n\x0c\x65lect_height\x18\x03 \x01(\x04\x12\x15\n\rleader_to_idx\x18\x04 \x01(\x05\"\xf4\t\n\x0c\x42lockMessage\x12=\n\tblock_req\x18\x01 \x01(\x0b\x32*.shardora.block.protobuf.GetTxBlockRequest\x12>\n\tblock_res\x18\x02 \x01(\x0b\x32+.shardora.block.protobuf.GetTxBlockResponse\x12\x41\n\nheight_req\x18\x03 \x01(\x0b\x32-.shardora.block.protobuf.AccountHeightRequest\x12\x42\n\nheight_res\x18\x04 \x01(\x0b\x32..shardora.block.protobuf.AccountHeightResponse\x12\x41\n\x0c\x61\x63\x63_attr_req\x18\x05 \x01(\x0b\x32+.shardora.block.protobuf.AccountAttrRequest\x12\x42\n\x0c\x61\x63\x63_attr_res\x18\x06 \x01(\x0b\x32,.shardora.block.protobuf.AccountAttrResponse\x12\x42\n\nup_vpn_req\x18\x07 \x01(\x0b\x32..shardora.block.protobuf.UpdateVpnCountRequest\x12\x43\n\nup_vpn_res\x18\x08 \x01(\x0b\x32/.shardora.block.protobuf.UpdateVpnCountResponse\x12L\n\x10\x61\x63\x63ount_init_req\x18\t \x01(\x0b\x32\x32.shardora.block.protobuf.GetAccountInitInfoRequest\x12M\n\x10\x61\x63\x63ount_init_res\x18\n \x01(\x0b\x32\x33.shardora.block.protobuf.GetAccountInitInfoResponse\x12G\n\x0evpn_active_req\x18\x0b \x01(\x0b\x32/.shardora.block.protobuf.UpdateVpnActiveRequest\x12?\n\rad_reward_req\x18\x0c \x01(\x0b\x32(.shardora.block.protobuf.AdRewardRequest\x12J\n\x0fref_heights_req\x18\r \x01(\x0b\x32\x31.shardora.block.protobuf.RefreshPoolHeightRequest\x12K\n\x0fref_heights_res\x18\x0e \x01(\x0b\x32\x32.shardora.block.protobuf.RefreshPoolHeightResponse\x12\x46\n\racc_shard_req\x18\x0f \x01(\x0b\x32/.shardora.block.protobuf.GetAccountShardRequest\x12\x46\n\racc_shard_res\x18\x10 \x01(\x0b\x32/.shardora.block.protobuf.GetAccountShardReponse\x12;\n\x08shard_to\x18\x11 \x01(\x0b\x32).shardora.block.protobuf.ShardToTxMessage\x12\x41\n\x0cstatistic_tx\x18\x12 \x01(\x0b\x32+.shardora.block.protobuf.StatisticTxMessage')
   ,
   dependencies=[protos_dot_address__pb2.DESCRIPTOR,protos_dot_bls__pb2.DESCRIPTOR,protos_dot_elect__pb2.DESCRIPTOR,protos_dot_pools__pb2.DESCRIPTOR,protos_dot_timeblock__pb2.DESCRIPTOR,])
 
@@ -64,8 +64,8 @@ _STORAGEITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=147,
-  serialized_end=188,
+  serialized_start=151,
+  serialized_end=192,
 )
 
 
@@ -109,8 +109,8 @@ _TRANSFERITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=190,
-  serialized_end=246,
+  serialized_start=194,
+  serialized_end=250,
 )
 
 
@@ -147,8 +147,8 @@ _TXLOG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=248,
-  serialized_end=285,
+  serialized_start=252,
+  serialized_end=289,
 )
 
 
@@ -192,8 +192,8 @@ _TXHASHSTATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=287,
-  serialized_end=377,
+  serialized_start=291,
+  serialized_end=385,
 )
 
 
@@ -356,8 +356,8 @@ _BLOCKTX = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=380,
-  serialized_end=835,
+  serialized_start=388,
+  serialized_end=855,
 )
 
 
@@ -408,8 +408,8 @@ _KEYVALUEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=837,
-  serialized_end=909,
+  serialized_start=857,
+  serialized_end=929,
 )
 
 
@@ -460,8 +460,8 @@ _CONSENSUSTOTXSITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=911,
-  serialized_end=998,
+  serialized_start=931,
+  serialized_end=1018,
 )
 
 
@@ -491,8 +491,8 @@ _CONSENSUSTOTXS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1000,
-  serialized_end=1070,
+  serialized_start=1020,
+  serialized_end=1094,
 )
 
 
@@ -529,8 +529,8 @@ _CROSSSHARDCLONEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1072,
-  serialized_end=1146,
+  serialized_start=1096,
+  serialized_end=1170,
 )
 
 
@@ -721,8 +721,8 @@ _BLOCK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1149,
-  serialized_end=2204,
+  serialized_start=1173,
+  serialized_end=2284,
 )
 
 
@@ -780,8 +780,8 @@ _GETTXBLOCKREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2206,
-  serialized_end=2316,
+  serialized_start=2286,
+  serialized_end=2396,
 )
 
 
@@ -811,8 +811,8 @@ _GETTXBLOCKRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2318,
-  serialized_end=2353,
+  serialized_start=2398,
+  serialized_end=2433,
 )
 
 
@@ -856,8 +856,8 @@ _ACCOUNTHEIGHTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2355,
-  serialized_end=2429,
+  serialized_start=2435,
+  serialized_end=2509,
 )
 
 
@@ -901,8 +901,8 @@ _ACCOUNTHEIGHTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2431,
-  serialized_end=2507,
+  serialized_start=2511,
+  serialized_end=2587,
 )
 
 
@@ -946,8 +946,8 @@ _ACCOUNTATTRREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2509,
-  serialized_end=2580,
+  serialized_start=2589,
+  serialized_end=2660,
 )
 
 
@@ -998,8 +998,8 @@ _ACCOUNTATTRRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2582,
-  serialized_end=2669,
+  serialized_start=2662,
+  serialized_end=2749,
 )
 
 
@@ -1057,8 +1057,8 @@ _UPDATEVPNCOUNTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2671,
-  serialized_end=2775,
+  serialized_start=2751,
+  serialized_end=2855,
 )
 
 
@@ -1095,8 +1095,8 @@ _VPNCOUNTITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2777,
-  serialized_end=2818,
+  serialized_start=2857,
+  serialized_end=2898,
 )
 
 
@@ -1126,8 +1126,8 @@ _UPDATEVPNCOUNTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2820,
-  serialized_end=2898,
+  serialized_start=2900,
+  serialized_end=2982,
 )
 
 
@@ -1185,8 +1185,8 @@ _GETACCOUNTINITINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2900,
-  serialized_end=3001,
+  serialized_start=2984,
+  serialized_end=3085,
 )
 
 
@@ -1237,8 +1237,8 @@ _GETACCOUNTINITINFORESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3003,
-  serialized_end=3127,
+  serialized_start=3088,
+  serialized_end=3216,
 )
 
 
@@ -1275,8 +1275,8 @@ _UPDATEVPNACTIVEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3129,
-  serialized_end=3177,
+  serialized_start=3218,
+  serialized_end=3266,
 )
 
 
@@ -1320,8 +1320,8 @@ _ADREWARDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3179,
-  serialized_end=3241,
+  serialized_start=3268,
+  serialized_end=3330,
 )
 
 
@@ -1365,8 +1365,8 @@ _ELECTSTATISTICINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3243,
-  serialized_end=3329,
+  serialized_start=3332,
+  serialized_end=3418,
 )
 
 
@@ -1410,8 +1410,8 @@ _STATISTICINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3332,
-  serialized_end=3461,
+  serialized_start=3421,
+  serialized_end=3554,
 )
 
 
@@ -1441,8 +1441,8 @@ _REFRESHPOOLHEIGHTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3463,
-  serialized_end=3506,
+  serialized_start=3556,
+  serialized_end=3599,
 )
 
 
@@ -1472,8 +1472,8 @@ _REFRESHPOOLHEIGHTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3508,
-  serialized_end=3552,
+  serialized_start=3601,
+  serialized_end=3645,
 )
 
 
@@ -1503,8 +1503,8 @@ _GETACCOUNTSHARDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3554,
-  serialized_end=3590,
+  serialized_start=3647,
+  serialized_end=3683,
 )
 
 
@@ -1541,8 +1541,8 @@ _GETACCOUNTSHARDREPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3592,
-  serialized_end=3646,
+  serialized_start=3685,
+  serialized_end=3739,
 )
 
 
@@ -1572,8 +1572,8 @@ _CROSSSHARDINGTOSMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3648,
-  serialized_end=3716,
+  serialized_start=3741,
+  serialized_end=3813,
 )
 
 
@@ -1603,8 +1603,8 @@ _CROSSSHARDINGSTATISTICMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3718,
-  serialized_end=3792,
+  serialized_start=3815,
+  serialized_end=3893,
 )
 
 
@@ -1634,8 +1634,8 @@ _ELECTBLOCKMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3794,
-  serialized_end=3856,
+  serialized_start=3895,
+  serialized_end=3961,
 )
 
 
@@ -1679,8 +1679,8 @@ _SHARDTOTXMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3858,
-  serialized_end=3941,
+  serialized_start=3963,
+  serialized_end=4046,
 )
 
 
@@ -1731,8 +1731,8 @@ _STATISTICTXMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3944,
-  serialized_end=4086,
+  serialized_start=4049,
+  serialized_end=4195,
 )
 
 
@@ -1881,8 +1881,8 @@ _BLOCKMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4089,
-  serialized_end=5285,
+  serialized_start=4198,
+  serialized_end=5466,
 )
 
 _TXHASHSTATUS.fields_by_name['events'].message_type = _TXLOG

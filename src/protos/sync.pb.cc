@@ -369,31 +369,32 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\021protos/sync.proto\022\022shardora.sync.protobuf\""
-      "&\n\010SyncItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\""
-      "7\n\010SyncInfo\022+\n\005items\030\001 \003(\0132\034.shardora.sync.p"
-      "rotobuf.SyncItem\"\?\n\016SyncHeightItem\022\020\n\010po"
-      "ol_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\022\013\n\003tag\030\003 \001("
-      "\r\"I\n\013FlushDbItem\022\025\n\rmax_vec_index\030\001 \001(\004\022"
-      "\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003 \003(\004\"\\\n\016"
-      "LatestSyncItem\022\022\n\nnetwork_id\030\001 \001(\r\022\033\n\023po"
-      "ol_latest_heights\030\002 \003(\004\022\031\n\021globl_pool_he"
-      "ight\030\003 \001(\004\"\247\001\n\020SyncValueRequest\022\022\n\nnetwo"
-      "rk_id\030\001 \001(\r\022\014\n\004keys\030\002 \003(\014\0223\n\007heights\030\003 \003"
-      "(\0132\".shardora.sync.protobuf.SyncHeightItem\022<"
-      "\n\020latest_sync_item\030\004 \001(\0132\".shardora.sync.pro"
-      "tobuf.LatestSyncItem\"l\n\013SyncResItem\022\013\n\003k"
-      "ey\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\022\n\nnetwork_id\030\003 "
-      "\001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n\006height\030\005 \001(\004\022\013\n"
-      "\003tag\030\006 \001(\r\"U\n\021SyncValueResponse\022\022\n\nnetwo"
-      "rk_id\030\001 \001(\r\022,\n\003res\030\002 \003(\0132\037.shardora.sync.pro"
-      "tobuf.SyncResItem\"\212\001\n\013SyncMessage\022<\n\016syn"
-      "c_value_req\030\001 \001(\0132$.shardora.sync.protobuf.S"
-      "yncValueRequest\022=\n\016sync_value_res\030\002 \001(\0132"
-      "%.shardora.sync.protobuf.SyncValueResponse"
+      "\n\021protos/sync.proto\022\026shardora.sync.proto"
+      "buf\"&\n\010SyncItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 "
+      "\001(\014\";\n\010SyncInfo\022/\n\005items\030\001 \003(\0132 .shardor"
+      "a.sync.protobuf.SyncItem\"\?\n\016SyncHeightIt"
+      "em\022\020\n\010pool_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\022\013\n\003"
+      "tag\030\003 \001(\r\"I\n\013FlushDbItem\022\025\n\rmax_vec_inde"
+      "x\030\001 \001(\004\022\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003"
+      " \003(\004\"\\\n\016LatestSyncItem\022\022\n\nnetwork_id\030\001 \001"
+      "(\r\022\033\n\023pool_latest_heights\030\002 \003(\004\022\031\n\021globl"
+      "_pool_height\030\003 \001(\004\"\257\001\n\020SyncValueRequest\022"
+      "\022\n\nnetwork_id\030\001 \001(\r\022\014\n\004keys\030\002 \003(\014\0227\n\007hei"
+      "ghts\030\003 \003(\0132&.shardora.sync.protobuf.Sync"
+      "HeightItem\022@\n\020latest_sync_item\030\004 \001(\0132&.s"
+      "hardora.sync.protobuf.LatestSyncItem\"l\n\013"
+      "SyncResItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022"
+      "\022\n\nnetwork_id\030\003 \001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n"
+      "\006height\030\005 \001(\004\022\013\n\003tag\030\006 \001(\r\"Y\n\021SyncValueR"
+      "esponse\022\022\n\nnetwork_id\030\001 \001(\r\0220\n\003res\030\002 \003(\013"
+      "2#.shardora.sync.protobuf.SyncResItem\"\222\001"
+      "\n\013SyncMessage\022@\n\016sync_value_req\030\001 \001(\0132(."
+      "shardora.sync.protobuf.SyncValueRequest\022"
+      "A\n\016sync_value_res\030\002 \001(\0132).shardora.sync."
+      "protobuf.SyncValueResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 878);
+      descriptor, 906);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/sync.proto", &protobuf_RegisterTypes);
 }

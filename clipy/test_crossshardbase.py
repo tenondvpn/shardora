@@ -375,7 +375,7 @@ def main():
 
     # 2. Compute CREATE2 address — no self-reference now
     #    TestToken constructor(address systemExecutor) — no baseRootAddress
-    SALT = 324  # change to redeploy fresh
+    SALT = 327  # change to redeploy fresh
     ctor_types = ["address"]
     ctor_args_hex = eth_abi.encode(ctor_types, [bytes.fromhex(SYSTEM_EXECUTOR)]).hex()
     full_bytecode = bytecode + ctor_args_hex
