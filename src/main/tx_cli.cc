@@ -7637,24 +7637,33 @@ contract AMMPool {
         std::vector<TokenDeployer8> tdeps8(kTokens);
 
         for (uint32_t i = 0; i < kTokens; ++i) {
-            // signing key — any shard
-            std::string pk(32, '\0');
-            for (int j = 0; j < 32; ++j) pk[j] = (char)(common::Random::RandomUint32() % 256);
-            auto s = std::make_shared<security::Ecdsa>();
-            s->SetPrivateKey(pk);
-            std::string addr = s->GetAddress();
-            tdeps8[i].prikey       = pk;
-            tdeps8[i].addr_hex     = common::Encode::HexEncode(addr);
-            tdeps8[i].signer_shard = addr_shard8(addr);
+            // Signer and contract MUST be on the same shard: Shardora's
+            // kCreateContract routes on the `to` address, and gas is deducted
+            // from the sender on that same shard's pool.
+            uint32_t cshard = kShards8[i % kNumShards8];  // spread tokens across shards
 
-            // contract address — random target shard from {3,4,5,6}
-            uint32_t cshard = kShards8[common::Random::RandomUint32() % kNumShards8];
+            // contract address — random address that routes to cshard
             std::string caddr;
             while (true) {
                 caddr.resize(20);
                 for (int j = 0; j < 20; ++j) caddr[j] = (char)(common::Random::RandomUint32() % 256);
                 if (addr_shard8(caddr) == cshard) break;
             }
+
+            // signing key — must also route to cshard (co-located with contract)
+            std::string pk, addr;
+            while (true) {
+                pk.resize(32);
+                for (int j = 0; j < 32; ++j) pk[j] = (char)(common::Random::RandomUint32() % 256);
+                auto sec = std::make_shared<security::Ecdsa>();
+                sec->SetPrivateKey(pk);
+                addr = sec->GetAddress();
+                if (addr_shard8(addr) == cshard) break;
+            }
+
+            tdeps8[i].prikey            = pk;
+            tdeps8[i].addr_hex          = common::Encode::HexEncode(addr);
+            tdeps8[i].signer_shard      = cshard;
             tdeps8[i].contract_addr     = caddr;
             tdeps8[i].contract_addr_hex = common::Encode::HexEncode(caddr);
             tdeps8[i].contract_shard    = cshard;
@@ -7674,8 +7683,8 @@ contract AMMPool {
         struct AmmDeployer8 {
             std::string prikey;
             std::string addr_hex;
-            uint32_t    signer_shard;
-            uint32_t    token_a;   // index into tdeps8
+            uint32_t    signer_shard;   // == deploy_shard (co-located)
+            uint32_t    token_a;        // index into tdeps8
             uint32_t    token_b;
             std::string contract_addr_hex;  // filled in after Phase 4 deploy
         };
@@ -7694,14 +7703,20 @@ contract AMMPool {
             }
 
             for (uint32_t k = 0; k < kAmmPairs; ++k) {
-                std::string pk(32, '\0');
-                for (int j = 0; j < 32; ++j) pk[j] = (char)(common::Random::RandomUint32() % 256);
-                auto s = std::make_shared<security::Ecdsa>();
-                s->SetPrivateKey(pk);
-                std::string addr = s->GetAddress();
+                // Pick a target shard for this AMM deployer; signer must be co-located.
+                uint32_t ashard = kShards8[k % kNumShards8];
+                std::string pk, addr;
+                while (true) {
+                    pk.resize(32);
+                    for (int j = 0; j < 32; ++j) pk[j] = (char)(common::Random::RandomUint32() % 256);
+                    auto sec = std::make_shared<security::Ecdsa>();
+                    sec->SetPrivateKey(pk);
+                    addr = sec->GetAddress();
+                    if (addr_shard8(addr) == ashard) break;
+                }
                 adeps8[k].prikey       = pk;
                 adeps8[k].addr_hex     = common::Encode::HexEncode(addr);
-                adeps8[k].signer_shard = addr_shard8(addr);
+                adeps8[k].signer_shard = ashard;
                 adeps8[k].token_a      = pairs[k].first;
                 adeps8[k].token_b      = pairs[k].second;
             }
@@ -8087,7 +8102,7 @@ contract AMMPool {
         }
 
         // Phase 3 verify: wait for all token contract addresses to appear on-chain
-        std::cout << "\n[Phase 3 verify] Wait for token contracts on-chain (max 300s)...\n";
+        std::cout << "\n[Phase 3 verify] Wait for token contracts on-chain (max 60s)...\n";
         {
             std::map<uint32_t, std::vector<std::string>> shard_token_addrs;
             for (uint32_t i = 0; i < kTokens; ++i)
@@ -8102,7 +8117,7 @@ contract AMMPool {
                 vth3.emplace_back([&, s, addrs]() {
                     ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
-                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
                         auto r = vsdk.batchQueryAccounts(pending);
                         std::vector<std::string> still;
                         if (r.contains("accounts")) {
@@ -8115,7 +8130,7 @@ contract AMMPool {
                             }
                         } else { still = pending; }
                         pending = still;
-                        if (!pending.empty() && rd % 30 == 0) {
+                        if (!pending.empty() && rd % 10 == 0) {
                             std::lock_guard<std::mutex> lk(vmx3);
                             std::cout << "  Shard " << s << ": " << (addrs.size() - pending.size())
                                       << "/" << addrs.size() << " token contracts confirmed [" << rd << "s]\n";
@@ -8128,7 +8143,7 @@ contract AMMPool {
                                   << " token contracts confirmed OK\n";
                     } else {
                         std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " token contracts not found after 300s:\n";
+                                  << "/" << addrs.size() << " token contracts not found after 60s:\n";
                         for (auto& a : pending) std::cout << "    " << a << "\n";
                         failed_tokens.fetch_add((uint32_t)pending.size());
                     }
@@ -8167,15 +8182,19 @@ contract AMMPool {
                     std::string ctor_args = encodeAddr32(tA_addr) + encodeAddr32(tB_addr);
                     std::string full_code = amm_bytecode8 + ctor_args;
 
-                    // pick a contract address on any shard (use deployer's shard for locality)
+                    // Contract address must route to the SAME shard as the deployer
+                    // (same rule as token deployers: signer and contract co-located).
                     std::string to_address;
-                    for (int attempt = 0; attempt < 50000 && !global_stop; ++attempt) {
-                        // derive a candidate address from bytecode + salt
-                        std::string salt = ad.prikey + std::to_string(attempt) +
-                            std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
+                    for (int attempt = 0; attempt < 200000 && !global_stop; ++attempt) {
+                        std::string salt = ad.addr_hex + std::to_string(attempt);
                         std::string cand = utils::keccak256Str(amm_bytecode8 + salt).substr(24);
-                        // any valid 40-char address is acceptable
-                        if (!cand.empty()) { to_address = cand; break; }
+                        if (!cand.empty()) {
+                            std::string raw = common::Encode::HexDecode(cand);
+                            if (!raw.empty() && addr_shard8(raw) == ad.signer_shard) {
+                                to_address = cand;
+                                break;
+                            }
+                        }
                     }
                     if (to_address.empty()) { ++amm_fail; return; }
 
@@ -8206,16 +8225,13 @@ contract AMMPool {
         }
 
         // Phase 4 verify: wait for AMM contract addresses on-chain
-        std::cout << "\n[Phase 4 verify] Wait for AMM contracts on-chain (max 300s)...\n";
+        std::cout << "\n[Phase 4 verify] Wait for AMM contracts on-chain (max 60s)...\n";
         {
-            // Group by whichever shard the contract address landed on
-            std::map<uint32_t, std::vector<std::pair<uint32_t,std::string>>> shard_amm;  // shard -> [(idx, addr)]
+            // Group by deployer's shard (contract address was chosen to match it)
+            std::map<uint32_t, std::vector<std::string>> shard_amm;
             for (uint32_t k = 0; k < kAmmPairs; ++k) {
                 if (adeps8[k].contract_addr_hex.empty()) continue;
-                std::string raw = common::Encode::HexDecode(adeps8[k].contract_addr_hex);
-                uint64_t h = common::Hash::Hash64(raw.substr(0, common::kUnicastAddressLength));
-                uint32_t s = (uint32_t)(h % kNumShards8) + network::kConsensusShardBeginNetworkId;
-                shard_amm[s].push_back({k, adeps8[k].contract_addr_hex});
+                shard_amm[adeps8[k].signer_shard].push_back(adeps8[k].contract_addr_hex);
             }
 
             std::vector<std::thread> vth4;
@@ -8223,14 +8239,12 @@ contract AMMPool {
             std::atomic<uint32_t> confirmed_amm{0};
             std::atomic<uint32_t> failed_amm{0};
 
-            for (auto& [s, pairs] : shard_amm) {
-                vth4.emplace_back([&, s, pairs]() {
+            for (auto& [s, addrs] : shard_amm) {
+                vth4.emplace_back([&, s, addrs]() {
                     ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
-                    std::vector<std::string> addrs, pending;
-                    for (auto& [idx, a] : pairs) addrs.push_back(a);
-                    pending = addrs;
+                    std::vector<std::string> pending = addrs;
 
-                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
                         auto r = vsdk.batchQueryAccounts(pending);
                         std::vector<std::string> still;
                         if (r.contains("accounts")) {
@@ -8240,7 +8254,7 @@ contract AMMPool {
                             }
                         } else { still = pending; }
                         pending = still;
-                        if (!pending.empty() && rd % 30 == 0) {
+                        if (!pending.empty() && rd % 10 == 0) {
                             std::lock_guard<std::mutex> lk(vmx4);
                             std::cout << "  Shard " << s << ": " << (addrs.size() - pending.size())
                                       << "/" << addrs.size() << " AMM contracts confirmed [" << rd << "s]\n";
@@ -8253,7 +8267,7 @@ contract AMMPool {
                                   << " AMM contracts confirmed OK\n";
                     } else {
                         std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " AMM contracts not found after 300s:\n";
+                                  << "/" << addrs.size() << " AMM contracts not found after 60s:\n";
                         for (auto& a : pending) std::cout << "    " << a << "\n";
                         failed_amm.fetch_add((uint32_t)pending.size());
                     }
