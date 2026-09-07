@@ -113,9 +113,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         ${DEP_DIR}/lib64
         ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
     set(LINK_UUID uuid)
-    if(DEFINED OPENSSL_INCLUDE_DIR)
-        include_directories(${OPENSSL_INCLUDE_DIR})
-    endif()
+    # Prefer system OpenSSL (3.x) over third_party (1.x) so httplib's
+    # SSL_get1_peer_certificate resolves correctly on Ubuntu 22+.
+    find_package(OpenSSL REQUIRED)
+    include_directories(${OPENSSL_INCLUDE_DIR})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(LIB_DIR ${DEP_DIR}/libs/android)
     set(LINK_RT )
@@ -337,8 +338,8 @@ set(LINK_ARGS
     gmp # Big number library, performance critical
     ${UWEBSOCKETS_LIB} # uWebSockets dependency
     z # zlib for uWebSockets
-    ssl # OpenSSL for HTTPS (static, from third_party)
-    crypto # OpenSSL crypto (static, from third_party)
+    OpenSSL::SSL    # OpenSSL for HTTPS — uses find_package result (3.x on Ubuntu 22+)
+    OpenSSL::Crypto # OpenSSL crypto
     #-static-libstdc++
     #-static
 )
