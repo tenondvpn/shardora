@@ -108,14 +108,31 @@ set(LINK_UUID )
 set(LINK_YAML )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Rebuild liboqs from source with OQS_USE_OPENSSL=OFF so it no longer
+    # references OpenSSL APIs at all (EVP_MD_fetch / EVP_CIPHER_fetch /
+    # EVP_MD_free / EVP_CIPHER_free) — those come from OpenSSL 3.x's provider
+    # API and previously caused undefined-reference errors when linked
+    # against the bundled OpenSSL. Building from source creates a CMake
+    # target "oqs" that takes precedence over any pre-built archive found
+    # via link_directories.
+    if(EXISTS "${DEP_DIR}/oqs/CMakeLists.txt")
+        set(OQS_USE_OPENSSL    OFF CACHE BOOL "Build liboqs without OpenSSL" FORCE)
+        set(OQS_BUILD_ONLY_LIB ON  CACHE BOOL "Build liboqs library only"   FORCE)
+        set(OQS_DIST_BUILD     OFF CACHE BOOL "" FORCE)
+        add_subdirectory(${DEP_DIR}/oqs oqs_from_src EXCLUDE_FROM_ALL)
+    endif()
+
+    # Link the bundled static OpenSSL only (third_party/lib[64]/libssl.a,
+    # libcrypto.a) so the resulting binary has no runtime dependency on
+    # whatever OpenSSL .so happens to be installed on the deploy target.
     set(LIB_DIR
         ${DEP_DIR}/lib
         ${DEP_DIR}/lib64
         ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
-    set(LINK_UUID uuid)
     if(DEFINED OPENSSL_INCLUDE_DIR)
         include_directories(${OPENSSL_INCLUDE_DIR})
     endif()
+    set(LINK_UUID uuid)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(LIB_DIR ${DEP_DIR}/libs/android)
     set(LINK_RT )
@@ -337,8 +354,8 @@ set(LINK_ARGS
     gmp # Big number library, performance critical
     ${UWEBSOCKETS_LIB} # uWebSockets dependency
     z # zlib for uWebSockets
-    ssl # OpenSSL for HTTPS
-    crypto # OpenSSL crypto
+    ssl # OpenSSL for HTTPS (static, from third_party)
+    crypto # OpenSSL crypto (static, from third_party)
     #-static-libstdc++
     #-static
 )
