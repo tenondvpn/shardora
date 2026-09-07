@@ -7948,97 +7948,85 @@ contract AMMPool {
         }
 
         // ─────────────────────────────────────────────────────────────────
-        // Phase 2b: Spot-check user balances on each shard in parallel (max 60s)
+        // Phase 2b: Verify ALL funded accounts via batch query per shard (max 300s)
         // ─────────────────────────────────────────────────────────────────
-        std::cout << "\n[Phase 2b] Spot-check balances (max 120s, need >=1/3 per shard)...\n";
+        std::cout << "\n[Phase 2b] Verify all " << total_fund8
+                  << " accounts funded (batch query per shard, max 300s)...\n";
         {
+            // Group all to_fund8 addresses by shard
+            std::map<uint32_t, std::vector<std::string>> shard_addrs8;
+            for (auto& [addr, shard] : to_fund8) {
+                shard_addrs8[shard].push_back(addr);
+            }
+
+            auto parseBalance8 = [](const nlohmann::json& bv) -> uint64_t {
+                uint64_t bal = 0;
+                try {
+                    if (bv.is_string()) {
+                        std::string bs = bv.get<std::string>();
+                        std::from_chars(bs.data(), bs.data() + bs.size(), bal);
+                    } else {
+                        bal = bv.get<uint64_t>();
+                    }
+                } catch (...) {}
+                return bal;
+            };
+
             std::vector<std::thread> bal_threads;
             std::mutex bal_mu;
-            uint32_t bal_ok_shards = 0;
-            for (uint32_t s : kShards8) {
-                bal_threads.emplace_back([&, s]() {
-                    std::vector<std::string> sample;
-                    for (auto& u : users8) {
-                        if (u.shard_id == s) { sample.push_back(u.addr_hex); }
-                        if (sample.size() >= 3) break;
-                    }
-                    if (sample.empty()) {
-                        std::lock_guard<std::mutex> lk(bal_mu);
-                        std::cout << "  Shard " << s << ": no users\n";
-                        ++bal_ok_shards;
-                        return;
+            std::atomic<uint32_t> total_unfunded{0};
+
+            for (auto& [s, addrs] : shard_addrs8) {
+                bal_threads.emplace_back([&, s, addrs]() {
+                    ShardoraSDK ssdk(eps8[s].ip, eps8[s].http);
+                    std::vector<std::string> pending = addrs;
+
+                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
+                        auto r = ssdk.batchQueryAccounts(pending);
+                        std::vector<std::string> still_pending;
+                        if (r.contains("accounts")) {
+                            for (auto& a : pending) {
+                                uint64_t bal = 0;
+                                if (r["accounts"].contains(a))
+                                    bal = parseBalance8(r["accounts"][a]["balance"]);
+                                if (bal == 0) still_pending.push_back(a);
+                            }
+                        } else {
+                            still_pending = pending;
+                        }
+                        pending = still_pending;
+
+                        if (!pending.empty() && rd % 30 == 0) {
+                            std::lock_guard<std::mutex> lk(bal_mu);
+                            std::cout << "  Shard " << s << ": "
+                                      << (addrs.size() - pending.size()) << "/"
+                                      << addrs.size() << " funded [" << rd << "s]\n";
+                        }
+                        if (!pending.empty()) usleep(1000000);
                     }
 
-                    ShardoraSDK ssdk(eps8[s].ip, eps8[s].http);
-                    bool shard_ok = false;
-                    for (int rd = 0; rd < 120 && !global_stop; ++rd) {
-                        auto r = ssdk.batchQueryAccounts(sample);
-                        uint32_t funded = 0;
-                        uint64_t last_bal = 0;
-                        if (r.contains("accounts")) {
-                            for (auto& a : sample) {
-                                if (!r["accounts"].contains(a)) continue;
-                                uint64_t bal = 0;
-                                try {
-                                    auto& bv = r["accounts"][a]["balance"];
-                                    if (bv.is_string()) {
-                                        std::string bs = bv.get<std::string>();
-                                        std::from_chars(bs.data(), bs.data() + bs.size(), bal);
-                                    } else {
-                                        bal = bv.get<uint64_t>();
-                                    }
-                                } catch (...) {}
-                                last_bal = bal;
-                                if (bal > 0) ++funded;
-                            }
-                        }
-                        if (funded >= 1) {
-                            std::lock_guard<std::mutex> lk(bal_mu);
-                            std::cout << "  Shard " << s << ": " << funded << "/" << sample.size()
-                                      << " sample users funded OK (balance=" << last_bal << ")\n";
-                            shard_ok = true;
-                            ++bal_ok_shards;
-                            break;
-                        }
-                        if (rd % 30 == 0) {
-                            std::lock_guard<std::mutex> lk(bal_mu);
-                            std::cout << "  Shard " << s << ": " << funded << "/" << sample.size()
-                                      << " funded [" << rd << "s] balance=" << last_bal << "\n";
-                        }
-                        usleep(1000000);
-                    }
-                    if (!shard_ok) {
-                        std::lock_guard<std::mutex> lk(bal_mu);
-                        std::cout << "  Shard " << s << ": FATAL balance check timed out (120s)\n";
-                        ShardoraSDK dbg(eps8[s].ip, eps8[s].http);
-                        auto r2 = dbg.batchQueryAccounts(sample);
-                        for (auto& a : sample) {
-                            uint64_t bal = 0;
-                            if (r2.contains("accounts") && r2["accounts"].contains(a)) {
-                                try {
-                                    auto& bv = r2["accounts"][a]["balance"];
-                                    if (bv.is_string()) {
-                                        std::string bs = bv.get<std::string>();
-                                        std::from_chars(bs.data(), bs.data() + bs.size(), bal);
-                                    } else {
-                                        bal = bv.get<uint64_t>();
-                                    }
-                                } catch (...) {}
-                            }
-                            std::cout << "    " << a << "  balance=" << bal << "\n";
-                        }
+                    std::lock_guard<std::mutex> lk(bal_mu);
+                    if (pending.empty()) {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " accounts funded OK\n";
+                    } else {
+                        std::cout << "  Shard " << s << ": FAILED " << pending.size()
+                                  << "/" << addrs.size() << " still unfunded after 300s:\n";
+                        for (auto& a : pending)
+                            std::cout << "    " << a << "\n";
+                        total_unfunded.fetch_add((uint32_t)pending.size());
                     }
                 });
             }
             for (auto& t : bal_threads) t.join();
-            if (bal_ok_shards < (uint32_t)kShards8.size()) {
-                std::cerr << "  FATAL: Phase 2b failed on "
-                          << (kShards8.size() - bal_ok_shards) << " shard(s). Aborting.\n";
+
+            if (total_unfunded.load() > 0) {
+                std::cerr << "  FATAL: Phase 2b: " << total_unfunded.load()
+                          << " accounts still unfunded. Aborting.\n";
                 transport::TcpTransport::Instance()->Stop();
                 return 1;
             }
-            std::cout << "  Phase 2b: " << bal_ok_shards << "/" << kShards8.size()
-                      << " shards confirmed\n";
+            std::cout << "  Phase 2b: all " << total_fund8 << " accounts confirmed funded\n";
         }
 
         // ─────────────────────────────────────────────────────────────────
