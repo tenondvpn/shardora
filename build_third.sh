@@ -686,7 +686,11 @@ require_installed_file "$SRC_PATH/third_party/include/boost/multiprecision/cpp_i
 if [ ! -d "$SRC_PATH/third_party/include/oqs" ]; then
     cd $SRC_PATH
     ensure_cmake_submodule third_party/oqs
-    cd third_party/oqs && checkout_if_available 94b421e && cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
+    # OQS_USE_OPENSSL=OFF: liboqs otherwise calls into OpenSSL 3.x provider
+    # APIs (EVP_MD_fetch/EVP_CIPHER_fetch/EVP_MD_free/EVP_CIPHER_free) that
+    # aren't available when linked against the bundled OpenSSL, causing
+    # undefined-reference link errors on the final shardora binary.
+    cd third_party/oqs && checkout_if_available 94b421e && cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DOQS_USE_OPENSSL=OFF -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j8 && make install
 fi
 require_installed_file "$SRC_PATH/third_party/include/oqs/oqs.h"
 require_installed_file "$SRC_PATH/third_party/lib/liboqs.a"

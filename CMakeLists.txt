@@ -108,57 +108,14 @@ set(LINK_UUID )
 set(LINK_YAML )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    # Rebuild liboqs out-of-tree with OQS_USE_OPENSSL=OFF so it no longer
-    # references OpenSSL APIs at all (EVP_MD_fetch / EVP_CIPHER_fetch /
-    # EVP_MD_free / EVP_CIPHER_free) — those come from OpenSSL 3.x's provider
-    # API and previously caused undefined-reference errors when linked
-    # against the bundled OpenSSL. Built out-of-tree (not add_subdirectory)
-    # because liboqs's own src/common/CMakeLists.txt defines targets named
-    # "common"/"internal" that collide with shardora's own "common" library.
-    # Cached under third_party/ so it survives a clean cmake reconfigure and
-    # isn't rebuilt every time.
-    set(_OQS_NOOPENSSL_LIB "${DEP_DIR}/lib_oqs_noopenssl/liboqs.a")
-    if(EXISTS "${DEP_DIR}/oqs/CMakeLists.txt" AND NOT EXISTS "${_OQS_NOOPENSSL_LIB}")
-        message(STATUS "Building liboqs without OpenSSL (one-time, cached at ${_OQS_NOOPENSSL_LIB})...")
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -S "${DEP_DIR}/oqs" -B "${DEP_DIR}/oqs/build_noopenssl"
-                    -DCMAKE_BUILD_TYPE=Release
-                    -DOQS_USE_OPENSSL=OFF
-                    -DOQS_BUILD_ONLY_LIB=ON
-                    -DBUILD_SHARED_LIBS=OFF
-                    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-            RESULT_VARIABLE _oqs_cfg_rc)
-        if(_oqs_cfg_rc EQUAL 0)
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} --build "${DEP_DIR}/oqs/build_noopenssl" --target oqs -j
-                RESULT_VARIABLE _oqs_build_rc)
-        endif()
-        if(_oqs_cfg_rc EQUAL 0 AND _oqs_build_rc EQUAL 0)
-            file(MAKE_DIRECTORY "${DEP_DIR}/lib_oqs_noopenssl")
-            file(GLOB _oqs_built_lib "${DEP_DIR}/oqs/build_noopenssl/lib/liboqs.a")
-            if(_oqs_built_lib)
-                file(COPY ${_oqs_built_lib} DESTINATION "${DEP_DIR}/lib_oqs_noopenssl")
-            else()
-                message(WARNING "liboqs build succeeded but liboqs.a not found; falling back to prebuilt third_party/lib/liboqs.a")
-            endif()
-        else()
-            message(WARNING "Failed to build liboqs without OpenSSL (cfg=${_oqs_cfg_rc} build=${_oqs_build_rc}); falling back to prebuilt third_party/lib/liboqs.a")
-        endif()
-    endif()
-
-    # Link the bundled static OpenSSL only (third_party/lib[64]/libssl.a,
-    # libcrypto.a) so the resulting binary has no runtime dependency on
-    # whatever OpenSSL .so happens to be installed on the deploy target.
-    # lib_oqs_noopenssl (if present) comes first so it shadows third_party/lib/liboqs.a.
     set(LIB_DIR
-        ${DEP_DIR}/lib_oqs_noopenssl
         ${DEP_DIR}/lib
         ${DEP_DIR}/lib64
         ${DEP_DIR}/libbls/deps/deps_inst/x86_or_x64/lib/)
+    set(LINK_UUID uuid)
     if(DEFINED OPENSSL_INCLUDE_DIR)
         include_directories(${OPENSSL_INCLUDE_DIR})
     endif()
-    set(LINK_UUID uuid)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(LIB_DIR ${DEP_DIR}/libs/android)
     set(LINK_RT )
