@@ -320,8 +320,8 @@ public:
             if (nonce == -1) nonce = fetchNonce(common::Encode::HexEncode(ecdsa.GetAddress()));
             if (nonce == -1) return false;
             nonce++;
-            // Must match shardora_sdk.py: gas_limit=5000000, gas_price=1
-            uint64_t gas_limit = 5000000lu;
+            // CrossShardToken/AMMPool constructors use ~6.5M gas; 30M gives headroom.
+            uint64_t gas_limit = 30000000lu;
             uint64_t gas_price = 1llu;
             Sign sig = signMessage(ecdsa, nonce, to, amount, gas_limit, gas_price, step, contract_bytes, input, prefund, key, val);
             httplib::Params params;
