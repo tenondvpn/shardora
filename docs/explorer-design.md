@@ -1,28 +1,36 @@
 # Shardora 区块链浏览器集成方案
 
-> 目标：以 SQLite 替代 ClickHouse，将区块浏览器直接内嵌到节点进程中，复用现有 BlockManager 和 HttpHandler 基础设施，不引入独立外部服务。
+> 目标：以 SQLite 替代 ClickHouse，将区块浏览器直接内嵌到节点进程中；前端在 **chainbaas** 项目中新增"Block Explorer"菜单，使用 Vue 3 + Element Plus 实现。
 
 ---
 
 ## 一、整体集成架构
 
 ```
-Shardora 节点进程
-│
-├── BlockManager::AddNewBlock()
-│       │
-│       ├── ck_client_->AddNewBlock(...)   ← 保留（可选）
-│       └── explorer_->AddNewBlock(...)    ← 新增 SQLite 写入
-│
-├── HttpHandler::Run()
-│       ├── /transaction, /query_account … ← 现有路由不变
-│       └── /explorer/*                   ← 新增浏览器 API 路由
-│
-└── src/explorer/                          ← 新模块
-        ├── explorer.h / explorer.cc       ← 核心类（异步写入 + 查询）
-        ├── schema.h                       ← SQL 建表语句常量
-        ├── query_handlers.h / .cc         ← HTTP 路由处理函数
-        └── CMakeLists.txt
+┌─────────────────────────────────────────────────────────────────┐
+│   chainbaas（Vue 3 前端）                                        │
+│   顶部导航新增 "Block Explorer" 菜单                             │
+│   /explorer/* 路由 → ExplorerLayout + 子页面组件                 │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ HTTP GET /explorer/*（Vite proxy → 节点）
+┌────────────────────▼────────────────────────────────────────────┐
+│   Shardora 节点进程                                              │
+│                                                                  │
+│   BlockManager::AddNewBlock()                                    │
+│     ├── ck_client_->AddNewBlock(...)   ← 保留（可选）            │
+│     └── explorer_->AddNewBlock(...)    ← 新增 SQLite 写入        │
+│                                                                  │
+│   HttpHandler::Run()                                             │
+│     ├── /transaction, /query_account … ← 现有路由不变           │
+│     └── /explorer/*                   ← 新增浏览器 API 路由      │
+│                                                                  │
+│   src/explorer/                        ← 新增 C++ 模块           │
+│     ├── explorer.h / explorer.cc       ← 核心类                  │
+│     ├── schema.h                       ← SQL 建表常量             │
+│     └── query_handlers.cc             ← HTTP 路由处理函数        │
+│                                                                  │
+│   explorer.db（SQLite WAL 模式）                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 **集成原则：**
@@ -517,26 +525,540 @@ add_subdirectory(src/explorer)   # 新增
 
 ---
 
-## 九、前端页面清单
+## 九、前端 — chainbaas Vue 集成
 
-前端为纯静态 HTML/JS，可嵌入节点 HTTP 服务作为静态文件托管，或独立部署。
+### 9.1 技术栈确认
 
-| 页面 | 数据来源 | 核心功能 |
+| 项 | 现有版本 | 说明 |
 |---|---|---|
-| 首页 Dashboard | `/explorer/chain-info` + `/explorer/blocks?limit=10` | 最新区块、交易统计、分片状态 |
-| 区块列表 | `/explorer/blocks` | 分片切换（Root/Consensus）、分页 |
-| 区块详情 | `/explorer/blocks/:hash` | 块元数据 + 内嵌交易列表（含系统交易开关） |
-| 交易列表 | `/explorer/transactions` | 按分片/StepType/系统交易过滤、分页 |
-| 交易详情 | `/explorer/transactions/:hash` | 完整字段 + EVM Logs |
-| 地址详情 | `/explorer/address/:addr` + 节点实时余额 | 账户类型、余额（实时）、分片归属 |
-| 地址交易历史 | `/explorer/address/:addr/txs` | 分页，标注 IN/OUT |
-| 合约列表 | `/explorer/contracts` | 区分库合约、克隆合约 |
-| 合约详情 | `/explorer/contracts/:addr` + 节点字节码 | 元数据 + 字节码（实时） |
-| Gas 预置 | `/explorer/gas-presets` | 各交易类型 Gas 标准展示 |
+| Vue | 3.5.18 | Composition API + `<script setup>` |
+| Element Plus | 2.11.1 | UI 组件库，直接复用 el-table、el-tag、el-descriptions 等 |
+| Vue Router | 4.5.1 | 新增嵌套路由 |
+| Axios | 1.11.0 | 复用现有 `api/api.ts` 的 `GET` helper |
+| Vite | 7.1.2 | 通过 proxy 转发 `/explorer/*` 到节点 |
+
+---
+
+### 9.2 Vite 代理配置
+
+**文件：`chainbaas/vite.config.js`**（在 `server.proxy` 中追加）
+
+```js
+export default defineConfig({
+  server: {
+    proxy: {
+      // 已有代理（保留）
+      '/rest_token': { target: 'http://127.0.0.1:30301', changeOrigin: true },
+      // 新增：浏览器 API 转发到 Shardora 节点
+      '/explorer': {
+        target: 'http://127.0.0.1:30301',   // 节点 HTTP 端口
+        changeOrigin: true,
+      },
+      // 新增：透传查询账户（余额实时查）
+      '/query_account': {
+        target: 'http://127.0.0.1:30301',
+        changeOrigin: true,
+      },
+    },
+  },
+})
+```
+
+生产部署时由 Nginx 完成同等转发，无需修改前端代码。
+
+---
+
+### 9.3 API 模块
+
+**新建文件：`chainbaas/api/modules/explorer.ts`**
+
+```ts
+import { GET } from '../api'
+
+// 区块
+export const getBlocks = (params: {
+  shard_id?: number
+  pool_index?: number
+  is_root?: boolean
+  before_id?: number
+  limit?: number
+}) => GET('/explorer/blocks', params)
+
+export const getBlock = (hash: string) =>
+  GET(`/explorer/blocks/${hash}`, {})
+
+// 交易
+export const getTransactions = (params: {
+  shard_id?: number
+  block_hash?: string
+  is_system?: boolean
+  step_type?: number
+  before_id?: number
+  limit?: number
+}) => GET('/explorer/transactions', params)
+
+export const getTransaction = (txHash: string) =>
+  GET(`/explorer/transactions/${txHash}`, {})
+
+// 地址
+export const getAddress = (addr: string) =>
+  GET(`/explorer/address/${addr}`, {})
+
+export const getAddressTxs = (addr: string, params: {
+  before_id?: number
+  limit?: number
+}) => GET(`/explorer/address/${addr}/txs`, params)
+
+// 合约
+export const getContracts = (params: {
+  is_library?: boolean
+  before_id?: number
+  limit?: number
+}) => GET('/explorer/contracts', params)
+
+export const getContract = (addr: string) =>
+  GET(`/explorer/contracts/${addr}`, {})
+
+// Gas 预置 & 链信息
+export const getGasPresets = () => GET('/explorer/gas-presets', {})
+export const getChainInfo  = () => GET('/explorer/chain-info', {})
+```
+
+---
+
+### 9.4 顶部菜单集成
+
+**修改文件：`chainbaas/src/App.vue`**
+
+在现有 `<el-menu>` 中，于 `Faucet` 菜单项之前插入：
+
+```html
+<el-menu-item index="7" @click="toExplorer">Block Explorer</el-menu-item>
+```
+
+对应 `<script setup>` 中新增：
+
+```js
+const toExplorer = () => router.push('/explorer')
+```
+
+菜单高亮通过现有 mitt 事件总线 `change_el_menu_item` 自动同步（路由守卫已有此逻辑，无需额外处理）。
+
+---
+
+### 9.5 路由配置
+
+**修改文件：`chainbaas/src/router/index.js`**
+
+```js
+import ExplorerLayout   from '@/components/Explorer/ExplorerLayout.vue'
+import ExplorerOverview from '@/components/Explorer/ExplorerOverview.vue'
+import BlockList        from '@/components/Explorer/BlockList.vue'
+import BlockDetail      from '@/components/Explorer/BlockDetail.vue'
+import TxList           from '@/components/Explorer/TxList.vue'
+import TxDetail         from '@/components/Explorer/TxDetail.vue'
+import AddressDetail    from '@/components/Explorer/AddressDetail.vue'
+import ContractList     from '@/components/Explorer/ContractList.vue'
+import ContractDetail   from '@/components/Explorer/ContractDetail.vue'
+import GasPresets       from '@/components/Explorer/GasPresets.vue'
+
+// 追加到 routes 数组
+{
+  path: '/explorer',
+  component: ExplorerLayout,          // 含侧边栏 + <router-view>
+  redirect: '/explorer/overview',
+  children: [
+    { path: 'overview',              component: ExplorerOverview },
+    { path: 'blocks',                component: BlockList },
+    { path: 'blocks/:hash',          component: BlockDetail },
+    { path: 'transactions',          component: TxList },
+    { path: 'transactions/:txHash',  component: TxDetail },
+    { path: 'address/:addr',         component: AddressDetail },
+    { path: 'contracts',             component: ContractList },
+    { path: 'contracts/:addr',       component: ContractDetail },
+    { path: 'gas-presets',           component: GasPresets },
+  ],
+},
+```
+
+---
+
+### 9.6 组件目录结构
+
+```
+chainbaas/src/components/Explorer/
+├── ExplorerLayout.vue     # 布局：左侧竖向菜单 + 右侧 <router-view>
+├── ExplorerOverview.vue   # 概览 Dashboard（链信息 + 最新区块/交易）
+├── BlockList.vue          # 区块列表（分页 + 分片筛选）
+├── BlockDetail.vue        # 区块详情
+├── TxList.vue             # 交易列表（分页 + 多维过滤）
+├── TxDetail.vue           # 交易详情（含 EVM Logs）
+├── AddressDetail.vue      # 地址详情 + 交易历史分页
+├── ContractList.vue       # 合约列表
+├── ContractDetail.vue     # 合约详情
+├── GasPresets.vue         # Gas 预置表
+└── composables/
+    ├── usePagination.js   # 游标分页逻辑复用
+    └── useAddrShorten.js  # 地址截断 + 复制工具
+```
+
+---
+
+### 9.7 ExplorerLayout.vue
+
+侧边栏竖向导航 + 右侧内容区，整体高度填满顶部菜单以下空间。
+
+```vue
+<template>
+  <div class="explorer-container">
+    <!-- 左侧竖向导航 -->
+    <el-menu
+      :default-active="$route.path"
+      mode="vertical"
+      router
+      class="explorer-sidebar"
+    >
+      <el-menu-item index="/explorer/overview">
+        <el-icon><DataAnalysis /></el-icon> Overview
+      </el-menu-item>
+      <el-sub-menu index="chain">
+        <template #title>
+          <el-icon><Connection /></el-icon> Chain
+        </template>
+        <el-menu-item index="/explorer/blocks">Blocks</el-menu-item>
+        <el-menu-item index="/explorer/transactions">Transactions</el-menu-item>
+      </el-sub-menu>
+      <el-sub-menu index="network">
+        <template #title>
+          <el-icon><Share /></el-icon> Network
+        </template>
+        <el-menu-item index="/explorer/contracts">Contracts</el-menu-item>
+        <el-menu-item index="/explorer/gas-presets">Gas Presets</el-menu-item>
+      </el-sub-menu>
+    </el-menu>
+
+    <!-- 右侧内容 -->
+    <div class="explorer-content">
+      <router-view />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.explorer-container {
+  display: flex;
+  height: calc(100vh - 44px);  /* 44px = 顶部菜单高度 */
+}
+.explorer-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--el-border-color);
+  overflow-y: auto;
+}
+.explorer-content {
+  flex: 1;
+  padding: 16px 24px;
+  overflow-y: auto;
+}
+</style>
+```
+
+---
+
+### 9.8 各页面组件设计
+
+#### ExplorerOverview.vue — 链概览 Dashboard
+
+```
+┌────────────────────────────────────────────────────┐
+│  统计卡片行（el-row + el-col）                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐            │
+│  │总区块数  │ │总交易数  │ │分片数量  │            │
+│  └──────────┘ └──────────┘ └──────────┘            │
+├────────────────────────────────────────────────────┤
+│  最新区块（el-table，10条，自动刷新 5s）            │
+│  高度 | 分片 | Pool | Hash | 时间 | 交易数          │
+├────────────────────────────────────────────────────┤
+│  最新交易（el-table，10条）                         │
+│  Hash | 类型 | From | To | Amount | 时间            │
+└────────────────────────────────────────────────────┘
+```
+
+数据来源：`getChainInfo()` + `getBlocks({limit:10})` + `getTransactions({limit:10})`
+
+---
+
+#### BlockList.vue — 区块列表
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  筛选栏                                                   │
+│  [分片类型 ▼ All/Root/Consensus] [Shard ID 输入]          │
+├──────────────────────────────────────────────────────────┤
+│  el-table                                                  │
+│  Height | Shard | Pool | Hash(截断) | 时间 | Gas | Txns   │
+│  每行 Hash 可点击 → /explorer/blocks/:hash                │
+├──────────────────────────────────────────────────────────┤
+│  分页按钮：[← 上一页] [下一页 →]（游标翻页，无页码）      │
+└──────────────────────────────────────────────────────────┘
+```
+
+**分页逻辑（usePagination.js 封装）**：
+```js
+// composables/usePagination.js
+export function usePagination(fetchFn, defaultParams = {}) {
+  const list      = ref([])
+  const hasMore   = ref(false)
+  const cursorStack = ref([])   // 历史游标栈，支持上一页
+  const loading   = ref(false)
+
+  async function load(beforeId = null) {
+    loading.value = true
+    const res = await fetchFn({ ...defaultParams, before_id: beforeId, limit: 20 })
+    const items = res.data.data ?? []
+    // 多取了1条用于判断 has_more
+    hasMore.value = items.length > 20
+    list.value = items.slice(0, 20)
+    loading.value = false
+    return res.data.next_cursor
+  }
+
+  async function nextPage() {
+    const lastId = list.value.at(-1)?.id
+    cursorStack.value.push(lastId)
+    await load(lastId)
+  }
+
+  async function prevPage() {
+    cursorStack.value.pop()
+    const cursor = cursorStack.value.at(-1) ?? null
+    await load(cursor)
+  }
+
+  onMounted(() => load())
+  return { list, hasMore, loading, nextPage, prevPage,
+           hasPrev: computed(() => cursorStack.value.length > 0) }
+}
+```
+
+---
+
+#### BlockDetail.vue — 区块详情
+
+```
+┌─────────────────────────────────────────────────────┐
+│  面包屑：Blocks > 0xabc...def                        │
+├─────────────────────────────────────────────────────┤
+│  el-descriptions（两列）                             │
+│  Hash        │ 0xabc...（可复制）                    │
+│  Height      │ 10230                                 │
+│  分片类型    │ [Root] / [Consensus] el-tag            │
+│  Shard ID    │ 2                                     │
+│  Pool Index  │ 5                                     │
+│  Parent Hash │ 0xdef...（可点击跳转）                 │
+│  时间        │ 2024-09-07 12:00:00                   │
+│  交易数      │ 12                                    │
+│  Gas Used    │ 252,000                               │
+│  选举高度    │ 100（Root 分片时显示）                 │
+├─────────────────────────────────────────────────────┤
+│  交易列表（el-table）                                │
+│  [显示系统交易 el-switch]                            │
+│  Hash | 类型 el-tag | From | To | Amount | Status   │
+└─────────────────────────────────────────────────────┘
+```
+
+`is_root_shard=1` 时顶部显示橙色 `<el-tag type="warning">Root Shard</el-tag>`；  
+`is_system_tx=1` 的交易行显示灰色 `<el-tag type="info">System</el-tag>`。
+
+---
+
+#### TxList.vue — 交易列表
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  筛选栏                                                       │
+│  [系统交易 el-switch] [StepType ▼] [Shard ID]                │
+├──────────────────────────────────────────────────────────────┤
+│  el-table                                                      │
+│  Hash | 类型 | Shard | From | To | Amount | Gas | 时间        │
+│  类型列使用 el-tag，颜色按 step_type 区分：                   │
+│    kNormalFrom → primary                                       │
+│    kCreateContract → success                                   │
+│    kContractExcute → warning                                   │
+│    System tx → info（灰色）                                    │
+├──────────────────────────────────────────────────────────────┤
+│  [← 上一页] [下一页 →]                                        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+StepType 下拉选项：
+
+| 标签 | step_type |
+|---|---|
+| All | — |
+| Transfer | 0 |
+| Create Contract | 6 |
+| Call Contract | 7 |
+| Join Elect | 11 |
+| System Only | is_system=true |
+
+---
+
+#### TxDetail.vue — 交易详情
+
+```
+┌──────────────────────────────────────────────────────┐
+│  面包屑：Transactions > 0xabc...                      │
+├──────────────────────────────────────────────────────┤
+│  el-descriptions（两列）                              │
+│  TX Hash     │ 0xabc（可复制）                        │
+│  类型        │ [Create Contract] el-tag               │
+│  状态        │ [Success] / [Failed] el-tag            │
+│  Block       │ 10230（可点击跳转区块详情）             │
+│  Shard/Pool  │ 3 / 5                                 │
+│  时间        │ 2024-09-07 12:00:00                   │
+│  From        │ 0x...（可点击跳转地址详情）             │
+│  To          │ 0x...                                 │
+│  Amount      │ 1,000,000                             │
+│  Gas Limit   │ 53,000                                │
+│  Gas Used    │ 50,000                                │
+│  Nonce       │ 42                                    │
+├──────────────────────────────────────────────────────┤
+│  Input Data（contract_input 非空时显示）              │
+│  el-input type=textarea readonly，hex 格式            │
+├──────────────────────────────────────────────────────┤
+│  EVM Logs（events 非空时显示）                        │
+│  el-collapse，每条 log 展示 contract/topics/data      │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+#### AddressDetail.vue — 地址详情
+
+```
+┌──────────────────────────────────────────────────────┐
+│  搜索栏：输入地址 → 跳转（顶部提供全局搜索入口）      │
+├──────────────────────────────────────────────────────┤
+│  el-descriptions                                      │
+│  地址       │ 0x...（可复制）                         │
+│  类型       │ [Normal] / [Contract] / [Library] tag  │
+│  余额       │ 实时查节点 /query_account               │
+│  Nonce      │ 实时查节点                              │
+│  归属分片   │ Shard 3 / Pool 5                        │
+│  首次出现   │ 2024-09-01                              │
+│  交易总数   │ 127（来自 SQLite）                      │
+├──────────────────────────────────────────────────────┤
+│  交易历史（el-table + 游标分页）                      │
+│  Hash | 类型 | 方向（IN/OUT） | Amount | 时间         │
+│  方向用 el-tag: IN=success，OUT=danger                │
+└──────────────────────────────────────────────────────┘
+```
+
+`is_contract=1` 时页面底部追加"合约详情"跳转按钮。
+
+---
+
+#### ContractList.vue — 合约列表
+
+```
+┌───────────────────────────────────────────────────────┐
+│  筛选：[库合约 el-switch] [克隆合约 el-switch]         │
+├───────────────────────────────────────────────────────┤
+│  el-table                                              │
+│  地址 | 类型 | 创建者 | 创建区块 | 分片 | 时间         │
+│  类型列：[Library] / [Clone] / [Contract] el-tag       │
+├───────────────────────────────────────────────────────┤
+│  [← 上一页] [下一页 →]                                 │
+└───────────────────────────────────────────────────────┘
+```
+
+---
+
+#### ContractDetail.vue — 合约详情
+
+```
+┌──────────────────────────────────────────────────────┐
+│  el-descriptions                                      │
+│  合约地址   │ 0x...                                   │
+│  类型       │ [Library] / [Clone] / [Contract]        │
+│  创建者     │ 0x...（可点击）                          │
+│  创建交易   │ 0x...（可点击）                          │
+│  创建区块   │ 10230（可点击）                          │
+│  归属分片   │ Shard 3 / Pool 5                        │
+├──────────────────────────────────────────────────────┤
+│  合约字节码（实时查节点 eth_getCode）                 │
+│  el-input type=textarea readonly，hex 格式            │
+├──────────────────────────────────────────────────────┤
+│  相关交易（el-table + 游标分页）                      │
+│  以 to_addr = 合约地址 过滤                           │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+#### GasPresets.vue — Gas 预置
+
+```
+┌───────────────────────────────────────────────────┐
+│  el-table（全量，无分页）                          │
+│  交易类型 | StepType | Gas 用量 | 说明             │
+│  通用规则（calldata/SSTORE 等）独立成一组          │
+└───────────────────────────────────────────────────┘
+```
+
+数据来源：`getGasPresets()` → 静态，无需刷新。
+
+---
+
+### 9.9 全局搜索
+
+在 `ExplorerLayout.vue` 顶部放一个搜索框，输入内容自动识别类型后跳转：
+
+```js
+function onSearch(val) {
+  const v = val.trim()
+  if (v.length === 66)      router.push(`/explorer/blocks/${v}`)       // 区块 hash (0x+64)
+  else if (v.length === 64) router.push(`/explorer/transactions/${v}`) // tx hash
+  else if (v.length === 42) router.push(`/explorer/address/${v}`)      // 地址 (0x+40)
+  else ElMessage.warning('请输入有效的 Hash 或地址')
+}
+```
+
+---
+
+### 9.10 StepType 标签与颜色映射
+
+`composables/useStepType.js` 提供统一的枚举描述，供各列表页复用：
+
+```js
+export const STEP_TYPE_MAP = {
+  0:  { label: 'Transfer',       type: 'primary',   isSystem: false },
+  1:  { label: 'NormalTo',       type: 'info',      isSystem: true  },
+  2:  { label: 'Elect',          type: 'warning',   isSystem: true  },
+  3:  { label: 'TimeBlock',      type: 'info',      isSystem: true  },
+  4:  { label: 'Genesis',        type: 'info',      isSystem: true  },
+  5:  { label: 'LocalTos',       type: 'info',      isSystem: true  },
+  6:  { label: 'CreateContract', type: 'success',   isSystem: false },
+  7:  { label: 'CallContract',   type: 'warning',   isSystem: false },
+  8:  { label: 'GasPrefund',     type: '',          isSystem: false },
+  9:  { label: 'CreateAddr',     type: 'info',      isSystem: true  },
+  10: { label: 'Refund',         type: '',          isSystem: false },
+  11: { label: 'JoinElect',      type: 'primary',   isSystem: false },
+  12: { label: 'Statistic',      type: 'info',      isSystem: true  },
+  13: { label: 'Library',        type: 'success',   isSystem: false },
+  15: { label: 'Cross',          type: 'info',      isSystem: true  },
+  16: { label: 'RootCross',      type: 'info',      isSystem: true  },
+  17: { label: 'PoolStat',       type: 'info',      isSystem: true  },
+  19: { label: 'CloneDeploy',    type: 'warning',   isSystem: true  },
+}
+```
 
 ---
 
 ## 十、文件变更汇总
+
+### 10.1 后端（Shardora C++ 节点）
 
 | 文件 | 变更类型 | 变更内容 |
 |---|---|---|
@@ -555,3 +1077,25 @@ add_subdirectory(src/explorer)   # 新增
 | `build_third.sh / build_third_mac.sh` | 修改 | 编译 sqlite3 amalgamation 为静态库 |
 | `third_party/include/sqlite3.h` | 新增 | SQLite 头文件 |
 | `third_party/src/sqlite3.c` | 新增 | SQLite 单文件实现 |
+
+### 10.2 前端（chainbaas Vue 项目）
+
+| 文件 | 变更类型 | 变更内容 |
+|---|---|---|
+| `vite.config.js` | 修改 | 新增 `/explorer`、`/query_account` proxy |
+| `src/App.vue` | 修改 | 顶部菜单新增 "Block Explorer" 菜单项 |
+| `src/router/index.js` | 修改 | 新增 `/explorer` 嵌套路由组 |
+| `api/modules/explorer.ts` | 新增 | 所有浏览器 API 请求函数 |
+| `src/components/Explorer/ExplorerLayout.vue` | 新增 | 侧边栏布局容器 |
+| `src/components/Explorer/ExplorerOverview.vue` | 新增 | 链概览 Dashboard |
+| `src/components/Explorer/BlockList.vue` | 新增 | 区块列表 |
+| `src/components/Explorer/BlockDetail.vue` | 新增 | 区块详情 |
+| `src/components/Explorer/TxList.vue` | 新增 | 交易列表 |
+| `src/components/Explorer/TxDetail.vue` | 新增 | 交易详情 |
+| `src/components/Explorer/AddressDetail.vue` | 新增 | 地址详情 + 历史交易 |
+| `src/components/Explorer/ContractList.vue` | 新增 | 合约列表 |
+| `src/components/Explorer/ContractDetail.vue` | 新增 | 合约详情 |
+| `src/components/Explorer/GasPresets.vue` | 新增 | Gas 预置表 |
+| `src/components/Explorer/composables/usePagination.js` | 新增 | 游标分页逻辑复用 |
+| `src/components/Explorer/composables/useStepType.js` | 新增 | StepType 枚举映射 |
+| `src/components/Explorer/composables/useAddrShorten.js` | 新增 | 地址截断 + 复制工具 |

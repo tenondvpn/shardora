@@ -76,6 +76,7 @@ int GlobalInfo::Init(const common::Config& config) {
        
     config.Get("shardora", "sharding_min_nodes_count", sharding_min_nodes_count_);
     config.Get("shardora", "for_ck", for_ck_server_);
+    config.Get("shardora", "for_explorer", for_explorer_);
     config.Get("shardora", "each_shard_max_members", each_shard_max_members_);
     config.Get("shardora", "join_root", join_root_);
     std::string str_contry;

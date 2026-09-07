@@ -313,6 +313,7 @@ set(LINK_ARGS
     block
     vss
     ck
+    explorer
     elect
     timeblock
     pools
@@ -402,6 +403,7 @@ add_subdirectory(${SRC_DIR}/consensus consensus)
 add_subdirectory(${SRC_DIR}/block block)
 add_subdirectory(${SRC_DIR}/timeblock timeblock)
 add_subdirectory(${SRC_DIR}/ck ck)
+add_subdirectory(${SRC_DIR}/explorer explorer)
 add_subdirectory(${SRC_DIR}/vss vss)
 add_subdirectory(${SRC_DIR}/sync sync)
 add_subdirectory(${SRC_DIR}/pki pki)

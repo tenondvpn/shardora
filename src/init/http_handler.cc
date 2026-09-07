@@ -33,6 +33,7 @@
 #include "shardoravm/execution.h"
 #include "shardoravm/shardora_host.h"
 #include "shardoravm/shardoravm_utils.h"
+#include "explorer/query_handlers.h"
 
 #include <google/protobuf/util/json_util.h>
 
@@ -2876,6 +2877,47 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
 void HttpHandler::Run() {
     SHARDORA_INFO("HTTPS server starting on %s:%d", http_ip_.c_str(), http_port_);
 
+    // Like safeHandler but adds CORS headers — used for all /explorer/* routes
+    // so the chainbaas frontend can query multiple shard nodes from different origins.
+    auto explorerHandler = [](auto handler, const char* endpoint) {
+        return [handler, endpoint](auto *res, auto *req) {
+            auto body = std::make_shared<std::string>();
+            auto alive = std::make_shared<bool>(true);
+            auto query_str = std::make_shared<std::string>(std::string(req->getQuery()));
+            res->onAborted([alive]() { *alive = false; });
+            std::weak_ptr<bool> weak_alive = alive;
+            res->onData([res, query_str, body, handler, endpoint, weak_alive](std::string_view data, bool last) {
+                auto alive_lock = weak_alive.lock();
+                if (!alive_lock || !*alive_lock) return;
+                try {
+                    body->append(data.data(), data.size());
+                    if (last) {
+                        UWSRequest uws_req(*query_str, *body);
+                        UWSResponse uws_res;
+                        handler(uws_req, uws_res);
+                        if (*alive_lock) {
+                            res->writeStatus("200 OK")
+                               ->writeHeader("Content-Type", uws_res.content_type())
+                               ->writeHeader("Access-Control-Allow-Origin", "*")
+                               ->writeHeader("Access-Control-Allow-Methods", "GET, OPTIONS")
+                               ->writeHeader("Access-Control-Allow-Headers", "Content-Type")
+                               ->end(uws_res.content());
+                            *alive_lock = false;
+                        }
+                    }
+                } catch (const std::exception& e) {
+                    SHARDORA_ERROR("Exception in %s: %s", endpoint, e.what());
+                    auto a = weak_alive.lock();
+                    if (a && *a) { res->writeStatus("500 Internal Server Error")->end("Internal server error"); *a = false; }
+                } catch (...) {
+                    SHARDORA_ERROR("Unknown exception in %s", endpoint);
+                    auto a = weak_alive.lock();
+                    if (a && *a) { res->writeStatus("500 Internal Server Error")->end("Internal server error"); *a = false; }
+                }
+            });
+        };
+    };
+
     auto safeHandler = [](auto handler, const char* endpoint) {
         return [handler, endpoint](auto *res, auto *req) {
             auto body = std::make_shared<std::string>();
@@ -2941,7 +2983,23 @@ void HttpHandler::Run() {
     ).post("/update_private_key", safeHandler(UpdatePrivateKey, "/update_private_key")
     ).post("/eth", safeHandler(EthJsonRpc, "/eth")
     ).get("/eth", safeHandler(EthJsonRpc, "/eth")
-    ).listen("0.0.0.0", http_port_, [this](auto *listen_socket) {
+    ).options("/explorer/*", [](auto *res, auto *req) {
+        res->writeStatus("204 No Content")
+           ->writeHeader("Access-Control-Allow-Origin", "*")
+           ->writeHeader("Access-Control-Allow-Methods", "GET, OPTIONS")
+           ->writeHeader("Access-Control-Allow-Headers", "Content-Type")
+           ->end();
+    }).get("/explorer/blocks",       explorerHandler(explorer::ExplorerBlocks,     "/explorer/blocks"))
+    .get("/explorer/block",         explorerHandler(explorer::ExplorerBlock,       "/explorer/block"))
+    .get("/explorer/transactions",  explorerHandler(explorer::ExplorerTxList,      "/explorer/transactions"))
+    .get("/explorer/transaction",   explorerHandler(explorer::ExplorerTx,          "/explorer/transaction"))
+    .get("/explorer/address",       explorerHandler(explorer::ExplorerAddress,     "/explorer/address"))
+    .get("/explorer/address_txs",   explorerHandler(explorer::ExplorerAddressTxs,  "/explorer/address_txs"))
+    .get("/explorer/contracts",     explorerHandler(explorer::ExplorerContracts,   "/explorer/contracts"))
+    .get("/explorer/contract",      explorerHandler(explorer::ExplorerContract,    "/explorer/contract"))
+    .get("/explorer/gas-presets",   explorerHandler(explorer::ExplorerGasPresets,  "/explorer/gas-presets"))
+    .get("/explorer/chain-info",    explorerHandler(explorer::ExplorerChainInfo,   "/explorer/chain-info"))
+    .listen("0.0.0.0", http_port_, [this](auto *listen_socket) {
         if (listen_socket) {
             SHARDORA_INFO("HTTPS server listening on 0.0.0.0:%d", http_port_);
             running_ = true;

@@ -147,6 +147,10 @@ public:
         return for_ck_server_;
     }
 
+    bool for_explorer() const {
+        return for_explorer_;
+    }
+
     uint32_t each_shard_max_members() {
         return each_shard_max_members_;
     }
@@ -292,6 +296,7 @@ private:
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
     uint8_t message_handler_thread_count_ = 8;
     bool for_ck_server_ = false;
+    bool for_explorer_  = false;
     std::string ck_host_ = "127.0.0.1";
     uint16_t ck_port_ = 9000;
     std::string ck_user_ = "default";

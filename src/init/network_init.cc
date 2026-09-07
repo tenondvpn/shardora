@@ -49,6 +49,8 @@
 #include "transport/transport_utils.h"
 #include "shardoravm/execution.h"
 #include "common/defer.h"
+#include "explorer/explorer.h"
+#include "explorer/query_handlers.h"
 
 namespace shardora {
 
@@ -227,7 +229,20 @@ int NetworkInit::Init(int argc, char** argv) {
         block_ck_client = nullptr;
     }
 
-    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, block_ck_client);
+    std::shared_ptr<explorer::Explorer> explorer_client = nullptr;
+    if (common::GlobalInfo::Instance()->for_explorer()) {
+        auto db_path = common::GlobalInfo::Instance()->root_path() + "/explorer.db";
+        explorer_client = std::make_shared<explorer::Explorer>(db_path);
+        if (!explorer_client->Init()) {
+            INIT_ERROR("Explorer init failed!");
+            explorer_client = nullptr;
+        } else {
+            explorer::SetGlobalExplorer(explorer_client);
+            INIT_INFO("Explorer initialized: %s", db_path.c_str());
+        }
+    }
+
+    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_, block_ck_client, explorer_client);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_, ck_client);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, account_mgr_, block_mgr_, security_, bls_mgr_, db_,

@@ -11,6 +11,7 @@
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
 #include "common/config.h"
+#include "explorer/explorer.h"
 #include "common/limit_hash_map.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
@@ -44,7 +45,8 @@ namespace block {
 class AccountManager;
 class BlockManager {
 public:
-    BlockManager(transport::MultiThreadHandler& net_handler_, std::shared_ptr<ck::ClickHouseClient> ck_client);
+    BlockManager(transport::MultiThreadHandler& net_handler_, std::shared_ptr<ck::ClickHouseClient> ck_client,
+                 std::shared_ptr<explorer::Explorer> explorer = nullptr);
     ~BlockManager();
 
     bool HasSingleTx(
@@ -160,6 +162,7 @@ private:
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     transport::MultiThreadHandler& net_handler_;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
+    std::shared_ptr<explorer::Explorer> explorer_ = nullptr;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
     uint64_t latest_timeblock_height_ = 0;

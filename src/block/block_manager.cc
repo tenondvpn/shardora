@@ -32,8 +32,10 @@ static const std::string kPoolStatisticTagPrefix = common::Encode::HexDecode(
     "7d501a4dda1b70eced7336fe49d6c1dbdf3dd2b8274981314cc959fe14552023");
 
 BlockManager::BlockManager(
-        transport::MultiThreadHandler& net_handler, 
-        std::shared_ptr<ck::ClickHouseClient> ck_client) : net_handler_(net_handler), ck_client_(ck_client) {
+        transport::MultiThreadHandler& net_handler,
+        std::shared_ptr<ck::ClickHouseClient> ck_client,
+        std::shared_ptr<explorer::Explorer> explorer)
+    : net_handler_(net_handler), ck_client_(ck_client), explorer_(std::move(explorer)) {
 }
 
 BlockManager::~BlockManager() {
@@ -550,6 +552,9 @@ void BlockManager::AddNewBlock(
 
     if (ck_client_) {
         ck_client_->AddNewBlock(view_block_item);
+    }
+    if (explorer_) {
+        explorer_->AddNewBlock(view_block_item);
     }
 }
 

@@ -58,7 +58,7 @@
 
 ### 2.2 配图：TPS × 节点数二维坐标图
 
-![2.2 TPS × 去中心化程度散点图](social_cards/card_scatter_1080.jpg)
+![2.2 TPS × 去中心化程度散点图](../social_cards/card_scatter_1080.jpg)
 
 ---
 
@@ -74,7 +74,7 @@
 | DeFi 原子性 | 8（同链） | 8（同链） | 7（同L2） | 6（同L2） | **9**（跨分片） |
 | 扩容路径 | 3 | 2 | 3（L3扩展有限） | 2（单公司路线图） | **10**（1024分片） |
 
-![2.3 五维能力雷达图](social_cards/card_radar_1080.jpg)
+![2.3 五维能力雷达图](../social_cards/card_radar_1080.jpg)
 
 ---
 
