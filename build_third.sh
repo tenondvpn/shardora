@@ -313,7 +313,7 @@ ensure_evmc_checkout() {
 
 install_deps() {
     if command -v apt-get >/dev/null 2>&1; then
-        $SUDO apt-get update
+        $SUDO apt-get update || true
         $SUDO apt-get install -y autoconf automake libtool build-essential cmake git perl \
             texinfo unzip libgnutls28-dev liblzma-dev pkg-config yasm zlib1g-dev libssh2-1-dev
         $SUDO apt-get install -y libprocps-dev || $SUDO apt-get install -y procps
@@ -774,6 +774,35 @@ require_installed_file "$SRC_PATH/third_party/include/libusockets.h"
 require_installed_file "$SRC_PATH/third_party/include/uWebSockets/App.h"
 require_installed_file "$SRC_PATH/third_party/lib/libuSockets.a"
 require_installed_file "$USOCKETS_BUILD_MARKER"
+
+# Build sqlite3 (static amalgamation)
+if [ ! -f "$SRC_PATH/third_party/lib/libsqlite3.a" ] ||         [ ! -f "$SRC_PATH/third_party/include/sqlite3.h" ]; then
+    echo "Building sqlite3 static library..."
+    SQLITE_VER="3460100"
+    SQLITE_DIR="$SRC_PATH/third_party/sqlite3-build"
+    rm -rf "$SQLITE_DIR" && mkdir -p "$SQLITE_DIR"
+    cd "$SQLITE_DIR"
+    if command -v curl >/dev/null 2>&1; then
+        curl -L -o sqlite.zip "https://www.sqlite.org/2024/sqlite-amalgamation-${SQLITE_VER}.zip"
+    else
+        wget -O sqlite.zip "https://www.sqlite.org/2024/sqlite-amalgamation-${SQLITE_VER}.zip"
+    fi
+    unzip -q sqlite.zip
+    AMAL_DIR=$(ls -d sqlite-amalgamation-* 2>/dev/null | head -1)
+    [ -n "$AMAL_DIR" ] || { echo "FATAL: sqlite amalgamation unzip failed"; exit 1; }
+    cd "$AMAL_DIR"
+    ${CC:-cc} -O2 -fPIC -DSQLITE_THREADSAFE=1 -c sqlite3.c -o sqlite3.o
+    ${AR:-ar} rvs libsqlite3.a sqlite3.o
+    mkdir -p "$SRC_PATH/third_party/lib" "$SRC_PATH/third_party/include"
+    cp libsqlite3.a "$SRC_PATH/third_party/lib/"
+    cp sqlite3.h sqlite3ext.h "$SRC_PATH/third_party/include/"
+    rm -rf "$SQLITE_DIR"
+    cd "$SRC_PATH"
+    echo "sqlite3 static library built successfully"
+fi
+require_installed_file "$SRC_PATH/third_party/lib/libsqlite3.a"
+require_installed_file "$SRC_PATH/third_party/include/sqlite3.h"
+
 
 cd $SRC_PATH
 rm -rf third_party/lib/lib*.so* third_party/lib64/lib*.so*

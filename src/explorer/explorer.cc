@@ -126,16 +126,16 @@ void Explorer::FlushLoop() {
     while (running_) {
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_cv_.wait_for(lock, std::chrono::milliseconds(200),
-                          [this]() { return !queue_.empty() || !running_; });
+                          [this]() { return queue_.size() != 0 || !running_; });
         lock.unlock();
 
-        if (!running_ && queue_.empty()) break;
+        if (!running_ && queue_.size() == 0) break;
 
         // Batch up to 200 blocks per transaction
         std::vector<std::shared_ptr<hotstuff::ViewBlock>> batch;
         batch.reserve(200);
         std::shared_ptr<hotstuff::ViewBlock> vb;
-        while (batch.size() < 200 && queue_.pop(vb)) {
+        while (batch.size() < 200 && queue_.pop(&vb)) {
             batch.push_back(std::move(vb));
         }
 
@@ -295,7 +295,7 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
         // Insert EVM logs
         for (int li = 0; li < tx.events_size(); ++li) {
             const auto& ev = tx.events(li);
-            std::string contract_hex = ev.address().empty() ? "" : HexStr(ev.address());
+            std::string contract_hex = "";
             std::string t0 = ev.topics_size() > 0 ? HexStr(ev.topics(0)) : "";
             std::string t1 = ev.topics_size() > 1 ? HexStr(ev.topics(1)) : "";
             std::string t2 = ev.topics_size() > 2 ? HexStr(ev.topics(2)) : "";
