@@ -35,6 +35,11 @@ message ToTxHeights {
     optional uint32 tx_count = 7;
 }
 
+message CrossStorageKV {
+    optional bytes  key   = 1;  // 32-byte storage slot key
+    optional bytes  value = 2;  // storage value (variable length)
+}
+
 message ToTxMessageItem {
     optional uint64 amount = 1;
     optional int32 pool_index = 2;
@@ -47,8 +52,7 @@ message ToTxMessageItem {
     optional uint32 des_sharding_id = 11;
     optional bytes  base_root_address  = 12;  // non-empty = CrossShardBase transfer path
     optional uint64 cross_nonce        = 13;  // monotonic nonce for replay protection
-    optional bytes  cross_storage_key  = 15;  // CrossStorageOut key (32 bytes)
-    optional bytes  cross_storage_value = 16; // CrossStorageOut value (variable length)
+    repeated CrossStorageKV cross_storage_kv = 15;  // list of [key, value] storage ops
     optional bytes  runtime_bytecode   = 17;  // emitter contract runtime bytecode for dest lazy-deploy
     optional bytes  amount256          = 18;  // full uint256 amount (32B BE); set by CrossShardBase
                                               // transfer path to avoid uint64 truncation. When present,

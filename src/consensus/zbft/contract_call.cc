@@ -4,6 +4,7 @@
 #include "network/network_utils.h"
 #include "shardoravm/execution.h"
 #include "shardoravm/host_journal_stack.h"
+#include "shardoravm/reversible_feistel_address.h"
 
 namespace shardora {
 
@@ -409,58 +410,85 @@ int ContractCall::HandleTx(
         }
 
         // ── pending_cross_actions_ → cross_to_map_ ──────────────────────
+        // key = item->des() (destination address, 20 bytes).
+        // Transfers to the same recipient are accumulated; storage ops to the
+        // Storage ops from the same shadow contract are appended as CrossStorageKV entries.
+        auto add_amount256 = [](pools::protobuf::ToTxMessageItem& dst,
+                                 const std::string& addend) {
+            if (dst.amount256().size() == 32 && addend.size() == 32) {
+                std::string r = dst.amount256();
+                uint32_t carry = 0;
+                for (int i = 31; i >= 0; --i) {
+                    uint32_t s = (uint8_t)r[i] + (uint8_t)addend[i] + carry;
+                    r[i] = char(s & 0xFF); carry = s >> 8;
+                }
+                dst.set_amount256(r);
+            } else if (!addend.empty()) {
+                dst.set_amount256(addend);
+            }
+        };
+
         for (auto& action : shardora_host.pending_cross_actions_) {
             if (action.base_root_address.empty()) continue;
 
             if (action.type == shardoravm::CrossShardActionType::kTransfer) {
                 if (action.to.empty()) continue;
-                std::string key = action.emitter + std::to_string(action.nonce);
-                if (cross_to_map_.find(key) == cross_to_map_.end()) {
+                auto it = cross_to_map_.find(action.to);
+                if (it == cross_to_map_.end()) {
                     auto item = std::make_shared<pools::protobuf::ToTxMessageItem>();
                     item->set_from(action.emitter);
                     item->set_des(action.to);
                     item->set_amount(action.amount);
-                    if (!action.amount_bytes.empty()) {
-                        item->set_amount256(action.amount_bytes);
-                    }
-                    // sharding_id repurposed as dest shard routing hint for root
+                    if (!action.amount_bytes.empty()) item->set_amount256(action.amount_bytes);
                     item->set_sharding_id(action.dest_shard_id);
-                    // pool_index carries dest pool for HandleCrossShardBase
                     item->set_pool_index(static_cast<int32_t>(action.dest_pool_index));
-                    item->set_des_sharding_id(network::kUniversalNetworkId);
+                    item->set_des_sharding_id(action.dest_shard_id);
                     item->set_base_root_address(action.base_root_address);
                     item->set_cross_nonce(action.nonce);
-                    cross_to_map_[key] = item;
+                    cross_to_map_[action.to] = item;
                     SHARDORA_INFO("CrossShardBase cross-transfer queued: base=%s, to=%s, amount=%lu, nonce=%lu, dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.base_root_address).c_str(),
                         common::Encode::HexEncode(action.to).c_str(),
                         action.amount, action.nonce,
                         action.dest_shard_id, action.dest_pool_index);
+                } else {
+                    it->second->set_amount(it->second->amount() + action.amount);
+                    add_amount256(*it->second, action.amount_bytes);
+                    SHARDORA_INFO("CrossShardBase cross-transfer accumulated: to=%s amount=%lu",
+                        common::Encode::HexEncode(action.to).c_str(), action.amount);
                 }
             } else if (action.type == shardoravm::CrossShardActionType::kSetStorage) {
                 if (action.storage_key.empty()) continue;
-                std::string key = action.emitter + "s" + std::to_string(action.nonce);
-                if (cross_to_map_.find(key) == cross_to_map_.end()) {
+                std::array<uint8_t, 20> base_arr;
+                std::memcpy(base_arr.data(), action.base_root_address.data(), 20);
+                auto shadow_arr = shardoravm::DeriveShardAddress(
+                    base_arr, action.dest_shard_id, action.dest_pool_index);
+                std::string shadow_des(reinterpret_cast<const char*>(shadow_arr.data()), 20);
+                auto it = cross_to_map_.find(shadow_des);
+                if (it == cross_to_map_.end()) {
                     auto item = std::make_shared<pools::protobuf::ToTxMessageItem>();
                     item->set_from(action.emitter);
-                    // des must be exactly 20 bytes so CreateLocalToTx doesn't reject it.
-                    // For cross-storage there is no single "recipient", so we use
-                    // base_root_address (20 bytes) as the identity / dedup key.
-                    item->set_des(action.base_root_address);
-                    // sharding_id repurposed as dest shard routing hint for root
+                    item->set_des(shadow_des);
                     item->set_sharding_id(action.dest_shard_id);
-                    // pool_index carries dest pool for HandleCrossShardBase
                     item->set_pool_index(static_cast<int32_t>(action.dest_pool_index));
-                    item->set_des_sharding_id(network::kUniversalNetworkId);
+                    item->set_des_sharding_id(action.dest_shard_id);
                     item->set_base_root_address(action.base_root_address);
                     item->set_cross_nonce(action.nonce);
-                    item->set_cross_storage_key(action.storage_key);
-                    item->set_cross_storage_value(action.storage_val);
-                    cross_to_map_[key] = item;
+                    auto* kv = item->add_cross_storage_kv();
+                    kv->set_key(action.storage_key);
+                    kv->set_value(action.storage_val);
+                    cross_to_map_[shadow_des] = item;
                     SHARDORA_INFO("CrossShardBase cross-storage queued: base=%s, key_len=%zu, nonce=%lu, dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.base_root_address).c_str(),
                         action.storage_key.size(), action.nonce,
                         action.dest_shard_id, action.dest_pool_index);
+                } else {
+                    auto* kv = it->second->add_cross_storage_kv();
+                    kv->set_key(action.storage_key);
+                    kv->set_value(action.storage_val);
+                    SHARDORA_INFO("CrossShardBase cross-storage appended: base=%s, key_len=%zu",
+                        common::Encode::HexEncode(action.base_root_address).c_str(),
+                        action.storage_key.size());
                 }
             }
         }
@@ -468,14 +496,20 @@ int ContractCall::HandleTx(
 
         shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), status_val);
         shardora_host.MergeToPrev();
-        for (auto exists_iter = cross_to_map_.begin(); exists_iter != cross_to_map_.end(); ++exists_iter) {
-            auto iter = pre_shardora_host.cross_to_map_.find(exists_iter->first);
-            std::shared_ptr<pools::protobuf::ToTxMessageItem> to_item_ptr;
+        for (auto& [map_key, new_item] : cross_to_map_) {
+            auto iter = pre_shardora_host.cross_to_map_.find(map_key);
             if (iter == pre_shardora_host.cross_to_map_.end()) {
-                pre_shardora_host.cross_to_map_[exists_iter->first] = exists_iter->second;
+                pre_shardora_host.cross_to_map_[map_key] = new_item;
             } else {
-                to_item_ptr = iter->second;
-                to_item_ptr->set_amount(exists_iter->second->amount() + to_item_ptr->amount());
+                auto& existing = iter->second;
+                if (new_item->cross_storage_kv_size() == 0) {
+                    existing->set_amount(existing->amount() + new_item->amount());
+                    add_amount256(*existing, new_item->amount256());
+                } else {
+                    for (int ki = 0; ki < new_item->cross_storage_kv_size(); ++ki) {
+                        *existing->add_cross_storage_kv() = new_item->cross_storage_kv(ki);
+                    }
+                }
             }
         }
     } else {

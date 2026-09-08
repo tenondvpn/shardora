@@ -477,8 +477,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, des_sharding_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, base_root_address_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, cross_nonce_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, cross_storage_key_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, cross_storage_value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, cross_storage_kv_),
+  ~0u,  // no field offset for removed field 16
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, runtime_bytecode_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ToTxMessageItem, amount256_),
   9,
@@ -492,8 +492,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   14,
   4,
   13,
-  5,
-  6,
+  ~0u,   // no has-bit for cross_storage_kv_ (repeated)
+  ~0u,   // no has-bit for removed field 16
   7,
   8,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::shardora::pools::protobuf::ShardToTxItem, _has_bits_),
@@ -1452,6 +1452,217 @@ void ToTxHeights::InternalSwap(ToTxHeights* other) {
 
 
 // ===================================================================
+// CrossStorageKV implementation
+
+CrossStorageKVDefaultTypeInternal _CrossStorageKV_default_instance_;
+
+void CrossStorageKV::InitAsDefaultInstance() {}
+
+CrossStorageKV::CrossStorageKV()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+}
+
+CrossStorageKV::CrossStorageKV(const CrossStorageKV& from)
+  : ::google::protobuf::Message(), _internal_metadata_(NULL),
+    _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_key()) {
+    key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
+  }
+  value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_value()) {
+    value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
+  }
+}
+
+void CrossStorageKV::SharedCtor() {
+  key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+CrossStorageKV::~CrossStorageKV() {
+  SharedDtor();
+}
+
+void CrossStorageKV::SharedDtor() {
+  key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void CrossStorageKV::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+
+const CrossStorageKV& CrossStorageKV::default_instance() {
+  if (_CrossStorageKV_default_instance_._instance.get_mutable() == NULL) {
+    _CrossStorageKV_default_instance_._instance.DefaultConstruct();
+  }
+  return *_CrossStorageKV_default_instance_._instance.get_mutable();
+}
+
+void CrossStorageKV::Clear() {
+  _has_bits_.Clear();
+  ::google::protobuf::uint32 cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) key_.ClearNonDefaultToEmptyNoArena();
+    if (cached_has_bits & 0x00000002u) value_.ClearNonDefaultToEmptyNoArena();
+  }
+  _internal_metadata_.Clear();
+}
+
+bool CrossStorageKV::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) == static_cast< ::google::protobuf::uint8>(10u)) {
+          set_has_key();
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(input, this->mutable_key()));
+        } else goto handle_unusual;
+        break;
+      }
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) == static_cast< ::google::protobuf::uint8>(18u)) {
+          set_has_value();
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(input, this->mutable_value()));
+        } else goto handle_unusual;
+        break;
+      }
+      default: {
+      handle_unusual:
+        if (tag == 0) goto success;
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  return true;
+failure:
+  return false;
+#undef DO_
+}
+
+void CrossStorageKV::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  ::google::protobuf::uint32 cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(1, this->key(), output);
+  }
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(2, this->value(), output);
+  }
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* CrossStorageKV::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic;
+  ::google::protobuf::uint32 cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(1, this->key(), target);
+  }
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(2, this->value(), target);
+  }
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  return target;
+}
+
+size_t CrossStorageKV::ByteSizeLong() const {
+  size_t total_size = 0;
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size += ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  ::google::protobuf::uint32 cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(this->key());
+    }
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(this->value());
+    }
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+::google::protobuf::Metadata CrossStorageKV::GetMetadata() const {
+  return ::google::protobuf::Metadata{NULL, NULL};
+}
+
+bool CrossStorageKV::IsInitialized() const { return true; }
+
+void CrossStorageKV::MergeFrom(const ::google::protobuf::Message& from) {
+  if (GOOGLE_PREDICT_FALSE(&from == this)) ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  const CrossStorageKV* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const CrossStorageKV>(&from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void CrossStorageKV::MergeFrom(const CrossStorageKV& from) {
+  if (&from == this) return;
+  ::google::protobuf::uint32 cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_key();
+      key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      set_has_value();
+      value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void CrossStorageKV::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CrossStorageKV::CopyFrom(const CrossStorageKV& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CrossStorageKV::Swap(CrossStorageKV* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+
+void CrossStorageKV::InternalSwap(CrossStorageKV* other) {
+  using std::swap;
+  key_.Swap(&other->key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+  value_.Swap(&other->value_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+// ===================================================================
+
+// ===================================================================
 
 void ToTxMessageItem::InitAsDefaultInstance() {
 }
@@ -1467,8 +1678,7 @@ const int ToTxMessageItem::kPrefundFieldNumber;
 const int ToTxMessageItem::kDesShardingIdFieldNumber;
 const int ToTxMessageItem::kBaseRootAddressFieldNumber;
 const int ToTxMessageItem::kCrossNonceFieldNumber;
-const int ToTxMessageItem::kCrossStorageKeyFieldNumber;
-const int ToTxMessageItem::kCrossStorageValueFieldNumber;
+const int ToTxMessageItem::kCrossStorageKvFieldNumber;
 const int ToTxMessageItem::kRuntimeBytecodeFieldNumber;
 const int ToTxMessageItem::kAmount256FieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -1505,14 +1715,7 @@ ToTxMessageItem::ToTxMessageItem(const ToTxMessageItem& from)
   if (from.has_base_root_address()) {
     base_root_address_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.base_root_address_);
   }
-  cross_storage_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_cross_storage_key()) {
-    cross_storage_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.cross_storage_key_);
-  }
-  cross_storage_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_cross_storage_value()) {
-    cross_storage_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.cross_storage_value_);
-  }
+  cross_storage_kv_.MergeFrom(from.cross_storage_kv_);
   runtime_bytecode_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_runtime_bytecode()) {
     runtime_bytecode_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.runtime_bytecode_);
@@ -1533,8 +1736,6 @@ void ToTxMessageItem::SharedCtor() {
   library_bytes_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   base_root_address_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  cross_storage_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  cross_storage_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   runtime_bytecode_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   amount256_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&amount_, 0, static_cast<size_t>(
@@ -1553,8 +1754,6 @@ void ToTxMessageItem::SharedDtor() {
   library_bytes_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   from_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   base_root_address_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  cross_storage_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  cross_storage_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   runtime_bytecode_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   amount256_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1596,16 +1795,11 @@ void ToTxMessageItem::Clear() {
     if (cached_has_bits & 0x00000010u) {
       base_root_address_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000020u) {
-      cross_storage_key_.ClearNonDefaultToEmptyNoArena();
-    }
-    if (cached_has_bits & 0x00000040u) {
-      cross_storage_value_.ClearNonDefaultToEmptyNoArena();
-    }
     if (cached_has_bits & 0x00000080u) {
       runtime_bytecode_.ClearNonDefaultToEmptyNoArena();
     }
   }
+  cross_storage_kv_.Clear();
   if (cached_has_bits & 0x00000100u) {
     amount256_.ClearNonDefaultToEmptyNoArena();
   }
@@ -1772,24 +1966,12 @@ bool ToTxMessageItem::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes cross_storage_key = 15;
+      // repeated CrossStorageKV cross_storage_kv = 15;
       case 15: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(122u /* 122 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_cross_storage_key()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional bytes cross_storage_value = 16;
-      case 16: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_cross_storage_value()));
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+                input, add_cross_storage_kv()));
         } else {
           goto handle_unusual;
         }
@@ -1907,16 +2089,10 @@ void ToTxMessageItem::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(13, this->cross_nonce(), output);
   }
 
-  // optional bytes cross_storage_key = 15;
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      15, this->cross_storage_key(), output);
-  }
-
-  // optional bytes cross_storage_value = 16;
-  if (cached_has_bits & 0x00000040u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      16, this->cross_storage_value(), output);
+  // repeated CrossStorageKV cross_storage_kv = 15;
+  for (unsigned int i = 0, n = static_cast<unsigned int>(cross_storage_kv_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      15, this->cross_storage_kv(static_cast<int>(i)), output);
   }
 
   // optional bytes runtime_bytecode = 17;
@@ -2011,18 +2187,11 @@ void ToTxMessageItem::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(13, this->cross_nonce(), target);
   }
 
-  // optional bytes cross_storage_key = 15;
-  if (cached_has_bits & 0x00000020u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        15, this->cross_storage_key(), target);
-  }
-
-  // optional bytes cross_storage_value = 16;
-  if (cached_has_bits & 0x00000040u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        16, this->cross_storage_value(), target);
+  // repeated CrossStorageKV cross_storage_kv = 15;
+  for (unsigned int i = 0, n = static_cast<unsigned int>(cross_storage_kv_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        15, this->cross_storage_kv(static_cast<int>(i)), deterministic, target);
   }
 
   // optional bytes runtime_bytecode = 17;
@@ -2092,18 +2261,15 @@ size_t ToTxMessageItem::ByteSizeLong() const {
           this->base_root_address());
     }
 
-    // optional bytes cross_storage_key = 15;
-    if (has_cross_storage_key()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->cross_storage_key());
-    }
-
-    // optional bytes cross_storage_value = 16;
-    if (has_cross_storage_value()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->cross_storage_value());
+    // repeated CrossStorageKV cross_storage_kv = 15;
+    {
+      unsigned int count = static_cast<unsigned int>(this->cross_storage_kv_size());
+      total_size += 1UL * count;
+      for (unsigned int i = 0; i < count; i++) {
+        total_size +=
+          ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+            this->cross_storage_kv(static_cast<int>(i)));
+      }
     }
 
     // optional bytes runtime_bytecode = 17;
@@ -2214,19 +2380,12 @@ void ToTxMessageItem::MergeFrom(const ToTxMessageItem& from) {
       set_has_base_root_address();
       base_root_address_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.base_root_address_);
     }
-    if (cached_has_bits & 0x00000020u) {
-      set_has_cross_storage_key();
-      cross_storage_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.cross_storage_key_);
-    }
-    if (cached_has_bits & 0x00000040u) {
-      set_has_cross_storage_value();
-      cross_storage_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.cross_storage_value_);
-    }
     if (cached_has_bits & 0x00000080u) {
       set_has_runtime_bytecode();
       runtime_bytecode_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.runtime_bytecode_);
     }
   }
+  cross_storage_kv_.MergeFrom(from.cross_storage_kv_);
   if (cached_has_bits & 32512u) {
     if (cached_has_bits & 0x00000100u) {
       set_has_amount256();
@@ -2288,10 +2447,7 @@ void ToTxMessageItem::InternalSwap(ToTxMessageItem* other) {
     GetArenaNoVirtual());
   base_root_address_.Swap(&other->base_root_address_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  cross_storage_key_.Swap(&other->cross_storage_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  cross_storage_value_.Swap(&other->cross_storage_value_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
+  cross_storage_kv_.InternalSwap(&other->cross_storage_kv_);
   runtime_bytecode_.Swap(&other->runtime_bytecode_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   amount256_.Swap(&other->amount256_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),

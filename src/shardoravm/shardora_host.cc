@@ -668,7 +668,7 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
             action.base_root_address = std::string(
                 reinterpret_cast<const char*>(topics[1].bytes + 12), 20);
             // 'to' address: data[12..32] (20 bytes in 32-byte ABI word)
-            action.to       = std::string(reinterpret_cast<const char*>(data + 12), 20);
+            action.to = std::string(reinterpret_cast<const char*>(data + 12), 20);
             // amount: data[32..64] — store full 32-byte uint256 to avoid truncation.
             // Also keep the low-64-bit value in action.amount for backward compat paths
             // that still read the uint64 field.

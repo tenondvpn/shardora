@@ -317,7 +317,7 @@ void ToTxLocalItem::HandleCrossShardBase(
         out += addr;  // 20 bytes
     };
 
-    if (!to_tx.has_cross_storage_key()) {
+    if (to_tx.cross_storage_kv_size() == 0) {
         // systemExecuteCrossTransfer(address to, uint256 amount, uint64 nonce)
         // selector(4) + to(32) + amount(32) + nonce(32) = 100 bytes
         calldata.reserve(100);
@@ -326,70 +326,82 @@ void ToTxLocalItem::HandleCrossShardBase(
                                                        : to_tx.des().substr(0, 20));
         write_uint256_bytes(calldata, to_tx.amount256(), to_tx.amount());
         write_uint256(calldata, to_tx.cross_nonce());
-    } else {
-        // systemExecuteCrossStorage(bytes32 key, bytes value, uint64 version)
-        // selector(4) + key(32) + offset(32) + version(32) + val_len(32) + val(padded)
-        const std::string& key = to_tx.cross_storage_key();
-        const std::string& val = to_tx.cross_storage_value();
-        uint64_t version = to_tx.cross_nonce();
-        size_t val_padded = ((val.size() + 31) / 32) * 32;
 
-        calldata.reserve(4 + 32 * 4 + val_padded);
-        calldata += kSelStorage;
+        // ── 4. 执行 EVM 调用 ─────────────────────────────────────────────────
+        block::protobuf::BlockTx sys_tx;
+        sys_tx.set_to(target_str);
+        sys_tx.set_from(sys_exec_str);
+        InitHost(shardora_host, sys_tx, 200000, 0, view_block);
 
-        // key (bytes32)
-        calldata.append(32 - std::min(key.size(), size_t(32)), '\0');
-        calldata += key.substr(0, std::min(key.size(), size_t(32)));
+        evmc::Result exec_res{ evmc_result{} };
+        int exec_status = shardoravm::Execution::Instance()->execute(
+            bytecode, calldata,
+            sys_exec_str, target_str, sys_exec_str,
+            0, 200000, 0,
+            shardoravm::kJustCall, shardora_host, &exec_res);
 
-        // offset to value = 96
-        calldata.append(31, '\0');
-        calldata += static_cast<char>(96);
-
-        // version (uint64)
-        write_uint256(calldata, version);
-
-        // value length
-        write_uint256(calldata, static_cast<uint64_t>(val.size()));
-
-        // value data (padded to 32-byte boundary)
-        calldata += val;
-        if (val.size() < val_padded)
-            calldata.append(val_padded - val.size(), '\0');
-    }
-
-    // ── 4. 执行 EVM 调用 ─────────────────────────────────────────────────────
-    block::protobuf::BlockTx sys_tx;
-    sys_tx.set_to(target_str);
-    sys_tx.set_from(sys_exec_str);
-    InitHost(shardora_host, sys_tx, 200000, 0, view_block);
-
-    evmc::Result exec_res{ evmc_result{} };
-    int exec_status = shardoravm::Execution::Instance()->execute(
-        bytecode,
-        calldata,
-        sys_exec_str,    // msg.sender = SYSTEM_EXECUTOR
-        target_str,      // msg.recipient = root contract or derived shard clone
-        sys_exec_str,    // tx.origin
-        0,               // value
-        200000,
-        0,
-        shardoravm::kJustCall,
-        shardora_host,
-        &exec_res);
-
-    if (exec_status != shardoravm::kShardoravmSuccess ||
-            exec_res.status_code != EVMC_SUCCESS) {
-        SHARDORA_ERROR("CrossShardBase system call failed: exec=%d evmc=%d, base=%s target=%s",
-            exec_status, (int)exec_res.status_code,
+        if (exec_status != shardoravm::kShardoravmSuccess ||
+                exec_res.status_code != EVMC_SUCCESS) {
+            SHARDORA_ERROR("CrossShardBase system call failed: exec=%d evmc=%d, base=%s target=%s",
+                exec_status, (int)exec_res.status_code,
+                common::Encode::HexEncode(base_raw).c_str(),
+                common::Encode::HexEncode(target_str).c_str());
+            return;
+        }
+        SHARDORA_INFO("CrossShardBase system call OK: base=%s target=%s nonce=%lu",
             common::Encode::HexEncode(base_raw).c_str(),
-            common::Encode::HexEncode(target_str).c_str());
+            common::Encode::HexEncode(target_str).c_str(),
+            to_tx.cross_nonce());
+    } else {
+        // systemExecuteCrossStorage — one EVM call per CrossStorageKV entry.
+        int n = to_tx.cross_storage_kv_size();
+        for (int i = 0; i < n; ++i) {
+            const auto& kv  = to_tx.cross_storage_kv(i);
+            const std::string& key = kv.key();
+            const std::string& val = kv.value();
+
+            uint64_t version    = to_tx.cross_nonce() + static_cast<uint64_t>(i);
+            size_t   val_padded = ((val.size() + 31) / 32) * 32;
+
+            calldata.clear();
+            calldata.reserve(4 + 32 * 4 + val_padded);
+            calldata += kSelStorage;
+            calldata.append(32 - std::min(key.size(), size_t(32)), '\0');
+            calldata += key.substr(0, std::min(key.size(), size_t(32)));
+            calldata.append(31, '\0');
+            calldata += static_cast<char>(96);
+            write_uint256(calldata, version);
+            write_uint256(calldata, static_cast<uint64_t>(val.size()));
+            calldata += val;
+            if (val.size() < val_padded)
+                calldata.append(val_padded - val.size(), '\0');
+
+            block::protobuf::BlockTx sys_tx;
+            sys_tx.set_to(target_str);
+            sys_tx.set_from(sys_exec_str);
+            InitHost(shardora_host, sys_tx, 200000, 0, view_block);
+
+            evmc::Result exec_res{ evmc_result{} };
+            int exec_status = shardoravm::Execution::Instance()->execute(
+                bytecode, calldata,
+                sys_exec_str, target_str, sys_exec_str,
+                0, 200000, 0,
+                shardoravm::kJustCall, shardora_host, &exec_res);
+
+            if (exec_status != shardoravm::kShardoravmSuccess ||
+                    exec_res.status_code != EVMC_SUCCESS) {
+                SHARDORA_ERROR("CrossShardBase storage call[%d] failed: exec=%d evmc=%d, base=%s target=%s",
+                    i, exec_status, (int)exec_res.status_code,
+                    common::Encode::HexEncode(base_raw).c_str(),
+                    common::Encode::HexEncode(target_str).c_str());
+                return;
+            }
+            SHARDORA_INFO("CrossShardBase storage call[%d] OK: base=%s target=%s version=%lu",
+                i, common::Encode::HexEncode(base_raw).c_str(),
+                common::Encode::HexEncode(target_str).c_str(), version);
+        }
         return;
     }
-
-    SHARDORA_INFO("CrossShardBase system call OK: base=%s target=%s nonce=%lu",
-        common::Encode::HexEncode(base_raw).c_str(),
-        common::Encode::HexEncode(target_str).c_str(),
-        to_tx.cross_nonce());
 }
 
 int ToTxLocalItem::TxToBlockTx(

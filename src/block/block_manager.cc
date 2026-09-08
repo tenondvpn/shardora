@@ -542,12 +542,17 @@ void BlockManager::AddNewBlock(
             view_block_item->qc().view(),
             common::GlobalInfo::Instance()->network_id(),
             ProtobufToJson(*block_item).c_str());
-        if (view_block_item->qc().network_id() == network::kRootCongressNetworkId && 
+        if (view_block_item->qc().network_id() == network::kRootCongressNetworkId &&
                 !network::IsSameShardOrSameWaitingPool(
-                common::GlobalInfo::Instance()->network_id(), 
+                common::GlobalInfo::Instance()->network_id(),
                 network::kRootCongressNetworkId)) {
             HandleRootCrossShardTx(*view_block_item);
         }
+        // CrossShardBase transfers: route items whose dest shard == local shard.
+        // des_sharding_id is set to kUniversalNetworkId (0) in contract_call.cc so
+        // HandleRootCrossShardTx skips them.  Use sharding_id() (set to the actual
+        // dest shard) to deliver same-shard and cross-shard CrossShardBase items.
+        HandleCrossShardBaseTx(*view_block_item);
     }
 
     if (ck_client_) {
@@ -575,6 +580,21 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
             continue;
         }
 
+        CreateLocalToTx(view_block, to_tx, true);
+    }
+}
+
+void BlockManager::HandleCrossShardBaseTx(const view_block::protobuf::ViewBlockItem& view_block) {
+    auto& block_item = view_block.block_info();
+    auto local_net_id = common::GlobalInfo::Instance()->network_id();
+    for (int32_t i = 0; i < block_item.cross_shard_to_array_size(); ++i) {
+        const auto& to_tx = block_item.cross_shard_to_array(i);
+        if (!to_tx.has_base_root_address()) continue;
+        if (static_cast<uint32_t>(to_tx.sharding_id()) != local_net_id) continue;
+        SHARDORA_DEBUG("CrossShardBaseTx: delivering base=%s to=%s shard=%u pool=%u",
+            common::Encode::HexEncode(to_tx.base_root_address()).c_str(),
+            common::Encode::HexEncode(to_tx.des()).c_str(),
+            to_tx.sharding_id(), to_tx.pool_index());
         CreateLocalToTx(view_block, to_tx, true);
     }
 }

@@ -59,7 +59,7 @@ void ToTxsPools::ThreadToStatistic(
     return;
 #endif
     auto& block = view_block_ptr->block_info();
-    if (!network::IsSameToLocalShard(common::GlobalInfo::Instance()->network_id())) {
+    if (!network::IsSameToLocalShard(view_block_ptr->qc().network_id())) {
         SHARDORA_DEBUG("network invalid: %d, local: %d", 
             view_block_ptr->qc().network_id(), 
             common::GlobalInfo::Instance()->network_id());
