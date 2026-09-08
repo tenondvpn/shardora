@@ -7965,10 +7965,10 @@ contract AMMPool {
         }
 
         // ─────────────────────────────────────────────────────────────────
-        // Phase 2b: Verify ALL funded accounts via batch query per shard (max 300s)
+        // Phase 2b: Verify ALL funded accounts via batch query per shard (max 60s)
         // ─────────────────────────────────────────────────────────────────
         std::cout << "\n[Phase 2b] Verify all " << total_fund8
-                  << " accounts funded (batch query per shard, max 300s)...\n";
+                  << " accounts funded (batch query per shard, max 60s)...\n";
         {
             // Group all to_fund8 addresses by shard
             std::map<uint32_t, std::vector<std::string>> shard_addrs8;
@@ -7998,7 +7998,7 @@ contract AMMPool {
                     ShardoraSDK ssdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
 
-                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
                         auto r = ssdk.batchQueryAccounts(pending);
                         std::vector<std::string> still_pending;
                         if (r.contains("accounts")) {
@@ -8013,11 +8013,19 @@ contract AMMPool {
                         }
                         pending = still_pending;
 
-                        if (!pending.empty() && rd % 30 == 0) {
+                        if (!pending.empty() && rd % 20 == 0) {
                             std::lock_guard<std::mutex> lk(bal_mu);
                             std::cout << "  Shard " << s << ": "
                                       << (addrs.size() - pending.size()) << "/"
-                                      << addrs.size() << " funded [" << rd << "s]\n";
+                                      << addrs.size() << " funded [" << rd << "s]";
+                            // Always print stuck addresses so diagnosis is visible
+                            // even if the run is interrupted before the 60s timeout.
+                            if (rd > 0) {
+                                std::cout << "  still-unfunded(" << pending.size() << "):";
+                                for (auto& a : pending)
+                                    std::cout << " " << a;
+                            }
+                            std::cout << "\n";
                         }
                         if (!pending.empty()) usleep(1000000);
                     }
@@ -8027,11 +8035,30 @@ contract AMMPool {
                         std::cout << "  Shard " << s << ": all " << addrs.size()
                                   << " accounts funded OK\n";
                     } else {
-                        std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " still unfunded after 300s:\n";
-                        for (auto& a : pending)
-                            std::cout << "    " << a << "\n";
-                        total_unfunded.fetch_add((uint32_t)pending.size());
+                        // Re-query each stuck address individually to separate
+                        // batch-query truncation from genuine funding failures.
+                        std::vector<std::string> truly_unfunded;
+                        for (auto& a : pending) {
+                            int64_t bal = ssdk.fetchBalance(a);
+                            if (bal > 0) {
+                                std::cout << "  Shard " << s << ": " << a
+                                          << " balance=" << bal
+                                          << " (batch missed, individually OK)\n";
+                            } else {
+                                truly_unfunded.push_back(a);
+                                std::cout << "  Shard " << s << ": " << a
+                                          << " balance=0 (genuinely unfunded)\n";
+                            }
+                        }
+                        if (!truly_unfunded.empty()) {
+                            std::cout << "  Shard " << s << ": FAILED "
+                                      << truly_unfunded.size() << "/"
+                                      << addrs.size() << " genuinely unfunded after 60s\n";
+                            total_unfunded.fetch_add((uint32_t)truly_unfunded.size());
+                        } else {
+                            std::cout << "  Shard " << s << ": all " << addrs.size()
+                                      << " accounts funded OK (batch had false misses)\n";
+                        }
                     }
                 });
             }
