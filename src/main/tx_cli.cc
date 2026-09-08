@@ -8346,6 +8346,10 @@ contract AMMPool {
                   << "  per-user amount: 10000 ether (10^22 wei)\n";
 
         // ── Send crossTransfer TXs (one thread per token) ─────────────────
+        // Step 7 (setGasPrefund) must precede step 8 (callContractWithNonce):
+        // step=8 validates against the prepayment account (contract+sender),
+        // which is created by step=7.  Nonce for step=8 comes from that account.
+        const uint64_t kGasPrefund5 = 2000000000ULL;  // 2B tokens covers many calls
         std::atomic<uint32_t> xok5{0}, xfail5{0};
         {
             std::vector<std::thread> xth5;
@@ -8356,14 +8360,35 @@ contract AMMPool {
 
                     ShardoraSDK dsdk(eps8[td.signer_shard].ip,
                                      eps8[td.signer_shard].http);
-                    int64_t nonce = dsdk.fetchNonce(td.addr_hex);
-                    if (nonce < 0) {
+
+                    // step=7: create prepayment account (contract_addr+deployer_addr)
+                    auto pfres = dsdk.setGasPrefund(
+                        pk_hex, td.contract_addr_hex, kGasPrefund5);
+                    if (!pfres.contains("status") || pfres["status"] != 0) {
+                        std::cerr << "  [token" << ti << "] setGasPrefund failed: "
+                                  << pfres.value("msg", "?") << "\n";
+                        xfail5.fetch_add((uint32_t)rcpt5[ti].size());
+                        return;
+                    }
+
+                    // Wait up to 60s for prepayment account to confirm
+                    std::string ppkey = td.contract_addr_hex + td.addr_hex;
+                    int64_t ppnonce = -1;
+                    for (int pw = 0; pw < 60 && !global_stop; ++pw) {
+                        usleep(1000000);
+                        ppnonce = dsdk.fetchNonce(ppkey);
+                        if (ppnonce >= 0) break;
+                    }
+                    if (ppnonce < 0) {
+                        std::cerr << "  [token" << ti
+                                  << "] gas prefund not confirmed after 60s\n";
                         xfail5.fetch_add((uint32_t)rcpt5[ti].size());
                         return;
                     }
 
                     std::cout << "  [token" << ti << "] contract="
                               << td.contract_addr_hex << " s" << td.signer_shard
+                              << "  ppnonce=" << ppnonce
                               << "  → " << rcpt5[ti].size() << " TXs\n";
 
                     for (uint32_t ri = 0;
@@ -8379,7 +8404,7 @@ contract AMMPool {
 
                         auto r = dsdk.callContractWithNonce(
                             pk_hex, td.contract_addr_hex,
-                            calldata, nonce + (int64_t)ri);
+                            calldata, ppnonce + (int64_t)ri);
                         if (r.contains("status") && r["status"] == 0) {
                             xok5.fetch_add(1);
                         } else {
@@ -8401,11 +8426,11 @@ contract AMMPool {
             return 1;
         }
 
-        // ── Phase 5 verify: wait 60s for cross-shard delivery then check ──
-        std::cout << "\n[Phase 5 verify] Waiting 60s for cross-shard delivery...\n";
-        for (int ws = 0; ws < 60 && !global_stop; ++ws) {
+        // ── Phase 5 verify: wait 120s for cross-shard delivery then check ──
+        std::cout << "\n[Phase 5 verify] Waiting 120s for cross-shard delivery...\n";
+        for (int ws = 0; ws < 120 && !global_stop; ++ws) {
             usleep(1000000);
-            if (ws % 10 == 9)
+            if (ws % 20 == 19)
                 std::cout << "  " << (ws + 1) << "s elapsed\n";
         }
         if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
