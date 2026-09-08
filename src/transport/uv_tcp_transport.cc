@@ -815,39 +815,41 @@ void TcpTransport::Run() {
         return;
     }
 
+    // SO_REUSEADDR must be set on the raw fd BEFORE uv_tcp_bind to avoid TIME_WAIT failures.
+    {
+        uv_os_sock_t raw_sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (raw_sock != -1) {
+            int opt = 1;
+            setsockopt(raw_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+            setsockopt(raw_sock, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
+            uv_tcp_open(&server, raw_sock);
+        }
+    }
+
     uv_ip4_addr(splits[0], port, &addr);
-    int bind_res = uv_tcp_bind(&server, (const struct sockaddr*)&addr, UV_TCP_REUSEPORT);
+    int bind_res = uv_tcp_bind(&server, (const struct sockaddr*)&addr, 0);
     if (bind_res < 0) {
-        SHARDORA_ERROR("bind failed: %s", uv_strerror(bind_res));
+        SHARDORA_ERROR("bind failed: %s: %d, res: %s", splits[0], port, uv_strerror(bind_res));
     }
 
-    // 2. 深度注入：通过底层 fd 设置 SO_REUSEADDR (防止 TIME_WAIT 导致绑定失败)
-    uv_os_fd_t fd;
-    if (uv_fileno((const uv_handle_t*)&server, &fd) == 0) {
-        int opt = 1;
-        // 在 Linux 系统下，显式设置 SO_REUSEADDR
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    }
-
-    // uv_tcp_bind(&server, (const struct sockaddr*)&addr, UV_UDP_REUSEADDR);
     int32_t try_times = 0;
     do {
         int r = uv_listen((uv_stream_t*)&server, 128, on_new_connection);
         if (r == 0) {
-            std::this_thread::sleep_for(std::chrono::microseconds(100000ull));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
             if (uv_is_active((uv_handle_t*)&server)) {
                 break;
             }
-        
+
             SHARDORA_FATAL("listen failed: %s: %d, server inactive.", splits[0], port);
             return;
         }
-        
-        SHARDORA_ERROR("listen failed: %s: %d, res: %d", splits[0], port, r);
-        std::this_thread::sleep_for(std::chrono::microseconds(100000ull));
-    } while (try_times++ < 10);
 
-    if (try_times >= 10) {
+        SHARDORA_ERROR("listen failed: %s: %d, res: %s, retry %d/60", splits[0], port, uv_strerror(r), try_times);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    } while (try_times++ < 60);
+
+    if (try_times >= 60) {
         SHARDORA_FATAL("listen failed: %s: %d", splits[0], port);
         return;
     }
