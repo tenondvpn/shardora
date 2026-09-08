@@ -55,6 +55,18 @@ struct GlobalTxVerifyPool {
         std::function<void()> fn;
     };
 
+    ~GlobalTxVerifyPool() {
+        {
+            std::lock_guard<std::mutex> lk(mu_);
+            stop_ = true;
+        }
+        cv_.notify_all();
+        for (auto& t : threads_) {
+            if (t.joinable())
+                t.join();
+        }
+    }
+
     void Acquire() {
         std::lock_guard<std::mutex> lk(mu_);
         if (ref_count_++ > 0) {
@@ -147,18 +159,6 @@ private:
     std::condition_variable cv_;
     std::queue<Task> queue_;
     std::vector<std::thread> threads_;
-    ~GlobalTxVerifyPool() {
-        {
-            std::lock_guard<std::mutex> lk(mu_);
-            stop_ = true;
-        }
-        cv_.notify_all();
-        for (auto& t : threads_) {
-            if (t.joinable())
-                t.join();
-        }
-    }
-
     bool stop_ = false;
     int ref_count_ = 0;
 };
