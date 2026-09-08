@@ -7398,12 +7398,10 @@ abstract contract CrossShardBase {
     }
     modifier onlyBase() { require(IS_ROOT, "ONLY_BASE_SHARD"); _; }
 
-    constructor(address systemExecutor, address baseRootAddress) {
+    constructor(address systemExecutor) {
         require(systemExecutor  != address(0), "ZERO_SYSTEM_EXECUTOR");
-        require(baseRootAddress != address(0), "ZERO_BASE_ROOT");
-        require(address(this) == baseRootAddress, "BASE_ADDR_MISMATCH");
         SYSTEM_EXECUTOR   = systemExecutor;
-        BASE_ROOT_ADDRESS = baseRootAddress;
+        BASE_ROOT_ADDRESS = address(this);
         IS_ROOT           = true;
         _baseInit();
         assembly { sstore(IS_CROSS_SHARD_BASE_SLOT, 1) }
@@ -7460,10 +7458,10 @@ abstract contract CrossShardBase {
 }
 
 contract CrossShardToken is CrossShardBase {
-    constructor(address sys, address base) CrossShardBase(sys, base) {}
+    constructor(address sys) CrossShardBase(sys) {}
 
     function _baseInit() internal override {
-        _balances[tx.origin] = 1_000_000 ether;
+        _balances[msg.sender] = 1_000_000 ether;
         totalSupply = 1_000_000 ether;
     }
 
@@ -8084,7 +8082,7 @@ contract AMMPool {
         // SYSTEM_EXECUTOR_ADDRESS constant from CrossShardBase (20 bytes, hex)
         const std::string kSysExec = "53595354454d5f4558454355544f525f56310000";
 
-        // ABI-encode constructor(address sys, address base): two address args, each 32 bytes (left-padded)
+        // ABI-encode constructor(address sys): one address arg, 32 bytes (left-padded)
         auto encodeAddr32 = [](const std::string& hex40) -> std::string {
             // left-pad 40-char hex address to 64 chars
             return std::string(24, '0') + hex40;
@@ -8098,9 +8096,8 @@ contract AMMPool {
             for (uint32_t i = 0; i < kTokens; ++i) {
                 tth3.emplace_back([&, i]() {
                     auto& td = tdeps8[i];
-                    // constructor args: (sys, base = contract_addr)
-                    std::string ctor_args = encodeAddr32(kSysExec)
-                                          + encodeAddr32(td.contract_addr_hex);
+                    // constructor arg: only sys (baseRootAddress auto-set to address(this))
+                    std::string ctor_args = encodeAddr32(kSysExec);
                     std::string full_code = token_bytecode8 + ctor_args;
 
                     ShardoraSDK dsdk(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
@@ -8453,9 +8450,9 @@ contract AMMPool {
             return 1;
         }
 
-        // ── Phase 5 verify: wait 120s for cross-shard delivery then check ──
-        std::cout << "\n[Phase 5 verify] Waiting 120s for cross-shard delivery...\n";
-        for (int ws = 0; ws < 120 && !global_stop; ++ws) {
+        // ── Phase 5 verify: wait 60s for cross-shard delivery then check ──
+        std::cout << "\n[Phase 5 verify] Waiting 60s for cross-shard delivery...\n";
+        for (int ws = 0; ws < 60 && !global_stop; ++ws) {
             usleep(1000000);
             if (ws % 20 == 19)
                 std::cout << "  " << (ws + 1) << "s elapsed\n";
