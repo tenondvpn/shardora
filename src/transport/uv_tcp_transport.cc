@@ -817,7 +817,7 @@ void TcpTransport::Run() {
 
     // SO_REUSEADDR must be set on the raw fd BEFORE uv_tcp_bind to avoid TIME_WAIT failures.
     {
-        uv_os_sock_t raw_sock = socket(AF_INET, SOCK_STREAM, 0);
+        uv_os_sock_t raw_sock = ::socket(AF_INET, SOCK_STREAM, 0);
         if (raw_sock != -1) {
             int opt = 1;
             setsockopt(raw_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
