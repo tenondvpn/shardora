@@ -181,41 +181,21 @@ void ToTxLocalItem::HandleCrossShardBase(
     }
 
     // ── 1. 确定目标合约地址 ──────────────────────────────────────────────────
-    // If the CrossShardBase root contract itself already lives on this shard
-    // (i.e. it was deployed here directly, not via lazy cross-shard clone),
-    // operate on it in place instead of deriving a Feistel shadow address.
-    // Deriving unconditionally is wrong: it silently credits a shadow clone
-    // that nobody queries (balanceOf on the home shard reads the root
-    // contract's own storage), so transfers whose destination happens to be
-    // the root's home shard/pool were being lost.
+    // Shadow contracts are deployed at the SAME address as the root contract on
+    // every destination shard. Shards have independent address spaces so there
+    // is no collision. This lets callers (and the test) query balanceOf on the
+    // root contract address regardless of which shard they are on.
     evmc::address base_evmc = shardoravm::StrToEvmcAddr(base_raw);
     std::string sys_exec_str(reinterpret_cast<const char*>(shardoravm::kCrossShardSystemExecutor.bytes), 20);
-
-    bool base_lives_here = false;
-    {
-        auto bit = acc_balance_map.find(base_raw);
-        if (bit != acc_balance_map.end() && !bit->second->bytes_code().empty()) {
-            base_lives_here = true;
-        } else if (shardora_host.view_block_chain_) {
-            auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(base_raw);
-            if (chain_info && !chain_info->bytes_code().empty()) {
-                base_lives_here = true;
-            }
-        }
-    }
 
     evmc::address target_evmc = base_evmc;
     std::string target_str = base_raw;
 
-    if (!base_lives_here) {
-        target_evmc = shardoravm::DeriveShardAddress(base_evmc, shard_id, pool_index);
-        target_str = std::string(reinterpret_cast<const char*>(target_evmc.bytes), 20);
-
-        // ── 2. 懒部署：若分身合约不存在，写入 bytecode + 必要存储槽 ─────────────
+    // ── 2. 懒部署：若该地址在本分片上不存在，写入 bytecode + 必要存储槽 ──────
+    {
         bool needs_deploy = false;
         auto it = acc_balance_map.find(target_str);
         if (it == acc_balance_map.end() || it->second->bytes_code().empty()) {
-            // 检查链上是否已有
             if (shardora_host.view_block_chain_) {
                 auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
                 if (!chain_info || chain_info->bytes_code().empty()) {
@@ -234,11 +214,11 @@ void ToTxLocalItem::HandleCrossShardBase(
             //     bytes[0..11]=0, bytes[12..31]=system_executor
             //   kIsCrossShardBaseSlot: 1
 
-            evmc::bytes32 slot0_key{};  // bytes32(0)
+            evmc::bytes32 slot0_key{};
             evmc::bytes32 slot0_val{};  // IS_ROOT=0, BASE_ROOT_ADDRESS=base_raw
             memcpy(&slot0_val.bytes[11], base_raw.data(), 20);
 
-            evmc::bytes32 slot1_key{};  // bytes32(1)
+            evmc::bytes32 slot1_key{};
             slot1_key.bytes[31] = 1;
             evmc::bytes32 slot1_val{};  // SYSTEM_EXECUTOR
             memcpy(&slot1_val.bytes[12], shardoravm::kCrossShardSystemExecutor.bytes, 20);
@@ -260,23 +240,13 @@ void ToTxLocalItem::HandleCrossShardBase(
             derived_info->set_bytes_code(bytecode);
             derived_info->set_latest_height(view_block.block_info().height());
             derived_info->set_tx_index(tx_index);
-            // balance/nonce must be explicitly set (even to 0) so that has_balance()/has_nonce()
-            // return true and block_acceptor.cc includes this entry in address_array.
-            // Without this, the shadow contract bytecode is silently dropped and never committed.
             derived_info->set_balance(0);
             derived_info->set_nonce(0);
             acc_balance_map[target_str] = derived_info;
 
-            SHARDORA_INFO("CrossShardBase lazy-deploy: base=%s derived=%s shard=%u pool=%u",
-                common::Encode::HexEncode(base_raw).c_str(),
-                common::Encode::HexEncode(target_str).c_str(),
-                shard_id, pool_index);
+            SHARDORA_INFO("CrossShardBase lazy-deploy shadow at base addr: base=%s shard=%u pool=%u",
+                common::Encode::HexEncode(base_raw).c_str(), shard_id, pool_index);
         }
-    } else {
-        SHARDORA_INFO("CrossShardBase: target is root contract's home shard, "
-                   "operating directly on base=%s shard=%u pool=%u",
-            common::Encode::HexEncode(base_raw).c_str(),
-            shard_id, pool_index);
     }
 
     // ── 3. ABI 编码 calldata ─────────────────────────────────────────────────
