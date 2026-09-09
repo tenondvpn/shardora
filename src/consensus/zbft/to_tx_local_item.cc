@@ -334,31 +334,33 @@ bool ToTxLocalItem::HandleCrossShardBase(
         *tx_hash_status.mutable_events() = block_tx.events();
         tx_hash_status.set_status(kConsensusSuccess);
         shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), tx_hash_status.SerializeAsString());
+        shardora_host.MergeToPrev();
         // 3. Ensure acc_balance_map has an entry with bytes_code so block_acceptor
         //    calls AddAddressInfo and the shadow contract remains findable via
         //    ChainGetAccountInfo across all future blocks (not just the deploy block).
-        auto it = acc_balance_map.find(target_str);
-        if (it != acc_balance_map.end()) {
-            it->second->set_latest_height(view_block.block_info().height());
-            it->second->set_tx_index(tx_index);
-            if (it->second->bytes_code().empty()) {
-                it->second->set_bytes_code(bytecode);
-            }
-            if (!it->second->has_balance()) it->second->set_balance(0);
-            if (!it->second->has_nonce()) it->second->set_nonce(0);
-        } else {
-            auto shadow_info = std::make_shared<address::protobuf::AddressInfo>();
-            shadow_info->set_addr(target_str);
-            shadow_info->set_sharding_id(shard_id);
-            shadow_info->set_pool_index(pool_index);
-            shadow_info->set_type(address::protobuf::kNormal);
-            shadow_info->set_bytes_code(bytecode);
-            shadow_info->set_latest_height(view_block.block_info().height());
-            shadow_info->set_tx_index(tx_index);
-            shadow_info->set_balance(0);
-            shadow_info->set_nonce(0);
-            acc_balance_map[target_str] = shadow_info;
-        }
+        
+        // auto it = acc_balance_map.find(target_str);
+        // if (it != acc_balance_map.end()) {
+        //     it->second->set_latest_height(view_block.block_info().height());
+        //     it->second->set_tx_index(tx_index);
+        //     if (it->second->bytes_code().empty()) {
+        //         it->second->set_bytes_code(bytecode);
+        //     }
+        //     if (!it->second->has_balance()) it->second->set_balance(0);
+        //     if (!it->second->has_nonce()) it->second->set_nonce(0);
+        // } else {
+        //     auto shadow_info = std::make_shared<address::protobuf::AddressInfo>();
+        //     shadow_info->set_addr(target_str);
+        //     shadow_info->set_sharding_id(shard_id);
+        //     shadow_info->set_pool_index(pool_index);
+        //     shadow_info->set_type(address::protobuf::kNormal);
+        //     shadow_info->set_bytes_code(bytecode);
+        //     shadow_info->set_latest_height(view_block.block_info().height());
+        //     shadow_info->set_tx_index(tx_index);
+        //     shadow_info->set_balance(0);
+        //     shadow_info->set_nonce(0);
+        //     acc_balance_map[target_str] = shadow_info;
+        // }
     };
 
     if (to_tx.cross_storage_kv_size() == 0) {
@@ -390,14 +392,12 @@ bool ToTxLocalItem::HandleCrossShardBase(
                 exec_status, (int)exec_res.status_code,
                 common::Encode::HexEncode(base_raw).c_str(),
                 common::Encode::HexEncode(target_str).c_str());
-            return true;  // Permanent failure — consume unique_hash, no retry.
+            // Permanent failure — consume unique_hash, no retry.
         }
         SHARDORA_INFO("CrossShardBase system call OK: base=%s target=%s nonce=%lu",
             common::Encode::HexEncode(base_raw).c_str(),
             common::Encode::HexEncode(target_str).c_str(),
             to_tx.cross_nonce());
-        persist_shadow_state();
-        return true;
     } else {
         // systemExecuteCrossStorage — one EVM call per CrossStorageKV entry.
         // Snapshot storage before the loop so a mid-loop failure can be rolled back
@@ -440,22 +440,19 @@ bool ToTxLocalItem::HandleCrossShardBase(
 
             if (exec_status != shardoravm::kShardoravmSuccess ||
                     exec_res.status_code != EVMC_SUCCESS) {
+                // Permanent failure — consume unique_hash, no retry.
                 SHARDORA_FATAL("CrossShardBase storage call[%d] failed: exec=%d evmc=%d, base=%s target=%s",
                     i, exec_status, (int)exec_res.status_code,
                     common::Encode::HexEncode(base_raw).c_str(),
                     common::Encode::HexEncode(target_str).c_str());
-                // Roll back all storage writes from successful iterations above.
-                shardora_host.accounts_[target_evmc].storage = storage_snapshot;
-                shardora_host.accounts_[target_evmc].str_storage = str_storage_snapshot;
-                return true;  // Permanent failure — consume unique_hash, no retry.
             }
             SHARDORA_INFO("CrossShardBase storage call[%d] OK: base=%s target=%s version=%lu",
                 i, common::Encode::HexEncode(base_raw).c_str(),
                 common::Encode::HexEncode(target_str).c_str(), version);
         }
-        persist_shadow_state();
-        return true;
     }
+        
+    persist_shadow_state();
 }
 
 int ToTxLocalItem::TxToBlockTx(
