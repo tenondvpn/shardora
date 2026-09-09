@@ -14,7 +14,7 @@ namespace consensus {
 int ToTxLocalItem::HandleTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
-        shardoravm::ShardorahainHost& shardora_host,
+        shardoravm::ShardorahainHost& pre_shardora_host,
         hotstuff::BalanceAndNonceMap& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     pools::protobuf::ToTxMessageItem to_tx_item;
@@ -26,12 +26,17 @@ int ToTxLocalItem::HandleTx(
         return consensus::kConsensusSuccess;
     }
 
+    shardoravm::ShardorahainHost shardora_host;
+    shardora_host.view_block_chain_ = pre_shardora_host.view_block_chain_;
+    shardora_host.tx_context_ = pre_shardora_host.tx_context_;
+    shardora_host.pre_shardora_host_ = &pre_shardora_host;
+
     uint64_t src_to_balance = 0;
     uint64_t src_to_nonce = 0;
-    GetTempAccountBalance(shardora_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
+    GetTempAccountBalance(pre_shardora_host, block_tx.to(), acc_balance_map, &src_to_balance, &src_to_nonce);
     auto& unique_hash = tx_info->key();
     std::string val;
-    if (shardora_host.GetKeyValue(block_tx.to(), unique_hash, &val) == shardoravm::kShardoravmSuccess) {
+    if (pre_shardora_host.GetKeyValue(block_tx.to(), unique_hash, &val) == shardoravm::kShardoravmSuccess) {
         SHARDORA_DEBUG("unique hash has consensus: %s, %s, %lu", 
             common::Encode::HexEncode(unique_hash).c_str(),
             common::Encode::HexEncode(to_tx_item.des()).c_str(),
@@ -79,6 +84,7 @@ int ToTxLocalItem::HandleTx(
     SHARDORA_DEBUG("success consensus local transfer to unique hash: %s, %s",
         common::Encode::HexEncode(unique_hash).c_str(), 
         ProtobufToJson(block_to_txs).c_str());
+    shardora_host.MergeToPrev();
     view_block.mutable_block_info()->add_unique_hashs(block_tx.unique_hash());
     return consensus::kConsensusSuccess;
 }
@@ -334,7 +340,7 @@ bool ToTxLocalItem::HandleCrossShardBase(
         *tx_hash_status.mutable_events() = block_tx.events();
         tx_hash_status.set_status(kConsensusSuccess);
         shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), tx_hash_status.SerializeAsString());
-        shardora_host.MergeToPrev();
+        // shardora_host.MergeToPrev();
         // 3. Ensure acc_balance_map has an entry with bytes_code so block_acceptor
         //    calls AddAddressInfo and the shadow contract remains findable via
         //    ChainGetAccountInfo across all future blocks (not just the deploy block).
