@@ -207,7 +207,40 @@ bool ToTxLocalItem::HandleCrossShardBase(
     std::string target_str = base_raw;
 
     // ── 2. 懒部署：若该地址在本分片上不存在，写入 bytecode + 必要存储槽 ──────
+    // Solidity CrossShardBase storage layout:
+    //   slot 0: IS_ROOT (bool,1B) + BASE_ROOT_ADDRESS (address,20B) packed
+    //     bytes[0..10]=0, bytes[11..30]=base_root_address, bytes[31]=IS_ROOT(0)
+    //   slot 1: SYSTEM_EXECUTOR (address,20B)
+    //     bytes[0..11]=0, bytes[12..31]=system_executor
+    //   kIsCrossShardBaseSlot: 1
+    //
+    // ALWAYS write these into accounts_ before every EVM call, not just on
+    // first deploy.  If a view block is replaced (HotStuff view change) the
+    // acc_balance_map may already have the contract but its db_batch_ was
+    // never committed, so DB has no storage for it.  The EVM would then read
+    // SYSTEM_EXECUTOR = address(0) from an uninitialized slot, the
+    // onlySystemExecutor modifier would revert, and the balance would stay 0.
+    // These writes are idempotent (constant values per shadow contract) and
+    // the gas overhead is negligible.
     {
+        evmc::bytes32 slot0_key{};
+        evmc::bytes32 slot0_val{};  // IS_ROOT=0, BASE_ROOT_ADDRESS=base_raw
+        memcpy(&slot0_val.bytes[11], base_raw.data(), 20);
+
+        evmc::bytes32 slot1_key{};
+        slot1_key.bytes[31] = 1;
+        evmc::bytes32 slot1_val{};  // SYSTEM_EXECUTOR
+        memcpy(&slot1_val.bytes[12], shardoravm::kCrossShardSystemExecutor.bytes, 20);
+
+        evmc::bytes32 marker_val{};
+        marker_val.bytes[31] = 1;
+
+        shardora_host.set_storage(target_evmc, slot0_key, slot0_val);
+        shardora_host.set_storage(target_evmc, slot1_key, slot1_val);
+        shardora_host.set_storage(target_evmc, shardoravm::kIsCrossShardBaseSlot, marker_val);
+        shardora_host.accounts_[target_evmc].code =
+            evmc::bytes(bytecode.begin(), bytecode.end());
+
         bool needs_deploy = false;
         auto it = acc_balance_map.find(target_str);
         if (it == acc_balance_map.end() || it->second->bytes_code().empty()) {
@@ -222,30 +255,16 @@ bool ToTxLocalItem::HandleCrossShardBase(
         }
 
         if (needs_deploy) {
-            // Solidity CrossShardBase storage layout:
-            //   slot 0: IS_ROOT (bool,1B) + BASE_ROOT_ADDRESS (address,20B) packed
-            //     bytes[0..10]=0, bytes[11..30]=base_root_address, bytes[31]=IS_ROOT(0)
-            //   slot 1: SYSTEM_EXECUTOR (address,20B)
-            //     bytes[0..11]=0, bytes[12..31]=system_executor
-            //   kIsCrossShardBaseSlot: 1
-
-            evmc::bytes32 slot0_key{};
-            evmc::bytes32 slot0_val{};  // IS_ROOT=0, BASE_ROOT_ADDRESS=base_raw
-            memcpy(&slot0_val.bytes[11], base_raw.data(), 20);
-
-            evmc::bytes32 slot1_key{};
-            slot1_key.bytes[31] = 1;
-            evmc::bytes32 slot1_val{};  // SYSTEM_EXECUTOR
-            memcpy(&slot1_val.bytes[12], shardoravm::kCrossShardSystemExecutor.bytes, 20);
-
-            evmc::bytes32 marker_val{};
-            marker_val.bytes[31] = 1;
-
-            shardora_host.set_storage(target_evmc, slot0_key, slot0_val);
-            shardora_host.set_storage(target_evmc, slot1_key, slot1_val);
-            shardora_host.set_storage(target_evmc, shardoravm::kIsCrossShardBaseSlot, marker_val);
-            shardora_host.accounts_[target_evmc].code =
-                evmc::bytes(bytecode.begin(), bytecode.end());
+            // Also zero-out totalSupply (slot 3) so the EVM reads 0 from
+            // accounts_ (step 1 of get_storage) instead of a potentially stale
+            // value from bytes32_storage_cache_.  The cache can be poisoned by
+            // a discarded previous proposal for the same height, causing
+            // different nodes to read different totalSupply_initial values and
+            // produce divergent block hashes (consensus failure).
+            evmc::bytes32 slot3_key{};
+            slot3_key.bytes[31] = 3;  // Solidity slot 3 = totalSupply
+            evmc::bytes32 slot3_val{};  // 0
+            shardora_host.set_storage(target_evmc, slot3_key, slot3_val);
 
             auto derived_info = std::make_shared<address::protobuf::AddressInfo>();
             derived_info->set_addr(target_str);
