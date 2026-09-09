@@ -357,7 +357,7 @@ int ContractUserCreateCall::HandleTx(
                     auto item = std::make_shared<pools::protobuf::ToTxMessageItem>();
                     item->set_from(action.emitter);
                     item->set_des(action.to);
-                    item->set_amount(action.amount);
+                    item->set_amount(0);
                     if (!action.amount_bytes.empty()) item->set_amount256(action.amount_bytes);
                     item->set_sharding_id(action.dest_shard_id);
                     item->set_pool_index(static_cast<int32_t>(action.dest_pool_index));
@@ -386,6 +386,7 @@ int ContractUserCreateCall::HandleTx(
                 if (it == cross_to_map_.end()) {
                     auto item = std::make_shared<pools::protobuf::ToTxMessageItem>();
                     item->set_from(action.emitter);
+                    item->set_amount(0);
                     item->set_des(shadow_des);
                     item->set_sharding_id(action.dest_shard_id);
                     item->set_pool_index(static_cast<int32_t>(action.dest_pool_index));
