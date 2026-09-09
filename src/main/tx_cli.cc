@@ -8020,8 +8020,13 @@ contract AMMPool {
                             // even if the run is interrupted before the 60s timeout.
                             if (rd > 0) {
                                 std::cout << "  still-unfunded(" << pending.size() << "):";
-                                for (auto& a : pending)
+                                int print_n = 0;
+                                for (auto& a : pending) {
+                                    if (print_n++ >= 3) break;
                                     std::cout << " " << a;
+                                }
+                                if ((int)pending.size() > 3)
+                                    std::cout << " ...";
                             }
                             std::cout << "\n";
                         }
