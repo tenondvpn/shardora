@@ -241,31 +241,55 @@ bool ToTxLocalItem::HandleCrossShardBase(
         shardora_host.accounts_[target_evmc].code =
             evmc::bytes(bytecode.begin(), bytecode.end());
 
+        // Determine whether the contract is committed to the chain (in DB).
+        // Note: even if it is in acc_balance_map it may be there only because
+        // a prior view-change proposal wrote it — that proposal's db_batch_ was
+        // never committed, so DB has no record of it.
         bool needs_deploy = false;
+        bool contract_committed = false;
         auto it = acc_balance_map.find(target_str);
-        if (it == acc_balance_map.end() || it->second->bytes_code().empty()) {
-            if (shardora_host.view_block_chain_) {
-                auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
-                if (!chain_info || chain_info->bytes_code().empty()) {
-                    needs_deploy = true;
-                }
-            } else {
-                needs_deploy = true;
+        bool in_acc_map = (it != acc_balance_map.end() && !it->second->bytes_code().empty());
+
+        if (shardora_host.view_block_chain_) {
+            auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
+            contract_committed = (chain_info && !chain_info->bytes_code().empty());
+        }
+
+        if (!in_acc_map && !contract_committed) {
+            needs_deploy = true;
+        } else if (!shardora_host.view_block_chain_ && !in_acc_map) {
+            needs_deploy = true;
+        }
+
+        // Zero totalSupply (slot 3) when the contract is NOT yet committed to
+        // chain AND slot 3 has not already been set by an earlier tx in this
+        // same block.  This covers two non-determinism scenarios:
+        //
+        //   a) First deployment (needs_deploy=true): obviously totalSupply
+        //      should start at 0.
+        //
+        //   b) Stale acc_balance_map after a view change (needs_deploy=false
+        //      but contract_committed=false): a discarded proposal poisoned
+        //      bytes32_storage_cache_ with a non-zero totalSupply.  If we
+        //      let the EVM fall through to GetPrevStorageBytes32KeyValue it
+        //      will return different values on different nodes → divergent
+        //      block hashes → consensus failure.
+        //
+        // If slot 3 is already in accounts_ (set by an earlier tx in this
+        // block for the same contract) we must NOT clobber it.
+        evmc::bytes32 slot3_key{};
+        slot3_key.bytes[31] = 3;  // Solidity slot 3 = totalSupply
+        if (!contract_committed) {
+            auto acct_it = shardora_host.accounts_.find(target_evmc);
+            bool slot3_set = (acct_it != shardora_host.accounts_.end() &&
+                              acct_it->second.storage.find(slot3_key) !=
+                                  acct_it->second.storage.end());
+            if (!slot3_set) {
+                shardora_host.set_storage(target_evmc, slot3_key, evmc::bytes32{});
             }
         }
 
         if (needs_deploy) {
-            // Also zero-out totalSupply (slot 3) so the EVM reads 0 from
-            // accounts_ (step 1 of get_storage) instead of a potentially stale
-            // value from bytes32_storage_cache_.  The cache can be poisoned by
-            // a discarded previous proposal for the same height, causing
-            // different nodes to read different totalSupply_initial values and
-            // produce divergent block hashes (consensus failure).
-            evmc::bytes32 slot3_key{};
-            slot3_key.bytes[31] = 3;  // Solidity slot 3 = totalSupply
-            evmc::bytes32 slot3_val{};  // 0
-            shardora_host.set_storage(target_evmc, slot3_key, slot3_val);
-
             auto derived_info = std::make_shared<address::protobuf::AddressInfo>();
             derived_info->set_addr(target_str);
             derived_info->set_sharding_id(shard_id);
