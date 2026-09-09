@@ -241,53 +241,26 @@ bool ToTxLocalItem::HandleCrossShardBase(
         shardora_host.accounts_[target_evmc].code =
             evmc::bytes(bytecode.begin(), bytecode.end());
 
-        // Determine whether the contract is committed to the chain (in DB).
-        // Note: even if it is in acc_balance_map it may be there only because
-        // a prior view-change proposal wrote it — that proposal's db_batch_ was
-        // never committed, so DB has no record of it.
         bool needs_deploy = false;
-        bool contract_committed = false;
         auto it = acc_balance_map.find(target_str);
-        bool in_acc_map = (it != acc_balance_map.end() && !it->second->bytes_code().empty());
-
-        if (shardora_host.view_block_chain_) {
-            auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
-            contract_committed = (chain_info && !chain_info->bytes_code().empty());
-        }
-
-        if (!in_acc_map && !contract_committed) {
-            needs_deploy = true;
-        } else if (!shardora_host.view_block_chain_ && !in_acc_map) {
-            needs_deploy = true;
-        }
-
-        // Zero totalSupply (slot 3) when the contract is NOT yet committed to
-        // chain AND slot 3 has not already been set by an earlier tx in this
-        // same block.  This covers two non-determinism scenarios:
-        //
-        //   a) First deployment (needs_deploy=true): obviously totalSupply
-        //      should start at 0.
-        //
-        //   b) Stale acc_balance_map after a view change (needs_deploy=false
-        //      but contract_committed=false): a discarded proposal poisoned
-        //      bytes32_storage_cache_ with a non-zero totalSupply.  If we
-        //      let the EVM fall through to GetPrevStorageBytes32KeyValue it
-        //      will return different values on different nodes → divergent
-        //      block hashes → consensus failure.
-        //
-        // If slot 3 is already in accounts_ (set by an earlier tx in this
-        // block for the same contract) we must NOT clobber it.
-        evmc::bytes32 slot3_key{};
-        slot3_key.bytes[31] = 3;  // Solidity slot 3 = totalSupply
-        if (!contract_committed) {
-            auto acct_it = shardora_host.accounts_.find(target_evmc);
-            bool slot3_set = (acct_it != shardora_host.accounts_.end() &&
-                              acct_it->second.storage.find(slot3_key) !=
-                                  acct_it->second.storage.end());
-            if (!slot3_set) {
-                shardora_host.set_storage(target_evmc, slot3_key, evmc::bytes32{});
+        if (it == acc_balance_map.end() || it->second->bytes_code().empty()) {
+            if (shardora_host.view_block_chain_) {
+                auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
+                if (!chain_info || chain_info->bytes_code().empty()) {
+                    needs_deploy = true;
+                }
+            } else {
+                needs_deploy = true;
             }
         }
+
+        // 分身合约的 totalSupply 每次 EVM 调用前无条件置 0。
+        // 原因：bytes32_storage_cache_ 会被被丢弃的提案污染，导致不同节点
+        // 读到不同的初始 totalSupply，产生不同区块哈希（共识失败）。
+        // 执行到此处的合约一定是分身合约，totalSupply 无需跨块累计。
+        evmc::bytes32 slot3_key{};
+        slot3_key.bytes[31] = 3;  // Solidity slot 3 = totalSupply
+        shardora_host.set_storage(target_evmc, slot3_key, evmc::bytes32{});
 
         if (needs_deploy) {
             auto derived_info = std::make_shared<address::protobuf::AddressInfo>();
