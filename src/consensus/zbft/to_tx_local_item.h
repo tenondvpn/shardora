@@ -33,7 +33,7 @@ public:
         block::protobuf::BlockTx* block_tx);
 
 private:
-    void CreateLocalToTx(
+    bool CreateLocalToTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         shardoravm::ShardorahainHost& shardora_host,
@@ -43,7 +43,9 @@ private:
         block::protobuf::BlockTx& block_tx);
 
     // CrossShardBase path: lazy-deploy derived contract + call systemExecuteCross*
-    void HandleCrossShardBase(
+    // Returns true if the pool tx was fully handled (EVM ran OR permanent failure),
+    // false if bytecode is not yet registered → caller should NOT commit unique_hash.
+    bool HandleCrossShardBase(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         shardoravm::ShardorahainHost& shardora_host,

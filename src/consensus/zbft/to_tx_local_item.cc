@@ -44,15 +44,28 @@ int ToTxLocalItem::HandleTx(
     }
 
     InitHost(shardora_host, block_tx, block_tx.gas_limit(), block_tx.gas_price(), view_block);
-    block::protobuf::TxHashStatus tx_hash_status;
-    tx_hash_status.set_status(block_tx.status());
-    auto status_val = tx_hash_status.SerializeAsString();
-    shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), status_val);
+    auto& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
+    bool processed = CreateLocalToTx(tx_index, view_block, shardora_host, acc_balance_map, to_tx_item, block_to_txs, block_tx);
+    if (!processed) {
+        // Bytecode not yet registered on this shard.  Do NOT write unique_hash so
+        // the pool tx stays in the queue and will be retried once bytecode arrives.
+        SHARDORA_WARN("CrossShardBase: bytecode not ready, will retry. unique=%s des=%s",
+            common::Encode::HexEncode(unique_hash).c_str(),
+            common::Encode::HexEncode(to_tx_item.des()).c_str());
+        return consensus::kConsensusError;
+    }
+
+    // Only after confirmed processing: mark unique_hash consumed and persist status.
+    // For CrossShardBase: persist_shadow_state() already saved TxHashStatus with events.
+    // For regular transfers: save status here (no EVM events to attach).
+    if (!to_tx_item.has_base_root_address()) {
+        block::protobuf::TxHashStatus tx_hash_status;
+        tx_hash_status.set_status(block_tx.status());
+        shardora_host.SaveKeyValue("tx", block_tx.tx_hash(), tx_hash_status.SerializeAsString());
+    }
     shardora_host.SaveKeyValue(block_tx.to(), unique_hash, "1");
     block_tx.set_unique_hash(unique_hash);
     block_tx.set_nonce(0);
-    auto& block_to_txs = *view_block.mutable_block_info()->mutable_local_to();
-    CreateLocalToTx(tx_index, view_block, shardora_host, acc_balance_map, to_tx_item, block_to_txs, block_tx);
     SHARDORA_DEBUG("success call to tx local block pool: %d, view: %lu, to_nonce: %lu. tx nonce: %lu, %s, %lu", 
         view_block.qc().pool_index(), view_block.qc().view(), src_to_nonce, block_tx.nonce(),
         common::Encode::HexEncode(to_tx_item.des()).c_str(), to_tx_item.amount());
@@ -70,7 +83,7 @@ int ToTxLocalItem::HandleTx(
     return consensus::kConsensusSuccess;
 }
 
-void ToTxLocalItem::CreateLocalToTx(
+bool ToTxLocalItem::CreateLocalToTx(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         shardoravm::ShardorahainHost& shardora_host,
@@ -79,15 +92,14 @@ void ToTxLocalItem::CreateLocalToTx(
         block::protobuf::ConsensusToTxs& block_to_txs,
         block::protobuf::BlockTx& block_tx) {
     if (to_tx_item.has_base_root_address()) {
-        HandleCrossShardBase(tx_index, view_block, shardora_host, acc_balance_map, to_tx_item, block_tx);
-        return;
+        return HandleCrossShardBase(tx_index, view_block, shardora_host, acc_balance_map, to_tx_item, block_tx);
     }
 
     if (to_tx_item.des().size() != common::kUnicastAddressLength &&
             to_tx_item.des().size() != common::kPreypamentAddressLength) {
         SHARDORA_ERROR("invalid to tx item: %s", ProtobufToJson(to_tx_item).c_str());
         //assert(false);
-        return;
+        return true;  // Permanent error — consume unique_hash so it isn't retried forever.
     }
 
     auto new_addr_func = [&](const std::string& addr, uint64_t amount) {
@@ -146,9 +158,10 @@ void ToTxLocalItem::CreateLocalToTx(
     }
 
     new_addr_func(addr, to_tx_item.amount());
+    return true;
 }
 
-void ToTxLocalItem::HandleCrossShardBase(
+bool ToTxLocalItem::HandleCrossShardBase(
         uint32_t tx_index,
         view_block::protobuf::ViewBlockItem& view_block,
         shardoravm::ShardorahainHost& shardora_host,
@@ -165,7 +178,7 @@ void ToTxLocalItem::HandleCrossShardBase(
 
     if (base_raw.size() != 20) {
         SHARDORA_ERROR("CrossShardBase: invalid base_root_address length %zu", base_raw.size());
-        return;
+        return true;  // Permanent error — consume unique_hash.
     }
 
     // Look up runtime bytecode from local KV registry (populated at deploy-broadcast time)
@@ -179,7 +192,7 @@ void ToTxLocalItem::HandleCrossShardBase(
         SHARDORA_ERROR("CrossShardBase: bytecode not in registry for base=%s "
                    "(contract not yet broadcast to this shard)",
             common::Encode::HexEncode(base_raw).c_str());
-        return;
+        return false;  // Transient — do NOT commit unique_hash, retry next block.
     }
 
     // ── 1. 确定目标合约地址 ──────────────────────────────────────────────────
@@ -361,13 +374,14 @@ void ToTxLocalItem::HandleCrossShardBase(
                 exec_status, (int)exec_res.status_code,
                 common::Encode::HexEncode(base_raw).c_str(),
                 common::Encode::HexEncode(target_str).c_str());
-            return;
+            return true;  // Permanent failure — consume unique_hash, no retry.
         }
         SHARDORA_INFO("CrossShardBase system call OK: base=%s target=%s nonce=%lu",
             common::Encode::HexEncode(base_raw).c_str(),
             common::Encode::HexEncode(target_str).c_str(),
             to_tx.cross_nonce());
         persist_shadow_state();
+        return true;
     } else {
         // systemExecuteCrossStorage — one EVM call per CrossStorageKV entry.
         // Snapshot storage before the loop so a mid-loop failure can be rolled back
@@ -417,14 +431,14 @@ void ToTxLocalItem::HandleCrossShardBase(
                 // Roll back all storage writes from successful iterations above.
                 shardora_host.accounts_[target_evmc].storage = storage_snapshot;
                 shardora_host.accounts_[target_evmc].str_storage = str_storage_snapshot;
-                return;
+                return true;  // Permanent failure — consume unique_hash, no retry.
             }
             SHARDORA_INFO("CrossShardBase storage call[%d] OK: base=%s target=%s version=%lu",
                 i, common::Encode::HexEncode(base_raw).c_str(),
                 common::Encode::HexEncode(target_str).c_str(), version);
         }
         persist_shadow_state();
-        return;
+        return true;
     }
 }
 
