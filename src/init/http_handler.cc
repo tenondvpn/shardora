@@ -911,12 +911,17 @@ static std::string EncodeEvmError(const std::string& msg) {
 }
 
 static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
-    SHARDORA_INFO("query contract coming.");
     auto tmp_contract_addr = req.get_param_value("address");
     auto tmp_input = req.get_param_value("input");
     auto tmp_from = req.get_param_value("from");
+    SHARDORA_INFO("AbiQueryContract request: address=%s, from=%s, input=%s",
+        std::string(tmp_contract_addr).c_str(),
+        std::string(tmp_from).c_str(),
+        std::string(tmp_input).c_str());
     std::string from = common::Encode::HexDecode(tmp_from);
     if (from.size() != common::kUnicastAddressLength) {
+        SHARDORA_INFO("AbiQueryContract: invalid from address '%s', using zero address",
+            std::string(tmp_from).c_str());
         from = common::Encode::HexDecode(std::string(common::kUnicastAddressLength * 2, '0'));
     }
 
@@ -942,14 +947,21 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         http_res.set_content(EncodeEvmError(res), "text/plain");
-        SHARDORA_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("AbiQueryContract: %s.", res.c_str());
         return;
     }
+
+    SHARDORA_INFO("AbiQueryContract: contract_addr=%s sharding_id=%u pool_index=%u balance=%lu destructed=%d",
+        common::Encode::HexEncode(contract_addr).c_str(),
+        contract_addr_info->sharding_id(),
+        contract_addr_info->pool_index(),
+        contract_addr_info->balance(),
+        contract_addr_info->destructed());
 
     if (contract_addr_info->destructed()) {
         std::string res = "get contract addr destructed!";
         http_res.set_content(EncodeEvmError(res), "text/plain");
-        SHARDORA_INFO("query contract param error: %s.", res.c_str());
+        SHARDORA_INFO("AbiQueryContract: contract destructed: %s.", std::string(tmp_contract_addr).c_str());
         return;
     }
 
@@ -975,6 +987,10 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
     shardora_host.AddTmpAccountBalance(
         contract_addr,
         to_balance);
+    SHARDORA_INFO("AbiQueryContract: calling EVM contract=%s from=%s input=%s",
+        common::Encode::HexEncode(contract_addr).c_str(),
+        common::Encode::HexEncode(from).c_str(),
+        common::Encode::HexEncode(input).c_str());
     evmc_result evmc_res = {};
     evmc::Result result{ evmc_res };
     int exec_res = shardoravm::Execution::Instance()->execute(
@@ -990,29 +1006,25 @@ static void AbiQueryContract(const UWSRequest& req, UWSResponse& http_res) {
         shardora_host,
         &result);
     if (exec_res != shardoravm::kShardoravmSuccess || result.status_code != EVMC_SUCCESS) {
-        std::string res = "query contract failed: " + 
-            std::to_string(result.status_code) + 
+        std::string res = "query contract failed: " +
+            std::to_string(result.status_code) +
             ", exec_res: " + std::to_string(exec_res);
         http_res.set_content(EncodeEvmError(res), "text/plain");
-        SHARDORA_INFO("query contract error: %s.", res.c_str());
+        SHARDORA_INFO("AbiQueryContract: EVM failed contract=%s from=%s status=%d exec_res=%d",
+            common::Encode::HexEncode(contract_addr).c_str(),
+            common::Encode::HexEncode(from).c_str(),
+            (int)result.status_code,
+            exec_res);
         return;
     }
-	
+
     std::string qdata((char*)result.output_data, result.output_size);
     auto hex_data = common::Encode::HexEncode(qdata);
-    // SHARDORA_INFO("LLLLLhttp: %s, size %d", common::Encode::HexEncode(qdata).c_str(), result.output_size);
-    // if (result.output_size < 64) {
-    //     auto res = common::Encode::HexEncode(qdata); 
-    //     evbuffer_add(req->buffer_out, res.c_str(), res.size());
-    //     evhtp_send_reply(req, EVHTP_RES_OK);
-    //     return;
-    // }
-    // evmc_bytes32 len_bytes;
-    // memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
-    // uint64_t len = shardoravm::EvmcBytes32ToUint64(len_bytes);
-    // std::string http_res(qdata.c_str() + 64, len);
     http_res.set_content(hex_data, "text/plain");
-    SHARDORA_INFO("query contract success data: %s", hex_data.c_str());
+    SHARDORA_INFO("AbiQueryContract: success contract=%s from=%s output=%s",
+        common::Encode::HexEncode(contract_addr).c_str(),
+        common::Encode::HexEncode(from).c_str(),
+        hex_data.c_str());
 }
 
 // Returns leader routing table: pool_index -> {ip, port} for the local shard.
