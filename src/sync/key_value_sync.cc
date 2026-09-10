@@ -66,6 +66,10 @@ void KeyValueSync::Init(
         std::shared_ptr<pools::TxPoolManager> tx_pool_mgr,
         const std::shared_ptr<db::Db>& db,
         ViewBlockSyncedCallback view_block_synced_callback) {
+    if (initialized_.exchange(true)) {
+        SHARDORA_WARN("KeyValueSync::Init called more than once, skipping");
+        return;
+    }
     SHARDORA_DEBUG("init key value sync 0");
     hotstuff_mgr_ = hotstuff_mgr;
     SHARDORA_DEBUG("init key value sync 1");

@@ -249,6 +249,7 @@ private:
     std::vector<std::shared_ptr<std::thread>> verify_threads_;
     std::atomic<uint32_t> verifying_count_{0};
     std::atomic<bool> destroy_{false};
+    std::atomic<bool> initialized_{false};
     uint64_t prev_sync_tm_ms_ = 0;
     uint64_t prev_sent_sync_tm_ms_ = 0;
 

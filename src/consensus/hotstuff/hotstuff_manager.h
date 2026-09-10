@@ -323,6 +323,7 @@ public:
     std::queue<transport::MessagePtr> consensus_add_tx_msgs_[common::kMaxThreadCount];
     // std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
     std::atomic<bool> destroy_ = false;
+    std::atomic<bool> initialized_{false};
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
 

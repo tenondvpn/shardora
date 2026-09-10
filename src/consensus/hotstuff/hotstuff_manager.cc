@@ -60,6 +60,10 @@ int HotstuffManager::Init(
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCacheCallback new_block_cache_callback) {
+    if (initialized_.exchange(true)) {
+        SHARDORA_WARN("HotstuffManager::Init called more than once, skipping");
+        return kConsensusSuccess;
+    }
     kv_sync_ = kv_sync;
     contract_mgr_ = contract_mgr;
     vss_mgr_ = vss_mgr;
