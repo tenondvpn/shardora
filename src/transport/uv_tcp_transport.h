@@ -47,6 +47,12 @@ public:
         uint16_t port,
         transport::protobuf::Header& message);
     int Send(
+        const std::string& ip,
+        uint16_t port,
+        uint32_t type,
+        uint64_t hash64,
+        std::string&& serialized_msg);
+    int Send(
         std::shared_ptr<tnet::TcpInterface> conn,
         const transport::protobuf::Header& message);
     int Send(

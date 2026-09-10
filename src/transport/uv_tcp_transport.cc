@@ -688,6 +688,33 @@ int TcpTransport::Send(
     return kTransportSuccess;
 }
 
+int TcpTransport::Send(
+        const std::string& des_ip,
+        uint16_t des_port,
+        uint32_t type,
+        uint64_t hash64,
+        std::string&& serialized_msg) {
+    if (!TcpOutputQueuesReady("TcpTransport::Send(ip,port,serialized)")) {
+        return kTransportError;
+    }
+    if (serialized_msg.size() >= (uint32_t)(common::kMaxProposeMsgBytes * 3 / 2)) {
+        SHARDORA_ERROR("dropping oversized pre-serialized msg: size=%zu, type=%u, des=%s:%d",
+            serialized_msg.size(), type, des_ip.c_str(), des_port);
+        return kTransportError;
+    }
+    auto output_item = std::make_shared<ClientItem>();
+    output_item->des_ip = des_ip;
+    output_item->port = des_port;
+    output_item->type = type;
+    output_item->hash64 = hash64;
+    output_item->msg = std::move(serialized_msg);
+    auto thread_idx = common::GlobalInfo::Instance()->get_thread_index();
+    output_queues_[thread_idx].push(output_item);
+    output_con_.notify_one();
+    SHARDORA_DEBUG("success add pre-serialized msg des: %s, %d, hash64: %lu", des_ip.c_str(), des_port, hash64);
+    return kTransportSuccess;
+}
+
 void TcpTransport::Output() {
     while (!destroy_) {
         uv_async_send(&async_handle);

@@ -280,18 +280,29 @@ void FilterBroadcast::LayerSend(
         const transport::MessagePtr& msg_ptr,
         std::vector<dht::NodePtr>& nodes) {
     auto& message = msg_ptr->header;
-    const auto* src_broadcast = message.has_broadcast() ? &message.broadcast() : nullptr;
-    uint64_t src_left  = src_broadcast ? src_broadcast->layer_left()  : 0;
-    uint64_t src_right = src_broadcast ? src_broadcast->layer_right() : 0;
+    auto* cast_msg = const_cast<transport::protobuf::Header*>(&message);
+
+    // Set per-process invariant fields once before the loop so TcpTransport::Send
+    // doesn't mutate the message again on each iteration (avoiding protobuf
+    // cached-size inconsistency that caused ByteSizeConsistencyError → abort).
+    cast_msg->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
+    if (!message.has_hash64() || message.hash64() == 0) {
+        transport::TcpTransport::Instance()->SetMessageHash(message);
+    }
+    const uint32_t msg_type = message.type();
+    const uint64_t msg_hash = message.hash64();
+
+    auto* broad_param = cast_msg->mutable_broadcast();
+    uint64_t src_left  = broad_param->layer_left();
+    uint64_t src_right = broad_param->layer_right();
+
     for (uint32_t i = 0; i < nodes.size(); ++i) {
         uint64_t node_left, node_right;
         if (i == 0) {
             node_left = GetLayerLeft(src_left, message);
-            if (nodes.size() == 1) {
-                node_right = GetLayerRight(src_right, message);
-            } else {
-                node_right = GetLayerRight(nodes[i]->id_hash, message);
-            }
+            node_right = (nodes.size() == 1)
+                ? GetLayerRight(src_right, message)
+                : GetLayerRight(nodes[i]->id_hash, message);
         } else if (i < nodes.size() - 1) {
             node_left  = GetLayerLeft(nodes[i - 1]->id_hash, message);
             node_right = GetLayerRight(nodes[i]->id_hash, message);
@@ -300,23 +311,25 @@ void FilterBroadcast::LayerSend(
             node_right = GetLayerRight(src_right, message);
         }
 
-        // Deep-copy the header so each Send call operates on an independent
-        // message object, preventing protobuf cached-size inconsistency from
-        // in-place mutation across multiple iterations.
-        transport::protobuf::Header send_header = message;
-        send_header.mutable_broadcast()->set_layer_left(node_left);
-        send_header.mutable_broadcast()->set_layer_right(node_right);
+        broad_param->set_layer_left(node_left);
+        broad_param->set_layer_right(node_right);
+
+        // Serialize immediately after the only mutation (layer_left/right) so
+        // protobuf sees a stable message with no further mutations before
+        // SerializeToString returns.  Pass pre-serialized bytes to avoid the
+        // second round of mutations inside TcpTransport::Send.
+        std::string serialized;
+        message.SerializeToString(&serialized);
 
         SHARDORA_DEBUG("broadcast layer send to: %s:%d, txhash: %lu, src:  %lu, %.lu, new: %lu, %lu",
-            nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64(),
-            src_left,
-            src_right,
-            node_left,
-            node_right);
+            nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_hash,
+            src_left, src_right, node_left, node_right);
         transport::TcpTransport::Instance()->Send(
             nodes[i]->public_ip,
             nodes[i]->public_port,
-            send_header);
+            msg_type,
+            msg_hash,
+            std::move(serialized));
     }
 }
 
