@@ -1174,12 +1174,14 @@ Status BlockAcceptor::addTxsToPool(
                     std::string bytecode;
                     shardora_host.GetKeyValue(sys_str, "xsb:" + base_raw, &bytecode);
                     if (bytecode.empty()) {
-                        SHARDORA_WARN("CrossShardBase: bytecode not ready, skip round. "
+                        SHARDORA_WARN("CrossShardBase: bytecode not ready, skip tx. "
                             "base=%s unique=%s",
                             common::Encode::HexEncode(base_raw).c_str(),
                             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                         tx_ptr = nullptr;
-                        create_success = false;
+                        // Do NOT set create_success=false here: that would break the
+                        // entire block. Only this tx is skipped; other txs (e.g.
+                        // kCreateContract) continue.
                     }
                 }
             }
