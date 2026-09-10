@@ -7268,6 +7268,8 @@ contract Exchange {
     //   Phase 2b: Verify all funded accounts (full batch check per shard)
     //   Phase 3: Deploy CrossShardToken (one per token deployer, on its own shard)
     //   Phase 4: Deploy AMMPool (one per amm deployer, constructor args = token pair)
+    //   Phase 5: crossTransfer tokens to users + verify balanceOf on shadow contract
+    //   Phase 6: setGasPrefund for token holders on AMM pool contracts + verify
     if (argv[1][0] == '8') {
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stderr, NULL, _IONBF, 0);
@@ -8637,9 +8639,196 @@ contract AMMPool {
         std::cout << "  Phase 5: all " << total5
                   << " user token balances confirmed OK\n";
 
+        // ── Phase 6: Set prefund for token holders on AMM pool contracts ──
+        // For each AMM pool, find users that hold either of its two tokens
+        // (from rcpt5), then create a prepayment account (amm_contract +
+        // user_addr) on the AMM's shard so they can later call swapAForB /
+        // swapBForA without being blocked by a missing prepayment account.
+        // ─────────────────────────────────────────────────────────────────
+        if (kAmmPairs > 0) {
+        std::cout << "\n" << std::string(70, '-') << "\n";
+        std::cout << "[Phase 6] Set AMM prefund for token holders\n";
+        std::cout << std::string(70, '-') << "\n";
+
+        const uint64_t kAmmPrefund6 = 2000000000ULL;  // 2B gas covers many swaps
+
+        // Build flat list of (user_idx, amm_idx) ops
+        struct AmmPfItem6 { uint32_t user_idx; uint32_t amm_idx; };
+        std::vector<AmmPfItem6> amm_pf6;
+        for (uint32_t k = 0; k < kAmmPairs; ++k) {
+            std::set<uint32_t> holders;
+            for (uint32_t ui : rcpt5[adeps8[k].token_a]) holders.insert(ui);
+            for (uint32_t ui : rcpt5[adeps8[k].token_b]) holders.insert(ui);
+            for (uint32_t ui : holders) amm_pf6.push_back({ui, k});
+        }
+        std::cout << "  Prefund ops: " << amm_pf6.size()
+                  << "  (" << kAmmPairs << " AMM pools)\n";
+
+        // Send prefunds — one thread per AMM pool for simplicity
+        std::atomic<uint32_t> apf6_ok{0}, apf6_fail{0};
+        {
+            std::vector<std::thread> apf6_threads;
+            for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+                apf6_threads.emplace_back([&, k]() {
+                    std::set<uint32_t> holders;
+                    for (uint32_t ui : rcpt5[adeps8[k].token_a]) holders.insert(ui);
+                    for (uint32_t ui : rcpt5[adeps8[k].token_b]) holders.insert(ui);
+                    auto ep_it = eps8.find(adeps8[k].signer_shard);
+                    if (ep_it == eps8.end()) {
+                        apf6_fail.fetch_add((uint32_t)holders.size());
+                        return;
+                    }
+                    ShardoraSDK asdk(ep_it->second.ip, ep_it->second.http);
+                    for (uint32_t ui : holders) {
+                        if (global_stop) break;
+                        std::string pk_hex =
+                            common::Encode::HexEncode(users8[ui].prikey);
+                        auto r = asdk.setGasPrefund(
+                            pk_hex, adeps8[k].contract_addr_hex, kAmmPrefund6);
+                        if (r.contains("status") && r["status"] == 0)
+                            apf6_ok.fetch_add(1);
+                        else
+                            apf6_fail.fetch_add(1);
+                    }
+                });
+            }
+            for (auto& th : apf6_threads) th.join();
+        }
+        std::cout << "  Sends: " << apf6_ok.load()
+                  << " ok  " << apf6_fail.load() << " fail\n";
+
+        // Wait for prefund consensus
+        std::cout << "  Waiting 10s for prefund consensus...\n";
+        for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
+        if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
+
+        // ── Phase 6 verify: poll until all prepayment accounts appear ────
+        std::cout << "\n[Phase 6 verify] Polling AMM prepayment accounts (max 120s, "
+                  << amm_pf6.size() << " checks)...\n";
+
+        // Prepayment key = amm_contract_addr + user_addr (both hex, 40 chars each)
+        std::vector<bool> apf6_confirmed(amm_pf6.size(), false);
+        std::vector<uint32_t> apf6_pending;
+        for (uint32_t i = 0; i < (uint32_t)amm_pf6.size(); ++i)
+            apf6_pending.push_back(i);
+
+        auto p6_start = std::chrono::steady_clock::now();
+        const int kP6MaxSec = 120;
+
+        for (int round = 0; !apf6_pending.empty() && !global_stop; ++round) {
+            int elapsed6 = (int)std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - p6_start).count();
+            if (elapsed6 >= kP6MaxSec) {
+                std::cerr << "  TIMEOUT: Phase 6: " << apf6_pending.size()
+                          << "/" << amm_pf6.size()
+                          << " AMM prefunds unconfirmed after " << kP6MaxSec << "s\n";
+                break;
+            }
+
+            // Group pending by AMM shard for batch query
+            std::unordered_map<uint32_t, std::vector<uint32_t>> shard_pend6;
+            for (uint32_t idx : apf6_pending)
+                shard_pend6[adeps8[amm_pf6[idx].amm_idx].signer_shard].push_back(idx);
+
+            std::vector<uint32_t> next_pend6;
+            uint32_t round6_ok = 0;
+
+            for (auto& [ashard, idxs6] : shard_pend6) {
+                if (global_stop) break;
+                auto ep6 = eps8.find(ashard);
+                if (ep6 == eps8.end()) {
+                    for (auto i2 : idxs6) next_pend6.push_back(i2);
+                    continue;
+                }
+                ShardoraSDK vsdk6(ep6->second.ip, ep6->second.http);
+
+                std::vector<std::string> bkeys;
+                std::vector<uint32_t>   bidxs;
+                const uint32_t kBatch6 = 50;
+                for (uint32_t j = 0; j <= (uint32_t)idxs6.size() && !global_stop; ++j) {
+                    bool flush = (j == (uint32_t)idxs6.size()) ||
+                                 (bkeys.size() >= kBatch6);
+                    if (j < (uint32_t)idxs6.size()) {
+                        uint32_t idx = idxs6[j];
+                        bkeys.push_back(adeps8[amm_pf6[idx].amm_idx].contract_addr_hex
+                                        + users8[amm_pf6[idx].user_idx].addr_hex);
+                        bidxs.push_back(idx);
+                    }
+                    if (!flush || bkeys.empty()) continue;
+                    auto qr6 = vsdk6.batchQueryAccounts(bkeys);
+                    if (qr6.contains("status") && qr6["status"] == 0
+                            && qr6.contains("accounts")) {
+                        for (uint32_t bi = 0; bi < bidxs.size(); ++bi) {
+                            if (qr6["accounts"].contains(bkeys[bi])) {
+                                apf6_confirmed[bidxs[bi]] = true;
+                                ++round6_ok;
+                            } else {
+                                next_pend6.push_back(bidxs[bi]);
+                            }
+                        }
+                    } else {
+                        for (auto i2 : bidxs) next_pend6.push_back(i2);
+                    }
+                    bkeys.clear(); bidxs.clear();
+                }
+            }
+
+            apf6_pending = std::move(next_pend6);
+            uint32_t total6_confirmed = 0;
+            for (bool b : apf6_confirmed) if (b) ++total6_confirmed;
+
+            std::cout << "  [P6 round " << (round + 1) << "] +" << round6_ok
+                      << "  confirmed: " << total6_confirmed
+                      << "/" << amm_pf6.size()
+                      << "  pending: " << apf6_pending.size()
+                      << "  [" << elapsed6 << "s]\n";
+
+            if (apf6_pending.empty()) break;
+
+            // Re-send unconfirmed after round 3 (i.e. ~30s)
+            if (round == 2 && !apf6_pending.empty()) {
+                std::cout << "  [P6 resend] Re-sending " << apf6_pending.size()
+                          << " unconfirmed prefunds...\n";
+                std::atomic<uint32_t> rs6_ok{0}, rs6_fail{0};
+                for (uint32_t idx : apf6_pending) {
+                    if (global_stop) break;
+                    auto& it6  = amm_pf6[idx];
+                    auto& amm6 = adeps8[it6.amm_idx];
+                    auto ep6r  = eps8.find(amm6.signer_shard);
+                    if (ep6r == eps8.end()) { ++rs6_fail; continue; }
+                    ShardoraSDK rsdk6(ep6r->second.ip, ep6r->second.http);
+                    std::string pk_hex6 =
+                        common::Encode::HexEncode(users8[it6.user_idx].prikey);
+                    auto r6 = rsdk6.setGasPrefund(
+                        pk_hex6, amm6.contract_addr_hex, kAmmPrefund6);
+                    if (r6.contains("status") && r6["status"] == 0)
+                        ++rs6_ok;
+                    else
+                        ++rs6_fail;
+                }
+                std::cout << "  [P6 resend] " << rs6_ok.load()
+                          << " ok  " << rs6_fail.load() << " fail\n";
+                for (int ws = 0; ws < 5 && !global_stop; ++ws) usleep(1000000);
+            } else {
+                for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
+            }
+        }
+        if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
+
+        uint32_t total6_ok = 0;
+        for (bool b : apf6_confirmed) if (b) ++total6_ok;
+        if (total6_ok < (uint32_t)amm_pf6.size()) {
+            std::cerr << "  WARNING: Phase 6: only " << total6_ok << "/"
+                      << amm_pf6.size() << " AMM prefund accounts confirmed\n";
+        } else {
+            std::cout << "  Phase 6: all " << total6_ok
+                      << " AMM prefund accounts confirmed OK\n";
+        }
+        } // end if (kAmmPairs > 0)
+
         // ─────────────────────────────────────────────────────────────────
         std::cout << "\n" << std::string(70, '=') << "\n";
-        std::cout << "  Mode 8 Complete (Phase 0-5)\n";
+        std::cout << "  Mode 8 Complete (Phase 0-6)\n";
         std::cout << "  Users:           " << users8.size() << "\n";
         std::cout << "  Token contracts: " << kTokens << "\n";
         for (uint32_t i = 0; i < kTokens; ++i)
