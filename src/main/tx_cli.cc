@@ -8431,15 +8431,27 @@ contract AMMPool {
                             + encodeUint32ABI(u.shard_id)
                             + encodeUint32ABI(u.pool_idx);
 
+                        std::cout << "  [Phase5 xfer] token" << ti
+                                  << " base=" << td.contract_addr_hex
+                                  << " → user=" << u.addr_hex
+                                  << " shard=" << u.shard_id
+                                  << " pool=" << u.pool_idx
+                                  << " nonce=" << (ppnonce + (int64_t)ri) << "\n";
                         auto r = dsdk.callContractWithNonce(
                             pk_hex, td.contract_addr_hex,
                             calldata, ppnonce + (int64_t)ri);
                         if (r.contains("status") && r["status"] == 0) {
                             xok5.fetch_add(1);
+                            std::cout << "  [Phase5 xfer] OK token" << ti
+                                      << " base=" << td.contract_addr_hex
+                                      << " user=" << u.addr_hex << "\n";
                         } else {
-                            std::cerr << "  [token" << ti << "] → "
-                                      << u.addr_hex
-                                      << " fail: " << r.value("msg", "?") << "\n";
+                            std::cerr << "  [Phase5 xfer] FAIL token" << ti
+                                      << " base=" << td.contract_addr_hex
+                                      << " user=" << u.addr_hex
+                                      << " shard=" << u.shard_id
+                                      << " pool=" << u.pool_idx
+                                      << " err=" << r.value("msg", "?") << "\n";
                             xfail5.fetch_add(1);
                         }
                     }
