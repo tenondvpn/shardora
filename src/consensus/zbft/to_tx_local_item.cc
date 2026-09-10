@@ -383,7 +383,8 @@ bool ToTxLocalItem::HandleCrossShardBase(
         block::protobuf::BlockTx sys_tx;
         sys_tx.set_to(target_str);
         sys_tx.set_from(sys_exec_str);
-        InitHost(shardora_host, sys_tx, 200000, 0, view_block);
+        shardora_host.my_address_ = sys_tx.to();
+        // InitHost(shardora_host, sys_tx, 200000, 0, view_block);
 
         evmc::Result exec_res{ evmc_result{} };
         int exec_status = shardoravm::Execution::Instance()->execute(
@@ -435,7 +436,8 @@ bool ToTxLocalItem::HandleCrossShardBase(
             block::protobuf::BlockTx sys_tx;
             sys_tx.set_to(target_str);
             sys_tx.set_from(sys_exec_str);
-            InitHost(shardora_host, sys_tx, 200000, 0, view_block);
+            shardora_host.my_address_ = sys_tx.to();
+            // InitHost(shardora_host, sys_tx, 200000, 0, view_block);
 
             evmc::Result exec_res{ evmc_result{} };
             int exec_status = shardoravm::Execution::Instance()->execute(
