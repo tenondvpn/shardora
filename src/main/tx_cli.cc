@@ -8479,21 +8479,30 @@ contract AMMPool {
                         auto& u = users8[rcpt5[ti][ri]];
                         // Query on user's shard (CrossShardBase clone stores
                         // balances per-shard after systemExecuteCrossTransfer)
-                        ShardoraSDK qsdk(eps8[u.shard_id].ip,
-                                         eps8[u.shard_id].http);
+                        std::string qip  = eps8[u.shard_id].ip;
+                        uint16_t   qhttp = eps8[u.shard_id].http;
+                        ShardoraSDK qsdk(qip, qhttp);
                         bool found = false;
                         // Up to 3 retries with 5s gap (cross-shard can be slow)
                         for (int rd = 0; rd < 3 && !found && !global_stop; ++rd) {
+                            std::cout << "  [Phase5 verify] token" << ti
+                                      << " user=" << u.addr_hex
+                                      << " shard=" << u.shard_id
+                                      << " node=" << qip << ":" << qhttp
+                                      << " contract=" << td.contract_addr_hex
+                                      << " retry=" << rd << "\n";
                             auto res = qsdk.queryFunctionSolidity(
                                 pk_hex, td.contract_addr_hex,
                                 "balanceOf",
                                 {"address"}, {u.addr_hex},
                                 {"uint256"});
-                            if (res.contains("status") && res["status"] == 0) {
-                                std::string rv = res.value("return_value", "");
-                                for (char c : rv)
-                                    if (c != '0') { found = true; break; }
-                            }
+                            std::string rv = res.contains("status") && res["status"] == 0
+                                             ? res.value("return_value", "") : "";
+                            std::cout << "  [Phase5 verify] result status="
+                                      << (res.contains("status") ? res["status"].dump() : "?")
+                                      << " return_value=" << (rv.empty() ? "(empty)" : rv) << "\n";
+                            for (char c : rv)
+                                if (c != '0') { found = true; break; }
                             if (!found && rd < 2) usleep(5000000);
                         }
 

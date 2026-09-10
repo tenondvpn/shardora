@@ -98,6 +98,8 @@ required_installed_files=(
     "$SRC_PATH/third_party/lib/libleveldb.a"
     "$SRC_PATH/third_party/lib/libuSockets.a"
     "$USOCKETS_BUILD_MARKER"
+    "$SRC_PATH/third_party/lib/libsqlite3.a"
+    "$SRC_PATH/third_party/include/sqlite3.h"
 )
 
 all_required_installed=true
