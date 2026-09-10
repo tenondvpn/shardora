@@ -1191,6 +1191,9 @@ static void BatchQueryAccounts(const UWSRequest& req, UWSResponse& http_res) {
         } else {
             acc["pool_index"] = common::GetAddressPoolIndex(addr);
         }
+        if (addr_info->has_sharding_id() && addr_info->sharding_id() >= network::kConsensusShardBeginNetworkId) {
+            acc["sharding_id"] = addr_info->sharding_id();
+        }
         accounts_json[hex_addr] = acc;
     }
 

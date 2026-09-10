@@ -8322,6 +8322,69 @@ contract AMMPool {
         // ─────────────────────────────────────────────────────────────────
         std::cout << "\n[Phase 5] Distribute tokens to users...\n";
 
+        // ── Pre-Phase 5: Query on-chain shard/pool for each user ──────────
+        // Replace locally-computed shard_id/pool_idx with on-chain values so
+        // crossTransfer uses the correct destination parameters.
+        {
+            std::set<uint32_t> unresolved;
+            for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i)
+                unresolved.insert(i);
+
+            for (int attempt = 0; !unresolved.empty() && attempt < 600 && !global_stop; ++attempt) {
+                if (attempt > 0) {
+                    usleep(1000000);
+                    if (attempt % 30 == 0)
+                        std::cout << "  [Phase5 shard-query] waiting... "
+                                  << (users8.size() - unresolved.size())
+                                  << "/" << users8.size() << " resolved\n";
+                }
+
+                // Group unresolved by current shard_id to batch per shard
+                std::unordered_map<uint32_t, std::vector<uint32_t>> shard_idxs;
+                for (uint32_t idx : unresolved)
+                    shard_idxs[users8[idx].shard_id].push_back(idx);
+
+                for (auto& [shard, idxs] : shard_idxs) {
+                    auto ep_it = eps8.find(shard);
+                    if (ep_it == eps8.end()) continue;
+                    ShardoraSDK qsdk(ep_it->second.ip, ep_it->second.http);
+                    std::vector<std::string> addrs;
+                    addrs.reserve(idxs.size());
+                    for (uint32_t idx : idxs)
+                        addrs.push_back(users8[idx].addr_hex);
+                    auto qres = qsdk.batchQueryAccounts(addrs);
+                    if (!qres.contains("status") || qres["status"] != 0) continue;
+                    if (!qres.contains("accounts")) continue;
+                    for (uint32_t idx : idxs) {
+                        auto& u = users8[idx];
+                        auto it = qres["accounts"].find(u.addr_hex);
+                        if (it == qres["accounts"].end()) continue;
+                        auto& acc = *it;
+                        if (acc.contains("pool_index"))
+                            u.pool_idx = acc["pool_index"].get<uint32_t>();
+                        if (acc.contains("sharding_id"))
+                            u.shard_id = acc["sharding_id"].get<uint32_t>();
+                        unresolved.erase(idx);
+                    }
+                }
+            }
+
+            if (!unresolved.empty()) {
+                std::cerr << "  FATAL: Phase 5: " << unresolved.size()
+                          << " users not found on-chain after 600s. Aborting.\n";
+                transport::TcpTransport::Instance()->Stop();
+                return 1;
+            }
+            std::cout << "  [Phase 5] All " << users8.size()
+                      << " users resolved on-chain (shard/pool confirmed)\n";
+            // Print updated shard/pool for each user
+            for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i) {
+                std::cout << "    [user" << i << "] " << users8[i].addr_hex
+                          << " s" << users8[i].shard_id
+                          << " pool=" << users8[i].pool_idx << "\n";
+            }
+        }
+
         // Encode uint256 from a 128-bit value (supports amounts up to 2^128)
         auto encodeUint256u128 = [](__uint128_t val) -> std::string {
             std::string res(64, '0');
