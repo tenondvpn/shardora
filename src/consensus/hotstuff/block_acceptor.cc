@@ -1152,18 +1152,20 @@ Status BlockAcceptor::addTxsToPool(
             tx_ptr = std::make_shared<consensus::ToTxLocalItem>(
                     msg_ptr, i, db_, account_mgr_, security_ptr_, address_info);
             std::string val;
-            if (shardora_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == shardoravm::kShardoravmSuccess) {
+            if (shardora_host.GetKeyValue(
+                    tx_ptr->tx_info->to(),
+                    tx_ptr->tx_info->key(),
+                    &val) == shardoravm::kShardoravmSuccess) {
                 SHARDORA_WARN("invalid add tx now get local to tx to: %s, unique hash: %s",
                     common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
                     common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                 tx_ptr = nullptr;
-                create_success = false;
             }
             // CrossShardBase to_tx (crossTransfer / crossStorageSet): all nodes must
             // have the shadow contract bytecode before participating in consensus.
             // If bytecode is missing locally the EVM result would differ, producing a
             // different block hash from nodes that do have it, so skip this round.
-            if (create_success) {
+            if (create_success && tx_ptr != nullptr) {
                 pools::protobuf::ToTxMessageItem to_tx_item;
                 if (to_tx_item.ParseFromString(tx_ptr->tx_info->value()) &&
                         to_tx_item.has_base_root_address() &&

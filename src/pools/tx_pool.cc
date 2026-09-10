@@ -750,6 +750,7 @@ void TxPool::TempGetTxIdempotently(
     }
 
     std::set<uint32_t> system_added_step;
+    std::unordered_set<std::string> local_tos_keys_in_propose;
     auto get_tx_func = [&](std::map<std::string, std::map<uint64_t, TxItemPtr>>& tx_map) {
         for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
             uint64_t valid_nonce = common::kInvalidUint64;
@@ -894,10 +895,47 @@ void TxPool::TempGetTxIdempotently(
                     if (tx_ptr->tx_info->nonce() != valid_nonce + 1) {
                         SHARDORA_DEBUG("trace tx pool: %d, tx_key invalid addr: %s, nonce: %lu, unique hash: %s",
                             pool_index_,
-                            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(), 
+                            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
                             tx_ptr->tx_info->nonce(),
                             common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                         break;
+                    }
+                }
+
+                // kConsensusLocalTos: each tx carries its own independent key and must be
+                // verified individually — matching the same view-chain check follower does.
+                if (tx_ptr->tx_info->step() == pools::protobuf::kConsensusLocalTos) {
+                    // Stale duplicate: same key already added to this propose.
+                    if (local_tos_keys_in_propose.count(tx_ptr->tx_info->key())) {
+                        SHARDORA_WARN("kConsensusLocalTos dup key in propose, erase from pool. "
+                            "pool=%d addr=%s nonce=%lu key=%s",
+                            pool_index_,
+                            common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                            tx_ptr->tx_info->nonce(),
+                            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+                        auto erase_it = iter->second.find(tx_ptr->tx_info->nonce());
+                        if (erase_it != iter->second.end()) {
+                            nonce_iter = iter->second.erase(erase_it);
+                        }
+                        continue;
+                    }
+                    // Follow-up nonces: first nonce is already checked by tx_valid_func above;
+                    // subsequent nonces must also be checked individually.
+                    if (valid_nonce != common::kInvalidUint64) {
+                        uint64_t dummy_nonce = 0;
+                        if (tx_valid_func(*tx_ptr->address_info, *tx_ptr->tx_info, &dummy_nonce) != 0) {
+                            SHARDORA_WARN("kConsensusLocalTos key already executed in view-chain, erase from pool. "
+                                "pool=%d addr=%s nonce=%lu key=%s",
+                                pool_index_,
+                                common::Encode::HexEncode(tx_ptr->address_info->addr()).c_str(),
+                                tx_ptr->tx_info->nonce(),
+                                common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+                            auto erase_it = iter->second.find(tx_ptr->tx_info->nonce());
+                            if (erase_it != iter->second.end()) {
+                                nonce_iter = iter->second.erase(erase_it);
+                            }
+                            continue;
+                        }
                     }
                 }
 
@@ -922,6 +960,9 @@ void TxPool::TempGetTxIdempotently(
                 valid_nonce = tx_ptr->tx_info->nonce();
                 tx_ptr->receive_tm_us = common::TimeUtils::TimestampUs();
                 res_map.push_back(tx_ptr);
+                if (tx_ptr->tx_info->step() == pools::protobuf::kConsensusLocalTos) {
+                    local_tos_keys_in_propose.insert(tx_ptr->tx_info->key());
+                }
                 SHARDORA_DEBUG("iter addr: %s, trace tx pool: %d, "
                     "consensus leader tx addr: %s, key: %s, nonce: %lu, "
                     "res count: %u, count: %u, tx_map size: %u, addr tx size: %u", 
