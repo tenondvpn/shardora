@@ -26,6 +26,7 @@
 #include "security/oqs/oqs.h"
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
+#include "shardoravm/reversible_feistel_address.h"
 #include "api.h"
 
 using namespace shardora;
@@ -8556,6 +8557,17 @@ contract AMMPool {
                         // balances per-shard after systemExecuteCrossTransfer)
                         std::string qip  = eps8[u.shard_id].ip;
                         uint16_t   qhttp = eps8[u.shard_id].http;
+                        // Compute the shadow contract address for this shard/pool.
+                        // Shadow = DeriveShardAddress(root, shard, pool), so the
+                        // ERC20 storage lives at shadow_addr, not root_addr.
+                        std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
+                        evmc::address root_evmc{};
+                        std::memcpy(root_evmc.bytes, root_raw.data(), 20);
+                        evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
+                            root_evmc, u.shard_id, u.pool_idx);
+                        std::string shadow_hex = common::Encode::HexEncode(
+                            std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
+
                         ShardoraSDK qsdk(qip, qhttp);
                         bool found = false;
                         // Up to 3 retries with 5s gap (cross-shard can be slow)
@@ -8565,11 +8577,11 @@ contract AMMPool {
                                       << " shard=" << u.shard_id
                                       << " node=" << qip << ":" << qhttp
                                       << " root=" << td.contract_addr_hex
-                                      << " shadow=" << td.contract_addr_hex
+                                      << " shadow=" << shadow_hex
                                       << " pool=" << u.pool_idx
                                       << " retry=" << rd << "\n";
                             auto res = qsdk.queryFunctionSolidity(
-                                pk_hex, td.contract_addr_hex,
+                                pk_hex, shadow_hex,
                                 "balanceOf",
                                 {"address"}, {u.addr_hex},
                                 {"uint256"});

@@ -209,8 +209,11 @@ bool ToTxLocalItem::HandleCrossShardBase(
     evmc::address base_evmc = shardoravm::StrToEvmcAddr(base_raw);
     std::string sys_exec_str(reinterpret_cast<const char*>(shardoravm::kCrossShardSystemExecutor.bytes), 20);
 
-    evmc::address target_evmc = base_evmc;
-    std::string target_str = base_raw;
+    // Shadow contract is deployed at a shard/pool-derived address, not at the
+    // base (root) address.  The base address is only used to look up bytecode
+    // and to verify legitimacy of the shadow via RecoverBaseAddress.
+    evmc::address target_evmc = shardoravm::DeriveShardAddress(base_evmc, shard_id, pool_index);
+    std::string target_str(reinterpret_cast<const char*>(target_evmc.bytes), 20);
 
     // ── 2. 懒部署：若该地址在本分片上不存在，写入 bytecode + 必要存储槽 ──────
     // Solidity CrossShardBase storage layout:
