@@ -8684,7 +8684,7 @@ contract AMMPool {
                     for (uint32_t ui : rcpt5[adeps8[k].token_a]) holders.insert(ui);
                     for (uint32_t ui : rcpt5[adeps8[k].token_b]) holders.insert(ui);
                     // Per-shard SDK cache: reuse connections within the same shard.
-                    std::map<uint32_t, ShardoraSDK> shard_sdk_cache;
+                    std::map<uint32_t, std::unique_ptr<ShardoraSDK>> shard_sdk_cache;
                     for (uint32_t ui : holders) {
                         if (global_stop) break;
                         uint32_t user_shard = users8[ui].shard_id;
@@ -8694,11 +8694,11 @@ contract AMMPool {
                                 apf6_fail.fetch_add(1);
                                 continue;
                             }
-                            shard_sdk_cache.emplace(user_shard,
-                                ShardoraSDK(ep_it->second.ip, ep_it->second.http));
+                            shard_sdk_cache[user_shard] = std::make_unique<ShardoraSDK>(
+                                ep_it->second.ip, ep_it->second.http);
                         }
                         std::string pk_hex = common::Encode::HexEncode(users8[ui].prikey);
-                        auto r = shard_sdk_cache.at(user_shard).setGasPrefund(
+                        auto r = shard_sdk_cache.at(user_shard)->setGasPrefund(
                             pk_hex, adeps8[k].contract_addr_hex, kAmmPrefund6);
                         if (r.contains("status") && r["status"] == 0)
                             apf6_ok.fetch_add(1);
