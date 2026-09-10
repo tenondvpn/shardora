@@ -7685,6 +7685,7 @@ contract AMMPool {
             std::string prikey;
             std::string addr_hex;
             uint32_t    signer_shard;   // == deploy_shard (co-located)
+            uint32_t    deployer_pool;  // pool of the deployer addr (contract must match)
             uint32_t    token_a;        // index into tdeps8
             uint32_t    token_b;
             std::string contract_addr_hex;  // filled in after Phase 4 deploy
@@ -7715,11 +7716,12 @@ contract AMMPool {
                     addr = sec->GetAddress();
                     if (addr_shard8(addr) == ashard) break;
                 }
-                adeps8[k].prikey       = pk;
-                adeps8[k].addr_hex     = common::Encode::HexEncode(addr);
-                adeps8[k].signer_shard = ashard;
-                adeps8[k].token_a      = pairs[k].first;
-                adeps8[k].token_b      = pairs[k].second;
+                adeps8[k].prikey        = pk;
+                adeps8[k].addr_hex      = common::Encode::HexEncode(addr);
+                adeps8[k].signer_shard  = ashard;
+                adeps8[k].deployer_pool = addr_pool8(addr);
+                adeps8[k].token_a       = pairs[k].first;
+                adeps8[k].token_b       = pairs[k].second;
             }
         }
 
@@ -7727,6 +7729,7 @@ contract AMMPool {
         for (uint32_t k = 0; k < kAmmPairs; ++k) {
             std::cout << "    [amm" << k << "] signer=" << adeps8[k].addr_hex
                       << " s" << adeps8[k].signer_shard
+                      << " pool=" << adeps8[k].deployer_pool
                       << "  pair=(token" << adeps8[k].token_a
                       << ",token" << adeps8[k].token_b << ")\n";
         }
@@ -8214,15 +8217,18 @@ contract AMMPool {
                     std::string ctor_args = encodeAddr32(tA_addr) + encodeAddr32(tB_addr);
                     std::string full_code = amm_bytecode8 + ctor_args;
 
-                    // Contract address must route to the SAME shard as the deployer
-                    // (same rule as token deployers: signer and contract co-located).
+                    // Contract address must be on the SAME shard AND pool as the deployer,
+                    // so that eps8[shard] node (which handles deployer_pool) can process
+                    // prefund TXs for this contract without "contract not local" errors.
                     std::string to_address;
                     for (int attempt = 0; attempt < 200000 && !global_stop; ++attempt) {
                         std::string salt = ad.addr_hex + std::to_string(attempt);
                         std::string cand = utils::keccak256Str(amm_bytecode8 + salt).substr(24);
                         if (!cand.empty()) {
                             std::string raw = common::Encode::HexDecode(cand);
-                            if (!raw.empty() && addr_shard8(raw) == ad.signer_shard) {
+                            if (!raw.empty() &&
+                                    addr_shard8(raw) == ad.signer_shard &&
+                                    addr_pool8(raw) == ad.deployer_pool) {
                                 to_address = cand;
                                 break;
                             }
