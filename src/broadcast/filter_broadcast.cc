@@ -280,40 +280,43 @@ void FilterBroadcast::LayerSend(
         const transport::MessagePtr& msg_ptr,
         std::vector<dht::NodePtr>& nodes) {
     auto& message = msg_ptr->header;
-    auto cast_msg = const_cast<transport::protobuf::Header*>(&message);
-    auto broad_param = cast_msg->mutable_broadcast();
-    uint64_t src_left = broad_param->layer_left();
-    uint64_t src_right = broad_param->layer_right();
+    const auto* src_broadcast = message.has_broadcast() ? &message.broadcast() : nullptr;
+    uint64_t src_left  = src_broadcast ? src_broadcast->layer_left()  : 0;
+    uint64_t src_right = src_broadcast ? src_broadcast->layer_right() : 0;
     for (uint32_t i = 0; i < nodes.size(); ++i) {
+        uint64_t node_left, node_right;
         if (i == 0) {
-            broad_param->set_layer_left(GetLayerLeft(src_left, message));
+            node_left = GetLayerLeft(src_left, message);
             if (nodes.size() == 1) {
-                broad_param->set_layer_right(GetLayerRight(src_right, message));
+                node_right = GetLayerRight(src_right, message);
             } else {
-                broad_param->set_layer_right(GetLayerRight(nodes[i]->id_hash, message));
+                node_right = GetLayerRight(nodes[i]->id_hash, message);
             }
+        } else if (i < nodes.size() - 1) {
+            node_left  = GetLayerLeft(nodes[i - 1]->id_hash, message);
+            node_right = GetLayerRight(nodes[i]->id_hash, message);
+        } else {
+            node_left  = GetLayerLeft(nodes[i - 1]->id_hash, message);
+            node_right = GetLayerRight(src_right, message);
         }
 
-        if (i > 0 && i < (nodes.size() - 1)) {
-            broad_param->set_layer_left(GetLayerLeft(nodes[i - 1]->id_hash, message));
-            broad_param->set_layer_right(GetLayerRight(nodes[i]->id_hash, message));
-        }
-
-        if (i > 0 && i == (nodes.size() - 1)) {
-            broad_param->set_layer_left(GetLayerLeft(nodes[i - 1]->id_hash, message));
-            broad_param->set_layer_right(GetLayerRight(src_right, message));
-        }
+        // Deep-copy the header so each Send call operates on an independent
+        // message object, preventing protobuf cached-size inconsistency from
+        // in-place mutation across multiple iterations.
+        transport::protobuf::Header send_header = message;
+        send_header.mutable_broadcast()->set_layer_left(node_left);
+        send_header.mutable_broadcast()->set_layer_right(node_right);
 
         SHARDORA_DEBUG("broadcast layer send to: %s:%d, txhash: %lu, src:  %lu, %.lu, new: %lu, %lu",
             nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64(),
             src_left,
             src_right,
-            broad_param->layer_left(),
-            broad_param->layer_right());
+            node_left,
+            node_right);
         transport::TcpTransport::Instance()->Send(
             nodes[i]->public_ip,
             nodes[i]->public_port,
-            message);
+            send_header);
     }
 }
 
