@@ -8531,88 +8531,105 @@ contract AMMPool {
             return 1;
         }
 
-        // ── Phase 5 verify: wait 60s for cross-shard delivery then check ──
-        std::cout << "\n[Phase 5 verify] Waiting 60s for cross-shard delivery...\n";
-        for (int ws = 0; ws < 60 && !global_stop; ++ws) {
-            usleep(1000000);
-            if (ws % 20 == 19)
-                std::cout << "  " << (ws + 1) << "s elapsed\n";
-        }
+        // ── Phase 5 verify: poll every 10s until all balances confirmed ──
+        // Build a flat list of (token_idx, user_idx) pairs to check.
+        struct P5Item { uint32_t ti; uint32_t ri; };
+        std::vector<P5Item> pending5;
+        for (uint32_t ti = 0; ti < kTokens; ++ti)
+            for (uint32_t ri = 0; ri < (uint32_t)rcpt5[ti].size(); ++ri)
+                pending5.push_back({ti, ri});
+        const uint32_t total5 = (uint32_t)pending5.size();
+
+        std::cout << "\n[Phase 5 verify] Polling balanceOf (10s initial wait, "
+                  << "max 240s, " << total5 << " checks)...\n";
+
+        // Initial wait — give cross-shard delivery a head start.
+        for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
         if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
 
-        std::cout << "[Phase 5 verify] Querying balanceOf on user shards...\n";
-        std::atomic<uint32_t> bok5{0}, bfail5{0};
-        std::mutex bmx5;
-        {
+        uint32_t bok5 = 0;
+        auto p5_start = std::chrono::steady_clock::now();
+        const int kP5MaxSec = 240;
+
+        while (!pending5.empty() && !global_stop) {
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - p5_start).count();
+            if (elapsed >= kP5MaxSec) {
+                std::cerr << "  TIMEOUT: Phase 5: " << pending5.size()
+                          << "/" << total5 << " balances unconfirmed after "
+                          << kP5MaxSec << "s.\n";
+                break;
+            }
+
+            std::vector<P5Item> still_pending;
+            std::mutex rmx5;
+            std::atomic<uint32_t> round_ok{0};
+
             std::vector<std::thread> bth5;
-            for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
-                bth5.emplace_back([&, ti]() {
+            for (auto& item : pending5) {
+                bth5.emplace_back([&, item]() {
+                    uint32_t ti = item.ti;
+                    uint32_t ri = item.ri;
                     auto& td = tdeps8[ti];
+                    auto& u  = users8[rcpt5[ti][ri]];
                     std::string pk_hex = common::Encode::HexEncode(td.prikey);
+                    std::string qip  = eps8[u.shard_id].ip;
+                    uint16_t   qhttp = eps8[u.shard_id].http;
 
-                    for (uint32_t ri = 0;
-                         ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
-                        auto& u = users8[rcpt5[ti][ri]];
-                        // Query on user's shard (CrossShardBase clone stores
-                        // balances per-shard after systemExecuteCrossTransfer)
-                        std::string qip  = eps8[u.shard_id].ip;
-                        uint16_t   qhttp = eps8[u.shard_id].http;
-                        // Compute the shadow contract address for this shard/pool.
-                        // Shadow = DeriveShardAddress(root, shard, pool), so the
-                        // ERC20 storage lives at shadow_addr, not root_addr.
-                        std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
-                        evmc::address root_evmc{};
-                        std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-                        evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
-                            root_evmc, u.shard_id, u.pool_idx);
-                        std::string shadow_hex = common::Encode::HexEncode(
-                            std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
+                    std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
+                    evmc::address root_evmc{};
+                    std::memcpy(root_evmc.bytes, root_raw.data(), 20);
+                    evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
+                        root_evmc, u.shard_id, u.pool_idx);
+                    std::string shadow_hex = common::Encode::HexEncode(
+                        std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
 
-                        ShardoraSDK qsdk(qip, qhttp);
-                        bool found = false;
-                        // Up to 3 retries with 5s gap (cross-shard can be slow)
-                        for (int rd = 0; rd < 3 && !found && !global_stop; ++rd) {
-                            std::cout << "  [Phase5 verify] token" << ti
-                                      << " user=" << u.addr_hex
-                                      << " shard=" << u.shard_id
-                                      << " node=" << qip << ":" << qhttp
-                                      << " root=" << td.contract_addr_hex
-                                      << " shadow=" << shadow_hex
-                                      << " pool=" << u.pool_idx
-                                      << " retry=" << rd << "\n";
-                            auto res = qsdk.queryFunctionSolidity(
-                                pk_hex, shadow_hex,
-                                "balanceOf",
-                                {"address"}, {u.addr_hex},
-                                {"uint256"});
-                            std::string rv = res.contains("status") && res["status"] == 0
-                                             ? res.value("return_value", "") : "";
-                            std::cout << "  [Phase5 verify] result status="
-                                      << (res.contains("status") ? res["status"].dump() : "?")
-                                      << " return_value=" << (rv.empty() ? "(empty)" : rv) << "\n";
-                            for (char c : rv)
-                                if (c != '0') { found = true; break; }
-                            if (!found && rd < 2) usleep(5000000);
-                        }
+                    std::cout << "  [Phase5 verify] token" << ti
+                              << " user=" << u.addr_hex
+                              << " shard=" << u.shard_id
+                              << " root=" << td.contract_addr_hex
+                              << " shadow=" << shadow_hex
+                              << " pool=" << u.pool_idx << "\n";
 
-                        if (found) {
-                            bok5.fetch_add(1);
-                        } else {
-                            std::lock_guard<std::mutex> lk(bmx5);
-                            std::cout << "  FAIL: token" << ti
-                                      << " user " << u.addr_hex
-                                      << " s" << u.shard_id << " balance=0\n";
-                            bfail5.fetch_add(1);
-                        }
+                    ShardoraSDK qsdk(qip, qhttp);
+                    auto res = qsdk.queryFunctionSolidity(
+                        pk_hex, shadow_hex,
+                        "balanceOf", {"address"}, {u.addr_hex}, {"uint256"});
+                    std::string rv = (res.contains("status") && res["status"] == 0)
+                                     ? res.value("return_value", "") : "";
+                    std::cout << "  [Phase5 verify] status="
+                              << (res.contains("status") ? res["status"].dump() : "?")
+                              << " balance=" << (rv.empty() ? "(empty)" : rv) << "\n";
+
+                    bool found = false;
+                    for (char c : rv) if (c != '0') { found = true; break; }
+                    if (found) {
+                        round_ok.fetch_add(1);
+                    } else {
+                        std::lock_guard<std::mutex> lk(rmx5);
+                        still_pending.push_back(item);
                     }
                 });
             }
             for (auto& t : bth5) t.join();
-        }
 
-        const uint32_t total5 = kTokens * kRcpt5;
-        if (bfail5.load() > 0) {
-            std::cerr << "  FATAL: Phase 5: " << bfail5.load()
+            bok5 += round_ok.load();
+            pending5 = std::move(still_pending);
+
+            auto now_elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - p5_start).count();
+            std::cout << "  [Phase5 verify] " << bok5 << "/" << total5
+                      << " confirmed, " << pending5.size() << " pending ["
+                      << now_elapsed << "s]\n";
+
+            if (!pending5.empty() && !global_stop) {
+                for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
+            }
+        }
+        if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
+
+        if (!pending5.empty()) {
+            std::cerr << "  FATAL: Phase 5: " << pending5.size()
                       << "/" << total5 << " token balances unconfirmed.\n";
             transport::TcpTransport::Instance()->Stop();
             return 1;
