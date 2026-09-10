@@ -459,6 +459,7 @@ bool ToTxLocalItem::HandleCrossShardBase(
     }
         
     persist_shadow_state();
+    return true;
 }
 
 int ToTxLocalItem::TxToBlockTx(
