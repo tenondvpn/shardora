@@ -26,6 +26,7 @@
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/pool_statistic_tag.h"
 #include "consensus/zbft/to_tx_local_item.h"
+#include "shardoravm/host_journal_stack.h"
 #include "consensus/zbft/to_tx_item.h"
 #include "consensus/zbft/time_block_tx.h"
 #include "consensus/zbft/statistic_tx_item.h"
@@ -1152,11 +1153,35 @@ Status BlockAcceptor::addTxsToPool(
                     msg_ptr, i, db_, account_mgr_, security_ptr_, address_info);
             std::string val;
             if (shardora_host.GetKeyValue(tx_ptr->tx_info->to(), tx_ptr->tx_info->key(), &val) == shardoravm::kShardoravmSuccess) {
-                SHARDORA_WARN("invalid add tx now get local to tx to: %s, unique hash: %s", 
+                SHARDORA_WARN("invalid add tx now get local to tx to: %s, unique hash: %s",
                     common::Encode::HexEncode(tx_ptr->tx_info->to()).c_str(),
                     common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
                 tx_ptr = nullptr;
                 create_success = false;
+            }
+            // CrossShardBase to_tx (crossTransfer / crossStorageSet): all nodes must
+            // have the shadow contract bytecode before participating in consensus.
+            // If bytecode is missing locally the EVM result would differ, producing a
+            // different block hash from nodes that do have it, so skip this round.
+            if (create_success) {
+                pools::protobuf::ToTxMessageItem to_tx_item;
+                if (to_tx_item.ParseFromString(tx_ptr->tx_info->value()) &&
+                        to_tx_item.has_base_root_address() &&
+                        !to_tx_item.base_root_address().empty()) {
+                    const std::string& base_raw = to_tx_item.base_root_address();
+                    const std::string sys_str(reinterpret_cast<const char*>(
+                        shardoravm::kCrossShardSystemExecutor.bytes), 20);
+                    std::string bytecode;
+                    shardora_host.GetKeyValue(sys_str, "xsb:" + base_raw, &bytecode);
+                    if (bytecode.empty()) {
+                        SHARDORA_WARN("CrossShardBase: bytecode not ready, skip round. "
+                            "base=%s unique=%s",
+                            common::Encode::HexEncode(base_raw).c_str(),
+                            common::Encode::HexEncode(tx_ptr->tx_info->key()).c_str());
+                        tx_ptr = nullptr;
+                        create_success = false;
+                    }
+                }
             }
             break;
         }
