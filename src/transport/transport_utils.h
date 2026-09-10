@@ -331,6 +331,7 @@ public:
     std::string msg;
     uint64_t hash64;
     uint32_t type;
+    bool is_retry = false;
     std::shared_ptr<tnet::TcpInterface> conn;
 };
 

@@ -5,6 +5,7 @@
 #include <queue>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <uv.h>
 
@@ -86,6 +87,10 @@ private:
     std::shared_ptr<std::thread> run_thread_{ nullptr };
     uv_udp_t* handle_{ nullptr };
     std::unordered_map<std::string, ex_uv_tcp_t*> conn_map_;
+    // Peers for which a uv_tcp_connect is in flight but on_connect has not yet
+    // fired. Used to prevent duplicate concurrent connection attempts in the same
+    // uv_async_cb iteration.
+    std::unordered_set<std::string> pending_conns_;
     std::string ip_port_;
     int backlog_;
     bool create_server_{ false };
