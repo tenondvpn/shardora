@@ -8564,7 +8564,9 @@ contract AMMPool {
                                       << " user=" << u.addr_hex
                                       << " shard=" << u.shard_id
                                       << " node=" << qip << ":" << qhttp
-                                      << " contract=" << td.contract_addr_hex
+                                      << " root=" << td.contract_addr_hex
+                                      << " shadow=" << td.contract_addr_hex
+                                      << " pool=" << u.pool_idx
                                       << " retry=" << rd << "\n";
                             auto res = qsdk.queryFunctionSolidity(
                                 pk_hex, td.contract_addr_hex,
