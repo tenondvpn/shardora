@@ -8709,7 +8709,7 @@ contract AMMPool {
         if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
 
         // ── Phase 6 verify: poll until all prepayment accounts appear ────
-        std::cout << "\n[Phase 6 verify] Polling AMM prepayment accounts (max 120s, "
+        std::cout << "\n[Phase 6 verify] Polling AMM prepayment accounts (max 60s, "
                   << amm_pf6.size() << " checks)...\n";
 
         // Prepayment key = amm_contract_addr + user_addr (both hex, 40 chars each)
@@ -8719,7 +8719,7 @@ contract AMMPool {
             apf6_pending.push_back(i);
 
         auto p6_start = std::chrono::steady_clock::now();
-        const int kP6MaxSec = 120;
+        const int kP6MaxSec = 60;
 
         for (int round = 0; !apf6_pending.empty() && !global_stop; ++round) {
             int elapsed6 = (int)std::chrono::duration_cast<std::chrono::seconds>(
@@ -8728,6 +8728,21 @@ contract AMMPool {
                 std::cerr << "  TIMEOUT: Phase 6: " << apf6_pending.size()
                           << "/" << amm_pf6.size()
                           << " AMM prefunds unconfirmed after " << kP6MaxSec << "s\n";
+                // Print details of up to 3 unconfirmed items for diagnosis
+                uint32_t diag_n = std::min((uint32_t)apf6_pending.size(), 3u);
+                for (uint32_t di = 0; di < diag_n; ++di) {
+                    uint32_t idx = apf6_pending[di];
+                    auto& it6  = amm_pf6[idx];
+                    auto& amm6 = adeps8[it6.amm_idx];
+                    auto& u6   = users8[it6.user_idx];
+                    std::string ppkey = amm6.contract_addr_hex + u6.addr_hex;
+                    std::cerr << "  [unconfirmed " << di << "]"
+                              << " user=" << u6.addr_hex
+                              << " s" << u6.shard_id << " pool=" << u6.pool_idx
+                              << " amm=" << amm6.contract_addr_hex
+                              << " s" << amm6.signer_shard << " pool=" << amm6.deployer_pool
+                              << " prepay_key=" << ppkey << "\n";
+                }
                 break;
             }
 
@@ -8826,6 +8841,20 @@ contract AMMPool {
         if (total6_ok < (uint32_t)amm_pf6.size()) {
             std::cerr << "  WARNING: Phase 6: only " << total6_ok << "/"
                       << amm_pf6.size() << " AMM prefund accounts confirmed\n";
+            // Print details of up to 3 still-pending items
+            uint32_t diag_n = std::min((uint32_t)apf6_pending.size(), 3u);
+            for (uint32_t di = 0; di < diag_n; ++di) {
+                uint32_t idx = apf6_pending[di];
+                auto& it6  = amm_pf6[idx];
+                auto& amm6 = adeps8[it6.amm_idx];
+                auto& u6   = users8[it6.user_idx];
+                std::cerr << "  [unconfirmed " << di << "]"
+                          << " user=" << u6.addr_hex
+                          << " s" << u6.shard_id << " pool=" << u6.pool_idx
+                          << " amm=" << amm6.contract_addr_hex
+                          << " s" << amm6.signer_shard << " pool=" << amm6.deployer_pool
+                          << " prepay=" << amm6.contract_addr_hex + u6.addr_hex << "\n";
+            }
         } else {
             std::cout << "  Phase 6: all " << total6_ok
                       << " AMM prefund accounts confirmed OK\n";
