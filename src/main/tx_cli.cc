@@ -8670,7 +8670,11 @@ contract AMMPool {
         std::cout << "  Prefund ops: " << amm_pf6.size()
                   << "  (" << kAmmPairs << " AMM pools)\n";
 
-        // Send prefunds — one thread per AMM pool for simplicity
+        // Send prefunds — one thread per AMM pool.
+        // Each prefund TX must be routed to the SENDER's (user's) shard, not the
+        // contract's shard.  The node that receives kContractGasPrefund looks up
+        // the sender address to debit gas; if the sender lives on a different shard
+        // the receiving node won't find it and the TX will be rejected.
         std::atomic<uint32_t> apf6_ok{0}, apf6_fail{0};
         {
             std::vector<std::thread> apf6_threads;
@@ -8679,17 +8683,22 @@ contract AMMPool {
                     std::set<uint32_t> holders;
                     for (uint32_t ui : rcpt5[adeps8[k].token_a]) holders.insert(ui);
                     for (uint32_t ui : rcpt5[adeps8[k].token_b]) holders.insert(ui);
-                    auto ep_it = eps8.find(adeps8[k].signer_shard);
-                    if (ep_it == eps8.end()) {
-                        apf6_fail.fetch_add((uint32_t)holders.size());
-                        return;
-                    }
-                    ShardoraSDK asdk(ep_it->second.ip, ep_it->second.http);
+                    // Per-shard SDK cache: reuse connections within the same shard.
+                    std::map<uint32_t, ShardoraSDK> shard_sdk_cache;
                     for (uint32_t ui : holders) {
                         if (global_stop) break;
-                        std::string pk_hex =
-                            common::Encode::HexEncode(users8[ui].prikey);
-                        auto r = asdk.setGasPrefund(
+                        uint32_t user_shard = users8[ui].shard_id;
+                        if (shard_sdk_cache.find(user_shard) == shard_sdk_cache.end()) {
+                            auto ep_it = eps8.find(user_shard);
+                            if (ep_it == eps8.end()) {
+                                apf6_fail.fetch_add(1);
+                                continue;
+                            }
+                            shard_sdk_cache.emplace(user_shard,
+                                ShardoraSDK(ep_it->second.ip, ep_it->second.http));
+                        }
+                        std::string pk_hex = common::Encode::HexEncode(users8[ui].prikey);
+                        auto r = shard_sdk_cache.at(user_shard).setGasPrefund(
                             pk_hex, adeps8[k].contract_addr_hex, kAmmPrefund6);
                         if (r.contains("status") && r["status"] == 0)
                             apf6_ok.fetch_add(1);
