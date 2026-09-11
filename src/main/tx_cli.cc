@@ -8980,6 +8980,19 @@ contract AMMPool {
         std::cout << "  [Phase 7b] addLiquidity\n";
         std::cout << std::string(70, '-') << "\n";
 
+        // Hex → uint64_t (take last 16 hex chars = 8 bytes)
+        auto hex2u64 = [](const std::string& h) -> uint64_t {
+            uint64_t v = 0;
+            size_t start = (h.size() > 16) ? h.size() - 16 : 0;
+            for (size_t i = start; i < h.size(); ++i) {
+                char c = h[i];
+                v = v * 16 + (c >= '0' && c <= '9' ? c - '0' :
+                              c >= 'a' && c <= 'f' ? c - 'a' + 10 :
+                              c >= 'A' && c <= 'F' ? c - 'A' + 10 : 0);
+            }
+            return v;
+        };
+
         // Phase 7b-pre: ensure every AMM deployer has >= kLiqAmt7 on both token shadows.
         // crossTransfer from Phase 7a is async; poll up to 90s.
         // If balance is still 0 after 30s, re-send crossTransfer from the token deployer.
@@ -9339,19 +9352,6 @@ contract AMMPool {
             usleep(1000000);
             if (w7 % 10 == 9) std::cout << "  [" << (w7+1) << "s] waiting...\n";
         }
-
-        // Hex → uint64_t (take last 16 hex chars = 8 bytes)
-        auto hex2u64 = [](const std::string& h) -> uint64_t {
-            uint64_t v = 0;
-            size_t start = (h.size() > 16) ? h.size() - 16 : 0;
-            for (size_t i = start; i < h.size(); ++i) {
-                char c = h[i];
-                v = v * 16 + (c >= '0' && c <= '9' ? c - '0' :
-                              c >= 'a' && c <= 'f' ? c - 'a' + 10 :
-                              c >= 'A' && c <= 'F' ? c - 'A' + 10 : 0);
-            }
-            return v;
-        };
 
         // Check AMM reserves
         std::cout << "  AMM reserves after swaps:\n";
