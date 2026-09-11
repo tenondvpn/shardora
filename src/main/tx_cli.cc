@@ -8996,7 +8996,7 @@ contract AMMPool {
                 for (uint32_t k = 0; k < kAmmPairs; ++k) {
                     if (res_ready[k]) { ++nc; continue; }
                     const auto& ad = adeps8[k];
-                    ShardoraSDK q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                    ShardoraClient q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
                     std::string rs = q.queryContract(common::Encode::HexEncode(ad.prikey),
                                                      ad.contract_addr_hex, kSel7Reserves);
                     // reserveA is first 64 hex chars; non-zero means liquidity added
@@ -9214,7 +9214,7 @@ contract AMMPool {
         uint32_t pools_swapped = 0;
         for (uint32_t k = 0; k < kAmmPairs; ++k) {
             const auto& ad = adeps8[k];
-            ShardoraSDK q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+            ShardoraClient q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
             std::string rs = q.queryContract(common::Encode::HexEncode(ad.prikey),
                                              ad.contract_addr_hex, kSel7Reserves);
             uint64_t rA = 0, rB = 0;
@@ -9235,7 +9235,7 @@ contract AMMPool {
             const auto& ad = adeps8[pf.amm_idx];
             uint32_t ti = ad.token_a;
             const auto& td = tdeps8[ti];
-            ShardoraSDK q(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
+            ShardoraClient q(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
             std::string qdata = kBalOfSel + encodeAddr32(u.addr_hex);
             std::string rs = q.queryContract(common::Encode::HexEncode(td.prikey),
                                              td.contract_addr_hex, qdata);
