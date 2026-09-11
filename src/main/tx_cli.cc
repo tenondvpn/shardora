@@ -8212,9 +8212,26 @@ contract AMMPool {
                 tth4.emplace_back([&, k]() {
                     auto& ad = adeps8[k];
                     // constructor(address tokenA, address tokenB)
-                    const std::string& tA_addr = tdeps8[ad.token_a].contract_addr_hex;
-                    const std::string& tB_addr = tdeps8[ad.token_b].contract_addr_hex;
-                    std::string ctor_args = encodeAddr32(tA_addr) + encodeAddr32(tB_addr);
+                    // Pass mirror addresses so the AMMPool EVM calls land on the same
+                    // shard+pool where crossTransfer created the token mirrors.
+                    const std::string& tA_base = tdeps8[ad.token_a].contract_addr_hex;
+                    const std::string& tB_base = tdeps8[ad.token_b].contract_addr_hex;
+                    evmc::address tA_evmc{}, tB_evmc{};
+                    {
+                        auto tA_raw = common::Encode::HexDecode(tA_base);
+                        auto tB_raw = common::Encode::HexDecode(tB_base);
+                        std::memcpy(tA_evmc.bytes, tA_raw.data(), 20);
+                        std::memcpy(tB_evmc.bytes, tB_raw.data(), 20);
+                    }
+                    evmc::address tA_shadow = shardoravm::DeriveShardAddress(
+                        tA_evmc, ad.signer_shard, ad.deployer_pool);
+                    evmc::address tB_shadow = shardoravm::DeriveShardAddress(
+                        tB_evmc, ad.signer_shard, ad.deployer_pool);
+                    std::string tA_shadow_hex = common::Encode::HexEncode(
+                        std::string(reinterpret_cast<const char*>(tA_shadow.bytes), 20));
+                    std::string tB_shadow_hex = common::Encode::HexEncode(
+                        std::string(reinterpret_cast<const char*>(tB_shadow.bytes), 20));
+                    std::string ctor_args = encodeAddr32(tA_shadow_hex) + encodeAddr32(tB_shadow_hex);
                     std::string full_code = amm_bytecode8 + ctor_args;
 
                     // Contract address must be on the SAME shard AND pool as the deployer,
@@ -8237,6 +8254,10 @@ contract AMMPool {
                     if (to_address.empty()) { ++amm_fail; return; }
 
                     ad.contract_addr_hex = to_address;  // store for later
+                    std::cout << "  [amm" << k << "] contract=" << to_address
+                              << " s" << ad.signer_shard << " pool=" << ad.deployer_pool
+                              << " tokenA_shadow=" << tA_shadow_hex
+                              << " tokenB_shadow=" << tB_shadow_hex << "\n";
 
                     ShardoraSDK dsdk(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
                     int64_t nonce = dsdk.fetchNonce(ad.addr_hex);
