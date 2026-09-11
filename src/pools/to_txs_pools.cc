@@ -89,8 +89,18 @@ void ToTxsPools::ThreadToStatistic(
         for (uint32_t i = 0; i < (uint32_t)block.cross_shard_to_array_size(); ++i) {
             auto& to = block.cross_shard_to_array(i);
             tx_map[to.des()] = to;
-            SHARDORA_DEBUG("success add to item: %s, %lu",
-                common::Encode::HexEncode(to.des()).c_str(), to.amount());
+            if (to.has_base_root_address() && !to.base_root_address().empty()) {
+                SHARDORA_INFO("to_txs_pools store CrossShardBase: block=%u_%u_%lu base=%s user=%s des_shard=%u pool=%u",
+                    view_block_ptr->qc().network_id(),
+                    view_block_ptr->qc().pool_index(),
+                    view_block_ptr->block_info().height(),
+                    common::Encode::HexEncode(to.base_root_address()).c_str(),
+                    common::Encode::HexEncode(to.des()).c_str(),
+                    to.des_sharding_id(), to.pool_index());
+            } else {
+                SHARDORA_DEBUG("success add to item: %s, %lu",
+                    common::Encode::HexEncode(to.des()).c_str(), to.amount());
+            }
         }
 
         common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
@@ -557,14 +567,22 @@ int ToTxsPools::CreateToTxWithHeights(
                     SHARDORA_DEBUG("len: %u, addr: %s",
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
-                    SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
-                        "transfer amount height: %lu, id: %s, amount: %lu, to info: %s, "
-                        "des_sharding_id: %u",
-                        pool_idx, height,
-                        height, common::Encode::HexEncode(to_iter->first).c_str(),
-                        to_iter->second.amount(),
-                        ProtobufToJson(to_iter->second).c_str(),
-                        to_iter->second.des_sharding_id());
+                    if (to_iter->second.has_base_root_address() && !to_iter->second.base_root_address().empty()) {
+                        SHARDORA_INFO("acc_amount_map add CrossShardBase: pool=%u h=%lu base=%s user=%s des_shard=%u item_pool=%u",
+                            pool_idx, height,
+                            common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
+                            common::Encode::HexEncode(to_iter->second.des()).c_str(),
+                            to_iter->second.des_sharding_id(), to_iter->second.pool_index());
+                    } else {
+                        SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
+                            "transfer amount height: %lu, id: %s, amount: %lu, to info: %s, "
+                            "des_sharding_id: %u",
+                            pool_idx, height,
+                            height, common::Encode::HexEncode(to_iter->first).c_str(),
+                            to_iter->second.amount(),
+                            ProtobufToJson(to_iter->second).c_str(),
+                            to_iter->second.des_sharding_id());
+                    }
                 } else {
                     amount_iter->second.set_amount(amount_iter->second.amount() + to_iter->second.amount());
                     // Accumulate full uint256 amount when both items carry it.
@@ -593,9 +611,18 @@ int ToTxsPools::CreateToTxWithHeights(
                     }
 
                     if (amount_iter->second.des_sharding_id() != to_iter->second.des_sharding_id()) {
+                        SHARDORA_INFO("CrossShardBase acc_amount_map MERGE des_sharding_id conflict: "
+                            "des=%s old_shard=%u new_shard=%u base=%s pool=%u height=%lu",
+                            common::Encode::HexEncode(to_iter->second.des()).c_str(),
+                            amount_iter->second.des_sharding_id(),
+                            to_iter->second.des_sharding_id(),
+                            to_iter->second.has_base_root_address()
+                                ? common::Encode::HexEncode(to_iter->second.base_root_address()).c_str()
+                                : "(none)",
+                            pool_idx, height);
                         amount_iter->second.set_des_sharding_id(to_iter->second.des_sharding_id());
                     }
-                    
+
                     SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
                         "transfer amount height: %lu, id: %s, amount: %lu, prefundement: %lu, "
                         "all: %lu, to info: %s",

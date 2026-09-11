@@ -365,16 +365,22 @@ int ContractUserCreateCall::HandleTx(
                     item->set_base_root_address(action.base_root_address);
                     item->set_cross_nonce(action.nonce);
                     cross_to_map_[action.to] = item;
-                    SHARDORA_INFO("CrossShardBase constructor cross-transfer queued: base=%s, to=%s, amount=%lu, dest_shard=%u pool=%u",
-                        common::Encode::HexEncode(action.base_root_address).c_str(),
-                        common::Encode::HexEncode(action.to).c_str(),
-                        action.amount, action.dest_shard_id, action.dest_pool_index);
+                    {
+                        std::array<uint8_t, 20> _b; std::memcpy(_b.data(), action.base_root_address.data(), 20);
+                        auto _s = shardoravm::DeriveShardAddress(_b, action.dest_shard_id, action.dest_pool_index);
+                        std::string _ss(reinterpret_cast<const char*>(_s.data()), 20);
+                        SHARDORA_INFO("CrossShardBase constructor cross-transfer queued: base=%s, user=%s, shadow=%s, dest_shard=%u pool=%u",
+                            common::Encode::HexEncode(action.base_root_address).c_str(),
+                            common::Encode::HexEncode(action.to).c_str(),
+                            common::Encode::HexEncode(_ss).c_str(),
+                            action.dest_shard_id, action.dest_pool_index);
+                    }
                 } else {
                     it->second->set_amount(it->second->amount() + action.amount);
                     add_amount256(*it->second, action.amount_bytes);
-                    SHARDORA_INFO("CrossShardBase constructor cross-transfer accumulated: to=%s dest_shard=%u pool=%u amount=%lu",
+                    SHARDORA_INFO("CrossShardBase constructor cross-transfer accumulated: user=%s dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.to).c_str(),
-                        action.dest_shard_id, action.dest_pool_index, action.amount);
+                        action.dest_shard_id, action.dest_pool_index);
                 }
             } else if (action.type == shardoravm::CrossShardActionType::kSetStorage) {
                 if (action.storage_key.empty()) continue;

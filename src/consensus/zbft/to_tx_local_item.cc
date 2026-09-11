@@ -292,8 +292,11 @@ bool ToTxLocalItem::HandleCrossShardBase(
             derived_info->set_nonce(0);
             acc_balance_map[target_str] = derived_info;
 
-            SHARDORA_INFO("CrossShardBase lazy-deploy shadow at base addr: base=%s shard=%u pool=%u",
-                common::Encode::HexEncode(base_raw).c_str(), shard_id, pool_index);
+            SHARDORA_INFO("CrossShardBase lazy-deploy shadow: base=%s user=%s shadow=%s shard=%u pool=%u",
+                common::Encode::HexEncode(base_raw).c_str(),
+                common::Encode::HexEncode(to_tx.des()).c_str(),
+                common::Encode::HexEncode(target_str).c_str(),
+                shard_id, pool_index);
         }
     }
 
@@ -412,9 +415,11 @@ bool ToTxLocalItem::HandleCrossShardBase(
                 common::Encode::HexEncode(target_str).c_str());
             // Permanent failure — consume unique_hash, no retry.
         }
-        SHARDORA_INFO("CrossShardBase system call OK: base=%s target=%s nonce=%lu",
+        SHARDORA_INFO("CrossShardBase system call OK: base=%s user=%s shadow=%s shard=%u pool=%u nonce=%lu",
             common::Encode::HexEncode(base_raw).c_str(),
+            common::Encode::HexEncode(to_tx.des()).c_str(),
             common::Encode::HexEncode(target_str).c_str(),
+            shard_id, pool_index,
             to_tx.cross_nonce());
     } else {
         // systemExecuteCrossStorage — one EVM call per CrossStorageKV entry.

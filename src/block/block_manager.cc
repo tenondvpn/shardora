@@ -21,6 +21,7 @@
 #include "transport/processor.h"
 #include "shardoravm/execution.h"
 #include "shardoravm/host_journal_stack.h"
+#include "shardoravm/reversible_feistel_address.h"
 
 namespace shardora {
 
@@ -586,10 +587,19 @@ void BlockManager::HandleCrossShardBaseTx(const view_block::protobuf::ViewBlockI
         const auto& to_tx = block_item.cross_shard_to_array(i);
         if (!to_tx.has_base_root_address()) continue;
         if (static_cast<uint32_t>(to_tx.sharding_id()) != local_net_id) continue;
-        SHARDORA_DEBUG("CrossShardBaseTx: delivering base=%s to=%s shard=%u pool=%u",
-            common::Encode::HexEncode(to_tx.base_root_address()).c_str(),
-            common::Encode::HexEncode(to_tx.des()).c_str(),
-            to_tx.sharding_id(), to_tx.pool_index());
+        {
+            evmc::address base_evmc = shardoravm::StrToEvmcAddr(to_tx.base_root_address());
+            evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
+                base_evmc, to_tx.sharding_id(), static_cast<uint32_t>(to_tx.pool_index()));
+            std::string shadow_str(reinterpret_cast<const char*>(shadow_evmc.bytes), 20);
+            SHARDORA_INFO("CrossShardBaseTx: delivering base=%s user=%s shadow=%s shard=%u pool=%u src_block=%u_%u_%lu",
+                common::Encode::HexEncode(to_tx.base_root_address()).c_str(),
+                common::Encode::HexEncode(to_tx.des()).c_str(),
+                common::Encode::HexEncode(shadow_str).c_str(),
+                to_tx.sharding_id(), to_tx.pool_index(),
+                view_block.qc().network_id(), view_block.qc().pool_index(),
+                view_block.block_info().height());
+        }
         CreateLocalToTx(view_block, to_tx, true);
     }
 }
