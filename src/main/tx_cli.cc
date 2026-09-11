@@ -8815,34 +8815,7 @@ contract AMMPool {
 
             if (apf6_pending.empty()) break;
 
-            // Re-send unconfirmed after round 3 (i.e. ~30s)
-            if (round == 2 && !apf6_pending.empty()) {
-                std::cout << "  [P6 resend] Re-sending " << apf6_pending.size()
-                          << " unconfirmed prefunds...\n";
-                std::atomic<uint32_t> rs6_ok{0}, rs6_fail{0};
-                for (uint32_t idx : apf6_pending) {
-                    if (global_stop) break;
-                    auto& it6  = amm_pf6[idx];
-                    auto& amm6 = adeps8[it6.amm_idx];
-                    uint32_t user_shard6 = users8[it6.user_idx].shard_id;
-                    auto ep6r  = eps8.find(user_shard6);
-                    if (ep6r == eps8.end()) { ++rs6_fail; continue; }
-                    ShardoraSDK rsdk6(ep6r->second.ip, ep6r->second.http);
-                    std::string pk_hex6 =
-                        common::Encode::HexEncode(users8[it6.user_idx].prikey);
-                    auto r6 = rsdk6.setGasPrefund(
-                        pk_hex6, amm6.contract_addr_hex, kAmmPrefund6);
-                    if (r6.contains("status") && r6["status"] == 0)
-                        ++rs6_ok;
-                    else
-                        ++rs6_fail;
-                }
-                std::cout << "  [P6 resend] " << rs6_ok.load()
-                          << " ok  " << rs6_fail.load() << " fail\n";
-                for (int ws = 0; ws < 5 && !global_stop; ++ws) usleep(1000000);
-            } else {
-                for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
-            }
+            for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
         }
         if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
 
