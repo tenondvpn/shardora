@@ -8630,7 +8630,7 @@ contract AMMPool {
         const uint32_t total5 = (uint32_t)pending5.size();
 
         std::cout << "\n[Phase 5 verify] Polling balanceOf (10s initial wait, "
-                  << "max 240s, " << total5 << " checks)...\n";
+                  << "max 60s, " << total5 << " checks)...\n";
 
         // Initial wait — give cross-shard delivery a head start.
         for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
@@ -8638,7 +8638,7 @@ contract AMMPool {
 
         uint32_t bok5 = 0;
         auto p5_start = std::chrono::steady_clock::now();
-        const int kP5MaxSec = 240;
+        const int kP5MaxSec = 60;
 
         while (!pending5.empty() && !global_stop) {
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
@@ -8687,6 +8687,11 @@ contract AMMPool {
                     } else {
                         std::lock_guard<std::mutex> lk(rmx5);
                         still_pending.push_back(item);
+                        std::cerr << "  [Phase5 FAIL] token[" << ti << "]=" << td.contract_addr_hex
+                                  << " user=" << u.addr_hex
+                                  << " shard=" << u.shard_id << " pool=" << u.pool_idx
+                                  << " shadow=" << shadow_hex
+                                  << " rv=" << (rv.empty() ? "(empty)" : rv) << "\n";
                     }
                 });
             }
@@ -8710,6 +8715,23 @@ contract AMMPool {
         if (!pending5.empty()) {
             std::cerr << "  FATAL: Phase 5: " << pending5.size()
                       << "/" << total5 << " token balances unconfirmed.\n";
+            std::cerr << "  Unconfirmed items:\n";
+            for (auto& item : pending5) {
+                uint32_t ti = item.ti;
+                uint32_t ri = item.ri;
+                auto& td = tdeps8[ti];
+                auto& u  = users8[rcpt5[ti][ri]];
+                evmc::address root_evmc{};
+                std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
+                std::memcpy(root_evmc.bytes, root_raw.data(), 20);
+                evmc::address shadow_evmc = shardoravm::DeriveShardAddress(root_evmc, u.shard_id, u.pool_idx);
+                std::string shadow_hex = common::Encode::HexEncode(
+                    std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
+                std::cerr << "    token[" << ti << "]=" << td.contract_addr_hex
+                          << " user=" << u.addr_hex
+                          << " shard=" << u.shard_id << " pool=" << u.pool_idx
+                          << " shadow=" << shadow_hex << "\n";
+            }
             transport::TcpTransport::Instance()->Stop();
             return 1;
         }
