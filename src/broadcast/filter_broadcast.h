@@ -30,7 +30,7 @@ private:
     uint32_t BinarySearch(const dht::Dht& dht, uint64_t val);
     void LayerSend(
         dht::BaseDhtPtr& dht_ptr,
-        const transport::MessagePtr& message,
+        transport::protobuf::Header& message,
         std::vector<dht::NodePtr>& nodes);
     void Send(
         dht::BaseDhtPtr& dht_ptr,

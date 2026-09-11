@@ -29,7 +29,9 @@ void FilterBroadcast::Broadcasting(
     //     return;
     // }
 
-    auto& message = msg_ptr->header;
+    // Take a local snapshot to avoid concurrent mutation by other threads
+    // that hold a reference to the same msg_ptr.
+    auto message = msg_ptr->header;
     uint32_t now_hop_count = message.hop_count();
     // if (message.broadcast().has_hop_to_layer() &&
     //         now_hop_count >= message.broadcast().hop_to_layer()) {
@@ -66,7 +68,7 @@ void FilterBroadcast::Broadcasting(
         // msg_ptr->header.mutable_broadcast()->clear_bloomfilter();
         // TODO(xielei): test gossip ,remove it later
         message.set_hop_count(now_hop_count + 1);
-        LayerSend(dht_ptr, msg_ptr, nodes);
+        LayerSend(dht_ptr, message, nodes);
     // } else {
     //     auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
     //     // for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
@@ -277,14 +279,11 @@ void FilterBroadcast::Send(
 
 void FilterBroadcast::LayerSend(
         dht::BaseDhtPtr& dht_ptr,
-        const transport::MessagePtr& msg_ptr,
+        transport::protobuf::Header& message,
         std::vector<dht::NodePtr>& nodes) {
-    auto& message = msg_ptr->header;
-    auto* cast_msg = const_cast<transport::protobuf::Header*>(&message);
+    auto* cast_msg = &message;
 
-    // Set per-process invariant fields once before the loop so TcpTransport::Send
-    // doesn't mutate the message again on each iteration (avoiding protobuf
-    // cached-size inconsistency that caused ByteSizeConsistencyError → abort).
+    // Set per-process invariant fields on the local message copy.
     cast_msg->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     if (!message.has_hash64() || message.hash64() == 0) {
         transport::TcpTransport::Instance()->SetMessageHash(message);
@@ -314,10 +313,6 @@ void FilterBroadcast::LayerSend(
         broad_param->set_layer_left(node_left);
         broad_param->set_layer_right(node_right);
 
-        // Serialize immediately after the only mutation (layer_left/right) so
-        // protobuf sees a stable message with no further mutations before
-        // SerializeToString returns.  Pass pre-serialized bytes to avoid the
-        // second round of mutations inside TcpTransport::Send.
         std::string serialized;
         message.SerializeToString(&serialized);
 
