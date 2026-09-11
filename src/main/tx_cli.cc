@@ -8980,36 +8980,118 @@ contract AMMPool {
         std::cout << "  [Phase 7b] addLiquidity\n";
         std::cout << std::string(70, '-') << "\n";
 
-        // Print diagnostic info before sending
-        for (uint32_t k = 0; k < kAmmPairs; ++k) {
-            const auto& ad = adeps8[k];
-            const auto& tdA = tdeps8[ad.token_a];
-            const auto& tdB = tdeps8[ad.token_b];
-            std::string calldata = enc2u64(kSel7AddLiq, kLiqAmt7, kLiqAmt7);
-            std::cout << "  [7b-diag amm" << k << "]\n"
-                      << "    deployer  : " << ad.addr_hex
-                      << " s" << ad.signer_shard << " pool=" << ad.deployer_pool << "\n"
-                      << "    AMM       : " << ad.contract_addr_hex << "\n"
-                      << "    tokenA    : base=" << tdA.contract_addr_hex
-                      << " shadow=" << ad.token_a_shadow_hex << "\n"
-                      << "    tokenB    : base=" << tdB.contract_addr_hex
-                      << " shadow=" << ad.token_b_shadow_hex << "\n"
-                      << "    calldata  : " << calldata << "\n";
+        // Phase 7b-pre: ensure every AMM deployer has >= kLiqAmt7 on both token shadows.
+        // crossTransfer from Phase 7a is async; poll up to 90s.
+        // If balance is still 0 after 30s, re-send crossTransfer from the token deployer.
+        std::cout << "  [7b-pre] Waiting for AMM deployers to have token balances on shadows...\n";
+        {
+            struct BalSt { bool aOk = false, bOk = false; };
+            std::vector<BalSt> bst(kAmmPairs);
 
-            // Query deployer balance on each shadow before addLiquidity
-            ShardoraClient qc(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
-            std::string balA = qc.queryContract(common::Encode::HexEncode(tdA.prikey),
-                ad.token_a_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
-            std::string balB = qc.queryContract(common::Encode::HexEncode(tdB.prikey),
-                ad.token_b_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
-            uint64_t bA = balA.size() >= 64 ? hex2u64(balA.substr(0, 64)) : 0;
-            uint64_t bB = balB.size() >= 64 ? hex2u64(balB.substr(0, 64)) : 0;
-            std::cout << "    deployer balanceOf tokenA_shadow: " << bA
-                      << (bA == 0 ? "  *** ZERO — crossTransfer not arrived? ***" : "") << "\n"
-                      << "    deployer balanceOf tokenB_shadow: " << bB
-                      << (bB == 0 ? "  *** ZERO — crossTransfer not arrived? ***" : "") << "\n";
+            for (int rd = 0; rd < 90 && !global_stop; ++rd) {
+                uint32_t allOk = 0;
+                for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                    if (bst[k].aOk && bst[k].bOk) { ++allOk; continue; }
+                    const auto& ad = adeps8[k];
+                    ShardoraClient qc(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+
+                    // tokenA shadow balance
+                    if (!bst[k].aOk) {
+                        const auto& tdA = tdeps8[ad.token_a];
+                        std::string rs = qc.queryContract(common::Encode::HexEncode(tdA.prikey),
+                            ad.token_a_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
+                        uint64_t bal = rs.size() >= 64 ? hex2u64(rs.substr(0, 64)) : 0;
+                        if (bal >= kLiqAmt7) {
+                            bst[k].aOk = true;
+                        } else if (rd > 0 && rd % 30 == 0) {
+                            // Re-send crossTransfer
+                            ShardoraSDK tsdk(eps8[tdA.signer_shard].ip, eps8[tdA.signer_shard].http);
+                            std::string ppkey = tdA.contract_addr_hex + tdA.addr_hex;
+                            int64_t tn = tsdk.fetchNonce(ppkey);
+                            if (tn >= 0) {
+                                std::string cd = kXferSel + encodeAddr32(ad.addr_hex)
+                                    + encodeUint256u128((__uint128_t)kLiqAmt7)
+                                    + encodeUint32ABI(ad.signer_shard)
+                                    + encodeUint32ABI(ad.deployer_pool);
+                                auto rr = tsdk.callContractWithNonce(
+                                    common::Encode::HexEncode(tdA.prikey),
+                                    tdA.contract_addr_hex, cd, tn);
+                                std::cout << "  [7b-pre] re-sent tokenA xfer → amm" << k
+                                          << " (bal=" << bal << " nonce=" << tn << "): "
+                                          << rr.value("msg", "ok") << "\n";
+                            }
+                        }
+                    }
+
+                    // tokenB shadow balance
+                    if (!bst[k].bOk) {
+                        const auto& tdB = tdeps8[ad.token_b];
+                        std::string rs = qc.queryContract(common::Encode::HexEncode(tdB.prikey),
+                            ad.token_b_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
+                        uint64_t bal = rs.size() >= 64 ? hex2u64(rs.substr(0, 64)) : 0;
+                        if (bal >= kLiqAmt7) {
+                            bst[k].bOk = true;
+                        } else if (rd > 0 && rd % 30 == 0) {
+                            ShardoraSDK tsdk(eps8[tdB.signer_shard].ip, eps8[tdB.signer_shard].http);
+                            std::string ppkey = tdB.contract_addr_hex + tdB.addr_hex;
+                            int64_t tn = tsdk.fetchNonce(ppkey);
+                            if (tn >= 0) {
+                                std::string cd = kXferSel + encodeAddr32(ad.addr_hex)
+                                    + encodeUint256u128((__uint128_t)kLiqAmt7)
+                                    + encodeUint32ABI(ad.signer_shard)
+                                    + encodeUint32ABI(ad.deployer_pool);
+                                auto rr = tsdk.callContractWithNonce(
+                                    common::Encode::HexEncode(tdB.prikey),
+                                    tdB.contract_addr_hex, cd, tn);
+                                std::cout << "  [7b-pre] re-sent tokenB xfer → amm" << k
+                                          << " (bal=" << bal << " nonce=" << tn << "): "
+                                          << rr.value("msg", "ok") << "\n";
+                            }
+                        }
+                    }
+
+                    if (bst[k].aOk && bst[k].bOk) ++allOk;
+                }
+                std::cout << "  [7b-pre " << rd << "s] " << allOk << "/" << kAmmPairs
+                          << " deployers ready\n";
+                if (allOk == kAmmPairs) break;
+                usleep(1000000);
+            }
+
+            // Final check + diagnostic print
+            bool any_missing = false;
+            for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                const auto& ad = adeps8[k];
+                const auto& tdA = tdeps8[ad.token_a];
+                const auto& tdB = tdeps8[ad.token_b];
+                ShardoraClient qc(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                std::string rsA = qc.queryContract(common::Encode::HexEncode(tdA.prikey),
+                    ad.token_a_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
+                std::string rsB = qc.queryContract(common::Encode::HexEncode(tdB.prikey),
+                    ad.token_b_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
+                uint64_t bA = rsA.size() >= 64 ? hex2u64(rsA.substr(0, 64)) : 0;
+                uint64_t bB = rsB.size() >= 64 ? hex2u64(rsB.substr(0, 64)) : 0;
+                std::cout << "  [7b-pre amm" << k << "]"
+                          << " deployer=" << ad.addr_hex
+                          << " s" << ad.signer_shard << " pool=" << ad.deployer_pool << "\n"
+                          << "    AMM      : " << ad.contract_addr_hex << "\n"
+                          << "    tA_base  : " << tdA.contract_addr_hex
+                          << "  tA_shadow: " << ad.token_a_shadow_hex
+                          << "  bal=" << bA << "\n"
+                          << "    tB_base  : " << tdB.contract_addr_hex
+                          << "  tB_shadow: " << ad.token_b_shadow_hex
+                          << "  bal=" << bB << "\n";
+                if (bA < kLiqAmt7 || bB < kLiqAmt7) any_missing = true;
+            }
+            if (any_missing) {
+                std::cerr << "  FATAL: Phase 7b-pre: AMM deployer(s) still missing token balance"
+                          << " after 90s. Cannot addLiquidity.\n";
+                transport::TcpTransport::Instance()->Stop();
+                return 1;
+            }
         }
 
+        // Now send addLiquidity for each AMM deployer
         {
             std::atomic<uint32_t> liq_ok{0}, liq_fail{0};
             std::vector<std::thread> th7liq;
