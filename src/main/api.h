@@ -190,47 +190,52 @@ public:
 class ShardoraClient {
 public:
     int64_t fetchNonce(const std::string& address) {
-        auto& cli = getOrCreateClient();
-        httplib::Params params;
-        params.emplace("address", address);
-        auto res = cli.Post("/query_account", params);
-        if (res && res->status == 200) {
-            try {
-                json info = json::parse(res->body);
-                if (info.contains("nonce")) {
-                    int64_t nonce = -1;
-                    auto str = info["nonce"].get<std::string>();
-                    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), nonce);
-                    if (ec != std::errc()) {
-                        std::cerr << "fetchNonce parse error: addr=" << address.substr(0,32)
-                                  << " nonce_str=\"" << str << "\"" 
-                                  << " host=" << node_host_ << ":" << node_port_ << std::endl;
-                        return -1;
+        const int kMaxRetries = 3;
+        for (int attempt = 0; attempt < kMaxRetries; ++attempt) {
+            auto& cli = getOrCreateClient();
+            httplib::Params params;
+            params.emplace("address", address);
+            auto res = cli.Post("/query_account", params);
+            if (res && res->status == 200) {
+                try {
+                    json info = json::parse(res->body);
+                    if (info.contains("nonce")) {
+                        int64_t nonce = -1;
+                        auto str = info["nonce"].get<std::string>();
+                        auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), nonce);
+                        if (ec != std::errc()) {
+                            std::cerr << "fetchNonce parse error: addr=" << address.substr(0,32)
+                                      << " nonce_str=\"" << str << "\""
+                                      << " host=" << node_host_ << ":" << node_port_ << std::endl;
+                            return -1;
+                        }
+                        return nonce;
                     }
-
-                    return nonce;
+                    // Server returned 200 but no "nonce" field — account may not exist yet
+                    return 0;
+                } catch (std::exception& e) {
+                    // Non-JSON response (e.g. "get address failed") — treat as nonce=0
+                    return 0;
                 }
-                // Server returned 200 but no "nonce" field — account may not exist yet
-                return 0;
-            } catch (std::exception& e) {
-                // Non-JSON response (e.g. "get address failed") — treat as nonce=0
-                return 0;
+            }
+
+            if (res) {
+                std::cerr << "fetchNonce http error: addr=" << address.substr(0,32)
+                          << " status=" << res->status
+                          << " host=" << node_host_ << ":" << node_port_ << std::endl;
+                return -1;  // HTTP error — no point retrying
+            }
+
+            // TCP connection failure — reset and retry with backoff
+            std::cerr << "fetchNonce connection failed (attempt " << (attempt+1) << "/" << kMaxRetries
+                      << "): addr=" << address.substr(0,32)
+                      << " host=" << node_host_ << ":" << node_port_ << std::endl;
+            resetClient();
+            if (attempt + 1 < kMaxRetries) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(200 * (attempt + 1)));
             }
         }
-
-        if (res) {
-            std::cerr << "fetchNonce http error: addr=" << address.substr(0,32)
-                      << " status=" << res->status
-                      << " host=" << node_host_ << ":" << node_port_ << std::endl;
-        } else {
-            auto err = getOrCreateClient().get_openssl_verify_result();
-            std::cerr << "fetchNonce connection failed: addr=" << address.substr(0,32)
-                      << " host=" << node_host_ << ":" << node_port_
-                      << " ssl_err=" << err << std::endl;
-            // Reset persistent client on connection failure so next call reconnects
-            resetClient();
-        }
-        return -1; 
+        return -1;
     }
 
     ShardoraClient(
