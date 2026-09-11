@@ -8849,11 +8849,413 @@ contract AMMPool {
             std::cout << "  Phase 6: all " << total6_ok
                       << " AMM prefund accounts confirmed OK\n";
         }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 7a: transfer liquidity tokens to AMM deployers + set deployer
+        //           gas-prefund on AMM contracts (two sub-steps in parallel)
+        // Phase 7b: AMM deployers call addLiquidity
+        // Phase 7c: Swap stress test (TCP fast path, max concurrency)
+        // Phase 7d: Verify reserves and user balances
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n" << std::string(70, '-') << "\n";
+        std::cout << "  [Phase 7a] Transfer tokens to deployers + deployer prefund\n";
+        std::cout << std::string(70, '-') << "\n";
+
+        const uint64_t kLiqAmt7      = 1'000'000'000'000ULL; // 1T per token
+        const uint64_t kSwapAmt7     = 1'000'000ULL;          // 1M per swap
+        const uint32_t kSwapRounds7  = 5;
+        const uint64_t kAdepPrefund7 = 5'000'000'000ULL;      // 5B gas for deployer
+
+        // ABI selectors
+        const std::string kSel7AddLiq   = utils::keccak256Str("addLiquidity(uint256,uint256)").substr(0, 8);
+        const std::string kSel7SwapAB   = utils::keccak256Str("swapAForB(uint256,uint256)").substr(0, 8);
+        const std::string kSel7SwapBA   = utils::keccak256Str("swapBForA(uint256,uint256)").substr(0, 8);
+        const std::string kSel7Reserves = utils::keccak256Str("getReserves()").substr(0, 8);
+
+        // ABI: selector + two uint256 (fits in uint64)
+        auto enc2u64 = [&](const std::string& sel, uint64_t a, uint64_t b) -> std::string {
+            return sel + encodeUint256u128((__uint128_t)a) + encodeUint256u128((__uint128_t)b);
+        };
+
+        // Build per-token set of holders (for fast membership test later)
+        std::vector<std::unordered_set<uint32_t>> holder_set(kTokens);
+        for (uint32_t ti = 0; ti < kTokens; ++ti)
+            for (uint32_t ui : rcpt5[ti]) holder_set[ti].insert(ui);
+
+        // Build contract → shard map for fast lookup in swap worker
+        std::unordered_map<std::string, uint32_t> amm_contract_shard;
+        for (const auto& ad : adeps8)
+            amm_contract_shard[ad.contract_addr_hex] = ad.signer_shard;
+
+        std::atomic<uint32_t> p7a_xfer_ok{0}, p7a_xfer_fail{0};
+        std::atomic<uint32_t> p7a_pf_ok{0},   p7a_pf_fail{0};
+
+        // Sub-step A: token deployers crossTransfer liq tokens to AMM deployers
+        std::vector<std::thread> th7a_xfer;
+        for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+            th7a_xfer.emplace_back([&, ti]() {
+                auto& td   = tdeps8[ti];
+                std::string pk_hex = common::Encode::HexEncode(td.prikey);
+                ShardoraSDK dsdk(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
+                // prepay key already set up in Phase 5
+                std::string ppkey = td.contract_addr_hex + td.addr_hex;
+                int64_t nonce = dsdk.fetchNonce(ppkey);
+                if (nonce < 0) {
+                    for (uint32_t k = 0; k < kAmmPairs; ++k)
+                        if (adeps8[k].token_a == ti || adeps8[k].token_b == ti) ++p7a_xfer_fail;
+                    std::cerr << "  [7a-xfer token" << ti << "] fetchNonce failed\n";
+                    return;
+                }
+                for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+                    if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
+                    const auto& ad = adeps8[k];
+                    // crossTransfer(address to, uint256 amt, uint32 shard, uint32 pool)
+                    std::string calldata = kXferSel
+                        + encodeAddr32(ad.addr_hex)
+                        + encodeUint256u128((__uint128_t)kLiqAmt7)
+                        + encodeUint32ABI(ad.signer_shard)
+                        + encodeUint32ABI(ad.deployer_pool);
+                    auto r = dsdk.callContractWithNonce(pk_hex, td.contract_addr_hex, calldata, nonce);
+                    if (r.contains("status") && r["status"] == 0) { ++p7a_xfer_ok; ++nonce; }
+                    else { ++p7a_xfer_fail; std::cerr << "  [7a token" << ti << "→amm" << k << "] " << r.dump() << "\n"; }
+                }
+            });
+        }
+
+        // Sub-step B: AMM deployers setGasPrefund on AMM contracts (parallel with A)
+        std::vector<std::thread> th7a_pf;
+        for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+            th7a_pf.emplace_back([&, k]() {
+                const auto& ad = adeps8[k];
+                std::string pk_hex = common::Encode::HexEncode(ad.prikey);
+                ShardoraSDK dsdk(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                int64_t nonce = dsdk.fetchNonce(ad.addr_hex);
+                if (nonce < 0) { ++p7a_pf_fail; return; }
+                auto r = dsdk.setGasPrefundWithNonce(pk_hex, ad.contract_addr_hex, kAdepPrefund7, nonce);
+                if (r.contains("status") && r["status"] == 0) ++p7a_pf_ok;
+                else { ++p7a_pf_fail; std::cerr << "  [7a-pf amm" << k << "] " << r.dump() << "\n"; }
+            });
+        }
+
+        for (auto& t : th7a_xfer) t.join();
+        for (auto& t : th7a_pf)   t.join();
+        std::cout << "  [7a] token xfer:       " << p7a_xfer_ok << " ok / " << (p7a_xfer_ok+p7a_xfer_fail) << "\n";
+        std::cout << "  [7a] deployer prefund: " << p7a_pf_ok   << " ok / " << (p7a_pf_ok+p7a_pf_fail)   << "\n";
+
+        // Poll until all deployer prepay accounts confirmed (max 60s)
+        std::cout << "  [7a] Polling deployer prepay accounts (max 60s)...\n";
+        {
+            std::vector<bool> dpf_ok(kAmmPairs, false);
+            for (int rd = 0; rd < 60 && !global_stop; ++rd) {
+                uint32_t nc = 0;
+                for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                    if (dpf_ok[k]) { ++nc; continue; }
+                    const auto& ad = adeps8[k];
+                    ShardoraSDK q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                    if (q.fetchNonce(ad.contract_addr_hex + ad.addr_hex) >= 0) { dpf_ok[k] = true; ++nc; }
+                }
+                std::cout << "  [7a " << rd << "s] " << nc << "/" << kAmmPairs << " deployer prepay OK\n";
+                if (nc == kAmmPairs) break;
+                usleep(1000000);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 7b: AMM deployers call addLiquidity
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n" << std::string(70, '-') << "\n";
+        std::cout << "  [Phase 7b] addLiquidity\n";
+        std::cout << std::string(70, '-') << "\n";
+        {
+            std::atomic<uint32_t> liq_ok{0}, liq_fail{0};
+            std::vector<std::thread> th7liq;
+            for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+                th7liq.emplace_back([&, k]() {
+                    const auto& ad = adeps8[k];
+                    std::string pk_hex = common::Encode::HexEncode(ad.prikey);
+                    ShardoraSDK dsdk(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                    // Nonce from prepay account: amm_addr + adep_addr
+                    int64_t nonce = dsdk.fetchNonce(ad.contract_addr_hex + ad.addr_hex);
+                    if (nonce < 0) { ++liq_fail; std::cerr << "  [7b amm" << k << "] nonce fail\n"; return; }
+                    auto r = dsdk.callContractWithNonce(pk_hex, ad.contract_addr_hex,
+                                enc2u64(kSel7AddLiq, kLiqAmt7, kLiqAmt7), nonce);
+                    if (r.contains("status") && r["status"] == 0) ++liq_ok;
+                    else { ++liq_fail; std::cerr << "  [7b amm" << k << "] " << r.dump() << "\n"; }
+                });
+            }
+            for (auto& t : th7liq) t.join();
+            std::cout << "  [7b] addLiquidity: " << liq_ok << " ok / " << (liq_ok+liq_fail) << "\n";
+        }
+
+        // Poll AMM reserves (max 60s)
+        std::cout << "  [7b] Polling AMM reserves (max 60s)...\n";
+        {
+            std::vector<bool> res_ready(kAmmPairs, false);
+            for (int rd = 0; rd < 60 && !global_stop; ++rd) {
+                uint32_t nc = 0;
+                for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                    if (res_ready[k]) { ++nc; continue; }
+                    const auto& ad = adeps8[k];
+                    ShardoraSDK q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                    std::string rs = q.queryContract(common::Encode::HexEncode(ad.prikey),
+                                                     ad.contract_addr_hex, kSel7Reserves);
+                    // reserveA is first 64 hex chars; non-zero means liquidity added
+                    bool nonzero = false;
+                    for (size_t ci = 0; ci < std::min<size_t>(rs.size(), 64); ++ci)
+                        if (rs[ci] != '0') { nonzero = true; break; }
+                    if (nonzero) { res_ready[k] = true; ++nc; }
+                }
+                std::cout << "  [7b " << rd << "s] " << nc << "/" << kAmmPairs << " pools have reserves\n";
+                if (nc == kAmmPairs) break;
+                usleep(1000000);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 7c: Swap stress test (TCP fast path, maximum concurrency)
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n" << std::string(70, '-') << "\n";
+        std::cout << "  [Phase 7c] Swap stress test  rounds=" << kSwapRounds7
+                  << "  swapAmt=" << kSwapAmt7 << "\n";
+        std::cout << std::string(70, '-') << "\n";
+
+        // ContractCallOp / NoncedCallGroup pattern (same as Mode 5, local to Phase 7)
+        struct SwapOp7  { std::string prikey_hex, contract_addr, caller_addr, input_data; };
+        struct SwapGrp7 {
+            std::string prikey_hex, caller_addr, contract_addr;
+            uint32_t    amm_shard;
+            std::vector<std::string> inputs;
+        };
+
+        // Build flat swap op list from amm_pf6
+        std::vector<SwapOp7> swap_ops7;
+        swap_ops7.reserve(amm_pf6.size() * kSwapRounds7);
+        for (const auto& pf : amm_pf6) {
+            const auto& u  = users8[pf.user_idx];
+            const auto& ad = adeps8[pf.amm_idx];
+            bool has_a = holder_set[ad.token_a].count(pf.user_idx);
+            bool has_b = holder_set[ad.token_b].count(pf.user_idx);
+            std::string pk_hex = common::Encode::HexEncode(u.prikey);
+            for (uint32_t r = 0; r < kSwapRounds7; ++r) {
+                // Alternate direction per round for balance stability
+                bool go_ab = has_a && (!has_b || (r % 2 == 0));
+                std::string inp = go_ab
+                    ? enc2u64(kSel7SwapAB, kSwapAmt7, 0)
+                    : enc2u64(kSel7SwapBA, kSwapAmt7, 0);
+                if (has_a || has_b)
+                    swap_ops7.push_back({pk_hex, ad.contract_addr_hex, u.addr_hex, inp});
+            }
+        }
+        std::cout << "  Total swap ops:   " << swap_ops7.size() << "\n";
+
+        // group_by_prepay: group by (contract_addr + caller_addr)
+        std::vector<SwapGrp7> swap_grps7;
+        {
+            std::unordered_map<std::string, uint32_t> key2idx;
+            for (const auto& op : swap_ops7) {
+                std::string key = op.contract_addr + op.caller_addr;
+                auto it = key2idx.find(key);
+                if (it == key2idx.end()) {
+                    uint32_t shard = amm_contract_shard.count(op.contract_addr)
+                                     ? amm_contract_shard[op.contract_addr] : (uint32_t)shardnum;
+                    key2idx[key] = (uint32_t)swap_grps7.size();
+                    swap_grps7.push_back({op.prikey_hex, op.caller_addr, op.contract_addr, shard, {}});
+                    it = key2idx.find(key);
+                }
+                swap_grps7[it->second].inputs.push_back(op.input_data);
+            }
+        }
+        std::cout << "  Swap groups:      " << swap_grps7.size() << "\n";
+
+        // TCP sender thread (same pattern as Mode 5)
+        struct TcpItem7 { transport::MessagePtr msg; std::string ip; uint16_t port; };
+        std::queue<TcpItem7>     tcp_q7;
+        std::mutex               tcp_mtx7;
+        std::condition_variable  tcp_cv7;
+        std::atomic<bool>        tcp_stop7{false};
+        std::atomic<uint64_t>    tcp_sent7{0};
+
+        std::thread tcp_sender7([&]() {
+            std::vector<TcpItem7> batch;
+            batch.reserve(4096);
+            while (!tcp_stop7.load()) {
+                {
+                    std::unique_lock<std::mutex> lk(tcp_mtx7);
+                    tcp_cv7.wait_for(lk, std::chrono::milliseconds(1),
+                        [&]{ return !tcp_q7.empty() || tcp_stop7.load(); });
+                    while (!tcp_q7.empty()) { batch.push_back(std::move(tcp_q7.front())); tcp_q7.pop(); }
+                }
+                for (auto& item : batch) {
+                    transport::TcpTransport::Instance()->Send(item.ip, item.port, item.msg->header);
+                    ++tcp_sent7;
+                }
+                batch.clear();
+            }
+            std::lock_guard<std::mutex> lk(tcp_mtx7);
+            while (!tcp_q7.empty()) {
+                auto item = std::move(tcp_q7.front()); tcp_q7.pop();
+                transport::TcpTransport::Instance()->Send(item.ip, item.port, item.msg->header);
+                ++tcp_sent7;
+            }
+        });
+
+        auto tcp_enq7 = [&](transport::MessagePtr msg, const std::string& ip, uint16_t port) -> bool {
+            if (!msg) return false;
+            { std::lock_guard<std::mutex> lk(tcp_mtx7); tcp_q7.push({std::move(msg), ip, port}); }
+            tcp_cv7.notify_one();
+            return true;
+        };
+
+        // Worker thread pool: one slice of groups per thread
+        std::atomic<uint64_t> swap_ok7{0}, swap_fail7{0};
+        auto swap_start7 = std::chrono::steady_clock::now();
+        {
+            uint32_t nt = std::min((uint32_t)common::kMaxThreadCount, (uint32_t)swap_grps7.size());
+            if (nt == 0) nt = 1;
+            uint32_t gpp = (uint32_t)swap_grps7.size() / nt;
+            std::vector<std::thread> workers;
+            for (uint32_t t = 0; t < nt; ++t) {
+                uint32_t s = t * gpp;
+                uint32_t e = (t == nt - 1) ? (uint32_t)swap_grps7.size() : s + gpp;
+                workers.emplace_back([&, s, e]() {
+                    std::unordered_map<std::string, std::shared_ptr<security::Security>> sec_cache;
+                    std::unordered_map<uint32_t, std::shared_ptr<ShardoraSDK>>          sdk_cache;
+                    for (uint32_t gi = s; gi < e && !global_stop; ++gi) {
+                        auto& grp = swap_grps7[gi];
+                        // Cache security object
+                        auto& sec = sec_cache[grp.prikey_hex];
+                        if (!sec) {
+                            sec = std::make_shared<security::Ecdsa>();
+                            sec->SetPrivateKey(common::Encode::HexDecode(grp.prikey_hex));
+                        }
+                        // Cache SDK per shard
+                        auto& sdk = sdk_cache[grp.amm_shard];
+                        if (!sdk) {
+                            auto ep = eps8.find(grp.amm_shard);
+                            if (ep == eps8.end()) { swap_fail7 += grp.inputs.size(); continue; }
+                            sdk = std::make_shared<ShardoraSDK>(ep->second.ip, ep->second.http);
+                        }
+                        // Fetch prepay nonce once per group (amm_addr + user_addr)
+                        std::string ppkey = grp.contract_addr + grp.caller_addr;
+                        int64_t nonce = -1;
+                        for (int retry = 0; retry < 3 && nonce < 0; ++retry) {
+                            nonce = sdk->fetchNonce(ppkey);
+                            if (nonce < 0 && retry < 2) usleep(100000);
+                        }
+                        if (nonce < 0) nonce = 0;
+                        // Lookup dest TCP port
+                        auto ep = eps8.find(grp.amm_shard);
+                        uint16_t tcp_port = (ep != eps8.end()) ? ep->second.http - 10000 : 10001;
+                        std::string dest_ip = (ep != eps8.end()) ? ep->second.ip : global_chain_node_ip;
+                        // Send all TXs in this group, incrementing nonce locally
+                        for (const auto& inp : grp.inputs) {
+                            if (global_stop) break;
+                            auto tx = CreateTransactionWithAttr(sec, ++nonce,
+                                grp.prikey_hex,
+                                common::Encode::HexDecode(grp.contract_addr),
+                                "call", inp, 0, 5000000, 1, (int32_t)grp.amm_shard);
+                            if (tcp_enq7(tx, dest_ip, tcp_port)) ++swap_ok7;
+                            else ++swap_fail7;
+                        }
+                    }
+                });
+            }
+            // Progress monitor
+            std::thread prog7([&]() {
+                uint64_t total = swap_ops7.size();
+                while (swap_ok7.load() + swap_fail7.load() < total && !global_stop) {
+                    usleep(2000000);
+                    auto el = std::chrono::duration_cast<std::chrono::seconds>(
+                        std::chrono::steady_clock::now() - swap_start7).count();
+                    std::cout << "  [7c " << el << "s] sent=" << (swap_ok7+swap_fail7)
+                              << "/" << total << "  tcp=" << tcp_sent7 << "\n";
+                }
+            });
+            for (auto& w : workers) w.join();
+            prog7.join();
+        }
+        // Drain TCP sender
+        tcp_stop7 = true;
+        tcp_cv7.notify_all();
+        tcp_sender7.join();
+
+        auto swap_elapsed7 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - swap_start7).count();
+        std::cout << "  [7c] sent=" << swap_ok7 << " fail=" << swap_fail7
+                  << "  tcp=" << tcp_sent7 << "  elapsed=" << swap_elapsed7 << "ms"
+                  << "  tps=" << (tcp_sent7.load() * 1000 / std::max(1LL, (long long)swap_elapsed7)) << "\n";
+
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 7d: Verify correctness
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n" << std::string(70, '-') << "\n";
+        std::cout << "  [Phase 7d] Verify (30s settlement wait)\n";
+        std::cout << std::string(70, '-') << "\n";
+        for (int w7 = 0; w7 < 30 && !global_stop; ++w7) {
+            usleep(1000000);
+            if (w7 % 10 == 9) std::cout << "  [" << (w7+1) << "s] waiting...\n";
+        }
+
+        // Hex → uint64_t (take last 16 hex chars = 8 bytes)
+        auto hex2u64 = [](const std::string& h) -> uint64_t {
+            uint64_t v = 0;
+            size_t start = (h.size() > 16) ? h.size() - 16 : 0;
+            for (size_t i = start; i < h.size(); ++i) {
+                char c = h[i];
+                v = v * 16 + (c >= '0' && c <= '9' ? c - '0' :
+                              c >= 'a' && c <= 'f' ? c - 'a' + 10 :
+                              c >= 'A' && c <= 'F' ? c - 'A' + 10 : 0);
+            }
+            return v;
+        };
+
+        // Check AMM reserves
+        std::cout << "  AMM reserves after swaps:\n";
+        uint32_t pools_swapped = 0;
+        for (uint32_t k = 0; k < kAmmPairs; ++k) {
+            const auto& ad = adeps8[k];
+            ShardoraSDK q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+            std::string rs = q.queryContract(common::Encode::HexEncode(ad.prikey),
+                                             ad.contract_addr_hex, kSel7Reserves);
+            uint64_t rA = 0, rB = 0;
+            if (rs.size() >= 128) { rA = hex2u64(rs.substr(0, 64)); rB = hex2u64(rs.substr(64, 64)); }
+            bool swapped = (rA != kLiqAmt7 || rB != kLiqAmt7);
+            if (swapped) ++pools_swapped;
+            std::cout << "    [amm" << k << "] s" << ad.signer_shard
+                      << " rA=" << rA << " rB=" << rB
+                      << (swapped ? "  ✓ swaps occurred" : "  – no change") << "\n";
+        }
+
+        // Check token balances for first 3 users per AMM (sample)
+        std::cout << "  Sample user token balances:\n";
+        uint32_t checked = 0;
+        for (const auto& pf : amm_pf6) {
+            if (checked >= 3 * kAmmPairs) break;
+            const auto& u  = users8[pf.user_idx];
+            const auto& ad = adeps8[pf.amm_idx];
+            uint32_t ti = ad.token_a;
+            const auto& td = tdeps8[ti];
+            ShardoraSDK q(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
+            std::string qdata = kBalOfSel + encodeAddr32(u.addr_hex);
+            std::string rs = q.queryContract(common::Encode::HexEncode(td.prikey),
+                                             td.contract_addr_hex, qdata);
+            uint64_t bal = rs.size() >= 64 ? hex2u64(rs.substr(0, 64)) : 0;
+            std::cout << "    [amm" << pf.amm_idx << " user=" << u.addr_hex.substr(0,8)
+                      << "...] token" << ti << " bal=" << bal << "\n";
+            ++checked;
+        }
+
+        std::cout << "\n  Phase 7 summary:\n";
+        std::cout << "    Liquidity:   " << kLiqAmt7 << " per token per pool\n";
+        std::cout << "    Swap TXs:    " << tcp_sent7 << " / " << swap_ops7.size() << "\n";
+        std::cout << "    TPS:         " << (tcp_sent7.load() * 1000 / std::max(1LL, (long long)swap_elapsed7)) << "\n";
+        std::cout << "    Pools with swaps: " << pools_swapped << "/" << kAmmPairs << "\n";
+
         } // end if (kAmmPairs > 0)
 
         // ─────────────────────────────────────────────────────────────────
         std::cout << "\n" << std::string(70, '=') << "\n";
-        std::cout << "  Mode 8 Complete (Phase 0-6)\n";
+        std::cout << "  Mode 8 Complete (Phase 0-7)\n";
         std::cout << "  Users:           " << users8.size() << "\n";
         std::cout << "  Token contracts: " << kTokens << "\n";
         for (uint32_t i = 0; i < kTokens; ++i)
