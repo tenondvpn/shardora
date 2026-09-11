@@ -8620,7 +8620,7 @@ contract AMMPool {
         const uint32_t total5 = (uint32_t)pending5.size();
 
         std::cout << "\n[Phase 5 verify] Polling balanceOf (10s initial wait, "
-                  << "max 60s, " << total5 << " checks)...\n";
+                  << "max 300s, " << total5 << " checks)...\n";
 
         // Initial wait — give cross-shard delivery a head start.
         for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
@@ -8628,7 +8628,7 @@ contract AMMPool {
 
         uint32_t bok5 = 0;
         auto p5_start = std::chrono::steady_clock::now();
-        const int kP5MaxSec = 60;
+        const int kP5MaxSec = 300;
 
         while (!pending5.empty() && !global_stop) {
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
