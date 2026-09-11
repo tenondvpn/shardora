@@ -8451,7 +8451,9 @@ contract AMMPool {
         const std::string kBalOfSel =
             utils::keccak256Str("balanceOf(address)").substr(0, 8);
 
-        const uint64_t kLiqAmt7 = 1'000'000'000'000ULL; // 1T per token for AMM liquidity
+        const uint64_t kLiqAmt7      = 1'000'000'000'000ULL; // 1T per token for AMM liquidity
+        const uint64_t kSwapAmt7     = 1'000'000ULL;          // 1M per swap
+        const uint32_t kSwapRounds7  = 5;
 
         // 10000 ether = 10000 * 10^18 (fits in 128 bits, exceeds uint64_t)
         const __uint128_t kPerAmt5 =
@@ -8555,8 +8557,11 @@ contract AMMPool {
                     // Also send kLiqAmt7 to each AMM deployer that uses this token,
                     // directly to the AMM's (shard, pool) shadow so addLiquidity works
                     // without a separate pre-transfer step in Phase 7.
+                    // Also send kSwapXferAmt to each user at each AMM shadow so swapAForB
+                    // can call transferFrom — CrossShardBase.transferFrom only needs balance.
                     {
                         int64_t amm_nonce = ppnonce + (int64_t)rcpt5[ti].size();
+                        // AMM deployer liquidity transfers
                         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
                             if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
                             const auto& ad = adeps8[k];
@@ -8574,6 +8579,32 @@ contract AMMPool {
                                           << "→amm" << k
                                           << " err=" << ra.value("msg", "?") << "\n";
                                 xfail5.fetch_add(1);
+                            }
+                        }
+                        // Swap-user transfers: each user needs kSwapXferAmt on the AMM shadow
+                        const uint64_t kSwapXferAmt = kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
+                        for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+                            if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
+                            const auto& ad = adeps8[k];
+                            for (uint32_t ri = 0; ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
+                                const auto& u = users8[rcpt5[ti][ri]];
+                                // skip users already on the AMM's shard/pool (own shadow == AMM shadow)
+                                if (u.shard_id == ad.signer_shard && u.pool_idx == ad.deployer_pool) continue;
+                                std::string cd = kXferSel
+                                    + encodeAddr32(u.addr_hex)
+                                    + encodeUint256u128((__uint128_t)kSwapXferAmt)
+                                    + encodeUint32ABI(ad.signer_shard)
+                                    + encodeUint32ABI(ad.deployer_pool);
+                                auto ra = dsdk.callContractWithNonce(
+                                    pk_hex, td.contract_addr_hex, cd, amm_nonce);
+                                if (ra.contains("status") && ra["status"] == 0) {
+                                    xok5.fetch_add(1); ++amm_nonce;
+                                } else {
+                                    std::cerr << "  [Phase5 usr-amm-xfer] FAIL token" << ti
+                                              << " usr" << rcpt5[ti][ri] << "→amm" << k
+                                              << " err=" << ra.value("msg", "?") << "\n";
+                                    xfail5.fetch_add(1);
+                                }
                             }
                         }
                     }
@@ -8959,8 +8990,6 @@ contract AMMPool {
         std::cout << "  [Phase 7a] Transfer tokens to deployers + deployer prefund\n";
         std::cout << std::string(70, '-') << "\n";
 
-        const uint64_t kSwapAmt7     = 1'000'000ULL;          // 1M per swap
-        const uint32_t kSwapRounds7  = 5;
         const uint64_t kAdepPrefund7 = 5'000'000'000ULL;      // 5B gas for deployer
 
         // ABI selectors
@@ -9101,138 +9130,6 @@ contract AMMPool {
                           << "  addLiquidity is reverting — check tokenA/B shadow addresses and deployer balances above.\n";
                 transport::TcpTransport::Instance()->Stop();
                 return 1;
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────────
-        // Phase 7c-pre: ensure every swap user has token balance on AMM's
-        // shadow (DeriveShardAddress(tokenBase, amm_shard, amm_pool)).
-        // swapAForB calls tokenA.transferFrom(user, amm, amt) on the AMM's
-        // shadow; users' balances from Phase 5 are on their OWN shadow.
-        // Fix: token deployer crossTransfers directly to user at AMM shard/pool.
-        // ─────────────────────────────────────────────────────────────────
-        std::cout << "\n" << std::string(70, '-') << "\n";
-        std::cout << "  [Phase 7c-pre] CrossTransfer user tokens to AMM shadows\n";
-        std::cout << std::string(70, '-') << "\n";
-        {
-            const uint64_t kSwapXferAmt = kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
-
-            struct XferOp7c { uint32_t token_idx; uint32_t user_idx; uint32_t amm_idx; };
-            std::vector<XferOp7c> xfer7c;
-            {
-                std::set<std::tuple<uint32_t,uint32_t,uint32_t>> seen; // (token, user, amm)
-                for (const auto& pf : amm_pf6) {
-                    const auto& u  = users8[pf.user_idx];
-                    const auto& ad = adeps8[pf.amm_idx];
-                    if (u.shard_id == ad.signer_shard && u.pool_idx == ad.deployer_pool) continue;
-                    bool has_a = holder_set[ad.token_a].count(pf.user_idx);
-                    bool has_b = holder_set[ad.token_b].count(pf.user_idx);
-                    if (has_a) {
-                        auto key = std::make_tuple(ad.token_a, pf.user_idx, pf.amm_idx);
-                        if (!seen.count(key)) { seen.insert(key); xfer7c.push_back({ad.token_a, pf.user_idx, pf.amm_idx}); }
-                    }
-                    if (has_b) {
-                        auto key = std::make_tuple(ad.token_b, pf.user_idx, pf.amm_idx);
-                        if (!seen.count(key)) { seen.insert(key); xfer7c.push_back({ad.token_b, pf.user_idx, pf.amm_idx}); }
-                    }
-                }
-            }
-            std::cout << "  [7c-pre] xfer ops needed: " << xfer7c.size() << "\n";
-
-            if (!xfer7c.empty()) {
-                // Group by token so each deployer handles its own users
-                std::unordered_map<uint32_t, std::vector<uint32_t>> tok2ops;
-                for (uint32_t i = 0; i < (uint32_t)xfer7c.size(); ++i)
-                    tok2ops[xfer7c[i].token_idx].push_back(i);
-
-                std::atomic<uint32_t> xf7c_ok{0}, xf7c_fail{0};
-                std::vector<std::thread> xf7c_threads;
-                for (auto& [ti_key, ops] : tok2ops) {
-                    xf7c_threads.emplace_back([&, ti_key, ops]() {
-                        const auto& td = tdeps8[ti_key];
-                        std::string pk_hex = common::Encode::HexEncode(td.prikey);
-                        ShardoraSDK tsdk(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
-                        std::string ppkey = td.contract_addr_hex + td.addr_hex;
-                        int64_t nonce = tsdk.fetchNonce(ppkey);
-                        if (nonce < 0) {
-                            xf7c_fail += (uint32_t)ops.size();
-                            std::cerr << "  [7c-pre token" << ti_key << "] fetchNonce failed\n";
-                            return;
-                        }
-                        for (uint32_t idx : ops) {
-                            if (global_stop) break;
-                            const auto& op = xfer7c[idx];
-                            const auto& u  = users8[op.user_idx];
-                            const auto& ad = adeps8[op.amm_idx];
-                            std::string calldata = kXferSel
-                                + encodeAddr32(u.addr_hex)
-                                + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                + encodeUint32ABI(ad.signer_shard)
-                                + encodeUint32ABI(ad.deployer_pool);
-                            auto r = tsdk.callContractWithNonce(pk_hex, td.contract_addr_hex, calldata, nonce);
-                            if (r.contains("status") && r["status"] == 0) { ++xf7c_ok; ++nonce; }
-                            else {
-                                ++xf7c_fail;
-                                std::cerr << "  [7c-pre tok" << ti_key << " usr" << op.user_idx
-                                          << "→amm" << op.amm_idx << "] " << r.dump() << "\n";
-                            }
-                        }
-                    });
-                }
-                for (auto& t : xf7c_threads) t.join();
-                std::cout << "  [7c-pre] sent: " << xf7c_ok << " ok / " << (xf7c_ok+xf7c_fail) << "\n";
-
-                // Poll until users have balance on AMM's shadow (max 90s)
-                std::cout << "  [7c-pre] Polling user balances on AMM shadows (max 90s)...\n";
-                std::vector<bool> xf7c_ready(xfer7c.size(), false);
-                for (int rd = 0; rd < 90 && !global_stop; ++rd) {
-                    uint32_t nc = 0;
-                    for (uint32_t xi = 0; xi < (uint32_t)xfer7c.size(); ++xi) {
-                        if (xf7c_ready[xi]) { ++nc; continue; }
-                        const auto& op = xfer7c[xi];
-                        const auto& u  = users8[op.user_idx];
-                        const auto& ad = adeps8[op.amm_idx];
-                        const auto& td = tdeps8[op.token_idx];
-                        std::string ammShadow_hex = (op.token_idx == ad.token_a)
-                            ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
-                        ShardoraClient qc(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
-                        std::string rs = qc.queryContract(common::Encode::HexEncode(td.prikey),
-                            ammShadow_hex, kBalOfSel + encodeAddr32(u.addr_hex));
-                        uint64_t bal = rs.size() >= 64 ? hex2u64(rs.substr(0, 64)) : 0;
-                        if (bal >= kSwapAmt7) { xf7c_ready[xi] = true; ++nc; }
-                        else if (rd > 0 && rd % 30 == 0) {
-                            ShardoraSDK tsdk2(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
-                            std::string ppkey2 = td.contract_addr_hex + td.addr_hex;
-                            int64_t tn = tsdk2.fetchNonce(ppkey2);
-                            if (tn >= 0) {
-                                std::string cd2 = kXferSel
-                                    + encodeAddr32(u.addr_hex)
-                                    + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(ad.signer_shard)
-                                    + encodeUint32ABI(ad.deployer_pool);
-                                tsdk2.callContractWithNonce(
-                                    common::Encode::HexEncode(td.prikey),
-                                    td.contract_addr_hex, cd2, tn);
-                                std::cout << "  [7c-pre rd=" << rd << "] re-sent usr=" << u.addr_hex
-                                          << " tok=" << op.token_idx << " amm=" << op.amm_idx
-                                          << " bal=" << bal << "\n";
-                            }
-                        }
-                    }
-                    std::cout << "  [7c-pre " << rd << "s] " << nc << "/" << xfer7c.size()
-                              << " user-token pairs ready\n";
-                    if (nc == (uint32_t)xfer7c.size()) break;
-                    usleep(1000000);
-                }
-                uint32_t ready7c = 0;
-                for (bool b : xf7c_ready) if (b) ++ready7c;
-                if (ready7c < (uint32_t)xfer7c.size()) {
-                    std::cerr << "  FATAL: Phase 7c-pre: only " << ready7c << "/"
-                              << xfer7c.size() << " user-token pairs ready after 90s.\n";
-                    transport::TcpTransport::Instance()->Stop();
-                    return 1;
-                }
-                std::cout << "  [7c-pre] All " << ready7c << " user-token pairs ready\n";
             }
         }
 
