@@ -9164,10 +9164,11 @@ contract AMMPool {
         std::cout << std::string(70, '-') << "\n";
 
         // ContractCallOp / NoncedCallGroup pattern (same as Mode 5, local to Phase 7)
-        struct SwapOp7  { std::string prikey_hex, contract_addr, caller_addr, input_data; };
+        struct SwapOp7  { std::string prikey_hex, contract_addr, caller_addr, input_data; bool go_ab; };
         struct SwapGrp7 {
             std::string prikey_hex, caller_addr, contract_addr;
             uint32_t    amm_shard;
+            uint32_t    cnt_ab{0}, cnt_ba{0};
             std::vector<std::string> inputs;
         };
 
@@ -9187,7 +9188,7 @@ contract AMMPool {
                     ? enc2u64(kSel7SwapAB, kSwapAmt7, 0)
                     : enc2u64(kSel7SwapBA, kSwapAmt7, 0);
                 if (has_a || has_b)
-                    swap_ops7.push_back({pk_hex, ad.contract_addr_hex, u.addr_hex, inp});
+                    swap_ops7.push_back({pk_hex, ad.contract_addr_hex, u.addr_hex, inp, go_ab});
             }
         }
         std::cout << "  Total swap ops:   " << swap_ops7.size() << "\n";
@@ -9207,6 +9208,8 @@ contract AMMPool {
                     it = key2idx.find(key);
                 }
                 swap_grps7[it->second].inputs.push_back(op.input_data);
+                if (op.go_ab) ++swap_grps7[it->second].cnt_ab;
+                else          ++swap_grps7[it->second].cnt_ba;
             }
         }
         std::cout << "  Swap groups:      " << swap_grps7.size() << "\n";
@@ -9251,6 +9254,7 @@ contract AMMPool {
         };
 
         // Worker thread pool: one slice of groups per thread
+        std::mutex cout_mtx7;
         std::atomic<uint64_t> swap_ok7{0}, swap_fail7{0};
         auto swap_start7 = std::chrono::steady_clock::now();
         {
@@ -9276,7 +9280,14 @@ contract AMMPool {
                         auto& sdk = sdk_cache[grp.amm_shard];
                         if (!sdk) {
                             auto ep = eps8.find(grp.amm_shard);
-                            if (ep == eps8.end()) { swap_fail7 += grp.inputs.size(); continue; }
+                            if (ep == eps8.end()) {
+                                std::lock_guard<std::mutex> ck(cout_mtx7);
+                                std::cout << "  [7c] grp=" << gi
+                                          << " FAIL no_ep shard=" << grp.amm_shard
+                                          << " user=" << grp.caller_addr
+                                          << " contract=" << grp.contract_addr << "\n";
+                                swap_fail7 += grp.inputs.size(); continue;
+                            }
                             sdk = std::make_shared<ShardoraSDK>(ep->second.ip, ep->second.http);
                         }
                         // Fetch prepay nonce once per group (amm_addr + user_addr)
@@ -9286,20 +9297,46 @@ contract AMMPool {
                             nonce = sdk->fetchNonce(ppkey);
                             if (nonce < 0 && retry < 2) usleep(100000);
                         }
-                        if (nonce < 0) nonce = 0;
+                        if (nonce < 0) {
+                            {
+                                std::lock_guard<std::mutex> ck(cout_mtx7);
+                                std::cout << "  [7c] grp=" << gi
+                                          << " WARN nonce_fail→0 user=" << grp.caller_addr
+                                          << " contract=" << grp.contract_addr << "\n";
+                            }
+                            nonce = 0;
+                        }
                         // Lookup dest TCP port
                         auto ep = eps8.find(grp.amm_shard);
                         uint16_t tcp_port = (ep != eps8.end()) ? ep->second.http - 10000 : 10001;
                         std::string dest_ip = (ep != eps8.end()) ? ep->second.ip : global_chain_node_ip;
                         // Send all TXs in this group, incrementing nonce locally
+                        {
+                            std::lock_guard<std::mutex> ck(cout_mtx7);
+                            std::cout << "  [7c] grp=" << gi
+                                      << " user=" << grp.caller_addr
+                                      << " contract=" << grp.contract_addr
+                                      << " shard=" << grp.amm_shard
+                                      << " nonce_start=" << nonce
+                                      << " AB=" << grp.cnt_ab
+                                      << " BA=" << grp.cnt_ba
+                                      << " total=" << grp.inputs.size()
+                                      << "\n";
+                        }
+                        uint64_t grp_ok = 0, grp_fail = 0;
                         for (const auto& inp : grp.inputs) {
                             if (global_stop) break;
                             auto tx = CreateTransactionWithAttr(sec, ++nonce,
                                 grp.prikey_hex,
                                 common::Encode::HexDecode(grp.contract_addr),
                                 "call", inp, 0, 5000000, 1, (int32_t)grp.amm_shard);
-                            if (tcp_enq7(tx, dest_ip, tcp_port)) ++swap_ok7;
-                            else ++swap_fail7;
+                            if (tcp_enq7(tx, dest_ip, tcp_port)) { ++swap_ok7; ++grp_ok; }
+                            else { ++swap_fail7; ++grp_fail; }
+                        }
+                        if (grp_fail > 0) {
+                            std::lock_guard<std::mutex> ck(cout_mtx7);
+                            std::cout << "  [7c] grp=" << gi
+                                      << " DONE ok=" << grp_ok << " fail=" << grp_fail << "\n";
                         }
                     }
                 });
