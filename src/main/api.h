@@ -638,6 +638,14 @@ public:
         return {{"status", 1}, {"msg", "set gas prefund failed"}};
     }
 
+    // Like setGasPrefund but with a caller-supplied current db_nonce (avoids fetchNonce
+    // seeing stale data when the sender already sent earlier TXs this session).
+    // Pass the last confirmed/sent nonce; transfer() increments it internally.
+    json setGasPrefundWithNonce(const std::string& private_key, const std::string& address, uint64_t prefund, int64_t current_nonce) {
+        if (client.transfer(private_key, address, 0, current_nonce, 7, "", "", "", "", prefund, true)) return {{"status", 0}, {"msg", "ok"}};
+        return {{"status", 1}, {"msg", "set gas prefund failed"}};
+    }
+
     json callFunctionSolidity(const std::string& private_key, const std::string& address, uint64_t amount, 
                                 const std::string& func_name, const std::vector<std::string>& fn_types, const std::vector<std::string>& fn_args) {
         try {

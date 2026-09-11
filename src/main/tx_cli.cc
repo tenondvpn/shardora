@@ -8670,40 +8670,47 @@ contract AMMPool {
         std::cout << "  Prefund ops: " << amm_pf6.size()
                   << "  (" << kAmmPairs << " AMM pools)\n";
 
-        // Send prefunds — one thread per AMM pool.
-        // Each prefund TX must be routed to the SENDER's (user's) shard, not the
-        // contract's shard.  The node that receives kContractGasPrefund looks up
-        // the sender address to debit gas; if the sender lives on a different shard
-        // the receiving node won't find it and the TX will be rejected.
+        // Send prefunds — one thread per USER so nonces are sequential.
+        // Each user may appear in multiple AMM pools (holding both tokens).
+        // Running one thread per AMM caused concurrent sends for the same user
+        // with the same fetched nonce → second TX rejected as nonce-reuse.
         std::atomic<uint32_t> apf6_ok{0}, apf6_fail{0};
         {
+            // Group amm_pf6 entries by user index
+            std::unordered_map<uint32_t, std::vector<uint32_t>> user_to_amms;
+            for (uint32_t i = 0; i < (uint32_t)amm_pf6.size(); ++i)
+                user_to_amms[amm_pf6[i].user_idx].push_back(i);
+
             std::vector<std::thread> apf6_threads;
-            for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
-                apf6_threads.emplace_back([&, k]() {
-                    std::set<uint32_t> holders;
-                    for (uint32_t ui : rcpt5[adeps8[k].token_a]) holders.insert(ui);
-                    for (uint32_t ui : rcpt5[adeps8[k].token_b]) holders.insert(ui);
-                    // Per-shard SDK cache: reuse connections within the same shard.
-                    std::map<uint32_t, std::unique_ptr<ShardoraSDK>> shard_sdk_cache;
-                    for (uint32_t ui : holders) {
+            for (auto& [ui, pf_idxs] : user_to_amms) {
+                apf6_threads.emplace_back([&, ui, pf_idxs]() {
+                    if (global_stop) return;
+                    uint32_t user_shard = users8[ui].shard_id;
+                    auto ep_it = eps8.find(user_shard);
+                    if (ep_it == eps8.end()) {
+                        apf6_fail.fetch_add((uint32_t)pf_idxs.size());
+                        return;
+                    }
+                    ShardoraSDK sdk(ep_it->second.ip, ep_it->second.http);
+                    std::string pk_hex = common::Encode::HexEncode(users8[ui].prikey);
+                    std::string addr_hex = users8[ui].addr_hex;
+                    // Fetch nonce once for this user; subsequent TXs increment locally.
+                    int64_t cur_nonce = sdk.fetchNonce(addr_hex);
+                    if (cur_nonce < 0) {
+                        apf6_fail.fetch_add((uint32_t)pf_idxs.size());
+                        return;
+                    }
+                    for (uint32_t idx : pf_idxs) {
                         if (global_stop) break;
-                        uint32_t user_shard = users8[ui].shard_id;
-                        if (shard_sdk_cache.find(user_shard) == shard_sdk_cache.end()) {
-                            auto ep_it = eps8.find(user_shard);
-                            if (ep_it == eps8.end()) {
-                                apf6_fail.fetch_add(1);
-                                continue;
-                            }
-                            shard_sdk_cache[user_shard] = std::make_unique<ShardoraSDK>(
-                                ep_it->second.ip, ep_it->second.http);
-                        }
-                        std::string pk_hex = common::Encode::HexEncode(users8[ui].prikey);
-                        auto r = shard_sdk_cache.at(user_shard)->setGasPrefund(
-                            pk_hex, adeps8[k].contract_addr_hex, kAmmPrefund6);
-                        if (r.contains("status") && r["status"] == 0)
+                        auto& amm6 = adeps8[amm_pf6[idx].amm_idx];
+                        auto r = sdk.setGasPrefundWithNonce(
+                            pk_hex, amm6.contract_addr_hex, kAmmPrefund6, cur_nonce);
+                        if (r.contains("status") && r["status"] == 0) {
                             apf6_ok.fetch_add(1);
-                        else
+                            ++cur_nonce;  // advance for next AMM
+                        } else {
                             apf6_fail.fetch_add(1);
+                        }
                     }
                 });
             }
