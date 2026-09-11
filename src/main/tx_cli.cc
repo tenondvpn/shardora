@@ -9362,29 +9362,44 @@ contract AMMPool {
         }
 
         // Check token balances for first 3 users per AMM (sample)
-        std::cout << "  Sample user token balances:\n";
+        // Query user's balance on the AMM shadow (where Phase5 funded them and swaps run)
+        std::cout << "  Sample user token balances (on AMM shadow):\n";
         uint32_t checked = 0;
         for (const auto& pf : amm_pf6) {
             if (checked >= 3 * kAmmPairs) break;
             const auto& u  = users8[pf.user_idx];
             const auto& ad = adeps8[pf.amm_idx];
-            uint32_t ti = ad.token_a;
-            const auto& td = tdeps8[ti];
-            // User balance is on the SHADOW contract on the user's shard, not the base contract
-            std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
-            evmc::address root_evmc{};
-            std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-            evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
-                root_evmc, u.shard_id, u.pool_idx);
-            std::string shadow_hex = common::Encode::HexEncode(
-                std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
-            ShardoraClient q(eps8[u.shard_id].ip, eps8[u.shard_id].http);
-            std::string qdata = kBalOfSel + encodeAddr32(u.addr_hex);
-            std::string rs = q.queryContract(common::Encode::HexEncode(td.prikey),
-                                             shadow_hex, qdata);
-            uint64_t bal = rs.size() >= 64 ? hex2u64(rs.substr(0, 64)) : 0;
-            std::cout << "    [amm" << pf.amm_idx << " user=" << u.addr_hex.substr(0,8)
-                      << "...] token" << ti << " bal=" << bal << "\n";
+
+            auto query_bal_full = [&](uint32_t ti_) {
+                const auto& td_ = tdeps8[ti_];
+                std::string root_raw_ = common::Encode::HexDecode(td_.contract_addr_hex);
+                evmc::address root_evmc_{};
+                std::memcpy(root_evmc_.bytes, root_raw_.data(), 20);
+                evmc::address shadow_evmc_ = shardoravm::DeriveShardAddress(
+                    root_evmc_, ad.signer_shard, ad.deployer_pool);
+                std::string shadow_hex_ = common::Encode::HexEncode(
+                    std::string(reinterpret_cast<const char*>(shadow_evmc_.bytes), 20));
+                ShardoraClient q_(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                std::string qdata_ = kBalOfSel + encodeAddr32(u.addr_hex);
+                std::string rs_ = q_.queryContract(common::Encode::HexEncode(td_.prikey),
+                                                   shadow_hex_, qdata_);
+                uint64_t bal = rs_.size() >= 64 ? hex2u64(rs_.substr(0, 64)) : 0;
+                std::cout << "      token" << ti_
+                          << " contract=" << td_.contract_addr_hex
+                          << " shadow=" << shadow_hex_
+                          << " endpoint=" << eps8[ad.signer_shard].ip
+                          << ":" << eps8[ad.signer_shard].http
+                          << " raw=" << (rs_.empty() ? "(empty)" : rs_.substr(0, 64))
+                          << " bal=" << bal << "\n";
+            };
+
+            std::cout << "    [amm" << pf.amm_idx << "]"
+                      << " user=" << u.addr_hex
+                      << " user_shard=" << u.shard_id << " user_pool=" << u.pool_idx
+                      << " amm_shard=" << ad.signer_shard << " amm_pool=" << ad.deployer_pool
+                      << "\n";
+            query_bal_full(ad.token_a);
+            query_bal_full(ad.token_b);
             ++checked;
         }
 
