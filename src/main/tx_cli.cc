@@ -8995,11 +8995,18 @@ contract AMMPool {
                     ShardoraClient q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
                     std::string rs = q.queryContract(common::Encode::HexEncode(ad.prikey),
                                                      ad.contract_addr_hex, kSel7Reserves);
-                    // reserveA is first 64 hex chars; non-zero means liquidity added
-                    bool nonzero = false;
-                    for (size_t ci = 0; ci < std::min<size_t>(rs.size(), 64); ++ci)
-                        if (rs[ci] != '0') { nonzero = true; break; }
-                    if (nonzero) { res_ready[k] = true; ++nc; }
+                    // Valid ABI response = 128 hex chars; reserveA (first 64) must be non-zero.
+                    // Error JSON responses (contain '{', '"') must not be treated as ready.
+                    bool valid_abi = rs.size() >= 128;
+                    for (size_t ci = 0; ci < 128 && valid_abi; ++ci) {
+                        char c = rs[ci];
+                        valid_abi = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+                    }
+                    bool rA_nonzero = false;
+                    if (valid_abi)
+                        for (size_t ci = 0; ci < 64; ++ci)
+                            if (rs[ci] != '0') { rA_nonzero = true; break; }
+                    if (rA_nonzero) { res_ready[k] = true; ++nc; }
                 }
                 std::cout << "  [7b " << rd << "s] " << nc << "/" << kAmmPairs << " pools have reserves\n";
                 if (nc == kAmmPairs) break;
@@ -9215,11 +9222,15 @@ contract AMMPool {
                                              ad.contract_addr_hex, kSel7Reserves);
             uint64_t rA = 0, rB = 0;
             if (rs.size() >= 128) { rA = hex2u64(rs.substr(0, 64)); rB = hex2u64(rs.substr(64, 64)); }
-            bool swapped = (rA != kLiqAmt7 || rB != kLiqAmt7);
+            bool liq_added = (rA > 0 || rB > 0);
+            bool swapped   = liq_added && (rA != kLiqAmt7 || rB != kLiqAmt7);
             if (swapped) ++pools_swapped;
+            std::string res_status = !liq_added ? "  ✗ no liquidity (addLiquidity failed)"
+                                   : swapped    ? "  ✓ swaps occurred"
+                                                : "  – no swaps";
             std::cout << "    [amm" << k << "] s" << ad.signer_shard
                       << " rA=" << rA << " rB=" << rB
-                      << (swapped ? "  ✓ swaps occurred" : "  – no change") << "\n";
+                      << res_status << "\n";
         }
 
         // Check token balances for first 3 users per AMM (sample)
