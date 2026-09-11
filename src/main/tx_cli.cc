@@ -7691,7 +7691,9 @@ contract AMMPool {
             uint32_t    deployer_pool;  // pool of the deployer addr (contract must match)
             uint32_t    token_a;        // index into tdeps8
             uint32_t    token_b;
-            std::string contract_addr_hex;  // filled in after Phase 4 deploy
+            std::string contract_addr_hex;   // filled in after Phase 4 deploy
+            std::string token_a_shadow_hex;  // DeriveShardAddress(tokenA_base, shard, pool)
+            std::string token_b_shadow_hex;  // DeriveShardAddress(tokenB_base, shard, pool)
         };
         std::vector<AmmDeployer8> adeps8(kAmmPairs);
 
@@ -8257,6 +8259,8 @@ contract AMMPool {
                     if (to_address.empty()) { ++amm_fail; return; }
 
                     ad.contract_addr_hex = to_address;  // store for later
+                    ad.token_a_shadow_hex = tA_shadow_hex;
+                    ad.token_b_shadow_hex = tB_shadow_hex;
                     {
                         std::string tA_raw2(reinterpret_cast<const char*>(tA_shadow.bytes), 20);
                         std::string tB_raw2(reinterpret_cast<const char*>(tB_shadow.bytes), 20);
@@ -8975,6 +8979,37 @@ contract AMMPool {
         std::cout << "\n" << std::string(70, '-') << "\n";
         std::cout << "  [Phase 7b] addLiquidity\n";
         std::cout << std::string(70, '-') << "\n";
+
+        // Print diagnostic info before sending
+        for (uint32_t k = 0; k < kAmmPairs; ++k) {
+            const auto& ad = adeps8[k];
+            const auto& tdA = tdeps8[ad.token_a];
+            const auto& tdB = tdeps8[ad.token_b];
+            std::string calldata = enc2u64(kSel7AddLiq, kLiqAmt7, kLiqAmt7);
+            std::cout << "  [7b-diag amm" << k << "]\n"
+                      << "    deployer  : " << ad.addr_hex
+                      << " s" << ad.signer_shard << " pool=" << ad.deployer_pool << "\n"
+                      << "    AMM       : " << ad.contract_addr_hex << "\n"
+                      << "    tokenA    : base=" << tdA.contract_addr_hex
+                      << " shadow=" << ad.token_a_shadow_hex << "\n"
+                      << "    tokenB    : base=" << tdB.contract_addr_hex
+                      << " shadow=" << ad.token_b_shadow_hex << "\n"
+                      << "    calldata  : " << calldata << "\n";
+
+            // Query deployer balance on each shadow before addLiquidity
+            ShardoraClient qc(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+            std::string balA = qc.queryContract(common::Encode::HexEncode(tdA.prikey),
+                ad.token_a_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
+            std::string balB = qc.queryContract(common::Encode::HexEncode(tdB.prikey),
+                ad.token_b_shadow_hex, kBalOfSel + encodeAddr32(ad.addr_hex));
+            uint64_t bA = balA.size() >= 64 ? hex2u64(balA.substr(0, 64)) : 0;
+            uint64_t bB = balB.size() >= 64 ? hex2u64(balB.substr(0, 64)) : 0;
+            std::cout << "    deployer balanceOf tokenA_shadow: " << bA
+                      << (bA == 0 ? "  *** ZERO — crossTransfer not arrived? ***" : "") << "\n"
+                      << "    deployer balanceOf tokenB_shadow: " << bB
+                      << (bB == 0 ? "  *** ZERO — crossTransfer not arrived? ***" : "") << "\n";
+        }
+
         {
             std::atomic<uint32_t> liq_ok{0}, liq_fail{0};
             std::vector<std::thread> th7liq;
@@ -9024,6 +9059,17 @@ contract AMMPool {
                 std::cout << "  [7b " << rd << "s] " << nc << "/" << kAmmPairs << " pools have reserves\n";
                 if (nc == kAmmPairs) break;
                 usleep(1000000);
+            }
+
+            // Count how many reserves are ready after polling
+            uint32_t ready_count = 0;
+            for (bool b : res_ready) if (b) ++ready_count;
+            if (ready_count < kAmmPairs) {
+                std::cerr << "  FATAL: Phase 7b: only " << ready_count << "/" << kAmmPairs
+                          << " AMM pools have non-zero reserves after 60s.\n"
+                          << "  addLiquidity is reverting — check tokenA/B shadow addresses and deployer balances above.\n";
+                transport::TcpTransport::Instance()->Stop();
+                return 1;
             }
         }
 
