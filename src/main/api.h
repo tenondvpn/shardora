@@ -364,7 +364,13 @@ public:
             params.emplace("address", contract_address);
             params.emplace("from", common::Encode::HexEncode(ecdsa.GetAddress()));
             auto res = cli.Post("/abi_query_contract", params);
-            if (res && res->status == 200) return res->body;
+            if (res && res->status == 200) {
+                // EncodeEvmError returns "0x..." (ABI-encoded string), not a valid uint256 hex.
+                // A valid ABI uint256 return is exactly 64 hex chars with no "0x" prefix.
+                if (res->body.size() >= 2 && res->body[0] == '0' && res->body[1] == 'x')
+                    return "";
+                return res->body;
+            }
             return "";
         } catch (...) { return ""; }
     }

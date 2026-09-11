@@ -8459,27 +8459,17 @@ contract AMMPool {
         const __uint128_t kPerAmt5 =
             (__uint128_t)1000000000000000000ULL * 10000ULL;
 
-        // Number of recipients per token: max(2, floor(users/kTokens)*2)
-        const uint32_t kRcpt5 =
-            std::max(2u, (uint32_t)(users8.size() / kTokens) * 2u);
-
-        // Build per-token recipient lists (random, wraps if users < kRcpt5*kTokens)
+        // Every token is distributed to every user so all shadow contracts
+        // are deployed on every shard/pool combination before Phase 6/7 run.
         std::vector<std::vector<uint32_t>> rcpt5(kTokens);
         {
-            std::vector<uint32_t> idxs(users8.size());
-            for (uint32_t i = 0; i < (uint32_t)idxs.size(); ++i) idxs[i] = i;
-            for (uint32_t i = (uint32_t)idxs.size(); i > 1u; --i) {
-                uint32_t j = common::Random::RandomUint32() % i;
-                std::swap(idxs[i - 1], idxs[j]);
-            }
             for (uint32_t ti = 0; ti < kTokens; ++ti) {
-                rcpt5[ti].reserve(kRcpt5);
-                for (uint32_t r = 0; r < kRcpt5; ++r)
-                    rcpt5[ti].push_back(
-                        idxs[(ti * kRcpt5 + r) % (uint32_t)idxs.size()]);
+                rcpt5[ti].resize(users8.size());
+                for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i)
+                    rcpt5[ti][i] = i;
             }
         }
-        std::cout << "  Recipients per token: " << kRcpt5
+        std::cout << "  Recipients per token: " << users8.size()
                   << "  per-user amount: 10000 ether (10^22 wei)\n";
 
         // ── Send crossTransfer TXs (one thread per token) ─────────────────
