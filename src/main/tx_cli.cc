@@ -7526,6 +7526,9 @@ contract AMMPool {
         reserveB += amountIn; reserveA -= amountOut;
         emit Swap(msg.sender, address(tokenB), amountIn, amountOut);
     }
+    function getReserves() external view returns (uint256, uint256) {
+        return (reserveA, reserveB);
+    }
 }
 )SOL";
 
@@ -8254,10 +8257,20 @@ contract AMMPool {
                     if (to_address.empty()) { ++amm_fail; return; }
 
                     ad.contract_addr_hex = to_address;  // store for later
-                    std::cout << "  [amm" << k << "] contract=" << to_address
-                              << " s" << ad.signer_shard << " pool=" << ad.deployer_pool
-                              << " tokenA_shadow=" << tA_shadow_hex
-                              << " tokenB_shadow=" << tB_shadow_hex << "\n";
+                    {
+                        std::string tA_raw2(reinterpret_cast<const char*>(tA_shadow.bytes), 20);
+                        std::string tB_raw2(reinterpret_cast<const char*>(tB_shadow.bytes), 20);
+                        uint32_t tA_pool = addr_pool8(tA_raw2);
+                        uint32_t tB_pool = addr_pool8(tB_raw2);
+                        std::cout << "  [amm" << k << "] contract=" << to_address
+                                  << " s" << ad.signer_shard << " deployer_pool=" << ad.deployer_pool
+                                  << "\n         tokenA_shadow=" << tA_shadow_hex
+                                  << " shadow_pool=" << tA_pool
+                                  << (tA_pool != ad.deployer_pool ? " MISMATCH!" : "")
+                                  << "\n         tokenB_shadow=" << tB_shadow_hex
+                                  << " shadow_pool=" << tB_pool
+                                  << (tB_pool != ad.deployer_pool ? " MISMATCH!" : "") << "\n";
+                    }
 
                     ShardoraSDK dsdk(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
                     int64_t nonce = dsdk.fetchNonce(ad.addr_hex);
@@ -9242,10 +9255,18 @@ contract AMMPool {
             const auto& ad = adeps8[pf.amm_idx];
             uint32_t ti = ad.token_a;
             const auto& td = tdeps8[ti];
-            ShardoraClient q(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
+            // User balance is on the SHADOW contract on the user's shard, not the base contract
+            std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
+            evmc::address root_evmc{};
+            std::memcpy(root_evmc.bytes, root_raw.data(), 20);
+            evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
+                root_evmc, u.shard_id, u.pool_idx);
+            std::string shadow_hex = common::Encode::HexEncode(
+                std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
+            ShardoraClient q(eps8[u.shard_id].ip, eps8[u.shard_id].http);
             std::string qdata = kBalOfSel + encodeAddr32(u.addr_hex);
             std::string rs = q.queryContract(common::Encode::HexEncode(td.prikey),
-                                             td.contract_addr_hex, qdata);
+                                             shadow_hex, qdata);
             uint64_t bal = rs.size() >= 64 ? hex2u64(rs.substr(0, 64)) : 0;
             std::cout << "    [amm" << pf.amm_idx << " user=" << u.addr_hex.substr(0,8)
                       << "...] token" << ti << " bal=" << bal << "\n";
