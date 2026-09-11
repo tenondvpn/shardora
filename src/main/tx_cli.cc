@@ -7285,14 +7285,10 @@ contract Exchange {
         uint32_t kTps8        = (argc >= 10) ? (uint32_t)std::stoul(argv[9]) : 0u;
         (void)kRounds8; (void)kTps8;
 
-        // amm_pairs must not exceed C(tokens, 2)
-        if (kTokens >= 2) {
-            uint32_t max_pairs = kTokens * (kTokens - 1) / 2;
-            if (kAmmPairs > max_pairs) kAmmPairs = max_pairs;
-        } else {
-            kAmmPairs = 0;
-        }
-        if (kTokens == 0) { std::cerr << "tokens must be >= 1\n"; return 1; }
+        // Each AMM pair needs exactly 2 co-located tokens (same shard).
+        // Override kTokens: 2 dedicated tokens per AMM pair, all co-located.
+        kTokens = kAmmPairs * 2;
+        if (kAmmPairs == 0) { std::cerr << "amm_pairs must be >= 1\n"; return 1; }
 
         // per-shard HTTP endpoints; override via argv[10..13] as "ip:port"
         struct Ep8 { std::string ip; uint16_t http; };
@@ -7638,10 +7634,9 @@ contract AMMPool {
         std::vector<TokenDeployer8> tdeps8(kTokens);
 
         for (uint32_t i = 0; i < kTokens; ++i) {
-            // Signer and contract MUST be on the same shard: Shardora's
-            // kCreateContract routes on the `to` address, and gas is deducted
-            // from the sender on that same shard's pool.
-            uint32_t cshard = kShards8[i % kNumShards8];  // spread tokens across shards
+            // Token 2k and 2k+1 must be on the same shard as AMM k so that
+            // intra-shard EVM calls (addLiquidity, swapA/B) work correctly.
+            uint32_t cshard = kShards8[(i / 2) % kNumShards8];
 
             // contract address — random address that routes to cshard
             std::string caddr;
@@ -7693,19 +7688,9 @@ contract AMMPool {
         std::vector<AmmDeployer8> adeps8(kAmmPairs);
 
         {
-            // Build sequential unique pairs (a, b) with a < b
-            std::vector<std::pair<uint32_t,uint32_t>> pairs;
-            for (uint32_t a = 0; a < kTokens; ++a)
-                for (uint32_t b = a + 1; b < kTokens; ++b)
-                    pairs.push_back({a, b});
-            // Fisher-Yates shuffle
-            for (uint32_t i = (uint32_t)pairs.size(); i > 1; --i) {
-                uint32_t j = common::Random::RandomUint32() % i;
-                std::swap(pairs[i-1], pairs[j]);
-            }
-
+            // Fixed pairing: AMM k uses token 2k and token 2k+1, all on the
+            // same shard so intra-shard EVM CALL works for transferFrom.
             for (uint32_t k = 0; k < kAmmPairs; ++k) {
-                // Pick a target shard for this AMM deployer; signer must be co-located.
                 uint32_t ashard = kShards8[k % kNumShards8];
                 std::string pk, addr;
                 while (true) {
@@ -7720,8 +7705,8 @@ contract AMMPool {
                 adeps8[k].addr_hex      = common::Encode::HexEncode(addr);
                 adeps8[k].signer_shard  = ashard;
                 adeps8[k].deployer_pool = addr_pool8(addr);
-                adeps8[k].token_a       = pairs[k].first;
-                adeps8[k].token_b       = pairs[k].second;
+                adeps8[k].token_a       = 2 * k;      // token 2k  (same shard ashard)
+                adeps8[k].token_b       = 2 * k + 1;  // token 2k+1 (same shard ashard)
             }
         }
 
@@ -8987,7 +8972,8 @@ contract AMMPool {
             std::cout << "  [7b] addLiquidity: " << liq_ok << " ok / " << (liq_ok+liq_fail) << "\n";
         }
 
-        // Poll AMM reserves (max 60s)
+        // Poll AMM reserves (max 60s); require a valid 128-char hex ABI response
+        // with non-zero reserveA (error strings or all-zero responses don't qualify).
         std::cout << "  [7b] Polling AMM reserves (max 60s)...\n";
         {
             std::vector<bool> res_ready(kAmmPairs, false);
@@ -8999,11 +8985,19 @@ contract AMMPool {
                     ShardoraClient q(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
                     std::string rs = q.queryContract(common::Encode::HexEncode(ad.prikey),
                                                      ad.contract_addr_hex, kSel7Reserves);
-                    // reserveA is first 64 hex chars; non-zero means liquidity added
-                    bool nonzero = false;
-                    for (size_t ci = 0; ci < std::min<size_t>(rs.size(), 64); ++ci)
-                        if (rs[ci] != '0') { nonzero = true; break; }
-                    if (nonzero) { res_ready[k] = true; ++nc; }
+                    // Valid ABI response = 128 hex chars; reserveA (first 64) must be non-zero
+                    bool valid_abi = rs.size() >= 128;
+                    if (valid_abi) {
+                        for (size_t ci = 0; ci < 128 && valid_abi; ++ci) {
+                            char c = rs[ci];
+                            valid_abi = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+                        }
+                    }
+                    bool rA_nonzero = false;
+                    if (valid_abi)
+                        for (size_t ci = 0; ci < 64; ++ci)
+                            if (rs[ci] != '0') { rA_nonzero = true; break; }
+                    if (rA_nonzero) { res_ready[k] = true; ++nc; }
                 }
                 std::cout << "  [7b " << rd << "s] " << nc << "/" << kAmmPairs << " pools have reserves\n";
                 if (nc == kAmmPairs) break;
@@ -9219,11 +9213,15 @@ contract AMMPool {
                                              ad.contract_addr_hex, kSel7Reserves);
             uint64_t rA = 0, rB = 0;
             if (rs.size() >= 128) { rA = hex2u64(rs.substr(0, 64)); rB = hex2u64(rs.substr(64, 64)); }
-            bool swapped = (rA != kLiqAmt7 || rB != kLiqAmt7);
+            bool liq_added = (rA > 0 || rB > 0);
+            bool swapped   = liq_added && (rA != kLiqAmt7 || rB != kLiqAmt7);
             if (swapped) ++pools_swapped;
+            std::string res_status = !liq_added ? "  ✗ no liquidity (addLiquidity failed)"
+                                   : swapped    ? "  ✓ swaps occurred"
+                                                : "  – no swaps";
             std::cout << "    [amm" << k << "] s" << ad.signer_shard
                       << " rA=" << rA << " rB=" << rB
-                      << (swapped ? "  ✓ swaps occurred" : "  – no change") << "\n";
+                      << res_status << "\n";
         }
 
         // Check token balances for first 3 users per AMM (sample)
