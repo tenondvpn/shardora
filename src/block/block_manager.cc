@@ -393,20 +393,19 @@ void BlockManager::HandleNormalToTx(
         // shardora_host.GetKeyValue(kCrossShardSystemExecutor, "xsb:" + addr).
         if (!to_tx.runtime_bytecode().empty()) {
             const std::string& addr = to_tx.des();
-            if (addr.size() != common::kUnicastAddressLength) {
+            if (addr.size() == common::kUnicastAddressLength) {
+                const std::string sys_str(reinterpret_cast<const char*>(
+                    shardoravm::kCrossShardSystemExecutor.bytes), 20);
+                const std::string kv_key = sys_str + "xsb:" + addr;
+                std::string existing_code;
+                if (!prefix_db_->GetTemporaryKv(kv_key, &existing_code) || existing_code.empty()) {
+                    prefix_db_->SaveTemporaryKv(kv_key, to_tx.runtime_bytecode());
+                    SHARDORA_INFO("HandleNormalToTx: saved XSB bytecode for addr=%s shard=%u",
+                        common::Encode::HexEncode(addr).c_str(), local_net_id);
+                }
+            } else {
                 SHARDORA_ERROR("HandleNormalToTx universal XSB bytecode: invalid addr len %zu", addr.size());
-                continue;
             }
-            const std::string sys_str(reinterpret_cast<const char*>(
-                shardoravm::kCrossShardSystemExecutor.bytes), 20);
-            const std::string kv_key = sys_str + "xsb:" + addr;
-            std::string existing_code;
-            if (!prefix_db_->GetTemporaryKv(kv_key, &existing_code) || existing_code.empty()) {
-                prefix_db_->SaveTemporaryKv(kv_key, to_tx.runtime_bytecode());
-                SHARDORA_INFO("HandleNormalToTx: saved XSB bytecode for addr=%s shard=%u",
-                    common::Encode::HexEncode(addr).c_str(), local_net_id);
-            }
-            continue;
         }
 
         // Library deploy — create an AddressInfo marked kLibrary so consensus can look
@@ -416,53 +415,49 @@ void BlockManager::HandleNormalToTx(
         if (!to_tx.library_bytes().empty()) {
             const std::string& addr = to_tx.des();
             if (addr.size() != common::kUnicastAddressLength) {
-                SHARDORA_ERROR("HandleNormalToTx universal library: invalid addr len %zu", addr.size());
-                continue;
-            }
-            auto existing = prefix_db_->GetAddressInfo(addr);
-            if (!existing || existing->bytes_code().empty()) {
-                address::protobuf::AddressInfo lib_info;
-                if (existing) {
-                    lib_info = *existing;
-                } else {
-                    lib_info.set_addr(addr);
-                    lib_info.set_sharding_id(local_net_id);
-                    lib_info.set_pool_index(common::GetAddressPoolIndex(addr));
-                    lib_info.set_balance(0);
-                    lib_info.set_nonce(0);
+                auto existing = prefix_db_->GetAddressInfo(addr);
+                if (!existing || existing->bytes_code().empty()) {
+                    address::protobuf::AddressInfo lib_info;
+                    if (existing) {
+                        lib_info = *existing;
+                    } else {
+                        lib_info.set_addr(addr);
+                        lib_info.set_sharding_id(local_net_id);
+                        lib_info.set_pool_index(common::GetAddressPoolIndex(addr));
+                        lib_info.set_balance(0);
+                        lib_info.set_nonce(0);
+                    }
+                    lib_info.set_type(address::protobuf::kLibrary);
+                    lib_info.set_bytes_code(to_tx.library_bytes());
+                    db::DbWriteBatch db_batch;
+                    prefix_db_->AddAddressInfo(addr, lib_info, db_batch);
+                    db_->Put(db_batch);
+                    SHARDORA_INFO("HandleNormalToTx: saved library bytecode for addr=%s shard=%u",
+                        common::Encode::HexEncode(addr).c_str(), local_net_id);
                 }
-                lib_info.set_type(address::protobuf::kLibrary);
-                lib_info.set_bytes_code(to_tx.library_bytes());
-                db::DbWriteBatch db_batch;
-                prefix_db_->AddAddressInfo(addr, lib_info, db_batch);
-                db_->Put(db_batch);
-                SHARDORA_INFO("HandleNormalToTx: saved library bytecode for addr=%s shard=%u",
-                    common::Encode::HexEncode(addr).c_str(), local_net_id);
+            } else {
+                SHARDORA_ERROR("HandleNormalToTx universal library: invalid addr len %zu", addr.size());
             }
-            continue;
         }
 
         // Prefund — check local contract exists, then enqueue prefund TX
         if (to_tx.des().size() == common::kPreypamentAddressLength) {
             const std::string contract_addr = to_tx.des().substr(0, common::kUnicastAddressLength);
             auto contract_info = prefix_db_->GetAddressInfo(contract_addr);
-            if (contract_info) {
+            if (contract_info && contract_info->sharding_id() == local_net_id) {
                 CreateLocalToTx(view_block, to_tx);
             } else {
                 SHARDORA_DEBUG("HandleNormalToTx: universal prefund skipped, contract not local: %s",
                     common::Encode::HexEncode(contract_addr).c_str());
             }
-            continue;
         }
 
         // CrossTransfer or CrossStorageSet — route to dest shard/pool
         if (to_tx.has_base_root_address()) {
-            if (!to_tx.has_sharding_id() ||
-                    static_cast<uint32_t>(to_tx.sharding_id()) != local_net_id) {
-                continue;
+            if (to_tx.has_sharding_id() &&
+                    static_cast<uint32_t>(to_tx.sharding_id()) == local_net_id) {
+                CreateLocalToTx(view_block, to_tx);
             }
-            CreateLocalToTx(view_block, to_tx);
-            continue;
         }
     }
 }

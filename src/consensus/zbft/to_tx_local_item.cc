@@ -98,7 +98,15 @@ bool ToTxLocalItem::CreateLocalToTx(
         block::protobuf::ConsensusToTxs& block_to_txs,
         block::protobuf::BlockTx& block_tx) {
     if (to_tx_item.has_base_root_address()) {
-        return HandleCrossShardBase(tx_index, view_block, shardora_host, acc_balance_map, to_tx_item, block_tx);
+        if (!HandleCrossShardBase(
+                tx_index, 
+                view_block, 
+                shardora_host, 
+                acc_balance_map, 
+                to_tx_item, 
+                block_tx)) {
+            return false;
+        }
     }
 
     if (to_tx_item.des().size() != common::kUnicastAddressLength &&

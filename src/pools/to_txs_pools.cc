@@ -541,7 +541,11 @@ int ToTxsPools::CreateToTxWithHeights(
                             pool_idx,
                             common::Encode::HexEncode(addr_info->addr()).c_str());
                     } else {
-                        to_iter->second.set_des_sharding_id(network::kRootCongressNetworkId);
+                        if (to_iter->second.prefund() > 0) {
+                            to_iter->second.set_des_sharding_id(network::kUniversalNetworkId);
+                        } else {
+                            to_iter->second.set_des_sharding_id(network::kRootCongressNetworkId);
+                        }
                         SHARDORA_DEBUG("new account: addr=%s des shard=%u",
                             common::Encode::HexEncode(to_iter->second.des()).c_str(), 
                             network::kRootCongressNetworkId);

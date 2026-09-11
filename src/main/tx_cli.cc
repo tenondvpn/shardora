@@ -8824,7 +8824,8 @@ contract AMMPool {
                     if (global_stop) break;
                     auto& it6  = amm_pf6[idx];
                     auto& amm6 = adeps8[it6.amm_idx];
-                    auto ep6r  = eps8.find(amm6.signer_shard);
+                    uint32_t user_shard6 = users8[it6.user_idx].shard_id;
+                    auto ep6r  = eps8.find(user_shard6);
                     if (ep6r == eps8.end()) { ++rs6_fail; continue; }
                     ShardoraSDK rsdk6(ep6r->second.ip, ep6r->second.http);
                     std::string pk_hex6 =
