@@ -8407,12 +8407,6 @@ contract AMMPool {
             }
             std::cout << "  [Phase 5] All " << users8.size()
                       << " users resolved on-chain (shard/pool confirmed)\n";
-            // Print updated shard/pool for each user
-            for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i) {
-                std::cout << "    [user" << i << "] " << users8[i].addr_hex
-                          << " s" << users8[i].shard_id
-                          << " pool=" << users8[i].pool_idx << "\n";
-            }
         }
 
         // Encode uint256 from a 128-bit value (supports amounts up to 2^128)
@@ -8524,20 +8518,11 @@ contract AMMPool {
                             + encodeUint32ABI(u.shard_id)
                             + encodeUint32ABI(u.pool_idx);
 
-                        std::cout << "  [Phase5 xfer] token" << ti
-                                  << " base=" << td.contract_addr_hex
-                                  << " → user=" << u.addr_hex
-                                  << " shard=" << u.shard_id
-                                  << " pool=" << u.pool_idx
-                                  << " nonce=" << (ppnonce + (int64_t)ri) << "\n";
                         auto r = dsdk.callContractWithNonce(
                             pk_hex, td.contract_addr_hex,
                             calldata, ppnonce + (int64_t)ri);
                         if (r.contains("status") && r["status"] == 0) {
                             xok5.fetch_add(1);
-                            std::cout << "  [Phase5 xfer] OK token" << ti
-                                      << " base=" << td.contract_addr_hex
-                                      << " user=" << u.addr_hex << "\n";
                         } else {
                             std::cerr << "  [Phase5 xfer] FAIL token" << ti
                                       << " base=" << td.contract_addr_hex
@@ -8613,22 +8598,12 @@ contract AMMPool {
                     std::string shadow_hex = common::Encode::HexEncode(
                         std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
 
-                    std::cout << "  [Phase5 verify] token" << ti
-                              << " user=" << u.addr_hex
-                              << " shard=" << u.shard_id
-                              << " root=" << td.contract_addr_hex
-                              << " shadow=" << shadow_hex
-                              << " pool=" << u.pool_idx << "\n";
-
                     ShardoraSDK qsdk(qip, qhttp);
                     auto res = qsdk.queryFunctionSolidity(
                         pk_hex, shadow_hex,
                         "balanceOf", {"address"}, {u.addr_hex}, {"uint256"});
                     std::string rv = (res.contains("status") && res["status"] == 0)
                                      ? res.value("return_value", "") : "";
-                    std::cout << "  [Phase5 verify] status="
-                              << (res.contains("status") ? res["status"].dump() : "?")
-                              << " balance=" << (rv.empty() ? "(empty)" : rv) << "\n";
 
                     bool found = false;
                     for (char c : rv) if (c != '0') { found = true; break; }
