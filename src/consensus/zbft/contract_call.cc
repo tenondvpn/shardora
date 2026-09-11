@@ -454,8 +454,9 @@ int ContractCall::HandleTx(
                 } else {
                     it->second->set_amount(it->second->amount() + action.amount);
                     add_amount256(*it->second, action.amount_bytes);
-                    SHARDORA_INFO("CrossShardBase cross-transfer accumulated: to=%s amount=%lu",
-                        common::Encode::HexEncode(action.to).c_str(), action.amount);
+                    SHARDORA_INFO("CrossShardBase cross-transfer accumulated: to=%s dest_shard=%u pool=%u amount=%lu",
+                        common::Encode::HexEncode(action.to).c_str(),
+                        action.dest_shard_id, action.dest_pool_index, action.amount);
                 }
             } else if (action.type == shardoravm::CrossShardActionType::kSetStorage) {
                 if (action.storage_key.empty()) continue;

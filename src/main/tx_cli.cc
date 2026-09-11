@@ -8593,8 +8593,8 @@ contract AMMPool {
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(ad.signer_shard)
-                                    + encodeUint32ABI(ad.deployer_pool);
+                                    + encodeUint32ABI(u.shard_id)
+                                    + encodeUint32ABI(u.pool_idx);
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
                                 if (ra.contains("status") && ra["status"] == 0) {
@@ -9376,10 +9376,10 @@ contract AMMPool {
                 evmc::address root_evmc_{};
                 std::memcpy(root_evmc_.bytes, root_raw_.data(), 20);
                 evmc::address shadow_evmc_ = shardoravm::DeriveShardAddress(
-                    root_evmc_, ad.signer_shard, ad.deployer_pool);
+                    root_evmc_, u.shard_id, u.pool_idx);
                 std::string shadow_hex_ = common::Encode::HexEncode(
                     std::string(reinterpret_cast<const char*>(shadow_evmc_.bytes), 20));
-                ShardoraClient q_(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
+                ShardoraClient q_(eps8[u.shard_id].ip, eps8[u.shard_id].http);
                 std::string qdata_ = kBalOfSel + encodeAddr32(u.addr_hex);
                 std::string rs_ = q_.queryContract(common::Encode::HexEncode(td_.prikey),
                                                    shadow_hex_, qdata_);
@@ -9387,8 +9387,8 @@ contract AMMPool {
                 std::cout << "      token" << ti_
                           << " contract=" << td_.contract_addr_hex
                           << " shadow=" << shadow_hex_
-                          << " endpoint=" << eps8[ad.signer_shard].ip
-                          << ":" << eps8[ad.signer_shard].http
+                          << " endpoint=" << eps8[u.shard_id].ip
+                          << ":" << eps8[u.shard_id].http
                           << " raw=" << (rs_.empty() ? "(empty)" : rs_.substr(0, 64))
                           << " bal=" << bal << "\n";
             };
