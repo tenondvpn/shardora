@@ -31,15 +31,20 @@ std::string GetBlockHash(const view_block::protobuf::ViewBlockItem &view_block) 
 
     SHARDORA_DEBUG("get block hash: %s, sharding_id: %u, pool_index: %u, "
         "phash: %s, vss_random: %lu, height: %lu, "
-        "timeblock_height: %lu, timestamp: %lu, msg: %s",
+        "timeblock_height: %lu, timestamp: %lu, "
+        "leader_idx: %u, view: %lu, serial_len: %zu, cross_shard_cnt: %d, msg: %s",
         common::Encode::HexEncode(hash).c_str(),
-        view_block.qc().network_id(), 
-        view_block.qc().pool_index(), 
-        common::Encode::HexEncode(view_block.parent_hash()).c_str(), 
-        block.consistency_random(), 
-        block.height(), 
-        block.timeblock_height(), 
+        view_block.qc().network_id(),
+        view_block.qc().pool_index(),
+        common::Encode::HexEncode(view_block.parent_hash()).c_str(),
+        block.consistency_random(),
+        block.height(),
+        block.timeblock_height(),
         block.timestamp(),
+        view_block.qc().leader_idx(),
+        view_block.qc().view(),
+        serialized.size(),
+        block.cross_shard_to_array_size(),
         ProtobufToJson(block).c_str());
 
     return hash;
