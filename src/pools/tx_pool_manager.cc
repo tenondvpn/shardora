@@ -1259,12 +1259,12 @@ int32_t TxPoolManager::HandleSetContractPrefund(const transport::MessagePtr& msg
     }
 
     auto tmp_acc_ptr = acc_mgr_.lock();
-    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
-    if (contract_info == nullptr) {
-        msg_ptr->address_info = nullptr;
-        SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return consensus::kConsensusContractNotExists;
-    }
+    // auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    // if (contract_info == nullptr) {
+    //     msg_ptr->address_info = nullptr;
+    //     SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     return consensus::kConsensusContractNotExists;
+    // }
 
     if (!UserTxValid(msg_ptr)) {
         SHARDORA_DEBUG("address %s balance invalid: %lu, transfer amount: %lu, "
@@ -1321,16 +1321,16 @@ int32_t TxPoolManager::HandleContractRefund(const transport::MessagePtr& msg_ptr
 
     auto tmp_acc_ptr = acc_mgr_.lock();
     auto from = security_->GetAddressWithPublicKey(tx_msg.pubkey());
-    auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
-    if (contract_info == nullptr) {
-        SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return consensus::kConsensusContractNotExists;
-    }
+    // auto contract_info = tmp_acc_ptr->GetAccountInfo(tx_msg.to());
+    // if (contract_info == nullptr) {
+    //     SHARDORA_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     return consensus::kConsensusContractNotExists;
+    // }
 
-    if (contract_info->destructed()) {
-        SHARDORA_ERROR("contract destructed: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
-        return consensus::kConsensusContractDestructed;
-    }
+    // if (contract_info->destructed()) {
+    //     SHARDORA_ERROR("contract destructed: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    //     return consensus::kConsensusContractDestructed;
+    // }
 
     auto prefund_id = tx_msg.to() + from;
     msg_ptr->address_info = tmp_acc_ptr->GetAccountInfo(prefund_id);
