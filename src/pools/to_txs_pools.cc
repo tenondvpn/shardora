@@ -89,13 +89,7 @@ void ToTxsPools::ThreadToStatistic(
         TxMap tx_map;
         for (uint32_t i = 0; i < (uint32_t)block.cross_shard_to_array_size(); ++i) {
             auto& to = block.cross_shard_to_array(i);
-            // CrossShardBase: key = user + base_root_address so different tokens
-            // for the same user get independent entries and don't overwrite each other.
-            std::string map_key = to.des();
-            if (to.has_base_root_address() && !to.base_root_address().empty()) {
-                map_key += to.base_root_address();
-            }
-            tx_map[map_key] = to;
+            tx_map[to.des()] = to;
             if (to.has_base_root_address() && !to.base_root_address().empty()) {
                 SHARDORA_INFO("to_txs_pools store CrossShardBase: block=%u_%u_%lu base=%s user=%s des_shard=%u pool=%u",
                     view_block_ptr->qc().network_id(),
