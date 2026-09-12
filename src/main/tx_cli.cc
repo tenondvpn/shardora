@@ -8583,8 +8583,8 @@ contract AMMPool {
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(ad.signer_shard)
-                                    + encodeUint32ABI(ad.deployer_pool);
+                                    + encodeUint32ABI(u.shard_id)
+                                    + encodeUint32ABI(u.pool_idx);
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
                                 if (ra.contains("status") && ra["status"] == 0) {
