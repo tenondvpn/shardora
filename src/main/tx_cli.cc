@@ -8455,9 +8455,8 @@ contract AMMPool {
         const uint64_t kSwapAmt7     = 1'000'000ULL;          // 1M per swap
         const uint32_t kSwapRounds7  = 5;
 
-        // 10000 ether = 10000 * 10^18 (fits in 128 bits, exceeds uint64_t)
-        const __uint128_t kPerAmt5 =
-            (__uint128_t)1000000000000000000ULL * 10000ULL;
+        // 7M per user; must fit in uint64 (server rejects amounts > 2^64)
+        const __uint128_t kPerAmt5 = (__uint128_t)7000000ULL;
 
         // Every token is distributed to every user so all shadow contracts
         // are deployed on every shard/pool combination before Phase 6/7 run.
@@ -8583,8 +8582,8 @@ contract AMMPool {
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(u.shard_id)
-                                    + encodeUint32ABI(u.pool_idx);
+                                    + encodeUint32ABI(ad.signer_shard)
+                                    + encodeUint32ABI(ad.deployer_pool);
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
                                 if (ra.contains("status") && ra["status"] == 0) {
@@ -9510,7 +9509,7 @@ contract AMMPool {
                     td.contract_addr_hex,
                     ad.signer_shard, ad.deployer_pool,
                     u.addr_hex,
-                    (__uint128_t)kSwapXferAmt7,
+                    (__uint128_t)(kSwapAmt7 * 2),
                     /*verbose=*/false);
                 if (ok) { ++amm_ok; ++bal7_ok; } else { ++amm_fail; ++bal7_fail; }
             }
