@@ -8,6 +8,7 @@
 #include "pools/tx_pool_manager.h"
 #include "protos/get_proto_hash.h"
 #include <protos/pools.pb.h>
+#include "shardoravm/reversible_feistel_address.h"
 
 namespace shardora {
 
@@ -623,15 +624,27 @@ int ToTxsPools::CreateToTxWithHeights(
                         amount_iter->second.set_des_sharding_id(to_iter->second.des_sharding_id());
                     }
 
-                    SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
-                        "transfer amount height: %lu, id: %s, amount: %lu, prefundement: %lu, "
-                        "all: %lu, to info: %s",
-                        pool_idx, height,
-                        height, common::Encode::HexEncode(to_iter->first).c_str(),
-                        to_iter->second.amount(),
-                        amount_iter->second.amount(),
-                        amount_iter->second.prefund(),
-                        ProtobufToJson(to_iter->second).c_str());
+                    if (to_iter->second.has_base_root_address() && !to_iter->second.base_root_address().empty()) {
+                        auto base_evmc2 = shardoravm::StrToEvmcAddr(to_iter->second.base_root_address());
+                        auto shad_evmc2 = shardoravm::DeriveShardAddress(base_evmc2, to_iter->second.des_sharding_id(), to_iter->second.pool_index());
+                        std::string shad_str2(reinterpret_cast<const char*>(shad_evmc2.bytes), 20);
+                        SHARDORA_INFO("to block pool MERGE CrossShardBase: pool=%u h=%lu base=%s shadow=%s des_shard=%u item_pool=%u amount=%lu acc_amount=%lu",
+                            pool_idx, height,
+                            common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
+                            common::Encode::HexEncode(shad_str2).c_str(),
+                            to_iter->second.des_sharding_id(), to_iter->second.pool_index(),
+                            to_iter->second.amount(), amount_iter->second.amount());
+                    } else {
+                        SHARDORA_DEBUG("to block pool: %u, height: %lu, success add account "
+                            "transfer amount height: %lu, id: %s, amount: %lu, prefundement: %lu, "
+                            "all: %lu, to info: %s",
+                            pool_idx, height,
+                            height, common::Encode::HexEncode(to_iter->first).c_str(),
+                            to_iter->second.amount(),
+                            amount_iter->second.amount(),
+                            amount_iter->second.prefund(),
+                            ProtobufToJson(to_iter->second).c_str());
+                    }
                 }
             }
         }
@@ -648,10 +661,22 @@ int ToTxsPools::CreateToTxWithHeights(
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         auto to_item = to_tx.add_tos();
         *to_item = iter->second;
-        SHARDORA_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d, prefund: %lu",
-            common::Encode::HexEncode(to_item->des()).c_str(),
-            iter->second.amount(), to_item->des_sharding_id(), 
-            to_item->des_sharding_id(), to_item->pool_index(), to_item->prefund());
+        if (to_item->has_base_root_address() && !to_item->base_root_address().empty()) {
+            auto base_evmc3 = shardoravm::StrToEvmcAddr(to_item->base_root_address());
+            auto shad_evmc3 = shardoravm::DeriveShardAddress(base_evmc3, to_item->des_sharding_id(), to_item->pool_index());
+            std::string shad_str3(reinterpret_cast<const char*>(shad_evmc3.bytes), 20);
+            SHARDORA_INFO("set to CrossShardBase: des=%s amount=%lu des_shard=%u pool=%u base=%s shadow=%s prefund=%lu",
+                common::Encode::HexEncode(to_item->des()).c_str(),
+                iter->second.amount(), to_item->des_sharding_id(), to_item->pool_index(),
+                common::Encode::HexEncode(to_item->base_root_address()).c_str(),
+                common::Encode::HexEncode(shad_str3).c_str(),
+                to_item->prefund());
+        } else {
+            SHARDORA_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %d, pool index: %d, prefund: %lu",
+                common::Encode::HexEncode(to_item->des()).c_str(),
+                iter->second.amount(), to_item->des_sharding_id(),
+                to_item->des_sharding_id(), to_item->pool_index(), to_item->prefund());
+        }
     }
 
     // to_tx.set_elect_height(elect_height);
