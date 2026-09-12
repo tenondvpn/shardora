@@ -36,11 +36,10 @@ public:
     void NewBlock(
         const std::shared_ptr<view_block::protobuf::ViewBlockItem>& view_block_ptr);
     int CreateToTxWithHeights(
-        // uint32_t sharding_id,
-        // uint64_t elect_height,
         pools::protobuf::ShardToTxItem* prev_to_heights,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
-        pools::protobuf::ToTxMessage& to_tx);
+        pools::protobuf::ToTxMessage& to_tx,
+        uint32_t des_shard_id = 0);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
     void ClearLeaderToHeights() {
         StoreLeaderToHeights(nullptr);

@@ -1044,29 +1044,14 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
                 sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
             auto& to_tx = *all_to_txs.add_to_tx_arr();
             auto res = to_txs_pool_->CreateToTxWithHeights(
-                    // sharding_id,
-                    // 0,
                     &prev_heights,
                     cur_heights,
-                    to_tx);
+                    to_tx,
+                    sharding_id);
             if (res != pools::kPoolsSuccess) {
                 SHARDORA_DEBUG("2 failed get to tx tx info, all shards failed, max_shard: %u, heights: %s",
                     max_consensus_sharding_id_.load(), ProtobufToJson(cur_heights).c_str());
                 return nullptr;
-            }
-
-            // Filter: keep only items destined for this sharding_id so the
-            // serialized AllToTxMessage is not duplicated N×(num_shards) times.
-            {
-                auto* tos = to_tx.mutable_tos();
-                int write = 0;
-                for (int ri = 0; ri < tos->size(); ++ri) {
-                    if ((uint32_t)(*tos)[ri].des_sharding_id() == sharding_id) {
-                        if (write != ri) (*tos)[write] = std::move((*tos)[ri]);
-                        ++write;
-                    }
-                }
-                while (tos->size() > write) tos->RemoveLast();
             }
 
             if (to_tx.tos_size() == 0) {

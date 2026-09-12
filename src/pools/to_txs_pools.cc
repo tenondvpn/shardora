@@ -457,11 +457,10 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
 }
 
 int ToTxsPools::CreateToTxWithHeights(
-        // uint32_t sharding_id,
-        // uint64_t elect_height,
         pools::protobuf::ShardToTxItem* prev_to_heights,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
-        pools::protobuf::ToTxMessage& to_tx) {
+        pools::protobuf::ToTxMessage& to_tx,
+        uint32_t des_shard_id) {
 #ifdef TEST_NO_CROSS
     return kPoolsError;
 #endif
@@ -561,6 +560,10 @@ int ToTxsPools::CreateToTxWithHeights(
                             common::Encode::HexEncode(to_iter->second.des()).c_str(), 
                             network::kRootCongressNetworkId);
                     }
+                }
+
+                if (des_shard_id != 0 && (uint32_t)to_iter->second.des_sharding_id() != des_shard_id) {
+                    continue;
                 }
 
                 auto amount_iter = acc_amount_map.find(to_iter->first);
