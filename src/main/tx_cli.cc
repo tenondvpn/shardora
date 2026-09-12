@@ -7930,14 +7930,14 @@ contract AMMPool {
             try { return v.get<int64_t>(); } catch (...) { return -1; }
         };
 
-        std::cout << "\n[Phase 2a] Verify funder nonces on-chain (max 60s)...\n";
+        std::cout << "\n[Phase 2a] Verify funder nonces on-chain (max 300s)...\n";
         {
             ShardoraSDK vsdk8(eps8[funder_shard].ip, eps8[funder_shard].http);
             std::vector<std::string> faddrs8;
             for (auto& fs : fstates8) faddrs8.push_back(fs.addr_hex);
 
             bool nonce_ok8 = false;
-            for (int rd = 0; rd < 60 && !global_stop; ++rd) {
+            for (int rd = 0; rd < 300 && !global_stop; ++rd) {
                 auto r = vsdk8.batchQueryAccounts(faddrs8);
                 bool all_match = true;
                 uint32_t confirmed = 0;
@@ -7959,7 +7959,7 @@ contract AMMPool {
             }
             if (nonce_ok8) std::cout << "  Funder nonces confirmed OK\n";
             else {
-                std::cout << "  FATAL: nonce check timed out after 60s\n";
+                std::cout << "  FATAL: nonce check timed out after 300s\n";
                 auto r = vsdk8.batchQueryAccounts(faddrs8);
                 for (auto& fs : fstates8) {
                     int64_t actual = -1;
@@ -7977,7 +7977,7 @@ contract AMMPool {
         // Phase 2b: Verify ALL funded accounts via batch query per shard (max 60s)
         // ─────────────────────────────────────────────────────────────────
         std::cout << "\n[Phase 2b] Verify all " << total_fund8
-                  << " accounts funded (batch query per shard, max 60s)...\n";
+                  << " accounts funded (batch query per shard, max 300s)...\n";
         {
             // Group all to_fund8 addresses by shard
             std::map<uint32_t, std::vector<std::string>> shard_addrs8;
@@ -8007,7 +8007,7 @@ contract AMMPool {
                     ShardoraSDK ssdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
 
-                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 300 && !pending.empty() && !global_stop; ++rd) {
                         auto r = ssdk.batchQueryAccounts(pending);
                         std::vector<std::string> still_pending;
                         if (r.contains("accounts")) {
@@ -8067,7 +8067,7 @@ contract AMMPool {
                         if (!truly_unfunded.empty()) {
                             std::cout << "  Shard " << s << ": FAILED "
                                       << truly_unfunded.size() << "/"
-                                      << addrs.size() << " genuinely unfunded after 60s\n";
+                                      << addrs.size() << " genuinely unfunded after 300s\n";
                             total_unfunded.fetch_add((uint32_t)truly_unfunded.size());
                         } else {
                             std::cout << "  Shard " << s << ": all " << addrs.size()
