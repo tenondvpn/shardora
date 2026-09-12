@@ -8583,8 +8583,8 @@ contract AMMPool {
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(u.shard_id)
-                                    + encodeUint32ABI(u.pool_idx);
+                                    + encodeUint32ABI(ad.signer_shard)
+                                    + encodeUint32ABI(ad.deployer_pool);
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
                                 if (ra.contains("status") && ra["status"] == 0) {
@@ -9080,6 +9080,24 @@ contract AMMPool {
             }
             return v;
         };
+        // Read up to 128-bit value from ABI-encoded hex (last 32 hex chars = 16 bytes)
+        auto hex2u128 = [](const std::string& h) -> __uint128_t {
+            __uint128_t v = 0;
+            size_t start = (h.size() > 32) ? h.size() - 32 : 0;
+            for (size_t i = start; i < h.size(); ++i) {
+                char c = h[i];
+                v = v * 16 + (c >= '0' && c <= '9' ? c - '0' :
+                              c >= 'a' && c <= 'f' ? c - 'a' + 10 :
+                              c >= 'A' && c <= 'F' ? c - 'A' + 10 : 0);
+            }
+            return v;
+        };
+        auto u128str = [](__uint128_t v) -> std::string {
+            if (v == 0) return "0";
+            std::string s;
+            while (v > 0) { s = char('0' + (int)(v % 10)) + s; v /= 10; }
+            return s;
+        };
 
         // Now send addLiquidity for each AMM deployer
         {
@@ -9388,47 +9406,120 @@ contract AMMPool {
                       << res_status << "\n";
         }
 
-        // Check token balances for first 3 users per AMM (sample)
-        // Query user's balance on the AMM shadow (where Phase5 funded them and swaps run)
-        std::cout << "  Sample user token balances (on AMM shadow):\n";
-        uint32_t checked = 0;
-        for (const auto& pf : amm_pf6) {
-            if (checked >= 3 * kAmmPairs) break;
-            const auto& u  = users8[pf.user_idx];
-            const auto& ad = adeps8[pf.amm_idx];
+        // Verify all user token balances at their own shadow and at each AMM shadow.
+        //
+        // After Phase 5:
+        //   token_shadow(user_shard, user_pool)._balances[user] = kPerAmt5
+        //   token_shadow(amm_shard,  amm_pool) ._balances[user] = kSwapXferAmt   (per AMM pair)
+        //   token_shadow(amm_shard,  amm_pool) ._balances[amm_deployer] = kLiqAmt7
+        std::cout << "  [Phase 7d] Verifying all user token balances...\n";
+        uint32_t bal7_ok = 0, bal7_fail = 0;
 
-            auto query_bal_full = [&](uint32_t ti_) {
-                const auto& td_ = tdeps8[ti_];
-                std::string root_raw_ = common::Encode::HexDecode(td_.contract_addr_hex);
-                evmc::address root_evmc_{};
-                std::memcpy(root_evmc_.bytes, root_raw_.data(), 20);
-                evmc::address shadow_evmc_ = shardoravm::DeriveShardAddress(
-                    root_evmc_, u.shard_id, u.pool_idx);
-                std::string shadow_hex_ = common::Encode::HexEncode(
-                    std::string(reinterpret_cast<const char*>(shadow_evmc_.bytes), 20));
-                ShardoraClient q_(eps8[u.shard_id].ip, eps8[u.shard_id].http);
-                std::string qdata_ = kBalOfSel + encodeAddr32(u.addr_hex);
-                std::string rs_ = q_.queryContract(common::Encode::HexEncode(td_.prikey),
-                                                   shadow_hex_, qdata_);
-                uint64_t bal = rs_.size() >= 64 ? hex2u64(rs_.substr(0, 64)) : 0;
-                std::cout << "      token" << ti_
-                          << " contract=" << td_.contract_addr_hex
-                          << " shadow=" << shadow_hex_
-                          << " endpoint=" << eps8[u.shard_id].ip
-                          << ":" << eps8[u.shard_id].http
-                          << " raw=" << (rs_.empty() ? "(empty)" : rs_.substr(0, 64))
-                          << " bal=" << bal << "\n";
-            };
+        // Helper: query token shadow balance and check against expected minimum
+        auto check_bal7 = [&](const std::string& label,
+                               const std::string& token_pk,
+                               const std::string& token_addr_hex,
+                               uint32_t shadow_shard, uint32_t shadow_pool,
+                               const std::string& account_hex,
+                               __uint128_t expected_min,
+                               bool verbose) -> bool {
+            std::string root_raw = common::Encode::HexDecode(token_addr_hex);
+            evmc::address root_evmc{};
+            std::memcpy(root_evmc.bytes, root_raw.data(), 20);
+            evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
+                root_evmc, shadow_shard, shadow_pool);
+            std::string shadow_hex = common::Encode::HexEncode(
+                std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
+            ShardoraClient qc(eps8[shadow_shard].ip, eps8[shadow_shard].http);
+            std::string rs = qc.queryContract(token_pk, shadow_hex,
+                                              kBalOfSel + encodeAddr32(account_hex));
+            __uint128_t bal = rs.size() >= 64 ? hex2u128(rs.substr(0, 64)) : 0;
+            bool ok = (bal >= expected_min);
+            if (!ok || verbose) {
+                std::cout << "    " << label
+                          << " shadow=" << shadow_hex
+                          << " raw=" << (rs.empty() ? "(empty)" : rs.substr(0, 64))
+                          << " bal=" << u128str(bal)
+                          << " exp>=" << u128str(expected_min)
+                          << (ok ? " ✓" : " ✗") << "\n";
+            }
+            return ok;
+        };
 
-            std::cout << "    [amm" << pf.amm_idx << "]"
-                      << " user=" << u.addr_hex
-                      << " user_shard=" << u.shard_id << " user_pool=" << u.pool_idx
-                      << " amm_shard=" << ad.signer_shard << " amm_pool=" << ad.deployer_pool
-                      << "\n";
-            query_bal_full(ad.token_a);
-            query_bal_full(ad.token_b);
-            ++checked;
+        // Check each user's balance at their own shadow (should be >= kPerAmt5)
+        std::cout << "    [user shadow] checking " << users8.size()
+                  << " users x " << kTokens << " tokens...\n";
+        for (uint32_t ui = 0; ui < (uint32_t)users8.size() && !global_stop; ++ui) {
+            const auto& u = users8[ui];
+            for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+                const auto& td = tdeps8[ti];
+                std::string label = "user=" + u.addr_hex.substr(0,8)
+                    + ".. token" + std::to_string(ti)
+                    + " s" + std::to_string(u.shard_id) + "p" + std::to_string(u.pool_idx);
+                bool ok = check_bal7(label,
+                    common::Encode::HexEncode(td.prikey),
+                    td.contract_addr_hex,
+                    u.shard_id, u.pool_idx,
+                    u.addr_hex,
+                    kPerAmt5,
+                    /*verbose=*/false);
+                if (ok) ++bal7_ok; else { ++bal7_fail;
+                    std::cerr << "  [Phase7d FAIL] user=" << u.addr_hex
+                              << " token" << ti << "=" << td.contract_addr_hex
+                              << " shard=" << u.shard_id << " pool=" << u.pool_idx << "\n";
+                }
+            }
         }
+
+        // Check each AMM's deployer balance at AMM shadow (should be >= kLiqAmt7)
+        std::cout << "    [AMM shadow liq] checking " << kAmmPairs << " AMMs x " << kTokens << " tokens...\n";
+        for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+            const auto& ad = adeps8[k];
+            for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+                if (ad.token_a != ti && ad.token_b != ti) continue;
+                const auto& td = tdeps8[ti];
+                std::string label = "amm" + std::to_string(k) + " deployer token"
+                    + std::to_string(ti)
+                    + " s" + std::to_string(ad.signer_shard) + "p" + std::to_string(ad.deployer_pool);
+                bool ok = check_bal7(label,
+                    common::Encode::HexEncode(td.prikey),
+                    td.contract_addr_hex,
+                    ad.signer_shard, ad.deployer_pool,
+                    ad.addr_hex,
+                    (__uint128_t)kLiqAmt7,
+                    /*verbose=*/true);
+                if (ok) ++bal7_ok; else ++bal7_fail;
+            }
+        }
+
+        // Check each user's balance at each AMM shadow (should be >= kSwapXferAmt)
+        const uint64_t kSwapXferAmt7 =
+            kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
+        std::cout << "    [AMM shadow swap] checking " << users8.size()
+                  << " users x " << kAmmPairs << " AMMs...\n";
+        for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+            const auto& ad = adeps8[k];
+            uint32_t amm_ok = 0, amm_fail = 0;
+            for (uint32_t ui = 0; ui < (uint32_t)users8.size() && !global_stop; ++ui) {
+                const auto& u = users8[ui];
+                if (u.shard_id == ad.signer_shard && u.pool_idx == ad.deployer_pool) continue;
+                const auto& td = tdeps8[ad.token_a];
+                bool ok = check_bal7(
+                    "amm" + std::to_string(k) + " user=" + u.addr_hex.substr(0,8) + "..",
+                    common::Encode::HexEncode(td.prikey),
+                    td.contract_addr_hex,
+                    ad.signer_shard, ad.deployer_pool,
+                    u.addr_hex,
+                    (__uint128_t)kSwapXferAmt7,
+                    /*verbose=*/false);
+                if (ok) { ++amm_ok; ++bal7_ok; } else { ++amm_fail; ++bal7_fail; }
+            }
+            std::cout << "    [amm" << k << "] swap-user balances: "
+                      << amm_ok << "/" << (amm_ok + amm_fail) << " ok\n";
+        }
+
+        std::cout << "  [Phase 7d] Balance check: " << bal7_ok << " ok, "
+                  << bal7_fail << " fail\n";
 
         std::cout << "\n  Phase 7 summary:\n";
         std::cout << "    Liquidity:   " << kLiqAmt7 << " per token per pool\n";
