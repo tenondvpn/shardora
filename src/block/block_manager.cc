@@ -651,9 +651,10 @@ void BlockManager::CreateLocalToTx(
     auto tx = msg_ptr->header.mutable_tx_proto();
     std::string uinique_tx_str = common::Hash::keccak256(
         view_block.qc().view_block_hash() +
-        view_block.qc().sign_x() + 
+        view_block.qc().sign_x() +
         view_block.qc().sign_y() +
-        to_tx_item.des());
+        to_tx_item.des() +
+        (to_tx_item.has_base_root_address() ? to_tx_item.base_root_address() : std::string()));
     tx->set_key(uinique_tx_str);
     tx->set_value(SerializeDeterministic(to_tx_item));
     tx->set_pubkey("");
