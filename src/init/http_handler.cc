@@ -571,6 +571,19 @@ static int CreateTransactionWithAttr(
         new_tx->set_contract_input(common::Encode::HexDecode(input));
     }
 
+    if (step_val == pools::protobuf::kContractExcute && input.size() >= 8) {
+        static const std::string kXferSel =
+            common::Encode::HexEncode(
+                common::Hash::keccak256("crossTransfer(address,uint256,uint32,uint32)").substr(0, 4));
+        if (input.substr(0, 8) == kXferSel) {
+            SHARDORA_INFO("http CrossTransfer: from=%s to=%s selector=%s input_len=%zu",
+                common::Encode::HexEncode(from).c_str(),
+                common::Encode::HexEncode(to).c_str(),
+                kXferSel.c_str(),
+                input.size());
+        }
+    }
+
     auto prefund = req.get_param_value("prefund");
     if (!prefund.empty()) {
         uint64_t prefund_val = 0;
@@ -2728,7 +2741,19 @@ static void EthJsonRpc(const UWSRequest& req, UWSResponse& http_res) {
             new_tx->set_contract_code(data);
         }
 
-        if (step == pools::protobuf::kContractExcute) new_tx->set_contract_input(data);
+        if (step == pools::protobuf::kContractExcute) {
+            new_tx->set_contract_input(data);
+            if (data.size() >= 4) {
+                static const std::string kXferSel =
+                    common::Hash::keccak256("crossTransfer(address,uint256,uint32,uint32)").substr(0, 4);
+                if (data.substr(0, 4) == kXferSel) {
+                    SHARDORA_INFO("eth_sendRawTransaction CrossTransfer: from=%s to=%s input_len=%zu",
+                        common::Encode::HexEncode(sender_addr).c_str(),
+                        common::Encode::HexEncode(to).c_str(),
+                        data.size());
+                }
+            }
+        }
 
         // Shardora signature: r || s || v
         std::string sign;
