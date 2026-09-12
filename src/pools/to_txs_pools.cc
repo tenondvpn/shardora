@@ -562,7 +562,7 @@ int ToTxsPools::CreateToTxWithHeights(
                     }
                 }
 
-                if (des_shard_id != 0 && (uint32_t)to_iter->second.des_sharding_id() != des_shard_id) {
+                if ((uint32_t)to_iter->second.des_sharding_id() != des_shard_id) {
                     continue;
                 }
 
@@ -684,6 +684,159 @@ int ToTxsPools::CreateToTxWithHeights(
 
     // to_tx.set_elect_height(elect_height);
     // to_tx.set_des_shard(sharding_id);
+    return kPoolsSuccess;
+}
+
+int ToTxsPools::CreateToTxForAllShards(
+        pools::protobuf::ShardToTxItem* prev_to_heights,
+        const pools::protobuf::ShardToTxItem& leader_to_heights,
+        pools::protobuf::AllToTxMessage& all_to_txs) {
+#ifdef TEST_NO_CROSS
+    return kPoolsError;
+#endif
+    if (leader_to_heights.heights_size() != common::kInvalidPoolIndex) {
+        return kPoolsError;
+    }
+
+    using AccAmountMap = std::map<std::string, pools::protobuf::ToTxMessageItem>;
+    std::unordered_map<uint32_t, AccAmountMap> per_shard_acc;
+
+    if (prev_to_heights->heights_size() <= 0) {
+        common::AutoSpinLock lock(prev_to_heights_mutex_);
+        *prev_to_heights = *prev_to_heights_;
+    }
+
+    for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+        if (prev_to_heights->heights(i) > leader_to_heights.heights(i)) {
+            return kPoolsError;
+        }
+    }
+
+    bool heights_valid = false;
+    for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+        if (prev_to_heights->heights(i) < leader_to_heights.heights(i)) {
+            heights_valid = true;
+            break;
+        }
+    }
+    if (!heights_valid) {
+        return kPoolsError;
+    }
+
+    for (uint32_t pool_idx = 0; pool_idx < (uint32_t)leader_to_heights.heights_size(); ++pool_idx) {
+        uint64_t min_height = prev_to_heights->heights(pool_idx) + 1;
+        uint64_t max_height = leader_to_heights.heights(pool_idx);
+        if (max_height > pool_consensus_heihgts_[pool_idx]) {
+            return kPoolsError;
+        }
+
+        common::AutoSpinLock auto_lock(network_txs_pools_mutex_);
+        auto& height_map = network_txs_pools_[pool_idx];
+        for (auto height = min_height; height <= max_height; ++height) {
+            auto hiter = height_map.find(height);
+            if (hiter == height_map.end()) continue;
+
+            for (auto to_iter = hiter->second.begin();
+                    to_iter != hiter->second.end(); ++to_iter) {
+                if (to_iter->second.des_sharding_id() == network::kWaitingToCheckNetworkId) {
+                    auto addr_info = acc_mgr_->GetAccountInfo(
+                        to_iter->second.des().substr(0, common::kUnicastAddressLength));
+                    if (addr_info) {
+                        to_iter->second.set_des_sharding_id(addr_info->sharding_id());
+                    } else {
+                        to_iter->second.set_des_sharding_id(
+                            to_iter->second.prefund() > 0
+                                ? network::kUniversalNetworkId
+                                : network::kRootCongressNetworkId);
+                    }
+                }
+
+                uint32_t shard = (uint32_t)to_iter->second.des_sharding_id();
+                auto& acc_map = per_shard_acc[shard];
+                auto amount_iter = acc_map.find(to_iter->first);
+                if (amount_iter == acc_map.end()) {
+                    acc_map[to_iter->first] = to_iter->second;
+                    if (to_iter->second.has_base_root_address() && !to_iter->second.base_root_address().empty()) {
+                        SHARDORA_INFO("acc_amount_map add CrossShardBase: pool=%u h=%lu base=%s user=%s des_shard=%u item_pool=%u",
+                            pool_idx, height,
+                            common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
+                            common::Encode::HexEncode(to_iter->second.des()).c_str(),
+                            shard, to_iter->second.pool_index());
+                    }
+                } else {
+                    amount_iter->second.set_amount(amount_iter->second.amount() + to_iter->second.amount());
+                    if (amount_iter->second.has_amount256() && to_iter->second.has_amount256()) {
+                        std::string acc = amount_iter->second.amount256();
+                        AddAmount256(acc, to_iter->second.amount256());
+                        amount_iter->second.set_amount256(acc);
+                    } else if (to_iter->second.has_amount256()) {
+                        amount_iter->second.set_amount256(to_iter->second.amount256());
+                    }
+                    if (to_iter->second.has_library_bytes())
+                        amount_iter->second.set_library_bytes(to_iter->second.library_bytes());
+                    if (to_iter->second.has_runtime_bytecode())
+                        amount_iter->second.set_runtime_bytecode(to_iter->second.runtime_bytecode());
+                    if (to_iter->second.has_base_root_address())
+                        amount_iter->second.set_base_root_address(to_iter->second.base_root_address());
+                    if (to_iter->second.prefund() > 0)
+                        amount_iter->second.set_prefund(amount_iter->second.prefund() + to_iter->second.prefund());
+                    if (amount_iter->second.des_sharding_id() != to_iter->second.des_sharding_id()) {
+                        SHARDORA_INFO("CrossShardBase acc_amount_map MERGE des_sharding_id conflict: "
+                            "des=%s old_shard=%u new_shard=%u base=%s pool=%u height=%lu",
+                            common::Encode::HexEncode(to_iter->second.des()).c_str(),
+                            amount_iter->second.des_sharding_id(), shard,
+                            to_iter->second.has_base_root_address()
+                                ? common::Encode::HexEncode(to_iter->second.base_root_address()).c_str()
+                                : "(none)",
+                            pool_idx, height);
+                        amount_iter->second.set_des_sharding_id(shard);
+                    }
+                    if (to_iter->second.has_base_root_address() && !to_iter->second.base_root_address().empty()) {
+                        auto base_evmc2 = shardoravm::StrToEvmcAddr(to_iter->second.base_root_address());
+                        auto shad_evmc2 = shardoravm::DeriveShardAddress(base_evmc2, shard, to_iter->second.pool_index());
+                        std::string shad_str2(reinterpret_cast<const char*>(shad_evmc2.bytes), 20);
+                        SHARDORA_INFO("to block pool MERGE CrossShardBase: pool=%u h=%lu base=%s shadow=%s des_shard=%u item_pool=%u amount=%lu acc_amount=%lu",
+                            pool_idx, height,
+                            common::Encode::HexEncode(to_iter->second.base_root_address()).c_str(),
+                            common::Encode::HexEncode(shad_str2).c_str(),
+                            shard, to_iter->second.pool_index(),
+                            to_iter->second.amount(), amount_iter->second.amount());
+                    }
+                }
+            }
+        }
+    }
+
+    if (per_shard_acc.empty()) {
+        return kPoolsSuccess;
+    }
+
+    for (auto& shard_entry : per_shard_acc) {
+        auto& acc_map = shard_entry.second;
+        if (acc_map.empty()) continue;
+        auto& to_tx = *all_to_txs.add_to_tx_arr();
+        to_tx.set_des_shard(shard_entry.first);
+        for (auto& kv : acc_map) {
+            auto* to_item = to_tx.add_tos();
+            *to_item = kv.second;
+            if (to_item->has_base_root_address() && !to_item->base_root_address().empty()) {
+                auto base_evmc3 = shardoravm::StrToEvmcAddr(to_item->base_root_address());
+                auto shad_evmc3 = shardoravm::DeriveShardAddress(base_evmc3, to_item->des_sharding_id(), to_item->pool_index());
+                std::string shad_str3(reinterpret_cast<const char*>(shad_evmc3.bytes), 20);
+                SHARDORA_INFO("set to CrossShardBase: des=%s amount=%lu des_shard=%u pool=%u base=%s shadow=%s prefund=%lu",
+                    common::Encode::HexEncode(to_item->des()).c_str(),
+                    to_item->amount(), to_item->des_sharding_id(), to_item->pool_index(),
+                    common::Encode::HexEncode(to_item->base_root_address()).c_str(),
+                    common::Encode::HexEncode(shad_str3).c_str(),
+                    to_item->prefund());
+            } else {
+                SHARDORA_DEBUG("set to %s amount %lu, des_shard=%u pool=%d prefund=%lu",
+                    common::Encode::HexEncode(to_item->des()).c_str(),
+                    to_item->amount(), to_item->des_sharding_id(),
+                    to_item->pool_index(), to_item->prefund());
+            }
+        }
+    }
     return kPoolsSuccess;
 }
 

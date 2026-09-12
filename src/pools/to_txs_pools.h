@@ -40,6 +40,12 @@ public:
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         pools::protobuf::ToTxMessage& to_tx,
         uint32_t des_shard_id = 0);
+    // Single-pass variant: fills one ToTxMessage per destination shard in
+    // all_to_txs, avoiding redundant iteration when multiple shards are needed.
+    int CreateToTxForAllShards(
+        pools::protobuf::ShardToTxItem* prev_to_heights,
+        const pools::protobuf::ShardToTxItem& leader_to_heights,
+        pools::protobuf::AllToTxMessage& all_to_txs);
     int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
     void ClearLeaderToHeights() {
         StoreLeaderToHeights(nullptr);

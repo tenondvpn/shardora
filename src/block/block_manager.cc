@@ -1040,26 +1040,16 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
     for (int attempt = 0; attempt <= kMaxReduceAttempts; ++attempt) {
         pools::protobuf::AllToTxMessage all_to_txs;
         pools::protobuf::ShardToTxItem prev_heights;
-        for (uint32_t sharding_id = network::kUniversalNetworkId;
-                sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
-            auto& to_tx = *all_to_txs.add_to_tx_arr();
-            auto res = to_txs_pool_->CreateToTxWithHeights(
+        {
+            auto res = to_txs_pool_->CreateToTxForAllShards(
                     &prev_heights,
                     cur_heights,
-                    to_tx,
-                    sharding_id);
+                    all_to_txs);
             if (res != pools::kPoolsSuccess) {
                 SHARDORA_DEBUG("2 failed get to tx tx info, all shards failed, max_shard: %u, heights: %s",
                     max_consensus_sharding_id_.load(), ProtobufToJson(cur_heights).c_str());
                 return nullptr;
             }
-
-            if (to_tx.tos_size() == 0) {
-                all_to_txs.mutable_to_tx_arr()->RemoveLast();
-                continue;
-            }
-
-            to_tx.set_des_shard(sharding_id);
         }
 
         if (all_to_txs.to_tx_arr_size() == 0) {
