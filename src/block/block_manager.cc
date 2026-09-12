@@ -621,6 +621,20 @@ void BlockManager::CreateLocalToTx(
         // CrossShardBase items carry dest pool explicitly; use it to route to the
         // correct consensus pool where the derived contract is deployed.
         pool_index = static_cast<uint32_t>(to_tx_item.pool_index());
+        {
+            std::array<uint8_t, 20> base_arr;
+            std::memcpy(base_arr.data(), to_tx_item.base_root_address().data(), 20);
+            auto shadow_arr = shardoravm::DeriveShardAddress(
+                base_arr,
+                static_cast<uint32_t>(to_tx_item.sharding_id()),
+                pool_index);
+            std::string shadow_str(reinterpret_cast<const char*>(shadow_arr.data()), 20);
+            SHARDORA_INFO("CreateLocalToTx CrossShardBase: base=%s user=%s shadow=%s shard=%u pool=%u",
+                common::Encode::HexEncode(to_tx_item.base_root_address()).c_str(),
+                common::Encode::HexEncode(addr).c_str(),
+                common::Encode::HexEncode(shadow_str).c_str(),
+                to_tx_item.sharding_id(), pool_index);
+        }
     } else {
         auto addr_info = prefix_db_->GetAddressInfo(addr);
         if (addr_info) {
@@ -1039,6 +1053,20 @@ pools::TxItemPtr BlockManager::HandleToTxsMessage(
                 SHARDORA_DEBUG("2 failed get to tx tx info, all shards failed, max_shard: %u, heights: %s",
                     max_consensus_sharding_id_.load(), ProtobufToJson(cur_heights).c_str());
                 return nullptr;
+            }
+
+            // Filter: keep only items destined for this sharding_id so the
+            // serialized AllToTxMessage is not duplicated N×(num_shards) times.
+            {
+                auto* tos = to_tx.mutable_tos();
+                int write = 0;
+                for (int ri = 0; ri < tos->size(); ++ri) {
+                    if ((uint32_t)(*tos)[ri].des_sharding_id() == sharding_id) {
+                        if (write != ri) (*tos)[write] = std::move((*tos)[ri]);
+                        ++write;
+                    }
+                }
+                while (tos->size() > write) tos->RemoveLast();
             }
 
             if (to_tx.tos_size() == 0) {
