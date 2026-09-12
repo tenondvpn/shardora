@@ -8570,20 +8570,17 @@ contract AMMPool {
                                 xfail5.fetch_add(1);
                             }
                         }
-                        // Swap-user transfers: each user needs kSwapXferAmt on the AMM shadow
+                        // Swap-user transfers: use user's own shard/pool as destination
                         const uint64_t kSwapXferAmt = kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
                         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
                             if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
-                            const auto& ad = adeps8[k];
                             for (uint32_t ri = 0; ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
                                 const auto& u = users8[rcpt5[ti][ri]];
-                                // skip users already on the AMM's shard/pool (own shadow == AMM shadow)
-                                if (u.shard_id == ad.signer_shard && u.pool_idx == ad.deployer_pool) continue;
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(ad.signer_shard)
-                                    + encodeUint32ABI(ad.deployer_pool);
+                                    + encodeUint32ABI(u.shard_id)
+                                    + encodeUint32ABI(u.pool_idx);
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
                                 if (ra.contains("status") && ra["status"] == 0) {
@@ -9491,29 +9488,28 @@ contract AMMPool {
             }
         }
 
-        // Check each user's balance at each AMM shadow (should be >= kSwapXferAmt)
+        // Check each user's balance on their own shard shadow (should be >= kSwapXferAmt)
         const uint64_t kSwapXferAmt7 =
             kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
-        std::cout << "    [AMM shadow swap] checking " << users8.size()
+        std::cout << "    [user own-shadow swap] checking " << users8.size()
                   << " users x " << kAmmPairs << " AMMs...\n";
         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
             const auto& ad = adeps8[k];
             uint32_t amm_ok = 0, amm_fail = 0;
             for (uint32_t ui = 0; ui < (uint32_t)users8.size() && !global_stop; ++ui) {
                 const auto& u = users8[ui];
-                if (u.shard_id == ad.signer_shard && u.pool_idx == ad.deployer_pool) continue;
                 const auto& td = tdeps8[ad.token_a];
                 bool ok = check_bal7(
                     "amm" + std::to_string(k) + " user=" + u.addr_hex.substr(0,8) + "..",
                     common::Encode::HexEncode(td.prikey),
                     td.contract_addr_hex,
-                    ad.signer_shard, ad.deployer_pool,
+                    u.shard_id, u.pool_idx,
                     u.addr_hex,
                     (__uint128_t)(kSwapAmt7 * 2),
                     /*verbose=*/false);
                 if (ok) { ++amm_ok; ++bal7_ok; } else { ++amm_fail; ++bal7_fail; }
             }
-            std::cout << "    [amm" << k << "] swap-user balances: "
+            std::cout << "    [amm" << k << "] user own-shadow balances: "
                       << amm_ok << "/" << (amm_ok + amm_fail) << " ok\n";
         }
 
