@@ -9444,12 +9444,27 @@ contract AMMPool {
             return ok;
         };
 
-        // Check each user's balance at their own shadow (should be >= kPerAmt5)
+        // Check each user's balance at their own shadow (should be >= kPerAmt5).
+        // Skip the check when the user's (shard, pool) coincides with any AMM that uses
+        // this token: in that case the user's own shadow IS the AMM's swap shadow, so
+        // Phase 7c swaps can modify it before the settlement window closes, causing
+        // spurious timing failures (the AMM-shadow check below covers these users).
+        auto user_on_amm = [&](uint32_t shard, uint32_t pool, uint32_t ti) {
+            for (uint32_t k = 0; k < kAmmPairs; ++k)
+                if (adeps8[k].signer_shard == shard && adeps8[k].deployer_pool == pool
+                        && (adeps8[k].token_a == ti || adeps8[k].token_b == ti))
+                    return true;
+            return false;
+        };
         std::cout << "    [user shadow] checking " << users8.size()
                   << " users x " << kTokens << " tokens...\n";
         for (uint32_t ui = 0; ui < (uint32_t)users8.size() && !global_stop; ++ui) {
             const auto& u = users8[ui];
             for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+                if (user_on_amm(u.shard_id, u.pool_idx, ti)) {
+                    ++bal7_ok;  // covered by [user amm-shadow swap] check below
+                    continue;
+                }
                 const auto& td = tdeps8[ti];
                 std::string label = "user=" + u.addr_hex.substr(0,8)
                     + ".. token" + std::to_string(ti)
