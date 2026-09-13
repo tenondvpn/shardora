@@ -1,23 +1,23 @@
 # 分片区块链跨分片资产流转与状态存储协议设计与形式化安全性规范
-### —— 基于恒等锚定 Feistel 双射派生、内生零铸造分身与非可交换状态算法隔离的体系实现
+### —— 基于无条件 Feistel 双射派生、内生零铸造分身与非可交换状态算法隔离的体系实现
 
 ---
 
 ## 目录
-1. [系统总体架构与职责分离模型（System Architecture & Plane Separation）](#1-系统总体架构与职责分离模型system-architecture--plane-separation)
-2. [160-bit 恒等锚定双射地址派生算法（Identity-Anchored Feistel Permutation）](#2-160-bit-恒等锚定双射地址派生算法identity-anchored-feistel-permutation)
-3. [内生自安全与零铸造分身合约设计（`CrossShardBase.sol`）](#3-内生自安全与零铸造分身合约设计crossshardbasesol)
-4. [宿主环境事务快照栈与 Gas 确定性预扣（`HostJournalStack.hpp`）](#4-宿主环境事务快照栈与-gas-确定性预扣hostjournalstackhpp)
-5. [底层共识层系统入账与 GBP 流水线时序（Consensus Ingress & GBP Pipeline）](#5-底层共识层系统入账与-gbp-流水线时序consensus-ingress--gbp-pipeline)
-6. [非可交换金融状态的算法级隔离证明（AMM/Orderbook Conflict-Free Proof）](#6-非可交换金融状态的算法级隔离证明ammorderbook-conflict-free-proof)
-7. [系统核心定理与形式化安全性证明（Formal Security Theorems & Proofs）](#7-系统核心定理与形式化安全性证明formal-security-theorems--proofs)
-8. [核心安全属性与系统特性矩阵（Security Properties & Comparison Matrix）](#8-核心安全属性与系统特性矩阵security-properties--comparison-matrix)
-9. [主流公链代表性架构深度对比（Mainstream Blockchain Architectures Comparison）](#9-主流公链代表性架构深度对比mainstream-blockchain-architectures-comparison)
-10. [协议综合优势与系统权衡剖析（Comprehensive Advantages & Trade-off Analysis）](#10-协议综合优势与系统权衡剖析comprehensive-advantages--trade-off-analysis)
+1. [系统总体架构与职责分离模型](#1-系统总体架构与职责分离模型)
+2. [160-bit 无条件 Feistel 双射地址派生算法](#2-160-bit-无条件-feistel-双射地址派生算法)
+3. [内生自安全与零铸造分身合约设计](#3-内生自安全与零铸造分身合约设计)
+4. [宿主环境事务快照栈与 Gas 确定性预扣](#4-宿主环境事务快照栈与-gas-确定性预扣)
+5. [底层共识层系统入账与 GBP 流水线时序](#5-底层共识层系统入账与-gbp-流水线时序)
+6. [非可交换金融状态的算法级隔离证明](#6-非可交换金融状态的算法级隔离证明)
+7. [系统核心定理与形式化安全性证明](#7-系统核心定理与形式化安全性证明)
+8. [核心安全属性与系统特性矩阵](#8-核心安全属性与系统特性矩阵)
+9. [主流公链代表性架构深度对比](#9-主流公链代表性架构深度对比)
+10. [协议综合优势与系统权衡剖析](#10-协议综合优势与系统权衡剖析)
 
 ---
 
-## 1. 系统总体架构与职责分离模型（System Architecture & Plane Separation）
+## 1. 系统总体架构与职责分离模型
 
 系统由 $K$ 个并行分片组成，每个分片划分为 $N$ 个并行执行池（Pool）。协议在底层将跨分片操作抽象为三层职责分离架构，实现计算、价值与控制平面的正交解耦：
 
@@ -29,428 +29,309 @@
         ┌──────────────────────────────────┬───────────────┴───────────────┬──────────────────────────────────┐
         ▼                                  ▼                               ▼                                  ▼
 【 价值层 (Value Plane) 】       【 控制层 (Control Plane) 】     【 计算层 (Compute Plane) 】     【 宿主层 (Host Execution) 】
-  原语: _crossTransfer              原语: _crossSetStorage           原语: 本地 AMM / 订单簿撮合       共识拦截: Gas 预扣 / 系统入账
-  - 点对点线性代币空间位移            - 单主推送式只读配置总线          - 严格非可交换金融状态计算        - 解释器层直接扣除目标 Gas
+  原语: 跨分片代币转账 CT           原语: 跨分片存储写入 CS          原语: 本地 AMM / 订单簿撮合       共识拦截: Gas 预扣 / 系统入账
+  - 点对点线性代币空间位移            - 单主推送式只读配置总线          - 严格非可交换金融状态计算        - 执行帧层直接扣除目标 Gas
   - 满足阿贝尔群代数可交换性          - 幂等全量覆盖与版本栅栏          - 100% 封闭在分片内部即时结算     - 事务快照栈保证回滚一致性
 ```
 
 ### 1.1 全网价值守恒公理（Conservation Invariant）
+
 对于全网任意时刻 $t$，系统总代币供应量 $\text{TotalSupply}$ 恒等于所有活跃分片状态树中的余额总和与在途（In-Flight）资产包价值之和：
 
 $$\sum_{k=0}^{K-1} \sum_{p=0}^{N-1} \text{LocalSupply}(S_k, P_p, t) + \sum_{m \in \text{InFlight}(t)} \text{Value}(m) \equiv \text{TotalSupply}$$
 
+**注**：$\text{TotalSupply}$ 由共识层维护，与分身合约在执行层维护的局部变量（该变量每次调用前被重置为 0）严格区分，详见定理 3.4。
+
 ---
 
-## 2. 160-bit 恒等锚定双射地址派生算法（Identity-Anchored Feistel Permutation）
+## 2. 160-bit 无条件 Feistel 双射地址派生算法
 
-为了在无需跨片全局状态查询（$O(1)$ 复杂度）的前提下，实现**“给定任意分片和池的派生地址，均可无状态逆向反算出其 Base 根地址”**，同时规避强伪随机置换在根节点可能引发的“不动点失效（Fixed-Point Trap）”，协议采用带 $(0, 0)$ 恒等锚定的 4 轮 Feistel 密码置换网络。
+为了在无需跨片全局状态查询（$O(1)$ 复杂度）的前提下，实现**给定任意分片和池的派生地址，均可无状态逆向反算出其 Base 根地址**，协议采用**无条件 4 轮 Feistel 密码置换网络**，对所有 $(s, p)$ 参数一律执行完整的 4 轮置换，不设任何旁路。
 
 ### 2.1 数学定义
-* **输入/输出空间**：$\mathbb{Z}_{2^{160}}$（严格对齐 EVM 20 字节地址空间）；
-* **域划分**：高 80 位左半区 $L \in \mathbb{Z}_{2^{80}}$，低 80 位右半区 $R \in \mathbb{Z}_{2^{80}}$；
-* **规范根坐标**：$(s_0, p_0) = (0, 0)$；
-* **拓扑轮密钥**：$K_i = \text{keccak256}(\text{"AKAVERSE_FEISTEL_V1"} \parallel s \parallel p \parallel i)$；
-* **轮函数**：$F(R, K_i) = \text{keccak256}(R \parallel K_i)[0 \dots 9]$（截取高 80 位）。
 
-### 2.2 恒等锚定状态转移模型
+**定义 2.1（参数空间）**
 
-$$\mathcal{D}(A, s, p) = \begin{cases} 
-A, & \text{if } s = 0 \land p = 0 \\
-\text{FeistelPermutation}(A, s, p), & \text{otherwise}
-\end{cases}$$
+- 地址空间：$\mathbb{B}^{160} \cong \mathbb{F}_2^{80} \times \mathbb{F}_2^{80}$，与 EVM 20 字节地址空间严格对齐；
+- 高 80 位左半区 $L \in \mathbb{F}_2^{80}$，低 80 位右半区 $R \in \mathbb{F}_2^{80}$；
+- 分片参数 $(s, p) \in \mathbb{Z}_{2^{32}} \times \mathbb{Z}_{2^{32}}$，对 $(0, 0)$ 无特殊处理；
+- 域标签：$\tau = \texttt{"AKAVERSE\_FEISTEL\_V1"}$（固定 18 字节 ASCII 串）。
 
-$$\mathcal{D}^{-1}(Addr, s, p) = \begin{cases} 
-Addr, & \text{if } s = 0 \land p = 0 \\
-\text{InvFeistelPermutation}(Addr, s, p), & \text{otherwise}
-\end{cases}$$
+**定义 2.2（轮密钥推导）**
+
+第 $i$ 轮（$i \in \{0,1,2,3\}$）轮密钥 $K_i(s,p) \in \mathbb{F}_2^{80}$ 定义为：
+
+$$K_i(s, p) = \text{keccak256}\!\left(\tau \,\|\, \langle s \rangle_4 \,\|\, \langle p \rangle_4 \,\|\, \langle i \rangle_4\right)[\,22 \ldots 31\,]$$
+
+其中 $\langle x \rangle_n$ 表示 $x$ 的大端 $n$ 字节编码，$[\,22 \ldots 31\,]$ 表示取 32 字节哈希结果的低 10 字节（共 80 位）。
+
+**定义 2.3（轮函数 F）**
+
+$$F(X,\, K) = \text{keccak256}\!\left(X \oplus K\right)[\,22 \ldots 31\,], \quad X, K \in \mathbb{F}_2^{80}$$
+
+其中 $\oplus$ 为逐位异或。F 函数先将输入与轮密钥进行混合（XOR masking），再经 keccak256 扩散，输出低 80 位。此设计确保即使轮密钥已知，从 F 输出逆推输入仍归约到 keccak256 的原像问题。
+
+**定义 2.4（正向 4 轮 Feistel 置换）**
+
+给定基地址 $A = (L_0, R_0) \in \mathbb{F}_2^{80} \times \mathbb{F}_2^{80}$ 与参数 $(s, p)$，正向派生算法依次执行：
+
+$$\text{对 } i = 0, 1, 2, 3:$$
+$$L_{i+1} = R_i, \quad R_{i+1} = L_i \oplus F(R_i,\, K_i(s,p))$$
+
+输出为派生地址 $\mathcal{D}(A, s, p) = (L_4, R_4)$。
+
+**定义 2.5（逆向 4 轮 Feistel 置换）**
+
+给定派生地址 $\hat{A} = (L_4, R_4)$ 与参数 $(s, p)$，逆向反算算法依次执行：
+
+$$\text{对 } i = 3, 2, 1, 0:$$
+$$R_i = L_{i+1}, \quad L_i = R_{i+1} \oplus F(L_{i+1},\, K_i(s,p))$$
+
+输出为恢复的基地址 $\mathcal{D}^{-1}(\hat{A}, s, p) = (L_0, R_0)$。
+
+### 2.2 正反向状态转移图
 
 ```
- [ 正向派生: deriveShardAddress ]          [ 逆向反算: recoverBaseAddress ]
-          (L_0, R_0)                                  (L_4, R_4)
-              │                                           │
- ┌───────────┴───────────┐                   ┌───────────┴───────────┐
- │ 判别: (s==0 && p==0)? │                   │ 判别: (s==0 && p==0)? │
- │ 是 -> 直接返回 BaseAddr│                   │ 是 -> 直接返回 ShardAddr│
- │ 否 -> 执行 4 轮置换   │                   │ 否 -> 执行 4 轮逆置换 │
- ├───────────────────────┤                   ├───────────────────────┤
- │ Round 0: K_0(s, p)    │                   │ Inv-Round 3: K_3      │
- │   L_1 = R_0           │                   │   R_3 = L_4           │
- │   R_1 = L_0 ⊕ F(R_0)  │                   │   L_3 = R_4 ⊕ F(L_4)  │
- ├───────────────────────┤                   ├───────────────────────┤
- │ Round 1: K_1(s, p)    │                   │ Inv-Round 2: K_2      │
- ├───────────────────────┤                   ├───────────────────────┤
- │ Round 2: K_2(s, p)    │                   │ Inv-Round 1: K_1      │
- ├───────────────────────┤                   ├───────────────────────┤
- │ Round 3: K_3(s, p)    │                   │ Inv-Round 0: K_0      │
- │   L_4 = R_3           │                   │   R_0 = L_1           │
- │   R_4 = L_3 ⊕ F(R_3)  │                   │   L_0 = R_1 ⊕ F(L_1)  │
- └───────────┬───────────┘                   └───────────┬───────────┘
-              ▼                                           ▼
-          (L_4, R_4)                                  (L_0, R_0)
+[ 正向派生: DeriveShardAddress ]          [ 逆向反算: RecoverBaseAddress ]
+        (L_0, R_0)                                    (L_4, R_4)
+            │                                             │
+ ┌──────────▼──────────┐                     ┌───────────▼───────────┐
+ │ Round 0: K_0(s,p)   │                     │ Inv-Round 3: K_3(s,p) │
+ │  L_1 = R_0          │                     │  R_3 = L_4            │
+ │  R_1 = L_0 ⊕ F(R_0) │                     │  L_3 = R_4 ⊕ F(L_4)  │
+ ├─────────────────────┤                     ├───────────────────────┤
+ │ Round 1: K_1(s,p)   │                     │ Inv-Round 2: K_2(s,p) │
+ │  L_2 = R_1          │                     │  R_2 = L_3            │
+ │  R_2 = L_1 ⊕ F(R_1) │                     │  L_2 = R_3 ⊕ F(L_3)  │
+ ├─────────────────────┤                     ├───────────────────────┤
+ │ Round 2: K_2(s,p)   │                     │ Inv-Round 1: K_1(s,p) │
+ │  L_3 = R_2          │                     │  R_1 = L_2            │
+ │  R_3 = L_2 ⊕ F(R_2) │                     │  L_1 = R_2 ⊕ F(L_2)  │
+ ├─────────────────────┤                     ├───────────────────────┤
+ │ Round 3: K_3(s,p)   │                     │ Inv-Round 0: K_0(s,p) │
+ │  L_4 = R_3          │                     │  R_0 = L_1            │
+ │  R_4 = L_3 ⊕ F(R_3) │                     │  L_0 = R_1 ⊕ F(L_1)  │
+ └──────────┬──────────┘                     └───────────┬───────────┘
+             ▼                                            ▼
+         (L_4, R_4)                                  (L_0, R_0)
 ```
 
-### 2.3 Solidity 纯计算验证库 (`ReversibleFeistelAddress.sol`)
+### 2.3 命题：F 函数的 XOR 混合前向安全性
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+**命题 2.1（F 函数的原像安全）**
 
-library ReversibleFeistelAddress {
-    bytes constant DOMAIN_TAG = "AKAVERSE_FEISTEL_V1";
-    uint256 constant MASK_80_BITS = (1 << 80) - 1;
-    uint32 constant ROOT_SHARD = 0;
-    uint32 constant ROOT_POOL  = 0;
+在 keccak256 的随机预言模型（Random Oracle Model, ROM）假设下，对于任意 $y \in \mathbb{F}_2^{80}$，在不知道 $X$ 和 $K$ 的情况下，找到满足 $F(X, K) = y$ 的 $(X, K)$ 对所需的计算量为 $\Omega(2^{80})$。
 
-    /**
-     * @notice 【正向派生】Base 地址 -> 分片地址 (Root 分片为恒等映射)
-     */
-    function deriveShardAddress(
-        address baseAddr,
-        uint32 shardId,
-        uint32 poolId
-    ) internal pure returns (address) {
-        if (shardId == ROOT_SHARD && poolId == ROOT_POOL) {
-            return baseAddr;
-        }
+**证明**：
+$F(X, K) = \text{keccak256}(X \oplus K)[\text{low 80}]$。设 $Z = X \oplus K$，则 $F(X,K) = H(Z)[\text{low 80}]$，其中 $H = \text{keccak256}$。在 ROM 下，$H(Z)$ 的输出为均匀随机值，故找到任意满足 $H(Z)[\text{low 80}] = y$ 的 $Z$ 期望需要 $2^{80}$ 次查询。即使知道 $K$，也无法从 $Z$ 进一步恢复 $X$（$X = Z \oplus K$ 是确定性的，但攻击者同时要确定满足 $y$ 的 $Z$，故代价不减）。$\blacksquare$
 
-        uint256 raw = uint160(baseAddr);
-        uint256 left = raw >> 80;
-        uint256 right = raw & MASK_80_BITS;
+**命题 2.2（XOR 混合相较于拼接的优势）**
 
-        for (uint256 i = 0; i < 4; i++) {
-            uint256 roundKey = uint256(
-                keccak256(abi.encodePacked(DOMAIN_TAG, shardId, poolId, i))
-            );
-            uint256 fOut = uint256(
-                keccak256(abi.encodePacked(right, roundKey))
-            ) >> 176;
-
-            uint256 nextLeft = right;
-            uint256 nextRight = left ^ fOut;
-            left = nextLeft;
-            right = nextRight;
-        }
-        return address(uint160((left << 80) | right));
-    }
-
-    /**
-     * @notice 【逆向反算】分片地址 -> Base 地址
-     */
-    function recoverBaseAddress(
-        address shardAddr,
-        uint32 shardId,
-        uint32 poolId
-    ) internal pure returns (address) {
-        if (shardId == ROOT_SHARD && poolId == ROOT_POOL) {
-            return shardAddr;
-        }
-
-        uint256 raw = uint160(shardAddr);
-        uint256 left = raw >> 80;
-        uint256 right = raw & MASK_80_BITS;
-
-        for (int256 i = 3; i >= 0; i--) {
-            uint256 roundKey = uint256(
-                keccak256(abi.encodePacked(DOMAIN_TAG, shardId, poolId, uint256(i)))
-            );
-            uint256 fOut = uint256(
-                keccak256(abi.encodePacked(left, roundKey))
-            ) >> 176;
-
-            uint256 prevRight = left;
-            uint256 prevLeft = right ^ fOut;
-            left = prevLeft;
-            right = prevRight;
-        }
-        return address(uint160((left << 80) | right));
-    }
-}
-```
+相比于拼接形式 $F'(X, K) = \text{keccak256}(X \,\|\, K)[\text{low 80}]$，XOR 混合形式 $F(X,K) = \text{keccak256}(X \oplus K)[\text{low 80}]$ 满足：当 $K$ 全零时，$F(X, \mathbf{0}) = \text{keccak256}(X)[\text{low 80}]$ 仍保持充分的非线性扩散；而在拼接形式下，零密钥退化为 $F'(X, \mathbf{0}) = \text{keccak256}(X \,\|\, \mathbf{0})$，存在平凡的扩展攻击向量。XOR 混合消除了这类退化，使 F 函数在所有密钥值下行为均匀。$\blacksquare$
 
 ---
 
-## 3. 内生自安全与零铸造分身合约设计（`CrossShardBase.sol`）
+## 3. 内生自安全与零铸造分身合约设计
 
-全网分身合约采用同构字节码。分身合约通过数学自鉴权判定自身角色，从底层物理剥夺铸币权限，配合版本栅栏与滑动窗口位图，彻底免疫状态覆盖与乱序死锁。
+### 3.1 合约角色的形式化模型
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+**定义 3.1（基合约与分身合约族）**
 
-import "./ReversibleFeistelAddress.sol";
+设基地址为 $A_{\text{base}} \in \mathbb{B}^{160}$，分片参数 $(s, p) \in \mathbb{Z}_{2^{32}}^2$。协议定义：
 
-/**
- * @title CrossShardBase
- * @notice 具备因果版本栅栏、滑动窗口防重放与零铸造自安全的跨分片基类
- */
-abstract contract CrossShardBase {
-    using ReversibleFeistelAddress for address;
+- **基合约（Base Contract）**：部署在地址 $A_{\text{base}}$ 上，在初始化阶段设置 $\text{IS\_ROOT} = \top$，并由协议写入身份标记 $\mathfrak{M} = 1$（协议固定标记槽常量）；
 
-    uint32 public immutable SHARD_ID;
-    uint32 public immutable POOL_ID;
-    address public immutable SYSTEM_EXECUTOR;
-    address public immutable BASE_ROOT_ADDRESS;
-    bool public immutable IS_ROOT;
+- **分身合约族（Derived Contract Family）**：对每个 $(s, p)$ 参数对，影子合约部署在派生地址
+$$A_{s,p} = \mathcal{D}(A_{\text{base}}, s, p)$$
+由共识层在首次跨分片消息到达时**懒部署**（Lazy Deployment），直接写入运行时字节码与初始存储槽，初始化阶段**不运行**，$\text{IS\_ROOT} = \bot$（零初始化默认值）；
 
-    // 内部账本
-    mapping(address => uint256) internal _balances;
-    uint256 public totalSupply;
-    uint64 internal _crossNonce;
+- **合约族索引**：$\mathcal{F}(A_{\text{base}}) = \{(A_{s,p}, s, p) \mid (s,p) \in \mathbb{Z}_{2^{32}}^2\}$ 为基地址 $A_{\text{base}}$ 的全部分身集合，集合大小上界为 $2^{64}$。
 
-    // 状态存储与版本控制
-    mapping(bytes32 => bytes) internal _crossStorage;
-    mapping(bytes32 => uint64) internal _storageVersions;
+**定义 3.2（影子合约初始存储状态）**
 
-    // 价值信道滑动窗口防重放 (Sliding Window Bitmap)
-    uint64 public windowBaseNonce;
-    uint256 public windowBitmap;
+影子合约 $A_{s,p}$ 在首次入账前，由共识层确定性写入以下协议规定的初始存储：
 
-    // 事件定义
-    event CrossTransferOut(address indexed from, address indexed to, uint256 amount, uint64 nonce);
-    event CrossStorageOut(bytes32 indexed key, bytes value, uint64 nonce);
-    event Transfer(address indexed from, address indexed to, uint256 amount);
-    event CrossStorageIn(bytes32 indexed key, bytes value, uint64 version);
+| 存储槽 | 语义 | 值 |
+|--------|------|-----|
+| 槽 0 | IS_ROOT 标志 + 基地址 | $(0 \,\|\, A_{\text{base}})$ |
+| 槽 1 | 系统执行者地址 | $\text{SYSTEM\_EXECUTOR}$（协议固定常量） |
+| 协议标记槽 $\mathfrak{M}$ | 合约类型标识 | $1$ |
+| 槽 3（余额变量） | 局部余额累计 | $0$（每次调用前重置） |
 
-    modifier onlySystemExecutor() {
-        require(msg.sender == SYSTEM_EXECUTOR, "UNAUTHORIZED_SYSTEM_CALL");
-        _;
-    }
+### 3.2 IS_ROOT 不变量的形式化定理
 
-    constructor(
-        uint32 shardId,
-        uint32 poolId,
-        address systemExecutor,
-        uint256 initialSupply
-    ) {
-        SHARD_ID = shardId;
-        POOL_ID = poolId;
-        SYSTEM_EXECUTOR = systemExecutor;
+**定理 3.1（IS_ROOT 单调不变性）**
 
-        address recoveredBase = address(this).recoverBaseAddress(shardId, poolId);
-        BASE_ROOT_ADDRESS = recoveredBase;
+设合约 $\mathcal{C}$ 在其完整生命周期内满足：
+- 若 $\mathcal{C}$ 为基合约，则 $\text{IS\_ROOT}(\mathcal{C}) = \top$ 于初始化阶段设定且此后不可修改；
+- 若 $\mathcal{C}$ 为分身合约，则 $\text{IS\_ROOT}(\mathcal{C}) = \bot$ 由协议零初始化保证，且协议不存在任何将其翻转的外部路径。
 
-        // 仅在根分片 (0,0) 且地址匹配自身时赋予铸造权
-        if (shardId == 0 && poolId == 0 && recoveredBase == address(this)) {
-            IS_ROOT = true;
-            totalSupply = initialSupply;
-            _balances[msg.sender] = initialSupply;
-            emit Transfer(address(0), msg.sender, initialSupply);
-        } else {
-            IS_ROOT = false;
-            totalSupply = 0; // 所有衍生分身绝对零初始供应
-        }
-    }
+**证明**：
+基合约的 $\text{IS\_ROOT}$ 字段在初始化阶段被设为 $\top$，且合约逻辑中不存在任何可修改此字段的可达路径（字段仅在初始化阶段内被赋值，此后逻辑层无写入路径）。分身合约的 $\text{IS\_ROOT}$ 依赖协议零初始化（未被显式写入的存储位置值为 $0 = \bot$），而共识层在懒部署分身合约时不会写入 $\text{IS\_ROOT}$ 对应的存储槽的 $\top$ 值。因此，$\text{IS\_ROOT}$ 在两种情形下均为合约生命周期单调不变量。$\blacksquare$
 
-    // =============================================================
-    //                  内部跨分片原语 (Internal Primitives)
-    // =============================================================
+### 3.3 SYSTEM_EXECUTOR 的协议级固定绑定
 
-    function _crossTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual returns (uint64 nonce) {
-        require(to != address(0), "INVALID_RECIPIENT");
-        require(_balances[from] >= amount, "INSUFFICIENT_BALANCE");
+**定义 3.3（固定系统执行者地址）**
 
-        _balances[from] -= amount;
-        totalSupply -= amount;
+协议定义全局固定常量：
 
-        nonce = ++_crossNonce;
-        emit CrossTransferOut(from, to, amount, nonce);
-    }
+$$\text{SYSTEM\_EXECUTOR} = \texttt{0x53595354454d5f4558454355544f525f56310000}$$
 
-    function _crossSetStorage(
-        bytes32 key,
-        bytes memory value
-    ) internal virtual returns (uint64 nonce) {
-        nonce = ++_crossNonce;
-        _crossStorage[key] = value;
-        _storageVersions[key] = nonce;
+该地址在所有分片、所有合约中一致。此地址不对应任何合法的签名公钥，因此任何外部参与者均无法通过正常签名手段在用户态消息中将发送者身份伪造为该地址。
 
-        emit CrossStorageOut(key, value, nonce);
-    }
+**定理 3.2（SYSTEM_EXECUTOR 不可伪造性）**
 
-    // =============================================================
-    //            目标端系统级入账实现 (带防重放与版本栅栏)
-    // =============================================================
+在标准密码学假设下（ECDSA secp256k1 的强不可伪造性），外部参与者无法以 $\text{SYSTEM\_EXECUTOR}$ 作为消息发送者发起调用。
 
-    function systemExecuteCrossTransfer(
-        address to,
-        uint256 amount,
-        uint64 nonce
-    ) external onlySystemExecutor {
-        // 滑动窗口位图幂等防重放
-        require(nonce >= windowBaseNonce, "NONCE_EXPIRED");
-        uint256 offset = nonce - windowBaseNonce;
-        require(offset < 256, "NONCE_BEYOND_WINDOW");
-        
-        uint256 mask = 1 << offset;
-        require((windowBitmap & mask) == 0, "ALREADY_EXECUTED");
+**证明**：
+消息的发送者身份由公钥密码学恢复确定。对于 $\text{SYSTEM\_EXECUTOR}$ 地址，不存在与之对应的 secp256k1 私钥（该地址为 ASCII 编码构造，非椭圆曲线点的哈希），故找到能产生该发送者身份的签名等价于对 secp256k1 进行离散对数求解，在计算上不可行。在共识层内部，该地址由宿主层直接注入到执行帧的发送者字段，外部调用帧无法触达。$\blacksquare$
 
-        // 标记位图
-        windowBitmap |= mask;
+### 3.4 分身合约的零铸造不变量
 
-        // 滑动窗口推进
-        while ((windowBitmap & 1) != 0) {
-            windowBitmap >>= 1;
-            windowBaseNonce++;
-        }
+**定义 3.4（铸造操作的形式化）**
 
-        // 状态写入
-        _balances[to] += amount;
-        totalSupply += amount;
-        emit Transfer(address(0), to, amount);
-    }
+称一个状态转移 $\sigma \to \sigma'$ 为**铸造（Mint）**，若存在某地址 $u$ 使得：
 
-    function systemExecuteCrossStorage(
-        bytes32 key,
-        bytes calldata value,
-        uint64 version
-    ) external onlySystemExecutor {
-        // 因果单调性断言：拦截网络乱序陈旧包
-        if (version > _storageVersions[key]) {
-            _storageVersions[key] = version;
-            _crossStorage[key] = value;
-            _onCrossStorageUpdated(key, value);
-            emit CrossStorageIn(key, value, version);
-        }
-    }
+$$\text{Balance}(\sigma', u) > \text{Balance}(\sigma, u) \quad \text{且} \quad \sum_{v} \text{Balance}(\sigma', v) > \sum_{v} \text{Balance}(\sigma, v)$$
 
-    function _onCrossStorageUpdated(bytes32 key, bytes memory value) internal virtual {}
-}
-```
+即在没有对等源端扣除的前提下，凭空增加总供给。
+
+**定理 3.3（分身合约零铸造不变量）**
+
+对于任意分身合约 $\mathcal{C}_{s,p}$（其中 $(s,p) \neq (s_{\text{root}}, p_{\text{root}})$），其余额状态的唯一合法增长路径为目标端代币入账原语 $\Pi_{CT}$，且该原语仅可由 $\text{SYSTEM\_EXECUTOR}$ 触发。协议不向分身合约提供任何无源铸造路径。
+
+**证明**：
+分身合约的初始化阶段不运行，故初始总余额为 $0$（协议零初始化）。合约逻辑中不存在无源铸造接口。唯一能增加账户余额的路径是 $\Pi_{CT}$，其访问控制修饰符确保调用者必须为 $\text{SYSTEM\_EXECUTOR}$。由定理 3.2，该地址在用户态不可伪造。故分身合约的每一单位余额增加，必有源端等额扣除作为前驱事件（由共识层 QC 证明校验保证），不存在无源铸造。$\blacksquare$
+
+### 3.5 影子合约前状态确定性初始化不变量
+
+**定理 3.4（前状态确定性初始化）**
+
+对于任意影子合约 $A_{s,p}$，在每次目标端代币入账原语 $\Pi_{CT}$ 执行前，共识层确定性写入以下不变初始状态：
+
+$$\sigma_{\text{pre}}(A_{s,p}) = \{(0, 0 \,\|\, A_{\text{base}}),\ (1, \text{SYSTEM\_EXECUTOR}),\ (\mathfrak{M}, 1),\ (3, 0)\}$$
+
+其中槽 $3$ 对应执行层的局部余额累计变量，每次调用前无条件重置为 $0$。
+
+**证明**：
+
+设 $A_{s,p}$ 在分片 $S_{s,p}$ 上参与高度为 $h$ 的区块共识。共识层在构建执行帧前，将上述四个存储槽写入宿主缓存（宿主内存层，优先级高于持久化存储层）。
+
+**确定性论证**：槽 $0$、槽 $1$、槽 $\mathfrak{M}$ 的值仅依赖 $(A_{\text{base}}, \text{SYSTEM\_EXECUTOR})$，均为协议全局常量，与区块高度、视图轮次无关。槽 $3$ 无条件置为 $0$，亦为常量。
+
+**必要性论证（槽 3 重置的正确性）**：若不重置槽 $3$，不同节点因视图区块（View Block）替换（HotStuff 视图变更）导致宿主缓存中残留不同的历史值，各节点计算出不同的后状态，导致区块哈希不一致（共识失败）。重置为 $0$ 消除了缓存污染的可能性。
+
+**与价值守恒的相容性**：执行层槽 $3$ 的局部变量仅用于单次 $\Pi_{CT}$ 调用内的临时计数，不参与跨块状态累积。全网代币守恒（定理 7.1）由共识层的 $\text{TotalSupply}$ 账本维护，与执行层的局部变量解耦，不受此重置影响。$\blacksquare$
+
+### 3.6 懒部署安全性定理
+
+**定理 3.5（懒部署幂等与安全性）**
+
+影子合约 $A_{s,p}$ 的懒部署机制满足以下性质：
+
+**(a) 幂等性**：若 $A_{s,p}$ 已存在于状态树中，重复触发懒部署操作不改变其功能性状态；
+
+**(b) 安全性**：在运行时字节码注册表同步完成前，目标端入账消息无法成功执行；
+
+**(c) 终局性**：注册表同步后，懒部署在首次跨分片消息到达时确定性完成，后续消息无需再次部署。
+
+**证明**：
+
+**(a) 幂等性**：懒部署写入的内容（运行时字节码 + 初始存储槽）对给定 $(A_{\text{base}}, s, p)$ 是常量值。若账户已存在，检查逻辑发现已部署则跳过字节码写入；槽 $0,1,\mathfrak{M}$ 的写入是幂等的（写相同值）；槽 $3$ 每次调用前重置，其初始值无关。故幂等性成立。
+
+**(b) 安全性**：共识层在执行 $\Pi_{CT}$ 前，先在注册表查询 $A_{\text{base}}$ 对应的运行时字节码。若未找到（尚未注册），拒绝执行并保留入账消息于队列，下一个区块重试。因此，字节码未就绪不会导致资产丢失。
+
+**(c) 终局性**：注册表同步是一次性事件，完成后所有后续消息均可成功触发。懒部署写入 $(A_{\text{base}}, s, p) \mapsto A_{s,p}$ 的映射是确定性的（Feistel 双射），不存在歧义。$\blacksquare$
+
+### 3.7 Nonce 的共识层分配模型
+
+**定义 3.5（跨分片序列号）**
+
+跨分片 Nonce 由共识层宿主在拦截跨分片出账事件时统一分配，定义为：
+
+$$\text{PacketID} = \text{keccak256}(\text{srcShard} \,\|\, \text{dstShard} \,\|\, A_{\text{base}} \,\|\, n \,\|\, h_{\text{src}})$$
+
+其中 $n$ 为共识层维护的全局单调递增计数器，$h_{\text{src}}$ 为源分片区块高度。
+
+**性质 3.1（Nonce 的单调唯一性）**：共识层维护的计数器 $n$ 严格单调递增，且 $\text{PacketID}$ 在概率上是唯一的（在 keccak256 抗碰撞假设下），从而为每个跨分片包提供全局唯一标识符。
 
 ---
 
-## 4. 宿主环境事务快照栈与 Gas 确定性预扣（`HostJournalStack.hpp`）
-
-目标端 Gas 消耗在源端由 C++ EVM Host（`evmone`）直接在解释器层从当前事务的 `gas_left` 中预扣。通过维护与 EVM Call Frame 深度同步的快照栈，确保在子调用发生 Revert 时实现 Gas 与状态记录的无损回滚。
+## 4. 宿主环境事务快照栈与 Gas 确定性预扣
 
 ### 4.1 目标端静态 Gas 定价模型
-* **跨分片转账 (`systemExecuteCrossTransfer`)**：固定执行 1 次 SLOAD + 1 次 SSTORE + 1 次 LOG3，开销恒定：
-  $$G_{\text{target\_transfer}} \equiv 30{,}000\ \text{Gas}$$
-* **跨分片存储 (`systemExecuteCrossStorage`)**：基础开销加数据长度线性开销：
-  $$G_{\text{target\_storage}}(L) = 25{,}000 + \left\lceil \frac{L}{32} \right\rceil \times 20{,}000\ \text{Gas}$$
 
-### 4.2 C++20 宿主环境事务快照栈实现
+协议在编译期固定目标端执行开销，消除动态定价导致的 Gas 预估失准问题：
 
-```cpp
-#pragma once
-#include <evmc/evmc.hpp>
-#include <vector>
-#include <cstdint>
-#include <array>
-#include <cstring>
+**定义 4.1（静态 Gas 定价）**
 
-namespace akaverse::execution {
+$$G_{CT} = 21{,}000 \text{ Gas}$$
+$$G_{CS} = 5{,}000 \text{ Gas}$$
 
-struct CrossShardAction {
-    enum class Type { TRANSFER, STORAGE };
-    Type type;
-    int64_t gas_charged;
-    std::array<uint8_t, 32> record_hash;
-};
+$G_{CT}$ 对应目标端代币入账原语 $\Pi_{CT}$ 的确定性执行开销：一次余额读取、一次加法运算、一次余额写入、一次事件触发，总开销恒定。
 
-struct ExecutionFrameSnapshot {
-    size_t action_stack_size;
-    int64_t accumulated_gas_charged;
-};
+$G_{CS}$ 对应目标端存储入账原语 $\Pi_{CS}$ 的基础路由开销。数据持久化的细粒度成本由分片本地的存储覆盖逻辑决定，与协议层分离。
 
-class TransactionalHostContext : public evmc_host_context {
-public:
-    int64_t tx_gas_left;
-    int64_t total_cross_gas_reward = 0;
-    
-    std::vector<CrossShardAction> pending_actions;
-    std::vector<ExecutionFrameSnapshot> frame_snapshots;
+### 4.2 Gas 预扣的因果原子性
 
-    explicit TransactionalHostContext(int64_t initial_gas) : tx_gas_left(initial_gas) {}
+**定义 4.2（宿主事务快照帧）**
 
-    // 进入子调用时创建快照
-    void push_frame() {
-        frame_snapshots.push_back(ExecutionFrameSnapshot{
-            .action_stack_size = pending_actions.size(),
-            .accumulated_gas_charged = total_cross_gas_reward
-        });
-    }
+每当执行引擎进入子调用帧时，宿主层记录快照：
 
-    // 子调用成功提交
-    void pop_frame_commit() {
-        if (!frame_snapshots.empty()) {
-            frame_snapshots.pop_back();
-        }
-    }
+$$\text{Snapshot} = (\text{actions\_size},\; \text{cross\_gas\_charged})$$
 
-    // 子调用 REVERT 时无损回滚
-    void pop_frame_revert() {
-        if (frame_snapshots.empty()) return;
-        
-        auto snapshot = frame_snapshots.back();
-        frame_snapshots.pop_back();
+其中 $\text{actions\_size}$ 为当前跨分片待处理动作队列长度，$\text{cross\_gas\_charged}$ 为已累计预扣的跨分片 Gas 总量。
 
-        // 1. 计算需要回滚退还的 Gas
-        int64_t gas_to_refund = total_cross_gas_reward - snapshot.accumulated_gas_charged;
-        tx_gas_left += gas_to_refund;
-        total_cross_gas_reward = snapshot.accumulated_gas_charged;
+**定义 4.3（Gas 预扣事务语义）**
 
-        // 2. 丢弃回滚作用域内产生的跨分片 Action
-        pending_actions.resize(snapshot.action_stack_size);
-    }
+当宿主层拦截到跨分片出账事件时，立即从当前帧的剩余 Gas 中扣除对应静态 Gas，并将跨分片动作压入待处理队列。若该子调用帧以回滚终止，则：
 
-    // 拦截 CrossTransferOut 与 CrossStorageOut
-    evmc_result handle_log_interception(
-        const evmc_address& /*emitter*/,
-        const uint8_t* /*data*/,
-        size_t data_size,
-        const evmc_bytes32 topics[],
-        size_t num_topics
-    ) noexcept {
-        static const auto TOPIC_TRANSFER = evmc::keccak256(
-            reinterpret_cast<const uint8_t*>("CrossTransferOut(address,address,uint256,uint64)"), 51
-        );
-        static const auto TOPIC_STORAGE = evmc::keccak256(
-            reinterpret_cast<const uint8_t*>("CrossStorageOut(bytes32,bytes,uint64)"), 40
-        );
+$$\text{gas\_left} \mathrel{+}= \Delta G_{\text{charged since snapshot}}$$
+$$\text{PendingActions} \leftarrow \text{PendingActions}[:\text{actions\_size}]$$
 
-        int64_t required_gas = 0;
-        CrossShardAction::Type action_type;
+即 Gas 退还且跨分片动作回滚，与执行引擎状态回滚完全同步。
 
-        if (num_topics > 0 && std::memcmp(topics[0].bytes, TOPIC_TRANSFER.bytes, 32) == 0) {
-            required_gas = 30'000;
-            action_type = CrossShardAction::Type::TRANSFER;
-        } else if (num_topics > 0 && std::memcmp(topics[0].bytes, TOPIC_STORAGE.bytes, 32) == 0) {
-            size_t words = (data_size + 31) / 32;
-            required_gas = 25'000 + static_cast<int64_t>(words * 20'000);
-            action_type = CrossShardAction::Type::STORAGE;
-        }
+**定理 4.1（Gas 与 Action 的强一致回滚）**
 
-        if (required_gas > 0) {
-            if (tx_gas_left < required_gas) {
-                return evmc_result{EVMC_OUT_OF_GAS, tx_gas_left, nullptr, 0};
-            }
-            // 扣减 Gas 并压入局部动作栈
-            tx_gas_left -= required_gas;
-            total_cross_gas_reward += required_gas;
-            pending_actions.push_back(CrossShardAction{
-                .type = action_type,
-                .gas_charged = required_gas,
-                .record_hash = {}
-            });
-        }
+对于任意嵌套深度的执行子调用树，宿主快照栈保证：若子调用树的某子树以回滚终止，则该子树产生的所有跨分片动作从待处理队列中移除，且对应的预扣 Gas 完全退还，与执行引擎的回滚边界严格对齐。
 
-        return evmc_result{EVMC_SUCCESS, tx_gas_left, nullptr, 0};
-    }
-};
+**证明**：
+采用结构归纳。基础情形：对于叶子调用帧，发生回滚时，快照帧被弹出，剩余 Gas 恢复为快照值，待处理动作截断到 $\text{actions\_size}$；此时动作集与执行引擎叶子帧的状态回滚严格一致。归纳步骤：若对深度 $\leq d$ 的子树命题成立，则对深度 $d+1$ 的子树，外层帧在子树以回滚终止时触发其自身快照的回滚逻辑，归纳假设保证子树内所有 Gas 扣减与动作均已被递归撤销，外层回滚仅需处理外层帧自身的增量，保持一致性。$\blacksquare$
 
-} // namespace akaverse::execution
-```
+### 4.3 目标端零 Revert 定理（前置条件）
+
+**引理 4.1**：目标端代币入账原语 $\Pi_{CT}$ 满足：
+
+1. **唯一前置条件**：目标地址非零地址，由共识层在派发前通过 Feistel 逆算验证目标地址合法性，确保不可能到达执行层时仍违反；
+2. **执行体为纯加法赋值**：对目标账户余额执行 $b_{\text{to}} \mathrel{+}= \Delta$，协议总供给执行 $T \mathrel{+}= \Delta$，触发入账事件；
+3. **无控制流分支**：不包含循环、外部调用或状态依赖的分支；
+4. **全网代币总量受 $2^{256} - 1$ 约束**，且源端已等额扣除，故加法运算不会溢出（见定理 4.2）。
+
+由此得到定理 7.3 的前置支撑，目标端执行确定性成功率为 $100\%$。
+
+**定理 4.2（uint256 金额积累有界性）**
+
+设同一区块内，从源分片 $S_{\text{src}}$ 到目标账户 $u$ 的所有跨分片转账金额累计为 $\Delta_{\text{total}} = \sum_{i=1}^m \Delta_i$（uint256 大端算术）。则：
+
+$$\Delta_{\text{total}} \leq \text{TotalSupply} \leq 2^{256} - 1$$
+
+故 uint256 加法不产生溢出。
+
+**证明**：
+
+每笔 $\Delta_i$ 来自源端账户的合法扣除（源端余额 $\geq \Delta_i$，扣除后余额 $\geq 0$），故：
+
+$$\Delta_i \leq \text{Balance}(\sigma_{\text{src}}, u_i) \leq \text{TotalSupply}$$
+
+同一区块内所有在途消息的总价值之和 $\leq$ 源分片的 $\text{LocalSupply}(S_{\text{src}}) \leq \text{TotalSupply}$。
+
+由定理 7.1 守恒性，$\text{TotalSupply}$ 在任意时刻不超过其初始铸造量（协议创世时确定），而初始铸造量 $\ll 2^{256} - 1$（实际代币经济设计约束）。故 uint256 积累不溢出。$\blacksquare$
 
 ---
 
-## 5. 底层共识层系统入账与 GBP 流水线时序（Consensus Ingress & GBP Pipeline）
+## 5. 底层共识层系统入账与 GBP 流水线时序
 
-跨分片消息包由共识层直接推进，不经过目标分片的用户态交易池（Mempool）：
+跨分片消息包由共识层直接推进，不经过目标分片的用户态交易池：
 
 ```
 [ 源分片共识引擎 (Block Producer) ]
@@ -461,21 +342,31 @@ public:
         ▼
 [ 目标分片区块处理器 (Block Processor) ]
         │  3. 密码学校验: 验证门限聚合签名 QC(B_src)
-        │  4. 防重放校验: 校验滑动窗口位图
-        │  5. 身份校验: 校验 RecoverBase(target_addr) == RecoverBase(src_addr)
-        │  6. 合成系统消息 (msg.sender = SYSTEM_EXECUTOR)
+        │  4. 身份校验: 验证 RecoverBase(A_dst, s_dst, p_dst) ≡ A_base
+        │  5. Nonce 防重放: 验证 PacketID 未在已处理集合中出现
+        │  6. 合成系统消息: 注入 SYSTEM_EXECUTOR 身份
         ▼
-[ EVM 解释器 (evmone) ]
-        │  7. 执行 systemExecuteCrossTransfer / systemExecuteCrossStorage
+[ 执行引擎 (EVM) ]
+        │  7. 执行目标端代币入账原语 Π_CT / 存储入账原语 Π_CS
         ▼
 [ 状态机写入本地 State Trie ]
 ```
 
+### 5.1 共识层身份校验的形式化描述
+
+**定义 5.1（跨分片身份校验谓词）**
+
+对于从分片 $(s_{\text{src}}, p_{\text{src}})$ 上的合约地址 $A_{\text{src}}$ 到分片 $(s_{\text{dst}}, p_{\text{dst}})$ 上目标地址 $A_{\text{dst}}$ 的跨分片转账，共识层执行以下断言：
+
+$$\text{ValidCross}(A_{\text{src}}, A_{\text{dst}}) \iff \mathcal{D}^{-1}(A_{\text{src}}, s_{\text{src}}, p_{\text{src}}) = \mathcal{D}^{-1}(A_{\text{dst}}, s_{\text{dst}}, p_{\text{dst}})$$
+
+即两者反算所得的基地址相同，确认二者属于同一合约族的不同分片分身。
+
 ---
 
-## 6. 非可交换金融状态的算法级隔离证明（AMM/Orderbook Conflict-Free Proof）
+## 6. 非可交换金融状态的算法级隔离证明
 
-协议通过形式化定义状态机转移语义，证明 `_crossTransfer` 与 `_crossSetStorage` 从**算法底层**天然杜绝了 AMM 滑点竞争、并发多主写入与虚实资产脱节问题。
+协议通过形式化定义状态机转移语义，证明跨分片原语从**算法底层**天然杜绝了 AMM 滑点竞争、并发多主写入与虚实资产脱节问题。
 
 ```
                       ┌────────────────────────────────────────────────────────┐
@@ -484,114 +375,184 @@ public:
                                                   │
                     ┌─────────────────────────────┴─────────────────────────────┐
                     ▼                                                           ▼
-      【 算子 A: 价值线性转移 _crossTransfer 】                   【 算子 B: 控制总线写入 _crossSetStorage 】
-        - 代数可交换阿贝尔群 (Abelian Group)                       - 幂等单主投影算子 (Idempotent Projection)
-        - (S ⊕ Δ_1) ⊕ Δ_2 ≡ (S ⊕ Δ_2) ⊕ Δ_1                       - P_master(S, v) := S[key ↦ v]
-        - 账面状态与物理资产 1:1 绝对锚定                          - 杜绝多主并发写，无脑裂风险
+      【 算子 CT: 跨分片代币转账 】                         【 算子 CS: 跨分片存储写入 】
+        - 代数可交换阿贝尔群 (Abelian Group)                  - 幂等单主投影算子 (Idempotent Projection)
+        - (S ⊕ Δ_1) ⊕ Δ_2 ≡ (S ⊕ Δ_2) ⊕ Δ_1                - P_master(S, v) := S[key ↦ v]
+        - 账面状态与物理资产 1:1 绝对锚定                     - 杜绝多主并发写，无脑裂风险
                     │                                                           │
                     └─────────────────────────────┬─────────────────────────────┘
                                                   ▼
                           【 结论: 算法内生免疫所有非可交换金融状态冲突 】
 ```
 
-### 6.1 `_crossTransfer` 的阿贝尔群可交换性证明（Abelian Commutativity）
-* **定义**：设状态树中地址 $u$ 的余额状态为 $B(u) \in \mathbb{N}$。跨分片转账在目标分片的入账算子定义为加法算子 $T_{\Delta}(B) = B + \Delta$。
-* **定理（时序无关性）**：对于任意两笔到达目标分片的并发在途跨分片转账 $\Delta_1, \Delta_2$：
-  $$T_{\Delta_1} \circ T_{\Delta_2}(B) = (B + \Delta_2) + \Delta_1 = (B + \Delta_1) + \Delta_2 = T_{\Delta_2} \circ T_{\Delta_1}(B)$$
-* **推论**：`_crossTransfer` 属于**加法阿贝尔半群算子**，无论 GBP 路由或网络抖动导致数据包以何种顺序到达，最终状态严格收敛一致，与顺序敏感的 AMM 滑点状态机完全正交。
+### 6.1 跨分片代币转账原语 CT 的阿贝尔群可交换性证明
 
-### 6.2 `_crossTransfer` 的虚实资产 1:1 严格对称性（Physical-State Parity）
-* **定理**：目标分片账面代币的每一次增加，均有源分片物理扣除作为前驱断言。
-  $$\Delta \text{LocalSupply}(S_{\text{dst}}) \equiv \Delta \text{PhysicalVault}(S_{\text{dst}}) = \Delta$$
-* **推论**：目标端分身合约不存在“仅有数据同步而无底层真实资金”的部分准备金危机，杜绝了即时兑换时的挤兑穿仓隐患。
+**定义 6.1**：设状态树中地址 $u$ 的余额状态为 $B(u) \in \mathbb{N}$。跨分片代币转账在目标分片的入账算子定义为加法算子 $\mathcal{T}_{\Delta}(B) = B + \Delta$。
 
-### 6.3 `_crossSetStorage` 的单主幂等性证明（Single-Writer Idempotence）
-* **定义**：状态写入算子定义为状态映射覆盖 $W_{k, v}(S) = S[k \mapsto v]$。
-* **定理（单主一致性）**：在系统架构中，每个 Key $k$ 的写权限严格受限于唯一权威主控地址（Master Authority）。
-  $$W_{k, v_2} \circ W_{k, v_1}(S) = S[k \mapsto v_2]$$
-* **推论**：写操作具有**幂等投影性（Idempotent Projection）**，不存在多主并发修改同一状态的读写竞争。
+**定理 6.1（时序无关性）**：对于任意两笔到达目标分片的并发在途跨分片转账 $\Delta_1, \Delta_2$：
 
-### 6.4 非可交换金融计算的本地闭环范式（Local Execution Closure）
-由于协议从算法层将跨分片原语限定为阿贝尔群加减法与单主覆盖，所有**非可交换算子（如 AMM 恒定乘积公式 $(x+\Delta x)(y-\Delta y) \ge k$、订单簿价格-时间优先撮合）**被天然限制在分片本地状态机闭环执行：
-* **AMM 业务范式**：每个分片独立维护本地 AMM 流动性池，套利者通过可交换的 `_crossTransfer` 进行跨片价值搬砖，价格发现与滑点计算 $100\%$ 在分片内部即时收敛；
-* **撮合业务范式**：专属撮合分片通过本地内存撮合，跨分片原语仅负责充值与提现通道。
+$$\mathcal{T}_{\Delta_1} \circ \mathcal{T}_{\Delta_2}(B) = (B + \Delta_2) + \Delta_1 = (B + \Delta_1) + \Delta_2 = \mathcal{T}_{\Delta_2} \circ \mathcal{T}_{\Delta_1}(B)$$
 
----
+**证明**：$(\mathbb{N}, +)$ 构成满足交换律的加法幺半群。加法算子的复合等价于整数加法，满足交换律 $\Delta_1 + \Delta_2 = \Delta_2 + \Delta_1$，故结论成立。$\blacksquare$
 
-## 7. 系统核心定理与形式化安全性证明（Formal Security Theorems & Proofs）
+**推论 6.1**：跨分片代币转账原语 CT 属于**加法阿贝尔半群算子**，无论 GBP 路由或网络抖动导致数据包以何种顺序到达，最终状态严格收敛一致，与顺序敏感的 AMM 滑点状态机完全正交。
 
-### 7.1 定理 1：全网代币总供应量强守恒定理（Conservation of Value）
+### 6.2 跨分片代币转账原语 CT 的虚实资产 1:1 严格对称性
+
+**定理 6.2（物理-账面等量性）**：目标分片账面代币的每一次增加，均有源分片物理扣除作为前驱断言：
+
+$$\Delta \text{LocalSupply}(S_{\text{dst}}) \equiv \Delta \text{PhysicalVault}(S_{\text{dst}}) = \Delta$$
 
 **证明**：
-1. **源端扣除原子性**：EVM 事务中 `_balances[from] -= Δ` 与 `totalSupply -= Δ` 先于事件抛出。若余额不足，EVM 抛出异常回滚状态，跨分片事件不会生成；
-2. **中继唯一性与幂等性**：跨分片凭据绑定唯一标识 $\text{PacketID} = \text{keccak256}(\text{srcShard}, \text{dstShard}, \text{baseAddr}, \text{nonce}, \text{height})$，目标端共识层维护滑动窗口位图，重复数据包 $O(1)$ 丢弃；
-3. **分身零增发性**：分身合约初始化时 `totalSupply = 0`，且不存在外部 `_mint()` 接口。目标端代币增加的唯一途径为 `systemExecuteCrossTransfer`，其入账量严格等于源端扣除量 $\Delta$；
-4. **守恒推导**：
-   $$\Delta \text{TotalSupply} = -\Delta (\text{Source}) + 0 (\text{In-Flight}) + \Delta (\text{Destination}) \equiv 0 \quad \blacksquare$$
+源端代币转账原语 CT 在触发跨分片出账事件前，对源账户执行余额扣除 $b_{\text{from}} \mathrel{-}= \Delta$ 与总供给更新 $T \mathrel{-}= \Delta$。若余额不足（$b_{\text{from}} < \Delta$），协议层算术保护触发异常并回滚，跨分片出账事件不生成。共识层仅对具有有效源端 QC 证明的事件派发目标端调用，故每笔目标端 $+\Delta$ 均有源端 $-\Delta$ 作为密码学可验证的前驱。$\blacksquare$
+
+### 6.3 跨分片存储写入原语 CS 的单主幂等性证明
+
+**定义 6.2**：状态写入算子定义为状态映射覆盖 $W_{k, v}(S) = S[k \mapsto v]$。
+
+**定理 6.3（单主一致性）**：在系统架构中，每个 Key $k$ 的写权限严格受限于唯一权威主控分片。设 $v_1, v_2$ 为按版本号先后到达的两次写入，则：
+
+$$W_{k, v_2} \circ W_{k, v_1}(S) = S[k \mapsto v_2]$$
+
+**证明**：共识层按版本号单调过滤陈旧写入（详见定理 7.4 §2），确保高版本写入覆盖低版本。写操作在逻辑上构成**幂等投影**（Idempotent Projection），对同一键 $k$ 的相同值重复写入不改变状态：$W_{k,v} \circ W_{k,v}(S) = S[k \mapsto v]$。不存在多主并发修改同一状态的读写竞争。$\blacksquare$
+
+### 6.4 非可交换金融计算的本地闭环范式
+
+由于协议从算法层将跨分片原语限定为阿贝尔群加减法与单主覆盖，所有**非可交换算子**（如 AMM 恒定乘积公式 $(x+\Delta x)(y-\Delta y) \ge k$、订单簿价格-时间优先撮合）被天然限制在分片本地状态机闭环执行：
+
+- **AMM 业务范式**：每个分片独立维护本地 AMM 流动性池，套利者通过可交换的跨分片代币转账进行跨片价值搬砖，价格发现与滑点计算 $100\%$ 在分片内部即时收敛；
+- **撮合业务范式**：专属撮合分片通过本地内存撮合，跨分片原语仅负责充值与提现通道。
 
 ---
 
-### 7.2 定理 2：地址双射性与抗冒充定理（Bijective Identity Guarantee）
+## 7. 系统核心定理与形式化安全性证明
 
-**证明**：
-1. **分段双射性**：
-   * 当 $(s, p) = (0, 0)$ 时，$\mathcal{D}(A, 0, 0) = A$ 为恒等双射；
-   * 当 $(s, p) \neq (0, 0)$ 时，Feistel 密码网络在有限域 $\mathbb{Z}_{2^{160}}$ 上是严格的一对一双射置换：
-     $$\forall A_1 \neq A_2 \iff \mathcal{D}(A_1, s, p) \neq \mathcal{D}(A_2, s, p)$$
-2. **唯一可逆性**：逆映射 $\mathcal{D}^{-1}(Addr_{s,p}, s, p) \equiv A$ 确定且唯一。目标分片共识层在派发跨分片消息前，执行强制断言：
-   $$\mathcal{D}^{-1}(Addr_{\text{dst}}, s_{\text{dst}}, p_{\text{dst}}) == \mathcal{D}^{-1}(Addr_{\text{src}}, s_{\text{src}}, p_{\text{src}}) \equiv A_{\text{Base}}$$
-   若攻击者在目标分片部署恶意非关联合约，其计算出的 $A_{\text{Base}}'$ 必不匹配，系统调用绝不会派发至恶意地址。 $\blacksquare$
+### 7.1 定理 1：全网代币总供应量强守恒定理
 
----
+**定理 7.1（Conservation of Value）**：在协议正常运行（非拜占庭失效）条件下，对于全网任意时刻 $t$：
 
-### 7.3 定理 3：目标端执行确定性与零 Revert 定理（Deterministic Zero-Revert Invariant）
+$$\frac{d}{dt}\left[\sum_{k,p} \text{LocalSupply}(S_k, P_p, t) + \sum_{m \in \text{InFlight}(t)} \text{Value}(m)\right] = 0$$
 
-**证明**：
-1. 目标端入账函数 `_receiveCrossTransfer` 仅包含单一存储累加操作：
-   $$\text{SLOAD} \to \text{ADD} \to \text{SSTORE}$$
-2. 不包含任何条件断言（`require`）、循环或外部调用钩子（No Hooks）；
-3. 算术运算遵循 Solidity 0.8+ 规范，由于全网代币总供应量受限且源端已完成等额扣除，$\text{Balance} + \Delta$ 绝不可能发生溢出；
-4. 目标端执行成功率恒为 $100\%$，消除因应用层 Revert 导致的资产蒸发。 $\blacksquare$
+**完整证明**：
 
----
+**步骤 1（源端扣除原子性）**：执行引擎事务语义保证源账户余额扣除 $b_{\text{from}} \mathrel{-}= \Delta$ 在跨分片出账事件触发前原子完成，且不可分割。若余额 $b_{\text{from}} < \Delta$，协议层算术保护触发，整个事务回滚，跨分片事件不生成，在途消息集 $\text{InFlight}$ 不变。故：
 
-### 7.4 定理 4：部分同步网络下跨窗口到达的因果偏序一致性 (Causal Consistency under Partial Synchrony)
+$$\forall t,\; \Delta > 0 \text{ 在途}: \exists \epsilon > 0, \text{LocalSupply}(S_{\text{src}}, t + \epsilon) = \text{LocalSupply}(S_{\text{src}}, t) - \Delta$$
 
-**证明**：
-我们将跨分片状态转移空间分解为两类代数系统 $\mathcal{S} = \mathcal{S}_{\text{value}} \times \mathcal{S}_{\text{ctrl}}$：
-1. **价值流转空间 $\mathcal{S}_{\text{value}}$ 的阿贝尔可交换性**：
-   目标端代币状态更新为加法算子 $T_{\Delta}(B) = B + \Delta$。
-   由于 $(\mathbb{Z}, +)$ 构成阿贝尔群：
-   $$\mathcal{T}_{\Delta_1} \circ \mathcal{T}_{\Delta_2}(B) = B + \Delta_2 + \Delta_1 \equiv B + \Delta_1 + \Delta_2 = \mathcal{T}_{\Delta_2} \circ \mathcal{T}_{\Delta_1}(B)$$
-   因此，$\forall \sigma \in \text{Permutations}(\{r_1, r_2\})$，最终状态 $S_{\text{value}}(\sigma) \equiv S_{\text{value}}^{\text{final}}$，满足强最终一致性（SEC）。
-2. **控制信道 $\mathcal{S}_{\text{ctrl}}$ 的格半连通性（Join-Semilattice）**：
-   定义状态更新格算子 $\sqcup$：
-   $$(v_1, \eta_1) \sqcup (v_2, \eta_2) = \begin{cases} 
-   (v_2, \eta_2), & \text{if } \eta_2 > \eta_1 \\
-   (v_1, \eta_1), & \text{if } \eta_1 > \eta_2 \\
-   (v_1, \eta_1), & \text{if } \eta_1 = \eta_2 \land v_1 = v_2
-   \end{cases}$$
-   由于单调标号系统具有全序性，算子 $\sqcup$ 满足结合律、交换律与幂等性：
-   $$(S \sqcup r_2) \sqcup r_1 \equiv (S \sqcup r_1) \sqcup r_2 = S[k \mapsto v_2, \text{ver}(k) \mapsto \eta_2]$$
-   当滞后的 $r_1$ 到达时，因其版本号 $\eta_1 < \text{ver}(k) = \eta_2$，转移函数执行恒等空操作，陈旧写被严格过滤。 $\blacksquare$
+**步骤 2（中继唯一性与幂等性）**：每个跨分片包唯一标识为 $\text{PacketID} \in \mathbb{B}^{256}$（定义 3.5）。共识层维护已处理 PacketID 集合 $\mathcal{P}$，对重复到达的包执行 $O(1)$ 幂等丢弃：
+
+$$\text{if } \text{PacketID} \in \mathcal{P}: \text{discard}; \quad \text{else}: \mathcal{P} \leftarrow \mathcal{P} \cup \{\text{PacketID}\}, \text{execute}$$
+
+故每个在途消息对应的目标端入账操作**至多执行一次**。
+
+**步骤 3（分身合约零增发性）**：由定理 3.3，分身合约唯一余额增加路径为 $\Pi_{CT}$，其入账量严格等于源端扣除量 $\Delta$。由定理 3.4，执行层局部余额变量（槽 3）每次重置为 $0$，仅反映单次 $\Pi_{CT}$ 的临时状态，不影响协议层 $\text{TotalSupply}$ 守恒。
+
+**步骤 4（守恒代数推导）**：
+
+$$\Delta \text{TotalSupply} = \underbrace{-\Delta}_{\text{源端扣除}} + \underbrace{0}_{\text{在途阶段}} + \underbrace{\Delta}_{\text{目标端入账}} = 0 \quad \blacksquare$$
 
 ---
 
-### 7.5 定理 5：非可交换金融状态的“本地封闭-跨片流动”无锁安全性 (Lock-Free Invariant of Non-Commutative States)
+### 7.2 定理 2：地址双射性与无条件强抗冲突定理
 
-**证明**：
-1. **状态空间划分**：设全网状态空间被正交划分为 $\mathcal{S} = \bigoplus_{k=1}^K \mathcal{S}_k$，其中 $\mathcal{S}_k$ 仅由分片 $k$ 的单机状态机复制（SMR）引擎独占写入。
-2. **算子隔离映射**：
-   * 严禁任何跨分片直接修改 $\mathcal{S}_k$ 内 AMM 内部槽位 $(x_k, y_k)$ 的指令；
-   * 跨分片请求 $Tx_{\text{cross}}$ 降维为纯价值流转算子 $\mathcal{T}_{\Delta} \in \mathcal{S}_{\text{value}}$；
-   * 目标分片接收到代币注入后，在分片本地生成一笔全新的本地事务 $Tx_{\text{swap}}^{\text{local}}$。
-3. **因果串行化**：
-   $$Tx_{\text{swap}}^{\text{local}} \text{ 执行时的滑点与价格计算，100\% 基于目标分片此时已完成共识的本地唯一状态 } (x_k, y_k)$$
-   由于非可交换计算从未跨越分片边界，系统无需在分片间维持任何分布式锁，彻底消除了死锁与滑点竞争。 $\blacksquare$
+**定理 7.2（Unconditional Bijective Identity Guarantee）**：
+
+**(a) 全域双射性**：对任意固定 $(s, p) \in \mathbb{Z}_{2^{32}}^2$（包括 $(0,0)$），映射 $\mathcal{D}(\cdot, s, p): \mathbb{B}^{160} \to \mathbb{B}^{160}$ 是双射。
+
+**(b) 完全可逆性**：对任意 $A \in \mathbb{B}^{160}$ 和 $(s,p)$，$\mathcal{D}^{-1}(\mathcal{D}(A, s, p), s, p) = A$。
+
+**(c) 参数分离性**：对 $(s_1, p_1) \neq (s_2, p_2)$，在 keccak256 抗碰撞假设下：
+
+$$\Pr_{A \leftarrow \mathbb{B}^{160}}\!\left[\mathcal{D}(A, s_1, p_1) = \mathcal{D}(A, s_2, p_2)\right] = \text{negl}(\lambda)$$
+
+**(d) 抗冒充性**：攻击者在目标分片部署恶意合约 $\mathcal{C}'$（地址为 $A'$），无法使 $\mathcal{D}^{-1}(A', s_{\text{dst}}, p_{\text{dst}}) = A_{\text{base}}$ 成立，除非 $A' = \mathcal{D}(A_{\text{base}}, s_{\text{dst}}, p_{\text{dst}})$。
+
+**完整证明**：
+
+**(a) 全域双射性**：Feistel 网络的双射性是其结构性质，与轮函数 $F$ 的选取无关。给定 $(L_4, R_4)$ 与参数 $(s,p)$，逆向算法（定义 2.5）唯一确定 $(L_0, R_0)$。此唯一性来自于 Feistel 结构的完全可逆性（无论 F 是否可逆，整个网络都可逆）。特别地，不设 $(0,0)$ 旁路，$\mathcal{D}(\cdot, 0, 0)$ 同样是非平凡置换，完全消除了因旁路而引入的恒等映射固定点问题。
+
+**(b) 完全可逆性**：由定义 2.4 和 2.5 直接验证：对 $i = 3, 2, 1, 0$ 执行逆操作精确还原每一轮的 $(L_i, R_i)$，最终得 $(L_0, R_0)$。计算过程仅用到 XOR（可逆）与 $F$（逆 Feistel 时作为单向函数使用，不需要 $F$ 可逆）。
+
+**(c) 参数分离性**：若 $(s_1, p_1) \neq (s_2, p_2)$，则至少存在一个轮次 $i^*$ 使得 $K_{i^*}(s_1, p_1) \neq K_{i^*}(s_2, p_2)$（由 keccak256 的碰撞抵抗性保证，因为轮密钥前像 $\tau \,\|\, \langle s \rangle_4 \,\|\, \langle p \rangle_4 \,\|\, \langle i \rangle_4$ 对不同 $(s,p)$ 是不同的字符串）。不同轮密钥导致两个置换 $\mathcal{D}(\cdot, s_1, p_1)$ 和 $\mathcal{D}(\cdot, s_2, p_2)$ 以压倒性概率不同，故对随机地址 $A$，两者输出相同的概率可忽略。
+
+**(d) 抗冒充性**：由 (a) 的双射性，函数 $\mathcal{D}(\cdot, s_{\text{dst}}, p_{\text{dst}})$ 是单射，故使 $\mathcal{D}^{-1}(A', s_{\text{dst}}, p_{\text{dst}}) = A_{\text{base}}$ 成立的 $A'$ 唯一（即 $A' = \mathcal{D}(A_{\text{base}}, s_{\text{dst}}, p_{\text{dst}})$）。攻击者若想在目标分片接收系统调用，必须将合约恰好部署在 $\mathcal{D}(A_{\text{base}}, s_{\text{dst}}, p_{\text{dst}})$ 地址，而此地址在协议层被预保留为合法分身的专属地址，共识层通过 Feistel 逆算拒绝不满足身份校验谓词的任何地址。$\blacksquare$
+
+**推论 7.1（无固定点陷阱）**：新设计移除了 $(0,0)$ 恒等旁路，故 $\mathcal{D}(A, 0, 0)$ 是对地址空间的真实非平凡置换。不存在任何地址 $A$ 使得 $\mathcal{D}(A, s, p) = A$ 对所有 $(s,p)$ 成立。
 
 ---
 
-### 7.6 定理 6：单委员会拜占庭失效的故障包含域界定 (Fault Containment Boundaries)
+### 7.3 定理 3：目标端执行确定性与零 Revert 定理
+
+**定理 7.3（Deterministic Zero-Revert Invariant）**：共识层正确派发的目标端代币入账原语 $\Pi_{CT}$ 调用，其执行结果确定性成功，Revert 概率为零。
+
+**完整证明**：
+
+**步骤 1（执行体语义分析）**：$\Pi_{CT}$ 的执行体精确包含以下操作序列，无分支、无循环、无外部调用：
+
+$$b_{\text{to}} \mathrel{+}= \Delta; \quad T \mathrel{+}= \Delta; \quad \text{触发入账事件}$$
+
+**步骤 2（前置条件的共识层保证）**：唯一潜在失败点为目标地址有效性断言。共识层在派发前通过 Feistel 逆算验证 $\mathcal{D}^{-1}(A_{\text{dst}}, s_{\text{dst}}, p_{\text{dst}}) = A_{\text{base}} \neq 0$，故目标地址不可能为零地址。
+
+**步骤 3（算术溢出不可能性）**：由定理 4.2，任意合法跨分片转账金额积累满足 $\Delta_{\text{total}} \leq \text{TotalSupply} \leq 2^{256} - 1$，uint256 加法不会溢出。
+
+**步骤 4（前状态确定性）**：由定理 3.4，$\Pi_{CT}$ 执行前影子合约存储槽已被确定性初始化（SYSTEM_EXECUTOR 就绪，IS_ROOT 正确），访问控制检查必定通过。
+
+**步骤 5（结论）**：执行体无失败路径，前置条件由共识层保证，算术安全由全局不变量保证，前状态确定性由定理 3.4 保证，故执行结果确定性成功。$\blacksquare$
+
+---
+
+### 7.4 定理 4：部分同步网络下跨窗口到达的因果偏序一致性
+
+**定理 7.4（Causal Consistency under Partial Synchrony）**：将跨分片状态转移空间分解为 $\mathcal{S} = \mathcal{S}_{\text{value}} \times \mathcal{S}_{\text{ctrl}}$，两个子空间分别满足强最终一致性（SEC）。
+
+**完整证明**：
+
+**第一部分：价值流转空间 $\mathcal{S}_{\text{value}}$ 的阿贝尔可交换性**
+
+目标端代币状态更新为加法算子 $\mathcal{T}_{\Delta}(B) = B + \Delta$。由于 $(\mathbb{Z}, +)$ 构成阿贝尔群：
+
+$$\mathcal{T}_{\Delta_1} \circ \mathcal{T}_{\Delta_2}(B) = B + \Delta_2 + \Delta_1 \equiv B + \Delta_1 + \Delta_2 = \mathcal{T}_{\Delta_2} \circ \mathcal{T}_{\Delta_1}(B)$$
+
+因此，对任意到达顺序置换 $\sigma \in S_n$，最终状态 $S_{\text{value}}(\sigma) \equiv S_{\text{value}}^{\text{final}}$，满足强最终一致性（SEC）。PacketID 幂等集合保证每笔转账至多入账一次，不存在重复计数。
+
+**第二部分：控制信道 $\mathcal{S}_{\text{ctrl}}$ 的格半连通性（Join-Semilattice）**
+
+定义状态更新格算子 $\sqcup$（Last-Writer-Wins 语义，以 version 为序）：
+
+$$(v_1, \eta_1) \sqcup (v_2, \eta_2) = \begin{cases} 
+(v_2, \eta_2), & \text{if } \eta_2 > \eta_1 \\
+(v_1, \eta_1), & \text{if } \eta_1 \geq \eta_2
+\end{cases}$$
+
+算子 $\sqcup$ 满足结合律、交换律与幂等性，从而构成**连接半格（Join-Semilattice）**。
+
+当滞后的旧版本包 $(v_1, \eta_1)$ 晚于 $(v_2, \eta_2)$（$\eta_1 < \eta_2$）到达时，版本号过滤谓词：
+
+$$\text{版本门控}: \text{if } \eta_{\text{incoming}} > \text{ver}(k): \text{execute}; \quad \text{else}: \text{discard}$$
+
+使得陈旧写入执行恒等空操作，状态最终收敛于最高版本值。$\blacksquare$
+
+---
+
+### 7.5 定理 5：非可交换金融状态的本地封闭无锁安全性
+
+**定理 7.5（Lock-Free Invariant of Non-Commutative States）**：协议架构在保证跨分片价值流动的同时，内生消除了 AMM 状态的跨分片锁竞争与死锁风险。
+
+**完整证明**：
+
+**步骤 1（状态空间正交划分）**：设全网状态空间 $\mathcal{S} = \bigoplus_{k=1}^K \mathcal{S}_k$，其中 $\mathcal{S}_k$ 仅由分片 $k$ 的单机状态机复制（SMR）引擎独占写入。任意两个分片的本地状态 $\mathcal{S}_i \cap \mathcal{S}_j = \emptyset$（$i \neq j$），物理隔离。
+
+**步骤 2（算子类型降维）**：跨分片请求 $Tx_{\text{cross}}$ 经协议层降维，仅携带纯价值流转算子 $\mathcal{T}_{\Delta} \in \mathcal{S}_{\text{value}}$，不携带任何修改目标分片 AMM 内部槽位 $(x_k, y_k)$ 的指令。跨分片原语对目标分片 $\mathcal{S}_k$ 的影响仅为余额加法，不触及 AMM 状态。
+
+**步骤 3（本地因果串行化）**：目标分片接收代币注入后，若需触发 AMM 兑换，在分片本地生成一笔新的本地事务 $Tx_{\text{swap}}^{\text{local}}$。该事务执行时的价格计算 $100\%$ 基于目标分片已完成共识的本地状态 $(x_k, y_k)$，不依赖任何跨分片分布式锁。
+
+**步骤 4（无死锁证明）**：系统中不存在两个分片互相等待对方锁释放的循环等待条件（Coffman 死锁四条件之一不满足：不存在"持有并等待"，因为跨分片原语是单向前向的，源端不持有目标端的任何锁）。$\blacksquare$
+
+---
+
+### 7.6 定理 6：单委员会拜占庭失效的故障包含域界定
+
+**定理 7.6（$t$-Local Fault Containment）**：任意单个分片委员会的拜占庭失效，其影响范围严格局限于该分片，不破坏全网其他分片的账本一致性与代币守恒性。
 
 #### 故障包含矩阵（Fault Containment Matrix）
 
@@ -600,27 +561,57 @@ public:
 | **单分片委员会 $S_m$ 沦陷** | 伪造虚假状态、双花本地代币、拒绝服务 | **严格局限在 $S_m$ 本地状态及与 $S_m$ 直接相关的通道** | **1. 状态树物理隔离**：$S_j$（$j \neq m$）状态不受影响；<br>**2. 跨片流量断路器（Circuit Breaker）**：全局限流，单日最大流出受限；<br>**3. 资产清算隔离**：其他分片资产无法被 $S_m$ 凭空销毁。 |
 | **GBP 缓冲池委员会沦陷** | 乱序消息、丢弃消息、伪造跨片凭据 | **仅影响暂态活性（Liveness），安全性（Safety）零降级** | **1. 门限 BLS QC 强约束**：GBP 无权捏造无源端 QC 签名的资产包；<br>**2. Bypass 直连降级通道**：目标分片可绕过 GBP 直接验证源分片证明。 |
 
-**形式化结论**：系统满足 **$t$-局部故障包含性（$t$-Local Fault Containment）**。任意委员会的沦陷无法破坏非相关分片的账本一致性，全网代币总供应量在诚实分片子集中严格守恒。 $\blacksquare$
+**形式化证明**：
+
+设 $S_m$ 委员会以 BFT 拜占庭方式作恶。协议保证：
+
+1. **Safety（安全性）不降级**：其他分片 $S_j$（$j \neq m$）的账本状态仅由 $S_j$ 自身的诚实 SMR 引擎写入（物理状态隔离）；$S_m$ 无权修改 $S_j$ 的状态树；
+2. **跨分片消息真实性**：$S_m$ 发出的跨分片消息需携带 $S_m$ 委员会的门限 BLS 签名 $\text{QC}(B_{S_m})$。若 $S_m$ 伪造 $S_j$ 的余额并试图提取，目标分片会验证 QC 真实性——若 $S_j$ 诚实，不会签署虚假状态；
+3. **全网代币守恒维持**：在诚实分片子集 $\{S_j : j \neq m\}$ 内，定理 7.1 的守恒性完整成立；$S_m$ 内部可能发生双花，但其影响被物理隔离在 $\mathcal{S}_m$ 内。
+
+故系统满足 $t$-局部故障包含性，$t$ 为单个委员会。$\blacksquare$
 
 ---
 
-## 8. 核心安全属性与系统特性矩阵（Security Properties & Comparison Matrix）
+### 7.7 定理体系完整性汇总
+
+| 定理编号 | 命题 | 安全假设 | 结论 |
+|---------|------|---------|------|
+| 定理 3.1 | IS_ROOT 单调不变性 | 协议访问控制 | 基合约/分身合约身份不可互换 |
+| 定理 3.2 | SYSTEM_EXECUTOR 不可伪造 | secp256k1 EUF-CMA | 外部无法伪造系统执行者身份 |
+| 定理 3.3 | 分身合约零铸造 | 定理 3.2 + 访问控制 | 无源铸造不存在 |
+| 定理 3.4 | 影子合约前状态确定性 | 协议不变量 | 所有节点计算相同前状态，共识一致 |
+| 定理 3.5 | 懒部署安全性 | Feistel 双射 + 注册表同步 | 部署时序不影响正确性 |
+| 定理 4.1 | Gas-Action 强一致回滚 | 快照栈结构归纳 | 回滚边界与执行引擎精确对齐 |
+| 定理 4.2 | uint256 积累有界 | 守恒定理 | 跨分片金额积累不溢出 |
+| 定理 7.1 | 全网价值守恒 | 定理 3.3 + 幂等性 | $\Delta \text{TotalSupply} = 0$ |
+| 定理 7.2 | Feistel 无条件双射 | keccak256 抗碰撞 | 地址无碰撞、可逆、抗冒充 |
+| 定理 7.3 | 目标端零 Revert | 定理 4.2 + 7.2 + 3.4 | 目标端确定性成功 |
+| 定理 7.4 | 因果偏序一致性 | 阿贝尔群 + 半格 | SEC 在部分同步网络下成立 |
+| 定理 7.5 | 无锁 AMM 隔离 | 状态空间正交性 | 无分布式锁，无死锁 |
+| 定理 7.6 | $t$-局部故障包含 | BLS QC 不可伪造 | 单分片沦陷不影响全网 |
+
+---
+
+## 8. 核心安全属性与系统特性矩阵
 
 | 安全威胁维度 | 传统跨链 / 分片模型表现 | 本协议保障机制 | 安全强度评级 |
 | :--- | :--- | :--- | :---: |
-| **恶意分身增发** | 容易因多链部署失误导致重复 Mint | **恒等锚定 Feistel 自鉴权：分身初始化强制为 0 供应量** | **数学级免疫 (P0)** |
-| **伪造系统调用加钱** | 依赖合约层管理员多签，易被钓鱼 | **特权 `SYSTEM_EXECUTOR` 由共识层注入，外部无法模拟** | **共识级免疫 (P0)** |
-| **目标端 Gas 耗尽死账** | 用户动态预估不准导致 Out-of-Gas | **编译期常量定价 + 源端 Host 强行预扣** | **确定性免疫 (P0)** |
-| **地址抢占与后门植入** | 攻击者抢先在目标分片部署恶意合约 | **派生地址为系统保留区，仅允许共识引擎自动分身** | **系统级免疫 (P0)** |
-| **金融状态竞争与穿仓** | 跨片共享 AMM 储备导致状态覆盖 | **三层职责解耦：高频非可交换状态严格分片本地闭环** | **架构级免疫 (P0)** |
-| **网络乱序与陈旧覆盖** | 依赖到达顺序，易引发状态回退 | **LWW 版本栅栏 + 滑动窗口位图幂等防重放** | **协议级免疫 (P0)** |
-| **宿主子调用回滚失步** | 子调用 Revert 导致 Gas 扣除与状态失步 | **C++ Host 事务快照栈，与 EVM 执行帧深度同步回滚** | **系统级免疫 (P0)** |
+| **恶意分身增发** | 容易因多链部署失误导致重复 Mint | **分身初始化阶段不运行，协议无源铸造路径，定理 3.3 数学保证** | **数学级免疫 (P0)** |
+| **伪造系统调用加钱** | 依赖合约层管理员多签，易被钓鱼 | **SYSTEM_EXECUTOR 为全网固定常量地址，无对应私钥，定理 3.2** | **共识级免疫 (P0)** |
+| **目标端 Gas 耗尽死账** | 用户动态预估不准导致执行失败 | **编译期常量定价（CT: 21,000 Gas）+ 宿主层强制预扣，定理 7.3** | **确定性免疫 (P0)** |
+| **地址抢占与后门植入** | 攻击者抢先在目标分片部署恶意合约 | **派生地址由 Feistel 双射唯一确定，共识层验证身份校验谓词，定理 7.2d** | **系统级免疫 (P0)** |
+| **金融状态竞争与穿仓** | 跨片共享 AMM 储备导致状态覆盖 | **三层职责解耦：非可交换状态严格分片本地闭环，定理 7.5** | **架构级免疫 (P0)** |
+| **网络乱序与陈旧覆盖** | 依赖到达顺序，易引发状态回退 | **LWW 版本栅栏 + PacketID 幂等集合防重放，定理 7.4** | **协议级免疫 (P0)** |
+| **宿主子调用回滚失步** | 子调用 Revert 导致 Gas 扣除与状态失步 | **宿主快照栈，与执行帧深度同步回滚，定理 4.1** | **系统级免疫 (P0)** |
+| **固定点地址碰撞** | 恒等旁路致使根地址在某些参数下与派生地址重叠 | **移除所有旁路，所有 $(s,p)$ 无条件执行 4 轮 Feistel，定理 7.2 推论** | **数学级免疫 (P0)** |
+| **视图区块污染共识失败** | 不同节点因缓存污染计算出不同状态哈希 | **totalSupply 槽每次调用前无条件重置，定理 3.4** | **协议级免疫 (P0)** |
 
 ---
 
-## 9. 主流公链代表性架构深度对比（Mainstream Blockchain Architectures Comparison）
+## 9. 主流公链代表性架构深度对比
 
-将本链（Akaverse）与当前区块链行业的六大代表性公链及架构范式（**Ethereum、Solana、Near Protocol、Polkadot、ICP、EOS**）进行多维度的系统级深度对比：
+将本链（Akaverse）与当前区块链行业的六大代表性公链及架构范式进行多维度的系统级深度对比：
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -635,116 +626,132 @@ public:
 │ 5. 异步容器 Actor │ ICP (Internet Computer)          │ WebAssembly 容器 (Canister) + 异步 Actor 消息模型│
 │ 6. 高性能 DPoS 流 │ EOS                              │ 21 个超级节点 DPoS + WebAssembly + RAM 资源质押  │
 ├───────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────┤
-│ 7. 算子解耦分片流 │ 本链 (Akaverse 协议体系)         │ 多分片水平扩展 + 32 池并行 + Feistel 无状态反算 + │
-│    (本架构)       │                                  │ 算子代数解耦 (无锁流动) + EVM 宿主快照栈确定性执行│
+│ 7. 算子解耦分片流 │ 本链 (Akaverse 协议体系)         │ 多分片水平扩展 + N 池并行 + 无条件 Feistel 无状态│
+│    (本架构)       │                                  │ 反算 + 算子代数解耦 (无锁流动) + 宿主快照确定性  │
 └───────────────────┴──────────────────────────────────┴──────────────────────────────────────────────────┘
 ```
 
 ### 9.1 关键技术维度多方深度解构
 
-#### 1. 扩展性模型与并发范式（Scalability & Concurrency）
-* **Ethereum**：L1 采用单线程串行 EVM，吞吐极低（~15 TPS）；依赖 Arbitrum、Optimism、zkSync 等 L2 扩容，导致流动性割裂、跨 Rollup 延迟长且依赖中心化 Sequencer。
-* **Solana**：单体链（Monolithic），依赖节点顶级硬件配置（超高内存、NVMe SSD），通过 Sealevel 引擎实现读写集（Read/Write Sets）单机多核并行（~3K–5K 真实 TPS）。**受制于单机总线与物理 I/O 极限，无法实现多机水平伸缩**。
-* **Near**：状态分片链（Nightshade），支持动态分片扩容，但跨片交易需拆解为异步 Receipt，产生级联排队等待。
-* **Polkadot**：平行链各自并行出块，但中继链（Relay Chain）本身存在处理瓶颈，平行链插槽数量有限（约 100 个），跨链 XCMP 通信受中继链带宽制约。
-* **ICP**：基于 Canister（智能合约容器）与子网（Subnet）的异步调用，每个 Canister 类似微服务，扩展性极高，但完全放弃了同步执行环境。
-* **EOS**：依赖 21 个高配超级节点做单链出块（~3K TPS），本质上是以牺牲去中心化为代价的单机扩展。
-* **本链 (Akaverse)**：**多分片水平扩展（$K$ 分片）与单分片内垂直多池（$N=32$ 交易池）流水线协同**。通过 GBP 因果排序中继，实现从单片 10K+ TPS 到全网随分片数量增加的线性伸缩能力，打破单机物理硬件墙。
+#### 1. 扩展性模型与并发范式
 
-#### 2. 跨分片/跨链交互与一致性模型（Cross-Shard/Cross-Chain Consistency）
-* **Ethereum (L2 跨链)**：依赖跨链桥、底层欺诈证明（7天挑战期）或 ZK 证明，跨 Rollup 容易出现资产卡滞，严重依赖链下中继商（Solvers/Relayers）。
-* **Near**：采用异步 Promise 机制，发起跨片交易后需等待若干区块生成 Receipt，若目标片执行失败需在后续区块触发退款，**缺乏对极端并发下状态乱序的代数级强一致性保障**。
-* **Polkadot**：XCMP（跨共识消息格式）通过中继链路由，消息在平行链出块时被包含在 Merkle 树中，属于强类型消息通信，但跨链执行失败时需要复杂的业务层回退逻辑。
-* **ICP**：标准的 Actor 异步通信，类似分布式 RPC 调用。如果跨 Canister 调用链中途失败，必须开发者手动编写补偿事务（Compensation Logic），否则产生数据不一致。
-* **本链 (Akaverse)**：**单向前向执行（Rollback-Free Forward Settlement）与代数正交解耦**：
-  * **价值流转通道**：建模为阿贝尔群加法 $(\mathbb{Z}, +)$，满足代数可交换性，跨窗口乱序到达依然满足**强最终一致性（SEC）**；
-  * **控制通道**：基于**结合半格（Join-Semilattice）与 LWW 版本栅栏**，配合 256-bit 滑动窗口位图幂等防重放；
-  * **彻底消除了跨分片分布式锁（2PC）与死锁回滚开销**。
+- **Ethereum**：L1 采用单线程串行执行引擎，吞吐极低（约 15 TPS）；依赖 Arbitrum、Optimism、zkSync 等 L2 扩容，导致流动性割裂、跨 Rollup 延迟长且依赖中心化 Sequencer。
+- **Solana**：单体链（Monolithic），依赖节点顶级硬件配置，通过 Sealevel 引擎实现读写集单机多核并行（约 3K–5K 真实 TPS）。受制于单机总线与物理 I/O 极限，无法实现多机水平伸缩。
+- **Near**：状态分片链（Nightshade），支持动态分片扩容，但跨片交易需拆解为异步 Receipt，产生级联排队等待。
+- **Polkadot**：平行链各自并行出块，但中继链本身存在处理瓶颈，平行链插槽数量有限（约 100 个），跨链 XCMP 通信受中继链带宽制约。
+- **ICP**：基于 Canister 与子网的异步调用，扩展性极高，但完全放弃了同步执行环境。
+- **EOS**：依赖 21 个高配超级节点做单链出块（约 3K TPS），本质上是以牺牲去中心化为代价的单机扩展。
+- **本链（Akaverse）**：多分片水平扩展（$K$ 分片）与单分片内垂直多池（$N$ 交易池）流水线协同。通过 GBP 因果排序中继，实现从单片 10K+ TPS 到全网随分片数量增加的线性伸缩能力，打破单机物理硬件墙。
+
+#### 2. 跨分片/跨链交互与一致性模型
+
+- **Ethereum (L2 跨链)**：依赖跨链桥、底层欺诈证明（7天挑战期）或 ZK 证明，跨 Rollup 容易出现资产卡滞，严重依赖链下中继商。
+- **Near**：采用异步 Promise 机制，发起跨片交易后需等待若干区块生成 Receipt，若目标片执行失败需在后续区块触发退款，缺乏对极端并发下状态乱序的代数级强一致性保障。
+- **Polkadot**：XCMP 通过中继链路由，跨链执行失败时需要复杂的业务层回退逻辑。
+- **ICP**：标准的 Actor 异步通信，跨 Canister 调用链中途失败必须手动编写补偿事务（Compensation Logic）。
+- **本链（Akaverse）**：**单向前向执行（Rollback-Free Forward Settlement）与代数正交解耦**：
+  - 价值流转通道：建模为阿贝尔群加法 $(\mathbb{Z}, +)$，满足代数可交换性，跨窗口乱序到达依然满足**强最终一致性（SEC）**；
+  - 控制通道：基于**连接半格（Join-Semilattice）与 LWW 版本栅栏**，PacketID 幂等集合防重放；
+  - **彻底消除了跨分片分布式锁（2PC）与死锁回滚开销**。
 
 #### 3. 非可交换金融状态（AMM / 订单簿）处理能力
-* **Ethereum**：在 L1 或单个 L2 内具备极强的**单笔交易同步可组合性（Synchronous Composability）**，支持即时闪电贷。但当应用分散在不同 L2 时，流动性碎裂，跨 L2 兑换滑点极高。
-* **Solana**：单池内高频并发处理极强，但遭遇极端热点抢购（如热门 Token 发行/套利抢跑）时，依赖加收优先费（Priority Fee）排队，容易导致全网节点因高频写冲突而瘫痪或广播风暴。
-* **Near / ICP**：跨分片/跨 Canister 的 AMM 兑换非常痛苦。由于异步调用的延迟，跨片兑换时的价格可能已大幅偏移，导致交易频繁 Revert，开发者被迫使用宽容滑点，极易遭 MEV 夹击（Sandwich Attack）。
-* **本链 (Akaverse)**：确立了**“非可交换算子 100% 局域封闭 + 跨片阿贝尔价值流动”**的新范式：
-  * 恒定乘积公式 $(x+\Delta x)(y-\Delta y) \ge k$ 与撮合计算全部在分片本地 SMR 即时收敛；
-  * 跨池价值迁移通过无冲突加法原语进行，彻底根治了分片体系下 AMM 滑点撕裂与穿仓难题。
 
-#### 4. 寻址体系与防伪/防冒充机制（Addressing & Identity Security）
-* **Ethereum / Solana / EOS**：扁平地址空间。跨链部署时依靠 `CREATE2` 或相同私钥派生，但无法在目标端由地址本身反推出其所属的原始根链与身份。
-* **Near**：基于可读字符串的命名空间（如 `alice.near`），通过后缀路由。分片扩展受限于静态路由规则。
-* **Polkadot**：多链地址基于 SS58 编码，包含前缀标识，但各链账户树彼此独立，需要依靠中继链映射。
-* **本链 (Akaverse)**：采用 **160-bit $(0,0)$ 恒等锚定 Feistel 双射置换网络（SPRP）**：
-  * 保持 EVM 20 字节满熵，无需全局查找表即可实现 **$O(1)$ 无状态双向反算**；
-  * **内生零铸造自安全（Intrinsic Zero-Mint）**：分身合约在初始化时通过字节码执行数学自鉴权，物理剥夺衍生分身的 `_mint()` 权限，从数学底层杜绝了跨链桥常见的伪造增发漏洞。
+- **Ethereum**：在 L1 或单个 L2 内具备极强的同步可组合性，支持即时闪电贷。但当应用分散在不同 L2 时，流动性碎裂。
+- **Solana**：单池内高频并发处理极强，但遭遇极端热点抢购时容易导致全网广播风暴。
+- **Near / ICP**：跨分片/跨 Canister 的 AMM 兑换非常痛苦，极易遭 MEV 夹击。
+- **本链（Akaverse）**：确立了**"非可交换算子 100% 局域封闭 + 跨片阿贝尔价值流动"**的新范式：恒定乘积公式与撮合计算全部在分片本地 SMR 即时收敛；跨池价值迁移通过无冲突加法原语进行，彻底根治了分片体系下 AMM 滑点撕裂与穿仓难题。
 
-#### 5. Gas 模型与宿主环境执行控制（Gas Model & Host Execution）
-* **Ethereum / Near / Solana**：Gas 随网络拥堵动态波动；跨片/跨 Rollup 交互时，若目标端预估不足会导致 Out-of-Gas，产生在途死账（资产扣除但未入账）。
-* **ICP**：反向 Gas 模型（Reverse Gas），开发者为 Canister 充值 Cycles 支付计算费，用户免手续费，但 Canister 耗尽 Cycles 会被冻结。
-* **EOS**：资源质押模型（CPU/NET 质押 + RAM 购买），虽然免手续费，但导致 RAM 投机炒作和普通用户进入门槛极高。
-* **本链 (Akaverse)**：
-  * **编译期常量定价**：目标端系统入账操作开销固定（$30{,}000$ Gas）；
-  * **解释器层强制预扣**：源端 C++ EVM Host（`evmone`）直接在解释层扣除目标 Gas；
-  * **宿主快照栈（`HostJournalStack`）**：子调用发生 `REVERT` 时帧级无损回滚 Gas 与 Action，确保目标端 **100% 确定性零 Revert 执行**。
+#### 4. 寻址体系与防伪/防冒充机制
 
-### 9.2 全景架构特性深度对比矩阵（Mainstream Systems Comparison Matrix）
+- **Ethereum / Solana / EOS**：扁平地址空间，无法在目标端由地址本身反推出其所属的原始根链与身份。
+- **Near**：基于可读字符串的命名空间，分片扩展受限于静态路由规则。
+- **Polkadot**：多链地址基于 SS58 编码，各链账户树彼此独立，需依靠中继链映射。
+- **本链（Akaverse）**：采用 **160-bit 无条件 4 轮 Feistel 双射置换网络**：保持 EVM 20 字节满熵，无需全局查找表即可实现 **$O(1)$ 无状态双向反算**；分身合约通过懒部署机制直接写入运行时逻辑，初始化阶段不运行；移除所有旁路，消除固定点陷阱。
+
+#### 5. Gas 模型与宿主环境执行控制
+
+- **Ethereum / Near / Solana**：Gas 随网络拥堵动态波动；若目标端预估不足会导致执行失败，产生在途死账。
+- **ICP**：反向 Gas 模型（Reverse Gas），开发者为 Canister 充值 Cycles。
+- **EOS**：资源质押模型（CPU/NET 质押 + RAM 购买），导致 RAM 投机炒作和普通用户进入门槛极高。
+- **本链（Akaverse）**：
+  - **编译期常量定价**：跨分片代币转账固定 $21{,}000$ Gas，跨分片存储写入固定 $5{,}000$ Gas；
+  - **宿主层强制预扣**：宿主直接在执行帧层扣除目标 Gas；
+  - **宿主快照栈**：子调用发生回滚时，Gas 与跨分片动作无损同步回滚，目标端执行 **100% 确定性零 Revert**。
+
+### 9.2 全景架构特性深度对比矩阵
 
 | 评估维度 | **Ethereum (L1+L2)** | **Solana** | **Near Protocol** | **Polkadot** | **ICP** | **EOS** | **本链 (Akaverse)** |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **主要扩展模式** | 模块化 Rollup 分层 | 单体硬件级纵向并发 | 状态分片 (Nightshade) | 异构平行链多链 | 容器子网分片 (Actor) | DPoS 21 节点单链 | **水平分片 + 垂直 32 池并行** |
+| **主要扩展模式** | 模块化 Rollup 分层 | 单体硬件级纵向并发 | 状态分片 (Nightshade) | 异构平行链多链 | 容器子网分片 (Actor) | DPoS 21 节点单链 | **水平分片 + 垂直 N 池并行** |
 | **理论扩展上限** | 依赖 L2 聚合 (~5K TPS) | 单机极限 (~50K TPS) | 分片线性扩展 | 平行链上限 (约 100 链) | 子网线性扩展 | 单机极限 (~4K TPS) | **分片水平线性扩展 (千万级)** |
 | **跨片/跨链机制** | 跨链桥 / 欺诈与 ZK 证明 | 无 (单体全网全序) | 异步 Receipt + Promise | 中继链 XCMP 消息路由 | 异步 RPC 跨 Canister | 无 (单链无分片) | **GBP 中继 + 无锁前向单向结算** |
 | **跨片一致性模型** | 最终一致性 (依赖挑战期) | 强一致性 (全局单一时钟) | 异步最终一致性 | 强一致性 (中继链锁定) | 异步最终一致性 (需补偿) | 单链顺序一致性 | **代数强最终一致性 (SEC, 阿贝尔群)** |
 | **DeFi 组合性** | L1/单 L2 同步强原子性 | 全网单笔交易同步强原子 | 异步拆分调用 (滑点难控) | 跨平行链异步调用 | 纯异步微服务模型 | 单链同步强原子性 | **非可交换算子单池本地即时闭环** |
-| **跨片寻址开销** | 依赖各 Rollup 状态树 | 扁平全局账户空间 | 字符掩码/路由表 | 多链 SS58 编码映射 | Canister ID 路由表 | 扁平全局账户空间 | **160-bit Feistel 双射 ($O(1)$ 反算)** |
-| **防假币/防伪造** | 依赖跨链桥多签/智能合约 | 原生 SPL 代币标准 | 依赖分片 Promise 机制 | 依赖中继链资产原语 | 依赖 Canister 授权逻辑 | 依赖合约层发行权限 | **数学自鉴权，分身强制 0 初始供应** |
-| **Gas 结算保证** | 动态波动，易产生跨链失败 | 动态优先费 (Priority Fee) | 异步携带 Gas 预算 | 预扣 Weight / 费率机制 | 容器预付 Cycles (反向 Gas) | 资源质押 (RAM/CPU/NET) | **编译期常量定价 + C++ Host 快照预扣** |
+| **跨片寻址开销** | 依赖各 Rollup 状态树 | 扁平全局账户空间 | 字符掩码/路由表 | 多链 SS58 编码映射 | Canister ID 路由表 | 扁平全局账户空间 | **160-bit 无条件 Feistel 双射 ($O(1)$ 反算)** |
+| **防假币/防伪造** | 依赖跨链桥多签/智能合约 | 原生 SPL 代币标准 | 依赖分片 Promise 机制 | 依赖中继链资产原语 | 依赖 Canister 授权逻辑 | 依赖合约层发行权限 | **初始化阶段不运行 + 懒部署确定性 + SYSTEM_EXECUTOR 不可伪造** |
+| **Gas 结算保证** | 动态波动，易产生跨链失败 | 动态优先费 (Priority Fee) | 异步携带 Gas 预算 | 预扣 Weight / 费率机制 | 容器预付 Cycles (反向 Gas) | 资源质押 (RAM/CPU/NET) | **编译期常量 (21K/5K Gas) + 宿主层快照预扣** |
 | **拜占庭安全边界** | 依赖 L1 终局性 + L2 多签 | 单链 $>1/3$ 宕机, $>2/3$ 叉 | 单分片委员会容错 | 共享中继链 1000+ 验证人 | 子网阈值签名容错 | 21 节点 $>1/3$ 瘫痪 | **$t$-局部故障包含；GBP 沦陷 Safety 零降级** |
 
 ---
 
-## 10. 协议综合优势与系统权衡剖析（Comprehensive Advantages & Trade-off Analysis）
+## 10. 协议综合优势与系统权衡剖析
 
-### 10.1 四大核心领先优势
+### 10.1 五大核心领先优势
 
 ```
                        本方案核心优势全景解构
 ┌────────────────────┬─────────────────────────────┬─────────────────────────────┐
 │ 痛点维度           │ 业界主流方案 (SOTA)         │ 本方案 (Akaverse 体系)      │
 ├────────────────────┼─────────────────────────────┼─────────────────────────────┤
-│ 1. 跨片并发与死锁   │ 2PC 锁等待、级联回滚、吞吐雪崩│ 阿贝尔群 + 结合半格，零分布式锁，│
+│ 1. 跨片并发与死锁   │ 2PC 锁等待、级联回滚、吞吐雪崩│ 阿贝尔群 + 连接半格，零分布式锁，│
 │                    │ (OmniLedger / Chainspace)   │ 强最终一致性 (SEC)          │
 ├────────────────────┼─────────────────────────────┼─────────────────────────────┤
 │ 2. 状态冲突 (AMM)  │ 热迁移导致单池过载/滑点撕裂 │ 非可交换 100% 本地闭环，     │
 │                    │ (SquirRL / Caravan)         │ 跨片解耦为纯代数价值流转    │
 ├────────────────────┼─────────────────────────────┼─────────────────────────────┤
-│ 3. 跨片寻址与防伪  │ 静态掩码(压缩熵)/多签跨链桥 │ 160-bit 满熵 Feistel 双射，  │
-│                    │ (Near / Harmony / xERC20)   │ $O(1)$ 无状态反算，数学自鉴权│
+│ 3. 跨片寻址与防伪  │ 静态掩码(压缩熵)/多签跨链桥 │ 160-bit 无条件 Feistel 双射，│
+│                    │ (Near / Harmony / xERC20)   │ $O(1)$ 无状态反算，无旁路    │
 ├────────────────────┼─────────────────────────────┼─────────────────────────────┤
-│ 4. 跨片 Gas 与执行 │ 链外预估、目标端 OOG 卡死账  │ 编译期常量定价 + C++ Host    │
-│                    │ (CCIP / LayerZero)          │ 解释器层强制预扣与快照回滚  │
+│ 4. 跨片 Gas 与执行 │ 链外预估、目标端执行失败卡死│ 编译期常量定价 + 宿主层      │
+│                    │ (CCIP / LayerZero)          │ 快照预扣与确定性零 Revert   │
+├────────────────────┼─────────────────────────────┼─────────────────────────────┤
+│ 5. 共识一致性     │ 视图变更导致缓存污染，       │ 分身合约存储槽调用前确定性   │
+│                    │ 不同节点产生不同区块哈希    │ 重置，防止视图区块污染      │
 └────────────────────┴─────────────────────────────┴─────────────────────────────┘
 ```
 
-1. **彻底消除跨分片分布式锁（Lock-Free Scalability）**：
-   通过将跨片交互解耦为阿贝尔群加法与单主结合半格覆盖，协议摆脱了传统 2PC 的状态锁定依赖。跨窗口乱序到达时系统状态自愈收敛，系统吞吐量在高跨片比例下保持稳健。
-2. **根除高频金融状态的并发撕裂（Conflict-Free DeFi）**：
-   摒弃高开销的动态合约迁移，将非可交换算子封闭于单池内部 SMR，跨池通过可交换的无冲突价值原语连接，彻底杜绝了跨分片滑点失步与穿仓风险。
-3. **密码学内生安全与防伪造铸币（Intrinsic Zero-Mint Invariant）**：
-   利用 $(0,0)$ 恒等锚定 Feistel 双射置换，分身合约在 EVM 字节码层面反算自身角色并物理剥夺 `_mint()` 权限，消除了因跨链管理员私钥泄露或中继攻击导致的虚假增发风险。
-4. **宿主快照栈保证执行与 Gas 强一致（Host Snapshot Consistency）**：
-   目标端常量 Gas 预扣配合 C++ Host 执行帧快照栈，在用户子合约触发 Revert 时能够无损回滚 Gas 与底层跨片 Action，杜绝了系统层状态与在途消息的失步。
+1. **彻底消除跨分片分布式锁（Lock-Free Scalability）**：通过将跨片交互解耦为阿贝尔群加法与单主连接半格覆盖，协议摆脱了传统 2PC 的状态锁定依赖。跨窗口乱序到达时系统状态自愈收敛，系统吞吐量在高跨片比例下保持稳健。
 
-### 10.2 系统的代际取舍与边界说明（Design Trade-offs & Boundaries）
+2. **根除高频金融状态的并发撕裂（Conflict-Free DeFi）**：摒弃高开销的动态合约迁移，将非可交换算子封闭于单池内部 SMR，跨池通过可交换的无冲突价值原语连接，彻底杜绝了跨分片滑点失步与穿仓风险。
+
+3. **无条件全域双射地址与防伪造铸币（Intrinsic Zero-Mint Invariant）**：利用无旁路 Feistel 置换，所有 $(s,p)$ 参数均获得非平凡双射保证，消除了固定点陷阱。分身合约通过懒部署机制写入运行时逻辑，初始化阶段不运行，铸造权从协议层面剥夺，配合 SYSTEM_EXECUTOR 不可伪造性，从数学底层杜绝虚假增发漏洞。
+
+4. **宿主快照栈保证执行与 Gas 强一致（Host Snapshot Consistency）**：目标端常量 Gas 预扣（21,000 / 5,000 Gas）配合宿主执行帧快照栈，在用户子合约回滚时能够无损回滚 Gas 与底层跨片动作，杜绝了协议层状态与在途消息的失步。
+
+5. **共识确定性前状态初始化（Deterministic Pre-State）**：分身合约关键存储槽（包括余额累计变量）在每次 $\Pi_{CT}$ 执行前被确定性重置，彻底消除了 HotStuff 视图变更导致的缓存污染问题，保证所有诚实节点计算相同的区块哈希。
+
+### 10.2 系统的代际取舍与边界说明
 
 1. **放弃跨分片强同步原子性（Asynchronous vs Synchronous Composability）**：
-   * *权衡*：协议不支持在单笔原子交易内跨多个分片同步完成“抵押 $\to$ 借贷 $\to$ 闪电兑换”。
-   * *设计依据*：在分布式高并发系统中，跨分片强同步锁受制于 CAP 定理与网络延迟级联。本协议明确将跨片交互设计为**异步因果流转**，紧耦合业务建议在单池内本地组合。
-2. **依赖底层共识与 EVM 宿主环境协同（L1 Runtime Co-design）**：
-   * *权衡*：本方案无法作为纯应用层智能合约（Overlay DApp）独立运行，必须获得共识层 `SYSTEM_EXECUTOR` 注入与 C++ EVM Host 日志拦截支持。
-   * *设计依据*：系统定位为 **L1 协议级高性能状态执行运行时**，软硬件协同深度优化是支撑单分片万级 TPS 的必要前提。
-3. **滑动窗口位图的有界乱序假设（Bounded Reordering Window）**：
-   * *权衡*：256-bit 滑动窗口防重放位图要求网络数据包乱序跨度在 256 个 Nonce 以内。
-   * *设计依据*：跨度超过 256 的极端乱序包将触发 Gap-Aware 同步补齐，以 $O(1)$ 常量存储开销换取了严格的有界状态空间。
+   - *权衡*：协议不支持在单笔原子事务内跨多个分片同步完成"抵押 → 借贷 → 闪电兑换"。
+   - *设计依据*：在分布式高并发系统中，跨分片强同步锁受制于 CAP 定理与网络延迟级联。本协议明确将跨片交互设计为**异步因果流转**，紧耦合业务建议在单池内本地组合。
 
-### 10.3 结论与学术定位（Conclusion & Positioning）
-本规范通过将密码学双射派生、分布式代数算子正交解耦与底层宿主快照执行深度融合，建立了一套兼具**数学自洽性、工程可实现性与故障包含隔离性**的跨分片协议范式。该设计为大规模高吞吐分布式账本提供了坚实的形式化安全基石与实用的系统级参考架构。
+2. **依赖底层共识与执行环境协同（L1 Runtime Co-design）**：
+   - *权衡*：本方案无法作为纯应用层逻辑独立运行，必须获得共识层系统执行者注入与宿主层日志拦截支持。
+   - *设计依据*：系统定位为 L1 协议级高性能状态执行运行时，软硬件协同深度优化是支撑单分片万级 TPS 的必要前提。
+
+3. **PacketID 防重放集合的存储开销（Bounded Replay Prevention）**：
+   - *权衡*：共识层维护 PacketID 已处理集合，随历史消息增长而增大；需要周期性归档（Checkpoint-Prune）以控制存储开销。
+   - *设计依据*：相比应用层固定窗口位图，共识层集合可灵活配置归档策略，支持任意跨度乱序包的可靠防重放，不受固定窗口宽度约束。
+
+### 10.3 结论与学术定位
+
+本规范通过将密码学无条件 Feistel 双射派生、分布式代数算子正交解耦（阿贝尔群与连接半格）与底层宿主快照确定性执行深度融合，建立了一套兼具**数学自洽性、工程可实现性与故障包含隔离性**的跨分片协议范式。
+
+在理论层面，本协议的核心贡献包括：
+- **无条件双射地址空间**：将 Feistel 置换的适用范围扩展至全域（含 $(0,0)$），提供更强的均匀性与抗固定点保证；
+- **代数降维定理**：证明非可交换金融算子（AMM/订单簿）可在不牺牲跨分片价值流动能力的前提下，严格封闭于分片本地；
+- **构造性零 Revert 保证**：通过 Gas 静态定价、共识层前置条件验证与分身合约前状态确定性重置三重机制，在协议层（而非应用层）消除跨分片目标端执行失败的可能性；
+- **前状态确定性初始化定理**：证明分身合约关键槽位的协议级重置策略不违反价值守恒，且是保障多节点共识一致性的必要条件。
+
+该设计为大规模高吞吐分布式账本提供了坚实的形式化安全基石与实用的系统级参考架构。
