@@ -9469,7 +9469,11 @@ contract AMMPool {
             }
         }
 
-        // Check each AMM's deployer balance at AMM shadow (should be >= kLiqAmt7)
+        // Check each AMM's deployer balance at AMM shadow.
+        // Same-shard token (token.shard == amm.shard): addLiquidity uses ERC20 transferFrom
+        // directly; the CrossShardBase shadow is untouched → expect kLiqAmt7.
+        // Cross-shard token (token.shard != amm.shard): addLiquidity must use
+        // shadow.transferFrom (the only source), draining the shadow → expect 0.
         std::cout << "    [AMM shadow liq] checking " << kAmmPairs << " AMMs x " << kTokens << " tokens...\n";
         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
             const auto& ad = adeps8[k];
@@ -9479,12 +9483,14 @@ contract AMMPool {
                 std::string label = "amm" + std::to_string(k) + " deployer token"
                     + std::to_string(ti)
                     + " s" + std::to_string(ad.signer_shard) + "p" + std::to_string(ad.deployer_pool);
+                bool cross_shard = (td.signer_shard != ad.signer_shard);
+                __uint128_t expected = cross_shard ? (__uint128_t)0 : (__uint128_t)kLiqAmt7;
                 bool ok = check_bal7(label,
                     common::Encode::HexEncode(td.prikey),
                     td.contract_addr_hex,
                     ad.signer_shard, ad.deployer_pool,
                     ad.addr_hex,
-                    (__uint128_t)kLiqAmt7,
+                    expected,
                     /*verbose=*/true);
                 if (ok) ++bal7_ok; else ++bal7_fail;
             }
