@@ -9850,7 +9850,8 @@ contract AMMPool {
                     std::string shex = p8_shadows[si].hex;
                     uint32_t sshard = p8_shadows[si].shard;
                     bal_futs.push_back(std::async(std::launch::async,
-                        [&eps8, shex, sshard, pk_hex, kBalOfSel, &p8_accts]() -> __uint128_t {
+                        [&eps8, shex, sshard, pk_hex, kBalOfSel, &p8_accts,
+                         encodeAddr32, hex2u128]() -> __uint128_t {
                             __uint128_t sum = 0;
                             for (auto& [acct, albl] : p8_accts) {
                                 ShardoraClient qb(eps8[sshard].ip, eps8[sshard].http);
