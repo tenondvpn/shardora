@@ -8808,13 +8808,13 @@ contract AMMPool {
             }
             const uint32_t total_su = (uint32_t)pending_su.size();
             std::cout << "\n[Phase5 swap-user@AMM verify] " << total_su
-                      << " user@AMM-shadow checks (max 300s)...\n";
+                      << " user@AMM-shadow checks (max 60s)...\n";
             auto su_start = std::chrono::steady_clock::now();
             int su_retry = 0;  // one retry allowed after nonce-gap detection
             while (!pending_su.empty() && !global_stop) {
                 auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::steady_clock::now() - su_start).count();
-                if (elapsed >= 300) {
+                if (elapsed >= 60) {
                     if (su_retry++ == 0) {
                         // Dump diagnostics for every unconfirmed item before retrying:
                         // shows which token/amm/user/shadow are stuck and what
@@ -8844,7 +8844,7 @@ contract AMMPool {
                         // Re-fetch on-chain nonce for each token deployer and resubmit
                         // only the unconfirmed transfers from there.
                         std::cout << "  [Phase5 su@AMM] " << pending_su.size() << "/"
-                                  << total_su << " unconfirmed after 300s"
+                                  << total_su << " unconfirmed after 60s"
                                   << " — retrying with fresh nonces...\n";
                         const uint64_t kSwapXferAmt_r =
                             kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
