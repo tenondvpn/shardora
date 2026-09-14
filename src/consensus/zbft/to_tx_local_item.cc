@@ -217,10 +217,27 @@ bool ToTxLocalItem::HandleCrossShardBase(
     evmc::address base_evmc = shardoravm::StrToEvmcAddr(base_raw);
     std::string sys_exec_str(reinterpret_cast<const char*>(shardoravm::kCrossShardSystemExecutor.bytes), 20);
 
-    // Shadow contract is deployed at a shard/pool-derived address, not at the
-    // base (root) address.  The base address is only used to look up bytecode
-    // and to verify legitimacy of the shadow via RecoverBaseAddress.
-    evmc::address target_evmc = shardoravm::DeriveShardAddress(base_evmc, shard_id, pool_index);
+    // If the base contract is deployed on the current shard/pool, target it
+    // directly (it IS the base, not a derived shadow). Fall back to deriving a
+    // shadow address when the contract is not found here.
+    bool is_base_shard = false;
+    {
+        protos::AddressInfoPtr base_info;
+        if (shardora_host.view_block_chain_)
+            base_info = shardora_host.view_block_chain_->ChainGetAccountInfo(base_raw);
+        if (!base_info || base_info->bytes_code().empty()) {
+            auto it = acc_balance_map.find(base_raw);
+            if (it != acc_balance_map.end() && !it->second->bytes_code().empty())
+                base_info = it->second;
+        }
+        if (base_info && !base_info->bytes_code().empty()) {
+            is_base_shard = (shard_id   == (uint32_t)base_info->sharding_id())
+                         && (pool_index == (uint32_t)base_info->pool_index());
+        }
+    }
+    evmc::address target_evmc = is_base_shard
+        ? base_evmc
+        : shardoravm::DeriveShardAddress(base_evmc, shard_id, pool_index);
     std::string target_str(reinterpret_cast<const char*>(target_evmc.bytes), 20);
 
     // ── 2. 懒部署：若该地址在本分片上不存在，写入 bytecode + 必要存储槽 ──────
@@ -252,22 +269,48 @@ bool ToTxLocalItem::HandleCrossShardBase(
         evmc::bytes32 marker_val{};
         marker_val.bytes[31] = 1;
 
-        shardora_host.set_storage(target_evmc, slot0_key, slot0_val);
-        shardora_host.set_storage(target_evmc, slot1_key, slot1_val);
-        shardora_host.set_storage(target_evmc, shardoravm::kIsCrossShardBaseSlot, marker_val);
+        // Always load bytecode into the EVM in-memory state for the call below.
         shardora_host.accounts_[target_evmc].code =
             evmc::bytes(bytecode.begin(), bytecode.end());
 
-        bool needs_deploy = false;
-        auto it = acc_balance_map.find(target_str);
-        if (it == acc_balance_map.end() || it->second->bytes_code().empty()) {
-            if (shardora_host.view_block_chain_) {
-                auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
-                if (!chain_info || chain_info->bytes_code().empty()) {
+        // Shadow only: write slot0/slot1/marker and lazy-deploy.
+        // Skipped for the base contract — its constructor already set IS_ROOT=1.
+        if (!is_base_shard) {
+            shardora_host.set_storage(target_evmc, slot0_key, slot0_val);
+            shardora_host.set_storage(target_evmc, slot1_key, slot1_val);
+            shardora_host.set_storage(target_evmc, shardoravm::kIsCrossShardBaseSlot, marker_val);
+
+            bool needs_deploy = false;
+            auto it = acc_balance_map.find(target_str);
+            if (it == acc_balance_map.end() || it->second->bytes_code().empty()) {
+                if (shardora_host.view_block_chain_) {
+                    auto chain_info = shardora_host.view_block_chain_->ChainGetAccountInfo(target_str);
+                    if (!chain_info || chain_info->bytes_code().empty()) {
+                        needs_deploy = true;
+                    }
+                } else {
                     needs_deploy = true;
                 }
-            } else {
-                needs_deploy = true;
+            }
+
+            if (needs_deploy) {
+                auto derived_info = std::make_shared<address::protobuf::AddressInfo>();
+                derived_info->set_addr(target_str);
+                derived_info->set_sharding_id(shard_id);
+                derived_info->set_pool_index(pool_index);
+                derived_info->set_type(address::protobuf::kNormal);
+                derived_info->set_bytes_code(bytecode);
+                derived_info->set_latest_height(view_block.block_info().height());
+                derived_info->set_tx_index(tx_index);
+                derived_info->set_balance(0);
+                derived_info->set_nonce(0);
+                acc_balance_map[target_str] = derived_info;
+
+                SHARDORA_INFO("CrossShardBase lazy-deploy shadow: base=%s user=%s shadow=%s shard=%u pool=%u",
+                    common::Encode::HexEncode(base_raw).c_str(),
+                    common::Encode::HexEncode(to_tx.des()).c_str(),
+                    common::Encode::HexEncode(target_str).c_str(),
+                    shard_id, pool_index);
             }
         }
 
@@ -282,26 +325,6 @@ bool ToTxLocalItem::HandleCrossShardBase(
             if (ts_it != shardora_host.accounts_.end()) {
                 ts_it->second.storage.erase(slot3_key);
             }
-        }
-
-        if (needs_deploy) {
-            auto derived_info = std::make_shared<address::protobuf::AddressInfo>();
-            derived_info->set_addr(target_str);
-            derived_info->set_sharding_id(shard_id);
-            derived_info->set_pool_index(pool_index);
-            derived_info->set_type(address::protobuf::kNormal);
-            derived_info->set_bytes_code(bytecode);
-            derived_info->set_latest_height(view_block.block_info().height());
-            derived_info->set_tx_index(tx_index);
-            derived_info->set_balance(0);
-            derived_info->set_nonce(0);
-            acc_balance_map[target_str] = derived_info;
-
-            SHARDORA_INFO("CrossShardBase lazy-deploy shadow: base=%s user=%s shadow=%s shard=%u pool=%u",
-                common::Encode::HexEncode(base_raw).c_str(),
-                common::Encode::HexEncode(to_tx.des()).c_str(),
-                common::Encode::HexEncode(target_str).c_str(),
-                shard_id, pool_index);
         }
     }
 
