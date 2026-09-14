@@ -8816,6 +8816,29 @@ contract AMMPool {
                     std::chrono::steady_clock::now() - su_start).count();
                 if (elapsed >= 300) {
                     if (su_retry++ == 0) {
+                        // Dump diagnostics for every unconfirmed item before retrying:
+                        // shows which token/amm/user/shadow are stuck and what
+                        // balanceOf currently returns (raw hex) for root-cause analysis.
+                        std::cout << "  [Phase5 su@AMM diag] "
+                                  << pending_su.size() << " unconfirmed:\n";
+                        for (auto& it_d : pending_su) {
+                            const auto& u_d  = users8[it_d.user_idx];
+                            std::string pk_d = common::Encode::HexEncode(
+                                tdeps8[it_d.token_idx].prikey);
+                            ShardoraClient qd(eps8[it_d.amm_shard].ip,
+                                              eps8[it_d.amm_shard].http);
+                            std::string rs_d = qd.queryContract(
+                                pk_d, it_d.shadow_hex,
+                                kBalOfSel + encodeAddr32(u_d.addr_hex));
+                            std::cout << "    token" << it_d.token_idx
+                                      << " amm"  << it_d.amm_idx
+                                      << " usr"  << it_d.user_idx
+                                      << " s"    << it_d.amm_shard
+                                      << " shadow=" << it_d.shadow_hex.substr(0, 12) << ".."
+                                      << " user="   << u_d.addr_hex.substr(0, 12) << ".."
+                                      << " balOf_raw=" << (rs_d.empty() ? "(empty)" : rs_d.substr(0, 64))
+                                      << "\n";
+                        }
                         // The 199-stuck pattern: some TX was dropped from the mempool,
                         // creating a nonce gap that blocks all subsequent nonces.
                         // Re-fetch on-chain nonce for each token deployer and resubmit
