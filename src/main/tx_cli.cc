@@ -7687,7 +7687,7 @@ contract AMMPool {
             tdeps8[i].contract_addr     = caddr;
             tdeps8[i].contract_addr_hex = common::Encode::HexEncode(caddr);
             tdeps8[i].contract_shard    = cshard;
-            tdeps8[i].contract_pool     = addr_pool8(caddr);
+            tdeps8[i].contract_pool     = addr_pool8(addr);  // TX routed by FROM (deployer), so pool = deployer's pool
         }
 
         std::cout << "  Token deployers: " << kTokens << "\n";
