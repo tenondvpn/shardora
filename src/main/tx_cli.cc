@@ -7389,6 +7389,9 @@ abstract contract CrossShardBase {
     address public SYSTEM_EXECUTOR;
     mapping(address => uint256) internal _balances;
     uint256 public totalSupply;
+    uint32[] private _xferShards;
+    uint32[] private _xferPools;
+    mapping(uint64 => bool) private _xferSeen;
 
     event CrossTransferOut(address indexed base, address indexed from, address to,
         uint256 amount, uint64 nonce, uint32 toShard, uint32 toPool);
@@ -7420,6 +7423,12 @@ abstract contract CrossShardBase {
         _balances[msg.sender] -= amount;
         totalSupply -= amount;
         nonce = 0;
+        uint64 key = (uint64(toShard) << 32) | uint64(toPool);
+        if (!_xferSeen[key]) {
+            _xferSeen[key] = true;
+            _xferShards.push(toShard);
+            _xferPools.push(toPool);
+        }
         emit CrossTransferOut(BASE_ROOT_ADDRESS, msg.sender, to, amount, nonce, toShard, toPool);
     }
 
@@ -7447,6 +7456,12 @@ abstract contract CrossShardBase {
 
     function balanceOf(address account) external view returns (uint256) {
         return _balances[account];
+    }
+
+    function getCrossTransferTargets() external view
+            returns (uint32[] memory shards, uint32[] memory pools) {
+        shards = _xferShards;
+        pools  = _xferPools;
     }
 
     function approve(address /*spender*/, uint256 /*amount*/) external pure returns (bool) {
@@ -9756,22 +9771,44 @@ contract AMMPool {
             // Base contract is always first
             add_shad(td.contract_addr_hex, td.contract_shard, "base");
 
-            // User own shadows (deduplicated by shard+pool)
-            for (auto& u : users8)
-                add_shad(derive_shex(u.shard_id, u.pool_idx), u.shard_id,
-                         "usr_shadow(s" + std::to_string(u.shard_id)
-                         + "p" + std::to_string(u.pool_idx) + ")");
-
-            // AMM shadows for this token
-            for (uint32_t k = 0; k < kAmmPairs; ++k) {
-                const auto& ad = adeps8[k];
-                if (ad.token_a != ti && ad.token_b != ti) continue;
-                const std::string& shex = (ad.token_a == ti)
-                    ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
-                add_shad(shex, ad.signer_shard,
-                         "amm" + std::to_string(k) + "_shadow(s"
-                         + std::to_string(ad.signer_shard)
-                         + "p" + std::to_string(ad.deployer_pool) + ")");
+            // Query base contract registry: getCrossTransferTargets() → (uint32[] shards, uint32[] pools)
+            // ABI layout: [offset1=0x40][offset2][n_shards][shard0..][n_pools][pool0..]
+            const std::string kGetTargetsSel =
+                utils::keccak256Str("getCrossTransferTargets()").substr(0, 8);
+            ShardoraClient qreg(eps8[td.contract_shard].ip, eps8[td.contract_shard].http);
+            std::string reg_rs = qreg.queryContract(pk_hex, td.contract_addr_hex, kGetTargetsSel);
+            bool reg_ok = false;
+            if (reg_rs.size() >= 192) {
+                uint64_t n_reg = hex2u64(reg_rs.substr(128, 64));
+                size_t needed = 192 + n_reg * 64 + 64 + n_reg * 64;
+                if (reg_rs.size() >= needed) {
+                    reg_ok = true;
+                    size_t pools_start = 192 + n_reg * 64 + 64;
+                    for (uint64_t ri = 0; ri < n_reg; ++ri) {
+                        uint32_t s = (uint32_t)hex2u64(reg_rs.substr(192 + ri * 64, 64));
+                        uint32_t p = (uint32_t)hex2u64(reg_rs.substr(pools_start + ri * 64, 64));
+                        add_shad(derive_shex(s, p), s,
+                                 "reg(s" + std::to_string(s) + "p" + std::to_string(p) + ")");
+                    }
+                    std::cout << "  [token" << ti << "] registry=" << n_reg << " targets\n";
+                }
+            }
+            if (!reg_ok) {
+                // Fallback: manual enumeration when registry unavailable (old contract)
+                for (auto& u : users8)
+                    add_shad(derive_shex(u.shard_id, u.pool_idx), u.shard_id,
+                             "usr(s" + std::to_string(u.shard_id)
+                             + "p" + std::to_string(u.pool_idx) + ")");
+                for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                    const auto& ad = adeps8[k];
+                    if (ad.token_a != ti && ad.token_b != ti) continue;
+                    const std::string& shex = (ad.token_a == ti)
+                        ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
+                    add_shad(shex, ad.signer_shard,
+                             "amm" + std::to_string(k) + "(s"
+                             + std::to_string(ad.signer_shard)
+                             + "p" + std::to_string(ad.deployer_pool) + ")");
+                }
             }
 
             // All known accounts that might hold a balance on any shadow
@@ -9876,15 +9913,56 @@ contract AMMPool {
                 std::cout << "  => [token" << ti << "] sum(shadow.totalSupply)="
                           << u128str(global_ts) << "  ✓ OK\n\n";
             } else if (global_ts > kInitialSupply8) {
-                // Sum exceeds initial mint — base shard replica returned stale (pre-decrement)
-                // data while destination shadow replicas returned fresher (post-increment) data.
-                // base_stale = excess + stale_deficit; this is always explainable by stale reads.
+                // Sum exceeds initial mint.  Most likely the base shard replica returned a
+                // stale (pre-decrement) totalSupply while destination shadows already show
+                // post-increment values.  Verify by querying the base contract from every
+                // node of the base shard; the minimum reading is the freshest value.
                 __uint128_t excess = global_ts - kInitialSupply8;
-                ++p8_token_ok;
-                std::cout << "  => [token" << ti << "] ✓ OK"
-                          << "  (stale-node: sum_excess=" << u128str(excess)
-                          << " base_stale~" << u128str(excess + stale_deficit)
-                          << " shadow_stale=" << u128str(stale_deficit) << ")\n\n";
+                const auto& base_sh  = p8_shadows[0]; // "base" is always index 0
+                uint16_t    http0    = eps8[base_sh.shard].http;
+                const std::string& base_ip = eps8[base_sh.shard].ip;
+                __uint128_t shadow_sum   = global_ts - p8_ts[0]; // sum of non-base shadow ts
+                __uint128_t min_base_ts  = p8_ts[0];
+                std::cout << "  [excess-verify] base(s" << base_sh.shard
+                          << ") ts per node (port " << http0 << "~" << (http0+3) << "):\n";
+                for (int ni = 0; ni < 4; ++ni) {
+                    ShardoraClient qn(base_ip, (uint16_t)(http0 + ni));
+                    std::string ts_rs = qn.queryContract(pk_hex, base_sh.hex, kTotalSupSel);
+                    __uint128_t nts = ts_rs.size() >= 64 ? hex2u128(ts_rs.substr(0, 64)) : 0;
+                    std::cout << "    node" << (ni + 1)
+                              << "(port=" << (http0 + ni) << "): base_ts=" << u128str(nts) << "\n";
+                    if (nts > 0 && nts < min_base_ts) min_base_ts = nts;
+                }
+                // best_sum = freshest base ts + shadow ts sum.
+                // If base is stale: min_base_ts < p8_ts[0], so best_sum < global_ts.
+                // Mathematically: best_sum == 1e24 - stale_deficit when all settled.
+                __uint128_t best_sum = min_base_ts + shadow_sum;
+                __uint128_t residual;
+                bool best_ok;
+                if (best_sum <= kInitialSupply8) {
+                    residual = kInitialSupply8 - best_sum;
+                    best_ok  = (residual <= stale_deficit);
+                } else {
+                    // Even freshest base still leaves excess — check shadow stale covers it
+                    residual = best_sum - kInitialSupply8;
+                    best_ok  = (residual <= stale_deficit);
+                }
+                if (best_ok) {
+                    ++p8_token_ok;
+                    std::cout << "  => [token" << ti << "] ✓ OK"
+                              << "  (stale-node confirmed: excess=" << u128str(excess)
+                              << " best_sum=" << u128str(best_sum)
+                              << " residual=" << u128str(residual)
+                              << " shadow_stale=" << u128str(stale_deficit) << ")\n\n";
+                } else {
+                    ++p8_token_fail;
+                    std::cout << "  => [token" << ti << "] ✗ MISMATCH (persistent excess)"
+                              << "  excess=" << u128str(excess)
+                              << "  best_sum=" << u128str(best_sum)
+                              << "  residual=" << u128str(residual)
+                              << "  shadow_stale=" << u128str(stale_deficit)
+                              << "  uncovered=" << u128str(residual - stale_deficit) << "\n\n";
+                }
             } else {
                 // Sum is below initial mint — compute real deficit after stale correction.
                 __uint128_t raw_deficit  = kInitialSupply8 - global_ts;
