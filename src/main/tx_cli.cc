@@ -8794,6 +8794,7 @@ contract AMMPool {
                 std::string shadow_hex;  // token shadow at AMM's (shard, pool)
                 uint32_t amm_shard;
                 uint32_t token_idx;
+                uint32_t amm_idx;        // index into adeps8 (for retry resubmission)
             };
             std::vector<SwapUserAmmItem> pending_su;
             for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
@@ -8802,20 +8803,73 @@ contract AMMPool {
                     uint32_t ti = (side == 0) ? ad.token_a : ad.token_b;
                     const std::string& shex = (side == 0) ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
                     for (uint32_t ui : rcpt5[ti])
-                        pending_su.push_back({ui, shex, ad.signer_shard, ti});
+                        pending_su.push_back({ui, shex, ad.signer_shard, ti, k});
                 }
             }
             const uint32_t total_su = (uint32_t)pending_su.size();
             std::cout << "\n[Phase5 swap-user@AMM verify] " << total_su
                       << " user@AMM-shadow checks (max 300s)...\n";
             auto su_start = std::chrono::steady_clock::now();
+            int su_retry = 0;  // one retry allowed after nonce-gap detection
             while (!pending_su.empty() && !global_stop) {
                 auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::steady_clock::now() - su_start).count();
                 if (elapsed >= 300) {
+                    if (su_retry++ == 0) {
+                        // The 199-stuck pattern: some TX was dropped from the mempool,
+                        // creating a nonce gap that blocks all subsequent nonces.
+                        // Re-fetch on-chain nonce for each token deployer and resubmit
+                        // only the unconfirmed transfers from there.
+                        std::cout << "  [Phase5 su@AMM] " << pending_su.size() << "/"
+                                  << total_su << " unconfirmed after 300s"
+                                  << " — retrying with fresh nonces...\n";
+                        const uint64_t kSwapXferAmt_r =
+                            kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
+                        // Group unconfirmed by token_idx so each deployer's
+                        // nonce sequence stays contiguous.
+                        std::map<uint32_t, std::vector<const SwapUserAmmItem*>> by_tok;
+                        for (auto& it : pending_su) by_tok[it.token_idx].push_back(&it);
+                        for (auto& [ti_r, items_r] : by_tok) {
+                            const auto& td_r = tdeps8[ti_r];
+                            std::string pk_r = common::Encode::HexEncode(td_r.prikey);
+                            ShardoraSDK dsdk_r(eps8[td_r.signer_shard].ip,
+                                               eps8[td_r.signer_shard].http);
+                            int64_t nonce_r = dsdk_r.fetchNonce(td_r.addr_hex);
+                            if (nonce_r < 0) {
+                                std::cerr << "  [su@AMM retry] fetchNonce failed token"
+                                          << ti_r << "\n";
+                                continue;
+                            }
+                            std::cout << "  [su@AMM retry] token" << ti_r
+                                      << " resubmit " << items_r.size()
+                                      << " transfers nonce=" << nonce_r << "\n";
+                            for (const auto* it_r : items_r) {
+                                const auto& u_r = users8[it_r->user_idx];
+                                const auto& ad_r = adeps8[it_r->amm_idx];
+                                std::string cd_r = kXferSel
+                                    + encodeAddr32(u_r.addr_hex)
+                                    + encodeUint256u128((__uint128_t)kSwapXferAmt_r)
+                                    + encodeUint32ABI(ad_r.signer_shard)
+                                    + encodeUint32ABI(ad_r.deployer_pool);
+                                auto ra_r = dsdk_r.callContractWithNonce(
+                                    pk_r, td_r.contract_addr_hex, cd_r, nonce_r);
+                                if (ra_r.contains("status") && ra_r["status"] == 0)
+                                    ++nonce_r;
+                                else
+                                    std::cerr << "  [su@AMM retry] FAIL token" << ti_r
+                                              << " usr" << it_r->user_idx << " amm"
+                                              << it_r->amm_idx << " "
+                                              << ra_r.value("msg", "?") << "\n";
+                                usleep(5000); // 5ms gap to reduce mempool pressure
+                            }
+                        }
+                        su_start = std::chrono::steady_clock::now();
+                        for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
+                        continue;
+                    }
                     std::cerr << "  TIMEOUT: Phase5 swap-user@AMM: "
                               << pending_su.size() << "/" << total_su
-                              << " unconfirmed after 300s.\n";
+                              << " unconfirmed after retry.\n";
                     transport::TcpTransport::Instance()->Stop();
                     return 1;
                 }
