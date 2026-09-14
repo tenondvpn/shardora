@@ -233,6 +233,17 @@ bool ToTxLocalItem::HandleCrossShardBase(
         if (base_info && !base_info->bytes_code().empty()) {
             is_base_shard = (shard_id   == (uint32_t)base_info->sharding_id())
                          && (pool_index == (uint32_t)base_info->pool_index());
+            SHARDORA_INFO("XSB is_base_shard=%d base=%s chain_shard=%u chain_pool=%u cur_shard=%u cur_pool=%u",
+                (int)is_base_shard,
+                common::Encode::HexEncode(base_raw).c_str(),
+                base_info->sharding_id(), base_info->pool_index(),
+                shard_id, pool_index);
+        } else {
+            SHARDORA_INFO("XSB is_base_shard=0 base=%s base_info=%s chain_vbc=%s cur_shard=%u cur_pool=%u",
+                common::Encode::HexEncode(base_raw).c_str(),
+                base_info ? "no_code" : "null",
+                shardora_host.view_block_chain_ ? "ok" : "null",
+                shard_id, pool_index);
         }
     }
     evmc::address target_evmc = is_base_shard
