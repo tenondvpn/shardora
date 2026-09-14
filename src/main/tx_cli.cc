@@ -8672,8 +8672,11 @@ contract AMMPool {
                     std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
                     evmc::address root_evmc{};
                     std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-                    evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
-                        root_evmc, u.shard_id, u.pool_idx);
+                    bool user_on_base = (u.shard_id == td.contract_shard)
+                                     && (u.pool_idx == td.contract_pool);
+                    evmc::address shadow_evmc = user_on_base
+                        ? root_evmc
+                        : shardoravm::DeriveShardAddress(root_evmc, u.shard_id, u.pool_idx);
                     std::string shadow_hex = common::Encode::HexEncode(
                         std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
 
@@ -8728,7 +8731,11 @@ contract AMMPool {
                 evmc::address root_evmc{};
                 std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
                 std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-                evmc::address shadow_evmc = shardoravm::DeriveShardAddress(root_evmc, u.shard_id, u.pool_idx);
+                bool user_on_base = (u.shard_id == td.contract_shard)
+                                 && (u.pool_idx == td.contract_pool);
+                evmc::address shadow_evmc = user_on_base
+                    ? root_evmc
+                    : shardoravm::DeriveShardAddress(root_evmc, u.shard_id, u.pool_idx);
                 std::string shadow_hex = common::Encode::HexEncode(
                     std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
                 std::cerr << "    token[" << ti << "]=" << td.contract_addr_hex
