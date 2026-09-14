@@ -9612,6 +9612,140 @@ contract AMMPool {
         std::cout << "    TPS:         " << (tcp_sent7.load() * 1000 / std::max(1LL, (long long)swap_elapsed7)) << "\n";
         std::cout << "    Pools with swaps: " << pools_swapped << "/" << kAmmPairs << "\n";
 
+        // ─────────────────────────────────────────────────────────────────
+        // Phase 8: Token supply integrity check
+        //
+        // CrossShardBase splits totalSupply across shadows:
+        //   _crossTransfer    → totalSupply -= amount  (source shadow)
+        //   systemExecuteCrossTransfer → totalSupply += amount  (dest shadow)
+        //
+        // Invariant: sum(totalSupply on all shadows) == initial mint == 1_000_000 ether
+        // Per-shadow: sum(balanceOf for all known accounts) == shadow.totalSupply
+        // ─────────────────────────────────────────────────────────────────
+        std::cout << "\n" << std::string(70, '=') << "\n";
+        std::cout << "  [Phase 8] Token supply integrity check\n";
+        std::cout << std::string(70, '=') << "\n";
+
+        const std::string kTotalSupSel =
+            utils::keccak256Str("totalSupply()").substr(0, 8);
+        // 1_000_000 ether = 1e6 * 1e18 = 1e24
+        const __uint128_t kInitialSupply8 =
+            (__uint128_t)1'000'000ULL * (__uint128_t)1'000'000'000'000'000'000ULL;
+
+        uint32_t p8_token_ok = 0, p8_token_fail = 0;
+
+        for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
+            const auto& td = tdeps8[ti];
+            const std::string pk_hex = common::Encode::HexEncode(td.prikey);
+
+            // Derive shadow hex for this token at (shard, pool)
+            auto derive_shex = [&](uint32_t shard, uint32_t pool) -> std::string {
+                std::string raw = common::Encode::HexDecode(td.contract_addr_hex);
+                evmc::address root{};
+                std::memcpy(root.bytes, raw.data(), 20);
+                evmc::address sh = shardoravm::DeriveShardAddress(root, shard, pool);
+                return common::Encode::HexEncode(
+                    std::string(reinterpret_cast<const char*>(sh.bytes), 20));
+            };
+
+            // Collect unique shadows: (hex, shard, label)
+            struct ShadowEntry { std::string hex; uint32_t shard; std::string label; };
+            std::vector<ShadowEntry> p8_shadows;
+            auto add_shad = [&](const std::string& hex, uint32_t shard, std::string lbl) {
+                for (auto& e : p8_shadows) if (e.hex == hex) return;
+                p8_shadows.push_back({hex, shard, std::move(lbl)});
+            };
+
+            // Base contract is always first
+            add_shad(td.contract_addr_hex, td.contract_shard, "base");
+
+            // User own shadows (deduplicated by shard+pool)
+            for (auto& u : users8)
+                add_shad(derive_shex(u.shard_id, u.pool_idx), u.shard_id,
+                         "usr_shadow(s" + std::to_string(u.shard_id)
+                         + "p" + std::to_string(u.pool_idx) + ")");
+
+            // AMM shadows for this token
+            for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                const auto& ad = adeps8[k];
+                if (ad.token_a != ti && ad.token_b != ti) continue;
+                const std::string& shex = (ad.token_a == ti)
+                    ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
+                add_shad(shex, ad.signer_shard,
+                         "amm" + std::to_string(k) + "_shadow(s"
+                         + std::to_string(ad.signer_shard)
+                         + "p" + std::to_string(ad.deployer_pool) + ")");
+            }
+
+            // All known accounts that might hold a balance on any shadow
+            std::vector<std::pair<std::string, std::string>> p8_accts; // (addr_hex, label)
+            auto add_acct = [&](const std::string& hex, const std::string& lbl) {
+                for (auto& a : p8_accts) if (a.first == hex) return;
+                p8_accts.push_back({hex, lbl});
+            };
+            add_acct(td.addr_hex, "token_deployer");
+            for (uint32_t ui = 0; ui < (uint32_t)users8.size(); ++ui)
+                add_acct(users8[ui].addr_hex, "user" + std::to_string(ui));
+            for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                add_acct(adeps8[k].addr_hex,
+                         "amm" + std::to_string(k) + "_deployer");
+                add_acct(adeps8[k].contract_addr_hex,
+                         "amm" + std::to_string(k) + "_contract");
+            }
+
+            std::cout << "  [token" << ti << "] " << td.contract_addr_hex
+                      << " s" << td.contract_shard
+                      << "  shadows=" << p8_shadows.size()
+                      << "  accounts=" << p8_accts.size() << "\n";
+
+            __uint128_t global_ts = 0;
+            bool shadow_mismatch = false;
+
+            for (auto& sh : p8_shadows) {
+                ShardoraClient qts(eps8[sh.shard].ip, eps8[sh.shard].http);
+                std::string ts_rs = qts.queryContract(pk_hex, sh.hex, kTotalSupSel);
+                __uint128_t shadow_ts =
+                    ts_rs.size() >= 64 ? hex2u128(ts_rs.substr(0, 64)) : 0;
+                global_ts += shadow_ts;
+
+                std::cout << "    [" << sh.label << "]"
+                          << " shadow=" << sh.hex.substr(0, 10) << ".."
+                          << " totalSupply=" << u128str(shadow_ts) << "\n";
+
+                __uint128_t sum_bals = 0;
+                for (auto& [acct, albl] : p8_accts) {
+                    ShardoraClient qb(eps8[sh.shard].ip, eps8[sh.shard].http);
+                    std::string bal_rs = qb.queryContract(
+                        pk_hex, sh.hex, kBalOfSel + encodeAddr32(acct));
+                    __uint128_t bal =
+                        bal_rs.size() >= 64 ? hex2u128(bal_rs.substr(0, 64)) : 0;
+                    sum_bals += bal;
+                    if (bal > 0)
+                        std::cout << "      " << albl << "=" << acct
+                                  << "  bal=" << u128str(bal) << "\n";
+                }
+
+                if (shadow_ts == 0 && sum_bals == 0) continue; // undeployed shadow, skip
+                if (sum_bals != shadow_ts) {
+                    shadow_mismatch = true;
+                    std::cout << "      ✗ sum_balances=" << u128str(sum_bals)
+                              << " != totalSupply=" << u128str(shadow_ts) << "\n";
+                }
+            }
+
+            bool ts_ok = (global_ts == kInitialSupply8);
+            if (!ts_ok) ++p8_token_fail; else ++p8_token_ok;
+            std::cout << "  => sum(totalSupply)=" << u128str(global_ts)
+                      << "  initialMint=" << u128str(kInitialSupply8)
+                      << (ts_ok ? "  ✓ OK" : "  ✗ MISMATCH")
+                      << (shadow_mismatch ? "  (shadow bal mismatch!)" : "") << "\n\n";
+        }
+
+        std::cout << "  Phase 8 result: " << p8_token_ok << "/" << kTokens
+                  << " tokens supply-correct"
+                  << (p8_token_fail ? ("  (" + std::to_string(p8_token_fail) + " FAILED)") : "")
+                  << "\n";
+
         } // end if (kAmmPairs > 0)
 
         // ─────────────────────────────────────────────────────────────────
