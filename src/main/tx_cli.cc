@@ -6,6 +6,7 @@
 #include <queue>
 #include <set>
 #include <vector>
+#include <future>
 #include <mutex>
 #include <condition_variable>
 #include <unordered_map>
@@ -9794,71 +9795,78 @@ contract AMMPool {
                       << "  shadows=" << p8_shadows.size()
                       << "  accounts=" << p8_accts.size() << "\n";
 
-            // ── Pass 1: query totalSupply on every shadow, retry until
+            // ── Pass 1: query totalSupply on every shadow in parallel, retry until
             // sum == initialMint or max retries exhausted.
-            // Retrying separates "in-flight" (eventually converges to 1e24)
-            // from "lost" (nonce gap / permanently dropped crossTransfer TX).
-            const int kP8RetryWait = 15;   // seconds between retries
-            const int kP8MaxRetries = 4;   // up to 60 s extra wait per token
+            const int kP8RetryWait = 15;
+            const int kP8MaxRetries = 4;
             std::vector<__uint128_t> p8_ts(p8_shadows.size(), 0);
             __uint128_t global_ts = 0;
 
             for (int p8_try = 0; p8_try <= kP8MaxRetries && !global_stop; ++p8_try) {
+                std::vector<std::future<std::string>> ts_futs;
+                ts_futs.reserve(p8_shadows.size());
+                for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
+                    std::string shex = p8_shadows[si].hex;
+                    uint32_t sshard = p8_shadows[si].shard;
+                    ts_futs.push_back(std::async(std::launch::async,
+                        [&eps8, shex, sshard, pk_hex, kTotalSupSel]() -> std::string {
+                            ShardoraClient qts(eps8[sshard].ip, eps8[sshard].http);
+                            return qts.queryContract(pk_hex, shex, kTotalSupSel);
+                        }));
+                }
                 global_ts = 0;
                 for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
-                    const auto& sh = p8_shadows[si];
-                    ShardoraClient qts(eps8[sh.shard].ip, eps8[sh.shard].http);
-                    std::string ts_rs = qts.queryContract(pk_hex, sh.hex, kTotalSupSel);
+                    std::string ts_rs = ts_futs[si].get();
                     p8_ts[si] = ts_rs.size() >= 64 ? hex2u128(ts_rs.substr(0, 64)) : 0;
                     global_ts += p8_ts[si];
                 }
-                if (global_ts == kInitialSupply8) break; // fully settled
+                if (global_ts == kInitialSupply8) break;
                 if (p8_try < kP8MaxRetries) {
-                    __uint128_t deficit = kInitialSupply8 - global_ts;
+                    std::string diff_str = (global_ts > kInitialSupply8)
+                        ? "excess=" + u128str(global_ts - kInitialSupply8)
+                        : "deficit=" + u128str(kInitialSupply8 - global_ts);
                     std::cout << "    [token" << ti << " retry " << (p8_try + 1)
                               << "/" << kP8MaxRetries << "] sum=" << u128str(global_ts)
-                              << "  deficit=" << u128str(deficit)
+                              << "  " << diff_str
                               << "  (in-flight?) waiting " << kP8RetryWait << "s...\n";
                     for (int ws = 0; ws < kP8RetryWait && !global_stop; ++ws)
                         usleep(1000000);
                 }
             }
 
-            // ── Pass 2: display per-shadow totalSupply and non-zero balances.
-            // Also detect stale-node reads: if sum(balances) > p8_ts[si] for a shadow,
-            // the totalSupply query returned a stale (under-counted) value while the
-            // balance queries hit a fresher node.  Accumulate stale_deficit so we can
-            // distinguish stale reads from genuinely lost crossTransfers in the verdict.
+            // ── Pass 2: detect stale-node reads in parallel (no per-user output).
+            // For each shadow: if sum(balances) > totalSupply, the ts query hit a
+            // stale replica. Accumulate stale_deficit to correct the raw_deficit verdict.
             __uint128_t stale_deficit = 0;
-            for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
-                const auto& sh = p8_shadows[si];
-                __uint128_t shadow_ts = p8_ts[si];
-                if (shadow_ts == 0) continue; // shadow not yet deployed, skip
-
-                std::cout << "    [" << sh.label << "]"
-                          << " shadow=" << sh.hex.substr(0, 10) << ".."
-                          << " totalSupply=" << u128str(shadow_ts) << "\n";
-
-                // Query balanceOf for each known account (informational).
-                __uint128_t bal_sum_si = 0;
-                for (auto& [acct, albl] : p8_accts) {
-                    ShardoraClient qb(eps8[sh.shard].ip, eps8[sh.shard].http);
-                    std::string bal_rs = qb.queryContract(
-                        pk_hex, sh.hex, kBalOfSel + encodeAddr32(acct));
-                    __uint128_t bal =
-                        bal_rs.size() >= 64 ? hex2u128(bal_rs.substr(0, 64)) : 0;
-                    if (bal > 0) {
-                        std::cout << "      " << albl << "=" << acct
-                                  << "  bal=" << u128str(bal) << "\n";
-                        bal_sum_si += bal;
+            {
+                std::vector<std::future<__uint128_t>> bal_futs;
+                bal_futs.reserve(p8_shadows.size());
+                for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
+                    if (p8_ts[si] == 0) {
+                        bal_futs.push_back(std::async(std::launch::deferred,
+                            []() -> __uint128_t { return 0; }));
+                        continue;
                     }
+                    std::string shex = p8_shadows[si].hex;
+                    uint32_t sshard = p8_shadows[si].shard;
+                    bal_futs.push_back(std::async(std::launch::async,
+                        [&eps8, shex, sshard, pk_hex, kBalOfSel, &p8_accts]() -> __uint128_t {
+                            __uint128_t sum = 0;
+                            for (auto& [acct, albl] : p8_accts) {
+                                ShardoraClient qb(eps8[sshard].ip, eps8[sshard].http);
+                                std::string bal_rs = qb.queryContract(
+                                    pk_hex, shex, kBalOfSel + encodeAddr32(acct));
+                                __uint128_t bal =
+                                    bal_rs.size() >= 64 ? hex2u128(bal_rs.substr(0, 64)) : 0;
+                                sum += bal;
+                            }
+                            return sum;
+                        }));
                 }
-                if (bal_sum_si > shadow_ts) {
-                    __uint128_t stale_by = bal_sum_si - shadow_ts;
-                    stale_deficit += stale_by;
-                    std::cout << "      [stale-ts!] sum(bal)=" << u128str(bal_sum_si)
-                              << " > totalSupply=" << u128str(shadow_ts)
-                              << "  stale_by=" << u128str(stale_by) << "\n";
+                for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
+                    __uint128_t bal_sum_si = bal_futs[si].get();
+                    if (p8_ts[si] > 0 && bal_sum_si > p8_ts[si])
+                        stale_deficit += bal_sum_si - p8_ts[si];
                 }
             }
 
