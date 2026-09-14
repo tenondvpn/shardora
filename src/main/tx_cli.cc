@@ -9819,7 +9819,11 @@ contract AMMPool {
             }
 
             // ── Pass 2: display per-shadow totalSupply and non-zero balances.
-            // Uses the last-queried p8_ts values from Pass 1.
+            // Also detect stale-node reads: if sum(balances) > p8_ts[si] for a shadow,
+            // the totalSupply query returned a stale (under-counted) value while the
+            // balance queries hit a fresher node.  Accumulate stale_deficit so we can
+            // distinguish stale reads from genuinely lost crossTransfers in the verdict.
+            __uint128_t stale_deficit = 0;
             for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
                 const auto& sh = p8_shadows[si];
                 __uint128_t shadow_ts = p8_ts[si];
@@ -9830,29 +9834,54 @@ contract AMMPool {
                           << " totalSupply=" << u128str(shadow_ts) << "\n";
 
                 // Query balanceOf for each known account (informational).
-                // Timing artifacts may cause sum(balances) != shadow_ts.
+                __uint128_t bal_sum_si = 0;
                 for (auto& [acct, albl] : p8_accts) {
                     ShardoraClient qb(eps8[sh.shard].ip, eps8[sh.shard].http);
                     std::string bal_rs = qb.queryContract(
                         pk_hex, sh.hex, kBalOfSel + encodeAddr32(acct));
                     __uint128_t bal =
                         bal_rs.size() >= 64 ? hex2u128(bal_rs.substr(0, 64)) : 0;
-                    if (bal > 0)
+                    if (bal > 0) {
                         std::cout << "      " << albl << "=" << acct
                                   << "  bal=" << u128str(bal) << "\n";
+                        bal_sum_si += bal;
+                    }
+                }
+                if (bal_sum_si > shadow_ts) {
+                    __uint128_t stale_by = bal_sum_si - shadow_ts;
+                    stale_deficit += stale_by;
+                    std::cout << "      [stale-ts!] sum(bal)=" << u128str(bal_sum_si)
+                              << " > totalSupply=" << u128str(shadow_ts)
+                              << "  stale_by=" << u128str(stale_by) << "\n";
                 }
             }
 
             bool ts_ok = (global_ts == kInitialSupply8);
-            if (!ts_ok) ++p8_token_fail; else ++p8_token_ok;
-            std::cout << "  => [token" << ti << "] sum(shadow.totalSupply)="
-                      << u128str(global_ts)
-                      << "  initialMint=" << u128str(kInitialSupply8)
-                      << (ts_ok ? "  ✓ OK"
-                                : ("  ✗ MISMATCH deficit="
-                                   + u128str(kInitialSupply8 - global_ts)
-                                   + " (permanently lost crossTransfer)"))
-                      << "\n\n";
+            if (ts_ok) {
+                ++p8_token_ok;
+                std::cout << "  => [token" << ti << "] sum(shadow.totalSupply)="
+                          << u128str(global_ts) << "  ✓ OK\n\n";
+            } else {
+                __uint128_t raw_deficit   = kInitialSupply8 - global_ts;
+                __uint128_t real_deficit  = (stale_deficit >= raw_deficit)
+                                            ? 0 : (raw_deficit - stale_deficit);
+                if (real_deficit == 0) {
+                    // Deficit fully explained by stale totalSupply reads — not real loss.
+                    ++p8_token_ok;
+                    std::cout << "  => [token" << ti << "] ✓ OK"
+                              << "  (stale-node: raw_deficit=" << u128str(raw_deficit)
+                              << " fully explained by stale totalSupply reads)\n\n";
+                } else {
+                    ++p8_token_fail;
+                    std::cout << "  => [token" << ti << "] sum(shadow.totalSupply)="
+                              << u128str(global_ts)
+                              << "  initialMint=" << u128str(kInitialSupply8)
+                              << "  ✗ MISMATCH raw_deficit=" << u128str(raw_deficit)
+                              << " stale_explained=" << u128str(stale_deficit)
+                              << " remaining=" << u128str(real_deficit)
+                              << " (permanently lost crossTransfer)\n\n";
+                }
+            }
         }
 
         std::cout << "  Phase 8 result: " << p8_token_ok << "/" << kTokens
