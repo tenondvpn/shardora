@@ -9708,6 +9708,14 @@ contract AMMPool {
         std::cout << "  [Phase 8] Token supply integrity check\n";
         std::cout << std::string(70, '=') << "\n";
 
+        // Wait for base-shard nodes to sync before querying totalSupply.
+        // Phase 5 crossTransfers execute on the token's base shard; without a
+        // pause the base-shard replica serving our queries may still be a few
+        // blocks behind, returning a stale (too-high) totalSupply and making
+        // the global sum appear less than the initial mint.
+        std::cout << "  Waiting 30s for base shard nodes to sync...\n";
+        for (int ws = 0; ws < 30 && !global_stop; ++ws) usleep(1000000);
+
         const std::string kTotalSupSel =
             utils::keccak256Str("totalSupply()").substr(0, 8);
         // 1_000_000 ether = 1e6 * 1e18 = 1e24
