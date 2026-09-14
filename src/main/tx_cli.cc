@@ -9788,24 +9788,49 @@ contract AMMPool {
                       << "  shadows=" << p8_shadows.size()
                       << "  accounts=" << p8_accts.size() << "\n";
 
+            // ── Pass 1: query totalSupply on every shadow, retry until
+            // sum == initialMint or max retries exhausted.
+            // Retrying separates "in-flight" (eventually converges to 1e24)
+            // from "lost" (nonce gap / permanently dropped crossTransfer TX).
+            const int kP8RetryWait = 15;   // seconds between retries
+            const int kP8MaxRetries = 4;   // up to 60 s extra wait per token
+            std::vector<__uint128_t> p8_ts(p8_shadows.size(), 0);
             __uint128_t global_ts = 0;
 
-            for (auto& sh : p8_shadows) {
-                // Query totalSupply on this shadow (used for global supply sum)
-                ShardoraClient qts(eps8[sh.shard].ip, eps8[sh.shard].http);
-                std::string ts_rs = qts.queryContract(pk_hex, sh.hex, kTotalSupSel);
-                __uint128_t shadow_ts =
-                    ts_rs.size() >= 64 ? hex2u128(ts_rs.substr(0, 64)) : 0;
-                global_ts += shadow_ts;
+            for (int p8_try = 0; p8_try <= kP8MaxRetries && !global_stop; ++p8_try) {
+                global_ts = 0;
+                for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
+                    const auto& sh = p8_shadows[si];
+                    ShardoraClient qts(eps8[sh.shard].ip, eps8[sh.shard].http);
+                    std::string ts_rs = qts.queryContract(pk_hex, sh.hex, kTotalSupSel);
+                    p8_ts[si] = ts_rs.size() >= 64 ? hex2u128(ts_rs.substr(0, 64)) : 0;
+                    global_ts += p8_ts[si];
+                }
+                if (global_ts == kInitialSupply8) break; // fully settled
+                if (p8_try < kP8MaxRetries) {
+                    __uint128_t deficit = kInitialSupply8 - global_ts;
+                    std::cout << "    [token" << ti << " retry " << (p8_try + 1)
+                              << "/" << kP8MaxRetries << "] sum=" << u128str(global_ts)
+                              << "  deficit=" << u128str(deficit)
+                              << "  (in-flight?) waiting " << kP8RetryWait << "s...\n";
+                    for (int ws = 0; ws < kP8RetryWait && !global_stop; ++ws)
+                        usleep(1000000);
+                }
+            }
 
-                if (shadow_ts == 0) continue; // shadow not yet deployed, no balances
+            // ── Pass 2: display per-shadow totalSupply and non-zero balances.
+            // Uses the last-queried p8_ts values from Pass 1.
+            for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
+                const auto& sh = p8_shadows[si];
+                __uint128_t shadow_ts = p8_ts[si];
+                if (shadow_ts == 0) continue; // shadow not yet deployed, skip
 
                 std::cout << "    [" << sh.label << "]"
                           << " shadow=" << sh.hex.substr(0, 10) << ".."
                           << " totalSupply=" << u128str(shadow_ts) << "\n";
 
-                // Query balanceOf for each known account (informational)
-                // Note: timing artifacts may cause sum(balances) != totalSupply
+                // Query balanceOf for each known account (informational).
+                // Timing artifacts may cause sum(balances) != shadow_ts.
                 for (auto& [acct, albl] : p8_accts) {
                     ShardoraClient qb(eps8[sh.shard].ip, eps8[sh.shard].http);
                     std::string bal_rs = qb.queryContract(
@@ -9818,16 +9843,15 @@ contract AMMPool {
                 }
             }
 
-            // The key correctness invariant: sum of ALL shadow totalSupplies == initial mint.
-            // If some cross-shard transfers are still in-flight, this sum will be < initial_mint,
-            // reflecting the conserved but not-yet-delivered amount. After full settlement the
-            // sum equals initial_mint exactly.
             bool ts_ok = (global_ts == kInitialSupply8);
             if (!ts_ok) ++p8_token_fail; else ++p8_token_ok;
             std::cout << "  => [token" << ti << "] sum(shadow.totalSupply)="
                       << u128str(global_ts)
                       << "  initialMint=" << u128str(kInitialSupply8)
-                      << (ts_ok ? "  ✓ OK" : "  ✗ MISMATCH (in-flight or lost)")
+                      << (ts_ok ? "  ✓ OK"
+                                : ("  ✗ MISMATCH deficit="
+                                   + u128str(kInitialSupply8 - global_ts)
+                                   + " (permanently lost crossTransfer)"))
                       << "\n\n";
         }
 
