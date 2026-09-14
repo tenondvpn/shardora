@@ -9593,12 +9593,14 @@ contract AMMPool {
                                uint32_t shadow_shard, uint32_t shadow_pool,
                                const std::string& account_hex,
                                __uint128_t expected_min,
-                               bool verbose) -> bool {
+                               bool verbose,
+                               bool use_root = false) -> bool {
             std::string root_raw = common::Encode::HexDecode(token_addr_hex);
             evmc::address root_evmc{};
             std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-            evmc::address shadow_evmc = shardoravm::DeriveShardAddress(
-                root_evmc, shadow_shard, shadow_pool);
+            evmc::address shadow_evmc = use_root
+                ? root_evmc
+                : shardoravm::DeriveShardAddress(root_evmc, shadow_shard, shadow_pool);
             std::string shadow_hex = common::Encode::HexEncode(
                 std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
             ShardoraClient qc(eps8[shadow_shard].ip, eps8[shadow_shard].http);
@@ -9639,6 +9641,8 @@ contract AMMPool {
                     continue;
                 }
                 const auto& td = tdeps8[ti];
+                bool user_on_base = (u.shard_id == td.contract_shard)
+                                 && (u.pool_idx  == td.contract_pool);
                 std::string label = "user=" + u.addr_hex.substr(0,8)
                     + ".. token" + std::to_string(ti)
                     + " s" + std::to_string(u.shard_id) + "p" + std::to_string(u.pool_idx);
@@ -9648,7 +9652,8 @@ contract AMMPool {
                     u.shard_id, u.pool_idx,
                     u.addr_hex,
                     kPerAmt5,
-                    /*verbose=*/false);
+                    /*verbose=*/false,
+                    /*use_root=*/user_on_base);
                 if (ok) ++bal7_ok; else { ++bal7_fail;
                     std::cerr << "  [Phase7d FAIL] user=" << u.addr_hex
                               << " token" << ti << "=" << td.contract_addr_hex
