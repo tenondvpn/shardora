@@ -8857,7 +8857,13 @@ contract AMMPool {
                             std::string pk_r = common::Encode::HexEncode(td_r.prikey);
                             ShardoraSDK dsdk_r(eps8[td_r.signer_shard].ip,
                                                eps8[td_r.signer_shard].http);
-                            int64_t nonce_r = dsdk_r.fetchNonce(td_r.addr_hex);
+                            // Must fetch the PREPAYMENT account nonce (contract+deployer),
+                            // not the deployer EOA nonce — all crossTransfer TXs use the
+                            // prepayment account nonce (ppnonce), so retrying with the EOA
+                            // nonce (which is only 2: deploy + setGasPrefund) would always
+                            // conflict with already-confirmed TXs and get silently rejected.
+                            std::string ppkey_r = td_r.contract_addr_hex + td_r.addr_hex;
+                            int64_t nonce_r = dsdk_r.fetchNonce(ppkey_r);
                             if (nonce_r < 0) {
                                 std::cerr << "  [su@AMM retry] fetchNonce failed token"
                                           << ti_r << "\n";
@@ -8865,7 +8871,7 @@ contract AMMPool {
                             }
                             std::cout << "  [su@AMM retry] token" << ti_r
                                       << " resubmit " << items_r.size()
-                                      << " transfers nonce=" << nonce_r << "\n";
+                                      << " transfers ppnonce=" << nonce_r << "\n";
                             for (const auto* it_r : items_r) {
                                 const auto& u_r = users8[it_r->user_idx];
                                 const auto& ad_r = adeps8[it_r->amm_idx];
