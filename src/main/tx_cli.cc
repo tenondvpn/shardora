@@ -8784,6 +8784,73 @@ contract AMMPool {
                       << " AMM deployers confirmed OK\n";
         }
 
+        // Phase 5 swap-user@AMM-shadow verify: wait for each user's balance at
+        // each AMM's token shadow to confirm before Phase 7 swaps can run.
+        // call#3 crossTransfer(user, kSwapXferAmt, amm.shard, amm.pool) is
+        // cross-shard for AMMs not on the token's home shard and arrives later.
+        if (kAmmPairs > 0) {
+            struct SwapUserAmmItem {
+                uint32_t user_idx;
+                std::string shadow_hex;  // token shadow at AMM's (shard, pool)
+                uint32_t amm_shard;
+                uint32_t token_idx;
+            };
+            std::vector<SwapUserAmmItem> pending_su;
+            for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+                const auto& ad = adeps8[k];
+                for (int side = 0; side < 2; ++side) {
+                    uint32_t ti = (side == 0) ? ad.token_a : ad.token_b;
+                    const std::string& shex = (side == 0) ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
+                    for (uint32_t ui : rcpt5[ti])
+                        pending_su.push_back({ui, shex, ad.signer_shard, ti});
+                }
+            }
+            const uint32_t total_su = (uint32_t)pending_su.size();
+            std::cout << "\n[Phase5 swap-user@AMM verify] " << total_su
+                      << " user@AMM-shadow checks (max 300s)...\n";
+            auto su_start = std::chrono::steady_clock::now();
+            while (!pending_su.empty() && !global_stop) {
+                auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::steady_clock::now() - su_start).count();
+                if (elapsed >= 300) {
+                    std::cerr << "  TIMEOUT: Phase5 swap-user@AMM: "
+                              << pending_su.size() << "/" << total_su
+                              << " unconfirmed after 300s.\n";
+                    transport::TcpTransport::Instance()->Stop();
+                    return 1;
+                }
+                std::vector<SwapUserAmmItem> still;
+                std::mutex smx;
+                std::vector<std::thread> sth;
+                for (auto& it : pending_su) {
+                    sth.emplace_back([&, it]() {
+                        const auto& u = users8[it.user_idx];
+                        std::string pk_hex = common::Encode::HexEncode(tdeps8[it.token_idx].prikey);
+                        ShardoraClient qc(eps8[it.amm_shard].ip, eps8[it.amm_shard].http);
+                        std::string rs = qc.queryContract(
+                            pk_hex, it.shadow_hex,
+                            kBalOfSel + encodeAddr32(u.addr_hex));
+                        bool ok = false;
+                        if (rs.size() >= 64) {
+                            for (char c : rs.substr(0, 64)) if (c != '0') { ok = true; break; }
+                        }
+                        if (!ok) {
+                            std::lock_guard<std::mutex> lk(smx);
+                            still.push_back(it);
+                        }
+                    });
+                }
+                for (auto& t : sth) t.join();
+                uint32_t done_su = total_su - (uint32_t)still.size();
+                std::cout << "  [Phase5 su@AMM " << elapsed << "s] "
+                          << done_su << "/" << total_su << " confirmed\n";
+                pending_su = std::move(still);
+                if (!pending_su.empty() && !global_stop)
+                    for (int ws = 0; ws < 5 && !global_stop; ++ws) usleep(1000000);
+            }
+            std::cout << "  Phase5 swap-user@AMM: all " << total_su << " confirmed OK\n";
+        }
+
         // ── Phase 6: Set prefund for token holders on AMM pool contracts ──
         // For each AMM pool, find users that hold either of its two tokens
         // (from rcpt5), then create a prepayment account (amm_contract +
