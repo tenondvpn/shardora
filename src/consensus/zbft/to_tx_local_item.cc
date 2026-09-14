@@ -271,13 +271,18 @@ bool ToTxLocalItem::HandleCrossShardBase(
             }
         }
 
-        // 分身合约的 totalSupply 每次 EVM 调用前无条件置 0。
-        // 原因：bytes32_storage_cache_ 会被被丢弃的提案污染，导致不同节点
-        // 读到不同的初始 totalSupply，产生不同区块哈希（共识失败）。
-        // 执行到此处的合约一定是分身合约，totalSupply 无需跨块累计。
+        // 从 accounts_ 中清除 totalSupply(slot3) 的 in-memory 缓存，
+        // 使 EVM 的 SLOAD 经由 get_storage 回落到 DB，读取已提交的 totalSupply。
+        // 废弃提案的写入从不提交，DB 永远是正确的已提交状态，故确定性不受影响。
+        // 同一 block 内多个 crossTransfer 通过 pre_shardora_host_ 链正确累积。
         evmc::bytes32 slot3_key{};
         slot3_key.bytes[31] = 3;  // Solidity slot 3 = totalSupply
-        shardora_host.set_storage(target_evmc, slot3_key, evmc::bytes32{});
+        {
+            auto ts_it = shardora_host.accounts_.find(target_evmc);
+            if (ts_it != shardora_host.accounts_.end()) {
+                ts_it->second.storage.erase(slot3_key);
+            }
+        }
 
         if (needs_deploy) {
             auto derived_info = std::make_shared<address::protobuf::AddressInfo>();
