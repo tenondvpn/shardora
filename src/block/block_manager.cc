@@ -576,6 +576,17 @@ void BlockManager::HandleRootCrossShardTx(const view_block::protobuf::ViewBlockI
 void BlockManager::HandleCrossShardBaseTx(const view_block::protobuf::ViewBlockItem& view_block) {
     auto& block_item = view_block.block_info();
     auto local_net_id = common::GlobalInfo::Instance()->network_id();
+    // Only process CrossShardBase items from LOCAL shard blocks.
+    // When a foreign shard block (e.g. shard=4) arrives containing CrossShardBase
+    // items destined for the local shard (e.g. shard=3 AMM shadow), this function
+    // would create a kConsensusLocalTos TX.  The same item also enters the foreign
+    // shard's to-tx pool and is forwarded via normal_to → HandleNormalToTx on the
+    // local shard → another kConsensusLocalTos.  Together these cause double-credit.
+    // Fix: let HandleNormalToTx be the sole path for foreign-shard-originated items;
+    // this function handles only same-shard-originated CrossShardBase items.
+    if (static_cast<uint32_t>(view_block.qc().network_id()) != local_net_id) {
+        return;
+    }
     for (int32_t i = 0; i < block_item.cross_shard_to_array_size(); ++i) {
         const auto& to_tx = block_item.cross_shard_to_array(i);
         if (!to_tx.has_base_root_address()) continue;
