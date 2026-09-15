@@ -637,6 +637,78 @@ Leader 收集 t 个后 Lagrange 重建：
 
 ---
 
+## 3.13 与现有交易模式的兼容性
+
+### 3.13.1 用户发起的 EVM 交易层：完全兼容
+
+隐私交易在用户侧依然是一笔普通 EVM 交易，调用 `PrivacyShadow` 合约：
+
+```
+普通转账：   from=Alice, to=Bob,           amount=100, data=""
+隐私转账：   from=Alice, to=PrivacyShadow, amount=0,   data=spend(nullifier, cm, proof, ...)
+```
+
+网络视角看两者都是合法合约调用，交易格式完全相同，区别仅在合约逻辑，不在交易结构。
+
+### 3.13.2 `ToTxMessageItem` protobuf 层：向后兼容
+
+Protobuf optional 字段天然向后兼容。新增的隐私字段默认不存在，对旧节点透明：
+
+```protobuf
+message ToTxMessageItem {
+  // 现有字段（保留不动）
+  optional uint32 sharding_id  = 1;
+  optional uint32 pool_index   = 2;
+  optional bytes  from         = 3;
+  optional bytes  to           = 4;
+  optional bytes  amount       = 5;
+  // ...（其余现有字段）
+
+  // 新增字段（默认缺失 = 普通交易，旧节点安全忽略）
+  optional bool   is_shielded    = 26;
+  optional bytes  nullifier      = 20;
+  optional bytes  new_commitment = 21;
+  optional bytes  elgamal_c1    = 22;
+  optional bytes  elgamal_c2    = 23;
+  optional bytes  zk_proof      = 25;
+}
+```
+
+- **旧节点**收到含隐私字段的消息：忽略未知字段，正常处理
+- **新节点**收到不含隐私字段的旧消息：`is_shielded` 缺省为 false，走原有路径
+
+### 3.13.3 各层兼容性汇总
+
+| 层级 | 兼容性 | 说明 |
+|------|--------|------|
+| 用户发起交易（EVM tx 格式） | ✅ 完全兼容 | 都是合约调用，格式相同 |
+| Proto 消息格式 | ✅ 向后兼容 | Optional 字段，旧节点安全忽略 |
+| 跨分片路由 | ✅ 完全兼容 | 路由只依赖 `sharding_id` + `pool_index`，不感知 `is_shielded` |
+| 源分片共识/打包 | ✅ 兼容 | `CrossShardPendingAction` 新增枚举值，不影响旧类型 |
+| 目标分片执行（`to_tx_local_item.cc`） | ✅ 兼容（新增 if 分支） | 普通交易走 else，代码路径一行不改 |
+| 合约状态模型 | ✅ 并存 | `_balances`（普通）与承诺 Merkle 树（隐私）在不同合约内独立存在 |
+
+目标分片执行层仅新增一个 `if` 分支，现有普通交易路径**零修改**：
+
+```cpp
+// to_tx_local_item.cc
+if (item.is_shielded()) {
+    // 新路径：阈值解密 → ZK 验证 → 更新承诺 Merkle 树
+    ShieldedDecryptAndCredit(item);
+} else {
+    // 原有路径：完全不变
+    NormalCrossTransferCredit(item);
+}
+```
+
+### 3.13.4 混合节点升级期的唯一注意事项
+
+网络升级期间若同时存在旧节点和新节点，旧节点收到 `is_shielded=true` 的消息时会因 `to`/`amount` 字段缺失而执行失败。
+
+**解决方案**：隐私交易作为特性开关，在分片委员会**全部升级后**统一启用——在 `ElectItem` 中新增 `privacy_enabled` 标志位，节点未升级则拒绝包含隐私 tx 的 Proposal，与 EIP 硬分叉激活机制一致。
+
+---
+
 # Part IV：形式化安全理论与证明
 
 ## 4.1 符号约定与困难假设
