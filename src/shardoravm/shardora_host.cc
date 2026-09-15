@@ -585,6 +585,16 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
         return t;
     }();
 
+    // Lazily compute CrossTransferIn topic
+    // sig: CrossTransferIn(address,address,uint256,uint64)
+    static const evmc::bytes32 kCrossTransferInTopic = []() {
+        const std::string sig = "CrossTransferIn(address,address,uint256,uint64)";
+        std::string h = common::Hash::keccak256(sig);
+        evmc::bytes32 t{};
+        memcpy(t.bytes, h.data(), 32);
+        return t;
+    }();
+
     // Lazily compute CrossStorageOut topic
     // sig: CrossStorageOut(address,bytes32,bytes,uint64,uint32,uint32)
     static const evmc::bytes32 kCrossStorageOutTopic = []() {
@@ -696,12 +706,35 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
             cross_gas_charged_  += kCrossTransferGasCost;
             pending_cross_actions_.push_back(std::move(action));
 
-            SHARDORA_DEBUG("CrossTransferOut intercepted from %s shard=%u pool=%u, cross_gas_charged=%ld",
-                common::Encode::HexEncode(action.emitter).c_str(),
-                action.dest_shard_id, action.dest_pool_index, cross_gas_charged_);
+            SHARDORA_DEBUG("EMIT_OUT base=%s from=%s to=%s amt=%s nonce=%lu dshard=%u dpool=%u",
+                common::Encode::HexEncode(action.base_root_address).c_str(),
+                common::Encode::HexEncode(std::string(reinterpret_cast<const char*>(topics[2].bytes + 12), 20)).c_str(),
+                common::Encode::HexEncode(action.to).c_str(),
+                common::Encode::HexEncode(action.amount_bytes).c_str(),
+                action.nonce, action.dest_shard_id, action.dest_pool_index);
         }
         contract_to_call_dirty_ = true;
         return;  // do not record in recorded_logs_; consensus layer handles it
+    }
+
+    if (topics_count >= 2 && topics[0] == kCrossTransferInTopic) {
+        // topics[1] = base (indexed address, low 20B of 32B word)
+        // data: (address to [0:32], uint256 amount [32:64], uint64 nonce [64:96])
+        if (data_size >= 96) {
+            std::string base_in(reinterpret_cast<const char*>(topics[1].bytes + 12), 20);
+            std::string to_in(reinterpret_cast<const char*>(data + 12), 20);
+            std::string amt_in(reinterpret_cast<const char*>(data + 32), 32);
+            uint64_t nonce_in = 0;
+            for (int i = 0; i < 8; ++i) {
+                nonce_in = (nonce_in << 8) | data[64 + 24 + i];
+            }
+            SHARDORA_DEBUG("EMIT_IN  base=%s to=%s amt=%s nonce=%lu",
+                common::Encode::HexEncode(base_in).c_str(),
+                common::Encode::HexEncode(to_in).c_str(),
+                common::Encode::HexEncode(amt_in).c_str(),
+                nonce_in);
+        }
+        // CrossTransferIn is a normal event — fall through to recorded_logs_
     }
 
 #ifndef NDEBUG
