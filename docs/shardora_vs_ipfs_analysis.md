@@ -2869,6 +2869,48 @@ IPFS 依赖节点自愿 Pin，无最低冗余保证；Filecoin 每笔存储合�
 | Filecoin | 每笔合约 1 个封印副本 | 合约数 $\times 1\times$ | 无 |
 | Shardora | 分片内 BFT 全副本 | $1024\times$（分片内），单节点 $= S_{\text{total}}/K$ | $P_{\text{fail}} \leq 6.5 \times 10^{-16}$ |
 
+#### E.2.3 Gas 定价的存储经济模型与 1/1024 成本优势
+
+**定义 E.5（Shardora 存储事务模型）**
+
+Shardora 将数据存储抽象为链上事务（Storage Transaction）。每笔存储事务 $tx_{\text{store}}$ 满足：
+
+$$|tx_{\text{store}}| \leq \ell_{\max} = 1\text{ KB} = 1024\text{ B}$$
+
+即单笔事务最大有效载荷为 1 KB。存储大小为 $|F|$ 的文件需拆分为 $\lceil |F| / \ell_{\max} \rceil$ 笔独立事务，每笔事务支付 gas 费用：
+
+$$G_{\text{store}}(tx) = G_{\text{base}} + G_{\text{byte}} \cdot |tx|$$
+
+其中 $G_{\text{base}}$ 为基础事务开销，$G_{\text{byte}}$ 为每字节附加计费。Gas 费用由用户支付，由分片内共识节点作为区块奖励获取，构成存储服务的经济激励。
+
+**命题 E.2.3（1024 分片并行的 Gas 均衡定价）**
+
+设以太坊主网（单分片）在需求水平 $\Lambda$（tx/s）下均衡 gas 价格为 $p_{\text{ETH}}$（单位：Wei/gas）。Shardora 部署 $K = 1024$ 个分片，在相同需求水平 $\Lambda$ 下，全网总吞吐量供给为 $1024 \times \text{TPS}_{\text{shard}}$，为以太坊的 $1024\times$。
+
+在供需均衡条件下，Shardora 的均衡 gas 价格满足：
+
+$$p_{\text{Shardora}} \approx \frac{p_{\text{ETH}}}{1024}$$
+
+**证明（供需均衡论证）**
+
+设区块链 gas 市场的均衡价格由总供给 $Q_s = \text{TPS} \times \text{gas\_per\_block}$ 与总需求 $Q_d(\Lambda, p)$ 共同决定。在需求弹性固定（$\partial Q_d / \partial p < 0$）且需求水平不变的假设下，供给端增加 $1024\times$ 使均衡价格按比例下降：
+
+$$p^* = p_{\text{ETH}} \cdot \frac{Q_{s,\text{ETH}}}{Q_{s,\text{Shardora}}} = p_{\text{ETH}} \cdot \frac{1}{1024}$$
+
+即在相同 DApp 生态需求下，Shardora 的 gas 价格约为以太坊的 $1/1024$。$\square$
+
+**推论 E.2.3（存储成本的三系统对比）**
+
+设存储 1 KB 数据的以太坊链上 gas 成本为基准单位 $C_{\text{ETH}}$：
+
+| 系统 | 存储计价单位 | 1 KB 存储等效成本 | 冗余保证 |
+|-----|-----------|----------------|---------|
+| IPFS | 无（自愿 Pin） | 零直接成本，无持久性保证 | 无协议冗余 |
+| Filecoin | 每字节每 Epoch（市场定价） | 取决于市场；存储矿工激励≠持久性 | 合约期内 1 副本 |
+| Shardora | Gas 费用，$1/1024$ ETH 等效 | $\approx C_{\text{ETH}} / 1024$ | BFT 1024 全副本，$P_{\text{fail}} \leq 6.5\times10^{-16}$ |
+
+**结论**：Shardora 存储经济模型的核心优势在于：用户支付约 $1/1024$ 以太坊等效 gas，获得的是由 1024 个 BFT 共识节点全副本保证的持久存储，而非依赖市场自愿或合约期限的条件性存储。Gas 机制同时作为防滥用经济屏障，限制非理性数据膨胀。
+
 ---
 
 ### E.3 基于网络坐标与 RTT 测距的防女巫证明（Proof-of-Position, PoP）
