@@ -2869,7 +2869,7 @@ IPFS 依赖节点自愿 Pin，无最低冗余保证；Filecoin 每笔存储合�
 | Filecoin | 每笔合约 1 个封印副本 | 合约数 $\times 1\times$ | 无 |
 | Shardora | 分片内 BFT 全副本 | $1024\times$（分片内），单节点 $= S_{\text{total}}/K$ | $P_{\text{fail}} \leq 6.5 \times 10^{-16}$ |
 
-#### E.2.3 Gas 定价的存储经济模型与 1/1024 成本优势
+#### E.2.3 Gas 定价的存储经济模型
 
 **定义 E.5（Shardora 存储事务模型）**
 
@@ -2877,39 +2877,31 @@ Shardora 将数据存储抽象为链上事务（Storage Transaction）。每笔�
 
 $$|tx_{\text{store}}| \leq \ell_{\max} = 1\text{ KB} = 1024\text{ B}$$
 
-即单笔事务最大有效载荷为 1 KB。存储大小为 $|F|$ 的文件需拆分为 $\lceil |F| / \ell_{\max} \rceil$ 笔独立事务，每笔事务支付 gas 费用：
+单笔事务最大有效载荷为 1 KB。存储大小为 $|F|$ 的文件需拆分为 $\lceil |F| / \ell_{\max} \rceil$ 笔独立事务，每笔支付 gas 费用：
 
 $$G_{\text{store}}(tx) = G_{\text{base}} + G_{\text{byte}} \cdot |tx|$$
 
-其中 $G_{\text{base}}$ 为基础事务开销，$G_{\text{byte}}$ 为每字节附加计费。Gas 费用由用户支付，由分片内共识节点作为区块奖励获取，构成存储服务的经济激励。
+Gas 由用户支付，由分片内共识节点作为区块奖励获取，构成存储服务的直接经济激励。
 
-**命题 E.2.3（1024 分片并行的 Gas 均衡定价）**
+**命题 E.2.3（高吞吐分片网络的低 Gas 均衡）**
 
-设以太坊主网（单分片）在需求水平 $\Lambda$（tx/s）下均衡 gas 价格为 $p_{\text{ETH}}$（单位：Wei/gas）。Shardora 部署 $K = 1024$ 个分片，在相同需求水平 $\Lambda$ 下，全网总吞吐量供给为 $1024 \times \text{TPS}_{\text{shard}}$，为以太坊的 $1024\times$。
+Shardora 原生代币总量固定为 $\mathcal{S}_{\text{total}} = 2.1 \times 10^{10}$（210 亿），通胀可控。单分片共识吞吐量 $\text{TPS}_{\text{shard}} \approx 10{,}000$，部署 $K$ 个分片时全网吞吐量 $\text{TPS}_{\text{net}} = K \times 10{,}000$。
 
-在供需均衡条件下，Shardora 的均衡 gas 价格满足：
+在供需均衡下，gas 价格 $p^*$ 满足：
 
-$$p_{\text{Shardora}} \approx \frac{p_{\text{ETH}}}{1024}$$
+$$p^* = \frac{\Lambda}{Q_s} = \frac{\Lambda}{K \times \text{TPS}_{\text{shard}} \times G_{\text{block}}}$$
 
-**证明（供需均衡论证）**
-
-设区块链 gas 市场的均衡价格由总供给 $Q_s = \text{TPS} \times \text{gas\_per\_block}$ 与总需求 $Q_d(\Lambda, p)$ 共同决定。在需求弹性固定（$\partial Q_d / \partial p < 0$）且需求水平不变的假设下，供给端增加 $1024\times$ 使均衡价格按比例下降：
-
-$$p^* = p_{\text{ETH}} \cdot \frac{Q_{s,\text{ETH}}}{Q_{s,\text{Shardora}}} = p_{\text{ETH}} \cdot \frac{1}{1024}$$
-
-即在相同 DApp 生态需求下，Shardora 的 gas 价格约为以太坊的 $1/1024$。$\square$
+其中 $\Lambda$ 为全网事务需求（tx/s），$G_{\text{block}}$ 为单块 gas 上限。当 $K$ 增大而 $\Lambda$ 不变时，$p^*$ 随分片数线性下降。在当前分片规模下，gas 价格可维持在极低水平，使得链上数据存储在经济上可行。$\square$
 
 **推论 E.2.3（存储成本的三系统对比）**
 
-设存储 1 KB 数据的以太坊链上 gas 成本为基准单位 $C_{\text{ETH}}$：
+| 系统 | 存储计价模型 | 持久性保证来源 | BFT 安全下界 |
+|-----|-----------|-------------|------------|
+| IPFS | 无强制计费（自愿 Pin） | 无协议保证 | 无 |
+| Filecoin | 每字节每 Epoch 市场定价，合约到期后无保证 | 存储合约期内 1 副本 | 无 |
+| Shardora | 链上 Gas（原生代币，总量 210 亿，低价可控） | BFT 共识全副本，协议层永久保证 | $P_{\text{fail}} \leq 6.5\times10^{-16}$ |
 
-| 系统 | 存储计价单位 | 1 KB 存储等效成本 | 冗余保证 |
-|-----|-----------|----------------|---------|
-| IPFS | 无（自愿 Pin） | 零直接成本，无持久性保证 | 无协议冗余 |
-| Filecoin | 每字节每 Epoch（市场定价） | 取决于市场；存储矿工激励≠持久性 | 合约期内 1 副本 |
-| Shardora | Gas 费用，$1/1024$ ETH 等效 | $\approx C_{\text{ETH}} / 1024$ | BFT 1024 全副本，$P_{\text{fail}} \leq 6.5\times10^{-16}$ |
-
-**结论**：Shardora 存储经济模型的核心优势在于：用户支付约 $1/1024$ 以太坊等效 gas，获得的是由 1024 个 BFT 共识节点全副本保证的持久存储，而非依赖市场自愿或合约期限的条件性存储。Gas 机制同时作为防滥用经济屏障，限制非理性数据膨胀。
+**结论**：Shardora 存储经济模型以链上 gas 作为存储成本的唯一定价维度：用户支付低廉的原生代币 gas，获得由 1024 个 BFT 共识节点全副本强制保证的持久存储。Gas 机制同时作为防滥用经济屏障，限制非理性数据膨胀。与 IPFS 的无成本无保证、Filecoin 的市场定价条件性存储相比，Shardora 实现了成本可控与协议级持久性的统一。
 
 ---
 
