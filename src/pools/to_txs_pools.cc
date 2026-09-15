@@ -86,9 +86,28 @@ void ToTxsPools::ThreadToStatistic(
 #endif
 
     {
+        const uint32_t local_net_id = common::GlobalInfo::Instance()->network_id();
         TxMap tx_map;
         for (uint32_t i = 0; i < (uint32_t)block.cross_shard_to_array_size(); ++i) {
             auto& to = block.cross_shard_to_array(i);
+            // CrossShardBase items whose dest shard == local shard are handled directly
+            // by HandleCrossShardBaseTx (block_manager.cc) which creates the
+            // kConsensusLocalTos TX.  Pooling them here would cause a second normal_to
+            // block to be generated for the same item, resulting in a duplicate
+            // kConsensusLocalTos → double-credit (the shard=3 ratio=2 inflation bug).
+            // Items destined for OTHER shards still enter the pool so they can be
+            // forwarded via the normal_to mechanism to the destination shard nodes.
+            if (to.has_base_root_address() && !to.base_root_address().empty() &&
+                    static_cast<uint32_t>(to.des_sharding_id()) == local_net_id) {
+                SHARDORA_INFO("to_txs_pools SKIP local CrossShardBase: block=%u_%u_%lu base=%s user=%s des_shard=%u pool=%u",
+                    view_block_ptr->qc().network_id(),
+                    view_block_ptr->qc().pool_index(),
+                    view_block_ptr->block_info().height(),
+                    common::Encode::HexEncode(to.base_root_address()).c_str(),
+                    common::Encode::HexEncode(to.des()).c_str(),
+                    to.des_sharding_id(), to.pool_index());
+                continue;
+            }
             std::string map_key = to.des();
             if (to.has_base_root_address() && !to.base_root_address().empty()) {
                 map_key += to.base_root_address();
