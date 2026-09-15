@@ -479,6 +479,15 @@ spend_key_for_note = Hash(shared) + spend_sk
 nullifier = Hash(spend_key_for_note ∥ commitment)
 ```
 
+> **设计自洽性说明——Pure Commitment Ledger**
+>
+> Section 3.6 描述的 `stealth_addr` 是 **Note 创建时的数学推导过程**，而非链上存储字段。Shardora 采用与 Zcash Sapling / Orchard 完全一致的"零地址沉淀设计"：
+>
+> - **链上仅存**：`new_cm`（Pedersen 承诺，~32B）和 `ecies_ct`（ECIES 密文，~144B）——**链上零地址痕迹**
+> - **stealth_addr 的归宿**：`stealth_addr` 即为该次转账的一次性 `spend_pk`（见公式：`stealth_addr = Hash(shared)·G + spend_pk_recipient`），作为 Note 内部字段封装于 `ecies_ct` 密文（`note_pt.spend_pk = stealth_addr`），外部不可见
+> - **接收方识别**：对每条链上 `(new_cm, ecies_ct)` 记录，用 `view_sk · epk` 恢复 ECDH 共享密钥，解密 `ecies_ct`，检验 `note_pt.spend_pk == my_spend_pk`（即验证 `stealth_addr` 是否由自己的密钥派生）——等价于 Section 3.6 的 `candidate == stealth_addr` 比对，无需在链上存储地址
+> - **安全含义**：链上可见数据仅为（承诺哈希, ECIES 密文），对外部观察者呈现为均匀随机串，无法从承诺集合推断接收方身份（定理 B 信息论不可链接性的直接来源）
+
 ---
 
 ## 3.7 ZK 证明电路（Groth16 on alt_bn128）
@@ -1164,40 +1173,49 @@ M=3：Pr ≤ 1/10⁹             （单链串联：1/3,000，差 333,333 倍）
 
 ---
 
-### 定理 D：隐私-共识精确紧归约
+### 定理 D：双轨安全定理（Dual-Track Security Guarantee）
 
-将定理 2 的定性等价升级为带精确安全参数的**紧归约**：
+**动机**：ECIES + CSCC 架构实现了密码学层面的**完全解耦**——"Note 机密性"仅依赖接收方私钥安全（CDH 困难性），与 BFT 共识状态**完全无关**；"账本完整性"依赖 BFT 共识安全与 BLS 签名不可伪造性。这比旧版混合界（`Adv^{privacy} ≤ Adv^{BFT} + 2·Adv^{DDH}`）更精确，揭示了在 ElGamal 阈值方案中不存在的强保证。
 
-**定理 D**：对任意 PPT 敌手 A（腐化至多 t-1 个委员会节点）：
+**定理 D**（双轨安全，ECIES+CSCC 架构）：对任意 PPT 敌手 A，设 λ 为安全参数、n 为委员会规模、t = ⌈2n/3⌉ 为诚实门限：
 
-```
-Adv^{privacy}_A(λ, n, t) ≤ Adv^{BFT-safety}_A(λ, n, t) + 2·Adv^{DDH}_{G₁}(λ)
-```
-
-其中 `Adv^{BFT-safety}` 是破坏 HotStuff safety 的优势，`Adv^{DDH}` 是破坏 G₁ 上 DDH 问题的优势。
-
-**推论**：在标准 BFT 假设（`Adv^{BFT-safety} ≤ negl(λ)`）和 DDH 假设（`Adv^{DDH} ≤ negl(λ)`）下：
+**轨道 1 — Note 机密性（与共识完全独立）**：
 
 ```
-Adv^{privacy}_A ≤ 3·negl(λ)
+Adv^{confidentiality}_A(λ) ≤ Adv^{CDH}_{G₁}(λ) + negl(λ)
 ```
 
-隐私系统相对于共识系统的安全损失至多为 `2·Adv^{DDH}`，量化地证明了隐私层的安全开销可忽略。
+归约链：破坏 Note 机密性 ⟹ 区分 ECIES 密文 ⟹ 求解 G₁ 上的 CDH 问题。**此链条与委员会人数 n、t 完全无关**。
 
-**反方向**：
-```
-Adv^{BFT-safety}_A ≤ Adv^{privacy}_A(λ, n, t) + negl(λ)
-```
-
-（若能破坏隐私，则能区分 t 个合谋节点的解密共谋，等价于破坏 BFT 法定人数——见定理 2 证明）
-
-两个方向合并：
+**轨道 2 — 账本完整性（CSCC 防伪，价值守恒）**：
 
 ```
-|Adv^{privacy}_A - Adv^{BFT-safety}_A| ≤ 2·Adv^{DDH}_{G₁}(λ)
+Adv^{integrity}_A(λ, n, t) ≤ Adv^{BFT-safety}_A(λ, n, t) + Adv^{EUF-CMA}_{BLS}(λ)
 ```
 
-这是比"等价"更精确的表述：两个优势之差以 DDH 困难性为界，在 DDH 成立时二者几乎相等。□
+归约链：伪造合法 CSCC ⟹ 伪造源分片 BFT 委员会 BLS 签名（破坏 EUF-CMA），或控制 ≥ ⌈2n/3⌉ 节点直接签名（破坏 BFT safety）。
+
+**强推论（BFT 全面崩溃下的隐私保护）**：
+
+即使 BFT 共识层完全被攻陷（`Adv^{BFT-safety} = 1`，即所有 n 个节点均为拜占庭），**轨道 1 依然成立**：任意接收方的 Note 内容（amount, randomness, spend_pk）对外部观察者仍以 CDH 困难性为保护界。攻击者掌握全部共识权力，可拒绝包含隐私交易（破坏 liveness）或强行插入无效 CSCC；但**无法解密任何 ecies_ct**（等价于求解 CDH，与共识无关）。
+
+> 对比旧架构（ElGamal 阈值解密）：t 个节点串通 → 重建 sk_master → 直接解密所有历史 Note。新架构彻底消除此攻击面。
+
+**证明梗概**：
+
+*（轨道 1 规约）* 设 B 是 CDH 挑战求解者，输入随机点对 `(aG, bG) ∈ G₁²`，嵌入 `aG` 作为接收方 `view_pk`，运行 A。若 A 以 ε 优势区分 ecies_ct，B 以 ECIES IND-CCA2 规约（Abdalla-Bellare-Rogaway ROM 框架）构造 CDH 解 `abG`，矛盾。故 ε ≤ Adv^{CDH} + negl(λ)。
+
+*（轨道 2 规约）* 若 A 以 ε' 伪造合法 CSCC（即通过 BLS 验签的签名），则在 BFT safety 成立时（A 无法控制 ≥ ⌈2n/3⌉ 节点），B' 以 ε' 优势破坏 BLS EUF-CMA；否则 A 已破坏 BFT safety，代价为 Adv^{BFT-safety}。两路合并得轨道 2 界。□
+
+**与旧定理 D（ElGamal 架构）的对比**：
+
+| 维度 | 旧定理 D（ElGamal 阈值） | 新定理 D（ECIES + CSCC） |
+|------|---------------------|------------------------|
+| 机密性归约目标 | DDH，且需 BFT safety（阈值解密依赖委员会） | CDH only，**与共识彻底解耦** |
+| t 节点串通后果 | 重建 sk_master → 解密全部历史 Note | 仅可拒绝服务，**无法解密任何 Note** |
+| 完整性归约目标 | BFT safety（隐含） | BFT safety + BLS EUF-CMA（显式精确） |
+| 公式形式 | 单一混合界 | 两条独立轨道，各司其职 |
+| BFT 崩溃后隐私 | **完全丧失** | **CDH 级别保护持续成立** |
 
 ---
 
@@ -1556,10 +1574,10 @@ Phase 4 — 匿名集扩大（工作量：中）
 | **定理 A** | 单链无 Gas 隐私不可能性 | **不可能性定理**（无假设） | 即为单链负结果 |
 | **定理 B** | 目标分片信息论源不可链接（精确 1/K） | **信息论安全**（无界敌手） | ❌ |
 | **定理 C** | 匿名集乘法复合性（1/∏Kᵢ 乘法界） | 计算安全 | ❌（单链仅加法界） |
-| **定理 D** | 隐私-共识精确紧归约（量化损失 ≤ 2·Adv^{DDH}） | 计算安全，精确参数 | ❌（无 BFT 委员会） |
+| **定理 D** | 双轨安全：机密性独立于共识（CDH only）∧ 完整性=BFT+BLS EUF-CMA | 计算安全，两轨解耦 | ❌（单链无法分离两轨） |
 | **定理 E** | 隐私-活性相容性（BFT Liveness 直接推出） | 系统性质 | ❌（Relayer 单点） |
 
-> **定理 A 和定理 B 是最强的两个新结果**：定理 A 是不可能性定理（论文黄金贡献），定理 B 将目标侧的不可链接性从计算安全升级为信息论安全（无界敌手下精确 1/K 界）。
+> **最强新结果排序**：定理 A（不可能性定理，论文黄金贡献）→ 定理 B（目标侧信息论不可链接性，无界敌手下精确 1/K 界）→ 定理 D（双轨解耦，BFT 崩溃下 Note 隐私仍成立，颠覆旧架构的混合界假设）。三者在单链方案中均不成立。
 
 ---
 
