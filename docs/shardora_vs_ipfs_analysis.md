@@ -2823,46 +2823,51 @@ $\geq 2f+1$ 个诚实副本已持有 $\pi_v^{\text{macro}}$，验证 $\text{Time
 
 由定理 E.2，Shardora 系统中**不存在**任何状态写入的"悬挂"（Hanging）路径——共识成功即存储确定性完成。任何声称存在"跨轨原子性悬挂"的论断，均以虚构的异步写入路径为前提，与 BFT 协议的基本性质矛盾。
 
-#### E.2.2 共识状态的规模有界性与存储膨胀的范畴错误
+#### E.2.2 分片 BFT 全副本存储的协议必要性与水平扩展定理
 
-**定义 E.3（共识操作域）**
+**定义 E.3（分片数据全量责任域）**
 
-Shardora 分片委员会共识协议的读写域 $\mathcal{W}_{\text{consensus}}$ 严格定义为：
+Shardora 分片内 1024 个共识节点对分配给该分片的全部数据承担完整的存储与验证责任，存储域定义为：
 
-$$\mathcal{W}_{\text{consensus}} \triangleq \{ \text{账户余额},\; \text{Nonce},\; \text{合约字节码},\; \text{合约存储槽（Storage Trie）} \}$$
+$$\mathcal{D}_{\text{shard}} \triangleq \underbrace{\{\text{账户余额},\;\text{Nonce},\;\text{合约字节码},\;\text{合约存储槽}\}}_{\mathcal{L}_{\text{meta}}} \cup \underbrace{\{F_i \mid \text{CID}(F_i) \text{ 注册于本分片}\}}_{\mathcal{L}_{\text{blob}}}$$
 
-**关键约束**：$\mathcal{W}_{\text{consensus}}$ **不包含**任意大小的原始文件 Blob。合约如需引用外部数据，仅存储其内容寻址哈希（CID），哈希值本身为定长 $256$ 位，不随文件大小增长。
+分片内全部 1024 个诚实节点均维护 $\mathcal{D}_{\text{shard}}$ 的**完整副本**。
 
-**命题 E.2.1（共识状态规模有界性）**
+**定理 E.3（RS 纠删码与 BFT 共识协议不相容性）**
 
-由定义 E.3 与 §D.3 命题 D.4 的参数代入：
+设 BFT 共识协议（HotStuff）要求每个共识节点能够**独立验证**区块内所有事务的合法性，即对事务读集 $\mathcal{R}(tx)$ 中的每一项数据在本地执行完整读取与校验。若对某 Blob 数据 $F \in \mathcal{L}_{\text{blob}}$ 采用 RS($k$, $m$) 纠删码，将 $k+m$ 个分块分发至不同节点，则对于仅持有第 $i$ 号分块的节点 $v$，当某事务读集包含第 $j \neq i$ 号分块内容时，$v$ 无法在本地完成该读项的验证，违反 BFT 独立验证公理。
 
-$$S_{\text{node}} = P \cdot A_{\text{pool}} \cdot \bar{s}_{\text{acct}} = 32 \times 10^6 \times \bar{s}_{\text{acct}}$$
+$$\exists\, tx,\; \mathcal{R}(tx) \cap \text{chunk}_j(F) \neq \emptyset,\; j \neq i \;\Longrightarrow\; v \text{ 无法独立验证 } tx$$
 
-| 账户类型 | 单账户状态大小 $\bar{s}_{\text{acct}}$ | 单节点总状态 $S_{\text{node}}$ |
-|---------|--------------------------------------|------------------------------|
-| 基础账户（余额 + Nonce） | $256\text{ B}$ | $8\text{ GiB}$ |
-| 含合约存储 | $4\text{ KiB}$ | $128\text{ GiB}$ |
-| 含大型合约存储（上限） | $64\text{ KiB}$ | $2\text{ TiB}$ |
+因此，RS 纠删码与 BFT 全节点独立验证模型**根本不相容**：在分片共识网络中对 Blob 引入 RS 纠删码将使部分节点丧失独立验证能力，破坏 BFT 协议的安全性前提。$\blacksquare$
 
-消费级 NVMe SSD 容量 $1\sim4\text{ TiB}$，上述三档均在合理存储预算内。
+**推论 E.2.1（全副本存储是 BFT 共识的协议必要条件）**
 
-**定理 E.3（$1024\times$ 存储放大的范畴谬误）**
+由定理 E.3，分片内 1024 个共识节点对 $\mathcal{D}_{\text{shard}}$（含 Blob）维护全副本并非设计冗余选择，而是 BFT 共识协议正确运行的**协议必要条件**。任何以减少单节点存储为目的引入 RS 纠删码或子集分发方案，均以牺牲独立验证能力为代价，从根本上破坏共识安全性。
 
-对 Shardora 提出 "$1024\times$ 存储放大" 质疑，等价于对以下命题 $\mathcal{P}$ 的断言：
+**定理 E.4'（水平扩展定理：安全参数与扩展参数正交）**
 
-$$\mathcal{P}:\; \exists \text{文件 Blob } F,\; |F| \gg 0,\; F \in \mathcal{W}_{\text{consensus}}$$
+设系统部署 $K$ 个分片，总数据量 $S_{\text{total}}$，每分片均匀分配数据量 $S_{\text{shard}} = S_{\text{total}} / K$，每分片内 $n = 1024$ 个共识节点各维护 $S_{\text{shard}}$ 的完整副本。则：
 
-由定义 E.3，$\mathcal{P}$ 为假。共识协议从不对 $F$ 执行任何读写操作。$m = 1024$ 的全副本冗余仅作用于 $\mathcal{W}_{\text{consensus}}$，即有界的账户状态，与文件大小完全无关。
+（i）**单节点存储负担**：$S_{\text{node}} = S_{\text{shard}} = S_{\text{total}} / K$，随分片数 $K$ 线性递减；
 
-**推论 E.2.2（与 IPFS/Filecoin 的对比定界）**：
+（ii）**全网冗余存储总量**：$K \cdot n \cdot S_{\text{shard}} = n \cdot S_{\text{total}} = 1024 \cdot S_{\text{total}}$；
 
-| 系统 | 复制对象 | 副本数 / 冗余机制 | 放大率 |
-|-----|---------|----------------|-------|
-| IPFS/Filecoin | 原始文件 Blob（任意大） | SDR 副本证明，$1$ 个 sealing 副本 + $11\times$ 开销 | $11\times$ |
-| Shardora 分片共识 | 账户状态（有界，$\leq 128\text{ GiB}$） | BFT 全副本，$m = 1024$，状态总量固定不随文件数增长 | $0\times$（文件维度） |
+（iii）**正交性**：BFT 安全参数 $n = 1024$（分片内冗余）与水平扩展参数 $K$（分片数）正交——增加 $K$ 可线性降低单节点存储负担，同时每个分片独立保持 $P_{\text{fail}} \leq 6.5 \times 10^{-16}$（$\beta = 0.2$）的 BFT 安全保证。$\blacksquare$
 
-**结论**：$1024\times$ 放大质疑将 Filecoin 的存储语义（复制文件）错误地套用到 Shardora 的共识语义（维护账户状态），两者在操作对象、规模属性与冗余目的上均不属同一范畴。该质疑在形式化意义上为**范畴谬误（Category Error）**，不构成对 Shardora 存储系统的有效批评。$\blacksquare$
+**推论 E.2.2（$1024\times$ 冗余的 BFT 安全对价）**
+
+全副本 $1024\times$ 冗余为分片数据提供：
+
+$$P_{\text{fail}} \leq \exp\!\Bigl(-2 \cdot 1024 \cdot \bigl(\tfrac{1}{3} - \beta\bigr)^2\Bigr) \leq 6.5 \times 10^{-16} \quad (\beta = 0.2)$$
+
+IPFS 依赖节点自愿 Pin，无最低冗余保证；Filecoin 每笔存储合约仅产生 1 个封印副本，冗余等于合约数，不提供 BFT 级别安全下界。
+
+| 系统 | Blob 冗余机制 | 放大倍率 | BFT 安全下界 |
+|-----|------------|---------|------------|
+| IPFS | P2P 自愿 Pin | 不确定（$1\sim3\times$） | 无 |
+| Filecoin | 每笔合约 1 个封印副本 | 合约数 $\times 1\times$ | 无 |
+| Shardora | 分片内 BFT 全副本 | $1024\times$（分片内），单节点 $= S_{\text{total}}/K$ | $P_{\text{fail}} \leq 6.5 \times 10^{-16}$ |
 
 ---
 
@@ -3146,7 +3151,8 @@ RocksDB 的写放大系数 $W_{\mathrm{amp}} \approx 36$ 使实际磁盘写带�
 | E.5 | Tier-2 宏证明抗审查性 | HotStuff View-Change + P2P broadcast + BLS 聚合 | 恶意 Leader 审查导致提案失效并轮换，诚实节点冤杀概率为零 |
 | E.5.1 | Slashing 精确性推论 | 定理 E.5 | Slash 当且仅当节点确实未存储，对诚实节点以概率 1 不触发 |
 | E.2（BFT） | BFT 状态提交确定性定理 | HotStuff Safety + RocksDB WAL | 共识成功即确定性写入，无悬挂路径 |
-| E.3（范畴） | $1024\times$ 存储放大范畴谬误 | 定义 E.3（$\mathcal{W}_{\text{consensus}}$）+ 命题 E.2.1 | 共识操作域不含 Blob，质疑为类型错误 |
+| E.3（RS-BFT） | RS 纠删码与 BFT 共识不相容性 | BFT 独立验证公理 + 分块不完备推导 | RS 让节点丧失独立验证能力，全副本存储是协议必要条件 |
+| E.4'（扩展） | 水平扩展与安全参数正交定理 | $S_{\text{node}} = S_{\text{total}}/K$，$P_{\text{fail}}$ 不变 | 增加分片数 $K$ 线性降低单节点负担，BFT 安全不变 |
 | E.3（PoP） | 物理坐标伪造阻断定理 | 光速极限 + 高斯 RTT 噪声 | $L{=}8$ 时伪造概率 $\leq 10^{-344}$ |
 | E.6 | 信标节点可信性定理 | VRF 伪随机性 + 超几何概率 | 全 $L{=}8$ 信标被攻陷概率 $\leq 1.5 \times 10^{-4}$ |
 | E.7 | PoP 端到端联合安全界 | 定理 E.6 + 定理 E.3（PoP）联合界 | PoP 被攻破概率 $\leq 1.5 \times 10^{-4}$；连续 10 Epoch 降至 $5.7 \times 10^{-39}$ |
@@ -3159,5 +3165,5 @@ RocksDB 的写放大系数 $W_{\mathrm{amp}} \approx 36$ 使实际磁盘写带�
 
 ---
 
-*附录 E 的定理链覆盖了 Shardora 存储系统的七个核心完备性维度：（E.1/E.5）两级审计在时间域的正交解耦与 Tier-2 抗审查终结性；（E.4）双层证明系统的职责完备性与功能不相交性；（E.2）BFT 状态提交确定性与无悬挂路径；（E.3 范畴）存储操作域的精确范畴界定；（E.3 PoP/E.6/E.7）基于 VRF 轮换信标的物理测距抗女巫机制；（E.8/E.9）网络同步假设的层次化分离与审计宽限期无冤杀性；（E.10）NVMe 多队列隔离保证 Tier-1 微证明在峰值 I/O 下的确定性时序。*
+*附录 E 的定理链覆盖了 Shardora 存储系统的七个核心完备性维度：（E.1/E.5）两级审计在时间域的正交解耦与 Tier-2 抗审查终结性；（E.4）双层证明系统的职责完备性与功能不相交性；（E.2）BFT 状态提交确定性与无悬挂路径；（E.3 RS-BFT）RS 纠删码与 BFT 独立验证不相容性及全副本存储的协议必要性，附水平扩展与安全参数正交定理（E.4'）；（E.3 PoP/E.6/E.7）基于 VRF 轮换信标的物理测距抗女巫机制；（E.8/E.9）网络同步假设的层次化分离与审计宽限期无冤杀性；（E.10）NVMe 多队列隔离保证 Tier-1 微证明在峰值 I/O 下的确定性时序。*
 
