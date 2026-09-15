@@ -29,6 +29,8 @@ KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {
     destroy_ = true;
+    // Unregister before joining so in-flight dispatches see destroy_=true
+    network::Route::Instance()->UnRegisterMessage(common::kSyncMessage);
     wait_con_.notify_all();
     verify_con_.notify_all();
     if (kv_consumer_thread_ && kv_consumer_thread_->joinable()) {
@@ -524,6 +526,9 @@ uint64_t KeyValueSync::SendSyncRequest(
 }
 
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    if (destroy_) {
+        return;
+    }
     ADD_DEBUG_PROCESS_TIMESTAMP();
     auto& header = msg_ptr->header;
     //assert(header.type() == common::kSyncMessage);
