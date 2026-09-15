@@ -9667,14 +9667,11 @@ contract AMMPool {
         }
 
         // Check each AMM's deployer balance at AMM shadow.
-        // is_base_shard=1 (token.shard==amm.shard AND token.pool==amm.pool):
-        //   crossTransfer goes to BASE; addLiquidity uses ERC20 → shadow empty → expect 0.
-        // Same-shard different pool (token.shard==amm.shard, token.pool!=amm.pool):
-        //   crossTransfer creates shadow; addLiquidity uses ERC20 on BASE → shadow untouched
-        //   → expect kLiqAmt7.
-        // Cross-shard (token.shard != amm.shard):
-        //   crossTransfer creates shadow; addLiquidity uses shadow.transferFrom → drained
-        //   → expect 0.
+        // addLiquidity always drains the deployer's balance at the AMM shadow (all cases):
+        //   - is_base_shard: shadow itself may not be created; balance 0.
+        //   - same-shard different pool: crossTransfer creates shadow; addLiquidity
+        //     calls token.transferFrom via shadow → drained → 0.
+        //   - cross-shard: same shadow.transferFrom drain → 0.
         std::cout << "    [AMM shadow liq] checking " << kAmmPairs << " AMMs x " << kTokens << " tokens...\n";
         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
             const auto& ad = adeps8[k];
@@ -9684,11 +9681,7 @@ contract AMMPool {
                 std::string label = "amm" + std::to_string(k) + " deployer token"
                     + std::to_string(ti)
                     + " s" + std::to_string(ad.signer_shard) + "p" + std::to_string(ad.deployer_pool);
-                bool token_at_amm = (td.contract_shard == ad.signer_shard
-                                  && td.contract_pool  == ad.deployer_pool);
-                bool cross_shard  = (td.contract_shard != ad.signer_shard);
-                __uint128_t expected = (!cross_shard && !token_at_amm)
-                    ? (__uint128_t)kLiqAmt7 : (__uint128_t)0;
+                __uint128_t expected = 0;  // addLiquidity always drains deployer shadow
                 bool ok = check_bal7(label,
                     common::Encode::HexEncode(td.prikey),
                     td.contract_addr_hex,
