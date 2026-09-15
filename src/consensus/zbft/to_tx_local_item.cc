@@ -460,6 +460,22 @@ bool ToTxLocalItem::HandleCrossShardBase(
             common::Encode::HexEncode(target_str).c_str(),
             shard_id, pool_index,
             to_tx.cross_nonce());
+        {
+            std::string _xbal_amt;
+            if (to_tx.amount256().size() == 32) {
+                _xbal_amt = to_tx.amount256();
+            } else {
+                _xbal_amt.assign(24, '\0');
+                uint64_t _v = to_tx.amount();
+                for (int _i = 7; _i >= 0; --_i) { _xbal_amt += char((_v >> (8 * _i)) & 0xFF); }
+            }
+            SHARDORA_WARN("XBAL_IN  base=%s user=%s shd=%s amt=%s nonce=%lu shard=%u pool=%u",
+                common::Encode::HexEncode(base_raw).c_str(),
+                common::Encode::HexEncode(to_tx.des()).c_str(),
+                common::Encode::HexEncode(target_str).c_str(),
+                common::Encode::HexEncode(_xbal_amt).c_str(),
+                to_tx.cross_nonce(), shard_id, pool_index);
+        }
     } else {
         // systemExecuteCrossStorage — one EVM call per CrossStorageKV entry.
         // Snapshot storage before the loop so a mid-loop failure can be rolled back

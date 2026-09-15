@@ -61,7 +61,7 @@ int GlobalInfo::Init(const common::Config& config) {
     tick_ptr_ = std::make_shared<common::Tick>();
     tick_ptr_->CutOff(2000000lu, std::bind(&GlobalInfo::Timer, this));
 #endif
-    begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 10000lu;
+    begin_run_timestamp_ms_ = common::TimeUtils::TimestampMs() + 60000lu;
     config.Get("shardora", "consensus_thread_count", hotstuff_thread_count_);
     message_handler_thread_count_ = hotstuff_thread_count_ + 2;
 
@@ -152,7 +152,6 @@ uint8_t GlobalInfo::get_thread_index() {
             should_check_thread_all_valid_ = false;
         }
     } else {
-        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
             // Thread started after the registration window; still assign a unique index

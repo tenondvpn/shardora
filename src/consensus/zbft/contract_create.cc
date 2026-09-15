@@ -374,6 +374,12 @@ int ContractUserCreateCall::HandleTx(
                             common::Encode::HexEncode(action.to).c_str(),
                             common::Encode::HexEncode(_ss).c_str(),
                             action.dest_shard_id, action.dest_pool_index);
+                        SHARDORA_WARN("XBAL_OUT base=%s user=%s shd=%s amt=%s nonce=%lu dshard=%u dpool=%u",
+                            common::Encode::HexEncode(action.base_root_address).c_str(),
+                            common::Encode::HexEncode(action.to).c_str(),
+                            common::Encode::HexEncode(_ss).c_str(),
+                            common::Encode::HexEncode(action.amount_bytes).c_str(),
+                            action.nonce, action.dest_shard_id, action.dest_pool_index);
                     }
                 } else {
                     it->second->set_amount(it->second->amount() + action.amount);
@@ -381,6 +387,11 @@ int ContractUserCreateCall::HandleTx(
                     SHARDORA_INFO("CrossShardBase constructor cross-transfer accumulated: user=%s dest_shard=%u pool=%u",
                         common::Encode::HexEncode(action.to).c_str(),
                         action.dest_shard_id, action.dest_pool_index);
+                    SHARDORA_WARN("XBAL_OUT_ACC base=%s user=%s amt_add=%s nonce=%lu dshard=%u dpool=%u",
+                        common::Encode::HexEncode(action.base_root_address).c_str(),
+                        common::Encode::HexEncode(action.to).c_str(),
+                        common::Encode::HexEncode(action.amount_bytes).c_str(),
+                        action.nonce, action.dest_shard_id, action.dest_pool_index);
                 }
             } else if (action.type == shardoravm::CrossShardActionType::kSetStorage) {
                 if (action.storage_key.empty()) continue;
