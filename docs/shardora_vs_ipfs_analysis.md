@@ -2216,54 +2216,53 @@ $$P_{2PC\text{-deadlock}} \geq 1 - (1 - e^{-3})^{64} \approx 1 - (0.9502)^{64} \
 
 ---
 
-## 附录 D：面向 SOSP 与安全四大顶会的系统学术审稿应对体系
+## 附录 D：分片 BFT 存储系统的存储引擎、编码集成与安全规约深度形式化
 
-> 本附录从学术审稿实践出发，针对 SOSP、IEEE S&P、ACM CCS、USENIX Security 及 NDSS 的核心审稿品味与典型拒稿模式，提供深度系统级形式化模型补充，覆盖：BFT SMR 系统叙事重构、存储引擎 I/O 真实性形式化、LRC 流水线集成、PoRA 安全规约完整化，以及合谋外包的博弈论阻断证明。
+> 本附录在附录 C 基础上，从分片 BFT 状态机吞吐-审计解耦建模、存储引擎写放大与崩溃恢复上界、LRC 归档流水线修复复杂度、PoRA 混合论证安全规约，以及合谋外包的博弈论阻断五个维度，给出完整的形式化定义、定理与证明。
 
 ---
 
-### D.1 SOSP 叙事重构：从"区块链存储"到"BFT SMR 状态机持久化架构"
+### D.1 分片 BFT 状态机的吞吐-审计解耦形式化模型
 
-#### D.1.1 叙事层次映射
-
-SOSP 评审对"区块链"、"代币"、"Web3"等标签有本能排斥，因为这类词汇通常预示着工程堆砌而非系统抽象创新。正确的切入点是将系统命题抽象为：
-
-> **核心命题**：在面向**去中心化高性能温热存储**（Decentralized Warm Storage）场景中，如何在不引入可信协调者的前提下，将**分片拜占庭容错状态机复制**（Sharded BFT SMR）的**共识流水线吞吐量**（Consensus Pipeline Throughput）与**分布式状态可审计性**（Distributed State Auditability）以**亚线性开销**解耦？
-
-该命题的系统学术合法性来自以下三层映射：
-
-| 区块链术语（禁用） | SOSP 系统术语（采用） | 学术意义 |
-|-----------------|---------------------|---------|
-| 区块链节点 | BFT SMR 副本（Replica） | 状态机复制理论（Schneider 1990） |
-| 分片 | 并行共识域（Parallel Consensus Domain） | 分区容错状态划分 |
-| 代币转账 | 跨域原子状态迁移（Cross-Domain Atomic Transfer） | 分布式事务协调 |
-| 存储挖矿 | 持续数据占有证明（Continuous Possession Attestation） | 可审计存储承诺 |
-| 共识出块 | 日志复制轮次（Log Replication Round） | Paxos/Raft/HotStuff 日志语义 |
-| VRF 随机数 | 去中心化随机信标（Decentralized Random Beacon） | 可验证无偏随机性 |
-
-#### D.1.2 新系统抽象定义：温热存储感知 BFT 流水线
-
-**定义 D.1（温热存储感知 BFT 状态机，WS-BFT-SMR）**
+**定义 D.1（分片 BFT 状态机五元组）**
 
 设系统为五元组 $\Pi = (\mathcal{R}, \mathcal{L}, \mathcal{A}, \mathcal{P}, \mathcal{V})$，其中：
 
-- $\mathcal{R} = \{r_1, \ldots, r_n\}$：$n$ 个 BFT 副本（Replica），其中至多 $f < n/3$ 个为拜占庭副本；
-- $\mathcal{L}$：日志复制协议（HotStuff 线性 BFT），单轮延迟 $\Delta_{\text{BFT}}$；
-- $\mathcal{A}$：存储审计协议（PoRA），内嵌于日志复制轮次，附加开销 $\Delta_{\text{audit}} \leq \delta \cdot \Delta_{\text{BFT}}$；
-- $\mathcal{P}$：状态持久化层（RocksDB LSM-Tree），写入路径满足 $W_{\text{amp}} \leq C_W$；
+- $\mathcal{R} = \{r_1, \ldots, r_n\}$：$n$ 个 BFT 副本，其中至多 $f < n/3$ 个为拜占庭副本；
+- $\mathcal{L}$：日志复制协议（HotStuff 线性 BFT），单轮网络延迟 $\Delta_{\text{net}}$；
+- $\mathcal{A}$：存储审计协议（PoRA），内嵌于日志复制提案阶段的本地计算步骤，附加时延 $\Delta_{\text{audit}}$；
+- $\mathcal{P}$：状态持久化层（LSM-Tree），写放大因子 $W_{\text{amp}}$；
 - $\mathcal{V}$：跨域状态迁移协议（交换结合幺半群语义，见附录 C.5）。
 
-**命题 D.1（吞吐-审计解耦性）**：系统 $\Pi$ 的设计目标是：
+**命题 D.1（吞吐-审计解耦性）**
 
-$$\frac{\partial \text{TPS}(\Pi)}{\partial \Delta_{\text{audit}}} \approx 0$$
+存储审计协议 $\mathcal{A}$ 不增加系统的共识端到端延迟，即：
 
-即存储审计开销对共识吞吐量的偏导数趋近于零——两个流水线阶段并行而非串行。
+$$\frac{\partial \text{TPS}(\Pi)}{\partial \Delta_{\text{audit}}} = 0 \quad \text{当} \quad \Delta_{\text{audit}} \leq \Delta_{\text{net}}$$
 
-**证明思路**：PoRA 的 $d$ 次串行 I/O 访问发生于 BFT 提案（Propose）阶段的**本地计算步骤**内，不占用网络广播（Broadcast）步骤的时延窗口。由 HotStuff 协议的线性化管道（Linear Pipeline）性质，Propose 阶段时延由网络 RTT 主导（$\Delta_{\text{net}} \geq 10\ \text{ms}$），本地 NVMe 随机读（$d \times \tau_{\text{SSD}} \approx d \times 0.1\ \text{ms}$）可在网络等待期间并行完成，当 $d \leq \Delta_{\text{net}} / \tau_{\text{SSD}} = 100$ 时无额外时延暴露。$\blacksquare$
+**证明**：
+
+HotStuff 协议的线性流水线（Linear Pipeline）结构将一轮共识分为三个步骤：提案（Propose）、投票（Vote）、提交（Commit）。各步骤均有一个网络广播等待期，长度为 $\Delta_{\text{net}}$（网络往返时延）。
+
+$\mathcal{A}$ 的 $d$ 次串行 I/O 访问发生于提案阶段的**本地计算**子步骤中，其执行时间为：
+
+$$\Delta_{\text{audit}} = d \cdot (\tau_{\text{SSD}} + \tau_{\text{hash}})$$
+
+由于本地计算与网络广播等待可**完全并行**（CPU 执行审计计算的同时网络等待投票响应），当且仅当 $\Delta_{\text{audit}} \leq \Delta_{\text{net}}$ 时，审计计算被完全隐藏在网络等待窗口内，不延长共识端到端延迟。
+
+此时 $\text{TPS}(\Pi)$ 由 $\Delta_{\text{net}}$ 主导，与 $\Delta_{\text{audit}}$ 无关，故偏导数为 $0$。$\blacksquare$
+
+**推论 D.1.1（参数约束）**：
+
+取 $\Delta_{\text{net}} = 10\ \text{ms}$，$\tau_{\text{SSD}} = 0.1\ \text{ms}$，$\tau_{\text{hash}} = 0.005\ \text{ms}$，则解耦约束为：
+
+$$d \leq \frac{\Delta_{\text{net}}}{\tau_{\text{SSD}} + \tau_{\text{hash}}} = \frac{10}{0.105} \approx 95$$
+
+当迭代次数 $d \leq 95$ 时，PoRA 审计对共识吞吐量零影响；若需更高的抗外包强度（$d > 95$），则引入 $\Delta_{\text{audit}} - \Delta_{\text{net}}$ 的附加延迟，需在安全性与吞吐量之间权衡。
 
 ---
 
-### D.2 SOSP 存储引擎 I/O 真实性形式化
+### D.2 存储引擎 I/O 建模：写放大上界与崩溃恢复形式化
 
 #### D.2.1 RocksDB LSM-Tree 写放大分析
 
@@ -2287,7 +2286,9 @@ $$W_{\text{amp}}^{\text{RocksDB}} \approx 1 + L \cdot F \cdot c = 1 + 7 \times 1
 
 $$W_{\text{disk}} = \lambda \cdot \bar{s} \cdot W_{\text{amp}} = 25{,}000 \times 256\ \text{B} \times 36 \approx 230\ \text{MB/s}$$
 
-**推论 D.2.1**：PCIe 4.0 NVMe SSD 的顺序写吞吐量约为 $7{,}000\ \text{MB/s}$，随机写约为 $1{,}000\ \text{MB/s}$。单分片 $230\ \text{MB/s}$ 的写负载处于 NVMe 随机写带宽的 $23\%$，远在安全区间内。但若同时运行 $K = 4$ 个分片副本（BFT 多副本场景），则总写带宽为 $K \cdot W_{\text{disk}} = 920\ \text{MB/s}$，趋近 NVMe 瓶颈，需要通过**写批处理**（Write Batching）与 **WAL 合并提交**降低放大。
+**推论 D.2.1（I/O 带宽可行性验证）**：
+
+PCIe 4.0 NVMe SSD 的顺序写吞吐量约为 $7{,}000\ \text{MB/s}$，随机写约为 $1{,}000\ \text{MB/s}$。单分片 $230\ \text{MB/s}$ 写负载处于 NVMe 随机写带宽的 $23\%$，在安全区间内。若同时运行 $K$ 个分片副本（BFT 多副本场景），总写带宽为 $K \cdot W_{\text{disk}}$，当 $K \geq 5$ 时趋近 NVMe 瓶颈，需通过**写批处理**（Write Batching）与 **WAL 合并提交**将有效 $W_{\text{amp}}$ 降低至 $10 \sim 15$。
 
 #### D.2.2 Write-Ahead Log (WAL) 同步开销建模
 
@@ -2333,11 +2334,13 @@ $$T_{\text{WAL-replay}} = \frac{6.25\ \text{MB}}{6{,}000\ \text{MB/s}} \approx 1
 
 $$T_{\text{RTO}} = T_{\text{WAL-replay}} + T_{\text{SMT-rebuild}} + T_{\text{BFT-catchup}} \leq 1\ \text{ms} + 1\ \text{ms} + 5\ \text{s} < 6\ \text{s}$$
 
-> **SOSP 审稿应对**：RTO $< 6$ 秒远优于工业界标准（大多数分布式数据库 RTO 在分钟级），且基于真实 NVMe 硬件参数而非内存 Mock，满足 SOSP 对"生产级系统实现"的最低要求。
+**推论 D.3.1（多副本场景 RTO 不变性）**：
+
+在 BFT $f+1$ 副本冗余模型下，节点崩溃后系统仍由 $n - 1$ 个诚实副本维持运行，不触发整体停机。单节点恢复 RTO 仅需处理本地 WAL 与状态树增量，与副本数 $n$ 无关，满足 $T_{\text{RTO}} < 6\ \text{s}$（NVMe）或 $< 30\ \text{s}$（SATA HDD）。
 
 ---
 
-### D.3 LRC 存储流水线集成：消除全副本膨胀死穴
+### D.3 LRC 归档层流水线集成与修复复杂度
 
 #### D.3.1 LRC 在分片共识流水线中的位置
 
@@ -2388,9 +2391,9 @@ $$\frac{\text{BW}_{\text{repair}}^{\text{LRC}}}{\text{BW}_{\text{repair}}^{\text
 
 ---
 
-### D.4 安全四大顶会：PoRA 安全规约的完整化
+### D.4 PoRA 可靠性安全规约：随机预言机混合论证
 
-#### D.4.1 完整安全模型定义
+#### D.4.1 安全模型定义
 
 **定义D.7（PoRA 安全游戏 $\mathcal{G}_{\text{PoRA}}$）**
 
@@ -2461,22 +2464,20 @@ $$(1-0.1)^{1000} + \frac{1000 \times 2^{80}}{2^{256}} = 0.9^{1000} + 2^{80-256+1
 
 ---
 
-### D.5 合谋外包的博弈论阻断：理性拜占庭安全模型
+### D.5 合谋外包攻击的博弈论阻断
 
-#### D.5.1 理性拜占庭安全模型（Rational Byzantine Security）
+#### D.5.1 理性外包攻击者模型
 
-安全审稿人会追问：若攻击者在博弈上是理性的（非单纯破坏型），能否设计出在超时窗口内动态拉取数据的**自适应外包策略**？
-
-**定义 D.9（理性外包策略）**
+**定义 D.9（理性外包攻击者）**
 
 设理性对手 $\mathcal{A}^*$ 具有以下能力：
 - 持有 1 份物理存储（位于 IDC A）；
 - 控制 $M$ 个声称独立存储的节点 $\{n_1, \ldots, n_M\}$；
 - 每个节点可在接收挑战后**立即**发起并行 LAN 请求，无需等待前一轮响应。
 
-**理性策略**：$\mathcal{A}^*$ 观测到挑战序列 $\text{idx}_1$（首步），立即向 IDC A 发出请求 $\mathcal{D}_1$，同时**预测**下一步 $\text{idx}_2$ 进行预取。
+**自适应预取策略**：$\mathcal{A}^*$ 观测到首步挑战索引 $\text{idx}_1$ 后，立即向中心存储发出请求 $\mathcal{D}_1$，同时尝试**预测**下一步 $\text{idx}_2$ 进行并行预取，以抵消往返时延。
 
-#### D.5.2 理性策略的不可行性定理
+#### D.5.2 理性自适应预取的不可行性定理
 
 **定理D.6（理性自适应外包的密码学不可行性）**
 
@@ -2504,11 +2505,11 @@ $$T_{\mathcal{A}^*}(d) \geq d \cdot 2\tau_{\text{LAN}} + d \cdot \tau_{\text{has
 
 而诚实节点的时间为 $T_{\text{honest}}(d) = d(\tau_{\text{SSD}} + \tau_{\text{hash}})$，时延差仍为 $\Delta T = 2d\tau_{\text{LAN}}$，物理不可消除。$\blacksquare$
 
-#### D.5.3 云厂商动态拉取攻击的博弈论分析
+#### D.5.3 远程云存储动态拉取攻击的时延-经济双重阻断
 
-**定义 D.10（AWS 式动态拉取攻击模型）**
+**定义 D.10（云存储动态拉取攻击模型）**
 
-攻击者将数据外包至云对象存储（如 AWS S3，数据中心内延迟 $\tau_{\text{S3}} \approx 1 \sim 5\ \text{ms}$），在被挑战时实时下载所需块，不在本地存储。
+攻击者将数据外包至远程云对象存储（典型端到端延迟 $\tau_{\text{cloud}} \approx 1 \sim 5\ \text{ms}$），在被挑战时实时拉取所需块，本地不保留任何副本。
 
 **定理 D.7（云厂商外包攻击的时延分离）**
 
@@ -2530,31 +2531,18 @@ $$C_{\text{annual}} = 0.035 \times 3{,}600 \times 24 \times 365 \approx \$1{,}10
 
 ---
 
-### D.6 安全审稿人追问应对矩阵
+### D.6 附录 D 定理体系汇总
 
-| 审稿人追问 | 对应定理 | 核心答复 |
-|----------|---------|---------|
-| "多个拜占庭节点合谋外包，你的协议能否密码学保证不可破防？" | 定理 D.5 + D.6 | ROM 下严格串行依赖，预测索引的概率为 $1/N$，物理时延差 $2d\tau_{\text{LAN}}$ 不可消除，合谋不改变此下界 |
-| "云厂商恶意扣押数据，只在被挑战时动态拉取？" | 定理 D.7 | 云延迟 $\tau_{\text{cloud}} \geq 1\ \text{ms}$，$d=100$ 轮后时延差 $\geq 1.2\ \text{s}$；年经济成本是本地存储 22,000 倍，经济理性不可持续 |
-| "你的测试是否基于内存 Mock？" | 定理 D.2 + D.3 | 全量 NVMe I/O，写放大 $\approx 36$，物理写带宽 $230\ \text{MB/s}$，RTO $< 6\ \text{s}$ |
-| "LRC 纠删码与 BFT 全副本冲突吗？" | 定义 D.5 + 定理 D.4 | 双层架构：Layer 1 热存 BFT 3 副本，Layer 2 暖存 LRC 归档，修复带宽降低 $80\%$ |
-| "SOSP 不接受区块链论文" | 定义 D.1 + 命题 D.1 | 叙事重构为 WS-BFT-SMR：去中心化温热存储中共识流水线与状态可审计性的亚线性开销解耦 |
-| "外包合谋的博弈下界是什么？" | 定理 D.6 | 理性 $\mathcal{A}^*$ 最优策略等价于盲猜（索引预测概率 $1/N$），物理时延差与合谋规模无关 |
-
----
-
-### D.7 附录 D 定理体系汇总
-
-| 定理编号 | 核心命题 | 安全假设 / 数学基础 | 目标会议 |
+| 定理编号 | 核心命题 | 安全假设 / 数学基础 | 结论强度 |
 |---------|---------|------------------|---------|
-| D.1 | WS-BFT-SMR 吞吐-审计解耦性 | HotStuff 流水线时延分析 | SOSP / EuroSys |
-| D.2 | RocksDB 分片写放大上界 $\approx 36$ | LSM-Tree 分层放大模型 | SOSP / FAST |
-| D.3 | 崩溃恢复 RTO $< 6\ \text{s}$ | NVMe I/O + 快照同步 | SOSP / FAST |
-| D.4 | LRC 单块修复带宽 $r \cdot B_0$（降低 $80\%$） | MDS 子码最优修复 | FAST / SOSP |
-| D.5 | PoRA $(α,T,ε)$-可靠性（ROM 规约） | 随机预言机模型 + 混合论证 | CCS / USENIX Security |
-| D.6 | 理性自适应外包的密码学不可行性 | ROM 不可预测性 + 物理延迟 | CCS / S&P |
-| D.7 | 云厂商动态拉取攻击的时延与经济阻断 | 延迟模型 + 博弈论成本 | NDSS / CCS |
+| D.1 | 分片 BFT 吞吐-审计解耦性 | HotStuff 流水线时延并行分析 | $d \leq \Delta_{\text{net}}/\tau_{\text{SSD}}$ 时审计零开销 |
+| D.2 | RocksDB 分片写放大上界 | LSM-Tree 多层放大模型 | $W_{\text{amp}} \approx 36$，物理写带宽 $230\ \text{MB/s}$ |
+| D.3 | 崩溃恢复 RTO 上界 | NVMe I/O + 快照同步 | $T_{\text{RTO}} < 6\ \text{s}$ |
+| D.4 | LRC 单块修复带宽最优性 | MDS 子码最优修复定理 | $\text{BW}_{\text{repair}} = r \cdot B_0$（降低 $r/k$ 倍） |
+| D.5 | PoRA $(\alpha, T, \varepsilon)$-可靠性 | ROM + 混合论证（Hybrid Argument） | 声误差 $\leq (1-\alpha)^d + d Q_H / 2^\lambda$ |
+| D.6 | 理性自适应外包密码学不可行 | ROM 强随机性 + 串行物理延迟 | 预测索引概率 $= 1/N$，时延差 $= 2d\tau_{\text{LAN}}$ |
+| D.7 | 云存储动态拉取的双重阻断 | 物理延迟 + 博弈论成本模型 | $d=100$ 时延差 $\geq 1.2\ \text{s}$；年成本比 $= 22{,}000\times$ |
 
 ---
 
-*附录 D 在附录 C 的形式化定理体系基础上，补充了面向 SOSP 的系统工程深度（存储引擎 I/O、RTO、LRC 集成），以及面向安全四大顶会的完整安全规约（PoRA 混合论证、理性拜占庭博弈论），构成面向全谱顶级学术投稿的完整支撑体系。*
+*附录 D 从系统流水线建模（D.1）、存储引擎 I/O 量化（D.2–D.3）、编码层修复复杂度（D.4）到密码安全规约（D.5）与博弈论阻断（D.6–D.7），覆盖了分片 BFT 存储系统从硬件基础设施到协议安全性的完整形式化链条。*
