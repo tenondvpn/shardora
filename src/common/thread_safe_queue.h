@@ -21,7 +21,6 @@ public:
     ~ThreadSafeQueue() {}
 
     void push(T e) {
-        std::lock_guard<std::mutex> lock(push_mutex_);
         rw_queue_.enqueue(e);
         auto& tmp_item = *this;
     }
@@ -43,7 +42,6 @@ public:
 private:
     static const int32_t kQueueCount = 1024;
     moodycamel::ReaderWriterQueue<T, kMaxCount> rw_queue_{kQueueCount};
-    std::mutex push_mutex_;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };
