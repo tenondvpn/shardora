@@ -350,8 +350,9 @@ Penumbra 通过 IBC 实现跨链隐私，但 IBC packet 内容在中继链上以
 | **Bulletproofs 范围证明** | 证明 `v ∈ [0, 2^64)` 而不揭露 `v` | alt_bn128 G1 |
 | **一次性地址（Stealth Address）** | 隐藏接收方真实身份 | alt_bn128 G1 |
 | **Nullifier（作废符）** | 防双花，类 Zcash 方案 | Poseidon Hash |
-| **Groth16 零知识证明** | 证明整体转账合法性 | alt_bn128（支持配对） |
-| **ElGamal 阈值加密** | 跨分片消息加密，由目标分片委员会集体解密 | alt_bn128 G1 |
+| **Groth16 零知识证明** | 证明整体转账合法性，在**源分片**验证 | alt_bn128（支持配对） |
+| **ECIES（椭圆曲线集成加密）** | Note 明文加密给**接收方** view_pk，委员会完全不参与解密 | alt_bn128 G1 + AES-GCM |
+| **跨分片信用证书（CSCC）** | 源分片 BFT 委员会签名，授权目标分片铸造对应承诺；替代委员会解密方案 | BLS on alt_bn128 G2 |
 
 ### Privacy Pools 合规扩展（可选）
 
@@ -368,42 +369,61 @@ C11: Note 的来源不在监管黑名单 Merkle 树中
 
 ## 3.4 整体架构
 
+> **架构核心原则**：目标分片委员会**永远不解密** Note 内容（amount, randomness, spend_pk）。委员会仅验证源分片 BFT 签名授权，然后盲目插入承诺。这与 Zcash 全节点的工作方式完全一致——全节点验证 ZK 证明、更新 Merkle 树，但从不知道 Note 内容。
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                              用户层                                       │
-│  发送方持有：spending_key (Fr)，viewing_key (Fr)                          │
+│  发送方持有：spending_key (Fr)，view_sk (Fr)                              │
 │  接收方公布：spend_pk = spend_sk·G (G1)，view_pk = view_sk·G (G1)        │
 └───────────────────────────────┬──────────────────────────────────────────┘
-                                │ ① 生成 ZK Proof + 一次性地址 + 加密载荷
+                                │ ① 生成：ZK Proof（源分片验证）
+                                │         ECIES 密文（接收方 view_pk 加密）
+                                │         stealth_addr（路由用，一次性）
                                 ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                   源分片：PrivacyShadow 合约                              │
-│  承诺 Merkle 树：notes[cm_hash] — 替代 _balances[addr]                   │
-│  Nullifier 集合：spent[nullifier] — 防双花                               │
-│  事件：ShieldedCrossTransferOut(nullifier, new_cm, C1, C2, zk_proof)     │
+│  ▸ 验证 Groth16 ZK proof（EVM 内，3 次 BN254 配对，~100ms）               │
+│  ▸ 检查并记录 old_nullifier（防双花）                                     │
+│  ▸ 将 new_cm_change（找零承诺）插入源分片 Merkle 树                       │
+│  ▸ 源分片 BFT 委员会对 (new_cm_send, target_shard, pool, block_hash)     │
+│    签名，生成 CSCC（跨分片信用证书，BLS 签名 ~96 B）                       │
+│  事件：ShieldedCrossTransferOut(old_nullifier, new_cm_send, ecies_ct)    │
 └───────────────────────────────┬──────────────────────────────────────────┘
-                                │ ② cross_shard_to_array（密文载荷）
+                                │ ② ToTxMessageItem 携带：
+                                │   new_cm_send（32B）+ ecies_ct（~112B）
+                                │   + cscc_signature（96B）—— 无明文金额/地址
                                 ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                    全局缓冲池路由层（逻辑不变）                             │
-│  ToTxMessageItem 携带：nullifier, new_cm, (C1, C2), zk_proof            │
-│  路由目标 shard/pool 由 new_cm 中嵌入的目标坐标决定                        │
+│  路由目标 shard/pool 由 CSCC 中嵌入的 target_shard/pool 字段决定          │
 └───────────────────────────────┬──────────────────────────────────────────┘
                                 │ ③ 路由至目标分片
                                 ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│               目标分片：委员会阈值解密 + ZK 验证 + 执行                    │
-│  各节点用 local_sk_i 计算 ElGamal 解密份额 D_i = sk_i · C1               │
-│  收集 t 个份额 → Lagrange 插值重建 → 得到 (stealth_addr, amount, r)       │
-│  验证 zk_proof → systemExecuteShieldedCredit(stealth_addr, new_cm)       │
-│  将 new_cm 插入目标分片承诺 Merkle 树                                     │
+│               目标分片：CSCC 验证 + 盲插承诺 + 存储密文                   │
+│  ▸ 验证 CSCC 中的 BLS 签名（源分片 BFT 公钥，~1-2ms，无配对）             │
+│  ▸ 验证 CSCC 中 target_shard/pool 与本分片匹配                           │
+│  ▸ 将 new_cm_send 插入目标分片承诺 Merkle 树（盲插，不知道 amount）        │
+│  ▸ 将 ecies_ct 存储链上（供接收方离线扫描）                               │
+│  ▸ 委员会节点【不知道】amount、randomness、spend_pk 中的任何一项           │
+│  事件：ShieldedCrossTransferIn(new_cm_send, new_cm_tree_root)            │
 └──────────────────────────────────────────────────────────────────────────┘
-                                │ ④ 接收方扫链
+                                │ ④ 接收方离线扫链
                                 ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  接收方：用 view_sk 扫描链上 ephemeral_pk，匹配 Note；用 spend_sk 花费    │
+│  接收方：用 view_sk 逐条尝试解密链上 ecies_ct，匹配 Note；用 spend_sk 花费 │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
+
+**与原设计的关键区别**：
+
+| 维度 | 原错误设计 | 修正后设计 |
+|------|-----------|-----------|
+| Note 内容加密 | ElGamal（委员会集体解密） | ECIES（接收方 view_pk，仅接收方能解密） |
+| 目标分片执行授权 | 委员会解密后知道 amount/stealth_addr | CSCC（BLS 签名），委员会不知道 Note 内容 |
+| 目标分片配对数 | 3600 次（1200 tx × 3 pairing）≈ 3.6-7.2s | 0 次配对（只验 BLS 签名） |
+| 与 Zcash 模型一致性 | ❌ 全节点知道金额（违反 Zcash 设计） | ✅ 全节点不知道金额（与 Zcash 一致） |
 
 ---
 
@@ -509,65 +529,106 @@ new_note_send, new_note_change
 
 ---
 
-## 3.8 跨分片 ElGamal 加密载荷
+## 3.8 跨分片传输载荷：ECIES + CSCC
 
-**ElGamal 加密**（alt_bn128 G1，使用目标分片委员会 `common_pk_G1`）：
+### ECIES：Note 内容加密（仅接收方可解）
 
 ```
-k       ← random Fr
-C1      = k · G
-C2      = M + k · common_pk_G1
+发送方（客户端）：
+  r         ← random Fr
+  epk       = r · G                            # 临时公钥（64B，链上可见）
+  shared    = r · view_pk                      # ECDH 共享点（不上链）
+  key       = HKDF-SHA256(shared ∥ "shardora_note_v1")  # 256-bit AES key
+  note_pt   = encode(amount, randomness, spend_pk)       # ~64 B 明文
+  ct        = AES-256-GCM(key, note_pt, aad=new_cm)     # ~80 B 密文
+  ecies_ct  = epk ∥ ct                         # ~144 B，链上存储
+
+接收方（离线扫链）：
+  for each (new_cm, ecies_ct) on target shard:
+    epk, ct = split(ecies_ct)
+    shared' = view_sk · epk
+    key'    = HKDF-SHA256(shared' ∥ "shardora_note_v1")
+    try: note_pt = AES-256-GCM-decrypt(key', ct, aad=new_cm)
+    if ok and note_pt.spend_pk == my_spend_pk:
+      此 Note 属于我，记录 (amount, randomness) 备用
 ```
 
-消息 M 编码：`M = Hash(stealth_addr ∥ amount ∥ randomness_send) · G`，实际以 AES-GCM 加密 Note 明文，C2 仅承载 AES 密钥的加密形式。
+**关键**：委员会节点在任何步骤中都**不持有**和**不需要** `view_sk`，永远无法解密 `ecies_ct`。Note 内容对委员会是完全不透明的黑盒。
 
-**ToTxMessageItem 新增字段**：
+### CSCC：跨分片信用证书（授权目标分片铸造）
+
+源分片 BFT 委员会将对应出块中的隐私跨分片请求打包成 CSCC：
+
+```
+CSCC = {
+  new_cm_send    : bytes32,   // 将在目标分片铸造的承诺（不含金额）
+  target_shard   : uint32,
+  pool_index     : uint32,
+  src_block_hash : bytes32,   // 源分片确认该 ZK proof 的区块哈希
+  bls_signature  : bytes96,   // 源分片 BFT 委员会 BLS 聚合签名
+}
+```
+
+CSCC 中**不含** amount、stealth_addr 或任何 Note 明文。目标分片只凭 BLS 签名验证源分片 BFT 已确认了合法的 ZK proof。这与现有 CrossTransfer 消息的授权模式完全一致（源分片 BFT 共识 → 路由 → 目标分片执行），无需引入任何新机制。
+
+### ToTxMessageItem 新增字段（精简后）
 
 ```protobuf
 message ToTxMessageItem {
   // 原有路由字段（保留）
-  optional uint32 sharding_id = ...;
-  optional uint32 pool_index  = ...;
+  optional uint32 sharding_id   = 1;
+  optional uint32 pool_index    = 2;
+  // ...现有字段...
 
-  // 隐私转账新增
-  optional bytes nullifier       = 20;   // 32 B
-  optional bytes new_commitment  = 21;   // 32 B
-  optional bytes elgamal_c1      = 22;   // 64 B（G1 点）
-  optional bytes elgamal_c2      = 23;   // 64 B（G1 点）
-  optional bytes aes_ciphertext  = 24;   // ~100 B
-  optional bytes zk_proof        = 25;   // ~256 B（Groth16）
-  optional bool  is_shielded     = 26;
+  // 隐私转账新增（无明文 amount/address）
+  optional bytes  new_commitment  = 21;   // 32 B
+  optional bytes  ecies_ct        = 22;   // ~144 B（epk + AES-GCM 密文）
+  optional bytes  cscc_signature  = 23;   // 96 B（BLS 聚合签名）
+  optional bytes  src_block_hash  = 24;   // 32 B
+  optional bool   is_shielded     = 26;
 }
+// ZK proof 不过路由层——仅在源分片 EVM 内验证，不放入 cross-shard 消息
 ```
 
-**DKG 扩展（生成 G1 方向公钥）**：
-
-在 `BlsDkg::FinishBroadcast()` 中，额外计算 `a_{i,0}·G1` 并广播，聚合得到：
-```
-common_pk_G1 = Σ a_{i,0}·G1 = sk_master · G1
-```
-不引入新的安全假设，与现有 DKG Feldman VSS 完全一致。
+消息总大小：**~320 B**（vs 原设计 ~840 B，减少 62%）
 
 ---
 
-## 3.9 目标分片：委员会阈值解密
+## 3.9 目标分片：CSCC 验证与盲插承诺
 
-**数学过程**（与 BLS 阈值签名完全对称）：
+目标分片的执行路径极度简化——**零配对运算**：
 
 ```
-每个节点 i：  D_i = sk_i · C1         （G1 标量乘法，~1 ms）
-Leader 收集 t 个后 Lagrange 重建：
-              D = Σ λ_i · D_i = sk_master · C1
-解密：        M = C2 - D
+to_tx_local_item.cc：ShieldedCreditFromCSCC(item)
+
+  // Step 1: 验证 CSCC BLS 签名（~1-2 ms，无配对）
+  src_committee_pk = elect_info.GetCommitteePk(item.src_shard_id)
+  assert BLS.Verify(src_committee_pk, item.cscc_signature,
+                    Hash(item.new_commitment ∥ item.target_shard ∥ ...))
+
+  // Step 2: 检查 new_cm 未被重复铸造
+  assert !target_cm_tree.Contains(item.new_commitment)
+
+  // Step 3: 插入承诺 Merkle 树（盲插，不知道 Note 内容）
+  target_cm_tree.Insert(item.new_commitment)
+
+  // Step 4: 将 ecies_ct 持久化（供接收方扫链）
+  ecies_store[item.new_commitment] = item.ecies_ct
+
+  // Step 5: 发出事件
+  emit ShieldedCrossTransferIn(item.new_commitment, target_cm_tree.Root())
+  // 事件中无 amount、无 stealth_addr，委员会对这两个值一无所知
 ```
 
-**复用路径**：`Crypto::ReconstructAndVerifyThresSign()` 的 Lagrange 插值框架可直接复用。仅需在 `to_tx_local_item.cc` 新增 `ShieldedDecryptAndCredit()`，调用已有插值逻辑。
+**与原设计对比**：
 
-**执行阶段**：
-1. 用合约内 `vk` 验证 `zk_proof`（链上，各节点独立验证）
-2. 检查 `new_cm` 不在目标分片承诺树中（防重入）
-3. 调用 `systemExecuteShieldedCredit(stealth_addr, new_cm)` → 插入 Merkle 树
-4. 发出 `ShieldedCrossTransferIn(new_cm, tree_root)` 事件（不暴露 stealth_addr）
+| 项目 | 原错误设计 | 修正后设计 |
+|------|-----------|-----------|
+| 目标分片知道 amount？ | ✅ 是（重建 M 后知道） | ❌ 否（永远不知道） |
+| 目标分片知道 stealth_addr？ | ✅ 是 | ❌ 否 |
+| 目标分片配对运算数 | 3600 次/块 ≈ 7s | **0 次**（仅 BLS 验签） |
+| 信任假设新增 | DKG 共用密钥（新假设） | 复用现有 BFT 签名（零新假设） |
+| 与 Zcash 模型一致 | ❌ | ✅ |
 
 ---
 
@@ -864,51 +925,113 @@ Nullifier 查找                   O(1)                哈希表查找
 
 ---
 
-### 定理 A：单链无 Gas 隐私不可能性（Impossibility Result）
+### 定理 A：标准账户状态机下无 Gas 隐私不可能性（Impossibility Result）
 
-**定义（三元组相容性）**：称协议 Π 满足三元组 (Privacy, Autonomy, Decentralized)，若：
+#### 形式化计算模型（Ideal/Real 框架）
+
+**定义（Gas-First 账户状态机，GASM）**：GASM 是一个状态转换系统 `(S, TX, →)`，其中：
+- 状态 S 包含账户余额映射 `bal: Addr → ℕ`
+- 交易 tx ∈ TX 有效当且仅当 `bal[tx.sender] ≥ tx.gas_cost`（Gas 先决条件）
+- 状态转换 `s →^{tx} s'` 首先扣除 Gas，再执行 tx 逻辑
+
+**注**：以太坊 EVM（含 EIP-1559）、当前 ERC-4337 UserOperation（不含 Paymaster）均满足 GASM 定义。
+
+**三个属性的形式化定义**：
+
+设 Π 是在 GASM 上运行的协议，D 是敌手，B 是接收新地址。
 
 ```
-Privacy(Π)       接收方地址对链上任意观察者不可见
-Autonomy(Π)      接收方在交易执行前链上余额为 0 且无任何预授权
-Decentralized(Π) 协议中不存在单一可识别发送方-接收方映射关系的节点
+SenderPrivacy(Π, D):
+  Pr[D(Transcript_chain) → "tx_i 的发送者是 A"] ≤ 1/k + negl(λ)
+  （k = 匿名集大小）
+
+GasAutonomy(Π, B):
+  B 在首次接收隐私 tx 前，∀t < T_receive: bal[B][t] = 0
+  且无任何 approve/allowance 记录
+
+Decentralized(Π):
+  ∄ 单一实体 R 使得 R 知晓 (sender_i, receiver_i) 的完整映射关系
+  （形式化：R 的视图 View_R 与 (sender, receiver) 对在统计距离上 ≥ ε）
 ```
 
-**定理 A（不可能性）**：不存在单链协议 Π，使得 Privacy(Π) ∧ Autonomy(Π) ∧ Decentralized(Π) 同时成立。
+**定理 A（不可能性，GASM 下）**：在 GASM 模型中，不存在协议 Π 同时满足 SenderPrivacy(Π, D) ∧ GasAutonomy(Π, B) ∧ Decentralized(Π)。
 
 **证明**：
 
-假设存在满足三元组的单链协议 Π。
+设 Π 满足 GasAutonomy(Π, B)，则 B 在首次接收前余额为 0。
 
-由 Autonomy(Π)：接收方余额为 0，不能主动发起任何交易（单链 Gas 约束，协议层硬性要求）。
+由 GASM 的 Gas 先决条件：B 不能主动发起任何交易触发自己的隐私余额。必须存在外部实体 R 发起令 B 可接收的交易。
 
-由此，接收方取款必须由第三方代发，称该第三方为 Relay(Π)。
+令 `TX_credit` 为向 B 发送隐私信用的交易。在 GASM 中：
+- `TX_credit.sender` ≠ B（B 余额为 0，无法发起）
+- `TX_credit` 必须包含足以令目标状态机识别接收方的信息（否则无法更新 B 的状态）
 
-**情形 1**：Relay(Π) 是单一实体（中心化 Relayer）。
+**情形 1**：R 是单一实体（中心化 Paymaster/Relayer）。
 
-Relay(Π) 在收到用户请求时知晓：请求方 IP（或匿名信道出口）+ 触发取款的 nullifier。Relay(Π) 可构造映射 IP → nullifier，而 nullifier 与存款 commitment 的关联可通过时序分析推断。故 Relay(Π) 知道发送方-接收方对应关系，违反 Decentralized(Π)。
+R 构造 `TX_credit`，知晓 B 的接收地址（否则无法构造有效交易）。任何触发此交易的链下请求（来自发送方 A）均经过 R。R 视图 `View_R ⊇ {(A 的标识, B 的地址)}`，违反 Decentralized(Π)。
 
-**情形 2**：Relay(Π) 是去中心化网络（如 P2P Relayer 网络）。
+**情形 2**：R 是去中心化网络（P2P Relay 网络，含 ERC-4337 Bundler 网络）。
 
-每个 Relay 节点处理取款请求时，必须知道目标地址（以构造交易的 `to` 字段）。由于接收方地址必须在交易中明文出现（单链账户模型约束），任何处理该请求的 Relay 节点均知道接收方地址，从而可以关联存款。设 Relay 网络有 m 个节点，只需 1 个节点被监控，即可还原映射，违反 Decentralized(Π)。
+P2P Relay 网络中，至少有 1 个节点处理 `TX_credit` 的构造或广播。该节点视图包含：UserOperation 中的 `callData`（含接收方信息），以及发起 UserOperation 的 IP/身份。即使采用零知识证明隐藏 callData，构造 UserOperation 的发送方必须向某个 Bundler 节点暴露明文意图（否则 Bundler 无法构造合法 UserOperation）。设 Bundler 网络有 m 个节点，只需其中 1 个被动监听，即可以 ≥ 1/m 的概率关联（m 在实践中很小），违反 Decentralized(Π)。
 
-**情形 3**：无 Relay，发送方直接代发取款交易。
+**情形 3**：无 R，接收方 B 自行触发。
 
-发送方必须将接收方地址写入交易的 `to` 字段（单链账户模型），该字段上链后对所有观察者可见，违反 Privacy(Π)。
+B 余额为 0 → 违反 GASM Gas 先决条件 → B 不能发起任何交易 → 违反 GasAutonomy(Π, B)。
 
-三种情形穷举，均导致矛盾。故假设不成立。□
+三情形穷举，矛盾。□
 
-**推论**：Tornado Cash Relayer（情形 1）、Aztec Sequencer（情形 1/2）均是此不可能性在工程层面的妥协表现。跨分片方案通过 SYSTEM_EXECUTOR（协议内置执行者）规避此约束，因为目标分片委员会整体扮演 Relay 角色，且不需要知道接收方明文地址（地址通过 ElGamal 加密传递）。
+#### ERC-4337 Paymaster 反例的处理
+
+**反驳**：ERC-4337 引入 Paymaster 合约，第三方可代付 Gas，且 Paymaster 可通过 ZK 证明接收来自隐私池的 Gas 偿还而不暴露用户信息。
+
+**回应**：
+
+定理 A 在标准 GASM 模型下严格成立（不含 Paymaster 扩展）。
+
+ERC-4337 Paymaster 的情形属于情形 1/2 的变体：Paymaster 本身是已知链上实体（必须预先在 `EntryPoint` 注册存入 ETH），其代付行为在链上是公开的（`postOp` 调用可见）。形成以下可观测链：
+
+```
+链上可见：UserOperation 被某个 Paymaster 代付 Gas
+  → 该 Paymaster 的历史行为（从哪些地址收取 Gas 偿还）可追溯
+  → 即使 ZK 证明隐藏了单次偿还来源，Paymaster 作为聚合中介形成关联
+```
+
+更精确地，ERC-4337 Paymaster 方案在以下扩展假设下可部分缓解 Gas 关联：
+- Paymaster 本身是完全不可追踪的（即匿名集 = 所有使用该 Paymaster 的用户）
+- Paymaster 的 Gas 偿还通过隐私池进行（形成循环依赖）
+
+但此方案将问题转移而非消除：Paymaster 自身变成了新的隐私瓶颈，且 Paymaster 必须预存 ETH 在链上（产生新的关联源）。
+
+**结论**：定理 A 在 GASM 模型下是严格定理；ERC-4337 是工程上的部分缓解，不是对定理的反驳，因为 Paymaster 本身不满足 Decentralized(Π)（它是链上可识别的聚合者）。
+
+**跨分片的规避方式**：目标分片委员会通过 SYSTEM_EXECUTOR 执行信用，不属于 GASM——因为协议层执行者不是"余额为 0 的新地址发起交易"，而是"协议内置系统账户代为执行"，根本不触发 Gas 先决条件。
 
 ---
 
 ### 定理 B：目标分片的信息论源不可链接性
 
-**定理 B**：对控制目标分片 Shard_dst 全部节点、计算能力**无界**的敌手 A，将其观测到的 Note（new_cm）与 Shard_src 中任意具体 nullifier 正确关联的概率，精确等于 1/K，其中 K 为源分片匿名集大小。
+#### 适用模型与假设（必须明确）
 
-即：`Pr[A(View_dst) → "new_cm 来自 nullifier_i"] = 1/K`
+**定理 B 在以下理想化模型下成立**：
 
-**此界与任何密码学假设无关（信息论安全）。**
+```
+假设 B1（理想同步信道）：
+  所有跨分片消息以固定大小、固定延迟传输
+  （无包大小泄露、无排队延迟差异、无流量元数据）
+
+假设 B2（无全局被动观察者，GPA）：
+  敌手控制 Shard_dst 全部节点，但无法同时监控
+  Shard_src 与 Shard_dst 之间的网络流量
+
+假设 B3（匿名集非空）：
+  目标分片匿名集 K ≥ 2
+```
+
+**在不满足 B1/B2 的真实网络中**（存在 GPA 或流量特征），定理 B 退化为计算安全界，需通过以下工程措施恢复：批处理（batching）、指数延迟调度（exponential delay）、固定包大小填充（padding）。见 4.6 节攻击分析。
+
+**定理 B（理想模型下）**：在假设 B1-B3 下，对控制目标分片 Shard_dst 全部节点、计算能力**无界**的敌手 A，将其观测到的 Note（new_cm）与 Shard_src 中任意具体 nullifier 正确关联的概率，精确等于 1/K。
+
+即：`Pr[A(View_dst) → "new_cm 来自 nullifier_i"] = 1/K`（信息论安全，与密码学假设无关）
 
 **证明**：
 
@@ -941,7 +1064,13 @@ View_dst = { new_cm, ShieldedCrossTransferIn 事件, ZK proof π }
 
 ### 定理 C：匿名集乘法复合性
 
-**定理 C**：在 DDH 假设下，通过 M 个分片跳转（各分片池规模分别为 K₁, K₂, ..., K_M）的隐私路由，敌手正确关联来源与最终目的 Note 的概率满足：
+#### 适用模型
+
+**定理 C 在假设 B1-B2（理想信道 + 无 GPA）下成立。**
+
+在真实网络中，GPA 可通过流量分析将乘法界退化至加法界。缓解措施：固定路由跳数、批处理、延迟随机化。
+
+**定理 C**：在 DDH 假设 + 假设 B1-B2 下，通过 M 个分片跳转（各分片池规模分别为 K₁, K₂, ..., K_M）的隐私路由，敌手正确关联来源与最终目的 Note 的概率满足：
 
 ```
 Pr[A 正确关联] ≤ ∏ᵢ₌₁ᴹ (1/Kᵢ) + M · negl(λ)
@@ -1103,93 +1232,172 @@ t = ⌈2n/3⌉                             （BFT 阈值，n=100 → t=67）
 
 ## 5.3 吞吐量分析
 
-**隐私 Tx 消息大小**：
+### 5.3.1 配对运算瓶颈精确分析（关键修正）
+
+**原设计的致命问题（已修正）**：若沿用"委员会阈值解密 + 目标分片验证 ZK proof"的错误架构，目标分片每块需执行：
 
 ```
-Groth16 proof：        256 B
-公开输入（6×32B）：    192 B
-ElGamal C1, C2：       128 B
-AES 密文：             ~100 B
-Nullifier + new_cm：    64 B
-其他 protobuf 字段：   ~100 B
-──────────────────────────────
-合计：                ~840 B   （vs 普通 tx ~142 B，放大 ~5.6×）
+1,200 txs/block × 3 次 BN254 配对/tx = 3,600 次配对
+BN254 配对耗时：1-2 ms（软件，现代服务器）
+合计：3.6 - 7.2 s  ← 几乎耗尽 10 s 出块周期，尚未含 BFT 投票与网络通信
 ```
 
-**单池隐私 TPS**：
+这是**顶会必杀的数字错误**，在 CCS/USENIX 会场直接被拒。
+
+**修正后架构（CSCC 方案）的配对分布**：
+
+| 阶段 | 配对运算 | 耗时 | 说明 |
+|------|---------|------|------|
+| 源分片（用户提交 tx） | 3 次/tx | ~3-6 ms/tx | 用户 tx 进入 EVM 时验证，分摊到出块窗口内 |
+| 路由层 | 0 次 | 0 | 仅转发 CSCC + ECIES 密文 |
+| 目标分片（铸造承诺） | 0 次/tx | ~1-2 ms/tx | 仅验证 BLS 聚合签名（1 次配对验全批） |
+
+**目标分片实际计算负载**：
+
 ```
-每块容量 = kMaxProposeMsgBytes / 840B ≈ 1,200 txs/block
-单池 TPS = 1,200 / 10 s = 120 TPS
+BLS 聚合签名验证（1 次/batch，含 1,000 txs）：
+  1 次 G2 配对 + n 次 G1 标量乘法 ≈ 2-5 ms（整批）
+  均摊：< 0.005 ms/tx
 ```
 
-**系统总隐私 TPS（随分片线性扩展）**：
+目标分片的瓶颈从 3.6-7.2 s 降至 **< 5 ms（整块）**，出块周期 10 s 绰绰有余。
+
+**源分片的配对负载**（真实瓶颈）：
 
 ```
-单分片（32 池）：  120 × 32 = 3,840 TPS
-5  分片：         19,200 TPS
-10 分片：         38,400 TPS
-20 分片：         76,800 TPS
+源分片每块验证所有用户提交的隐私 tx ZK proof：
+  每块用户提交量（估算）：设 P = 待证明 tx 数
+  单次验证：3 次配对 ≈ 3-6 ms（不批量）
+  批量验证（Groth16 batch）：(2+P) 次配对 vs 3P 次，节省 ~33%
+  
+  实际瓶颈：P × 3 ms（无批量）或 P × 2 ms（有批量）
+  若 P = 100 txs/block（合理估计，用户主动提交量）：
+    无批量：300 ms   ← 10 s 窗口内可接受
+    批量：  200 ms   ← 更优
 ```
 
-**与业界方案 TPS 对比**：
+**TPS 重新计算（修正后架构）**：
 
-| 方案 | 隐私 TPS | 扩展性 |
-|------|---------|-------|
-| Tornado Cash（ETH L1） | 2.5 | ❌ 固定 |
-| Zcash Sapling（单链） | 5-10 | ❌ 固定 |
-| Monero | 30-50 | ❌ 固定 |
-| Aztec（L2，Sequencer） | ~100 | ⚠️ 中心化 |
-| **Shardora 隐私（10 分片）** | **38,400** | ✅ 线性扩展 |
+**隐私 Tx 消息大小（ECIES + CSCC 方案）**：
+
+```
+new_commitment：    32 B
+ecies_ct：         ~144 B（64B epk + 80B AES-GCM 密文）
+cscc_signature：    96 B（BLS 聚合签名）
+src_block_hash：    32 B
+routing 字段：      ~50 B
+──────────────────────────────────────────
+合计：             ~354 B   （vs 原 ~840 B，减少 58%）
+（vs 普通 tx ~142 B，放大 ~2.5×）
+```
+
+**注**：ZK proof（256 B）留在源分片 EVM 处理，不进入跨分片 ToTxMessageItem。
+
+**单池实际 TPS 受源分片配对验证约束**：
+
+```
+源分片每块可验证 ZK proof 数（批量验证，200 ms 内）：
+  200 ms / (2 ms/tx × 批量系数 0.67) ≈ 150 txs/block（保守估计）
+  → 单池 TPS：150 / 10 s = 15 TPS（源分片验证瓶颈）
+
+  启用 SnarkPack/批量聚合（Leader GPU ~5s 聚合，链上验证 1 次）：
+  → 单池 TPS：1,000+ / 10 s = 100+ TPS
+
+  启用证明代理池（GPU 集群，多 proof 并行生成 + 批量聚合）：
+  → 单池 TPS：向消息大小上限逼近：354B × 容量 → ~2,800 txs/block → 280 TPS/pool
+```
+
+**系统总 TPS（修正后，保守与乐观估计）**：
+
+```
+配置                          单池 TPS   单分片 TPS   10分片 TPS
+──────────────────────────────────────────────────────────────
+无批量聚合（基准）              15         480         4,800
+批量验证（bellman batch）       50         1,600       16,000
+GPU 聚合 + SnarkPack            100+       3,200+      32,000+
+```
+
+**注意**：上述数字为分析估算，以实际 Shardora 节点硬件（实测配对耗时）为准。论文 Evaluation 部分需提供：① 单节点 BN254 配对基准测试；② 不同 batch size 下批量验证耗时曲线；③ 真实分布式环境下的 E2E TPS 实测值。
+
+**与业界方案 TPS 对比（修正后）**：
+
+| 方案 | 隐私 TPS（实测/估算） | 配对运算/块 | 扩展性 |
+|------|-------------------|-----------|-------|
+| Tornado Cash（ETH L1） | 2.5（实测） | 受 gas limit | ❌ |
+| Zcash Sapling（单链） | 5-10（实测） | 受出块速度 | ❌ |
+| Monero | 30-50（实测） | 无配对 | ❌ |
+| Aztec（L2，Sequencer） | ~100（估算） | Sequencer 私有 | ⚠️ |
+| **Shardora（批量验证，10分片）** | **16,000-32,000**（估算，待实测） | 源分片批量，目标零配对 | ✅ |
 
 ---
 
 ## 5.4 证明生成性能
 
-| 环境 | 估算时间 |
-|------|---------|
-| 桌面 CPU（bellman/arkworks Rust） | 1-2 s |
-| GPU（CUDA，bellman-cuda） | ~200 ms |
-| 移动端（ARM 软件实现） | 5-15 s ⚠️ |
-| 证明代理服务 | <500 ms（网络往返） |
+| 环境 | 估算时间 | 说明 |
+|------|---------|------|
+| 桌面 CPU（bellman/arkworks Rust） | 1-2 s | 主流开发机 |
+| GPU（CUDA，bellman-cuda） | ~200 ms | RTX 4090 级别 |
+| 移动端（ARM，软件实现） | 5-15 s | 需证明代理 |
+| 证明代理服务（GPU 集群） | <500 ms（含网络往返） | 生产推荐方案 |
 
 对比：Tornado Cash 电路 ~28,000 约束 → ~1s；本方案 ~21,010 约束，性能相近。
 
+**证明代理服务的隐私安全性**（重要）：证明代理接收的 witness 不含 `spending_key`——因为 `spending_key` 仅用于计算 `nullifier`（客户端本地完成），计算完毕后立即销毁。代理收到的 witness 包含公开输入和随机数，不足以暴露发送方身份。
+
 ---
 
-## 5.5 链上存储开销
+## 5.5 链上存储开销（修正后）
 
-| 数据结构 | 每笔 Tx 开销 |
-|---------|------------|
-| Merkle 树叶节点（Sparse 存储） | 32 B × d = 640 B（d=20 路径节点） |
-| Nullifier 集合（已花费） | 32 B |
-| Groth16 Verifying Key（合约内，一次性） | ~1-2 KB 固定 |
+| 数据结构 | 每笔 Tx 开销 | 位置 |
+|---------|------------|------|
+| 承诺 Merkle 叶节点 | 32 B | 目标分片 |
+| ECIES 密文（接收方扫链） | ~144 B | 目标分片 |
+| Nullifier（防双花） | 32 B | 源分片 |
+| Groth16 Verifying Key（一次性） | ~1-2 KB | 源分片合约 |
 
-放大因子约 20×（Merkle 路径）vs 普通 `_balances` 每账户 32B。
+ECIES 密文上链是新增开销，但换来了委员会无需知道 Note 内容的关键安全性质。
 
 ---
 
 ## 5.6 性能瓶颈与优化路径
 
-| 瓶颈 | 影响 | 优化方案 |
-|------|------|---------|
-| 移动端证明生成（5-15 s） | 用户体验 | 证明代理服务（witness 不含私钥，零知识） |
-| 单块隐私 Tx 上限（1,200/block） | 峰值吞吐 | Groth16 批量聚合验证（节省 60% 配对成本） |
-| Nullifier 集合无界增长 | 长期存储 | 快照归档（Merkle 根上链，原始数据链外） |
+| 瓶颈 | 量化影响 | 优化方案 |
+|------|---------|---------|
+| 源分片配对验证（主要瓶颈） | ~3ms/tx，无批量时 ~15 TPS/pool | Groth16 批量验证 / SnarkPack 聚合 |
+| 移动端证明生成 | 5-15 s 用户体验差 | GPU 证明代理服务 |
+| ECIES 密文链上存储 | 144 B/tx 额外存储 | 可降至链外 DA 层（IPFS/Celestia）存密文，链上存 hash |
+| Nullifier 集合增长 | 线性增长 | 快照归档（Merkle 根上链，原始数据链外） |
 
-**Groth16 批量验证**：验证 k 个 proof 代价 ≈ `(2+k)` 次配对 vs 单独验证 `3k` 次。k=10 时节省 60%，单池 TPS 可进一步提升。
+**批量 Groth16 验证**：验证 k 个 proof 代价 `(2+k)` 次配对 vs 单独 `3k` 次，k=50 时节省 97 次配对（64%）。批量验证是**必须实现**的工程特性，不是可选优化。
 
-**递归聚合**：将 N 个 proof 聚合为 1 个（Leader GPU，~5s），区块只需验证 1 个聚合 proof。单块隐私 Tx 容量上限从 1,200 提升至消息大小约束（~7,000 txs/block）。
+**SnarkPack 递归聚合**（最终方案）：将 N 个 Groth16 proof 聚合为 1 个（Inner Product Argument），链上仅验证 1 次 ≈ O(log N) 配对。Leader GPU 聚合耗时 ~5-10s（可在前一轮共识期间预聚合）。单块隐私 Tx 容量仅受消息大小约束。
 
 ---
 
-## 5.7 性能总结
+## 5.7 性能总结（修正后）
 
 ```
-E2E 延迟：         ~27 s  （vs 普通跨分片 ~25 s，增量 < 10%）
-客户端延迟（PC）：  1-2 s  （不在关键路径，与链上确认并行）
-系统吞吐量：       38,400 TPS（10 分片，随分片数线性扩展）
-Tx 消息大小：      ~840 B （vs 普通 ~142 B，5.6× 放大）
-链上存储/Tx：      ~64 B  （Nullifier + 承诺，与普通账户相当）
+架构：ECIES + CSCC，ZK proof 在源分片验证，目标分片零配对
+
+源分片 ZK 验证（基准，无聚合）：
+  ~15 TPS/pool（受配对运算约束）
+  → 实测得出，以实际硬件为准
+
+系统总吞吐（批量聚合，10 分片）：
+  16,000 - 32,000 TPS（估算，待实测验证）
+
+E2E 延迟：
+  ~26 s（vs 普通跨分片 ~25 s，目标分片改为 BLS 验证后延迟更低）
+
+Tx 跨分片消息大小：
+  ~354 B（vs 原设计 ~840 B，减少 58%）
+
+关键警示：
+  论文 Evaluation 节必须提供实测数据：
+  ① BN254 配对基准（单节点）
+  ② 批量验证 TPS 曲线（batch size 10/50/100/500）
+  ③ 真实广域网环境 E2E 延迟分布
+  以上缺一不可，否则 USENIX/CCS 必拒
 ```
 
 ---
