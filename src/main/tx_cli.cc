@@ -9849,14 +9849,16 @@ contract AMMPool {
             __uint128_t global_bal_sum = 0;
 
             for (int p8_try = 0; p8_try <= kP8MaxRetries && !global_stop; ++p8_try) {
-                std::vector<std::future<__uint128_t>> shad_futs;
+                using ShadResult = std::pair<__uint128_t, std::string>; // (sum, label)
+                std::vector<std::future<ShadResult>> shad_futs;
                 shad_futs.reserve(p8_shadows.size());
                 for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
                     std::string shex  = p8_shadows[si].hex;
                     uint32_t  sshard  = p8_shadows[si].shard;
+                    std::string slbl  = p8_shadows[si].label;
                     shad_futs.push_back(std::async(std::launch::async,
-                        [&eps8, shex, sshard, pk_hex, kBalOfSel, &p8_accts,
-                         encodeAddr32, hex2u128]() -> __uint128_t {
+                        [&eps8, shex, sshard, slbl, pk_hex, kBalOfSel, &p8_accts,
+                         encodeAddr32, hex2u128]() -> ShadResult {
                             __uint128_t s = 0;
                             for (auto& [acct, albl] : p8_accts) {
                                 ShardoraClient qb(eps8[sshard].ip, eps8[sshard].http);
@@ -9864,11 +9866,28 @@ contract AMMPool {
                                     pk_hex, shex, kBalOfSel + encodeAddr32(acct));
                                 if (rs.size() >= 64) s += hex2u128(rs.substr(0, 64));
                             }
-                            return s;
+                            return {s, slbl};
                         }));
                 }
                 global_bal_sum = 0;
-                for (auto& f : shad_futs) global_bal_sum += f.get();
+                std::vector<ShadResult> shad_results;
+                shad_results.reserve(p8_shadows.size());
+                for (auto& f : shad_futs) {
+                    auto r = f.get();
+                    global_bal_sum += r.first;
+                    shad_results.push_back(std::move(r));
+                }
+                // On last retry with mismatch, dump per-shadow totals for diagnosis
+                if (global_bal_sum != kInitialSupply8 && p8_try == kP8MaxRetries) {
+                    std::cout << "  [token" << ti << " P8-breakdown by shadow]\n";
+                    for (uint32_t si = 0; si < (uint32_t)shad_results.size(); ++si) {
+                        if (shad_results[si].first > 0)
+                            std::cout << "    shd " << p8_shadows[si].hex
+                                      << " s" << p8_shadows[si].shard
+                                      << " " << shad_results[si].second
+                                      << " sum=" << u128str(shad_results[si].first) << "\n";
+                    }
+                }
 
                 if (global_bal_sum == kInitialSupply8) break;
                 if (p8_try < kP8MaxRetries) {
