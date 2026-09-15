@@ -1020,6 +1020,330 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
 
 ---
 
+# Part VII：用户主动隐私选择——Shield/Unshield 机制与安全性
+
+## 7.1 问题：为何协议层"隐私 flag"不可行
+
+用户自然希望在发起交易时简单指定"我要隐私转账"。但这在**协议层**上结构不兼容：
+
+| 维度 | 普通转账 | 隐私转账 |
+|------|---------|---------|
+| 必要链上字段 | `from, to, amount`（明文） | `nullifier, commitment`（密文替代 to/amount） |
+| 余额状态 | `_balances[addr]`（账户模型） | Merkle 承诺树（UTXO Note 模型） |
+| 客户端准备 | 签名（<1ms） | 选 Note + 生成 ZK proof + ElGamal 加密（1-2s） |
+| 节点执行路径 | 直接更新余额 | 阈值解密 → 验证 ZK proof → 更新承诺树 |
+
+普通交易的 `(from, to, amount)` 三元组在隐私交易中**根本不存在**——没有 `to`（替换为 stealth address 承诺），没有 `amount`（替换为 Pedersen commitment）。协议层无法在接收到"普通交易+flag"后凭空生成这些字段，因为它们依赖用户侧的私密输入（spending_key、随机数、接收方公钥）。
+
+---
+
+## 7.2 解决方案：SDK/钱包层统一接口
+
+在协议层之上提供**统一发送接口**，隐私细节全部在客户端处理：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  用户/应用层调用                              │
+│   wallet.send(recipient_id, amount, privacy=True/False)     │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+          ┌────────────▼────────────┐
+          │   Shardora Wallet SDK   │
+          │                         │
+          │  privacy=False:         │
+          │    → 构造普通 CrossTransfer tx                    │
+          │    → 签名 → 广播                                  │
+          │                         │
+          │  privacy=True:          │
+          │    Step 1: 检查隐私余额（UTXO Note pool）         │
+          │      若不足：先 Shield 明文余额入池（见 7.3）       │
+          │    Step 2: 选 Note，计算 nullifier                │
+          │    Step 3: 生成 stealth_addr（接收方 view_pk）    │
+          │    Step 4: Groth16 proof 生成（1-2s）             │
+          │    Step 5: ElGamal 加密 Note 载荷                 │
+          │    Step 6: 提交 ShieldedCrossTransferOut tx       │
+          └─────────────────────────────────────────────────┘
+```
+
+**SDK 的隐私保证**：SDK 在本地完成所有私密计算。网络上只有最终的隐私交易（nullifier + commitment + 密文 + ZK proof），不含 spending_key 或明文 amount。
+
+---
+
+## 7.3 Shield / Unshield：明文与隐私余额的入口/出口
+
+用户的资产在两个平行的余额域之间流动：
+
+```
+明文余额域（_balances）
+        │                         ↑
+        │  Shield（存入）          │  Unshield（取出）
+        ▼                         │
+隐私余额域（UTXO Note Merkle 树）
+        │
+        │  隐私跨分片转账（Part III 完整流程）
+        ▼
+（目标分片隐私余额域）
+```
+
+### Shield 操作（明文 → 隐私）
+
+```
+用户输入：amount_shield（明文金额），spend_pk（接收方），r ← rand(Fr)
+
+链上步骤（PrivacyShadow.shield(amount, commitment)）：
+  1. 从 msg.sender 的 _balances 扣除 amount_shield
+  2. cm = Pedersen(amount_shield, r, spend_pk)
+  3. 将 cm 插入承诺 Merkle 树 cm_tree
+  4. 发出事件 ShieldDeposit(cm, cm_tree_root)
+     ← 事件仅暴露承诺 cm 和新树根，不暴露 spend_pk 或 r
+
+公开暴露：amount_shield（链上可见）
+隐藏：spend_pk（Pedersen 承诺绑定但不揭露）、r（完全隐藏）
+```
+
+### Unshield 操作（隐私 → 明文）
+
+```
+用户输入：Note 的 spending_key、commitment 的 Merkle 路径、recipient_addr（明文接收地址）
+
+链上步骤（PrivacyShadow.unshield(nullifier, recipient, amount, proof)）：
+  1. 验证 Groth16 proof
+     公开输入：nullifier, cm_root, value_binding, recipient_addr_hash
+     私密输入：spending_key, Merkle 路径, Note 内容
+  2. 检查 nullifier 未被使用
+  3. 向 recipient_addr 的 _balances 增加 amount
+  4. 发出事件 ShieldWithdraw(nullifier, recipient_addr, amount)
+     ← 事件暴露：recipient_addr、amount（不可避免，明文接收地址）
+     ← 隐藏：哪个承诺被花费（ZK proof 隐藏 Merkle 路径）
+```
+
+---
+
+## 7.4 安全性分析
+
+### 7.4.1 Shield 操作的隐私界
+
+**已知暴露（不可避免）**：
+- `amount_shield`：链上明文，任何观察者可见
+- 时序：Shield 发生的区块号和时间戳
+
+**已隐藏**：
+- `spend_pk`：Pedersen 承诺的完美隐藏性（信息论安全，见定义 1）
+- 后续流向：Shield 之后，资产在 UTXO 域流转，链上只见承诺
+
+**关联风险**：若用户 Shield 金额 v，再从同一分片 Unshield 金额 v，观察者可凭金额推断关联。缓解手段（见 7.4.4）：拆分金额、跨分片转移后再 Unshield、混合池中间跳转。
+
+### 7.4.2 Unshield 操作的隐私界
+
+**已知暴露（不可避免）**：
+- `recipient_addr`：明文地址，链上可见
+- `amount`：明文金额，链上可见
+- `nullifier`：链上可见，但无法反推来源 Note（单向哈希，见引理 4）
+
+**已隐藏**：
+- 哪个 Note（commitment）被花费：ZK 约束 C2（Merkle 路径验证）确保任何树中的 Note 都能合法花费，而不揭露具体是哪个
+- `spending_key`：ZK 约束 C4 证明知识，但不暴露值
+
+### 7.4.3 SDK 层的信息隔离
+
+SDK 在客户端运行，需保证：
+
+| 信息 | 存储位置 | 是否上网 |
+|------|---------|---------|
+| `spending_key`（Fr 标量） | 本地钱包，加密存储 | ❌ 永不出设备 |
+| `randomness r`（Fr 标量） | 本地 Note 数据库 | ❌ 永不出设备 |
+| `view_sk`（扫链私钥） | 本地钱包 | ❌ 永不出设备 |
+| Groth16 proof | 本地生成后 → 广播 | ✅ 仅最终 proof |
+| ElGamal C1, C2 | 本地加密后 → 广播 | ✅ 密文形式 |
+| Witness（电路输入） | 内存临时 | ❌ 不持久化 |
+
+若使用**证明代理服务**（见 5.6 优化路径），witness 中不含 spending_key：
+```
+Nullifier = H(spending_key ∥ cm)
+  → spending_key 用于计算 nullifier 后立即销毁
+  → 代理接收的 witness 包含 nullifier（公开输入），不含 spending_key
+```
+
+### 7.4.4 特有攻击向量
+
+#### 金额图分析（Amount Graph Analysis）
+
+攻击：观察者记录所有 Shield 金额和 Unshield 金额，按金额匹配找关联。
+
+```
+攻击者的信息：
+  ShieldDeposit events:  {cm₁→v₁, cm₂→v₂, cm₃→v₃, ...}  （金额可见）
+  ShieldWithdraw events: {nul_a→w₁, nul_b→w₂, ...}        （金额可见）
+  
+  若 vᵢ = wⱼ → 怀疑关联
+```
+
+**缓解层级**：
+
+| 缓解手段 | 效果 | 代价 |
+|---------|------|------|
+| 固定面额混合池（见 3.10） | 消除精确金额匹配 | 需碎券/合券操作 |
+| Note 拆分（1个 Note → N 次 Shield） | 增加匹配难度 | 多笔 Shield 事务 |
+| 跨分片中转（Shield 在 Shard_A，Unshield 在 Shard_B） | 不同观察域 | 跨分片延迟 |
+| 时序随机延迟（Exp 分布） | 切断时序关联 | 平均 +300s 延迟 |
+
+#### Shield 时序窗口关联
+
+攻击：观察 Shield 操作与后续隐私转账的时间间隔，推断资金流向。
+
+单链上这是主要攻击面（Tornado Cash 受此影响），但在跨分片场景下：
+- Shield 在 Shard_src 的节点集 N_src 可见
+- 后续隐私转账路由到 Shard_dst，由节点集 N_dst（与 N_src 不相交）处理
+- 没有任何单一观察者能同时看到 Shield 事件和后续隐私转账目的地
+
+形式化：设 E_shield = ShieldDeposit 事件，E_transfer = ShieldedCrossTransferOut 事件。外部观察者可见 E_shield（源分片公开）和 E_transfer（源分片公开），但 E_transfer 中的目标分片 ID 和接收方通过 ElGamal 加密，观察者无法知道最终去向。
+
+---
+
+## 7.5 形式化定义与定理
+
+### 定义 4（Shield 操作安全性）
+
+Shield 操作 `Sh(amount, spend_pk, r) → cm` 满足：
+
+- **金额绑定**（依赖 DL）：`Pr[∃(amount'≠amount, r') : Pedersen(amount',r')=cm] ≤ negl(λ)`
+- **spend_pk 隐藏**（完美隐藏）：`∀(pk₀, pk₁) : Pr[A(cm)=b | cm←Ped(v,r,pk_b)] = 1/2`
+- **随机性隐藏**（完美隐藏）：Pedersen 承诺对 r 均匀随机时完美隐藏 spend_pk 和 amount
+
+### 定义 5（Unshield 操作安全性）
+
+Unshield 操作 `Unsh(sk, cm_path, recipient) → (nul, π)` 满足：
+
+- **Note 不可链接性**：对外部观察者，`nul = H(sk ∥ cm)` 无法反推 `cm`（ROM 下单向性）
+- **消费合法性**（ZK 可靠性）：`Pr[伪造合法 proof 花费未知 Note] ≤ negl(λ)`（依赖 q-SDH）
+- **防双花**（Nullifier 唯一性）：合约拒绝重复 `nul`，攻击者无法对同一 Note 生成两个不同 `nul`（ROM 下 hash 单射）
+
+### 定理 4：Shield 后的不可链接性
+
+**定理 4**：在 DDH + ROM 假设下，对于在 Merkle 承诺树中有 k 个叶节点的系统，任意 PPT 外部观察者 A 区分两个 Shield 操作 `Sh(v, pk₀)` 和 `Sh(v, pk₁)` 的优势不超过 negl(λ)，且将后续任意隐私转账与具体 Shield 操作关联的概率不超过 1/k + negl(λ)。
+
+**证明**：
+
+（spend_pk 不可区分）由定义 4，Pedersen 承诺对 spend_pk 完美隐藏，即使 amount 相同，任何观察者也无法从 cm 区分 pk₀ 和 pk₁。
+
+（后续转账不可关联）花费 Note 时公开的 nullifier = H(spending_key ∥ cm)。由 ROM，H 的输出对不知道 spending_key 的观察者是伪随机的；cm 是 k 个叶节点之一，观察者猜中对应关系的概率为 1/k。
+
+两者联合：关联优势 ≤ 1/k + negl(λ)。 □
+
+### 定理 5：Unshield 的隐私界（不可避免的暴露）
+
+**定理 5**：在任意密码学假设下，Unshield 操作**不可避免地**向链上观察者暴露 `recipient_addr` 和 `amount`，但以下内容在 DL + q-SDH + ROM 假设下对外部观察者计算保密：
+1. 被花费的具体 Note（哪个 cm）
+2. Note 的来源（哪笔 Shield 或哪次隐私转账）
+3. `spending_key`（私钥）
+
+**证明**：
+
+（不可避免性）明文余额的接收方必须能接收，即其地址必须公开，否则无法转账至其账户——这是账户模型的基本约束。
+
+（被花费 Note 的保密性）Unshield ZK 约束 C2 证明存在一条 Merkle 路径，但 Merkle 树有 k 个叶节点，观察者无法从 nullifier 和 proof 推断路径，由 Groth16 零知识性（定义 2），proof 不泄露 witness，而 Merkle 路径正是 witness 的一部分。
+
+（来源保密性）nullifier = H(spending_key ∥ cm)，由 ROM 单向性，不能从 nullifier 反推 cm，从而不能追溯来源。 □
+
+> **推论**：Unshield 是隐私系统的最大信息泄露点。最佳实践是：在隐私域内完成所有中间转账，只在最终资金出口时 Unshield，且 Unshield 金额应与 Shield 金额不同（拆分/合并），降低金额匹配关联风险。
+
+### 定理 6：混合余额模型整体隐私保证
+
+**定理 6**（主定理扩展）：在 DDH + DL + q-SDH + ROM 假设下，用户资金从 Shield 到若干次跨分片隐私转账再到 Unshield 的完整生命周期，外部观察者 A 能获得的信息不超过：
+```
+I_A = {amount_shield, timestamp_shield, amount_unshield, recipient_unshield}
+```
+
+具体地，A 对以下内容的优势不超过 negl(λ)：
+- 确定 Shield 和 Unshield 操作是否属于同一用户
+- 确定中间经过多少次跨分片转账
+- 确定中间经过哪些分片/地址
+- 确定接收方在 Shield 之前是否知道该笔资金
+
+**证明梗概（混合论证）**：
+
+在定理 3 的 H₀→H₄ 混合序列基础上，在两端接续新的混合步骤：
+
+- H_{-1} → H₀：将 Shield 的 spend_pk 替换为均匀随机 G₁ 点（定义 4 完美隐藏性，优势差 = 0）
+- H₄ → H₅：将 Unshield 中的 Merkle 路径 witness 替换为 Simulator 模拟（Groth16 ZK 性，优势差 ≤ negl(λ)）
+
+整个序列 H_{-1} → H₅ 中，中间阶段（跨分片隐私转账）已由定理 3 保证，首尾的 Shield/Unshield 边界由本定理的新混合步骤覆盖。
+
+外部观察者视图 `View_A = (cm_shield, cm_unshield_nullifier, I_A)`，其中 cm_shield 完美隐藏内容，nullifier 是伪随机的，只有 `I_A` 是真实暴露的信息。 □
+
+---
+
+## 7.6 混合余额模型的状态机图
+
+```
+                     Shield(v)
+                     ──────────►  UTXO Note 余额域
+                     链上暴露：v
+明文余额域
+_balances[addr]        ┌──────────────────────────────────────────────────┐
+                       │  Privacy Domain                                   │
+                       │                                                   │
+                       │  隐私分片内转账（Part III）                        │
+                       │  • nullifier + commitment，全加密                  │
+                       │  • 外部不可见                                      │
+                       │                                                   │
+                       │  跨分片隐私转账（Part III）                        │
+                       │  • ElGamal 加密，路由全程密文                      │
+                       │  • 源/目标分片节点集不相交                         │
+                       └──────────────────────────────────────────────────┘
+                     ◄────────── Unshield(v', recipient)
+                     链上暴露：v', recipient
+```
+
+**信息泄露时机**：
+
+| 操作 | 链上暴露 | 不暴露 |
+|------|---------|-------|
+| Shield | `amount_shield`，时间戳 | spend_pk，随机数，后续去向 |
+| 隐私域内跨分片转账 | nullifier（不可反推），new_cm | 金额，接收方，源/目标 |
+| Unshield | `amount_unshield`，`recipient` | 来源 Note，中间路径 |
+
+---
+
+## 7.7 对完整定理体系的影响
+
+新增定理 4、5、6 与原有定理 1-3 的关系：
+
+```
+定理 1（ElGamal IND-CPA）
+    ↓ 被定理 3 混合论证使用
+定理 2（隐私安全 ≡ 共识安全）
+    ↓ 共享安全假设
+定理 3（端到端跨分片隐私，主定理）
+    ↓ 定理 6 将其扩展至 Shield/Unshield 边界
+定理 4（Shield 后不可链接性）──────┐
+定理 5（Unshield 的隐私界）        ├─→ 定理 6（混合余额模型整体隐私）
+定理 4 + 5 + 3 ───────────────────┘
+```
+
+**完整安全定理体系**：
+
+| 定理 | 内容 | 依赖假设 |
+|------|------|---------|
+| 定理 1 | ElGamal 阈值 IND-CPA | DDH，t-1 腐化 |
+| 定理 2 | 隐私安全 ≡ 共识安全 | BFT 安全模型 |
+| 定理 3 | 端到端跨分片隐私 | DDH + DL + q-SDH + ROM |
+| **定理 4** | Shield 后不可链接 | DDH + ROM |
+| **定理 5** | Unshield 的不可避免暴露界 | DL + q-SDH + ROM |
+| **定理 6** | 混合余额模型全生命周期隐私 | DDH + DL + q-SDH + ROM |
+
+**最大攻击面排序**（从高到低）：
+
+```
+1. Unshield 操作（recipient + amount 公开）        ← 不可避免，应尽量推迟
+2. Shield 操作（amount 公开）                      ← 用固定面额混合池缓解
+3. 委员会内部人串通（≥t 个节点）                   ← 等价于攻破共识（定理 2）
+4. 金额图分析（Shield-Unshield 金额匹配）          ← 用拆分/合并缓解
+5. 时序关联攻击                                    ← 用指数延迟缓解
+```
+
+---
+
 *整合自：PRIVACY_TX_DESIGN.md、PRIVACY_TX_COMPARISON.md、PRIVACY_TX_PERFORMANCE.md、PRIVACY_TX_FORMAL_ANALYSIS.md*
 *版本：2026-09-15 | 分支：xl0616 | 核心模块：shardoravm、consensus/zbft、bls、protos*
 *参考：Groth 2016、Pedersen 1991、Buterin et al. 2023、Möser et al. 2018、Bünz et al. 2018*
