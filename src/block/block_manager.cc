@@ -381,6 +381,17 @@ void BlockManager::HandleNormalToTx(
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto to_tx = to_txs.tos(i);
         if (to_tx.des_sharding_id() == local_net_id) {
+            // BUG FIX (shard=3 to-tx double execution): CrossShardBase items
+            // (has_base_root_address) are already handled by HandleCrossShardBaseTx
+            // when the source block arrives.  That path uses the source-block hash in
+            // the unique_hash; this path would use the normal_to block hash — a
+            // different key — so the kv-store dedup in ToTxLocalItem::HandleTx would
+            // not detect the duplicate, causing each transfer to be credited twice.
+            // Skip CrossShardBase items here; they must only go through
+            // HandleCrossShardBaseTx to guarantee exactly-once execution.
+            if (to_tx.has_base_root_address() && !to_tx.base_root_address().empty()) {
+                continue;
+            }
             CreateLocalToTx(view_block, to_tx);
             continue;
         }
@@ -454,12 +465,10 @@ void BlockManager::HandleNormalToTx(
         }
 
         // CrossTransfer or CrossStorageSet — route to dest shard/pool
-        if (to_tx.has_base_root_address()) {
-            if (to_tx.has_sharding_id() &&
-                    static_cast<uint32_t>(to_tx.sharding_id()) == local_net_id) {
-                CreateLocalToTx(view_block, to_tx);
-            }
-        }
+        // NOTE: Do NOT call CreateLocalToTx here for CrossShardBase items.
+        // HandleCrossShardBaseTx is the sole path for these; creating a second
+        // kConsensusLocalTos TX from the normal_to block would produce a different
+        // unique_hash and bypass dedup, causing double-credit (the shard=3 ratio=2 bug).
     }
 }
 

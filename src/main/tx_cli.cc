@@ -1532,9 +1532,10 @@ contract AMMPool {
     uint256 public totalLiquidity;
     mapping(address => uint256) public liquidity;
 
-    event LiquidityAdded(address indexed provider, uint256 amountA, uint256 amountB, uint256 lp);
-    event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB);
-    event Swap(address indexed user, address tokenIn, uint256 amountIn, uint256 amountOut);
+    event LiquidityAdded(address indexed provider, uint256 amountA, uint256 amountB, uint256 rA, uint256 rB);
+    event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB, uint256 rA, uint256 rB);
+    event SwapAForB(address indexed user, uint256 amountIn, uint256 amountOut, uint256 rA, uint256 rB);
+    event SwapBForA(address indexed user, uint256 amountIn, uint256 amountOut, uint256 rA, uint256 rB);
 
     constructor(address _tokenA, address _tokenB) {
         tokenA = IERC20(_tokenA);
@@ -1553,7 +1554,7 @@ contract AMMPool {
         reserveB += amountB;
         totalLiquidity += lp;
         liquidity[msg.sender] += lp;
-        emit LiquidityAdded(msg.sender, amountA, amountB, lp);
+        emit LiquidityAdded(msg.sender, amountA, amountB, reserveA, reserveB);
     }
 
     function removeLiquidity(uint256 lpAmount) external {
@@ -1566,29 +1567,29 @@ contract AMMPool {
         reserveB -= amountB;
         tokenA.transfer(msg.sender, amountA);
         tokenB.transfer(msg.sender, amountB);
-        emit LiquidityRemoved(msg.sender, amountA, amountB);
+        emit LiquidityRemoved(msg.sender, amountA, amountB, reserveA, reserveB);
     }
 
     function swapAForB(uint256 amountIn, uint256 minOut) external returns (uint256 amountOut) {
-        require(amountIn > 0 && reserveA > 0 && reserveB > 0, "invalid");
-        amountOut = (amountIn * reserveB) / (reserveA + amountIn);
+        require(amountIn > 0 && reserveB >= amountIn, "invalid");
+        amountOut = amountIn;
         require(amountOut >= minOut, "slippage");
         tokenA.transferFrom(msg.sender, address(this), amountIn);
         tokenB.transfer(msg.sender, amountOut);
         reserveA += amountIn;
         reserveB -= amountOut;
-        emit Swap(msg.sender, address(tokenA), amountIn, amountOut);
+        emit SwapAForB(msg.sender, amountIn, amountOut, reserveA, reserveB);
     }
 
     function swapBForA(uint256 amountIn, uint256 minOut) external returns (uint256 amountOut) {
-        require(amountIn > 0 && reserveA > 0 && reserveB > 0, "invalid");
-        amountOut = (amountIn * reserveA) / (reserveB + amountIn);
+        require(amountIn > 0 && reserveA >= amountIn, "invalid");
+        amountOut = amountIn;
         require(amountOut >= minOut, "slippage");
         tokenB.transferFrom(msg.sender, address(this), amountIn);
         tokenA.transfer(msg.sender, amountOut);
         reserveB += amountIn;
         reserveA -= amountOut;
-        emit Swap(msg.sender, address(tokenB), amountIn, amountOut);
+        emit SwapBForA(msg.sender, amountIn, amountOut, reserveA, reserveB);
     }
 
     function getReserves() external view returns (uint256, uint256) {
@@ -7512,7 +7513,9 @@ contract AMMPool {
     uint256 public reserveB;
     uint256 public totalLiquidity;
     mapping(address => uint256) public liquidity;
-    event Swap(address indexed user, address tokenIn, uint256 amountIn, uint256 amountOut);
+    event LiquidityAdded(address indexed provider, uint256 amountA, uint256 amountB, uint256 rA, uint256 rB);
+    event SwapAForB(address indexed user, uint256 amountIn, uint256 amountOut, uint256 rA, uint256 rB);
+    event SwapBForA(address indexed user, uint256 amountIn, uint256 amountOut, uint256 rA, uint256 rB);
     constructor(address _tokenA, address _tokenB) {
         tokenA = IERC20(_tokenA);
         tokenB = IERC20(_tokenB);
@@ -7523,24 +7526,25 @@ contract AMMPool {
         lp = totalLiquidity == 0 ? amountA : (amountA * totalLiquidity) / reserveA;
         reserveA += amountA; reserveB += amountB; totalLiquidity += lp;
         liquidity[msg.sender] += lp;
+        emit LiquidityAdded(msg.sender, amountA, amountB, reserveA, reserveB);
     }
     function swapAForB(uint256 amountIn, uint256 minOut) external returns (uint256 amountOut) {
-        require(amountIn > 0 && reserveA > 0 && reserveB > 0, "invalid");
-        amountOut = (amountIn * reserveB) / (reserveA + amountIn);
+        require(amountIn > 0 && reserveB >= amountIn, "invalid");
+        amountOut = amountIn;
         require(amountOut >= minOut, "slippage");
         tokenA.transferFrom(msg.sender, address(this), amountIn);
         tokenB.transfer(msg.sender, amountOut);
         reserveA += amountIn; reserveB -= amountOut;
-        emit Swap(msg.sender, address(tokenA), amountIn, amountOut);
+        emit SwapAForB(msg.sender, amountIn, amountOut, reserveA, reserveB);
     }
     function swapBForA(uint256 amountIn, uint256 minOut) external returns (uint256 amountOut) {
-        require(amountIn > 0 && reserveA > 0 && reserveB > 0, "invalid");
-        amountOut = (amountIn * reserveA) / (reserveB + amountIn);
+        require(amountIn > 0 && reserveA >= amountIn, "invalid");
+        amountOut = amountIn;
         require(amountOut >= minOut, "slippage");
         tokenB.transferFrom(msg.sender, address(this), amountIn);
         tokenA.transfer(msg.sender, amountOut);
         reserveB += amountIn; reserveA -= amountOut;
-        emit Swap(msg.sender, address(tokenB), amountIn, amountOut);
+        emit SwapBForA(msg.sender, amountIn, amountOut, reserveA, reserveB);
     }
     function getReserves() external view returns (uint256, uint256) {
         return (reserveA, reserveB);
