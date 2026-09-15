@@ -69,7 +69,7 @@ Shardora 的挖矿奖励由多层机制叠加：
 
 **吞吐量奖励**为分片基础奖励最多上浮 20%，与该分片本 Epoch 处理的交易量挂钩，激励节点积极参与共识。
 
-**Gas 分配机制**：每笔交易产生的 Gas 费用全额分配给分片内共识节点，不执行销毁。原生代币设有最大供应量上限（210 亿），通过挖矿奖励逐步释放，Gas 收入构成节点维护存储与参与共识的经济激励来源。
+**Gas 分配机制**：每笔交易产生的 Gas 费用 100% 分配给分片内共识节点，无代币燃烧。原生代币设硬顶（Hard Cap）210 亿，区块奖励通过减半曲线逐步释放，渐近硬顶，Gas 收入构成节点维护存储与参与共识的经济激励来源。
 
 ### 2.3 换届不停机机制
 
@@ -2869,39 +2869,53 @@ IPFS 依赖节点自愿 Pin，无最低冗余保证；Filecoin 每笔存储合�
 | Filecoin | 每笔合约 1 个封印副本 | 合约数 $\times 1\times$ | 无 |
 | Shardora | 分片内 BFT 全副本 | $1024\times$（分片内），单节点 $= S_{\text{total}}/K$ | $P_{\text{fail}} \leq 6.5 \times 10^{-16}$ |
 
-#### E.2.3 Gas 定价的存储经济模型
+#### E.2.3 存储凭证事务模型、数据面两阶段提交与代币经济学
 
-**定义 E.5（Shardora 存储事务模型）**
+##### E.2.3.1 存储凭证事务（Storage Receipt Transaction, SRT）
 
-Shardora 将数据存储抽象为链上事务（Storage Transaction）。每笔存储事务 $tx_{\text{store}}$ 满足：
+**定义（存储凭证事务 SRT）**
 
-$$|tx_{\text{store}}| \leq \ell_{\max} = 1\text{ KB} = 1024\text{ B}$$
+Shardora 文件存储的链上记录为存储凭证事务（Storage Receipt Transaction，SRT），载荷为定长元数据（$\approx 256\text{ B}$）：
 
-单笔事务最大有效载荷为 1 KB。存储大小为 $|F|$ 的文件需拆分为 $\lceil |F| / \ell_{\max} \rceil$ 笔独立事务，每笔支付 gas 费用：
+$$\text{SRT} \triangleq \bigl(\,\underbrace{\text{CID}}_{256\text{-bit}},\;\; \underbrace{T_{\text{lease}}}_{\text{租约 Epoch}},\;\; \underbrace{G_{\text{pool}}}_{\text{预付 Gas 租金池}},\;\; \underbrace{|F|}_{\text{文件大小}},\;\; \underbrace{\theta}_{\text{挑战参数}}\,\bigr)$$
 
-$$G_{\text{store}}(tx) = G_{\text{base}} + G_{\text{byte}} \cdot |tx|$$
+**关键性质**：一个文件对应**一笔** SRT，无论 $|F|$ 为 1 MB 还是 10 GB，链上事务数量均为 1，载荷固定约 256 B，不随文件大小增长。原始 Blob 数据不经由 HotStuff 区块打包广播，不消耗共识出块容量。
 
-Gas 由用户支付，由分片内共识节点作为区块奖励获取，构成存储服务的直接经济激励。
+**命题 E.2.3（链上存储容量中立性）**
 
-**命题 E.2.3（高吞吐分片网络的低 Gas 均衡）**
+SRT 载荷 $|\text{SRT}| = \Theta(1)$，存储任意大小文件所消耗的链上出块资源与 $|F|$ 无关。单分片以约 $10{,}000\text{ tx/s}$ 的共识吞吐量可并发处理 $10^4$ 笔存储凭证，对应文件大小无上限约束。$\square$
 
-Shardora 原生代币设最大供应量上限 $\mathcal{S}_{\max} = 2.1 \times 10^{10}$（210 亿），通过挖矿奖励逐步释放，不设预挖或额外增发。单分片共识吞吐量 $\text{TPS}_{\text{shard}} \approx 10{,}000$，部署 $K$ 个分片时全网吞吐量 $\text{TPS}_{\text{net}} = K \times 10{,}000$。
+##### E.2.3.2 控制面与数据面的两阶段提交协议
 
-在供需均衡下，gas 价格 $p^*$ 满足：
+Shardora 存储子系统分为两个相互隔离的平面：
 
-$$p^* = \frac{\Lambda}{Q_s} = \frac{\Lambda}{K \times \text{TPS}_{\text{shard}} \times G_{\text{block}}}$$
+- **控制面（Control Plane）**：HotStuff BFT 共识网络，仅处理 SRT 等元数据事务，单条消息体积 $\leq$ 数 KB，与 §7.2 所述共识网络行为一致。
+- **数据面（Data Plane）**：分片内部 P2P Blob 广播网络，在 1024 个节点间直接传输原始 Blob 数据，与控制面物理隔离，互不干扰。
 
-其中 $\Lambda$ 为全网事务需求（tx/s），$G_{\text{block}}$ 为单块 gas 上限。当 $K$ 增大而 $\Lambda$ 不变时，$p^*$ 随分片数线性下降。在当前分片规模下，gas 价格可维持在极低水平，使得链上数据存储在经济上可行。$\square$
+**协议（两阶段存储提交）**
+
+- **Phase 1（数据同步）**：客户端经数据面将 Blob $F$ 广播至分片 P2P 网络，1024 个节点将 $F$ 完整缓存于本地 Blob Pool，以 $\text{CID}(F)$ 索引；
+- **Phase 2（元数据提交）**：Leader 打包存储元数据区块前，校验本地 Blob Pool 已完整接收对应 CID；校验通过后，SRT 经 HotStuff QC 共识写入 $\mathcal{L}_{\text{meta}}$，Phase 2 的链上承诺以 Phase 1 的数据完整到达为前提，保证链上记录与实际存储的一致性。
+
+该两阶段设计对齐定理 E.3（RS-BFT 不相容性）的推论 E.2.1：所有 1024 个节点在共识前须持有完整 Blob，全副本存储是 Phase 2 提交的协议前置条件。
+
+##### E.2.3.3 代币经济学与 Gas 定价
+
+Shardora 原生代币采用**硬顶发行模型**：
+
+- **硬顶（Hard Cap）**：$\mathcal{S}_{\max} = 2.1 \times 10^{10}$（210 亿），上限不可突破；
+- **释放曲线**：区块奖励通过减半曲线（Halving Schedule）逐步释放，渐近硬顶；
+- **Gas 分配**：每笔事务 Gas 费用 **100% 分配**给分片内共识节点，**无代币燃烧**。
+
+Gas 单价由全网供需均衡决定：随分片数 $K$ 增大（供给扩容），均衡 Gas 价格随 $K$ 线性下降，SRT 的实际链上成本维持在极低水平。
 
 **推论 E.2.3（存储成本的三系统对比）**
 
-| 系统 | 存储计价模型 | 持久性保证来源 | BFT 安全下界 |
-|-----|-----------|-------------|------------|
-| IPFS | 无强制计费（自愿 Pin） | 无协议保证 | 无 |
-| Filecoin | 每字节每 Epoch 市场定价，合约到期后无保证 | 存储合约期内 1 副本 | 无 |
-| Shardora | 链上 Gas（原生代币，总量 210 亿，低价可控） | BFT 共识全副本，协议层永久保证 | $P_{\text{fail}} \leq 6.5\times10^{-16}$ |
-
-**结论**：Shardora 存储经济模型以链上 gas 作为存储成本的唯一定价维度：用户支付低廉的原生代币 gas，获得由 1024 个 BFT 共识节点全副本强制保证的持久存储。Gas 机制同时作为防滥用经济屏障，限制非理性数据膨胀。与 IPFS 的无成本无保证、Filecoin 的市场定价条件性存储相比，Shardora 实现了成本可控与协议级持久性的统一。
+| 系统 | 链上存储计价单位 | 数据持久性来源 | BFT 安全下界 |
+|-----|--------------|------------|------------|
+| IPFS | 无（自愿 Pin，无强制保证） | 无协议保证 | 无 |
+| Filecoin | 每字节每 Epoch 市场定价；合约到期后无保证 | 合约期内 1 副本/deal | 无 |
+| Shardora | 每文件一笔 SRT（$\approx 256\text{ B}$）× Gas 单价；与 $|F|$ 无关 | BFT 1024 全副本，协议层永久保证 | $P_{\text{fail}} \leq 6.5\times10^{-16}$ |
 
 ---
 
