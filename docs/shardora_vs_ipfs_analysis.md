@@ -1660,7 +1660,7 @@ $$\text{攻破共识层 PoS} \leq_R \text{keccak256 原象搜索} \approx O(2^{2
 
 ## 附录 C：基于分片机制的深度形式化理论体系
 
-> 本附录从分片拜占庭容错概率界、局部重构纠删码（LRC）存储模型、一致性哈希动态扩缩容迁移界、抗局域网外包攻击的时序放大博弈，以及跨分片交换结合幺半群确定性收敛五个维度，给出严密的形式化定义、定理与数学证明，旨在将 Shardora 的理论深度提升至 IEEE TDSC / TPDS 及 FAST / EuroSys 顶级学术会议水准。
+> 本附录从分片拜占庭容错概率界、1024 节点分片的 BFT 存储安全与 32 池并发吞吐量形式化、一致性哈希动态扩缩容迁移界、抗局域网外包攻击的时序放大博弈，以及跨分片交换结合幺半群确定性收敛五个维度，给出严密的形式化定义、定理与数学证明。
 
 ---
 
@@ -1734,106 +1734,146 @@ $$\left|\Pr[\mathcal{A}(y) = 1 \mid y = \text{VRF}_{sk}(x)] - \Pr[\mathcal{A}(y)
 
 ---
 
-### C.2 分片局部重构纠删码（LRC）与数据可用性（DA）
+### C.2 1024 节点分片的 BFT 存储安全性与 32 池并发吞吐量形式化
 
-单纯依赖 BFT 全副本存储会导致 $m$ 倍的物理存储膨胀（Storage Amplification）。必须引入**局部重构纠删码**（Local Reconstruction Codes, LRC）以在存储效率与容错能力之间取得最优均衡。
+#### C.2.1 Shardora 架构参数体系
 
-#### C.2.1 $(k,r,g)$-LRC 架构代数定义
+**定义 C.3（Shardora 系统规模参数）**
 
-**定义 C.3（LRC 参数化编码）**
+Shardora 系统由以下固定架构参数确定：
 
-设文件切分为 $k$ 个原始数据块 $\mathcal{D} = \{d_1, d_2, \ldots, d_k\}$，定义在有限域 $\mathbb{F}_q$ 上（$q$ 为素数幂）。
+| 参数 | 符号 | 固定值 | 含义 |
+|------|------|-------|------|
+| 每分片节点数 | $m$ | $1024$ | 分片委员会规模 |
+| 每分片交易池数 | $P$ | $32$ | 分片内并行处理单元 |
+| 最大分片数 | $K_{\max}$ | $1024$ | 系统水平扩展上限 |
+| BFT 容错阈值 | $f$ | $\lfloor(m-1)/3\rfloor = 341$ | 每分片最多 341 个拜占庭节点 |
+| 全网节点总数上界 | $N_{\max}$ | $K_{\max} \cdot m = 1{,}048{,}576$ | 约 $10^6$ 节点 |
 
-**局部组划分**：将 $k$ 个数据块均匀划分为 $M = \lceil k/r \rceil$ 个局部组（Local Groups），每组大小为 $r$。
+**定义 C.4（分片状态空间分区）**
 
-**局部校验块**：为每个组分配 1 个局部校验块 $p_j^{\text{loc}}$（共 $M$ 个），满足局部校验方程：
+系统全局状态 $\Sigma$ 被划分为 $K \times P$ 个**不相交状态分区**（Disjoint State Partition）：
 
-$$p_j^{\text{loc}} = \sum_{i=1}^{r} \alpha_{j,i} \cdot d_{(j-1)r+i}, \quad \alpha_{j,i} \in \mathbb{F}_q^*, \quad j \in [1, M]$$
+$$\Sigma = \bigsqcup_{j=1}^{K} \bigsqcup_{p=1}^{P} \Sigma_{j,p}, \quad \Sigma_{j,p} \cap \Sigma_{j',p'} = \emptyset \text{ 对所有 } (j,p) \neq (j',p')$$
 
-**全局校验块**：为全量数据生成 $g$ 个全局校验块 $\{p_1^{\text{glob}}, \ldots, p_g^{\text{glob}}\}$，由以下全局生成矩阵 $G \in \mathbb{F}_q^{g \times k}$ 决定：
+每个分区 $\Sigma_{j,p}$ 由分片 $j$ 的第 $p$ 个交易池独立管理，持有该池内所有账户的本地状态。
 
-$$\mathbf{p}^{\text{glob}} = G \cdot \mathbf{d}, \quad G_{i,j} = \omega^{(i-1)(j-1)}, \quad \omega \text{ 为 } \mathbb{F}_q \text{ 本原元}$$
+#### C.2.2 m=1024 分片的拜占庭数据安全定理
 
-**编码参数汇总**：
+**定理 C.2（1024 节点分片数据不丢失定理）**
 
-| 参数 | 表达式 | 含义 |
-|------|--------|------|
-| 总编码块数 | $n_{\text{code}} = k + \lceil k/r \rceil + g$ | 原始块 + 局部校验 + 全局校验 |
-| 存储放大率 | $R_{\text{amp}} = 1 + \frac{1}{r} + \frac{g}{k}$ | 编码开销 |
-| 局部修复度 | $r$ | 单块故障只需读 $r$ 个块 |
-| 全局容错度 | $g+1$ | 任意 $g+1$ 个并发故障可恢复 |
+在 Shardora 系统中，单个分片委员会规模 $m = 1024$，全网拜占庭比例 $\beta < 1/3$，则单个分片的拜占庭沦陷概率满足：
 
-**架构示意（$k=6, r=2, g=2$ 的 $(6,2,2)$-LRC）**：
+$$P_{\text{fail}}(m{=}1024) \leq \exp\!\left(-2 \times 1024 \times \left(\tfrac{1}{3} - \beta\right)^{\!2}\right)$$
 
-```
-原始数据块：   [d₁  d₂]     [d₃  d₄]     [d₅  d₆]
-               |   局部组1  |   局部组2  |   局部组3  |
-局部校验：      p₁^loc       p₂^loc       p₃^loc
-                  \               |               /
-全局校验：         └────────────────────────────┘
-                        p₁^glob    p₂^glob
-```
+**典型参数下的数值界**：
 
-#### C.2.2 存储最优性与最小距离界
+| 拜占庭比例 $\beta$ | $P_{\text{fail}}$（精确上界） | 量级 |
+|------------------|---------------------------|------|
+| $0.30$ | $\exp(-0.91) \approx 0.40$ | 不安全区间边界 |
+| $0.25$ | $\exp(-9.20) \approx 10^{-4}$ | 较弱安全 |
+| $0.20$ | $\exp(-36.4) \approx 6.5 \times 10^{-16}$ | **强安全** |
+| $0.15$ | $\exp(-82.1) \approx 6.1 \times 10^{-36}$ | 极强安全 |
+| $0.10$ | $\exp(-146) \approx 10^{-63}$ | 计算不可行 |
 
-**定理 C.2（LRC Singleton 类型界）**
+**证明**：直接代入定理 C.1 的 Hoeffding 界，令 $m = 1024$，$\varepsilon = 1/3 - \beta$：
 
-在 $(k,r,g)$-LRC 编码下，系统的最小汉明距离 $d_{\min}$ 满足严格上界：
+$$P_{\text{fail}} \leq \exp(-2m\varepsilon^2) = \exp\!\left(-2 \times 1024 \times (1/3 - \beta)^2\right) \quad \blacksquare$$
 
-$$d_{\min} \leq n_{\text{code}} - k - \left\lceil \frac{k}{r} \right\rceil + 2 = g + 2$$
+**推论 C.2.1（m=1024 相对于安全最小规模 m=830 的裕量）**：
 
-当且仅当全局校验矩阵 $G$ 选取为 Vandermonde 矩阵（MDS 子码构造）时，上界取等：
+定理 C.1 推导出 $\beta=0.2$ 时委员会最小安全规模为 $m^* = 830$。Shardora 采用 $m = 1024 > m^*$，安全裕量为：
 
-$$d_{\min} = g + 2$$
+$$\frac{P_{\text{fail}}(m^*)}{P_{\text{fail}}(m)} = \frac{\exp(-2 \times 830 \times (1/3-0.2)^2)}{\exp(-2 \times 1024 \times (1/3-0.2)^2)} = \exp(2 \times (1024-830) \times 0.01\overline{7}) = \exp(6.89) \approx 985$$
 
-**证明：**
+即 Shardora 的单分片数据安全概率比理论最小规模高出约 **3 个数量级**。
 
-由 Gopalan、Huang、Simitci、Yekhanin（2012）建立的标量线性 LRC 理论界，对任意满足局部度 $r$ 约束的线性码，其最小距离满足：
+#### C.2.3 全网多分片数据可用性定理
 
-$$d_{\min} \leq n - k - \left\lceil \frac{k}{r} \right\rceil + 2$$
+**定理 C.3（全网数据不丢失概率下界）**
 
-代入 $n = n_{\text{code}} = k + \lceil k/r \rceil + g$：
+设 Shardora 系统运行 $K$ 个分片（$K \leq 1024$），每纪元 $E$ 重组委员会，全网拜占庭比例 $\beta = 0.2$。则系统在连续 $E$ 个纪元内**所有**分片均维持数据安全的概率下界为：
 
-$$d_{\min} \leq \left(k + \left\lceil \frac{k}{r} \right\rceil + g\right) - k - \left\lceil \frac{k}{r} \right\rceil + 2 = g + 2$$
+$$\mathcal{S}_{\text{data}} \geq 1 - K \cdot E \cdot \exp\!\left(-2 \times 1024 \times \left(\tfrac{1}{3} - \beta\right)^{\!2}\right) = 1 - K \cdot E \cdot 6.5 \times 10^{-16}$$
 
-**下界验证（$d_{\min} \geq g+2$）**：取任意码字 $\mathbf{c} \neq \mathbf{0}$，其局部组分量中至多有 $g+1$ 个块可同时为零（否则全局校验矩阵行列满秩条件被破坏）。故任意两个不同码字的汉明距离 $d(\mathbf{c}_1, \mathbf{c}_2) \geq g+2$，得 $d_{\min} \geq g+2$。
+**参数代入（最大规模场景）**：令 $K = 1024$，$E = 10^9$（约 31.7 年，若每纪元 1 秒）：
 
-综合上下界，$d_{\min} = g+2$。$\blacksquare$
+$$\mathcal{S}_{\text{data}} \geq 1 - 1024 \times 10^9 \times 6.5 \times 10^{-16} = 1 - 6.7 \times 10^{-4} \approx 99.93\%$$
 
-**推论 C.2.1（局部修复高效性）**：单个块 $d_i$ 丢失时，仅需从同一局部组读取 $r$ 个块（局部性 $r \ll k$），无需跨分片通信即可线性恢复：
+即在最大规模（1024 分片）连续运行 30 年的情景下，系统全局数据不丢失概率仍高于 **99.93%**。
 
-$$d_i = \frac{p_j^{\text{loc}} - \sum_{\ell \neq i} \alpha_{j,\ell} \cdot d_{(j-1)r+\ell}}{\alpha_{j,i}}$$
+**证明**：由联合界（Union Bound），$K$ 个分片中任意一个在单纪元沦陷的概率 $\leq K \cdot P_{\text{fail}}$。$E$ 个纪元连续安全的概率 $\geq (1 - K \cdot P_{\text{fail}})^E \geq 1 - K \cdot E \cdot P_{\text{fail}}$（Bernoulli 不等式）。代入 $P_{\text{fail}} = 6.5 \times 10^{-16}$ 即得。$\blacksquare$
 
-修复带宽为 $r$ 个块，相比 $(n,k)$-MDS 码需要读 $k$ 个块，修复放大率降低至 $r/k$。
+**推论 C.2.2（BFT 全副本冗余的充分性）**：
 
-#### C.2.3 跨分片数据可用性故障概率模型
+每个分片的 1024 个节点各持有**完整状态副本**，共识协议保证 BFT 安全性要求同时使 $f+1 = 342$ 个以上节点故障才可能引发数据丢失，而这需要全局拜占庭比例 $\beta \geq 1/3$（被安全假设所排除）。因此，**BFT 全副本冗余本身已提供充分的数据可用性保证**，无需额外的纠删码机制。数据安全性由去中心化共识协议在协议层保证，而非存储层编码。
 
-**定义 C.4（独立分片失活模型）**
+#### C.2.4 32 池并发状态分区不变量
 
-设全网共有 $K$ 个分片，将 $n_{\text{code}}$ 个编码块分散存储于不同的物理分片上。假设分片独立失活（离线或被攻破）的概率为 $p_{\text{fail}}$，且各分片失活事件相互独立。
+**定义 C.5（分片内交易池状态隔离）**
 
-**定理 C.3（数据永久丢失概率上界）**
+分片 $j$ 的第 $p$ 个交易池 $(j,p)$ 维护独立的状态树 $\mathcal{T}_{j,p}$，满足以下不变量：
 
-文件在 $(k,r,g)$-LRC 分布式分片部署下，发生不可逆数据丢失的概率 $P_{\text{loss}}$ 满足：
+1. **状态隔离性**：任意本地事务 $Tx \in \text{Pool}(j,p)$ 的状态读写集严格约束于 $\Sigma_{j,p}$，不访问 $\Sigma_{j,p'}\,(p' \neq p)$；
+2. **并发独立性**：池 $(j,p)$ 和池 $(j,p')$（$p \neq p'$）的执行引擎无共享可变状态，执行可完全并行；
+3. **跨池一致性**：跨池状态迁移（跨分片转账）通过附录 C.5 的交换结合幺半群协议处理，不引入阻塞锁。
 
-$$P_{\text{loss}} = \sum_{j=g+2}^{n_{\text{code}}} \binom{n_{\text{code}}}{j} p_{\text{fail}}^j (1-p_{\text{fail}})^{n_{\text{code}}-j} + \sum_{j=2}^{g+1} \xi(j) \binom{n_{\text{code}}}{j} p_{\text{fail}}^j (1-p_{\text{fail}})^{n_{\text{code}}-j}$$
+**定理 C.4（32 池并发无竞争定理）**
 
-其中第一项为总失效数 $\geq g+2$ 时的强纠错破坏项，第二项中 $\xi(j)$ 为失效节点数 $j \in [2, g+1]$ 恰好全部命中同一局部组的条件概率（坏情形）：
+在满足定义 C.5 三条不变量的条件下，分片 $j$ 内的 $P = 32$ 个交易池可以**完全并发执行**，无任何锁竞争或状态冲突。即对任意排列 $\pi \in S_P$，以任意顺序执行 $P$ 个池的事务批，最终全局状态唯一且等于全部批次顺序执行的结果。
 
-$$\xi(j) = \frac{\lceil k/r \rceil \cdot \binom{r+1}{j}}{\binom{n_{\text{code}}}{j}}$$
+**证明**：
 
-**渐近阶估计**：当 $p_{\text{fail}} \to 0$ 时，主导项为：
+由状态隔离性（不变量 1），设池 $p$ 的事务批 $B_p$ 的读写集为 $\text{RW}_p \subseteq \Sigma_{j,p}$。对任意 $p \neq p'$：
 
-$$P_{\text{loss}} = O\!\left(p_{\text{fail}}^{g+2}\right)$$
+$$\text{RW}_p \cap \text{RW}_{p'} \subseteq \Sigma_{j,p} \cap \Sigma_{j,p'} = \emptyset$$
 
-**与全副本冗余的对比**：
+读写集两两不相交，即任意两个池的事务批之间不存在**读-写冲突**（Read-Write Conflict）或**写-写冲突**（Write-Write Conflict）。
 
-| 冗余方案 | 存储放大率 | 数据丢失渐近阶 |
-|---------|-----------|-------------|
-| 全 $m$ 副本（BFT 全量） | $m \approx 20 \sim 100$ | $O(p_{\text{fail}}^m)$ |
-| $(k,r,g)$-LRC | $R_{\text{amp}} = 1.25 \sim 1.5$ | $O(p_{\text{fail}}^{g+2})$ |
+由数据库事务理论的**冲突可串行化定理**（Conflict Serializability），无冲突的并发执行等价于任意串行化顺序，最终状态唯一：
 
-取 $g = m - 2$，两者数据丢失渐近阶等价，但 LRC 将存储开销从 $m$ 倍压缩至 $1.3$ 倍，存储效率提升 $15 \sim 75$ 倍。$\blacksquare$
+$$\text{State}(\sigma, B_{\pi(1)}, B_{\pi(2)}, \ldots, B_{\pi(P)}) = \text{State}(\sigma, B_1, B_2, \ldots, B_P) \quad \forall \pi \in S_P \quad \blacksquare$$
+
+#### C.2.5 系统吞吐量线性扩展定理
+
+**定义 C.6（系统吞吐量模型）**
+
+设单个交易池的处理吞吐量为 $\lambda_{\text{pool}}$（TPS），则：
+
+- **分片吞吐量**：$\lambda_{\text{shard}} = P \cdot \lambda_{\text{pool}} = 32 \cdot \lambda_{\text{pool}}$（由定理 C.4 并发无竞争保证）
+- **系统总吞吐量**：$\lambda_{\text{total}} = K \cdot P \cdot \lambda_{\text{pool}} = K \cdot 32 \cdot \lambda_{\text{pool}}$
+
+**定理 C.5（双维线性扩展定理）**
+
+Shardora 系统的总吞吐量相对于分片数 $K$ 和每分片池数 $P$ 均呈**严格线性扩展**：
+
+$$\lambda_{\text{total}}(K, P) = K \cdot P \cdot \lambda_{\text{pool}}, \quad \frac{\partial \lambda_{\text{total}}}{\partial K} = P \cdot \lambda_{\text{pool}}, \quad \frac{\partial \lambda_{\text{total}}}{\partial P} = K \cdot \lambda_{\text{pool}}$$
+
+**证明（两阶段线性性）**：
+
+**阶段 1（分片内 P 池并发）**：由定理 C.4，$P$ 个池完全并发执行，不存在阻塞依赖，吞吐量完全叠加：
+
+$$\lambda_{\text{shard}} = \sum_{p=1}^{P} \lambda_{\text{pool}} = P \cdot \lambda_{\text{pool}}$$
+
+**阶段 2（K 个分片并发）**：由定义 C.4 的状态分区不相交性，不同分片的状态树 $\mathcal{T}_{j,p}$ 与 $\mathcal{T}_{j',p}$（$j \neq j'$）完全独立，不同分片的共识实例之间无全局阻塞依赖（跨分片消息通过异步幺半群协议处理）：
+
+$$\lambda_{\text{total}} = \sum_{j=1}^{K} \lambda_{\text{shard}} = K \cdot P \cdot \lambda_{\text{pool}} \quad \blacksquare$$
+
+**推论 C.2.3（最大规模系统吞吐量）**：
+
+取 $K = 1024$，$P = 32$，$\lambda_{\text{pool}} \approx 781\ \text{TPS}$（对应分片吞吐量 $25{,}000\ \text{TPS}$）：
+
+$$\lambda_{\text{total}}^{\max} = 1024 \times 32 \times 781 = 32{,}768 \times 781 \approx 2.56 \times 10^7\ \text{TPS}$$
+
+即系统最大规模下可实现约 **2560 万 TPS** 的理论峰值吞吐量，且增加分片数时不存在全局协调瓶颈，扩展效率为 $O(1)$（相对于单分片）。
+
+**推论 C.2.4（存储总量线性增长）**：
+
+系统全局存储量满足：
+
+$$\text{Storage}_{\text{total}} = K \cdot m \cdot S_{\text{node}}$$
+
+其中 $S_{\text{node}}$ 为单个节点存储的本地状态大小。增加分片数 $K$ 时，每个分片独立贡献 $m = 1024$ 个副本的存储，系统总存储线性增长，不存在跨分片集中式存储瓶颈。
 
 ---
 
@@ -2191,34 +2231,38 @@ $$P_{2PC\text{-deadlock}} \geq 1 - (1 - e^{-3})^{64} \approx 1 - (0.9502)^{64} \
 |---------|---------|------------------|---------|
 | C.1 | 单分片拜占庭沦陷上界 | 超几何分布 Hoeffding 不等式 | $P_{\text{fail}} \leq e^{-2m(1/3-\beta)^2}$ |
 | C.1.1 | 全网多纪元安全界 | 联合界（Union Bound） | $\mathcal{S} \geq 1 - K \cdot E \cdot P_{\text{fail}}$ |
-| C.2 | LRC Singleton 类型界 | Gopalan-Huang-Simitci-Yekhanin 代数界 | $d_{\min} = g+2$（MDS 最优） |
-| C.3 | 数据永久丢失概率 | 二项分布尾部界 | $P_{\text{loss}} = O(p_{\text{fail}}^{g+2})$ |
-| C.4 | 一致性哈希迁移期望界 | 顺序统计量 + Dirichlet 测度 | $\mathbb{E}[\Delta_{\text{mig}}] = 1/(K+1)$（全局最优） |
-| C.5 | 分片负载均衡 Chernoff 界 | Chernoff 不等式 | 最大偏差 $O(\sqrt{n\log K / KV})$ |
-| C.6 | PoRA 延迟线性放大分离 | ROM 强依赖 + 物理延迟下界 | $\Delta T(d) = 2d\tau_{\text{LAN}}$，$d=1001$ 时超过 WAN 抖动 |
-| C.7 | 跨分片操作交换结合幺半群 | 整数加法 + 格论 + 集合代数 | $(\mathcal{M}, \oplus, \mathbf{0})$ 交换结合幺半群 |
-| C.8 | 跨分片并发强最终一致性 | Church-Rosser 菱形性质 | 任意排列 $\pi$ 下最终状态唯一，死锁概率 $\equiv 0$ |
-| C.9 | 2PC 死锁概率下界 | 指数分布超时模型 | $K=64$ 时死锁概率 $\geq 96.1\%$ |
+| C.2 | $m{=}1024$ 分片数据不丢失定理 | 超几何 Hoeffding 界 + BFT 全副本协议 | $P_{\text{fail}}(1024, 0.2) \leq 6.5 \times 10^{-16}$ |
+| C.2.1 | $m{=}1024$ 相对最小规模安全裕量 | 指数函数单调性 | 安全概率高出 $m^*{=}830$ 约 $985 \times$（$\approx 3$ 个数量级） |
+| C.3 | 全网数据不丢失概率下界 | 联合界 + Bernoulli 不等式 | $\mathcal{S}_{\text{data}} \geq 99.93\%$（$K{=}1024$，$E{=}10^9$） |
+| C.2.2 | BFT 全副本冗余充分性 | 定理 C.2 + BFT 安全协议假设 | 协议层保证数据安全，无需纠删码 |
+| C.4 | 32 池并发无竞争定理 | 冲突可串行化 + 状态分区不变量 | $P{=}32$ 个池完全并发，任意排列最终状态唯一 |
+| C.5 | 双维线性扩展定理 | 定理 C.4 + 分片间状态树独立性 | $\lambda_{\text{total}} = K \cdot P \cdot \lambda_{\text{pool}}$，最大约 $2.56 \times 10^7$ TPS |
+| C.3（节§） | 一致性哈希迁移期望界 | 顺序统计量 + Dirichlet 测度 | $\mathbb{E}[\Delta_{\text{mig}}] = 1/(K+1)$（全局最优） |
+| C.3.4 | 分片负载均衡 Chernoff 界 | Chernoff 不等式 | 最大偏差 $O(\sqrt{n\log K / KV})$ |
+| C.4（节§） | PoRA 延迟线性放大分离 | ROM 强依赖 + 物理延迟下界 | $\Delta T(d) = 2d\tau_{\text{LAN}}$，$d{=}1001$ 时超过 WAN 抖动 |
+| C.5（节§） | 跨分片操作交换结合幺半群 | 整数加法 + 格论 + 集合代数 | $(\mathcal{M}, \oplus, \mathbf{0})$ 交换结合幺半群 |
+| C.5.2 | 跨分片并发强最终一致性 | Church-Rosser 菱形性质 | 任意排列 $\pi$ 下最终状态唯一，死锁概率 $\equiv 0$ |
+| C.5.3 | 2PC 死锁概率下界 | 指数分布超时模型 | $K{=}64$ 时死锁概率 $\geq 96.1\%$ |
 
 ### C.7 理论贡献矩阵（顶级学术标准对比）
 
 | 理论维度 | 经典方案（Filecoin / Polkadot） | 本文理论体系（Shardora） | 数学保证级别 |
 |---------|-------------------------------|----------------------|------------|
 | 分片安全抽样 | 经验值（10~50 节点，忽视局部女巫） | 超几何 Hoeffding 界，$m \geq 830$ 下界 | 信息论 + 统计极限定理 |
-| 存储冗余模型 | 全副本（$m \times$ 空间膨胀）或重度 zk-PoRep | $(k,r,g)$-LRC，$d_{\min} = g+2$，冗余 $\leq 1.5\times$ | MDS 广义 Singleton 代数界 |
+| 存储冗余模型 | 少量副本或重度 zk-PoRep（无协议层证明） | $m{=}1024$ BFT 全副本，协议层数据安全，$P_{\text{fail}} \leq 6.5 \times 10^{-16}$ | 超几何 Hoeffding 界 + BFT 安全性定理 |
 | 拓扑扩缩容 | 取模哈希，$O(1-1/K)$ 数据雪崩 | 圆周测度 $\mathbb{S}^1$ 虚拟节点，迁移期望 $= 1/(K+1)$ | 顺序统计量 + Dirichlet 测度分析 |
 | 抗外包共谋 | 高成本 zk-SNARK 算术电路，小时级证明 | PoRA 串行依赖，$d \geq 1001$ 轮，$\Delta T > 500\ \text{ms}$ | 物理延迟下界 + ROM 强依赖 |
 | 跨分片结算 | 阻塞式 2PC，死锁概率 $\geq 96.1\%$ | 交换结合幺半群，SEC 合流，死锁概率 $\equiv 0$ | 抽象代数 + Church-Rosser 定理 |
 
 ---
 
-*附录 C 中所有定理均基于标准密码学假设（ROM、DDH、CDH）与成熟的代数/概率工具（超几何分布、Dirichlet 测度、格论、Church-Rosser 定理），构成面向 IEEE TDSC / TPDS 及 FAST / EuroSys 顶级会议的严密学术支撑。*
+*附录 C 中所有定理均基于标准密码学假设（ROM、DDH、CDH）与成熟的代数/概率工具（超几何分布、Dirichlet 测度、格论、Church-Rosser 定理），形成对 Shardora 核心机制的完整形式化理论体系。*
 
 ---
 
-## 附录 D：分片 BFT 存储系统的存储引擎、编码集成与安全规约深度形式化
+## 附录 D：分片 BFT 存储系统的存储引擎与安全规约深度形式化
 
-> 本附录在附录 C 基础上，从分片 BFT 状态机吞吐-审计解耦建模、存储引擎写放大与崩溃恢复上界、LRC 归档流水线修复复杂度、PoRA 混合论证安全规约，以及合谋外包的博弈论阻断五个维度，给出完整的形式化定义、定理与证明。
+> 本附录在附录 C 基础上，从分片 BFT 状态机吞吐-审计解耦建模、存储引擎写放大与崩溃恢复上界、1024 节点全副本存储负载与 32 池 WAL 优化、PoRA 混合论证安全规约，以及合谋外包的博弈论阻断五个维度，给出完整的形式化定义、定理与证明。
 
 ---
 
@@ -2340,54 +2384,69 @@ $$T_{\text{RTO}} = T_{\text{WAL-replay}} + T_{\text{SMT-rebuild}} + T_{\text{BFT
 
 ---
 
-### D.3 LRC 归档层流水线集成与修复复杂度
+### D.3 1024 节点分片的存储负载、状态树规模与节点写负载形式化
 
-#### D.3.1 LRC 在分片共识流水线中的位置
+#### D.3.1 单分片状态树规模建模
 
-**定义 D.5（双层存储架构）**
+**定义 D.5（分片状态树参数）**
 
-系统采用**双层存储架构**（Two-Tier Storage Architecture）：
+设单个交易池管理 $A_{\text{pool}}$ 个活跃账户，每个账户状态大小为 $\bar{s}_{\text{acct}}$（包含余额、Nonce 及合约存储）。则：
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Layer 1：BFT 共识层（Hot Storage，NVMe SSD）           │
-│  ▪ 当前纪元 E 的完整状态树（In-Consensus SMT）          │
-│  ▪ 存储放大率：m_BFT 副本 × 1 = m_BFT（约 3 副本）     │
-│  ▪ 目标：1秒内快速提交，强一致性                        │
-├─────────────────────────────────────────────────────────┤
-│  Layer 2：LRC 归档层（Warm Storage，多分片分布）         │
-│  ▪ 历史纪元 [0, E-δ] 的编码归档数据                    │
-│  ▪ 存储放大率：R_amp = 1 + 1/r + g/k ≈ 1.3×            │
-│  ▪ 目标：长期可审计、可局部修复                         │
-└─────────────────────────────────────────────────────────┘
-```
+- **单池状态大小**：$S_{\text{pool}} = A_{\text{pool}} \cdot \bar{s}_{\text{acct}}$
+- **单分片状态大小**：$S_{\text{shard}} = P \cdot S_{\text{pool}} = 32 \cdot A_{\text{pool}} \cdot \bar{s}_{\text{acct}}$
+- **单节点存储量**：$S_{\text{node}} = S_{\text{shard}}$（每节点持有完整分片状态副本）
 
-**定义 D.6（纪元滚动归档协议）**
+**命题 D.4（单节点存储量上界）**
 
-每当系统推进到纪元 $E$，前 $\delta$ 个纪元的共识状态 $\sigma_{E-\delta}$ 从 Layer 1 迁移到 Layer 2，执行以下编码流程：
+取典型参数 $A_{\text{pool}} = 10^6$ 账户，$\bar{s}_{\text{acct}} = 256\ \text{B}$（基础账户）：
 
-1. **数据分块**：将 $\sigma_{E-\delta}$ 切分为 $k$ 个大小均等的块 $\{d_1, \ldots, d_k\}$；
-2. **LRC 编码**：按定义 C.3 生成 $n_{\text{code}} = k + \lceil k/r \rceil + g$ 个编码块；
-3. **跨分片分发**：按一致性哈希（定义 C.6）将各编码块分发至对应分片存储节点；
-4. **编码承诺**：在 Layer 1 状态树中记录编码块的 Merkle 根 $R_{\text{enc}}$，供审计验证。
+$$S_{\text{node}} = 32 \times 10^6 \times 256\ \text{B} = 8\ \text{GiB}$$
 
-#### D.3.2 LRC 修复协议的通信复杂度分析
+账户含合约存储（平均 $4\ \text{KiB}$）时：
 
-**定理 D.4（LRC 单块修复通信复杂度）**
+$$S_{\text{node}}^{\text{contract}} = 32 \times 10^6 \times 4\ \text{KiB} = 128\ \text{GiB}$$
 
-在 $(k,r,g)$-LRC 编码下，单个块 $d_i$ 丢失时，修复所需的**跨分片通信量**（Repair Bandwidth）满足：
+均处于消费级 NVMe SSD（$1 \sim 4\ \text{TiB}$）的合理存储范围，不存在存储瓶颈。
 
-$$\text{BW}_{\text{repair}} = r \cdot B_0$$
+#### D.3.2 1024 节点全副本写负载分析
 
-其中 $B_0$ 为单块大小。相比朴素 $(n_{\text{code}}, k)$-MDS Reed-Solomon 码的修复带宽 $k \cdot B_0$，LRC 修复带宽降低为：
+**定理D.4（全副本写负载的节点均摊界）**
 
-$$\frac{\text{BW}_{\text{repair}}^{\text{LRC}}}{\text{BW}_{\text{repair}}^{\text{MDS}}} = \frac{r}{k}$$
+在 $m = 1024$ 节点全副本模型下，设分片吞吐量 $\lambda_{\text{shard}} = 25{,}000\ \text{TPS}$，每笔交易平均状态写量 $\bar{s} = 256\ \text{B}$，RocksDB 写放大因子 $W_{\text{amp}} \approx 36$，则每个节点的**物理磁盘写带宽**为：
 
-当 $k = 10$，$r = 2$ 时，修复带宽压缩至 $20\%$。
+$$W_{\text{node}} = \lambda_{\text{shard}} \cdot \bar{s} \cdot W_{\text{amp}} = 25{,}000 \times 256\ \text{B} \times 36 \approx 230\ \text{MB/s}$$
 
-**证明**：单块丢失时，失效块所属局部组由 $r$ 个数据块和 1 个局部校验块构成 $(r+1, r)$-MDS 子码。根据 MDS 子码最优修复性质，读取同组 $r$ 块即可线性恢复，无需跨组通信。$\blacksquare$
+且 $W_{\text{node}}$ 与节点数 $m = 1024$ **严格无关**：全副本模型中每个节点写负载恒等于分片写负载，不随节点规模增加而增长。
 
-**推论 D.3.1（跨分片修复通信优化）**：设全网有 $K = 64$ 个分片，块大小 $B_0 = 1\ \text{MiB}$，$r = 2$。每次单块修复的跨分片流量为 $2\ \text{MiB}$，与原来 MDS 码的 $10\ \text{MiB}$ 相比降低 $80\%$，大幅降低分片间网络带宽压力。
+**证明**：全副本模型下，每个节点在 BFT 提交后独立写入本地状态树，写入量等于分片总状态变更量 $\lambda_{\text{shard}} \cdot \bar{s}$，经 LSM-Tree 放大 $W_{\text{amp}}$ 倍后得物理写带宽，此值与 $m$ 的取值无关。$\blacksquare$
+
+**推论 D.4.1（全网写负载总量）**：
+
+$$W_{\text{total}} = K \cdot m \cdot W_{\text{node}} = K \times 1024 \times 230\ \text{MB/s}$$
+
+这是分布在 $K \times m$ 个节点上的**去中心化分布式写负载**，每个节点仅承担 $230\ \text{MB/s}$，不存在中心化写瓶颈。
+
+#### D.3.3 32 池并发写的 WAL 批量合并优化定理
+
+**定义 D.6（池级 WAL 批量提交）**
+
+设分片 $j$ 的 $P = 32$ 个池同时产生事务，在区块提交时执行**批量 WAL 刷盘**：将 $P$ 个池的 WAL 记录合并到单次 `fsync` 调用，而非每池独立刷盘。
+
+**定理D.5（WAL 批量提交的 fsync 节约定理）**
+
+在批量 WAL 提交策略下，每个区块的 `fsync` 次数从 $P$ 次降低至 $1$ 次，写同步 CPU 开销降低为：
+
+$$\text{WAL}_{\text{overhead}}^{\text{batch}} = \frac{\lambda_{\text{shard}}}{T} \times \tau_{\text{fsync}}$$
+
+与非批量策略相比，开销降低 $P = 32$ 倍：
+
+$$\frac{\text{WAL}_{\text{overhead}}^{\text{non-batch}}}{\text{WAL}_{\text{overhead}}^{\text{batch}}} = P = 32$$
+
+取 $T = 500$，$\tau_{\text{fsync}} = 100\ \mu\text{s}$，$\lambda_{\text{shard}} = 25{,}000\ \text{TPS}$：
+
+$$\text{WAL}_{\text{overhead}}^{\text{batch}} = 50 \times 100\ \mu\text{s} = 5\ \text{ms/s} = 0.5\%\ \text{CPU}$$
+
+**证明**：由定理 C.4（32 池并发无竞争），区块内各池事务完全并行执行，所有池的 WAL 写入在区块提交时一次性同步。`fsync` 的开销主要取决于调用次数而非数据量，故 $P$ 个池合并到 1 次 `fsync` 后开销降低 $P$ 倍。$\blacksquare$
 
 ---
 
@@ -2538,11 +2597,12 @@ $$C_{\text{annual}} = 0.035 \times 3{,}600 \times 24 \times 365 \approx \$1{,}10
 | D.1 | 分片 BFT 吞吐-审计解耦性 | HotStuff 流水线时延并行分析 | $d \leq \Delta_{\text{net}}/\tau_{\text{SSD}}$ 时审计零开销 |
 | D.2 | RocksDB 分片写放大上界 | LSM-Tree 多层放大模型 | $W_{\text{amp}} \approx 36$，物理写带宽 $230\ \text{MB/s}$ |
 | D.3 | 崩溃恢复 RTO 上界 | NVMe I/O + 快照同步 | $T_{\text{RTO}} < 6\ \text{s}$ |
-| D.4 | LRC 单块修复带宽最优性 | MDS 子码最优修复定理 | $\text{BW}_{\text{repair}} = r \cdot B_0$（降低 $r/k$ 倍） |
+| §D.3 | 全副本写负载节点均摊界 | LSM-Tree 写放大 + BFT 全副本模型 | $W_{\text{node}} = 230\ \text{MB/s}$，与 $m{=}1024$ 严格无关 |
+| §D.3 | WAL 批量提交 fsync 节约 | 32 池并发无竞争（定理 C.4） | fsync 次数降低 $P{=}32$ 倍，WAL 开销 $< 0.5\%$ CPU |
 | D.5 | PoRA $(\alpha, T, \varepsilon)$-可靠性 | ROM + 混合论证（Hybrid Argument） | 声误差 $\leq (1-\alpha)^d + d Q_H / 2^\lambda$ |
 | D.6 | 理性自适应外包密码学不可行 | ROM 强随机性 + 串行物理延迟 | 预测索引概率 $= 1/N$，时延差 $= 2d\tau_{\text{LAN}}$ |
-| D.7 | 云存储动态拉取的双重阻断 | 物理延迟 + 博弈论成本模型 | $d=100$ 时延差 $\geq 1.2\ \text{s}$；年成本比 $= 22{,}000\times$ |
+| D.7 | 云存储动态拉取的双重阻断 | 物理延迟 + 博弈论成本模型 | $d{=}100$ 时延差 $\geq 1.2\ \text{s}$；年成本比 $= 22{,}000\times$ |
 
 ---
 
-*附录 D 从系统流水线建模（D.1）、存储引擎 I/O 量化（D.2–D.3）、编码层修复复杂度（D.4）到密码安全规约（D.5）与博弈论阻断（D.6–D.7），覆盖了分片 BFT 存储系统从硬件基础设施到协议安全性的完整形式化链条。*
+*附录 D 从系统流水线建模（D.1）、存储引擎 I/O 量化（D.2–D.3）、1024 节点全副本写负载与 WAL 优化（§D.3）到密码安全规约（D.5）与博弈论阻断（D.6–D.7），覆盖了分片 BFT 存储系统从硬件基础设施到协议安全性的完整形式化链条。*
