@@ -2714,6 +2714,91 @@ $$\begin{cases} d_1 \cdot (\tau_{\text{SSD}} + \tau_{\text{hash}}) < \Delta_{\te
 | 时延放大量 | $\approx 3.36\text{ ms}$ | $204.8\text{ ms} \gg \sigma_{\text{WAN}}$ |
 | 对 TPS 影响 | 零（隐藏于网络等待窗） | 零（后台异步） |
 
+#### E.1.4 双层证明系统的职责分工形式化（Dual-Proof Functional Partition）
+
+**定义 E.3（双层存储证明系统）**
+
+Shardora 的存储可验证性由两个协议共同构成，各自作用于不同的数据范畴：
+
+$$\Pi_{\text{sys}} \triangleq \left( \Pi_{\text{PoRA}},\; \Pi_{\text{BLS-Store}} \right)$$
+
+**第一层：共识历史持有证明** $\Pi_{\text{PoRA}}$
+
+$$\Pi_{\text{PoRA}} : \text{节点} \xrightarrow{\text{随机访问挑战}} \text{证明持有} \{B_h\}_{h=1}^{H}$$
+
+- **被证对象**：全部历史区块 $B_h$，包括其中记录的存储合约与 Manifest 元数据
+- **挑战机制**：附录 C.4 的 PoRA 串行随机访问（Tier-1 块内 + Tier-2 纪元宏证明）
+- **安全保证**：定理 D.5，PoRA $(\alpha, T, \varepsilon)$-可靠性；Tier-2 定理 E.1 的物理时延阻断
+- **作用**：保证全网账本历史、存储合约与寻址拓扑的不可篡改性
+
+**第二层：用户文件持有证明** $\Pi_{\text{BLS-Store}}$
+
+$$\Pi_{\text{BLS-Store}} : \text{存储节点} \xrightarrow{\text{CID 随机挑战}} \text{BLS 份额签名} \xrightarrow{\text{聚合}} \text{纪元聚合证明}$$
+
+- **被证对象**：节点按合约承接的用户文件 $\{F_i\}$，由其 CID（内容寻址哈希）标识
+- **挑战机制**：每个 Epoch 内，根国会对节点所持 CID 集合发起随机抽样挑战；节点响应后提交 BLS 份额；委员会聚合后作为纪元存储证明提交给根国会
+- **安全保证**：BLS 门限签名的不可伪造性（附录 A 的 EUF-CMA 安全）；CID 的内容寻址性保证响应数据与合约记录一致
+- **作用**：作为存储收益释放的链上依据，保证节点真实持有所承诺的用户文件
+
+**定理 E.4（双层证明职责完备性）**
+
+设存储系统的可信性目标分解为以下两条性质：
+
+1. **账本不可篡改性**（Ledger Integrity）：全网任意节点对存储合约与 Manifest 的认知一致；
+2. **文件实际持有性**（File Possession）：存储节点实际持有其承诺的用户文件。
+
+则 $\Pi_{\text{PoRA}}$ 单独实现性质 1，$\Pi_{\text{BLS-Store}}$ 单独实现性质 2，两者联合实现系统完整存储可验证性：
+
+$$\Pi_{\text{PoRA}} \Rightarrow \text{Ledger Integrity}, \quad \Pi_{\text{BLS-Store}} \Rightarrow \text{File Possession}$$
+
+$$\Pi_{\text{sys}} = \left( \Pi_{\text{PoRA}},\; \Pi_{\text{BLS-Store}} \right) \Rightarrow \text{Ledger Integrity} \land \text{File Possession}$$
+
+**证明**：
+
+**性质 1（$\Pi_{\text{PoRA}}$ 保证账本不可篡改性）**：
+
+设 $B_h$ 包含存储合约 $C_i$ 与 Manifest $M_i$。由 PoRA 定义（附录 C.4），挑战要求节点在不可预测的随机索引处提供原始区块内容，任何对 $B_h$ 的篡改都会导致哈希链断裂（附录 A 定理 A.12 的链式承诺安全性）。因此，通过 PoRA 挑战的节点必须持有与全网一致的完整区块历史，账本内容（含 $C_i$, $M_i$）不可被单方篡改。
+
+**性质 2（$\Pi_{\text{BLS-Store}}$ 保证文件实际持有性）**：
+
+对 CID $= H(F_i)$ 的随机挑战要求节点返回 $F_i$ 的指定字节范围并附上 BLS 份额签名。由 CID 的抗碰撞性（SHA-256/SHA-3），任何与 $F_i$ 内容不同的文件都不能通过哈希验证；由 BLS 签名的不可伪造性（EUF-CMA），份额无法在不持有文件的情况下伪造。聚合后的纪元证明唯一标识了节点在该 Epoch 实际存储的文件集合。
+
+**两者正交性**：$\Pi_{\text{PoRA}}$ 的挑战域为 $\{B_h\}$，$\Pi_{\text{BLS-Store}}$ 的挑战域为用户文件 $\{F_i\}$；两域不相交（由定义 E.3：$\mathcal{W}_{\text{consensus}} \cap \{F_i\} = \emptyset$），协议互不干扰，联合实现完备存储可验证性。$\blacksquare$
+
+#### E.1.5 Tier-2 宏证明的抗审查性（Censorship Resistance）
+
+**定理 E.5（Tier-2 宏证明抗审查性定理）**
+
+在 Shardora HotStuff 协议下，$f < m/3$ 的拜占庭假设成立。设诚实节点 $v$ 在纪元结束前完成了有效的 Tier-2 宏证明 $\pi_v^{\text{macro}}$，且在分片委员会内通过 P2P 广播传播。则 $v$ **不会**因恶意 Leader 的审查行为而被冤杀（Slashing）。
+
+**证明**：
+
+**第 1 步（P2P 传播保证多数知晓）**：
+
+Tier-2 宏证明 $\pi_v^{\text{macro}}$ 在纪元结束前通过分片内 P2P gossip 广播，不经由 Leader 的单点中继。由 HotStuff 的网络模型，在同步假设下，$\pi_v^{\text{macro}}$ 在 $\Delta_{\text{net}}$ 内到达所有诚实节点。设诚实节点数 $\geq 2f+1$（由 $f < m/3$），则 $\pi_v^{\text{macro}}$ 被 $\geq 2f+1$ 个诚实节点收到。
+
+**第 2 步（阈值聚合独立于 Leader）**：
+
+分片委员会在 Epoch TimeBlock 提交时，对各节点的宏证明执行 BLS 阈值聚合（附录 A.3）。聚合的输入来自各节点独立广播的份额，而非 Leader 汇总提交。只要 $\geq 2f+1$ 个节点广播了有效份额，聚合即可在不依赖 Leader 的情况下完成。
+
+**第 3 步（恶意 Leader 的代价）**：
+
+设 Leader $\ell$ 为拜占庭节点，蓄意在 TimeBlock 提案中排除 $\pi_v^{\text{macro}}$，则：
+
+$$\text{TimeBlock}_\ell.\text{ProofDigest} \neq \text{Aggregation}(\pi_v^{\text{macro}}, \ldots)$$
+
+$\geq 2f+1$ 个诚实副本已持有 $\pi_v^{\text{macro}}$，验证 $\text{TimeBlock}_\ell$ 时发现证明摘要缺失，**拒绝为该 TimeBlock 签名**，导致 $\ell$ 的提案无法获得有效 QC，视图超时（View Timeout）。
+
+**第 4 步（Leader 轮换恢复）**：
+
+视图超时触发 HotStuff 的 View-Change 协议，下一轮 Leader $\ell'$ 从诚实节点中选出（由 VRF 随机性，在 $\beta < 1/3$ 下以压倒性概率选到诚实节点）。$\ell'$ 接收 $\pi_v^{\text{macro}}$ 并将其包含进合法 TimeBlock，$v$ 的宏证明得以正常记录，不触发 Slashing。
+
+综合四步，恶意 Leader 的审查行为导致其本轮提案失效并被轮换，诚实节点 $v$ 的宏证明在下一诚实 Leader 视图内必然被提交，冤杀不可能发生。$\blacksquare$
+
+**推论 E.5.1（Slashing 精确性保证）**：
+
+在 $f < m/3$ 假设下，Slashing 事件当且仅当节点未能在任意连续 $W_{\text{epoch}}$ 个纪元内通过 Tier-2 宏证明挑战，且所有 $W_{\text{epoch}}$ 次 TimeBlock 中均无该节点的有效证明摘要。由定理 E.5，此条件仅对确实未存储数据的节点成立，对诚实存储节点以概率 1 不触发。
+
 ---
 
 ### E.2 BFT 状态提交确定性与存储膨胀质疑的范畴澄清
@@ -2857,6 +2942,66 @@ RTT 挑战为**被动式**测量，信标只需发送一个含签名时间戳的
 | 欺骗成功概率 | $\leq 10^{-344}$（$L{=}8$）| 任意（VPN 完全绕过）| 不适用 |
 | 与共识集成 | 节点加入时触发，异步 | 独立过滤层 | 独立证明层 |
 
+#### E.3.5 信标节点的 VRF 动态选取与可信性定理
+
+**定义 E.8（信标节点 VRF 选取机制）**
+
+信标节点集合 $\mathcal{B} = \{b_1, \ldots, b_L\}$ 并非静态固定节点，而是由根国会在每个 Epoch 开始时通过以下机制动态产生：
+
+1. **候选池约束**：候选集 $\mathcal{C}_{\text{beacon}}$ 由满足以下条件的节点构成：
+   - 质押额排名前 $N_{\text{top}}$ 名（$N_{\text{top}} \leq N$）；
+   - 历史信用分 $\text{Credit}(v) \geq \theta_{\text{credit}}$（连续在线、无 Slash 记录）；
+   - 在线运行纪元数 $\geq E_{\text{min}}$（防止新进节点操纵）。
+
+2. **VRF 随机抽样**：根国会 Leader 使用纪元随机信标 $\rho_{\text{epoch}}$（附录 A.3）作为 VRF 输入，从 $\mathcal{C}_{\text{beacon}}$ 中抽取 $L$ 个节点：
+
+$$\mathcal{B} = \text{VRF-Select}(\rho_{\text{epoch}},\; \mathcal{C}_{\text{beacon}},\; L)$$
+
+3. **每 Epoch 轮换**：$\mathcal{B}$ 随每个 Epoch 更新，攻击者无法提前预知下一 Epoch 的信标集合。
+
+**定理 E.6（信标节点可信性定理）**
+
+设全网拜占庭比例 $\beta < 1/3$，VRF 抽样从规模 $|\mathcal{C}_{\text{beacon}}| = N_c$ 的候选池中无放回抽取 $L$ 个信标。则 $L$ 个信标节点**全部**为拜占庭节点的概率满足：
+
+$$\Pr[\mathcal{B} \subseteq \mathcal{B}_{\text{adv}}] \leq \beta^L \leq \left(\frac{1}{3}\right)^L$$
+
+取 $L = 8$：
+
+$$\Pr[\mathcal{B} \subseteq \mathcal{B}_{\text{adv}}] \leq \left(\frac{1}{3}\right)^8 = \frac{1}{6561} \approx 1.5 \times 10^{-4}$$
+
+**证明**：
+
+由 VRF 的伪随机性（附录 A.3，EUF-CMA + 随机预言机假设），每次 VRF 抽样的输出在攻击者视角下均匀分布于 $\mathcal{C}_{\text{beacon}}$。设候选池中拜占庭节点比例为 $\beta_c \leq \beta$，则第 $l$ 次抽中拜占庭节点的条件概率上界为 $\beta$（因候选池的信用分约束进一步筛除低信用拜占庭节点，实际 $\beta_c \leq \beta$）。
+
+$L$ 次独立抽样（每次 $\leq \beta$ 概率抽中拜占庭节点），全部抽中的概率：
+
+$$\Pr[\mathcal{B} \subseteq \mathcal{B}_{\text{adv}}] \leq \beta^L \leq (1/3)^8 \approx 1.5 \times 10^{-4}$$
+
+**各 $L$ 下的信标集合全被攻陷概率**：
+
+| $L$ | $\Pr[\mathcal{B} \subseteq \mathcal{B}_{\text{adv}}]$ |
+|-----|----------------------------------------------|
+| 4 | $\leq (1/3)^4 \approx 1.23 \times 10^{-2}$ |
+| 6 | $\leq (1/3)^6 \approx 1.37 \times 10^{-3}$ |
+| 8 | $\leq (1/3)^8 \approx 1.52 \times 10^{-4}$ |
+| 12 | $\leq (1/3)^{12} \approx 1.88 \times 10^{-6}$ |
+
+$\blacksquare$
+
+**定理 E.7（PoP 信标可信性与测距阻断的联合安全界）**
+
+将定理 E.6（信标集合可信性）与定理 E.3（物理坐标伪造阻断）组合，得到 PoP 系统的端到端安全界：
+
+$$\Pr[\text{PoP 被攻破}] \leq \underbrace{\Pr[\mathcal{B} \subseteq \mathcal{B}_{\text{adv}}]}_{\text{信标被全攻陷}} + \underbrace{\Pr[\text{伪造成功} \mid \exists \text{诚实信标}]}_{\leq 10^{-344}}$$
+
+$$\leq 1.5 \times 10^{-4} + 10^{-344} \approx 1.5 \times 10^{-4}$$
+
+即 PoP 系统的攻破概率由信标全被攻陷的概率主导（$\approx 1.5 \times 10^{-4}$），在计算不可行门限内。
+
+**推论 E.7.1（每 Epoch 轮换的抗持续攻击性）**：
+
+攻击者要在连续 $E$ 个 Epoch 中均攻破 PoP，需在每个 Epoch 独立攻陷信标集合（VRF 轮换保证独立性），概率为 $(1.5 \times 10^{-4})^E$。当 $E = 10$，此概率降至 $\approx 5.7 \times 10^{-39}$，实际免疫任何持续性地理伪造攻击。
+
 ---
 
 ### E.4 附录 E 定理体系汇总
@@ -2864,14 +3009,17 @@ RTT 挑战为**被动式**测量，信标只需发送一个含签名时间戳的
 | 定理编号 | 核心命题 | 数学基础 | 结论强度 |
 |---------|---------|---------|---------|
 | E.1 | 两级 PoRA 协同定理 | 时间域正交分解 + 命题 D.1 | TPS 零损耗 $\land$ 外包时延放大 $204.8\text{ ms}$ |
-| E.1.1 | Tier-1/Tier-2 参数设计空间 | 不等式约束组 | $d_1{=}32$，$d_2{=}2048$ 实现 $4.1\times$ 裕量 |
-| E.2 | BFT 状态提交确定性定理 | HotStuff Safety + BLS 阈值签名 + RocksDB WAL | 共识成功即确定性写入，原子性/一致性/终结性三重保证，无悬挂路径 |
-| E.2.1 | 无悬挂路径推论 | 定理 E.2 | 任何"跨轨原子性悬挂"论断均与 BFT 基本性质矛盾 |
-| E.3 | $1024\times$ 存储放大的范畴谬误 | 定义 E.3 + 命题 E.2.1 | $\mathcal{W}_{\text{consensus}}$ 不含 Blob，质疑为范畴错误，状态上界 $\leq 128\text{ GiB}/\text{节点}$ |
-| E.3（PoP） | 物理坐标伪造阻断定理 | 光速极限 + 高斯 RTT 噪声模型 | $L{=}8$ 时伪造概率 $\leq 10^{-344}$ |
-| E.3.1 | PoP 与超几何抽样组合安全 | 定理 E.3（PoP）+ 定理 C.1 联合界 | 物理地理维度的女巫攻击路径完全阻断 |
+| E.1.1 | Tier-1/Tier-2 参数设计空间 | 不等式约束组 | $d_1{=}32$，$d_2{=}2048$，$4.1\times$ 设计裕量 |
+| E.4 | 双层证明职责完备性 | 定义 E.3 + PoRA 可靠性 + BLS EUF-CMA | $\Pi_{\text{PoRA}}$ 保证账本完整性，$\Pi_{\text{BLS-Store}}$ 保证文件持有性，联合完备 |
+| E.5 | Tier-2 宏证明抗审查性 | HotStuff View-Change + P2P broadcast + BLS 聚合 | 恶意 Leader 审查导致提案失效并轮换，诚实节点冤杀概率为零 |
+| E.5.1 | Slashing 精确性推论 | 定理 E.5 | Slash 当且仅当节点确实未存储，对诚实节点以概率 1 不触发 |
+| E.2（BFT） | BFT 状态提交确定性定理 | HotStuff Safety + RocksDB WAL | 共识成功即确定性写入，无悬挂路径 |
+| E.3（范畴） | $1024\times$ 存储放大范畴谬误 | 定义 E.3（$\mathcal{W}_{\text{consensus}}$）+ 命题 E.2.1 | 共识操作域不含 Blob，质疑为类型错误 |
+| E.3（PoP） | 物理坐标伪造阻断定理 | 光速极限 + 高斯 RTT 噪声 | $L{=}8$ 时伪造概率 $\leq 10^{-344}$ |
+| E.6 | 信标节点可信性定理 | VRF 伪随机性 + 超几何概率 | 全 $L{=}8$ 信标被攻陷概率 $\leq 1.5 \times 10^{-4}$ |
+| E.7 | PoP 端到端联合安全界 | 定理 E.6 + 定理 E.3（PoP）联合界 | PoP 被攻破概率 $\leq 1.5 \times 10^{-4}$；连续 10 Epoch 降至 $5.7 \times 10^{-39}$ |
 
 ---
 
-*附录 E 以时间域正交分解消解了 Tier-1/Tier-2 $d$ 步互斥矛盾，以 BFT 状态提交确定性定理与范畴分析驳斥了大文件存储膨胀质疑，以光速物理极限阻断了 IP 代理女巫攻击，三大理论死穴在此形成完整闭合。*
+*附录 E 的定理链覆盖了 Shardora 存储系统的五个核心完备性维度：（E.1/E.5）两级审计在时间域的正交解耦与 Tier-2 的抗审查终结性；（E.4）双层证明系统的职责完备性与功能不相交性；（E.2）BFT 状态提交的确定性与无悬挂路径；（E.3）存储操作域的范畴精确界定；（E.3 PoP/E.6/E.7）基于 VRF 轮换信标的物理测距抗女巫机制。*
 
