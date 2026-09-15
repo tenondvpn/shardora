@@ -152,12 +152,17 @@ uint8_t GlobalInfo::get_thread_index() {
             should_check_thread_all_valid_ = false;
         }
     } else {
+        std::lock_guard<std::mutex> g(now_valid_thread_index_mutex_);
         auto iter = thread_with_index_.find(now_thread_id);
         if (iter == thread_with_index_.end()) {
-            SHARDORA_FATAL("invalid get new thread index: %u", now_thread_id);
+            // Thread started after the registration window; still assign a unique index
+            // so it doesn't collide with index-0 and corrupt the SPSC send queue.
+            thread_idx = now_valid_thread_index_++;
+            thread_with_index_[now_thread_id] = thread_idx;
+            SHARDORA_WARN("late thread registered: tid=%u -> idx=%u", now_thread_id, (uint32_t)thread_idx);
+        } else {
+            thread_idx = iter->second;
         }
-            
-        thread_idx = iter->second;
     }
 
     return thread_idx;
