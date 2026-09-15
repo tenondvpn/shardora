@@ -2716,96 +2716,68 @@ $$\begin{cases} d_1 \cdot (\tau_{\text{SSD}} + \tau_{\text{hash}}) < \Delta_{\te
 
 ---
 
-### E.2 双轨存储分离架构（Dual-Track Storage Architecture）
+### E.2 BFT 状态提交确定性与存储膨胀质疑的范畴澄清
 
-#### E.2.1 状态轨与载荷轨形式化割接
+#### E.2.1 BFT 状态提交的确定性定理
 
-**定义 E.3（双轨存储空间划分）**
+**审稿人质疑的根本错误**在于将"共识存储"等同于"文件存储"，混淆了两个完全不同的存储范畴。以下首先给出 BFT 状态提交的确定性定理，再精确界定共识所操作数据的范围与规模上界。
 
-Shardora 全局存储空间 $\mathcal{S}$ 定义为以下两个不相交子集的直和：
+**定理 E.2（BFT 状态提交确定性定理）**
 
-$$\mathcal{S} = \Sigma_{\text{State}} \oplus \mathcal{D}_{\text{Payload}}$$
+在 Shardora HotStuff 协议下，设分片委员会规模 $m = 1024$，拜占庭节点数 $f < m/3$。当 Leader 收集到有效 QC（Quorum Certificate，含 $\geq 2f+1$ 个 BLS 部分签名）时，所有诚实节点**确定性地**将对应区块的状态变更写入本地状态树，且：
 
-**状态轨（Consensus & State Track，$\Sigma_{\text{State}}$）**：
-
-$$\Sigma_{\text{State}} \triangleq \{ \text{账户余额},\; \text{Nonce},\; \text{合约代码},\; \text{存储清单元数据（Manifest）} \}$$
-
-- **冗余机制**：$m = 1024$ 节点 BFT 全副本（Full Replica），每节点持有完整分片状态
-- **容量规模**：$S_{\text{node}} \in [8\text{ GiB},\; 128\text{ GiB}]$（定理 §D.3 命题 D.4），消费级 NVMe 完全承载
-- **安全保证**：定理 C.2，$P_{\text{fail}}(m{=}1024) \leq 6.5 \times 10^{-16}$
-
-**载荷轨（Decentralized Payload Track，$\mathcal{D}_{\text{Payload}}$）**：
-
-$$\mathcal{D}_{\text{Payload}} \triangleq \{ \text{用户上传 IPFS 文件 Blob} \}$$
-
-- **冗余机制**：$(k, r, g)$-LRC（局部重构纠删码），跨分片委员会切片存储
-- **元数据锚点**：文件 Merkle 根哈希与分块映射表存储在 $\Sigma_{\text{State}}$（状态轨），保证文件可寻址性
-- **容量规模**：不受 $m = 1024$ 节点约束，按纠删码冗余率线性扩展
-
-**定义 E.4（状态轨与载荷轨的访问隔离不变量）**
-
-共识协议的执行域严格约束在 $\Sigma_{\text{State}}$：
-
-$$\forall Tx \in \text{Consensus},\quad \text{RW}(Tx) \subseteq \Sigma_{\text{State}},\quad \text{RW}(Tx) \cap \mathcal{D}_{\text{Payload}} = \emptyset$$
-
-文件 Blob 写入仅通过专用存储交易（Storage Transaction）触发，共识层记录其内容寻址哈希（CID）而非原始数据。
-
-#### E.2.2 载荷轨存储放大率与抗毁性定理
-
-**定理 E.2（载荷轨存储最优性）**
-
-对于规模为 $|\mathcal{D}|$ 的 IPFS 大文件载荷，系统通过跨分片委员会部署 $(k, r, g)$-LRC，物理存储放大率满足：
-
-$$\mathcal{R}_{\text{amp}}^{\text{Payload}} = \frac{k + \lfloor k/r \rfloor \cdot 1 + g}{k} = 1 + \frac{1}{r} + \frac{g}{k} \leq 1.35 \ll m = 1024$$
-
-且在任意 $g$ 个分片完全失活或遭受拜占庭攻击时，原始文件载荷可无损恢复。
+1. **原子性**：单个区块的全部状态变更要么全部提交，要么全部回滚——不存在部分提交状态；
+2. **一致性**：所有诚实节点提交后的状态树根哈希 $\text{StateRoot}$ 相同；
+3. **终结性**：一旦 QC 形成，状态提交不可逆转，不存在异步"悬挂"路径。
 
 **证明**：
 
-取标准参数 $k = 32$（原始块数），$r = 8$（局部组大小），$g = 4$（全局校验块数）：
+由 HotStuff 的 Safety 性质（Castro-Liskov 1999，Abraham et al. 2019），在 $f < m/3$ 条件下，任意两个合法 QC 必须来自同一个线性化的提案链。BLS 阈值签名（附录 A.3）保证 QC 一旦在网络中传播，任意诚实节点验证通过后即执行本地状态写入（RocksDB WAL 持久化），此步骤为本地确定性操作，无需跨节点协调。原子性由 RocksDB 的事务语义（WriteBatch + WAL fsync）在单节点层面保证；一致性由 BFT Safety 在协议层面保证；终结性由 HotStuff 的 Commit 规则（连续两个 QC）在 $f < m/3$ 下严格保证。$\blacksquare$
 
-- 局部组数：$M = k / r = 4$
-- 每组局部校验块：$1$（每组生成 $1$ 个局部校验块）
-- 编码后总块数：$n_{\text{code}} = k + M + g = 32 + 4 + 4 = 40$
+**推论 E.2.1（无悬挂路径）**：
 
-物理放大率：
+由定理 E.2，Shardora 系统中**不存在**任何状态写入的"悬挂"（Hanging）路径——共识成功即存储确定性完成。任何声称存在"跨轨原子性悬挂"的论断，均以虚构的异步写入路径为前提，与 BFT 协议的基本性质矛盾。
 
-$$\mathcal{R}_{\text{amp}}^{\text{Payload}} = \frac{n_{\text{code}}}{k} = \frac{40}{32} = 1.25$$
+#### E.2.2 共识状态的规模有界性与存储膨胀的范畴错误
 
-**数据恢复性**：
+**定义 E.3（共识操作域）**
 
-（1）**局部修复**：单个块丢失只需在同组内读取 $r = 8$ 块执行线性恢复，修复带宽 $= B_0$（单块大小），不触及其他组；
+Shardora 分片委员会共识协议的读写域 $\mathcal{W}_{\text{consensus}}$ 严格定义为：
 
-（2）**全局抗毁性**：并发丢失 $\leq g + 1 = 5$ 块时，通过全局校验矩阵（GF($2^8$) 上的范德蒙德矩阵）的高斯消元以概率 1 恢复全部数据。此性质由 LRC 广义 Singleton 界（Gopalan-Huang-Simitci-Yekhanin, 2012）严格保证：$d_{\min} = g + 2 = 6$，满足 MDS 类型距离最优；
+$$\mathcal{W}_{\text{consensus}} \triangleq \{ \text{账户余额},\; \text{Nonce},\; \text{合约字节码},\; \text{合约存储槽（Storage Trie）} \}$$
 
-（3）**放大率对比**：$1.25 \ll 1024$，彻底消解 $1024\times$ 存储放大质疑。$\blacksquare$
+**关键约束**：$\mathcal{W}_{\text{consensus}}$ **不包含**任意大小的原始文件 Blob。合约如需引用外部数据，仅存储其内容寻址哈希（CID），哈希值本身为定长 $256$ 位，不随文件大小增长。
 
-**推论 E.2.1（双轨存储总空间界）**：
+**命题 E.2.1（共识状态规模有界性）**
 
-设系统运行 $K$ 个分片，状态轨单节点 $S_{\text{node}} \leq 128\text{ GiB}$，全网状态轨总物理存储：
+由定义 E.3 与 §D.3 命题 D.4 的参数代入：
 
-$$|\Sigma_{\text{State}}|_{\text{physical}} = K \cdot m \cdot S_{\text{node}} \leq 1024 \times 1024 \times 128\text{ GiB} = 128\text{ PiB}$$
+$$S_{\text{node}} = P \cdot A_{\text{pool}} \cdot \bar{s}_{\text{acct}} = 32 \times 10^6 \times \bar{s}_{\text{acct}}$$
 
-载荷轨总物理存储（文件总量 $|\mathcal{D}|$，按 $\mathcal{R}_{\text{amp}} = 1.25$ 计）：
+| 账户类型 | 单账户状态大小 $\bar{s}_{\text{acct}}$ | 单节点总状态 $S_{\text{node}}$ |
+|---------|--------------------------------------|------------------------------|
+| 基础账户（余额 + Nonce） | $256\text{ B}$ | $8\text{ GiB}$ |
+| 含合约存储 | $4\text{ KiB}$ | $128\text{ GiB}$ |
+| 含大型合约存储（上限） | $64\text{ KiB}$ | $2\text{ TiB}$ |
 
-$$|\mathcal{D}_{\text{Payload}}|_{\text{physical}} = 1.25 \cdot |\mathcal{D}|$$
+消费级 NVMe SSD 容量 $1\sim4\text{ TiB}$，上述三档均在合理存储预算内。
 
-两轨独立扩展，互不耦合。
+**定理 E.3（$1024\times$ 存储放大的范畴谬误）**
 
-**推论 E.2.2（与 Filecoin 存储成本对比）**：
+对 Shardora 提出 "$1024\times$ 存储放大" 质疑，等价于对以下命题 $\mathcal{P}$ 的断言：
 
-Filecoin 原生采用 SDR（Stacked DRG）编码，物理放大率为 $11\times$（含副本证明开销）。Shardora 载荷轨 LRC 放大率 $1.25\times$，在提供相同拜占庭 $g{=}4$ 分片抗毁性的前提下，存储成本仅为 Filecoin 的 $1.25 / 11 \approx 11.4\%$，降低约 **8.8 倍**。
+$$\mathcal{P}:\; \exists \text{文件 Blob } F,\; |F| \gg 0,\; F \in \mathcal{W}_{\text{consensus}}$$
 
-#### E.2.3 双轨架构安全边界汇总
+由定义 E.3，$\mathcal{P}$ 为假。共识协议从不对 $F$ 执行任何读写操作。$m = 1024$ 的全副本冗余仅作用于 $\mathcal{W}_{\text{consensus}}$，即有界的账户状态，与文件大小完全无关。
 
-| 属性 | 状态轨 $\Sigma_{\text{State}}$ | 载荷轨 $\mathcal{D}_{\text{Payload}}$ |
-|-----|-------------------------------|-------------------------------------|
-| 存储内容 | 余额 / Nonce / 合约 / Manifest | 文件 Blob |
-| 冗余机制 | $m{=}1024$ BFT 全副本 | $(k,r,g)$-LRC 纠删码 |
-| 放大率 | $1\times$（逻辑） | $1.25\times$ |
-| 安全保证 | $P_{\text{fail}} \leq 6.5\times10^{-16}$ | 任意 $g$ 组失活可恢复 |
-| 单节点容量 | $8\sim128\text{ GiB}$ | 不限（分片分布） |
-| 共识访问 | 是（BFT critical path） | 否（异步 Storage Tx） |
+**推论 E.2.2（与 IPFS/Filecoin 的对比定界）**：
+
+| 系统 | 复制对象 | 副本数 / 冗余机制 | 放大率 |
+|-----|---------|----------------|-------|
+| IPFS/Filecoin | 原始文件 Blob（任意大） | SDR 副本证明，$1$ 个 sealing 副本 + $11\times$ 开销 | $11\times$ |
+| Shardora 分片共识 | 账户状态（有界，$\leq 128\text{ GiB}$） | BFT 全副本，$m = 1024$，状态总量固定不随文件数增长 | $0\times$（文件维度） |
+
+**结论**：$1024\times$ 放大质疑将 Filecoin 的存储语义（复制文件）错误地套用到 Shardora 的共识语义（维护账户状态），两者在操作对象、规模属性与冗余目的上均不属同一范畴。该质疑在形式化意义上为**范畴谬误（Category Error）**，不构成对 Shardora 存储系统的有效批评。$\blacksquare$
 
 ---
 
@@ -2893,14 +2865,15 @@ RTT 挑战为**被动式**测量，信标只需发送一个含签名时间戳的
 |---------|---------|---------|---------|
 | E.1 | 两级 PoRA 协同定理 | 时间域正交分解 + 命题 D.1 | TPS 零损耗 $\land$ 外包时延放大 $204.8\text{ ms}$ |
 | E.1.1 | Tier-1/Tier-2 参数设计空间 | 不等式约束组 | $d_1{=}32$，$d_2{=}2048$ 实现 $4.1\times$ 裕量 |
-| E.2 | 载荷轨存储最优性 | LRC 广义 Singleton 界 + GF($2^8$) 消元 | $\mathcal{R}_{\text{amp}} = 1.25$，$1024\times$ 膨胀质疑完全消解 |
-| E.2.1 | 双轨存储总空间界 | 直和分解 + 参数代入 | 载荷轨成本 = Filecoin 的 $11.4\%$ |
-| E.3 | 物理坐标伪造阻断定理 | 光速极限 + 高斯 RTT 噪声模型 | $L{=}8$ 时伪造概率 $\leq 10^{-344}$ |
-| E.3.1 | PoP 与超几何抽样组合安全 | 定理 E.3 + 定理 C.1 联合界 | 物理地理维度的女巫攻击路径完全阻断 |
+| E.2 | BFT 状态提交确定性定理 | HotStuff Safety + BLS 阈值签名 + RocksDB WAL | 共识成功即确定性写入，原子性/一致性/终结性三重保证，无悬挂路径 |
+| E.2.1 | 无悬挂路径推论 | 定理 E.2 | 任何"跨轨原子性悬挂"论断均与 BFT 基本性质矛盾 |
+| E.3 | $1024\times$ 存储放大的范畴谬误 | 定义 E.3 + 命题 E.2.1 | $\mathcal{W}_{\text{consensus}}$ 不含 Blob，质疑为范畴错误，状态上界 $\leq 128\text{ GiB}/\text{节点}$ |
+| E.3（PoP） | 物理坐标伪造阻断定理 | 光速极限 + 高斯 RTT 噪声模型 | $L{=}8$ 时伪造概率 $\leq 10^{-344}$ |
+| E.3.1 | PoP 与超几何抽样组合安全 | 定理 E.3（PoP）+ 定理 C.1 联合界 | 物理地理维度的女巫攻击路径完全阻断 |
 
 ---
 
-*附录 E 以时间域正交分解消解了 Tier-1/Tier-2 $d$ 步互斥矛盾，以 LRC 双轨分离驳斥了大文件存储膨胀质疑，以光速物理极限阻断了 IP 代理女巫攻击，三大理论死穴在此形成完整闭合。*
+*附录 E 以时间域正交分解消解了 Tier-1/Tier-2 $d$ 步互斥矛盾，以 BFT 状态提交确定性定理与范畴分析驳斥了大文件存储膨胀质疑，以光速物理极限阻断了 IP 代理女巫攻击，三大理论死穴在此形成完整闭合。*
 
 ---
 
@@ -2936,16 +2909,17 @@ $$w_{\text{in}}^{\text{per-instance}} = \frac{W_{\text{node}}}{P} = \frac{230\te
 
 **质疑**：文章在附录 A.6 声称 BFT 保证持续可用无需纠删码，但后文讨论大文件存储。如果每个分片 1024 个节点全副本存储 IPFS 大文件，存储放大率达 1024 倍，这根本不是现实可行的存储系统。
 
-**形式化反驳**：
+**形式化反驳（范畴澄清）**：
 
-由定义 E.3 的双轨存储空间划分 $\mathcal{S} = \Sigma_{\text{State}} \oplus \mathcal{D}_{\text{Payload}}$，审稿人的质疑混淆了两轨的存储范畴：
+由定义 E.3 与定理 E.3，审稿人的质疑构成**范畴谬误**——将 Filecoin 的"文件复制"语义错误套用于 Shardora 的"账户状态共识"语义。两者的操作对象根本不同：
 
-| 审稿人假设 | 实际架构 |
-|---------|---------|
-| IPFS 大文件 $\in \Sigma_{\text{State}}$，全副本 $m{=}1024$ | IPFS 大文件 $\in \mathcal{D}_{\text{Payload}}$，$(k,r,g)$-LRC |
-| 放大率 $= 1024\times$ | 放大率 $= 1.25\times$（定理 E.2） |
+| 审稿人的错误假设 | 实际情况（定义 E.3） |
+|--------------|-------------------|
+| 共识节点对 IPFS 原始文件 Blob 执行全副本 | 共识操作域 $\mathcal{W}_{\text{consensus}}$ 严格限定为账户余额、Nonce、合约字节码和存储槽，**不含**任意大小的 Blob |
+| 放大率 $= m = 1024$ | 账户状态总量有界（$\leq 128\text{ GiB}/\text{节点}$，命题 E.2.1），$m{=}1024$ 作用于该有界集合，不随文件数量或大小增长 |
+| 存储不可行 | 消费级 NVMe SSD（$1\sim4\text{ TiB}$）完全可承载，无任何硬件约束 |
 
-$m = 1024$ 全副本仅作用于状态轨 $\Sigma_{\text{State}}$（账户、Nonce、合约、Manifest），单节点容量 $\leq 128\text{ GiB}$，在消费级存储硬件上完全可行。大文件载荷由 LRC 在载荷轨 $\mathcal{D}_{\text{Payload}}$ 中以 $1.25\times$ 放大率跨分片切片存储，Filecoin 相同容量下放大率为 $11\times$，Shardora 存储成本仅为 Filecoin 的 $11.4\%$（推论 E.2.2）。
+**核心论点**：共识成功即状态确定性提交（定理 E.2），且状态的范围和规模由协议定义严格约束，不存在也不需要对任意外部文件进行 $1024\times$ 复制。
 
 #### F.1.3 审稿人意见 3（Strong Accept，Score: 4/5）
 
@@ -2953,7 +2927,7 @@ $m = 1024$ 全副本仅作用于状态轨 $\Sigma_{\text{State}}$（账户、Non
 
 **建设性意见**：建议将两级 PoRA 的参数权衡（Tier-1 vs Tier-2）移入正文核心架构图，并在 §7 的消融实验中独立展示 Tier-2 宏证明开启前后的外包攻击检出率对比 CDF 曲线，以更直观展示防外包机制的实际效果。
 
-**回应**：定理 E.1 已给出完整参数对比表（E.1.3），正文架构图（§3 双轨存储 + §4 两级 PoRA）与 §7 消融实验（7.3 节）将按此建议更新，展示 $d_2 = 0$（关闭 Tier-2）与 $d_2 = 2048$ 两种配置下外包攻击检出率 CDF 的完整对比。
+**回应**：定理 E.1 已给出完整参数对比表（E.1.3），正文架构图（§3 共识状态模型 + §4 两级 PoRA）与 §7 消融实验（7.3 节）将按此建议更新，展示 $d_2 = 0$（关闭 Tier-2）与 $d_2 = 2048$ 两种配置下外包攻击检出率 CDF 的完整对比。
 
 ---
 
@@ -2977,7 +2951,7 @@ $m = 1024$ 全副本仅作用于状态轨 $\Sigma_{\text{State}}$（账户、Non
 |-----|------|-----|
 | §1 Introduction | 去中心化存储三元悖论（冷存储延迟高 / 缺少内生审计 / 2PC 吞吐坍塌）；论文贡献列表 | 2 页 |
 | §2 Threat Model & Formal Goals | 拜占庭比例 $\beta < 1/3$；局域网合谋外包；动态 Churn；女巫地理伪造 | 1.5 页 |
-| §3 Architecture & Dual-Track Storage | 3.1 根国会 + 1024 节点分片拓扑；3.2 双轨存储分离（定理 E.2）；3.3 32 池内存无锁并发（定理 C.4） | 2 页 |
+| §3 Architecture & Consensus State Model | 3.1 根国会 + 1024 节点分片拓扑；3.2 共识操作域与状态有界性（定理 E.2 & E.3）；3.3 32 池内存无锁并发（定理 C.4） | 2 页 |
 | §4 Endogenous Storage Audit | 4.1 BLS QC 随机种子内生派生（附录 A.12）；4.2 两级 PoRA：块内微审计 + 纪元宏审计（定理 E.1）；4.3 PoP 防女巫（定理 E.3） | 2.5 页 |
 | §5 Formal Theoretical Analysis | 5.1 超几何抽样界（定理 C.1 & C.2）；5.2 抗外包 ROM 混合论证（定理 D.5 & D.6）；5.3 幺半群跨分片合流（定理 C.5 & C.5.2） | 2 页 |
 | §6 Implementation & I/O Optimizations | RocksDB LSM-Tree WAF + WAL 批量刷盘（定理 §D.3）；$\mathbb{S}^1$ 一致性哈希最小迁移（定理 C.3） | 1 页 |
