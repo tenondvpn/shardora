@@ -76,28 +76,28 @@ Ethereum 全节点的视角：
   不知道：源分片、发送方
 
 路由层节点的视角：
-  仅见：一个 ElGamal 密文从 S_src 流向 S_dst（内容不可见）
+  仅见：一个 ECIES 密文 + CSCC 签名从 S_src 流向 S_dst（Note 内容不可见）
 ```
 
 这是**架构级的观察域分离**，密码学无法在单链上复制。
 
 ---
 
-## 1.4 问题三：阈值解密权威——零增量信任假设
+## 1.4 问题三：零增量信任的跨片授权——BFT 签名即授权
 
-跨链隐私需要一个实体执行解密。在 Aztec 是 Sequencer（中心化），在 Keep Network 是独立 MPC 委员会（新的信任假设）。
+跨链隐私需要一个实体授权目标链铸造资产。在 Aztec 是 Sequencer（中心化），在 Keep Network 是独立 MPC 委员会（新的信任假设）。
 
-**跨分片的独特价值**：目标分片的 BFT 委员会已经存在，已经是经济激励对齐的抗拜占庭委员会。破坏隐私（解密密文）与破坏共识（双花攻击）需要完全相同的能力：腐化 ≥ t = ⌈2n/3⌉ 个节点。
+**跨分片的独特价值**：目标分片的 BFT 委员会已经存在，已经是经济激励对齐的抗拜占庭委员会。本方案中，源分片 BFT 委员会对 ZK proof 验证结果签名，生成 **CSCC（跨分片信用证书）**，目标分片验证 BLS 签名后盲插承诺——授权的信任基础**直接等于现有共识的信任基础**，无需任何额外假设。
 
 ```
 单链方案的信任结构：
   共识安全          需要 > 1/3 节点诚实
-  隐私解密权威      需要独立的 MPC 委员会（新的信任假设！）
+  跨链授权实体      需要独立的 Relayer / Sequencer（新的信任假设！）
   → 两个独立安全假设，攻击面叠加
 
 跨分片方案的信任结构：
   共识安全          需要 > 1/3 节点诚实
-  隐私解密权威      同一批 BFT 委员会（无新假设！）
+  跨片授权（CSCC）  同一批 BFT 委员会 BLS 签名（无新假设！）
   → 单一安全假设，攻击面不增加
 ```
 
@@ -109,8 +109,8 @@ Ethereum 全节点的视角：
 |---------|------------|------------|
 | Gas 关联攻击免疫 | ❌ 结构上不可能 | ✅ SYSTEM_EXECUTOR 原生解决 |
 | 观察域架构级分离 | ❌ 密码学无法替代 | ✅ 不同分片节点物理隔离 |
-| 零增量信任阈值解密 | ❌ 必须引入独立 MPC | ✅ 复用现有 BFT 委员会 |
-| 跨链关联泄露 | ❌ 桥接必然明文 | ✅ 路由层全程密文 |
+| 零增量信任跨片授权（CSCC） | ❌ 必须引入独立 Relayer/MPC | ✅ BFT 委员会 BLS 签名直接授权 |
+| 跨链关联泄露 | ❌ 桥接必然明文 | ✅ 路由层传 ECIES 密文，内容不可见 |
 | 匿名集线性扩展 | ⚠️ 受 L1 TPS 限制 | ✅ 随分片数线性增长 |
 | 吞吐量扩展 | ⚠️ 单链瓶颈 | ✅ 32×N 池并行 |
 
@@ -268,7 +268,7 @@ One-sided payment，Sigma 协议 + Bulletproofs，无 Trusted Setup，灵活匿�
 
 Penumbra 通过 IBC 实现跨链隐私，但 IBC packet 内容在中继链上以**明文传递**（包括金额和目标地址），中继者可以看到。
 
-本方案路由层携带 ElGamal 密文，路由节点（GBP）不获得任何明文信息，密文仅在目标分片委员会内解密——**路由全程加密，无明文中继点**。
+本方案路由层携带 ECIES 密文（仅接收方可解）+ CSCC（BFT 签名授权），路由节点不获得任何 Note 明文——**路由全程不暴露金额和接收方，无明文中继点**。目标分片委员会也不解密 Note 内容，仅验证 CSCC 签名后盲插承诺。
 
 代价：本方案仅在 Shardora 自有分片间工作，不与外部 IBC 链互操作。
 
@@ -334,13 +334,13 @@ Penumbra 通过 IBC 实现跨链隐私，但 IBC packet 内容在中继链上以
 
 | 现有能力 | 复用方式 |
 |---------|---------|
-| `libff::alt_bn128_G1/G2` 群运算 | Pedersen 承诺、ElGamal 加密 |
-| `libff::alt_bn128_GT` 配对 | Groth16 proof 链上验证 |
-| DKG 生成的 `local_sk_`（Fr 份额） | ElGamal 阈值解密份额（数学结构与 BLS 签名份额相同） |
-| `ReconstructAndVerifyThresSign` Lagrange 插值框架 | 阈值解密重建（零修改复用） |
-| `common_pk`（G2 公共公钥） | ElGamal 加密密钥基础 |
+| `libff::alt_bn128_G1/G2` 群运算 | Pedersen 承诺、ECIES ECDH 共享点计算 |
+| `libff::alt_bn128_GT` 配对 | Groth16 proof 在**源分片** EVM 内验证 |
+| BLS 聚合签名（`BlsDkg::Sign/Aggregate`） | 源分片委员会生成 CSCC 签名（直接复用，零修改） |
+| BLS 验签（`Crypto::VerifyBls`） | 目标分片验证 CSCC 签名（直接复用，零修改） |
+| `common_pk`（G2 聚合公钥） | 目标分片验证 CSCC 的验证密钥（现有字段，无需新增） |
 
-> **关键洞察**：ElGamal 阈值解密和 BLS 阈值签名的数学结构完全相同，都是对 Fr 域份额的 Lagrange 插值重建，DKG 已分发的密钥份额可同时用于两个用途，无需额外协议。
+> **关键洞察**：CSCC 的签发与验证直接复用现有的 BLS 聚合签名/验签基础设施——源分片 BFT 委员会对每个出块已经签名，CSCC 只是在现有 BLS 签名中附加跨分片授权内容。目标分片验 CSCC 等价于验一条特殊的 BFT 消息，**零新增配对运算**，完全在现有安全假设范围内。
 
 ### 新增密码学原语
 
@@ -652,33 +652,71 @@ to_tx_local_item.cc：ShieldedCreditFromCSCC(item)
 ## 3.11 完整隐私流程时序图
 
 ```
-用户 A（发送）                    链上/路由层                    用户 B（接收）
+用户 A（发送方）                  链上/路由层                    用户 B（接收方）
     │                                │                                │
-    │ 1. 生成 stealth_addr_B         │                                │
-    │ 2. 构造 Note_send + Note_change│                                │
-    │    生成 Groth16 proof          │                                │
-    │ 3. ElGamal 加密 Note_send      │                                │
-    │ 4. 调用 PrivacyShadow.spend()  │                                │
+    │ 1. 生成 B 的一次性 stealth_addr │                                │
+    │    （ECDH: r←rand, epk=r·G,    │                                │
+    │     shared=r·view_pk_B）        │                                │
     │                                │                                │
-    │             源分片共识打包     │                                │
+    │ 2. 构造 Note_send（B 收）       │                                │
+    │    + Note_change（A 找零）      │                                │
+    │                                │                                │
+    │ 3. 生成 Groth16 proof          │                                │
+    │    公开输入：nullifier,         │                                │
+    │    old_cm_root, new_cm_send,   │                                │
+    │    new_cm_change               │                                │
+    │                                │                                │
+    │ 4. ECIES 加密 Note_send        │                                │
+    │    ecies_ct = epk ∥ AES(key,  │                                │
+    │              Note_plaintext)   │                                │
+    │    （仅 B 可解密）              │                                │
+    │                                │                                │
+    │ 5. 调用 PrivacyShadow.spend(   │                                │
+    │    nullifier, new_cm_send,     │                                │
+    │    new_cm_change, proof,       │                                │
+    │    ecies_ct, target_shard)     │                                │
+    │                                │                                │
+    │         ◄── 源分片 EVM 验证 ──►│                                │
+    │         Groth16 verify(proof)  │                                │
+    │         （3 次 BN254 配对）    │                                │
+    │         check nullifier ∉ spent│                                │
+    │         insert new_cm_change   │                                │
+    │         into src Merkle tree   │                                │
+    │                                │                                │
     │──────────────────────────────►│                                │
-    │                       ShieldedCrossTransferOut                  │
-    │                       (nullifier, new_cm, C1, C2, proof)        │
+    │             源分片 BFT 共识    │                                │
+    │             生成 CSCC 签名：   │                                │
+    │             BLS.Sign(src_bft_sk│                                │
+    │             , new_cm_send ∥   │                                │
+    │             target_shard ∥    │                                │
+    │             block_hash)        │                                │
     │                                │                                │
-    │                       路由至目标分片（密文）                     │
+    │   ShieldedCrossTransferOut(    │                                │
+    │   nullifier, new_cm_send,      │                                │
+    │   ecies_ct)  [不含金额/地址]   │                                │
     │                                │                                │
-    │                       目标分片委员会阈值解密                     │
-    │                       D_i = sk_i · C1                           │
-    │                       D = Σ λ_i · D_i                          │
-    │                       M = C2 - D                                │
-    │                       验证 zk_proof                             │
-    │                       ──────────────────────────────────────►  │
-    │                       systemExecuteShieldedCredit(cm)           │
+    │          路由层转发             │                                │
+    │    ToTxMessageItem 携带：      │                                │
+    │    new_cm_send + ecies_ct      │                                │
+    │    + cscc_signature            │                                │
+    │    [无明文，无配对运算]         │                                │
     │                                │                                │
-    │                       ShieldedCrossTransferIn(new_cm)           │
-    │                                │◄───────────────────────────── │
-    │                                │  B 用 view_sk 扫链匹配 Note   │
-    │                                │  B 用 spend_sk 花费 Note      │
+    │          目标分片处理           │                                │
+    │    BLS.Verify(src_committee_pk │                                │
+    │              , cscc_signature) │                                │
+    │    （~1-2 ms，零配对）         │                                │
+    │    insert new_cm_send into     │                                │
+    │    dst Merkle tree（盲插）      │                                │
+    │    store ecies_ct on-chain     │                                │
+    │    [委员会不知道 amount/addr]   │                                │
+    │                                │                                │
+    │                   ShieldedCrossTransferIn(new_cm_send)          │
+    │                                │◄────────────── B 离线扫链 ─── │
+    │                                │  ecies_ct ──ECIES decrypt──►  │
+    │                                │  key = HKDF(view_sk · epk)    │
+    │                                │  Note_plaintext = AES-dec(key) │
+    │                                │  → 获知 amount, randomness     │
+    │                                │  → 用 spend_sk 花费 Note       │
 ```
 
 ---
@@ -690,10 +728,10 @@ to_tx_local_item.cc：ShieldedCreditFromCSCC(item)
 | `src/shardoravm/shardora_host.cc` `emit_log()` | 新增 case | 拦截 `ShieldedCrossTransferOut`，构造 `kShieldedTransfer` pending action |
 | `src/shardoravm/host_journal_stack.h` `CrossShardPendingAction` | 扩展 | 新增 `kShieldedTransfer` 枚举值，字段替换为 `(nullifier, new_cm, encrypted_payload)` |
 | `src/consensus/zbft/contract_call.cc` ~L431 | 修改 | shielded action 转 `ToTxMessageItem` 时写密文字段 |
-| `src/protos/pools.proto` `ToTxMessageItem` | 添加字段 | `nullifier`, `new_commitment`, `elgamal_c1/c2`, `aes_ciphertext`, `zk_proof`, `is_shielded` |
-| `src/consensus/zbft/to_tx_local_item.cc` | 主要改动 | 新增 `ShieldedDecryptAndCredit()`，调用阈值解密→验证 proof→执行 shielded credit |
-| `src/bls/bls_dkg.cc` `FinishBroadcast()` | 小扩展 | 额外计算并广播 `common_pk_G1`（G1 点） |
-| `src/consensus/hotstuff/elect_info.h` `ElectItem` | 添加字段 | `libff::alt_bn128_G1 common_pk_g1_` |
+| `src/protos/pools.proto` `ToTxMessageItem` | 添加字段 | `new_commitment`, `ecies_ct`, `cscc_signature`, `src_block_hash`, `is_shielded`（无 ElGamal 字段） |
+| `src/consensus/zbft/to_tx_local_item.cc` | 主要改动 | 新增 `ShieldedCreditFromCSCC()`：验证 CSCC BLS 签名 → 盲插 new_cm → 存 ecies_ct |
+| `src/consensus/zbft/contract_call.cc` | 新增 | 源分片出块后，对 shielded pending action 生成 CSCC 并附入 ToTxMessageItem |
+| `src/consensus/hotstuff/elect_info.h` `ElectItem` | **无需修改** | `common_pk`（G2）已存在，直接用于 CSCC 验签，无需新增 G1 字段 |
 | Shadow 合约 Solidity | 新合约 | `PrivacyCrossShardBase`：承诺 Merkle 树 + Nullifier 集合 + Groth16 verifier |
 
 ---
@@ -726,12 +764,12 @@ message ToTxMessageItem {
   // ...（其余现有字段）
 
   // 新增字段（默认缺失 = 普通交易，旧节点安全忽略）
-  optional bool   is_shielded    = 26;
-  optional bytes  nullifier      = 20;
-  optional bytes  new_commitment = 21;
-  optional bytes  elgamal_c1    = 22;
-  optional bytes  elgamal_c2    = 23;
-  optional bytes  zk_proof      = 25;
+  // ZK proof 留在源分片 EVM，不放入跨分片消息
+  optional bool   is_shielded     = 26;
+  optional bytes  new_commitment  = 21;   // 32 B
+  optional bytes  ecies_ct        = 22;   // ~144 B（epk + AES-GCM 密文）
+  optional bytes  cscc_signature  = 23;   // 96 B（BLS 聚合签名）
+  optional bytes  src_block_hash  = 24;   // 32 B
 }
 ```
 
@@ -754,8 +792,8 @@ message ToTxMessageItem {
 ```cpp
 // to_tx_local_item.cc
 if (item.is_shielded()) {
-    // 新路径：阈值解密 → ZK 验证 → 更新承诺 Merkle 树
-    ShieldedDecryptAndCredit(item);
+    // 新路径：验证 CSCC BLS 签名 → 盲插承诺 → 存 ECIES 密文
+    ShieldedCreditFromCSCC(item);
 } else {
     // 原有路径：完全不变
     NormalCrossTransferCredit(item);
@@ -820,32 +858,47 @@ H           Poseidon 哈希（zk-friendly）
 
 ---
 
-## 4.3 定理 1：阈值 ElGamal 的 IND-CPA 安全性
+## 4.3 定理 1：ECIES IND-CCA2 安全性 与 CSCC EUF-CMA 抗伪造性
 
-**定理 1**：若 DDH 在 G₁ 上成立，则对腐化至多 t-1 个节点的 PPT 敌手 A，
+本方案的跨分片载荷由两部分构成：Note 内容的 ECIES 加密，以及授权铸造的 CSCC 签名。对应两个独立的安全性质。
+
+### 定理 1a：ECIES IND-CCA2 安全性
+
+**定理 1a**：若 CDH 在 G₁ 上成立，AES-256-GCM 是 IND-CPA 对称加密方案，HKDF 建模为随机预言机，则 ECIES 方案满足 IND-CCA2（选择密文攻击不可区分性）：
+
 ```
-Adv^{IND-CPA}_A ≤ 2 · Adv^{DDH}_{G₁}
+Adv^{IND-CCA2}_{ECIES, A} ≤ Adv^{CDH}_{G₁} + Adv^{IND-CPA}_{AES-GCM} + negl(λ)
 ```
 
-**证明（归约）**：B 收到 DDH 挑战 `(g, ag, bg, c·g)`，设 `pk_G1 = a·g`。
+**证明梗概**：标准 ECIES 安全性归约（Bellare-Rogaway 1993 范式）。CDH 假设保证 ECDH 共享密钥 `k = r·view_pk` 不可区分于随机；HKDF（ROM）将 ECDH 输出扩展为均匀 AES 密钥；AES-GCM 的 IND-CPA 安全性保证密文不区分。CCA2 安全性额外依赖 GCM 的认证标签（防止密文篡改后解密）。 □
 
-- 若 `c = ab`：`C₂ = Mβ + c·g = Mβ + k·pk_G1` 是对 Mβ 的合法加密（k = b）
-- 若 `c ←$ Fr`：`C₂` 对 A 是均匀随机，与 M₀,M₁ 无关
+**与 Note 隐私的关联**：对任意不知道 `view_sk` 的敌手，`ecies_ct` 与随机串计算不可区分，即敌手无法从链上存储的 `ecies_ct` 中获取任何关于 amount、randomness 或 spend_pk 的信息。
 
-A 的区分优势直接转化为 B 破坏 DDH 的优势，故 `Pr[B 攻破 DDH] = ε/2`，即 `ε ≤ 2·Adv^{DDH}`。 □
+### 定理 1b：CSCC BLS 签名 EUF-CMA 抗伪造性
+
+**定理 1b**：若 BLS 签名方案满足 EUF-CMA（存在不可伪造性），则任意 PPT 敌手在不控制源分片 BFT 委员会私钥的情况下，伪造合法 CSCC 的概率 ≤ negl(λ)。
+
+```
+Adv^{EUF-CMA}_{BLS, A} ≤ negl(λ)
+```
+
+（BLS 在 co-CDH 假设下满足 EUF-CMA，Boneh-Lynn-Shacham 2001）
+
+**与 CSCC 安全的关联**：敌手无法伪造一个声称由合法源分片 BFT 委员会签署的 CSCC，从而无法向目标分片注入未经合法 ZK proof 验证的虚假承诺。
 
 ---
 
 ## 4.4 定理 2：共识安全与隐私安全的假设完全对齐
 
-**定理 2**：破坏跨分片隐私与破坏 BFT 共识需要**完全相同的攻击能力**（均需腐化 ≥ t 个委员会节点）。
+**定理 2**：破坏跨分片隐私（读取 Note 内容或伪造 CSCC）与破坏 BFT 共识需要**完全相同的攻击能力**。
 
 **证明**：
 
-- （→）若敌手可破坏隐私（解密跨分片密文），则其腐化至少 t 个节点（定理 1 的 IND-CPA 逆否）
-- （←）若腐化至少 t 个节点，可重建 sk_master 并解密任意密文；同时 t ≥ ⌈2n/3⌉ 意味着控制了 BFT 法定人数，共识 safety 失效
+- （Note 内容隐私→共识）若敌手破坏 Note 内容隐私（即解密 ecies_ct），则其知道 `view_sk`（ECIES 密钥，定理 1a 逆否），而 `view_sk` 仅为接收方持有，不与共识相关——注意这与共识无关，是**接收方私钥的保密性**，不依赖委员会。
 
-两者互为充要条件，安全假设完全对齐，隐私层不引入额外攻击面。 □
+- （CSCC 完整性→共识）若敌手伪造合法 CSCC（定理 1b 的逆否），则其获得了源分片 BFT 委员会私钥的知识；私钥由 DKG 生成，腐化至少 t = ⌈2n/3⌉ 个节点方可获得；t ≥ ⌈2n/3⌉ 等价于破坏 BFT safety。
+
+两个方向总结：Note 内容隐私由接收方私钥保证（与共识无关），CSCC 完整性由 BFT 共识安全保证（等价于共识）。**隐私系统的攻击面不超过（接收方私钥安全 ∪ BFT 共识安全）**，后者即系统现有安全基础。 □
 
 ---
 
@@ -859,14 +912,14 @@ A 的区分优势直接转化为 B 破坏 DDH 的优势，故 `Pr[B 攻破 DDH] 
 
 | 混合步骤 | 操作 | 不可区分性依据 | 优势差 |
 |---------|------|-------------|--------|
-| H₀ → H₁ | `(C₁, C₂)` 替换为均匀随机 G₁ 点 | 定理 1（ElGamal IND-CPA） | `≤ 2·Adv^{DDH}` |
+| H₀ → H₁ | `ecies_ct` 替换为均匀随机串 | 定理 1a（ECIES IND-CCA2） | `≤ Adv^{CDH} + negl(λ)` |
 | H₁ → H₂ | π 替换为 Sim(x) 模拟证明 | Groth16 零知识性（定义 2） | `≤ negl(λ)` |
 | H₂ → H₃ | `cm_out` 替换为随机 G₁ 点 | Pedersen 完美隐藏性（定义 1） | 0（完美不可区分） |
 | H₃ → H₄ | `nul` 替换为随机哈希 | Nullifier 不可预测性（ROM + DL） | `≤ negl(λ)` |
 
-在 H₄ 中，`View_O = (nul, cm_out, C₁, C₂, π)` 全部为独立均匀随机值，不含任何隐私信息。
+在 H₄ 中，`View_O = (nul, cm_out, ecies_ct, π)` 全部为独立均匀随机值，不含任何隐私信息。
 
-总优势 ≤ `2·Adv^{DDH} + negl(λ)`。 □
+总优势 ≤ `Adv^{CDH} + negl(λ)`（ECIES IND-CCA2 规约）。 □
 
 ---
 
@@ -884,11 +937,11 @@ A 的区分优势直接转化为 B 破坏 DDH 的优势，故 `Pr[B 攻破 DDH] 
 
 ### 跨分片前跑攻击
 
-恶意 Leader 看到密文后，在解密前将自己插入取款队列。分析：Leader 无法单独解密（需 t 个节点协作），在重建 sk_master 之前不知道金额和接收方，无法有针对性前跑。HotStuff liveness 保证合法 tx 最终被包含。
+恶意 Leader 看到跨分片消息（`new_cm, ecies_ct, cscc_signature`）后，尝试在盲插前抢先构造竞争交易。分析：Leader 无法解密 `ecies_ct`（需接收方 view_sk），不知道金额和接收方地址；`cscc_signature` 绑定 `new_cm_send` 和 `target_pool_index`，不可重放到其他池。HotStuff liveness 保证合法 tx 最终被包含。
 
 ### 委员会内部人攻击
 
-t 个节点串通重建 sk_master。这与攻击共识需要相同资源（定理 2），是系统安全底线。对比：Tornado Cash 无委员会（零信任→零跨链能力），这是明确的安全-功能权衡。
+CSCC 架构下，目标分片委员会**永远无法**获得 Note 内容（amount, stealth_addr, randomness），因为这些信息仅由接收方 view_sk 加密保护（ECIES），与委员会完全隔离。攻击者即使控制整个目标分片委员会，也只能拒绝服务（破坏 liveness），不能窃取隐私。源分片委员会伪造 CSCC 需破坏 BFT safety（≥ 2/3 腐化），与攻击共识等价（定理 2），是系统安全底线。
 
 ---
 
@@ -898,10 +951,11 @@ t 个节点串通重建 sk_master。这与攻击共识需要相同资源（定�
 操作                              复杂度              具体估计（|C|=21,010）
 ────────────────────────────────────────────────────────────────────────────
 Groth16 证明生成（MSM）          O(|C|log|C|)        ~300,000 G₁ 乘法
-Groth16 验证                     O(1)                3 次配对（恒定）
-ElGamal 加密（用户侧）           O(1)                2 次 G₁ 乘法
-ElGamal 部分解密（每节点）       O(1)                1 次 G₁ 乘法（~1 ms）
-ElGamal 重建（Leader）           O(t)                t≈67 次 G₁ 乘法（~70 ms）
+Groth16 验证（批量）             O(1)                (2+k) 次配对，k 笔共享
+ECIES 加密（发送方，客户端）     O(1)                1 次 ECDH + AES-256-GCM
+ECIES 解密（接收方，客户端）     O(1)                1 次 ECDH + AES-256-GCM
+CSCC 生成（源分片 BLS 聚合）     O(n)                n≈100 次 G₁ 乘法（~2 ms/block）
+CSCC 验签（目标分片）            O(1)                1 次配对（~1-2 ms）
 Merkle 路径更新（插入 Note）      O(d)                d=20 次 hash
 Nullifier 查找                   O(1)                哈希表查找
 ────────────────────────────────────────────────────────────────────────────
@@ -911,7 +965,7 @@ Nullifier 查找                   O(1)                哈希表查找
 
 ## 4.8 局限性
 
-**量子计算威胁**：BN254 的离散对数问题可被 Shor 算法解决，这是全行业共同问题。后量子迁移路径：Groth16 → 格基 SNARK（Latticefold），ElGamal → Kyber/ML-KEM，Pedersen → 哈希基承诺。当前尚无成熟方案在合理 proof 大小内运行。
+**量子计算威胁**：BN254 的离散对数问题可被 Shor 算法解决，这是全行业共同问题。后量子迁移路径：Groth16 → 格基 SNARK（Latticefold），ECIES/ECDH → CRYSTALS-Kyber（ML-KEM，NIST PQC 标准），BLS 签名 → Dilithium/Falcon，Pedersen → 哈希基承诺。当前尚无成熟方案在合理 proof 大小内运行，属行业整体挑战。
 
 **Trusted Setup**：Groth16 CRS 若被毒化，攻击者可伪造证明（破坏防双花）或无声铸币。缓解：采用大规模 MPC 仪式（100+ 参与者），或替换 PLONK（无专属仪式，代价 proof 增大 3×）。
 
@@ -1090,7 +1144,7 @@ Pr[A 正确关联] ≤ ∏ᵢ₌₁ᴹ (1/Kᵢ) + M · negl(λ)
 
 对 M 跳路由，构造混合序列 G₀, G₁, ..., G_M：
 
-在 Gⱼ 中，前 j 跳的 ElGamal 密文替换为均匀随机 G₁ 点（DDH 不可区分性，每步优势 ≤ negl(λ)）。
+在 Gⱼ 中，前 j 跳的 ECIES 密文替换为均匀随机串（ECIES IND-CCA2 不可区分性，每步优势 ≤ Adv^{CDH} + negl(λ)）。
 
 在 G_M 中，所有密文均随机，A 的视图与路由路径完全独立。对 M 个分片独立猜测，各跳猜中概率 ≤ 1/Kᵢ，联合概率 ≤ ∏(1/Kᵢ)（独立事件）。
 
@@ -1155,7 +1209,7 @@ Adv^{BFT-safety}_A ≤ Adv^{privacy}_A(λ, n, t) + negl(λ)
 
 合法隐私交易 tx（ZK proof 有效，nullifier 未使用）在源分片提交后，由 BFT Liveness 保证在有限轮次内被打包进块（HotStuff Liveness 标准结果）。
 
-阈值解密需 t 个节点协作，由诚实节点 > 2/3 = t/n 保证，t 个诚实节点的 D_i 份额在一轮广播后可集齐。ZK proof 链上验证确定性成功（合法 tx 必然通过验证）。故 tx 在 O(κ·Δ) 内确认。□
+源分片 BFT Liveness 保证 ZK proof 验证 + CSCC 签名生成在 O(κ·Δ) 内完成；跨分片消息路由时间有界（BFT Liveness of routing layer）；目标分片收到 CSCC 后，`ShieldedCreditFromCSCC()` 执行纯本地 BLS 验签 + 盲插操作，零额外跨分片交互，确定性完成。故 tx 端到端在 O(κ·Δ) 内确认。□
 
 **与单链方案对比**：
 
@@ -1216,8 +1270,8 @@ t = ⌈2n/3⌉                             （BFT 阈值，n=100 → t=67）
 |------|------|-------------|
 | 客户端 Groth16 证明生成（PC/Rust） | 1-2 s | **否**，与源分片等待（10s）并行 |
 | 客户端证明生成（GPU/代理） | ~200 ms | **否** |
-| ElGamal 部分解密广播 + 收集 | ~300-600 ms | **否**，藏入 HotStuff 投票收集窗口 |
-| Groth16 链上验证（EVM 执行） | ~100 ms | 目标分片出块内完成 |
+| 源分片 CSCC 生成（BLS 聚合，随 HotStuff 投票）| ~2 ms | **否**，藏入现有 HotStuff 投票流程 |
+| 目标分片 CSCC 验签 + 盲插 | ~1-2 ms | 目标分片出块内完成 |
 
 **E2E 延迟对比**：
 
@@ -1226,7 +1280,7 @@ t = ⌈2n/3⌉                             （BFT 阈值，n=100 → t=67）
 隐私跨分片    ~26-27 s    （增量 < 10%）
 ```
 
-关键原因：阈值解密与 BLS 投票数学结构相同，`D_i` 消息直接搭载在现有 VoteMsg 广播上，**不增加共识轮次**。
+关键原因：CSCC 生成复用现有 BLS 聚合签名流程，**不增加共识轮次**；目标分片 `ShieldedCreditFromCSCC()` 在单个出块周期内完成。
 
 ---
 
@@ -1421,11 +1475,11 @@ Phase 2 — 金额隐私（工作量：中）
   效果：分片内金额隐藏，UTXO 模型生效
 
 Phase 3 — 跨分片完整隐私（工作量：高）
-  ├── DKG 扩展输出 common_pk_G1
-  ├── ToTxMessageItem 改为加密载荷
-  ├── to_tx_local_item.cc 新增阈值解密流程
-  └── ZK 电路扩展支持跨分片转账证明
-  效果：跨分片金额/接收方完全隐藏
+  ├── pools.proto 添加 ecies_ct / cscc_signature / src_block_hash 字段
+  ├── 源分片：ZK 验证通过后，BLS 聚合生成 CSCC，嵌入 ToTxMessageItem
+  ├── 目标分片：to_tx_local_item.cc 新增 ShieldedCreditFromCSCC()（BLS 验签 + 盲插）
+  └── ZK 电路扩展支持跨分片转账证明（new_cm_send 约束）
+  效果：跨分片金额/接收方完全隐藏，目标分片零配对
 
 Phase 4 — 匿名集扩大（工作量：中）
   ├── 固定面额混合池合约
@@ -1440,7 +1494,9 @@ Phase 4 — 匿名集扩大（工作量：中）
 
 **最重要的复用点**
 
-DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈值解密与 BLS 阈值签名**数学结构完全相同**（均为 Lagrange 插值重建线性组合）。`ReconstructAndVerifyThresSign()` 框架可**零成本复用**于阈值解密，仅需添加 G1 方向的 `common_pk_G1`。
+系统已有完整 BLS 聚合签名基础设施（`bls_dkg.cc`, `ReconstructAndVerifyThresSign()`）。CSCC 即源分片 BFT 委员会的一次标准 BLS 聚合签名，**完全复用**现有签名逻辑，无需新增任何密钥或协议：
+- **源分片**：复用 BLS 聚合算法，对 `H(new_cm_send ∥ target_shard ∥ pool_index ∥ src_block_hash)` 签名生成 CSCC
+- **目标分片**：复用 BLS 验签逻辑（`bls::PublicKey::Verify()`），单次配对验证 CSCC 合法性
 
 **最大工程挑战**
 
@@ -1450,7 +1506,7 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
 
 **消息类型关系**
 
-隐私转账是 `kConsensusLocalTos` 的新子类型（`is_shielded = true`）。现有路由分发逻辑（`block_manager.cc HandleCrossShardBaseTx`）不变，仅在 `to_tx_local_item.cc` 处理阶段分叉：明文转账走原有路径，隐私转账走阈值解密→ZK 验证新路径。
+隐私转账是 `kConsensusLocalTos` 的新子类型（`is_shielded = true`）。现有路由分发逻辑（`block_manager.cc HandleCrossShardBaseTx`）不变，仅在 `to_tx_local_item.cc` 处理阶段分叉：明文转账走原有路径，隐私转账走 **CSCC 验签→盲插新路径**（`ShieldedCreditFromCSCC()`）。
 
 ---
 
@@ -1461,7 +1517,7 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
 | 发送方关联 | Nullifier 不暴露来源 Note；混合池匿名集 | 依赖匿名集大小 |
 | 接收方识别 | 一次性 Stealth Address，每笔不同 | 强（信息论安全） |
 | 金额推断 | Pedersen 承诺 + Bulletproofs | 强（计算安全） |
-| 跨分片关联 | ElGamal 加密，路由层全程密文 | 强（依赖 DKG 阈值 t） |
+| 跨分片关联 | ECIES 加密（接收方 view_pk），CSCC BLS 授权（仅承诺哈希） | 强（CDH + BFT safety） |
 | 双花 | Nullifier 集合 + ZK 约束 C3 | 强（计算安全） |
 | 委员会串通 | 需 > t = ⌈2n/3⌉ 节点串通（= 攻破共识） | 同现有系统安全假设 |
 | 无效 proof | Groth16 链上验证，BN254 安全参数 128 位 | 强 |
@@ -1485,9 +1541,10 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
 
 | 定理 | 内容 | 安全类型 | 依赖假设 |
 |------|------|---------|---------|
-| **定理 1** | 阈值 ElGamal IND-CPA 安全 | 计算安全 | DDH，t-1 腐化 |
-| **定理 2** | 隐私安全与共识安全等价（定性） | 计算安全 | BFT 安全模型 |
-| **定理 3** | 端到端跨分片隐私（主定理） | 计算安全 | DDH + DL + q-SDH + ROM |
+| **定理 1a** | ECIES IND-CCA2 安全（Note 内容加密） | 计算安全 | CDH + ROM |
+| **定理 1b** | CSCC BLS EUF-CMA 安全（跨分片授权） | 计算安全 | DL（BLS），BFT safety |
+| **定理 2** | Note 隐私（接收方密钥）与 CSCC 完整性（BFT 共识）独立安全 | 计算安全 | CDH + BFT 安全模型 |
+| **定理 3** | 端到端跨分片隐私（主定理） | 计算安全 | CDH + DL + q-SDH + ROM |
 | **定理 4** | Shield 后不可链接性 | 计算安全 | DDH + ROM |
 | **定理 5** | Unshield 最小暴露界 | 计算安全 | DL + q-SDH + ROM |
 | **定理 6** | 混合余额模型全生命周期隐私 | 计算安全 | DDH + DL + q-SDH + ROM |
@@ -1508,7 +1565,7 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
 
 ## 6.5 最终结论
 
-> **核心结论 1**：没有分片架构，隐私交易完全可以实现（Tornado Cash、Zcash 已证明）。但存在三个结构性问题在单链上无法克服：Gas 关联攻击、观察域无法分离、阈值解密需独立 MPC 基础设施。
+> **核心结论 1**：没有分片架构，隐私交易完全可以实现（Tornado Cash、Zcash 已证明）。但存在三个结构性问题在单链上无法克服：Gas 关联攻击、观察域无法分离、额外加密原语导致独立 MPC 或受信任中介。
 >
 > **核心结论 2**：跨分片架构对隐私交易的价值是结构性的，不是性能性的。它解决了单链上没有令人满意答案的三个问题：SYSTEM_EXECUTOR 消除 Gas 关联、物理节点集合分离消除观察域重叠、BFT 委员会复用消除额外信任假设。
 >
@@ -1526,8 +1583,8 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
 |------|---------|---------|
 | 必要链上字段 | `from, to, amount`（明文） | `nullifier, commitment`（密文替代 to/amount） |
 | 余额状态 | `_balances[addr]`（账户模型） | Merkle 承诺树（UTXO Note 模型） |
-| 客户端准备 | 签名（<1ms） | 选 Note + 生成 ZK proof + ElGamal 加密（1-2s） |
-| 节点执行路径 | 直接更新余额 | 阈值解密 → 验证 ZK proof → 更新承诺树 |
+| 客户端准备 | 签名（<1ms） | 选 Note + 生成 ZK proof + ECIES 加密（1-2s） |
+| 节点执行路径 | 直接更新余额 | 验证 ZK proof → CSCC 签名 → 目标分片盲插承诺树 |
 
 普通交易的 `(from, to, amount)` 三元组在隐私交易中**根本不存在**——没有 `to`（替换为 stealth address 承诺），没有 `amount`（替换为 Pedersen commitment）。协议层无法在接收到"普通交易+flag"后凭空生成这些字段，因为它们依赖用户侧的私密输入（spending_key、随机数、接收方公钥）。
 
@@ -1556,7 +1613,7 @@ DKG 已在每个分片委员会分发 alt_bn128 Fr 域秘钥份额。ElGamal 阈
           │    Step 2: 选 Note，计算 nullifier                │
           │    Step 3: 生成 stealth_addr（接收方 view_pk）    │
           │    Step 4: Groth16 proof 生成（1-2s）             │
-          │    Step 5: ElGamal 加密 Note 载荷                 │
+          │    Step 5: ECIES 加密 Note 载荷（接收方 view_pk）  │
           │    Step 6: 提交 ShieldedCrossTransferOut tx       │
           └─────────────────────────────────────────────────┘
 ```
@@ -1650,7 +1707,7 @@ SDK 在客户端运行，需保证：
 | `randomness r`（Fr 标量） | 本地 Note 数据库 | ❌ 永不出设备 |
 | `view_sk`（扫链私钥） | 本地钱包 | ❌ 永不出设备 |
 | Groth16 proof | 本地生成后 → 广播 | ✅ 仅最终 proof |
-| ElGamal C1, C2 | 本地加密后 → 广播 | ✅ 密文形式 |
+| ECIES 密文（ecies_ct） | 本地加密后 → 广播 | ✅ 密文形式，仅接收方可解 |
 | Witness（电路输入） | 内存临时 | ❌ 不持久化 |
 
 若使用**证明代理服务**（见 5.6 优化路径），witness 中不含 spending_key：
@@ -1692,7 +1749,7 @@ Nullifier = H(spending_key ∥ cm)
 - 后续隐私转账路由到 Shard_dst，由节点集 N_dst（与 N_src 不相交）处理
 - 没有任何单一观察者能同时看到 Shield 事件和后续隐私转账目的地
 
-形式化：设 E_shield = ShieldDeposit 事件，E_transfer = ShieldedCrossTransferOut 事件。外部观察者可见 E_shield（源分片公开）和 E_transfer（源分片公开），但 E_transfer 中的目标分片 ID 和接收方通过 ElGamal 加密，观察者无法知道最终去向。
+形式化：设 E_shield = ShieldDeposit 事件，E_transfer = ShieldedCrossTransferOut 事件。外部观察者可见 E_shield（源分片公开）和 E_transfer（源分片公开），但 E_transfer 中的 Note 载荷（金额、接收方 stealth_addr）通过 ECIES 加密，仅接收方 view_sk 可解，观察者无法知道最终去向。
 
 ---
 
@@ -1784,7 +1841,7 @@ _balances[addr]        ┌──────────────────
                        │  • 外部不可见                                      │
                        │                                                   │
                        │  跨分片隐私转账（Part III）                        │
-                       │  • ElGamal 加密，路由全程密文                      │
+                       │  • ECIES 加密 Note，CSCC BLS 授权跨片              │
                        │  • 源/目标分片节点集不相交                         │
                        └──────────────────────────────────────────────────┘
                      ◄────────── Unshield(v', recipient)
@@ -1806,9 +1863,9 @@ _balances[addr]        ┌──────────────────
 新增定理 4、5、6 与原有定理 1-3 的关系：
 
 ```
-定理 1（ElGamal IND-CPA）
+定理 1a（ECIES IND-CCA2）+ 定理 1b（CSCC BLS EUF-CMA）
     ↓ 被定理 3 混合论证使用
-定理 2（隐私安全 ≡ 共识安全）
+定理 2（Note 隐私 ≡ 接收方密钥安全；CSCC 完整性 ≡ BFT 共识安全）
     ↓ 共享安全假设
 定理 3（端到端跨分片隐私，主定理）
     ↓ 定理 6 将其扩展至 Shield/Unshield 边界
@@ -1821,9 +1878,10 @@ _balances[addr]        ┌──────────────────
 
 | 定理 | 内容 | 依赖假设 |
 |------|------|---------|
-| 定理 1 | ElGamal 阈值 IND-CPA | DDH，t-1 腐化 |
-| 定理 2 | 隐私安全 ≡ 共识安全 | BFT 安全模型 |
-| 定理 3 | 端到端跨分片隐私 | DDH + DL + q-SDH + ROM |
+| 定理 1a | ECIES IND-CCA2（Note 内容加密） | CDH + ROM |
+| 定理 1b | CSCC BLS EUF-CMA（跨分片授权） | DL + BFT safety |
+| 定理 2 | Note 隐私（接收方密钥安全）∧ CSCC 完整性（BFT 共识安全） | CDH + BFT 安全模型 |
+| 定理 3 | 端到端跨分片隐私 | CDH + DL + q-SDH + ROM |
 | **定理 4** | Shield 后不可链接 | DDH + ROM |
 | **定理 5** | Unshield 的不可避免暴露界 | DL + q-SDH + ROM |
 | **定理 6** | 混合余额模型全生命周期隐私 | DDH + DL + q-SDH + ROM |
