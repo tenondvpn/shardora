@@ -1345,8 +1345,6 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
     }
 
     evmc::bytes32 tmp_val;
-    // Cache the miss result too — an empty bytes32 means "not in view chain, go to DB"
-    bytes32_storage_cache_.put(addr, key, tmp_val);
     return tmp_val;
 }
 
