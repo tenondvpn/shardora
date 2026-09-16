@@ -614,6 +614,50 @@ Replica（验证节点）在 block_acceptor.cc 中对每个提议区块：
 | 最小挑战历史深度 | `min(H_max, 10000)` | 避免极早期区块内容过于稀少 |
 | 惩罚机制 | 出块质押 slash | 验证节点拒绝投票 → Leader 无法形成 QC → 被替换 → 轮数惩罚 |
 
+#### 12.3.4 历史区块随机读取的存储引擎极致优化
+
+PoRA 的关键热路径是在每轮出块约束时间窗（数百毫秒）内完成 `B_{h_target}[offset : offset + buf_size]` 的读取。此操作本质为**按偏移量 pos 和长度 len 对存储 Value 做部分范围读取（Partial Range Read）**，其极致性能方案可分为两个引擎路径：
+
+##### 方案一：标准 Block-Based Table 的零拷贝切片（常规 Value 场景）
+
+RocksDB 的 Block-Based Table 将 Key-Value 数据按固定大小的 Block（通常 4 KB～64 KB）压缩存储，并通过 Block Cache 管理热页缓存。读取任意偏移时，引擎必须先将包含目标 Key 的整个 Block 解压到 Block Cache——这一步骤**无法绕过**，因为块内所有 KV 紧凑排布且联合压缩。
+
+**性能瓶颈不在块解压，而在向用户层返回数据时的额外内存分配与拷贝。**
+
+针对这一瓶颈，核心优化手段是复用 RocksDB 的 `PinnableSlice` 资源生命周期管理机制：
+
+- `PinnableSlice` 内部维护一个 Block Cache 句柄引用计数（Cleanable 链表）。只要 PinnableSlice 持有该句柄，Block Cache 不会驱逐对应页，且返回给调用方的是**直接指向 Block Cache 内存的原始指针**，无需任何复制。
+- 在已获取完整 Value 的 PinnableSlice 基础上，通过**指针偏移裁剪**将 Slice 的起点前移 pos、长度限制为 `min(len, value_size - pos)`，即可在内存层面获得所需子范围的只读视图——既不分配新堆内存，也不触发任何 `memcpy`，Block Cache 的 Pin 引用计数保持不变直到裁剪后的切片被释放。
+- 偏移越界时将切片置为空（而非抛出异常），保证操作的天然幂等性。
+- 通过在 `ReadOptions` 中显式绑定 MVCC Snapshot，可保证任意并发写入或 Compaction 不影响同一 Snapshot 下的重复读取结果，从而实现**跨时间幂等性**。
+
+**额外开销**：仅为一次整数加法（指针偏移）与一次边界判断，耗时不足 5 ns；零堆内存分配，零 `memcpy`。
+
+##### 方案二：BlobDB 范围 I/O（大 Value 场景，跳过整值读取）
+
+当 Value 体积达到数 KB 至数 MB 量级并启用 RocksDB 的 Integrated BlobDB（`enable_blob_files = true`）时，Value 以独立 `.blob` 文件形式存储，与 SST 索引层解耦。此时，性能瓶颈从内存拷贝转移为磁盘 I/O 总量。
+
+针对大 Value 的部分范围读取，核心优化是将底层系统调用的 I/O 范围直接限定到所需区间：
+
+- Blob 文件内部以线性字节流存储，每个 Value 在文件中有确定的起始偏移量（`blob_offset`）与总长度（`blob_size`）；
+- 通过将底层 `pread` 系统调用的起始点设置为 `blob_offset + pos`、长度限制为 `min(len, blob_size - pos)`，可以从磁盘直接读取所需子范围，**完全跳过 pos 之前和 pos+len 之后的字节**；
+- 在 NVMe SSD 上，I/O 粒度通常为 4 KB 对齐，实际读取的扇区数仅由 `(actual_len + alignment - 1) / alignment` 决定，与 Value 总大小无关；
+- 大 Value 场景下（1 MB Value 读取 1 KB），磁盘 I/O 量和 Page Cache 占用均可降低 **1000 倍**量级。
+
+**约束条件**：此优化要求 Blob 文件以 `kNoCompression` 模式存储。若开启 Blob 级压缩（`blob_compression_type ≠ kNoCompression`），Blob 文件内的每个 Value 以压缩单元整体存储，不支持直接字节偏移定位，需整体解压后再做切片——此时退化为方案一（内存切片零拷贝），而非磁盘 I/O 裁剪。
+
+##### 两方案对比与适用场景
+
+| 维度 | 方案一（SST 零拷贝切片） | 方案二（BlobDB 范围 I/O） |
+|------|----------------------|------------------------|
+| 适用 Value 大小 | 数 KB 以下（标准历史区块序列化） | 数 KB 以上（大 CID 数据 blob） |
+| 节省的开销 | 用户层内存分配与 `memcpy`（< 5 ns 额外成本） | 磁盘 I/O 与 Page Cache（最高数千倍） |
+| Block Cache 利用率 | 高（整块仍在缓存，后续读取命中） | N/A（Blob 文件绕开 Block Cache） |
+| 压缩兼容性 | 与 Block 级压缩完全兼容 | 仅兼容 Blob 文件不压缩配置 |
+| MVCC 幂等性 | 通过 `ReadOptions.snapshot` 绑定 | 同左 |
+
+> **PoRA 实践选型**：历史区块（`B_h`）的序列化体积通常在数十 KB 以下，标准 SST 引擎配合方案一即可实现全链路零拷贝。若未来存储 CID 数据 blob（可能达 MB 量级），则按上述方案二对 BlobDB 读取路径做范围 I/O 改造，以彻底消除大 Value 场景下的 I/O 放大。两方案在协议层上对调用方透明，读取接口语义一致。
+
 ---
 
 ### 12.4 形式化安全证明
