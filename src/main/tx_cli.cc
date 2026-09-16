@@ -7596,61 +7596,14 @@ contract AMMPool {
             return (uint32_t)(h % kNumShards8) + network::kConsensusShardBeginNetworkId;
         };
 
-        // ── User accounts — distributed evenly across shards 3-6 ─────────
+        // UserAcct8 struct — users are generated AFTER AMM deployers so each
+        // user can be co-located at the AMM's (shard, pool).
         struct UserAcct8 {
             std::string prikey;
             std::string addr_hex;
             uint32_t    shard_id;
             uint32_t    pool_idx;
         };
-        std::vector<UserAcct8> users8;
-        users8.reserve(kUsers);
-
-        {
-            uint32_t per_shard = kUsers / kNumShards8;
-            if (per_shard == 0) per_shard = 1;
-
-            std::mutex mu;
-            std::vector<std::thread> uth;
-            for (uint32_t si = 0; si < kNumShards8 && !global_stop; ++si) {
-                uth.emplace_back([&, si, per_shard]() {
-                    uint32_t target = kShards8[si];
-                    uint32_t need   = (si < kNumShards8 - 1)
-                                        ? per_shard
-                                        : (kUsers - per_shard * (kNumShards8 - 1));
-                    std::vector<UserAcct8> local;
-                    local.reserve(need);
-                    while ((uint32_t)local.size() < need && !global_stop) {
-                        std::string pk(32, '\0');
-                        for (int j = 0; j < 32; ++j)
-                            pk[j] = (char)(common::Random::RandomUint32() % 256);
-                        auto s = std::make_shared<security::Ecdsa>();
-                        s->SetPrivateKey(pk);
-                        std::string addr = s->GetAddress();
-                        if (addr_shard8(addr) == target) {
-                            local.push_back({pk, common::Encode::HexEncode(addr),
-                                             target, addr_pool8(addr)});
-                        }
-                    }
-                    std::lock_guard<std::mutex> lk(mu);
-                    for (auto& u : local) users8.push_back(std::move(u));
-                });
-            }
-            for (auto& t : uth) t.join();
-        }
-
-        // Print shard distribution + full addresses
-        std::cout << "  Users: " << users8.size() << "  (";
-        for (uint32_t s : kShards8) {
-            uint32_t c = 0;
-            for (auto& u : users8) if (u.shard_id == s) ++c;
-            std::cout << "s" << s << "=" << c << " ";
-        }
-        std::cout << ")\n";
-        for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i) {
-            std::cout << "    [user" << i << "] addr=" << users8[i].addr_hex
-                      << " s" << users8[i].shard_id << "\n";
-        }
 
         // ── Token deployers — random signing keys + pre-chosen contract addrs ──
         // Shardora lets the sender choose the contract address freely via the `to`
@@ -7765,6 +7718,45 @@ contract AMMPool {
                       << "  pair=(token" << adeps8[k].token_a
                       << ",token" << adeps8[k].token_b << ")\n";
         }
+
+        // ── Users — generated at each AMM's (shard, pool) for co-location ──
+        // Each user sits at the SAME (shard, pool) as the AMM they'll trade on.
+        // This makes crossTransfer(to=user, shard=u.shard, pool=u.pool) create
+        // the token shadow at the AMM's location, enabling local swaps.
+        std::vector<UserAcct8> users8;
+        users8.reserve(kUsers);
+        {
+            uint32_t per_amm = kUsers / kAmmPairs;
+            for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
+                uint32_t target_shard = adeps8[k].signer_shard;
+                uint32_t target_pool  = adeps8[k].deployer_pool;
+                uint32_t need = (k < kAmmPairs - 1)
+                    ? per_amm
+                    : (kUsers - per_amm * (kAmmPairs - 1));
+                uint32_t found = 0;
+                while (found < need && !global_stop) {
+                    std::string pk(32, '\0');
+                    for (int j = 0; j < 32; ++j)
+                        pk[j] = (char)(common::Random::RandomUint32() % 256);
+                    auto s = std::make_shared<security::Ecdsa>();
+                    s->SetPrivateKey(pk);
+                    std::string addr = s->GetAddress();
+                    if (addr_shard8(addr) == target_shard &&
+                        addr_pool8(addr) == target_pool) {
+                        users8.push_back({pk, common::Encode::HexEncode(addr),
+                                          target_shard, target_pool});
+                        ++found;
+                    }
+                }
+            }
+        }
+        std::cout << "  Users: " << users8.size() << "\n";
+        for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i) {
+            std::cout << "    [user" << i << "] addr=" << users8[i].addr_hex
+                      << " s" << users8[i].shard_id
+                      << " pool=" << users8[i].pool_idx << "\n";
+        }
+
         std::cout << "  [Phase 1] OK\n";
 
         // ─────────────────────────────────────────────────────────────────
@@ -8495,12 +8487,24 @@ contract AMMPool {
         // 7M per user; must fit in uint64 (server rejects amounts > 2^64)
         const __uint128_t kPerAmt5 = (__uint128_t)7000000ULL;
 
-        // Partition users across tokens: user ui is assigned to token (ui % kTokens).
-        // This ensures each address holds exactly ONE token type — no address ever
-        // appears in two different token shadow contracts simultaneously.
+        // Assign users to tokens: for each AMM k, its block of users (contiguous
+        // in users8, ordered by AMM index) is split alternately between the two
+        // token sides — even offset → token_a, odd offset → token_b.
+        // This keeps each user in exactly ONE token's shadow.
         std::vector<std::vector<uint32_t>> rcpt5(kTokens);
-        for (uint32_t i = 0; i < (uint32_t)users8.size(); ++i)
-            rcpt5[i % kTokens].push_back(i);
+        {
+            uint32_t per_amm = (uint32_t)users8.size() / kAmmPairs;
+            for (uint32_t k = 0; k < kAmmPairs; ++k) {
+                uint32_t start = k * per_amm;
+                uint32_t end   = (k == kAmmPairs - 1)
+                    ? (uint32_t)users8.size() : start + per_amm;
+                for (uint32_t j = start; j < end; ++j) {
+                    uint32_t ti = ((j - start) % 2 == 0)
+                        ? adeps8[k].token_a : adeps8[k].token_b;
+                    rcpt5[ti].push_back(j);
+                }
+            }
+        }
         std::cout << "  Recipients per token:";
         for (uint32_t ti = 0; ti < kTokens; ++ti)
             std::cout << "  token" << ti << "=" << rcpt5[ti].size();
@@ -8586,14 +8590,15 @@ contract AMMPool {
                             const auto& ad_sw = adeps8[k];
                             for (uint32_t ri = 0; ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
                                 uint32_t ui = rcpt5[ti][ri];
-                                // Only fund this user at AMM k if they are assigned to AMM k.
-                                if (kAmmPairs > 1 && ui % kAmmPairs != k) continue;
+                                // Only fund this user at AMM k if their location matches (co-located).
+                                if (users8[ui].shard_id != adeps8[k].signer_shard ||
+                                    users8[ui].pool_idx  != adeps8[k].deployer_pool) continue;
                                 const auto& u = users8[ui];
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
-                                    + encodeUint32ABI(ad_sw.signer_shard)
-                                    + encodeUint32ABI(ad_sw.deployer_pool);
+                                    + encodeUint32ABI(u.shard_id)    // user's own shard (== amm.shard for co-located users)
+                                    + encodeUint32ABI(u.pool_idx);   // user's own pool  (== amm.pool for co-located users)
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
                                 if (ra.contains("status") && ra["status"] == 0) {
@@ -8701,8 +8706,9 @@ contract AMMPool {
                     uint32_t ti = (side == 0) ? ad.token_a : ad.token_b;
                     const std::string& shex = (side == 0) ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
                     for (uint32_t ui : rcpt5[ti]) {
-                        // Only check users assigned to this AMM (same assignment as crossTransfer).
-                        if (kAmmPairs > 1 && ui % kAmmPairs != k) continue;
+                        // Only check users co-located with this AMM.
+                        if (users8[ui].shard_id != ad.signer_shard ||
+                            users8[ui].pool_idx  != ad.deployer_pool) continue;
                         pending_su.push_back({ui, shex, ad.signer_shard, ti, k});
                     }
                 }
@@ -8779,8 +8785,8 @@ contract AMMPool {
                                 std::string cd_r = kXferSel
                                     + encodeAddr32(u_r.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt_r)
-                                    + encodeUint32ABI(ad_r.signer_shard)
-                                    + encodeUint32ABI(ad_r.deployer_pool);
+                                    + encodeUint32ABI(u_r.shard_id)
+                                    + encodeUint32ABI(u_r.pool_idx);
                                 auto ra_r = dsdk_r.callContractWithNonce(
                                     pk_r, td_r.contract_addr_hex, cd_r, nonce_r);
                                 if (ra_r.contains("status") && ra_r["status"] == 0)
@@ -8890,8 +8896,10 @@ contract AMMPool {
                         std::cout << "      amm_deployer=" << ad.addr_hex
                                   << " bal=" << snap_str128(snap_hx128(rs)) << "\n";
                     }
-                    // Each user assigned to this token
+                    // Each user assigned to this token and co-located with this AMM
                     for (uint32_t ui : rcpt5[ti]) {
+                        if (users8[ui].shard_id != ad.signer_shard ||
+                            users8[ui].pool_idx  != ad.deployer_pool) continue;
                         const auto& u = users8[ui];
                         std::string rs = qa.queryContract(pk_hex, shex,
                                                           kBalOfSel + encodeAddr32(u.addr_hex));
@@ -8916,16 +8924,18 @@ contract AMMPool {
         const uint64_t kAmmPrefund6 = 2000000000ULL;  // 2B gas covers many swaps
 
         // Build flat list of (user_idx, amm_idx) ops.
-        // Only include users assigned to AMM k (user_idx % kAmmPairs == k) so that
+        // Only include users co-located with AMM k (same shard+pool) so that
         // each user only prefunds and swaps at the ONE AMM where they have tokens.
         struct AmmPfItem6 { uint32_t user_idx; uint32_t amm_idx; };
         std::vector<AmmPfItem6> amm_pf6;
         for (uint32_t k = 0; k < kAmmPairs; ++k) {
             std::set<uint32_t> holders;
             for (uint32_t ui : rcpt5[adeps8[k].token_a])
-                if (kAmmPairs == 1 || ui % kAmmPairs == k) holders.insert(ui);
+                if (users8[ui].shard_id == adeps8[k].signer_shard &&
+                    users8[ui].pool_idx  == adeps8[k].deployer_pool) holders.insert(ui);
             for (uint32_t ui : rcpt5[adeps8[k].token_b])
-                if (kAmmPairs == 1 || ui % kAmmPairs == k) holders.insert(ui);
+                if (users8[ui].shard_id == adeps8[k].signer_shard &&
+                    users8[ui].pool_idx  == adeps8[k].deployer_pool) holders.insert(ui);
             for (uint32_t ui : holders) amm_pf6.push_back({ui, k});
         }
         std::cout << "  Prefund ops: " << amm_pf6.size()
@@ -9615,7 +9625,8 @@ contract AMMPool {
                 std::string pk_hex = common::Encode::HexEncode(td.prikey);
                 uint32_t amm_ok = 0, amm_fail = 0;
                 for (uint32_t ui : rcpt5[ti]) {
-                    if (kAmmPairs > 1 && ui % kAmmPairs != k) continue;
+                    if (users8[ui].shard_id != adeps8[k].signer_shard ||
+                        users8[ui].pool_idx  != adeps8[k].deployer_pool) continue;
                     const auto& u = users8[ui];
                     bool ok = check_bal7(
                         "amm" + std::to_string(k) + " token" + std::to_string(ti)
