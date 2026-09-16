@@ -8554,39 +8554,12 @@ contract AMMPool {
                               << "  ppnonce=" << ppnonce
                               << "  → " << rcpt5[ti].size() << " TXs\n";
 
-                    for (uint32_t ri = 0;
-                         ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
-                        auto& u = users8[rcpt5[ti][ri]];
-                        // ABI: crossTransfer(address,uint256,uint32,uint32)
-                        std::string calldata =
-                            kXferSel
-                            + encodeAddr32(u.addr_hex)
-                            + encodeUint256u128(kPerAmt5)
-                            + encodeUint32ABI(u.shard_id)
-                            + encodeUint32ABI(u.pool_idx);
-
-                        auto r = dsdk.callContractWithNonce(
-                            pk_hex, td.contract_addr_hex,
-                            calldata, ppnonce + (int64_t)ri);
-                        if (r.contains("status") && r["status"] == 0) {
-                            xok5.fetch_add(1);
-                        } else {
-                            std::cerr << "  [Phase5 xfer] FAIL token" << ti
-                                      << " base=" << td.contract_addr_hex
-                                      << " user=" << u.addr_hex
-                                      << " shard=" << u.shard_id
-                                      << " pool=" << u.pool_idx
-                                      << " err=" << r.value("msg", "?") << "\n";
-                            xfail5.fetch_add(1);
-                        }
-                    }
-                    // Also send kLiqAmt7 to each AMM deployer that uses this token,
-                    // directly to the AMM's (shard, pool) shadow so addLiquidity works
-                    // without a separate pre-transfer step in Phase 7.
-                    // Also send kSwapXferAmt to each user at each AMM shadow so swapAForB
-                    // can call transferFrom — CrossShardBase.transferFrom only needs balance.
+                    // Each user is assigned to exactly one AMM (user_idx % kAmmPairs == k).
+                    // Tokens are only sent to the AMM's (shard, pool) shadow — never to
+                    // the user's own pool shadow — so each address has balance in exactly
+                    // one shadow contract per token.
                     {
-                        int64_t amm_nonce = ppnonce + (int64_t)rcpt5[ti].size();
+                        int64_t amm_nonce = ppnonce;
                         // AMM deployer liquidity transfers
                         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
                             if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
@@ -8607,14 +8580,17 @@ contract AMMPool {
                                 xfail5.fetch_add(1);
                             }
                         }
-                        // Swap-user transfers: fund each user at the AMM's (shard, pool) shadow
-                        // so the AMM can call transferFrom on the shadow it controls.
+                        // Swap-user transfers: each user only goes to the ONE AMM they are
+                        // assigned to (user_idx % kAmmPairs == k), ensuring one shadow per token.
                         const uint64_t kSwapXferAmt = kSwapAmt7 * (uint64_t)(kSwapRounds7 + 2);
                         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
                             if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
                             const auto& ad_sw = adeps8[k];
                             for (uint32_t ri = 0; ri < (uint32_t)rcpt5[ti].size() && !global_stop; ++ri) {
-                                const auto& u = users8[rcpt5[ti][ri]];
+                                uint32_t ui = rcpt5[ti][ri];
+                                // Only fund this user at AMM k if they are assigned to AMM k.
+                                if (kAmmPairs > 1 && ui % kAmmPairs != k) continue;
+                                const auto& u = users8[ui];
                                 std::string cd = kXferSel
                                     + encodeAddr32(u.addr_hex)
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
@@ -8626,7 +8602,7 @@ contract AMMPool {
                                     xok5.fetch_add(1); ++amm_nonce;
                                 } else {
                                     std::cerr << "  [Phase5 usr-amm-xfer] FAIL token" << ti
-                                              << " usr" << rcpt5[ti][ri] << "→amm" << k
+                                              << " usr" << ui << "→amm" << k
                                               << " err=" << ra.value("msg", "?") << "\n";
                                     xfail5.fetch_add(1);
                                 }
@@ -8645,130 +8621,10 @@ contract AMMPool {
             return 1;
         }
 
-        // ── Phase 5 verify: poll every 10s until all balances confirmed ──
-        // Build a flat list of (token_idx, user_idx) pairs to check.
-        struct P5Item { uint32_t ti; uint32_t ri; };
-        std::vector<P5Item> pending5;
-        for (uint32_t ti = 0; ti < kTokens; ++ti)
-            for (uint32_t ri = 0; ri < (uint32_t)rcpt5[ti].size(); ++ri)
-                pending5.push_back({ti, ri});
-        const uint32_t total5 = (uint32_t)pending5.size();
-
-        std::cout << "\n[Phase 5 verify] Polling balanceOf (10s initial wait, "
-                  << "max 300s, " << total5 << " checks)...\n";
-
-        // Initial wait — give cross-shard delivery a head start.
-        for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
-        if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
-
-        uint32_t bok5 = 0;
-        auto p5_start = std::chrono::steady_clock::now();
-        const int kP5MaxSec = 300;
-
-        while (!pending5.empty() && !global_stop) {
-            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
-                std::chrono::steady_clock::now() - p5_start).count();
-            if (elapsed >= kP5MaxSec) {
-                std::cerr << "  TIMEOUT: Phase 5: " << pending5.size()
-                          << "/" << total5 << " balances unconfirmed after "
-                          << kP5MaxSec << "s.\n";
-                break;
-            }
-
-            std::vector<P5Item> still_pending;
-            std::mutex rmx5;
-            std::atomic<uint32_t> round_ok{0};
-
-            std::vector<std::thread> bth5;
-            for (auto& item : pending5) {
-                bth5.emplace_back([&, item]() {
-                    uint32_t ti = item.ti;
-                    uint32_t ri = item.ri;
-                    auto& td = tdeps8[ti];
-                    auto& u  = users8[rcpt5[ti][ri]];
-                    std::string pk_hex = common::Encode::HexEncode(td.prikey);
-                    std::string qip  = eps8[u.shard_id].ip;
-                    uint16_t   qhttp = eps8[u.shard_id].http;
-
-                    std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
-                    evmc::address root_evmc{};
-                    std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-                    bool user_on_base = (u.shard_id == td.contract_shard)
-                                     && (u.pool_idx == td.contract_pool);
-                    evmc::address shadow_evmc = user_on_base
-                        ? root_evmc
-                        : shardoravm::DeriveShardAddress(root_evmc, u.shard_id, u.pool_idx);
-                    std::string shadow_hex = common::Encode::HexEncode(
-                        std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
-
-                    ShardoraSDK qsdk(qip, qhttp);
-                    auto res = qsdk.queryFunctionSolidity(
-                        pk_hex, shadow_hex,
-                        "balanceOf", {"address"}, {u.addr_hex}, {"uint256"});
-                    std::string rv = (res.contains("status") && res["status"] == 0)
-                                     ? res.value("return_value", "") : "";
-
-                    bool found = false;
-                    for (char c : rv) if (c != '0') { found = true; break; }
-                    if (found) {
-                        round_ok.fetch_add(1);
-                    } else {
-                        std::lock_guard<std::mutex> lk(rmx5);
-                        still_pending.push_back(item);
-                        std::cerr << "  [Phase5 FAIL] token[" << ti << "]=" << td.contract_addr_hex
-                                  << " user=" << u.addr_hex
-                                  << " shard=" << u.shard_id << " pool=" << u.pool_idx
-                                  << " shadow=" << shadow_hex
-                                  << " rv=" << (rv.empty() ? "(empty)" : rv) << "\n";
-                    }
-                });
-            }
-            for (auto& t : bth5) t.join();
-
-            bok5 += round_ok.load();
-            pending5 = std::move(still_pending);
-
-            auto now_elapsed = std::chrono::duration_cast<std::chrono::seconds>(
-                std::chrono::steady_clock::now() - p5_start).count();
-            std::cout << "  [Phase5 verify] " << bok5 << "/" << total5
-                      << " confirmed, " << pending5.size() << " pending ["
-                      << now_elapsed << "s]\n";
-
-            if (!pending5.empty() && !global_stop) {
-                for (int ws = 0; ws < 10 && !global_stop; ++ws) usleep(1000000);
-            }
-        }
-        if (global_stop) { transport::TcpTransport::Instance()->Stop(); return 1; }
-
-        if (!pending5.empty()) {
-            std::cerr << "  FATAL: Phase 5: " << pending5.size()
-                      << "/" << total5 << " token balances unconfirmed.\n";
-            std::cerr << "  Unconfirmed items:\n";
-            for (auto& item : pending5) {
-                uint32_t ti = item.ti;
-                uint32_t ri = item.ri;
-                auto& td = tdeps8[ti];
-                auto& u  = users8[rcpt5[ti][ri]];
-                evmc::address root_evmc{};
-                std::string root_raw = common::Encode::HexDecode(td.contract_addr_hex);
-                std::memcpy(root_evmc.bytes, root_raw.data(), 20);
-                bool user_on_base = (u.shard_id == td.contract_shard)
-                                 && (u.pool_idx == td.contract_pool);
-                evmc::address shadow_evmc = user_on_base
-                    ? root_evmc
-                    : shardoravm::DeriveShardAddress(root_evmc, u.shard_id, u.pool_idx);
-                std::string shadow_hex = common::Encode::HexEncode(
-                    std::string(reinterpret_cast<const char*>(shadow_evmc.bytes), 20));
-                std::cerr << "    token[" << ti << "]=" << td.contract_addr_hex
-                          << " user=" << u.addr_hex
-                          << " shard=" << u.shard_id << " pool=" << u.pool_idx
-                          << " shadow=" << shadow_hex << "\n";
-            }
-            transport::TcpTransport::Instance()->Stop();
-            return 1;
-        }
-        std::cout << "  Phase 5: all " << total5
-                  << " user token balances confirmed OK\n";
+        // Phase 5 user-balance verification is done by the Phase5 swap-user@AMM verify
+        // block below (which checks the AMM shadows where tokens were actually sent).
+        // The old per-user own-pool shadow check is removed because tokens are no
+        // longer sent to user's own pool — only to the assigned AMM's shadow.
 
         // Phase 5 AMM deployer verify: poll until each AMM deployer has kLiqAmt7
         // of both its tokens on the AMM's shadow (shard, pool).
@@ -8846,8 +8702,11 @@ contract AMMPool {
                 for (int side = 0; side < 2; ++side) {
                     uint32_t ti = (side == 0) ? ad.token_a : ad.token_b;
                     const std::string& shex = (side == 0) ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
-                    for (uint32_t ui : rcpt5[ti])
+                    for (uint32_t ui : rcpt5[ti]) {
+                        // Only check users assigned to this AMM (same assignment as crossTransfer).
+                        if (kAmmPairs > 1 && ui % kAmmPairs != k) continue;
                         pending_su.push_back({ui, shex, ad.signer_shard, ti, k});
+                    }
                 }
             }
             const uint32_t total_su = (uint32_t)pending_su.size();
@@ -8991,13 +8850,17 @@ contract AMMPool {
 
         const uint64_t kAmmPrefund6 = 2000000000ULL;  // 2B gas covers many swaps
 
-        // Build flat list of (user_idx, amm_idx) ops
+        // Build flat list of (user_idx, amm_idx) ops.
+        // Only include users assigned to AMM k (user_idx % kAmmPairs == k) so that
+        // each user only prefunds and swaps at the ONE AMM where they have tokens.
         struct AmmPfItem6 { uint32_t user_idx; uint32_t amm_idx; };
         std::vector<AmmPfItem6> amm_pf6;
         for (uint32_t k = 0; k < kAmmPairs; ++k) {
             std::set<uint32_t> holders;
-            for (uint32_t ui : rcpt5[adeps8[k].token_a]) holders.insert(ui);
-            for (uint32_t ui : rcpt5[adeps8[k].token_b]) holders.insert(ui);
+            for (uint32_t ui : rcpt5[adeps8[k].token_a])
+                if (kAmmPairs == 1 || ui % kAmmPairs == k) holders.insert(ui);
+            for (uint32_t ui : rcpt5[adeps8[k].token_b])
+                if (kAmmPairs == 1 || ui % kAmmPairs == k) holders.insert(ui);
             for (uint32_t ui : holders) amm_pf6.push_back({ui, k});
         }
         std::cout << "  Prefund ops: " << amm_pf6.size()
