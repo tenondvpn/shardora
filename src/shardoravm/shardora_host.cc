@@ -574,6 +574,15 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
                 size_t data_size,
                 const evmc::bytes32 topics[],
                 size_t topics_count) noexcept {
+    // Lazily compute Transfer topic: Transfer(address indexed,address indexed,uint256)
+    static const evmc::bytes32 kTransferTopic = []() {
+        const std::string sig = "Transfer(address,address,uint256)";
+        std::string h = common::Hash::keccak256(sig);
+        evmc::bytes32 t{};
+        memcpy(t.bytes, h.data(), 32);
+        return t;
+    }();
+
     // Lazily compute CrossTransferOut topic
     // sig: CrossTransferOut(address,address,address,uint256,uint64,uint32,uint32)
     static const evmc::bytes32 kCrossTransferOutTopic = []() {
@@ -605,6 +614,23 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
         memcpy(t.bytes, h.data(), 32);
         return t;
     }();
+
+    // Transfer(address indexed from, address indexed to, uint256 value)
+    // Covers both transferFrom and the burn-transfer emitted inside _crossTransfer.
+    // topic[0]=kTransferTopic, topic[1]=from (padded 32B), topic[2]=to (padded 32B)
+    // data[0:32]=value (uint256); extract low 8 bytes as uint64 for readability.
+    if (topics_count >= 3 && topics[0] == kTransferTopic && data_size >= 32) {
+        std::string from_hex = common::Encode::HexEncode(
+            std::string(reinterpret_cast<const char*>(topics[1].bytes + 12), 20));
+        std::string to_hex = common::Encode::HexEncode(
+            std::string(reinterpret_cast<const char*>(topics[2].bytes + 12), 20));
+        std::string contract_hex = common::Encode::HexEncode(
+            std::string(reinterpret_cast<const char*>(addr.bytes), 20));
+        uint64_t amt64 = 0;
+        for (int i = 0; i < 8; ++i) amt64 = (amt64 << 8) | data[24 + i];
+        SHARDORA_WARN("[TRANSFER] contract=%s from=%s to=%s amt=%lu",
+            contract_hex.c_str(), from_hex.c_str(), to_hex.c_str(), amt64);
+    }
 
     if (topics_count >= 3 && topics[0] == kCrossStorageOutTopic) {
         // topics[1] = base (indexed address, low 20B), topics[2] = key (indexed bytes32)
