@@ -8253,10 +8253,22 @@ contract AMMPool {
                         std::memcpy(tA_evmc.bytes, tA_raw.data(), 20);
                         std::memcpy(tB_evmc.bytes, tB_raw.data(), 20);
                     }
-                    evmc::address tA_shadow = shardoravm::DeriveShardAddress(
-                        tA_evmc, ad.signer_shard, ad.deployer_pool);
-                    evmc::address tB_shadow = shardoravm::DeriveShardAddress(
-                        tB_evmc, ad.signer_shard, ad.deployer_pool);
+                    // When the token base is co-located with the AMM deployer
+                    // (same shard AND same pool), systemExecuteCrossTransfer runs
+                    // directly on the base contract (is_base_shard=TRUE in
+                    // to_tx_local_item.cc).  Pass the base address as the shadow so
+                    // AMMPool's balanceOf calls land on the contract that actually
+                    // holds the balance, instead of a derived address that has nothing.
+                    const auto& tdA = tdeps8[ad.token_a];
+                    evmc::address tA_shadow = (tdA.contract_shard == ad.signer_shard &&
+                                               tdA.contract_pool  == ad.deployer_pool)
+                        ? tA_evmc
+                        : shardoravm::DeriveShardAddress(tA_evmc, ad.signer_shard, ad.deployer_pool);
+                    const auto& tdB8 = tdeps8[ad.token_b];
+                    evmc::address tB_shadow = (tdB8.contract_shard == ad.signer_shard &&
+                                               tdB8.contract_pool  == ad.deployer_pool)
+                        ? tB_evmc
+                        : shardoravm::DeriveShardAddress(tB_evmc, ad.signer_shard, ad.deployer_pool);
                     std::string tA_shadow_hex = common::Encode::HexEncode(
                         std::string(reinterpret_cast<const char*>(tA_shadow.bytes), 20));
                     std::string tB_shadow_hex = common::Encode::HexEncode(
@@ -8287,18 +8299,16 @@ contract AMMPool {
                     ad.token_a_shadow_hex = tA_shadow_hex;
                     ad.token_b_shadow_hex = tB_shadow_hex;
                     {
-                        std::string tA_raw2(reinterpret_cast<const char*>(tA_shadow.bytes), 20);
-                        std::string tB_raw2(reinterpret_cast<const char*>(tB_shadow.bytes), 20);
-                        uint32_t tA_pool = addr_pool8(tA_raw2);
-                        uint32_t tB_pool = addr_pool8(tB_raw2);
+                        bool tA_coloc = (tdA.contract_shard == ad.signer_shard &&
+                                         tdA.contract_pool  == ad.deployer_pool);
+                        bool tB_coloc = (tdB8.contract_shard == ad.signer_shard &&
+                                         tdB8.contract_pool  == ad.deployer_pool);
                         std::cout << "  [amm" << k << "] contract=" << to_address
                                   << " s" << ad.signer_shard << " deployer_pool=" << ad.deployer_pool
                                   << "\n         tokenA_shadow=" << tA_shadow_hex
-                                  << " shadow_pool=" << tA_pool
-                                  << (tA_pool != ad.deployer_pool ? " MISMATCH!" : "")
+                                  << (tA_coloc ? " (base=shadow, co-located)" : "")
                                   << "\n         tokenB_shadow=" << tB_shadow_hex
-                                  << " shadow_pool=" << tB_pool
-                                  << (tB_pool != ad.deployer_pool ? " MISMATCH!" : "") << "\n";
+                                  << (tB_coloc ? " (base=shadow, co-located)" : "") << "\n";
                     }
 
                     ShardoraSDK dsdk(eps8[ad.signer_shard].ip, eps8[ad.signer_shard].http);
