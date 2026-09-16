@@ -99,13 +99,14 @@ void ToTxsPools::ThreadToStatistic(
             // forwarded via the normal_to mechanism to the destination shard nodes.
             if (to.has_base_root_address() && !to.base_root_address().empty() &&
                     static_cast<uint32_t>(to.des_sharding_id()) == local_net_id) {
-                SHARDORA_INFO("to_txs_pools SKIP local CrossShardBase: block=%u_%u_%lu base=%s user=%s des_shard=%u pool=%u",
-                    view_block_ptr->qc().network_id(),
-                    view_block_ptr->qc().pool_index(),
-                    view_block_ptr->block_info().height(),
+                SHARDORA_INFO("[XSBT] POOL_SKIP base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
                     common::Encode::HexEncode(to.base_root_address()).c_str(),
                     common::Encode::HexEncode(to.des()).c_str(),
-                    to.des_sharding_id(), to.pool_index());
+                    to.amount(),
+                    to.des_sharding_id(), to.pool_index(),
+                    view_block_ptr->qc().network_id(),
+                    view_block_ptr->qc().pool_index(),
+                    view_block_ptr->block_info().height());
                 continue;
             }
             std::string map_key = to.des();
@@ -118,13 +119,14 @@ void ToTxsPools::ThreadToStatistic(
             }
             tx_map[map_key] = to;
             if (to.has_base_root_address() && !to.base_root_address().empty()) {
-                SHARDORA_INFO("to_txs_pools store CrossShardBase: block=%u_%u_%lu base=%s user=%s des_shard=%u pool=%u",
-                    view_block_ptr->qc().network_id(),
-                    view_block_ptr->qc().pool_index(),
-                    view_block_ptr->block_info().height(),
+                SHARDORA_INFO("[XSBT] POOL_QUEUE base=%s user=%s amt=%lu des_shard=%u pool=%u src_block=%u_%u_%lu",
                     common::Encode::HexEncode(to.base_root_address()).c_str(),
                     common::Encode::HexEncode(to.des()).c_str(),
-                    to.des_sharding_id(), to.pool_index());
+                    to.amount(),
+                    to.des_sharding_id(), to.pool_index(),
+                    view_block_ptr->qc().network_id(),
+                    view_block_ptr->qc().pool_index(),
+                    view_block_ptr->block_info().height());
             } else {
                 SHARDORA_DEBUG("success add to item: %s, %lu",
                     common::Encode::HexEncode(to.des()).c_str(), to.amount());

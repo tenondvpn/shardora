@@ -439,6 +439,7 @@ bool ToTxLocalItem::HandleCrossShardBase(
         shardora_host.my_address_ = sys_tx.to();
         // InitHost(shardora_host, sys_tx, 200000, 0, view_block);
 
+        size_t xsbt_logs_before = shardora_host.recorded_logs_.size();
         evmc::Result exec_res{ evmc_result{} };
         int exec_status = shardoravm::Execution::Instance()->execute(
             bytecode, calldata,
@@ -448,18 +449,14 @@ bool ToTxLocalItem::HandleCrossShardBase(
 
         if (exec_status != shardoravm::kShardoravmSuccess ||
                 exec_res.status_code != EVMC_SUCCESS) {
-            SHARDORA_FATAL("CrossShardBase system call failed: exec=%d evmc=%d, base=%s target=%s",
+            SHARDORA_FATAL("[XSBT] IN_FAIL exec=%d evmc=%d base=%s shd=%s user=%s shard=%u pool=%u nonce=%lu",
                 exec_status, (int)exec_res.status_code,
                 common::Encode::HexEncode(base_raw).c_str(),
-                common::Encode::HexEncode(target_str).c_str());
+                common::Encode::HexEncode(target_str).c_str(),
+                common::Encode::HexEncode(to_tx.des()).c_str(),
+                shard_id, pool_index, to_tx.cross_nonce());
             // Permanent failure — consume unique_hash, no retry.
         }
-        SHARDORA_INFO("CrossShardBase system call OK: base=%s user=%s shadow=%s shard=%u pool=%u nonce=%lu",
-            common::Encode::HexEncode(base_raw).c_str(),
-            common::Encode::HexEncode(to_tx.des()).c_str(),
-            common::Encode::HexEncode(target_str).c_str(),
-            shard_id, pool_index,
-            to_tx.cross_nonce());
         {
             std::string _xbal_amt;
             if (to_tx.amount256().size() == 32) {
@@ -469,12 +466,28 @@ bool ToTxLocalItem::HandleCrossShardBase(
                 uint64_t _v = to_tx.amount();
                 for (int _i = 7; _i >= 0; --_i) { _xbal_amt += char((_v >> (8 * _i)) & 0xFF); }
             }
-            SHARDORA_WARN("XBAL_IN  base=%s user=%s shd=%s amt=%s nonce=%lu shard=%u pool=%u",
+            SHARDORA_INFO("[XSBT] IN  base=%s user=%s shd=%s amt=%lu(%s) nonce=%lu shard=%u pool=%u",
                 common::Encode::HexEncode(base_raw).c_str(),
                 common::Encode::HexEncode(to_tx.des()).c_str(),
                 common::Encode::HexEncode(target_str).c_str(),
+                to_tx.amount(),
                 common::Encode::HexEncode(_xbal_amt).c_str(),
                 to_tx.cross_nonce(), shard_id, pool_index);
+        }
+        // Dump every EVM event emitted during this call (CrossTransferIn, Transfer, etc.)
+        for (size_t _li = xsbt_logs_before; _li < shardora_host.recorded_logs_.size(); ++_li) {
+            auto& lr = shardora_host.recorded_logs_[_li];
+            std::string tpx;
+            for (auto& t : lr.topics) {
+                if (!tpx.empty()) tpx += ",";
+                tpx += common::Encode::HexEncode(
+                    std::string(reinterpret_cast<const char*>(t.bytes), 32));
+            }
+            SHARDORA_INFO("[XSBT] EVM_EVENT creator=%s topics=[%s] data=%s",
+                common::Encode::HexEncode(
+                    std::string(reinterpret_cast<const char*>(lr.creator.bytes), 20)).c_str(),
+                tpx.c_str(),
+                common::Encode::HexEncode(lr.data).c_str());
         }
     } else {
         // systemExecuteCrossStorage — one EVM call per CrossStorageKV entry.

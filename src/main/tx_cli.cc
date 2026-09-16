@@ -7400,6 +7400,9 @@ abstract contract CrossShardBase {
     event CrossStorageOut(address indexed base, bytes32 indexed key, bytes value,
         uint64 nonce, uint32 toShard, uint32 toPool);
     event CrossStorageIn(address indexed base, bytes32 key, bytes value, uint64 version);
+    // ERC20-compatible event; fired on same-shard transfer/transferFrom so every
+    // balance movement is observable with a single keyword: [XSBT]
+    event Transfer(address indexed from, address indexed to, uint256 value);
 
     modifier onlySystemExecutor() {
         require(msg.sender == SYSTEM_EXECUTOR, "ONLY_SYSTEM_EXECUTOR"); _;
@@ -7473,6 +7476,7 @@ abstract contract CrossShardBase {
         require(_balances[from] >= amount, "INSUFFICIENT");
         _balances[from] -= amount;
         _balances[to]   += amount;
+        emit Transfer(from, to, amount);
         return true;
     }
 }
@@ -7493,6 +7497,7 @@ contract CrossShardToken is CrossShardBase {
         require(_balances[msg.sender] >= amt, "INSUFFICIENT");
         _balances[msg.sender] -= amt;
         _balances[to] += amt;
+        emit Transfer(msg.sender, to, amt);
         return true;
     }
 }
