@@ -1858,7 +1858,7 @@ $$\text{攻破共识层 PoS} \leq_R \text{keccak256 原象搜索} \approx O(2^{2
 
 ## 附录 C：基于分片机制的深度形式化理论体系
 
-> 本附录从分片拜占庭容错概率界、1024 节点分片的 BFT 存储安全与 32 池并发吞吐量形式化、一致性哈希动态扩缩容迁移界、抗局域网外包攻击的时序放大博弈，以及跨分片交换结合幺半群确定性收敛五个维度，给出严密的形式化定义、定理与数学证明。
+> 本附录从分片拜占庭容错概率界、1024 节点分片的 BFT 存储安全与 32 池并发吞吐量形式化、抗局域网外包攻击的时序放大博弈，以及跨分片交换结合幺半群确定性收敛四个维度，给出严密的形式化定义、定理与数学证明。
 
 ---
 
@@ -2072,98 +2072,6 @@ $$\lambda_{\text{total}}^{\max} = 1024 \times 32 \times 781 = 32{,}768 \times 78
 $$\text{Storage}_{\text{total}} = K \cdot m \cdot S_{\text{node}}$$
 
 其中 $S_{\text{node}}$ 为单个节点存储的本地状态大小。增加分片数 $K$ 时，每个分片独立贡献 $m = 1024$ 个副本的存储，系统总存储线性增长，不存在跨分片集中式存储瓶颈。
-
----
-
-### C.3 动态分片拓扑与一致性哈希迁移上界
-
-#### C.3.1 朴素取模寻址的灾难性缺陷
-
-**引理 C.2（朴素取模迁移下界）**
-
-若分片寻址采用 $\text{ShardID} = H(\text{CID}) \bmod K$，则当分片数由 $K$ 动态扩展至 $K+1$ 时，期望迁移数据比例为：
-
-$$\Pr_{\text{mod}}[\text{迁移}] = 1 - \frac{1}{K+1} = \frac{K}{K+1} \xrightarrow{K=1024} 99.9\%$$
-
-**证明**：对均匀哈希 $H$，$H(\text{CID}) \bmod K = j$ 当且仅当 $H(\text{CID}) \bmod (K+1)$ 落在以 $j$ 为余数的同余类的子集中，该子集大小约为 $K/(K+1)$ 的概率的补集。由鸽巢原理，约 $K/(K+1)$ 比例的内容必须重新映射。$\blacksquare$
-
-这一缺陷促使必须采用基于连续测度空间的**一致性哈希虚拟环**（Consistent Hashing with Virtual Nodes）。
-
-#### C.3.2 虚拟环数学定义
-
-**定义 C.5（拓扑圆周群与随机预言机映射）**
-
-定义拓扑空间为一维圆周群 $\mathbb{S}^1 = [0,1)$（模 1 加法群）。哈希函数 $H: \{0,1\}^* \to \mathbb{S}^1$ 被建模为**随机预言机**（Random Oracle），将输入均匀映射在 $\mathbb{S}^1$ 上。
-
-**定义 C.6（虚拟节点映射）**
-
-每个物理分片 $S_j$（$j \in \{1,\ldots,K\}$）在环上部署 $V$ 个虚拟节点（Vnodes）：
-
-$$\mathcal{V}_j = \{v_{j,1}, v_{j,2}, \ldots, v_{j,V}\}, \quad v_{j,\ell} = H(S_j \| \ell) \in \mathbb{S}^1$$
-
-全体虚拟节点集合 $\Omega_K = \bigcup_{j=1}^{K} \mathcal{V}_j$，$|\Omega_K| = KV$。将 $\Omega_K$ 中的点沿顺时针升序排列：
-
-$$0 \leq u_1 < u_2 < \cdots < u_{KV} < 1$$
-
-**内容寻址算子**：
-
-$$\Phi(\text{CID}) = \arg\min_{u \in \Omega_K}\!\left(\bigl(u - H(\text{CID})\bigr) \bmod 1\right)$$
-
-即沿环顺时针方向找到第一个大于等于 $H(\text{CID})$ 的虚拟节点（顺时针最近邻算子）。
-
-#### C.3.3 扩容状态迁移下界定理
-
-**定理 C.4（最小数据迁移期望界）**
-
-当系统活跃分片数由 $K$ 动态增加至 $K+1$ 时，在一致性哈希拓扑下，全网需要发生物理跨分片迁移的数据期望比例严格满足：
-
-$$\mathbb{E}[\Delta_{\text{mig}}] = \frac{1}{K+1}$$
-
-且对任意单个既有分片 $S_j$（$j \leq K$），其迁出数据的方差满足：
-
-$$\mathrm{Var}\!\left[\Delta_{\text{mig}}^{(j)}\right] \leq \frac{1}{V(K+1)^2}$$
-
-**证明（分两步）**：
-
-**步骤 1（期望推导）**：引入第 $K+1$ 个分片后，新增 $V$ 个虚拟节点集 $\mathcal{V}_{K+1}$。环上总虚拟节点数增至 $(K+1)V$。
-
-由随机预言机假设，$\Omega_{K+1}$ 中每个虚拟节点均在 $\mathbb{S}^1$ 上独立同分布于 $\mathcal{U}(0,1)$。由圆周对称性，环被 $(K+1)V$ 个随机切点划分为 $(K+1)V$ 个弧段，每段期望弧长为：
-
-$$\mathbb{E}[L_i] = \frac{1}{(K+1)V}$$
-
-新增的 $V$ 个虚拟节点所劫获（Preempt）的弧段总和即为迁移至新分片的数据占比：
-
-$$\mathbb{E}[\Delta_{\text{mig}}] = \sum_{\ell=1}^{V} \mathbb{E}[L_\ell] = V \cdot \frac{1}{(K+1)V} = \frac{1}{K+1}$$
-
-**步骤 2（方差收敛性）**：
-
-设 $N' = (K+1)V$。单位环被 $N'$ 个均匀随机点分割，各段弧长 $(L_1, \ldots, L_{N'})$ 服从 $\text{Dirichlet}(1,1,\ldots,1)$ 分布。单个区间的方差为：
-
-$$\mathrm{Var}[L_i] = \frac{N'-1}{(N')^2(N'+1)} \approx \frac{1}{(N')^2} = \frac{1}{((K+1)V)^2}$$
-
-由于各新增虚拟节点随机穿插于既有弧段中，各段的协方差满足 $\mathrm{Cov}[L_i, L_j] = -\frac{1}{(N')^2(N'+1)} \approx 0$。对 $S_j$ 的迁出数据（由 $V$ 个虚拟节点贡献）：
-
-$$\mathrm{Var}\!\left[\Delta_{\text{mig}}^{(j)}\right] = \sum_{\ell=1}^{V} \mathrm{Var}[L_\ell] + \text{协方差项} \approx V \cdot \frac{1}{((K+1)V)^2} = \frac{1}{V(K+1)^2}$$
-
-$\blacksquare$
-
-**推论 C.3.1（虚拟节点参数设计）**：设 $V \geq 100$，$K = 64$，扩容时：
-
-$$\mathbb{E}[\Delta_{\text{mig}}] = \frac{1}{65} \approx 1.54\%, \quad \mathrm{Var}[\Delta_{\text{mig}}^{(j)}] \leq \frac{1}{100 \times 65^2} \approx 2.4 \times 10^{-6}$$
-
-与朴素取模的 99.9% 迁移率相比，迁移量降低至最优下界 $1/K$，且各节点迁移负载方差趋于零，彻底消除数据迁移雪崩。
-
-#### C.3.4 虚拟节点负载均衡界
-
-**定理 C.5（分片负载均衡 Chernoff 界）**
-
-设全网共有 $n$ 个内容项均匀映射到环上，每个分片 $S_j$ 持有 $V$ 个虚拟节点。令 $\mu_j = n/K$ 为 $S_j$ 的期望负载。则任意分片的实际负载 $L_j$ 满足 Chernoff 界：
-
-$$\Pr\!\left[\left|L_j - \mu_j\right| \geq \delta \mu_j\right] \leq 2\exp\!\left(-\frac{\delta^2 \mu_j}{3}\right)$$
-
-当 $V$ 足够大时（$V \geq \lceil \log K \rceil$），各分片负载的最大偏差以高概率收敛：
-
-$$\max_j \left|L_j - \frac{n}{K}\right| = O\!\left(\sqrt{\frac{n \log K}{KV}}\right) \quad \text{（w.h.p.）}$$
 
 ---
 
@@ -2435,8 +2343,6 @@ $$P_{2PC\text{-deadlock}} \geq 1 - (1 - e^{-3})^{64} \approx 1 - (0.9502)^{64} \
 | C.2.2 | BFT 全副本冗余充分性 | 定理 C.2 + BFT 安全协议假设 | 协议层保证数据安全，无需纠删码 |
 | C.4 | 32 池并发无竞争定理 | 冲突可串行化 + 状态分区不变量 | $P{=}32$ 个池完全并发，任意排列最终状态唯一 |
 | C.5 | 双维线性扩展定理 | 定理 C.4 + 分片间状态树独立性 | $\lambda_{\text{total}} = K \cdot P \cdot \lambda_{\text{pool}}$，最大约 $2.56 \times 10^7$ TPS |
-| C.3（节§） | 一致性哈希迁移期望界 | 顺序统计量 + Dirichlet 测度 | $\mathbb{E}[\Delta_{\text{mig}}] = 1/(K+1)$（全局最优） |
-| C.3.4 | 分片负载均衡 Chernoff 界 | Chernoff 不等式 | 最大偏差 $O(\sqrt{n\log K / KV})$ |
 | C.4（节§） | PoRA 延迟线性放大分离 | ROM 强依赖 + 物理延迟下界 | $\Delta T(d) = 2d\tau_{\text{LAN}}$，$d{=}1001$ 时超过 WAN 抖动 |
 | C.5（节§） | 跨分片操作交换结合幺半群 | 整数加法 + 格论 + 集合代数 | $(\mathcal{M}, \oplus, \mathbf{0})$ 交换结合幺半群 |
 | C.5.2 | 跨分片并发强最终一致性 | Church-Rosser 菱形性质 | 任意排列 $\pi$ 下最终状态唯一，死锁概率 $\equiv 0$ |
@@ -2448,13 +2354,12 @@ $$P_{2PC\text{-deadlock}} \geq 1 - (1 - e^{-3})^{64} \approx 1 - (0.9502)^{64} \
 |---------|-------------------------------|----------------------|------------|
 | 分片安全抽样 | 经验值（10~50 节点，忽视局部女巫） | 超几何 Hoeffding 界，$m \geq 830$ 下界 | 信息论 + 统计极限定理 |
 | 存储冗余模型 | 少量副本或重度 zk-PoRep（无协议层证明） | $m{=}1024$ BFT 全副本，协议层数据安全，$P_{\text{fail}} \leq 6.5 \times 10^{-16}$ | 超几何 Hoeffding 界 + BFT 安全性定理 |
-| 拓扑扩缩容 | 取模哈希，$O(1-1/K)$ 数据雪崩 | 圆周测度 $\mathbb{S}^1$ 虚拟节点，迁移期望 $= 1/(K+1)$ | 顺序统计量 + Dirichlet 测度分析 |
 | 抗外包共谋 | 高成本 zk-SNARK 算术电路，小时级证明 | PoRA 串行依赖，$d \geq 1001$ 轮，$\Delta T > 500\ \text{ms}$ | 物理延迟下界 + ROM 强依赖 |
 | 跨分片结算 | 阻塞式 2PC，死锁概率 $\geq 96.1\%$ | 交换结合幺半群，SEC 合流，死锁概率 $\equiv 0$ | 抽象代数 + Church-Rosser 定理 |
 
 ---
 
-*附录 C 中所有定理均基于标准密码学假设（ROM、DDH、CDH）与成熟的代数/概率工具（超几何分布、Dirichlet 测度、格论、Church-Rosser 定理），形成对 Shardora 核心机制的完整形式化理论体系。*
+*附录 C 中所有定理均基于标准密码学假设（ROM、DDH、CDH）与成熟的代数/概率工具（超几何分布、格论、Church-Rosser 定理），形成对 Shardora 核心机制的完整形式化理论体系。*
 
 ---
 
