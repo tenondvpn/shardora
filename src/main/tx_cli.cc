@@ -8841,9 +8841,12 @@ contract AMMPool {
         // This makes it easy to verify supply conservation before Phase 6/7.
         {
             std::cout << "\n[Phase 5 balance snapshot]\n";
-            auto snap_hex2u64 = [](const std::string& h) -> uint64_t {
-                uint64_t v = 0;
-                size_t start = (h.size() > 16) ? h.size() - 16 : 0;
+            // Read up to 128 bits from ABI uint256 (last 32 hex chars = 16 bytes).
+            // Sufficient for any realistic token supply (uint256 max ~3.4e38,
+            // but supplies here are <= 1e24 which fits in ~80 bits).
+            auto snap_hx128 = [](const std::string& h) -> __uint128_t {
+                __uint128_t v = 0;
+                size_t start = (h.size() > 32) ? h.size() - 32 : 0;
                 for (size_t i = start; i < h.size(); ++i) {
                     char c = h[i];
                     v = v * 16 + (c>='0'&&c<='9' ? c-'0' :
@@ -8852,18 +8855,24 @@ contract AMMPool {
                 }
                 return v;
             };
+            auto snap_str128 = [](__uint128_t v) -> std::string {
+                if (v == 0) return "0";
+                std::string s;
+                while (v > 0) { s = char('0' + (int)(v % 10)) + s; v /= 10; }
+                return s;
+            };
             for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
                 const auto& td = tdeps8[ti];
                 std::string pk_hex = common::Encode::HexEncode(td.prikey);
                 std::cout << "  [token" << ti << "] contract=" << td.contract_addr_hex
                           << " s" << td.signer_shard << "\n";
-                // Token deployer balance at base shadow
+                // Token deployer balance at base shadow (uint256, needs 128-bit read)
                 {
                     ShardoraClient qb(eps8[td.signer_shard].ip, eps8[td.signer_shard].http);
                     std::string rs = qb.queryContract(pk_hex, td.contract_addr_hex,
                                                       kBalOfSel + encodeAddr32(td.addr_hex));
                     std::cout << "    [base] deployer=" << td.addr_hex
-                              << " bal=" << snap_hex2u64(rs) << "\n";
+                              << " bal=" << snap_str128(snap_hx128(rs)) << "\n";
                 }
                 // AMM deployer + users at AMM shadow
                 for (uint32_t k = 0; k < kAmmPairs; ++k) {
@@ -8879,7 +8888,7 @@ contract AMMPool {
                         std::string rs = qa.queryContract(pk_hex, shex,
                                                           kBalOfSel + encodeAddr32(ad.addr_hex));
                         std::cout << "      amm_deployer=" << ad.addr_hex
-                                  << " bal=" << snap_hex2u64(rs) << "\n";
+                                  << " bal=" << snap_str128(snap_hx128(rs)) << "\n";
                     }
                     // Each user assigned to this token
                     for (uint32_t ui : rcpt5[ti]) {
@@ -8887,7 +8896,7 @@ contract AMMPool {
                         std::string rs = qa.queryContract(pk_hex, shex,
                                                           kBalOfSel + encodeAddr32(u.addr_hex));
                         std::cout << "      user" << ui << "=" << u.addr_hex
-                                  << " bal=" << snap_hex2u64(rs) << "\n";
+                                  << " bal=" << snap_str128(snap_hx128(rs)) << "\n";
                     }
                 }
             }
