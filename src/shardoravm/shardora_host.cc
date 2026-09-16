@@ -619,8 +619,8 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
     // topic[0]=kTransferTopic, topic[1]=from (padded 32B), topic[2]=to (padded 32B)
     // data[0:32]=value (uint256, big-endian 32 bytes).
     // Post-transfer balances read from CrossShardBase._balances (slot 2).
-    // Balances are printed as full uint256 hex (trimmed) because token supply
-    // is 1_000_000 ether = 10^24 which exceeds uint64 max (~1.84e19).
+    // Token supply = 1_000_000 ether = 10^24, which exceeds uint64 (~1.84e19),
+    // so balances are converted to decimal strings via full uint256 arithmetic.
     if (topics_count >= 3 && topics[0] == kTransferTopic && data_size >= 32) {
         std::string from_hex = common::Encode::HexEncode(
             std::string(reinterpret_cast<const char*>(topics[1].bytes + 12), 20));
@@ -628,15 +628,26 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
             std::string(reinterpret_cast<const char*>(topics[2].bytes + 12), 20));
         std::string contract_hex = common::Encode::HexEncode(
             std::string(reinterpret_cast<const char*>(addr.bytes), 20));
-        // Print amount as full uint256 hex (trimmed leading zeros)
-        auto bytes32_to_trimmed_hex = [](const uint8_t* b32) -> std::string {
-            std::string hex = common::Encode::HexEncode(std::string(reinterpret_cast<const char*>(b32), 32));
-            size_t s = hex.find_first_not_of('0');
-            return s == std::string::npos ? "0" : hex.substr(s);
+        // Convert 32-byte big-endian uint256 to decimal string
+        auto bytes32_to_decimal = [](const uint8_t* b) -> std::string {
+            std::string result = "0";
+            for (int i = 0; i < 32; i++) {
+                uint32_t carry = b[i];
+                for (int j = (int)result.size() - 1; j >= 0; j--) {
+                    uint32_t v = (uint32_t)(result[j] - '0') * 256 + carry;
+                    result[j] = (char)('0' + v % 10);
+                    carry = v / 10;
+                }
+                while (carry > 0) {
+                    result = (char)('0' + carry % 10) + result;
+                    carry /= 10;
+                }
+            }
+            return result;
         };
-        std::string amt_str = bytes32_to_trimmed_hex(data);
+        std::string amt_str = bytes32_to_decimal(data);
         // Read post-transfer balance: _balances[a] at keccak256(padded_addr || slot2_padded)
-        auto read_balance_hex = [&](const evmc::bytes32& padded_addr) -> std::string {
+        auto read_balance_dec = [&](const evmc::bytes32& padded_addr) -> std::string {
             uint8_t ki[64] = {0};
             memcpy(ki, padded_addr.bytes, 32);
             ki[63] = 2;  // _balances mapping is at slot 2 in CrossShardBase
@@ -645,10 +656,10 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
             evmc::bytes32 bkey{};
             memcpy(bkey.bytes, h.data(), 32);
             auto sv = get_storage(addr, bkey);
-            return bytes32_to_trimmed_hex(sv.bytes);
+            return bytes32_to_decimal(sv.bytes);
         };
-        std::string from_bal = read_balance_hex(topics[1]);
-        std::string to_bal   = read_balance_hex(topics[2]);
+        std::string from_bal = read_balance_dec(topics[1]);
+        std::string to_bal   = read_balance_dec(topics[2]);
         SHARDORA_WARN("[TRANSFER] contract=%s from=%s to=%s amt=%s from_bal=%s to_bal=%s",
             contract_hex.c_str(), from_hex.c_str(), to_hex.c_str(),
             amt_str.c_str(), from_bal.c_str(), to_bal.c_str());
