@@ -616,9 +616,9 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
     }();
 
     // Transfer(address indexed from, address indexed to, uint256 value)
-    // Covers both transferFrom and the burn-transfer emitted inside _crossTransfer.
     // topic[0]=kTransferTopic, topic[1]=from (padded 32B), topic[2]=to (padded 32B)
     // data[0:32]=value (uint256); extract low 8 bytes as uint64 for readability.
+    // Post-transfer balances read from CrossShardBase._balances (slot 2).
     if (topics_count >= 3 && topics[0] == kTransferTopic && data_size >= 32) {
         std::string from_hex = common::Encode::HexEncode(
             std::string(reinterpret_cast<const char*>(topics[1].bytes + 12), 20));
@@ -628,8 +628,24 @@ void ShardorahainHost::emit_log(const evmc::address& addr,
             std::string(reinterpret_cast<const char*>(addr.bytes), 20));
         uint64_t amt64 = 0;
         for (int i = 0; i < 8; ++i) amt64 = (amt64 << 8) | data[24 + i];
-        SHARDORA_WARN("[TRANSFER] contract=%s from=%s to=%s amt=%lu",
-            contract_hex.c_str(), from_hex.c_str(), to_hex.c_str(), amt64);
+        // Read post-transfer balance: _balances[a] at keccak256(topics[N] || slot2)
+        auto read_balance = [&](const evmc::bytes32& padded_addr) -> uint64_t {
+            uint8_t ki[64] = {0};
+            memcpy(ki, padded_addr.bytes, 32);
+            ki[63] = 2;  // _balances is at slot 2 in CrossShardBase
+            std::string h = common::Hash::keccak256(
+                std::string(reinterpret_cast<const char*>(ki), 64));
+            evmc::bytes32 bkey{};
+            memcpy(bkey.bytes, h.data(), 32);
+            auto sv = get_storage(addr, bkey);
+            uint64_t bal = 0;
+            for (int j = 24; j < 32; ++j) bal = (bal << 8) | sv.bytes[j];
+            return bal;
+        };
+        uint64_t from_bal = read_balance(topics[1]);
+        uint64_t to_bal   = read_balance(topics[2]);
+        SHARDORA_WARN("[TRANSFER] contract=%s from=%s to=%s amt=%lu from_bal=%lu to_bal=%lu",
+            contract_hex.c_str(), from_hex.c_str(), to_hex.c_str(), amt64, from_bal, to_bal);
     }
 
     if (topics_count >= 3 && topics[0] == kCrossStorageOutTopic) {

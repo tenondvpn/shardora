@@ -7426,7 +7426,7 @@ abstract contract CrossShardBase {
         require(_balances[msg.sender] >= amount, "INSUFFICIENT_BALANCE");
         _balances[msg.sender] -= amount;
         totalSupply -= amount;
-        emit Transfer(msg.sender, address(0), amount);
+        emit Transfer(msg.sender, to, amount);
         nonce = 0;
         uint64 key = (uint64(toShard) << 32) | uint64(toPool);
         if (!_xferSeen[key]) {
@@ -7442,7 +7442,7 @@ abstract contract CrossShardBase {
         require(to != address(0), "ZERO_TO");
         _balances[to] += amount;
         totalSupply += amount;
-        emit Transfer(address(0), to, amount);
+        emit Transfer(BASE_ROOT_ADDRESS, to, amount);
         emit CrossTransferIn(BASE_ROOT_ADDRESS, to, amount, nonce);
     }
 
