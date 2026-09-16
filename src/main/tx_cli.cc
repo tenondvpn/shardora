@@ -9853,7 +9853,11 @@ contract AMMPool {
             __uint128_t global_bal_sum = 0;
 
             for (int p8_try = 0; p8_try <= kP8MaxRetries && !global_stop; ++p8_try) {
-                using ShadResult = std::pair<__uint128_t, std::string>; // (sum, label)
+                struct ShadResult {
+                    __uint128_t sum;
+                    std::string label;
+                    std::vector<std::pair<std::string, __uint128_t>> acct_bals; // (label(addr), bal)
+                };
                 std::vector<std::future<ShadResult>> shad_futs;
                 shad_futs.reserve(p8_shadows.size());
                 for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
@@ -9864,13 +9868,17 @@ contract AMMPool {
                         [&eps8, shex, sshard, slbl, pk_hex, kBalOfSel, &p8_accts,
                          encodeAddr32, hex2u128]() -> ShadResult {
                             __uint128_t s = 0;
+                            std::vector<std::pair<std::string, __uint128_t>> ab;
                             for (auto& [acct, albl] : p8_accts) {
                                 ShardoraClient qb(eps8[sshard].ip, eps8[sshard].http);
                                 std::string rs = qb.queryContract(
                                     pk_hex, shex, kBalOfSel + encodeAddr32(acct));
-                                if (rs.size() >= 64) s += hex2u128(rs.substr(0, 64));
+                                __uint128_t bal = 0;
+                                if (rs.size() >= 64) bal = hex2u128(rs.substr(0, 64));
+                                if (bal > 0) ab.push_back({albl + "(" + acct + ")", bal});
+                                s += bal;
                             }
-                            return {s, slbl};
+                            return {s, slbl, std::move(ab)};
                         }));
                 }
                 global_bal_sum = 0;
@@ -9878,18 +9886,22 @@ contract AMMPool {
                 shad_results.reserve(p8_shadows.size());
                 for (auto& f : shad_futs) {
                     auto r = f.get();
-                    global_bal_sum += r.first;
+                    global_bal_sum += r.sum;
                     shad_results.push_back(std::move(r));
                 }
-                // On last retry with mismatch, dump per-shadow totals for diagnosis
+                // On last retry with mismatch, dump per-shadow and per-account balances
                 if (global_bal_sum != kInitialSupply8 && p8_try == kP8MaxRetries) {
                     std::cout << "  [token" << ti << " P8-breakdown by shadow]\n";
                     for (uint32_t si = 0; si < (uint32_t)shad_results.size(); ++si) {
-                        if (shad_results[si].first > 0)
+                        auto& sr = shad_results[si];
+                        if (sr.sum > 0) {
                             std::cout << "    shd " << p8_shadows[si].hex
                                       << " s" << p8_shadows[si].shard
-                                      << " " << shad_results[si].second
-                                      << " sum=" << u128str(shad_results[si].first) << "\n";
+                                      << " " << sr.label
+                                      << " sum=" << u128str(sr.sum) << "\n";
+                            for (auto& [albl, bal] : sr.acct_bals)
+                                std::cout << "        " << albl << "  " << u128str(bal) << "\n";
+                        }
                     }
                 }
 
