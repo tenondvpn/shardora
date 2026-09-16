@@ -69,11 +69,23 @@ evmc::bytes32 ShardorahainHost::GetCachedStorage(
 evmc::bytes32 ShardorahainHost::get_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) const noexcept {
+    std::string addr_hex = common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes)));
+    std::string key_hex  = common::Encode::HexEncode(std::string((char*)key.bytes, sizeof(key.bytes)));
+    std::string my_addr_hex     = common::Encode::HexEncode(my_address_);
+    std::string origin_addr_hex = common::Encode::HexEncode(origin_address_);
+
     // Fast path: check in-transaction cache first
     auto it = accounts_.find(addr);
     if (it != accounts_.end()) {
         auto storage_iter = it->second.storage.find(key);
         if (storage_iter != it->second.storage.end()) {
+            std::string val_hex = common::Encode::HexEncode(
+                std::string((char*)storage_iter->second.value.bytes, sizeof(storage_iter->second.value.bytes)));
+            SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=cache "
+                "contract=%s key=%s value=%s my_addr=%s origin=%s dirty=%d",
+                addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+                my_addr_hex.c_str(), origin_addr_hex.c_str(),
+                (int)storage_iter->second.dirty);
             return storage_iter->second.value;
         }
     }
@@ -81,28 +93,60 @@ evmc::bytes32 ShardorahainHost::get_storage(
     // Check parent transaction's cache (same block, previous tx)
     if (pre_shardora_host_ != nullptr) {
         auto parent_val = pre_shardora_host_->get_storage(addr, key);
+        std::string val_hex = common::Encode::HexEncode(
+            std::string((char*)parent_val.bytes, sizeof(parent_val.bytes)));
         if (parent_val) {
             // Cache for subsequent reads
             const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {parent_val};
+            SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=parent_host "
+                "contract=%s key=%s value=%s my_addr=%s origin=%s",
+                addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+                my_addr_hex.c_str(), origin_addr_hex.c_str());
             return parent_val;
         }
+        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=parent_host(empty) "
+            "contract=%s key=%s value=%s my_addr=%s origin=%s",
+            addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+            my_addr_hex.c_str(), origin_addr_hex.c_str());
         return parent_val;
     }
 
     // Check view block chain (uncommitted blocks)
     if (view_block_chain_) {
         auto res_val = view_block_chain_->GetPrevStorageBytes32KeyValue(parent_hash_, addr, key);
+        std::string val_hex = common::Encode::HexEncode(
+            std::string((char*)res_val.bytes, sizeof(res_val.bytes)));
         if (res_val) {
             const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {res_val};
+            SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=view_chain "
+                "contract=%s key=%s value=%s my_addr=%s origin=%s parent_hash=%s",
+                addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+                my_addr_hex.c_str(), origin_addr_hex.c_str(),
+                common::Encode::HexEncode(parent_hash_).c_str());
             return res_val;
         }
+        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=view_chain(miss) "
+            "contract=%s key=%s value=%s my_addr=%s origin=%s",
+            addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+            my_addr_hex.c_str(), origin_addr_hex.c_str());
     }
 
     // Final fallback: read from DB
     evmc::bytes32 tmp_val{};
     Execution::Instance()->GetStorage(addr, key, &tmp_val);
+    std::string val_hex = common::Encode::HexEncode(
+        std::string((char*)tmp_val.bytes, sizeof(tmp_val.bytes)));
     if (tmp_val) {
         const_cast<ShardorahainHost*>(this)->accounts_[addr].storage[key] = {tmp_val};
+        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=db "
+            "contract=%s key=%s value=%s my_addr=%s origin=%s",
+            addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+            my_addr_hex.c_str(), origin_addr_hex.c_str());
+    } else {
+        SHARDORA_INFO("[TRANSFER_CALL][GET_STORAGE] src=db(miss) "
+            "contract=%s key=%s value=%s my_addr=%s origin=%s",
+            addr_hex.c_str(), key_hex.c_str(), val_hex.c_str(),
+            my_addr_hex.c_str(), origin_addr_hex.c_str());
     }
     return tmp_val;
 }
@@ -111,6 +155,12 @@ evmc_storage_status ShardorahainHost::set_storage(
         const evmc::address& addr,
         const evmc::bytes32& key,
         const evmc::bytes32& value) noexcept {
+    std::string addr_hex    = common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes)));
+    std::string key_hex     = common::Encode::HexEncode(std::string((char*)key.bytes, sizeof(key.bytes)));
+    std::string new_val_hex = common::Encode::HexEncode(std::string((char*)value.bytes, sizeof(value.bytes)));
+    std::string my_addr_hex     = common::Encode::HexEncode(my_address_);
+    std::string origin_addr_hex = common::Encode::HexEncode(origin_address_);
+
     auto it = accounts_.find(addr);
     if (it == accounts_.end()) {
         accounts_[addr] = MockedAccount();
@@ -118,11 +168,24 @@ evmc_storage_status ShardorahainHost::set_storage(
     }
 
     auto& old = it->second.storage[key];
+    std::string old_val_hex = common::Encode::HexEncode(
+        std::string((char*)old.value.bytes, sizeof(old.value.bytes)));
+    bool was_dirty = old.dirty;
+    uint64_t gas_charged = 0;
     if (!old.dirty) {
-        gas_more_ += consensus::kSstoreNewSlotGas;
+        gas_charged = consensus::kSstoreNewSlotGas;
+        gas_more_ += gas_charged;
     } else {
-        gas_more_ += consensus::kSstoreDirtySlotGas;
+        gas_charged = consensus::kSstoreDirtySlotGas;
+        gas_more_ += gas_charged;
     }
+
+    SHARDORA_INFO("[TRANSFER_CALL][SET_STORAGE] "
+        "contract=%s key=%s old_value=%s new_value=%s "
+        "my_addr=%s origin=%s was_dirty=%d gas_charged=%lu gas_more_total=%lu",
+        addr_hex.c_str(), key_hex.c_str(), old_val_hex.c_str(), new_val_hex.c_str(),
+        my_addr_hex.c_str(), origin_addr_hex.c_str(),
+        (int)was_dirty, gas_charged, gas_more_);
 
     old.value = value;
     old.dirty = true;
