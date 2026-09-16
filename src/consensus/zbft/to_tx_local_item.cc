@@ -483,7 +483,7 @@ bool ToTxLocalItem::HandleCrossShardBase(
                 tpx += common::Encode::HexEncode(
                     std::string(reinterpret_cast<const char*>(t.bytes), 32));
             }
-            SHARDORA_INFO("[XSBT] EVM_EVENT creator=%s topics=[%s] data=%s",
+            SHARDORA_INFO("[TOKEN_TEST] contract=%s topics=[%s] data=%s",
                 common::Encode::HexEncode(
                     std::string(reinterpret_cast<const char*>(lr.creator.bytes), 20)).c_str(),
                 tpx.c_str(),

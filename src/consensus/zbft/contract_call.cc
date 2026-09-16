@@ -357,6 +357,16 @@ int ContractCall::HandleTx(
                 topic_iter != (*event_iter).topics.end(); ++topic_iter) {
             log->add_topics(std::string((char*)(*topic_iter).bytes, sizeof((*topic_iter).bytes)));
         }
+        std::string _tpx;
+        for (auto& _t : (*event_iter).topics) {
+            if (!_tpx.empty()) _tpx += ",";
+            _tpx += common::Encode::HexEncode(std::string((char*)_t.bytes, 32));
+        }
+        SHARDORA_INFO("[TOKEN_TEST] contract=%s topics=[%s] data=%s",
+            common::Encode::HexEncode(
+                std::string((char*)(*event_iter).creator.bytes, 20)).c_str(),
+            _tpx.c_str(),
+            common::Encode::HexEncode((*event_iter).data).c_str());
     }
 
     block::protobuf::TxHashStatus tx_hash_status;
