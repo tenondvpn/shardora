@@ -1301,18 +1301,12 @@ bool ViewBlockChain::GetPrevStorageKeyValue(
 }
 
 evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
-        const std::string& parent_hash, 
+        const std::string& parent_hash,
         const evmc::address& addr,
         const evmc::bytes32& key) {
-    // Check cache first — cache values are safe because get_storage()
-    // checks accounts_ (current tx writes) and pre_shardora_host_ (same-block writes)
-    // before reaching here, so cached values won't shadow uncommitted writes.
-    auto* cached = bytes32_storage_cache_.get(addr, key);
-    if (cached) {
-        return *cached;
-    }
-
-    // Traverse view chain
+    // Traverse view chain — no caching: cached values become stale when blocks
+    // commit and update the view chain, causing subsequent blocks to read wrong
+    // base values for EVM storage slots (e.g. totalSupply decremented incorrectly).
     std::string phash = parent_hash;
     while (true) {
         if (phash.empty()) {
@@ -1323,7 +1317,7 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
         if (it == view_blocks_info_.end()) {
             break;
         }
-    
+
         if (it->second->view_block->qc().view() <= stored_to_db_view_) {
             break;
         }
@@ -1331,8 +1325,6 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
         if (it->second->shardora_host_ptr) {
             auto res = it->second->shardora_host_ptr->GetCachedStorage(addr, key);
             if (res) {
-                // Cache the result for future lookups
-                bytes32_storage_cache_.put(addr, key, res);
                 return res;
             }
         }
@@ -1340,7 +1332,7 @@ evmc::bytes32 ViewBlockChain::GetPrevStorageBytes32KeyValue(
         if (!it->second->view_block) {
             break;
         }
-        
+
         phash = it->second->view_block->parent_hash();
     }
 
