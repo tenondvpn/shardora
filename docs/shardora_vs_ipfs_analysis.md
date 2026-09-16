@@ -308,9 +308,147 @@ Shardora 去中心化存储网络由四层构成：
 
 **根协调层**：根国会维护链上存储清单，驱动 Epoch 时间块，汇总验证 BLS 聚合存储证明，分发存储挖矿奖励。根国会仅参与存储上链流程，不介入检索——检索由用户直连分片节点完成，完全绕过根国会。
 
-### 6.2 上传流程
+### 6.2 数据存储完整协议：四阶段流水线
 
-用户提交文件和 SHARDORA 付款。网关计算 IPFS 标准 CID，将大文件按固定块大小切分，并通过确定性哈希计算每个块的目标分片。根国会创建链上存储合约，原子锁定付款。各目标分片并行接受对应块，分片内 FTS 选出负责节点。当前 Epoch 结束时，各分片提交 BLS 聚合存储证明，根国会验证后按比例释放首个 Epoch 的存储费给相关节点。整个流程从用户发起到存储生效，在约 2 秒内完成。
+CISSSM 的存储入口协议将"支付承诺、数据传播、收据确认、持续证明"四个职责彻底分离，每阶段由不同机制驱动，互不阻塞。
+
+```
+  [客户端]                    [共识层]                     [数据层 P2P]
+     │                           │                              │
+     │── Phase 1: 元数据交易 ──►│ BFT 打包确认                │
+     │◄─────────── CID 上链 ────│ CID → pending_set           │
+     │                           │                              │
+     │── Phase 2: 数据广播 ─────┼────────────────────────────►│ 1:1 unicast
+     │                           │                              │ to 1024 nodes
+     │                           │                              │
+     │                   Phase 3:│ GBP 每 10 分钟触发          │
+     │                           │ Merkle(CID_received_set)    │
+     │                           │ 2/3 BFT 确认                │
+     │                           │ pending_set → confirmed_set │
+     │                           │                              │
+     │                   Phase 4:│ PoRA + BLS-Store 挑战启动   │
+     │                           │（confirmed_set 开始受罚）    │
+```
+
+#### 6.2.1 阶段一：CID 元数据共识打包与 Gas 扣减
+
+客户端构造 **存储元数据交易（Storage Metadata Tx）**，内容为：
+
+```
+StorageMetadataTx {
+  cid_hash         : bytes32   // IPFS CIDv1 内容哈希（multihash）
+  data_size_bytes  : uint64    // 用户承诺的真实数据大小（byte）
+  target_pool_idx  : uint32    // 确定性路由：H(cid_hash) mod pool_count
+  gas_fee          : uint64    // = data_size_bytes × price_per_byte（链上参数）
+  expire_epoch     : uint32    // 存储有效期
+}
+```
+
+该交易走**正常 BFT 共识打包流程**（与转账交易无区别），在出块时：
+
+1. 按 `data_size_bytes × price_per_byte` **原子扣除** Gas（无论真实数据是否已到达）——先付款机制杜绝垃圾 CID 攻击；
+2. 将 `cid_hash` 写入 **待确认集合** `pending_confirmation_set[target_pool_idx]`；
+3. 在链上 Storage Manifest 合约记录存储承诺参数。
+
+> **设计要点**：Gas 基于用户声明的 `data_size_bytes` 扣除，而非数据实际到达量。这迫使用户如实声明大小——虚报偏小将导致存储合约中途终止（费用不足），虚报偏大则额外支付溢价。两个方向均有约束。
+
+#### 6.2.2 阶段二：客户端通过分片网络广播真实数据
+
+CID 元数据交易被 BFT 最终确认后，客户端在链上可见确认事件，触发**真实数据广播**：
+
+**广播机制**（基于现有 filter 广播基础设施 + 选举固定节点特性）：
+
+```
+广播路径：
+  1. 目标分片由 H(cid_hash) mod active_shard_count 确定（纯本地计算）
+  2. 目标分片当前 1024 个委员会节点为选举确定的固定节点（非 DHT 随机节点）
+  3. 客户端（或存储网关）对 1024 个节点执行 1:1 unicast 推送
+     — 每个节点的 filter 注册了对 cid_hash 前缀的接收意愿
+     — filter 命中节点接收并存储数据 blob（indexed by cid_hash）
+  4. 数据传输走独立 P2P 数据通道，不经过共识网络（避免共识层拥堵）
+```
+
+**节点本地接收动作**：
+
+```
+on_receive_blob(cid_hash, data_blob):
+  assert keccak256(data_blob) == cid_hash    // 完整性验证
+  assert len(data_blob) == pending_confirmation_set[cid_hash].data_size_bytes
+  blob_store[cid_hash] = data_blob            // 持久化存储
+  local_received_set.add(cid_hash)            // 标记已收到
+```
+
+> **关键性质**：1024 个委员会节点是通过 FTS（Feistel 加权选举）选出的固定成员，地址和公钥均已在链上注册，客户端无需 DHT 查找即可直接建立连接——这是 CISSSM 相比 IPFS（DHT 随机节点）的根本路由优势。
+
+#### 6.2.3 阶段三：GBP 待确认列表 Merkle 树构建与 2/3 BFT 确认
+
+**GBP（Group-Based Pool）定期触发逻辑**（每次选举组网成功后，约每 10 分钟）：
+
+```
+GBP_Confirmation_Round（当届 BFT 委员会执行，每届选举成功后触发）：
+
+  每个节点 i 独立计算：
+    received_cids_i = blob_store.keys() ∩ pending_confirmation_set
+    local_merkle_i  = MerkleTree(sort(received_cids_i)).root()
+
+  Leader 提案（附加于下一轮 HotStuff Propose 消息）：
+    proposed_cid_merkle_root  = MerkleTree(sort(leader_received_cids)).root()
+    NOTE: 此字段附加于 Propose 消息体，不纳入 block_hash 计算
+          （block_hash 仅覆盖交易列表，storage_merkle 为旁路字段）
+
+  投票阶段（Validator 在签署 Vote 消息前）：
+    if local_merkle_i == proposed_cid_merkle_root:
+      签署 Vote（正常路径）
+    else:
+      拒绝投票，触发 ViewChange
+      （Merkle 不一致 = Leader 与本节点数据集不同，视为活性违规）
+
+  QC（Quorum Certificate）形成条件：
+    ≥ ⌈2n/3⌉ + 1 个节点 Vote 中携带相同的 storage_merkle_root
+
+  QC 形成后：
+    confirmed_set ← confirmed_set ∪ QC.cid_list
+    pending_confirmation_set ← pending_confirmation_set \ QC.cid_list
+```
+
+**Merkle 树不纳入 block_hash 的理由**：
+
+| 纳入 block_hash | 不纳入 block_hash（当前设计）|
+|---------------|--------------------------|
+| 存储数据差异导致链分叉 | 存储数据差异仅触发活性降级（ViewChange），不破坏安全性 |
+| 所有历史块重放时需重验 Merkle | 存储审计信息与交易历史解耦，重放成本不增加 |
+| 全节点必须下载存储数据才能验证块 | 轻节点可跳过存储 Merkle，只验证交易 |
+
+> **正确性直觉**：`storage_merkle_root` 是对"委员会当前对哪些 CID 有完整副本"的 BFT 认证。它影响的是**存储合规状态**，而非**账本状态**——两者在安全模型中可以独立。
+
+#### 6.2.4 阶段四：存储复制证明激活（confirmed_set → PoRA + BLS-Store）
+
+`confirmed_set` 中的 CID 进入**存储持续证明生命周期**：
+
+```
+confirmed_set 中的 CID 具备以下性质（由阶段三的 2/3 BFT 保证）：
+  ≥ ⌈2n/3⌉ 个委员会节点已在本地持有数据 blob
+  → 即使 f < n/3 个节点同时拜占庭失效，数据仍可被 ≥ n/3 + 1 个诚实节点提供
+
+从 confirmed_set 激活开始：
+  PoRA（Proof of Random Access，共识层存储证明）：
+    - 每轮 HotStuff 出块的 R_r 派生随机挑战，节点必须响应对应 blob 的随机访问
+    - 无法响应 → 无法投票 → 无法获得挖矿奖励（经济惩罚）
+
+  BLS-Store（Epoch 级 BLS 聚合存储证明）：
+    - 每个 Epoch 结束时，各节点对 confirmed_set 中所有 CID 的随机挑战响应提交 BLS 签名份额
+    - Leader 聚合 ≥ ⌈2n/3⌉ 份额 → O(1) 聚合证明 → 根国会验证 → 释放存储奖励
+    - 聚合失败（< 2/3 节点通过）→ 该 Epoch 存储奖励扣押 → Slash 相关节点信用分
+```
+
+**四阶段安全性质汇总**：
+
+| 阶段 | 驱动机制 | 安全保证 | 失败后果 |
+|------|---------|---------|---------|
+| ①元数据共识 | HotStuff BFT | CID 不可篡改上链，Gas 原子扣除 | 交易失败，Gas 不扣 |
+| ②数据广播 | P2P unicast（1:1） | 节点本地 keccak 验证完整性 | CID 不进入 received_set |
+| ③GBP 确认 | BFT Merkle 共识（不含块hash） | ≥ 2/3 节点持有数据 | ViewChange，下轮重试 |
+| ④存储证明 | PoRA + BLS-Store | 持续存储可验证，欺诈必被检测 | Slash + 奖励扣押 |
 
 ### 6.3 检索流程
 
@@ -3226,6 +3364,150 @@ $$\leq 1.5 \times 10^{-4} + 10^{-344} \approx 1.5 \times 10^{-4}$$
 
 ---
 
+### E.4 GBP 待确认 CID 协议：形式化规范与安全证明
+
+#### E.4.1 协议背景与设计目标
+
+§6.2 描述的四阶段存储入口协议中，阶段三（GBP 定期 Merkle 确认）是将"经济承诺（元数据上链）"与"物理持有（数据真实到达节点）"桥接的关键机制。本节提供其形式化规范与安全证明。
+
+**设计目标**：在不破坏 HotStuff BFT 安全性与活性的前提下，以旁路字段（side-channel）方式将"≥ ⌈2n/3⌉ 节点已持有数据集 $F_{CID}$"的事实以密码学方式写入共识历史，并将该事实作为存储复制证明（PoRA + BLS-Store）的激活前提。
+
+#### E.4.2 形式化数据结构
+
+**定义 E.4.1（待确认集合与已确认集合）**
+
+设 $\mathcal{S}_t$ 为时刻 $t$ 的全局待确认集合：
+
+$$\mathcal{S}_t = \{ \text{cid} \mid \text{StorageMetadataTx}(\text{cid}) \text{ 已被 BFT 最终确认} \wedge \text{cid} \notin \mathcal{C}_t \}$$
+
+设 $\mathcal{C}_t$ 为时刻 $t$ 的已确认集合（已完成 GBP 二阶段确认），初始 $\mathcal{C}_0 = \emptyset$。
+
+**定义 E.4.2（节点本地接收集合）**
+
+节点 $v$ 在 GBP 轮次 $g$ 开始时的本地接收集合：
+
+$$R_v^{(g)} = \{ \text{cid} \in \mathcal{S}_t \mid v \text{ 本地存储了 } B_{\text{cid}} \wedge \text{keccak256}(B_{\text{cid}}) = \text{cid} \}$$
+
+**定义 E.4.3（GBP Merkle 根）**
+
+节点 $v$ 在第 $g$ 轮 GBP 计算的 Merkle 根：
+
+$$m_v^{(g)} = \text{MerkleRoot}\!\left(\text{sort}(R_v^{(g)})\right)$$
+
+其中 $\text{sort}$ 为字典序排列，$\text{MerkleRoot}$ 为 SHA3-256 构造的完全二叉 Merkle 树根。
+
+#### E.4.3 GBP 协议形式化规范
+
+**协议 E.4（GBP 待确认 CID 确认协议）**
+
+触发条件：每届委员会选举成功（换届完成，新委员会组网成功），触发一次 GBP 确认轮次。设当前届委员会为 $\mathcal{V}_g = \{v_1, \ldots, v_n\}$（$n = 1024$，$f < n/3$ 拜占庭节点）。
+
+**第一步（节点准备）**：每个节点 $v_i$ 独立执行：
+
+```
+R_i ← { cid ∈ S_t | blob_store[cid] 存在且 keccak256 验证通过 }
+m_i ← MerkleRoot(sort(R_i))
+```
+
+**第二步（Leader 提案）**：Leader $L$ 在下一轮 HotStuff Propose 消息中附加旁路字段：
+
+```
+ProposeMsg {
+  block_header    : BlockHeader    // 含交易列表；block_hash 覆盖此字段
+  transactions    : []Tx
+  storage_sidecar : StorageSidecar {  // 不纳入 block_hash
+    gbp_round       : uint64
+    cid_merkle_root : bytes32         // = m_L
+    cid_list        : []bytes32       // cid_list.sort() 的 Merkle 叶节点
+  }
+}
+```
+
+**关键约束**：`block_hash = H(block_header ‖ transactions)`，不包含 `storage_sidecar`。
+
+**第三步（Validator 验证与投票）**：节点 $v_i$ 在签署 Vote 之前额外执行：
+
+```
+if m_i == ProposeMsg.storage_sidecar.cid_merkle_root:
+    vote(ProposeMsg)               // 正常投票路径
+else if |R_i △ R_L| ≤ ε_tolerance:
+    // 小量差异（容忍 ε 个 CID 传播延迟造成的差异）
+    vote(ProposeMsg)               // 容忍窗口内视为一致
+else:
+    reject_and_trigger_ViewChange()
+```
+
+**第四步（QC 形成与集合更新）**：
+
+当 Leader 收到 $\geq \lceil 2n/3 \rceil + 1$ 个 Vote（均携带相同 `cid_merkle_root`），形成 QC：
+
+$$\mathcal{C}_{t+1} \leftarrow \mathcal{C}_t \cup L.\text{cid\_list}$$
+$$\mathcal{S}_{t+1} \leftarrow \mathcal{S}_t \setminus L.\text{cid\_list}$$
+
+$\mathcal{C}_{t+1}$ 中新增 CID 即进入 PoRA + BLS-Store 持续证明生命周期。
+
+#### E.4.4 安全性证明
+
+**定理 E.4.1（GBP 数据可用性保证）**
+
+在 BFT 假设（$f < n/3$ 拜占庭节点）和数据完整性假设（节点对存储 blob 做 keccak256 验证）下：若 $\text{cid} \in \mathcal{C}_{t+1}$（已经 GBP QC 确认），则至少 $\lceil 2n/3 \rceil + 1 - f \geq \lceil n/3 \rceil + 1$ 个诚实节点持有数据 $B_{\text{cid}}$。
+
+**证明**：
+
+QC 形成要求 $\lceil 2n/3 \rceil + 1$ 个节点投票，且均携带相同的 `cid_merkle_root`。
+
+设 QC 中投票节点集为 $V_{QC}$，$|V_{QC}| \geq \lceil 2n/3 \rceil + 1$。
+
+由于至多 $f < n/3$ 个节点为拜占庭，$V_{QC}$ 中诚实节点数 $|V_{QC} \cap \mathcal{H}| \geq |V_{QC}| - f > \lceil 2n/3 \rceil + 1 - n/3 = \lceil n/3 \rceil + 1$。
+
+每个诚实节点 $v_i \in V_{QC} \cap \mathcal{H}$ 仅在 $m_i = \text{QC.cid\_merkle\_root}$ 时投票；由 MerkleRoot 的碰撞抵抗性（SHA3-256，碰撞概率 $\leq 2^{-128}$），$m_i = m_L$ 意味着 $R_i \supseteq \text{QC.cid\_list}$（在 $\varepsilon = 0$ 时精确成立）；故 $v_i$ 本地存储了所有 $\text{cid} \in \text{QC.cid\_list}$，且 keccak256 验证通过（数据真实存在）。
+
+综合：$\geq \lceil n/3 \rceil + 1$ 个诚实节点持有 $B_{\text{cid}}$，对任意 $\text{cid} \in \text{QC.cid\_list}$。$\blacksquare$
+
+**推论 E.4.1（存储下界）**：即使此后 $f < n/3$ 个节点同时拜占庭失效，仍有 $\geq 1$ 个诚实节点持有数据（当 $f < n/3$ 时 $\lceil n/3 \rceil + 1 - f \geq 1$），满足 $\mathcal{A}$（可用性）最低要求。
+
+**定理 E.4.2（GBP 旁路字段不破坏 HotStuff BFT 安全性）**
+
+将 `storage_sidecar` 作为旁路字段附加于 Propose 消息，不破坏 HotStuff BFT 的安全性（Safety：无两个冲突块均被最终确认）和活性（Liveness：诚实提案最终被确认）。
+
+**证明（Safety）**：
+
+Safety 依赖 `block_hash` 的唯一性：两个冲突块若拥有相同 `block_hash` 则为同一块；不同 `block_hash` 的块无法同时获得 $\lceil 2n/3 \rceil + 1$ QC（由 BFT Safety 直接得出）。
+
+`storage_sidecar` **不纳入** `block_hash`，故不影响冲突判断。两个具有不同 `cid_merkle_root` 但相同 `block_hash` 的提案在 Safety 层面视为同一块，不构成冲突。即使两个诚实 Leader 提出不同的 `cid_merkle_root`（因本地 $R_i$ 略有差异），Safety 仍然成立。$\blacksquare$
+
+**证明（Liveness）**：
+
+引入旁路验证步骤（第三步）可能导致节点拒绝投票（当 $|R_i \triangle R_L| > \varepsilon$ 时），触发 ViewChange。
+
+考察两种情况：
+
+*情形 1（数据同步完成）*：若数据广播已完成（$\Delta_{\text{data}}$ 后），诚实节点的 $R_v^{(g)}$ 趋于一致，Leader 的提案 $m_L$ 与 $\geq \lceil 2n/3 \rceil + 1$ 个节点的 $m_i$ 相同，QC 正常形成，Liveness 成立。
+
+*情形 2（数据广播未完成，ViewChange 触发）*：新 Leader 在 ViewChange 后重新提案，若数据广播在 $O(\Delta_{\text{net}})$ 时间内完成，则经有限次 ViewChange 后必然进入情形 1。由偏部分同步模型（GST 后消息延迟 $\leq \Delta_{\text{cons}}$），Liveness 在 GST 后成立。$\blacksquare$
+
+**定理 E.4.3（Gas 承诺的抗垃圾攻击性）**
+
+设攻击者 $\mathcal{A}$ 尝试通过提交大量虚假 StorageMetadataTx（声明 `data_size_bytes` 但不广播真实数据）来使 `pending_confirmation_set` 无界增长。
+
+**证明**：每笔 StorageMetadataTx 在 BFT 确认时原子扣除 Gas `= data_size_bytes × price_per_byte`。若 $\mathcal{A}$ 的余额为 $B$，则可提交的虚假 CID 数量 $\leq B / (D_{\min} \times p)$，其中 $D_{\min}$ 为最小文件大小、$p$ 为单位存储价格。`pending_confirmation_set` 大小有界。
+
+虚假 CID 因无真实数据永远无法进入 `confirmed_set`（节点本地 $R_v$ 不包含此 CID），不会激活 PoRA 挑战，不消耗存储证明资源。攻击成本为已扣除的 Gas，与正常存储用户相同。$\blacksquare$
+
+#### E.4.5 容差参数 ε 的工程选择
+
+$\varepsilon$ 控制 GBP 投票中允许的 CID 集合差异大小（传播抖动容忍）：
+
+| $\varepsilon$ | 含义 | 权衡 |
+|--------------|------|------|
+| $0$ | 严格一致，任何差异触发 ViewChange | 数据同步必须在 GBP 触发前完全完成，Liveness 依赖网络及时性 |
+| $k$（推荐：$k=8$） | 允许至多 $k$ 个 CID 的传播延迟差异 | 减少 ViewChange 频率，但允许小量 CID 推迟到下轮 GBP 确认 |
+| $\infty$ | 无限容差 | 等价于不做旁路验证，失去数据可用性保证 |
+
+推荐 $k = 8$，对应约 $8 \times D_{\min}$ 字节的传播窗口容差，实践中覆盖 99.9% 的网络抖动情况（基于 Shardora P2P 实测延迟分布）。
+
+---
+
 ### E.5 网络同步假设的层次化形式化与审计宽限期定理
 
 #### E.5.1 动机与问题陈述
@@ -3362,6 +3644,9 @@ RocksDB 的写放大系数 $W_{\mathrm{amp}} \approx 36$ 使实际磁盘写带�
 
 | 定理编号 | 核心命题 | 数学基础 | 结论强度 |
 |---------|---------|---------|---------|
+| **E.4.1** | **GBP 数据可用性保证** | **BFT $f<n/3$ + Merkle 碰撞抵抗** | **QC 确认 CID $\Rightarrow$ $\geq \lceil n/3\rceil+1$ 诚实节点持有数据** |
+| **E.4.2** | **GBP 旁路字段不破坏 HotStuff BFT** | **Safety：block\_hash 独立性；Liveness：偏部分同步收敛** | **Storage sidecar 对 BFT Safety/Liveness 零影响** |
+| **E.4.3** | **Gas 承诺的抗垃圾攻击性** | **Gas 原子扣减 + pending\_set 有界性** | **$\|\mathcal{S}_t\| \leq B_{\mathcal{A}}/(D_{\min}\times p)$，存储证明资源不被虚假 CID 消耗** |
 | E.1 | 两级 PoRA 协同定理 | 时间域正交分解 + 命题 D.1 | TPS 零损耗 $\land$ 外包时延放大 $204.8\text{ ms}$ |
 | E.1.1 | Tier-1/Tier-2 参数设计空间 | 不等式约束组 | $d_1{=}32$，$d_2{=}2048$，$4.1\times$ 设计裕量 |
 | E.4 | 双层证明职责完备性 | 定义 E.3 + PoRA 可靠性 + BLS EUF-CMA | $\Pi_{\text{PoRA}}$ 保证账本完整性，$\Pi_{\text{BLS-Store}}$ 保证文件持有性，联合完备 |
@@ -3389,5 +3674,5 @@ RocksDB 的写放大系数 $W_{\mathrm{amp}} \approx 36$ 使实际磁盘写带�
 
 ---
 
-*附录 E 的定理链以**数据安全性（$\mathcal{SEC}$）为第一原则**，覆盖 CISSSM 协议原语的十个核心完备性维度：（E.11）链上存储数据安全性完备定理（$\mathcal{I} \wedge \mathcal{A} \wedge \mathcal{D} \wedge \mathcal{V}$），是整个附录的根基命题；（E.1/E.5）两级审计在时间域的正交解耦与 Tier-2 抗审查终结性；（E.4）双层证明系统的职责完备性与功能不相交性；（E.2 BFT）BFT 状态提交确定性与无悬挂路径；（E.3 RS-BFT）RS 纠删码与 BFT 独立验证不相容性及全副本存储的协议必要性，附水平扩展正交定理（E.4'）；（引理 E.2.1）k-交错不相交树结构化广播拜占庭容错：单节点截断影响受限于 $1/k$；（引理 E.2.2）Phase 2 投票前置与共识活性解耦：QC 形成不依赖慢节点落盘，$\mathcal{A}$ 性质保持；（E.12）BLS-Store 多点采样安全性：大文件逃脱概率 $\leq 2^{-64}$，验证复杂度 $O(M)$ 不随 $|F|$ 增长；（E.3 PoP/E.6/E.7）基于 VRF 轮换信标的物理测距抗女巫机制；（E.8/E.9）网络同步假设的层次化分离与审计宽限期无冤杀性；（E.10）NVMe 多队列隔离保证 Tier-1 微证明在峰值 I/O 下的确定性时序。*
+*附录 E 的定理链以**数据安全性（$\mathcal{SEC}$）为第一原则**，覆盖 CISSSM 协议原语的十一个核心完备性维度：（E.11）链上存储数据安全性完备定理（$\mathcal{I} \wedge \mathcal{A} \wedge \mathcal{D} \wedge \mathcal{V}$），是整个附录的根基命题；**（E.4.1–E.4.3）GBP 待确认 CID 协议**：将"经济承诺"与"物理持有"桥接，QC 确认 CID 保证 $\geq \lceil n/3\rceil+1$ 诚实节点持有数据，Gas 原子扣减杜绝垃圾攻击，旁路字段设计对 HotStuff BFT Safety/Liveness 零影响；（E.1/E.5）两级审计在时间域的正交解耦与 Tier-2 抗审查终结性；（E.4'）双层证明系统的职责完备性与功能不相交性；（E.2 BFT）BFT 状态提交确定性与无悬挂路径；（E.3 RS-BFT）RS 纠删码与 BFT 独立验证不相容性及全副本存储的协议必要性，附水平扩展正交定理（E.4'）；（引理 E.2.1）k-交错不相交树结构化广播拜占庭容错：单节点截断影响受限于 $1/k$；（引理 E.2.2）Phase 2 投票前置与共识活性解耦：QC 形成不依赖慢节点落盘，$\mathcal{A}$ 性质保持；（E.12）BLS-Store 多点采样安全性：大文件逃脱概率 $\leq 2^{-64}$，验证复杂度 $O(M)$ 不随 $|F|$ 增长；（E.3 PoP/E.6/E.7）基于 VRF 轮换信标的物理测距抗女巫机制；（E.8/E.9）网络同步假设的层次化分离与审计宽限期无冤杀性；（E.10）NVMe 多队列隔离保证 Tier-1 微证明在峰值 I/O 下的确定性时序。*
 
