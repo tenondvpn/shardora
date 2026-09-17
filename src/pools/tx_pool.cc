@@ -996,9 +996,12 @@ void TxPool::TempGetTxIdempotently(
         "get: %u, count: %u", 
         pool_index_, all_tx_size(), added_txs_.size(),
         res_map.size(), count);
-    // If the full scan yielded 0 valid txs, mark pool as clean so the next
-    // call can skip the scan unless new txs arrive or nonces advance.
-    if (res_map.empty()) {
+    // Only mark the pool clean when there are truly no txs left.
+    // If tx_map_ or consensus_tx_map_ still hold entries (e.g. a tx whose
+    // nonce predecessor hasn't committed yet), keep dirty=true so the next
+    // Propose call re-scans rather than skipping — otherwise the pool gets
+    // permanently stuck until a new tx arrives.
+    if (res_map.empty() && tx_map_.empty() && consensus_tx_map_.empty()) {
         tx_pool_dirty_ = false;
     }
     MaybeReportNormalToDelay(common::TimeUtils::TimestampUs());
