@@ -1013,6 +1013,29 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         res->set_value(SerializeDeterministic(*view_block_ptr));
         res->set_tag(req_height.tag());
         add_size += 16 + res->value().size();
+        // Piggyback the pool's latest QC/TC so the requesting node can commit
+        // the synced block even when no successor block will ever arrive (e.g.
+        // the view timed out and the TC references a proposed-but-uncommitted block).
+        auto hf = hotstuff_mgr_->hotstuff(req_height.pool_idx());
+        if (hf) {
+            auto latest_qc = hf->latest_qc_item_ptr();
+            if (latest_qc && latest_qc->view() > view_block_ptr->qc().view() &&
+                    latest_qc->has_view_block_hash()) {
+                res->set_latest_qc_item(SerializeDeterministic(*latest_qc));
+                // Only include the referenced block when it has no sign_x (TC scenario:
+                // view timed out, block was proposed but never QC'd).  If it has sign_x
+                // the client can sync it through the normal height-sync path.
+                auto ref_chain = hotstuff_mgr_->chain(req_height.pool_idx());
+                if (ref_chain) {
+                    auto ref_info = ref_chain->Get(latest_qc->view_block_hash());
+                    if (ref_info && ref_info->view_block &&
+                            ref_info->view_block->qc().sign_x().empty()) {
+                        res->set_qc_view_block(SerializeDeterministic(*ref_info->view_block));
+                    }
+                }
+                add_size += res->latest_qc_item().size() + res->qc_view_block().size();
+            }
+        }
     }
 
     if (sync_msg.sync_value_req().has_latest_sync_item() && add_size < kSyncPacketMaxSize) {
@@ -1184,6 +1207,14 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 }
             }
 
+            // Attach piggybacked TC/QC data so HandleSyncedViewBlock can commit the
+            // synced block even when no successor block will ever arrive.
+            if (iter->has_latest_qc_item()) {
+                pb_vblock->set_sync_tc_item(iter->latest_qc_item());
+                if (iter->has_qc_view_block()) {
+                    pb_vblock->set_sync_tc_ref_block(iter->qc_view_block());
+                }
+            }
             EnqueueVerifyBlock(
                 pb_vblock,
                 key,

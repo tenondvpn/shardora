@@ -43,6 +43,8 @@ message SyncResItem {
 	optional uint32 pool_idx = 4;
     optional uint64 height = 5;
     optional uint32 tag = 6;
+    optional bytes latest_qc_item = 7;   // serialized QcItem: pool's latest TC/QC (may reference uncommitted block)
+    optional bytes qc_view_block = 8;    // serialized ViewBlockItem referenced by latest_qc_item
 }
 
 message SyncValueResponse {

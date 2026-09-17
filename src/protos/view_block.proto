@@ -22,6 +22,8 @@ message ViewBlockItem {
     optional QcItem qc = 3;
     optional MemberConsensusStat leader_consen_stat = 4;
     optional bytes debug = 5;
+    optional bytes sync_tc_item = 6;       // transient: serialized QcItem (TC) piggybacked from sync server
+    optional bytes sync_tc_ref_block = 7;  // transient: serialized ViewBlockItem referenced by sync_tc_item
 }
 
 message MemberConsensusStat {

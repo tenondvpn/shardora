@@ -1873,11 +1873,34 @@ void Hotstuff::HandleSyncedViewBlock(
         TryCommit(view_block_chain(), msg_ptr, *latest_qc_item_ptr_);
     ADD_DEBUG_PROCESS_TIMESTAMP();
         TryCommit(view_block_chain(), msg_ptr, vblock->qc());
+        // If the sync server piggybacked a later TC/QC, use it to commit the synced block.
+        // The TC references a proposed-but-uncommitted block (e.g. block N+1 that timed out),
+        // whose parent is the block we just synced (block N).  CheckCommit(TC) can then
+        // find block N via the parent chain and commit it.
+        if (vblock->has_sync_tc_item()) {
+            auto tc_item = std::make_shared<view_block::protobuf::QcItem>();
+            if (tc_item->ParseFromString(vblock->sync_tc_item()) && tc_item->has_view_block_hash()) {
+                // Store the referenced (proposed-but-uncommitted) block so CheckCommit can traverse to it
+                if (vblock->has_sync_tc_ref_block()) {
+                    auto ref_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
+                    if (ref_block->ParseFromString(vblock->sync_tc_ref_block())) {
+                        view_block_chain()->Store(ref_block, true, nullptr, nullptr, false);
+                    }
+                }
+                if (VerifyQC(*tc_item) == Status::kSuccess) {
+                    view_block_chain()->UpdateHighViewBlock(*tc_item);
+                    TryCommit(view_block_chain(), nullptr, *tc_item);
+                    if (latest_qc_item_ptr_ == nullptr || tc_item->view() >= latest_qc_item_ptr_->view()) {
+                        UpdateLatestQcItemPtr(tc_item);
+                    }
+                }
+            }
+        }
         if (vblock->block_info().tx_list_size() > 0) {
             SyncLaterBlocks(
-                view_block_chain(), 
-                vblock->qc().network_id(), 
-                vblock->qc().pool_index(), 
+                view_block_chain(),
+                vblock->qc().network_id(),
+                vblock->qc().pool_index(),
                 vblock->qc().view());
         }
     } else if (network::IsSameShardOrSameWaitingPool(
