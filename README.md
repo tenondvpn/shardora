@@ -2,6 +2,12 @@
 
 **Shardora** is a high-performance blockchain sharding system featuring resilient and seamless shard reconfiguration. It optimizes consensus and transaction processing to maintain system stability even during complex shard transitions.
 
+## Technology Mind Map
+
+<p align="center">
+  <img src="./docs/shardora_mindmap_en.png" width="100%" alt="Shardora Technology Mind Map" />
+</p>
+
 ## 🔺 Blockchain Trilemma — Revised Triangle Area Comparison
 
 | Project | Decentralization | Security | Scalability | Triangle Area | Rank |
