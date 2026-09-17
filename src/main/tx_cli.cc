@@ -9625,6 +9625,11 @@ contract AMMPool {
                     (side == 0) ? ad.token_a_shadow_hex : ad.token_b_shadow_hex;
                 const auto& td = tdeps8[ti];
                 std::string pk_hex = common::Encode::HexEncode(td.prikey);
+                // When the token base is co-located with the AMM deployer (same shard+pool),
+                // HandleCrossShardBase runs on the root contract itself (is_base_shard=true).
+                // shex == td.contract_addr_hex in that case; check_bal7 must query the root
+                // directly, not a derived shadow that was never created.
+                bool token_coloc = (shex == td.contract_addr_hex);
                 uint32_t amm_ok = 0, amm_fail = 0;
                 for (uint32_t ui : rcpt5[ti]) {
                     if (users8[ui].shard_id != adeps8[k].signer_shard ||
@@ -9637,7 +9642,8 @@ contract AMMPool {
                         ad.signer_shard, ad.deployer_pool,
                         u.addr_hex,
                         (__uint128_t)(kSwapAmt7 * 2),
-                        /*verbose=*/false);
+                        /*verbose=*/false,
+                        /*use_root=*/token_coloc);
                     if (ok) { ++amm_ok; ++bal7_ok; } else { ++amm_fail; ++bal7_fail; }
                 }
                 std::cout << "    [amm" << k << " token" << ti << "] user amm-shadow balances: "
