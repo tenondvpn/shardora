@@ -1023,6 +1023,39 @@ void ViewBlockChain::HandleTimerMessage() {
         ++iter;
     }
 
+    // Force-commit the trailing uncommitted block when the pool goes idle.
+    // In the two-phase HotStuff used here, block N is written to DB only when
+    // block N+1 arrives and provides the successor QC.  If the pool goes idle
+    // after block N (no new TXs, no block N+1 produced), block N sits in
+    // view_blocks_info_ with a valid QC but is never flushed to RocksDB.
+    // This causes queryContract to return stale state indefinitely.
+    // Fix: once a block at height (latest_committed + 1) has a full QC and
+    // has survived at least one timer cycle without a successor, commit it
+    // directly.  A full QC (sign_x non-empty) already guarantees safety.
+    {
+        auto latest_committed = LatestCommittedBlock();
+        if (latest_committed) {
+            uint64_t next_height = latest_committed->block_info().height() + 1;
+            uint32_t net_id  = latest_committed->qc().network_id();
+            uint32_t pool_idx = latest_committed->qc().pool_index();
+            if (!BlockHeightCommited(prefix_db_, net_id, pool_idx, next_height)) {
+                for (auto& [hash, info] : view_blocks_info_) {
+                    if (!info || !info->view_block) continue;
+                    auto& vb = info->view_block;
+                    if (vb->qc().network_id() != net_id ||
+                            vb->qc().pool_index() != pool_idx) continue;
+                    if (vb->block_info().height() != next_height) continue;
+                    if (vb->qc().sign_x().empty()) continue;
+                    SHARDORA_INFO("force-commit trailing block %u_%u_v%lu h=%lu: "
+                        "pool idle, no successor block arrived",
+                        net_id, pool_idx, vb->qc().view(), next_height);
+                    Commit(info);
+                    break;
+                }
+            }
+        }
+    }
+
     // Fallback cleanup: remove view_with_blocks_ entries whose view <= commited_max_view_
     // These are definitely committed and should not linger in memory.
     if (view_with_blocks_.size() > 16) {
