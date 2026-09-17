@@ -59,7 +59,7 @@ def oqs_sign_test():
     test_oqs_contract_prefund_flow(w3, MY_OQS, OQS_KEY, OQS_PK)
 ```
 
-> More Resources & Stress Tests: [ShardoraTests](https://github.com/iPoW-Stack/ShardoraTests)
+> More Resources & Stress Tests: [ShardoraTests](https://github.com/iPoW-Stack/SethTests)
 
 ---
 
