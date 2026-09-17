@@ -1597,6 +1597,16 @@ void ViewBlockChain::UpdateHighViewBlock(const view_block::protobuf::QcItem& qc_
             pool_index_,
             high_view_block_->qc().view_block_hash(),
             db_batch);
+        // Write this block's contract storage KV to DB immediately so that
+        // QueryContract reads fresh state without waiting for the two-phase
+        // commit (which requires the next block to arrive).  A block with a
+        // full QC is on the canonical chain (HotStuff safety), so this write
+        // is safe.  The normal commit path writes the same values again
+        // (idempotent).
+        for (int i = 0; i < high_view_block_->block_info().key_value_array_size(); ++i) {
+            const auto& kv = high_view_block_->block_info().key_value_array(i);
+            prefix_db_->SaveTemporaryKv(kv.addr() + kv.key(), kv.SerializeAsString(), db_batch);
+        }
         auto st = db_->Put(db_batch);
         if (!st.ok()) {
             SHARDORA_ERROR("failed to persist high view block %u_%u_%lu, hash: %s",
