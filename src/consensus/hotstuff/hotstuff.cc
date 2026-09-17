@@ -1880,15 +1880,23 @@ void Hotstuff::HandleSyncedViewBlock(
         if (vblock->has_sync_tc_item()) {
             auto tc_item = std::make_shared<view_block::protobuf::QcItem>();
             if (tc_item->ParseFromString(vblock->sync_tc_item()) && tc_item->has_view_block_hash()) {
-                // Store the referenced (proposed-but-uncommitted) block so CheckCommit can traverse to it
+                // Store the referenced (proposed-but-uncommitted) block so CheckCommit can traverse to it.
+                // Pass an empty (non-null) balance map to skip the full state initialisation inside
+                // Store — we only need the block in view_blocks_info_ for the hash lookup; no DB
+                // writes or balance-map population should happen for an uncommitted TC-referenced block.
                 if (vblock->has_sync_tc_ref_block()) {
                     auto ref_block = std::make_shared<view_block::protobuf::ViewBlockItem>();
                     if (ref_block->ParseFromString(vblock->sync_tc_ref_block())) {
-                        view_block_chain()->Store(ref_block, true, nullptr, nullptr, false);
+                        auto empty_balance_map = std::make_shared<BalanceAndNonceMap>();
+                        view_block_chain()->Store(ref_block, true, empty_balance_map, nullptr, false);
                     }
                 }
                 if (VerifyQC(*tc_item) == Status::kSuccess) {
-                    view_block_chain()->UpdateHighViewBlock(*tc_item);
+                    // Do NOT call UpdateHighViewBlock here: it would push the TC-referenced block
+                    // into cached_block_queue_, which is drained on the sync timer thread and can
+                    // trigger pruning + destruction of uncommitted ViewBlockInfos, leading to crashes.
+                    // For a synced non-consensus node the high_view_block does not need to advance
+                    // beyond what the synced block's own QC already provided.
                     TryCommit(view_block_chain(), nullptr, *tc_item);
                     if (latest_qc_item_ptr_ == nullptr || tc_item->view() >= latest_qc_item_ptr_->view()) {
                         UpdateLatestQcItemPtr(tc_item);
