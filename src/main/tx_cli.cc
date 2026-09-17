@@ -8,6 +8,7 @@
 #include <vector>
 #include <future>
 #include <mutex>
+#include <semaphore>
 #include <condition_variable>
 #include <unordered_map>
 #include <unordered_set>
@@ -8947,6 +8948,8 @@ contract AMMPool {
         // Each user may appear in multiple AMM pools (holding both tokens).
         // Running one thread per AMM caused concurrent sends for the same user
         // with the same fetched nonce → second TX rejected as nonce-reuse.
+        // Semaphore throttles concurrent TCP connections to avoid overwhelming
+        // the node and causing fetchNonce to fail for all users simultaneously.
         std::atomic<uint32_t> apf6_ok{0}, apf6_fail{0};
         {
             // Group amm_pf6 entries by user index
@@ -8954,10 +8957,15 @@ contract AMMPool {
             for (uint32_t i = 0; i < (uint32_t)amm_pf6.size(); ++i)
                 user_to_amms[amm_pf6[i].user_idx].push_back(i);
 
+            const int kP6MaxConcurrent = 20;
+            std::counting_semaphore<1024> p6_sem(kP6MaxConcurrent);
+
             std::vector<std::thread> apf6_threads;
             for (auto& [ui, pf_idxs] : user_to_amms) {
                 apf6_threads.emplace_back([&, ui, pf_idxs]() {
-                    if (global_stop) return;
+                    p6_sem.acquire();
+                    defer(p6_sem.release());
+                    if (global_stop) { apf6_fail.fetch_add((uint32_t)pf_idxs.size()); return; }
                     uint32_t user_shard = users8[ui].shard_id;
                     auto ep_it = eps8.find(user_shard);
                     if (ep_it == eps8.end()) {
