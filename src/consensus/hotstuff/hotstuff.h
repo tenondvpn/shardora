@@ -266,6 +266,10 @@ public:
         return GetLocalMemberIdx() != common::kInvalidUint32;
     }
 
+    std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr() const {
+        return latest_qc_item_ptr_;
+    }
+
 private:
     void InitAddNewViewBlock(
         std::shared_ptr<ViewBlockChain> view_block_chain,
@@ -282,10 +286,6 @@ private:
         const std::string& expect_view_block_hash);
     void StartInit();
     Status HandleVoteMsgImpl(const transport::MessagePtr& msg_ptr);
-    std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr() const {
-        return latest_qc_item_ptr_;
-    }
-
     void UpdateLatestQcItemPtr(std::shared_ptr<view_block::protobuf::QcItem> qc_ptr) {
         if (qc_ptr->elect_height() >= latest_elect_height_ && qc_ptr->leader_idx() != common::kInvalidUint32) {
             last_stable_leader_member_index_ = qc_ptr->leader_idx();
