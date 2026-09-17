@@ -8479,6 +8479,8 @@ contract AMMPool {
             utils::keccak256Str("crossTransfer(address,uint256,uint32,uint32)").substr(0, 8);
         const std::string kBalOfSel =
             utils::keccak256Str("balanceOf(address)").substr(0, 8);
+        const std::string kTotalSupplySel =
+            utils::keccak256Str("totalSupply()").substr(0, 8);
 
         const uint64_t kLiqAmt7      = 1'000'000'000'000ULL; // 1T per token for AMM liquidity
         const uint64_t kSwapAmt7     = 1'000'000ULL;          // 1M per swap
@@ -9750,93 +9752,65 @@ contract AMMPool {
                 }
             }
 
-            // All known accounts that might hold a balance on any shadow
-            std::vector<std::pair<std::string, std::string>> p8_accts; // (addr_hex, label)
-            auto add_acct = [&](const std::string& hex, const std::string& lbl) {
-                for (auto& a : p8_accts) if (a.first == hex) return;
-                p8_accts.push_back({hex, lbl});
-            };
-            add_acct(td.addr_hex, "token_deployer");
-            for (uint32_t ui = 0; ui < (uint32_t)users8.size(); ++ui)
-                add_acct(users8[ui].addr_hex, "user" + std::to_string(ui));
-            for (uint32_t k = 0; k < kAmmPairs; ++k) {
-                add_acct(adeps8[k].addr_hex,
-                         "amm" + std::to_string(k) + "_deployer");
-                add_acct(adeps8[k].contract_addr_hex,
-                         "amm" + std::to_string(k) + "_contract");
-            }
-
             std::cout << "  [token" << ti << "] " << td.contract_addr_hex
                       << " s" << td.contract_shard
-                      << "  shadows=" << p8_shadows.size()
-                      << "  accounts=" << p8_accts.size() << "\n";
+                      << "  shadows=" << p8_shadows.size() << "\n";
 
-            // Query sum of balanceOf(account) for every (shadow, account) pair.
-            // Invariant: sum over all pairs == initialMint when fully settled.
+            // Batch-query totalSupply() on every shadow contract in parallel.
+            // Invariant: sum(totalSupply across all shadows) == initialMint.
             const int kP8RetryWait  = 15;
             const int kP8MaxRetries = 4;
-            __uint128_t global_bal_sum = 0;
+            __uint128_t global_ts_sum = 0;
 
             for (int p8_try = 0; p8_try <= kP8MaxRetries && !global_stop; ++p8_try) {
-                struct ShadResult {
-                    __uint128_t sum;
+                struct ShadTsResult {
+                    __uint128_t ts;
                     std::string label;
-                    std::vector<std::pair<std::string, __uint128_t>> acct_bals; // (label(addr), bal)
+                    std::string hex;
+                    uint32_t shard;
                 };
-                std::vector<std::future<ShadResult>> shad_futs;
-                shad_futs.reserve(p8_shadows.size());
+                std::vector<std::future<ShadTsResult>> ts_futs;
+                ts_futs.reserve(p8_shadows.size());
                 for (uint32_t si = 0; si < (uint32_t)p8_shadows.size(); ++si) {
                     std::string shex  = p8_shadows[si].hex;
                     uint32_t  sshard  = p8_shadows[si].shard;
                     std::string slbl  = p8_shadows[si].label;
-                    shad_futs.push_back(std::async(std::launch::async,
-                        [&eps8, shex, sshard, slbl, pk_hex, kBalOfSel, &p8_accts,
-                         encodeAddr32, hex2u128]() -> ShadResult {
-                            __uint128_t s = 0;
-                            std::vector<std::pair<std::string, __uint128_t>> ab;
-                            for (auto& [acct, albl] : p8_accts) {
-                                ShardoraClient qb(eps8[sshard].ip, eps8[sshard].http);
-                                std::string rs = qb.queryContract(
-                                    pk_hex, shex, kBalOfSel + encodeAddr32(acct));
-                                __uint128_t bal = 0;
-                                if (rs.size() >= 64) bal = hex2u128(rs.substr(0, 64));
-                                if (bal > 0) ab.push_back({albl + "(" + acct + ")", bal});
-                                s += bal;
-                            }
-                            return {s, slbl, std::move(ab)};
+                    ts_futs.push_back(std::async(std::launch::async,
+                        [&eps8, shex, sshard, slbl, pk_hex, kTotalSupplySel,
+                         hex2u128]() -> ShadTsResult {
+                            ShardoraClient qts(eps8[sshard].ip, eps8[sshard].http);
+                            std::string rs = qts.queryContract(pk_hex, shex, kTotalSupplySel);
+                            __uint128_t ts = 0;
+                            if (rs.size() >= 64) ts = hex2u128(rs.substr(0, 64));
+                            return {ts, slbl, shex, sshard};
                         }));
                 }
-                global_bal_sum = 0;
-                std::vector<ShadResult> shad_results;
-                shad_results.reserve(p8_shadows.size());
-                for (auto& f : shad_futs) {
+                global_ts_sum = 0;
+                std::vector<ShadTsResult> ts_results;
+                ts_results.reserve(p8_shadows.size());
+                for (auto& f : ts_futs) {
                     auto r = f.get();
-                    global_bal_sum += r.sum;
-                    shad_results.push_back(std::move(r));
+                    global_ts_sum += r.ts;
+                    ts_results.push_back(std::move(r));
                 }
-                // On last retry with mismatch, dump per-shadow and per-account balances
-                if (global_bal_sum != kInitialSupply8 && p8_try == kP8MaxRetries) {
+                // On last retry with mismatch, dump per-shadow totalSupply for diagnostics
+                if (global_ts_sum != kInitialSupply8 && p8_try == kP8MaxRetries) {
                     std::cout << "  [token" << ti << " P8-breakdown by shadow]\n";
-                    for (uint32_t si = 0; si < (uint32_t)shad_results.size(); ++si) {
-                        auto& sr = shad_results[si];
-                        if (sr.sum > 0) {
-                            std::cout << "    shd " << p8_shadows[si].hex
-                                      << " s" << p8_shadows[si].shard
-                                      << " " << sr.label
-                                      << " sum=" << u128str(sr.sum) << "\n";
-                            for (auto& [albl, bal] : sr.acct_bals)
-                                std::cout << "        " << albl << "  " << u128str(bal) << "\n";
-                        }
+                    for (auto& sr : ts_results) {
+                        std::cout << "    shd " << sr.hex
+                                  << " s" << sr.shard
+                                  << " " << sr.label
+                                  << " totalSupply=" << u128str(sr.ts) << "\n";
                     }
                 }
 
-                if (global_bal_sum == kInitialSupply8) break;
+                if (global_ts_sum == kInitialSupply8) break;
                 if (p8_try < kP8MaxRetries) {
-                    std::string diff_str = (global_bal_sum > kInitialSupply8)
-                        ? "excess=" + u128str(global_bal_sum - kInitialSupply8)
-                        : "deficit=" + u128str(kInitialSupply8 - global_bal_sum);
+                    std::string diff_str = (global_ts_sum > kInitialSupply8)
+                        ? "excess=" + u128str(global_ts_sum - kInitialSupply8)
+                        : "deficit=" + u128str(kInitialSupply8 - global_ts_sum);
                     std::cout << "    [token" << ti << " retry " << (p8_try + 1)
-                              << "/" << kP8MaxRetries << "] sum=" << u128str(global_bal_sum)
+                              << "/" << kP8MaxRetries << "] sum(totalSupply)=" << u128str(global_ts_sum)
                               << "  " << diff_str
                               << "  (in-flight?) waiting " << kP8RetryWait << "s...\n";
                     for (int ws = 0; ws < kP8RetryWait && !global_stop; ++ws)
@@ -9844,20 +9818,20 @@ contract AMMPool {
                 }
             }
 
-            if (global_bal_sum == kInitialSupply8) {
+            if (global_ts_sum == kInitialSupply8) {
                 ++p8_token_ok;
-                std::cout << "  => [token" << ti << "] sum(balances)="
-                          << u128str(global_bal_sum) << "  ✓ OK\n\n";
-            } else if (global_bal_sum > kInitialSupply8) {
+                std::cout << "  => [token" << ti << "] sum(totalSupply)="
+                          << u128str(global_ts_sum) << "  ✓ OK\n\n";
+            } else if (global_ts_sum > kInitialSupply8) {
                 ++p8_token_fail;
                 std::cout << "  => [token" << ti << "] ✗ MISMATCH"
-                          << "  sum(balances)=" << u128str(global_bal_sum)
-                          << "  excess=" << u128str(global_bal_sum - kInitialSupply8) << "\n\n";
+                          << "  sum(totalSupply)=" << u128str(global_ts_sum)
+                          << "  excess=" << u128str(global_ts_sum - kInitialSupply8) << "\n\n";
             } else {
                 ++p8_token_fail;
                 std::cout << "  => [token" << ti << "] ✗ MISMATCH"
-                          << "  sum(balances)=" << u128str(global_bal_sum)
-                          << "  deficit=" << u128str(kInitialSupply8 - global_bal_sum) << "\n\n";
+                          << "  sum(totalSupply)=" << u128str(global_ts_sum)
+                          << "  deficit=" << u128str(kInitialSupply8 - global_ts_sum) << "\n\n";
             }
         }
 
