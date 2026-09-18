@@ -127,6 +127,12 @@ ALTER TABLE addresses ADD COLUMN balance INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE addresses ADD COLUMN nonce   INTEGER NOT NULL DEFAULT 0;
 )SQL";
 
+static const char* kMigrateContractsSQL = R"SQL(
+ALTER TABLE contracts ADD COLUMN bytecode    TEXT;
+ALTER TABLE contracts ADD COLUMN source_code TEXT;
+ALTER TABLE contracts ADD COLUMN abi         TEXT;
+)SQL";
+
 static const char* kSeedGasPresetsSQL = R"SQL(
 INSERT OR IGNORE INTO gas_presets(id, name, step_type, gas_amount, description) VALUES
 (1,  '普通转账',          0,    21000,  'kNormalFrom'),

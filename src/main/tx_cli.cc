@@ -8217,9 +8217,14 @@ contract AMMPool {
             const uint64_t kTokenDeployPrefund = 5000000000ULL;
             std::vector<std::thread> tth3;
             std::atomic<uint32_t> tok_ok{0}, tok_fail{0};
+            // Throttle concurrent fetchNonce+deploy to avoid flooding shard HTTP servers.
+            const int kP3MaxConcurrent = 20;
+            std::counting_semaphore<1024> p3_sem(kP3MaxConcurrent);
 
             for (uint32_t i = 0; i < kTokens; ++i) {
                 tth3.emplace_back([&, i]() {
+                    p3_sem.acquire();
+                    defer(p3_sem.release());
                     auto& td = tdeps8[i];
                     // constructor arg: only sys (baseRootAddress auto-set to address(this))
                     std::string ctor_args = encodeAddr32(kSysExec);
@@ -8266,7 +8271,7 @@ contract AMMPool {
                 vth3.emplace_back([&, s, addrs]() {
                     ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
-                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 120 && !pending.empty() && !global_stop; ++rd) {
                         auto r = vsdk.batchQueryAccounts(pending);
                         std::vector<std::string> still;
                         if (r.contains("accounts")) {
@@ -8292,7 +8297,7 @@ contract AMMPool {
                                   << " token contracts confirmed OK\n";
                     } else {
                         std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " token contracts not found after 60s:\n";
+                                  << "/" << addrs.size() << " token contracts not found after 120s:\n";
                         for (auto& a : pending) std::cout << "    " << a << "\n";
                         failed_tokens.fetch_add((uint32_t)pending.size());
                     }
@@ -8321,9 +8326,13 @@ contract AMMPool {
             const uint64_t kAmmDeployPrefund = 5000000000ULL;
             std::vector<std::thread> tth4;
             std::atomic<uint32_t> amm_ok{0}, amm_fail{0};
+            const int kP4MaxConcurrent = 20;
+            std::counting_semaphore<1024> p4_sem(kP4MaxConcurrent);
 
             for (uint32_t k = 0; k < kAmmPairs; ++k) {
                 tth4.emplace_back([&, k]() {
+                    p4_sem.acquire();
+                    defer(p4_sem.release());
                     auto& ad = adeps8[k];
                     // constructor(address tokenA, address tokenB)
                     // Pass mirror addresses so the AMMPool EVM calls land on the same
@@ -8439,7 +8448,7 @@ contract AMMPool {
                     ShardoraSDK vsdk(eps8[s].ip, eps8[s].http);
                     std::vector<std::string> pending = addrs;
 
-                    for (int rd = 0; rd < 60 && !pending.empty() && !global_stop; ++rd) {
+                    for (int rd = 0; rd < 120 && !pending.empty() && !global_stop; ++rd) {
                         auto r = vsdk.batchQueryAccounts(pending);
                         std::vector<std::string> still;
                         if (r.contains("accounts")) {
@@ -8462,7 +8471,7 @@ contract AMMPool {
                                   << " AMM contracts confirmed OK\n";
                     } else {
                         std::cout << "  Shard " << s << ": FAILED " << pending.size()
-                                  << "/" << addrs.size() << " AMM contracts not found after 60s:\n";
+                                  << "/" << addrs.size() << " AMM contracts not found after 120s:\n";
                         for (auto& a : pending) std::cout << "    " << a << "\n";
                         failed_amm.fetch_add((uint32_t)pending.size());
                     }
@@ -8610,6 +8619,9 @@ contract AMMPool {
         std::atomic<uint32_t> xok5{0}, xfail5{0};
         {
             std::vector<std::thread> xth5;
+            // Throttle only the initial setGasPrefund burst (release immediately after call).
+            const int kP5MaxConcurrent = 20;
+            std::counting_semaphore<1024> p5_sem(kP5MaxConcurrent);
             for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
                 xth5.emplace_back([&, ti]() {
                     auto& td = tdeps8[ti];
@@ -8619,8 +8631,10 @@ contract AMMPool {
                                      eps8[td.signer_shard].http);
 
                     // step=7: create prepayment account (contract_addr+deployer_addr)
+                    p5_sem.acquire();
                     auto pfres = dsdk.setGasPrefund(
                         pk_hex, td.contract_addr_hex, kGasPrefund5);
+                    p5_sem.release();
                     if (!pfres.contains("status") || pfres["status"] != 0) {
                         std::cerr << "  [token" << ti << "] setGasPrefund failed: "
                                   << pfres.value("msg", "?") << "\n";
