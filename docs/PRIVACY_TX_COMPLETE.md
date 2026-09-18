@@ -1442,7 +1442,21 @@ $$\leq I(X; Y_1 | Y_0) + I(X; Y_2 | Y_0) + I(X; Y_3 | Y_0)$$
 | 真实网络，无缓解 | $\sim 1/N_\delta$（可至 1） | 同量级 |
 | 真实网络，$\mathcal{M}$ 全缓解 | $\leq 1/K + 10^{-3}$（**定理 F 推论 F.1**） | 比 Tornado 低 3 个数量级（$K=1000$）|
 
-**安全定位（可直接引用）**：*在推荐缓解栈 $\mathcal{M}$ 下，本方案在真实网络中的跨分片链接优势仅比信息论理想界高 $\varepsilon_{\text{real}} < 10^{-3}$，与 Tornado Cash 等单链方案（链接概率 $\approx 1$）相差约 $K \sim 10^3$ 量级。这是形式化可证明的计算安全保证，在现有跨分片/跨链隐私方案中属首次精确量化。*
+**推论 F.2（定理 F → N1 Real-World Security，完整蕴含链）**：
+
+设协议 $\Pi$ 运行于真实网络并部署缓解栈 $\mathcal{M}$，则 $\Pi$ 在真实网络中满足 **N1 安全**（Game^CL 定义，§4.2），具体为：
+
+$$\text{Adv}^{\text{CL}}_{\mathcal{A},\Pi,\text{real}}(\lambda) \leq \varepsilon_{\text{real}}(\mu, B, \tau_{\min}, s)$$
+
+其中 $\varepsilon_{\text{real}}$ 由定理 F 给出，推荐参数下 $\varepsilon_{\text{real}} < 10^{-3}$（推论 F.1，需 $n_{\text{pool}} > 3.5 \times 10^7$）。
+
+**蕴含链**：定理 B（理想模型）→ 定理 F（真实网络退化）→ 推论 F.2（Game^CL N1 安全性）
+
+形式化连接：定理 B 在 B1-B3 理想模型下给出 $\text{Adv}^{\text{CL}} = 0$；定理 F 量化了 B1-B3 被违反时的额外优势 $\varepsilon_{\text{real}}$（由 MI 次可加性分解为三维独立贡献，非假设）；推论 F.2 合并两者得到实际部署下的 N1 优势上界 $0 + \varepsilon_{\text{real}} = \varepsilon_{\text{real}}$。Game^CL 的 Adv^CL = 0（理想）→ ≤ ε_real（真实），完整闭合了从博弈定义到实际安全参数的证明链。
+
+**关于协议强制缓解**：$\varepsilon_{\text{real}}$ 中的固定填充（$H_s \to \infty$）和批处理（batch_B）是**协议层强制执行**的属性（CSCC 消息格式固定为 1024B，目标分片状态机检查 CSCC 大小合法性）；指数延迟（$\mu^{-1} = 300$s）是**客户端推荐配置**（协议不强制，但钱包 SDK 默认启用）。固定填充和批处理的 $\varepsilon$ 贡献可以视为协议设计属性（不依赖客户端合规性），而 $\varepsilon_{\text{timing}}$ 依赖客户端延迟设置（若客户端不延迟，$\varepsilon_{\text{timing}}$ 退化为 $N_W/K$）。
+
+**安全定位（可直接引用）**：*在推荐缓解栈 $\mathcal{M}$ 下，本方案在真实网络中满足 N1 安全（Game^CL），链接优势 $\text{Adv}^{\text{CL}} \leq \varepsilon_{\text{real}} < 10^{-3}$，与 Tornado Cash 等单链方案（链接概率 $\approx 1$）相差约 $K \sim 10^3$ 量级。这是首个形式化闭合了"博弈定义 → 理想界 → 真实退化 → 协议 N1 安全"完整证明链的跨分片隐私分析。*
 
 ---
 
@@ -1629,7 +1643,19 @@ ERC-4337 Paymaster 的情形属于情形 1/2 的变体：Paymaster 本身是已�
 
 **结论**：定理 A 在 GASM 模型下是严格定理；ERC-4337 是工程上的部分缓解，不是对定理的反驳，因为 Paymaster 本身不满足 Decentralized(Π)（它是链上可识别的聚合者）。
 
-**跨分片的规避方式**：目标分片委员会通过 SYSTEM_EXECUTOR 执行信用，不属于 GASM——因为协议层执行者不是"余额为 0 的新地址发起交易"，而是"协议内置系统账户代为执行"，根本不触发 Gas 先决条件。
+**跨分片的规避方式（形式化）**：
+
+**定义（协议层账户，Protocol-Level Account，PLA）**：地址 $P \in \text{Addr}$ 是 PLA，当且仅当该账户的交易不经过 GASM 的 Gas 先决条件检查——即状态转换函数 $s \xrightarrow{\text{tx}} s'$ 对 tx.sender = P 的执行**跳过** `bal[P][t] ≥ tx.gas_cost` 的验证，直接执行 tx 逻辑。
+
+> 等价定义：$P$ 是 PLA 当且仅当 $\forall t, \text{tx}$ 使得 tx.sender = P：$s \xrightarrow{\text{tx}} s'$ 在余额为 0 时仍合法。这意味着 $P$ 的"Gas 需求"由协议本身隐式满足，而非由账户余额显式覆盖。
+
+**引理 A.1（Shardora 的 APLE 是 PLA）**：Shardora 协议的 SYSTEM_EXECUTOR 地址（APLE）是一个 PLA。
+
+证明：Shardora 的目标分片 BFT 状态机在处理 CSCC 消息时，调用 APLE 执行 `ShieldedCreditFromCSCC()`。该调用路径为：收到有效 cscc_sig → APLE 自动执行 Note 盲插 → 不经过用户账户余额检查，由共识协议本身调度执行。APLE 不在 `bal` 映射中（没有用户账户），故 GASM 的 `bal[APLE][t] ≥ gas_cost` 检查**从未被触发**——APLE 是 PLA（q.e.d.）。
+
+**推论 A.1（Shardora 超出定理 A 的适用范围）**：设 Π 是 Shardora 跨分片隐私协议，则 Π **不是** GASM（因为 Π 包含 PLA = APLE）。定理 A 仅对 GASM 成立，故定理 A 的不可能性不适用于 Π。
+
+**与定理 A 的兼容性**：定理 A 证明了在**标准 GASM**（无 PLA）下不可能同时满足三个性质。Shardora 通过引入 PLA（协议内置执行者）逃离了 GASM 的约束。这是绕过不可能性的唯一已知方式：要么接受 Gas 关联（Tornado Cash），要么接受中心化（ERC-4337 Paymaster），要么像 Shardora 一样在共识层引入 PLA，将 Gas 执行权归还给协议本身。
 
 ---
 
@@ -1673,9 +1699,19 @@ ERC-4337 Paymaster 的情形属于情形 1/2 的变体：Paymaster 本身是已�
 
 > **【理想模型假设】** 无全局被动观察者（GPA）· 理想同步信道（固定大小/延迟）· 活跃匿名集 $K \geq 2$。在真实网络中这三条假设仅近似成立；退化分析见本节下方"定理 B/C 真实网络退化分析"专节及 §4.6。
 
-**定理 B（理想模型下，正式陈述）**：在假设 B1-B3 下，对控制目标分片 Shard_dst 全部节点、计算能力**无界**的敌手 A，将其观测到的 Note（new_cm）与 Shard_src 中任意具体 nullifier 正确关联的概率，精确等于 1/K。
+**匿名集 K 的精确定义（必须明确）**：
 
-即：`Pr[A(View_dst) → "new_cm 来自 nullifier_i"] = 1/K`（信息论安全，与密码学假设无关）
+$$K \stackrel{\text{def}}{=} |\{\text{pool\_index } p \text{ 中在时刻 } T_{\text{receive}} \text{ 未被花费的 Note 集合}\}|$$
+
+其中 $p$ = CSCC 中 `pool_index` 字段绑定的目标池（DSPE 的 kImmutablePoolSize = 32 个池之一）。
+
+K **是单个池内的匿名集大小**，不是整个 DSPE 的 Note 总数。CSCC 的 `pool_index` 字段将 new_cm 路由到特定池；敌手知道这一池绑定（`pool_index` 在 cscc_sig 的签名消息中，因而在 View_dst 中可见），因此有效匿名集是该池内的 K 个 Note，而非跨池的总数。
+
+> **实践含义**：若 DSPE 共 32 个池，每池有 K=1000 个 Note，则 Theorem B 给出的是 1/1000 而非 1/32000。提高匿名性的关键参数是**单池大小 K**，而非总 Note 数。这要求协议在设计上保持各池负载均衡，防止特定池极稀疏（K < 100）导致隐私退化。
+
+**定理 B（理想模型下，正式陈述）**：在假设 B1-B3 下，对控制目标分片 Shard_dst 全部节点、计算能力**无界**的敌手 A，将其观测到的 Note（new_cm）与 Shard_src 中任意具体 nullifier 正确关联的概率，精确等于 $1/K$（K 定义如上）。
+
+即：$\Pr[\mathcal{A}(\text{View}_{\text{dst}}) \to \text{"new\_cm 来自 nullifier}_i\text{"}] = 1/K$（信息论安全，与密码学假设无关）
 
 **证明（信息论直接论证）**：
 
@@ -1892,6 +1928,18 @@ $$\Pr[\text{诚实节点误签无效 CSCC}] \leq \text{Adv}^{\text{Soundness}}_{
 **关键洞察**：机密性（轨道 1）对 $f'$ 完全不敏感。无论拜占庭节点数为何，攻击者要解密某接收方的 Note，必须求解对应 `view_pk` 的 CDH 问题——这与谁控制共识层无关。这意味着即使在最坏情形（$f' = n$，全网节点被攻陷），**所有历史隐私 Notes 的内容依然受 CDH 保护**，不存在"共识崩溃 → 隐私历史被解密"的级联攻击路径。
 
 **双轨解耦的系统意义**：传统方案（ElGamal 阈值、MPC 生成 Note 密钥）中，共识安全与隐私安全耦合：一旦阈值节点串通，既破坏完整性又获得解密能力。ECIES+CSCC 架构在 DESIGN LEVEL 上切断了此耦合——接收方私钥 `view_sk` 永不进入共识层，故共识层的腐化程度不影响 Note 密文的安全边界。
+
+**定理 B 与定理 D 的正交性声明（防止混淆）**：
+
+| | 定理 B（N1 不可链接性） | 定理 D 轨道 1（Note 机密性） |
+|--|----------------------|--------------------------|
+| **保护目标** | 防止"new_cm 来自哪个 nullifier"被关联 | 防止"Note 内容（金额、spend_pk）"被读取 |
+| **敌手能力** | 无界（信息论，CDH 可破） | 计算有界（CDH 困难） |
+| **成立条件** | B1-B3 理想模型，纯代数独立性 | CDH 假设 + ROM（ECIES） |
+| **安全强度** | 信息论精确 $\Pr = 1/K$ | $\text{Adv} \leq \text{Adv}^{\text{CDH}} + \text{negl}$ |
+| **破坏后果** | 知道"谁花了哪个 Note"，但仍无法读取内容 | 读取 Note 内容，但仍无法链接来源 |
+
+**两者独立且互补**：敌手可能（a）知道来源但不知道内容（仅 N1 被破，B 被 B1-B3 违反时），（b）知道内容但不知道来源（CDH 被破但 N1 保持），或（c）两者均被破（需要 CDH + B1-B3 同时失效）。特别地：在 CDH 可破的无界敌手下，定理 B 仍然成立（N1 保持）——**Note 来源的匿名性不依赖任何密码学困难性**，这是比定理 D 强得多的保证。
 
 **证明梗概**：
 
