@@ -8064,19 +8064,15 @@ contract AMMPool {
                         if (!pending.empty()) usleep(1000000);
                     }
 
-                    std::lock_guard<std::mutex> lk(bal_mu);
-                    if (pending.empty()) {
-                        std::cout << "  Shard " << s << ": all " << addrs.size()
-                                  << " accounts funded OK\n";
-                    } else {
-                        // Re-query each stuck address individually to separate
-                        // batch-query truncation from genuine funding failures.
-                        std::vector<std::string> truly_unfunded;
+                    // Re-query each stuck address individually (outside lock — fetchBalance may take time).
+                    std::vector<std::string> truly_unfunded;
+                    if (!pending.empty()) {
                         for (auto& a : pending) {
-                            int64_t bal = ssdk.fetchBalance(a);
-                            if (bal > 0) {
+                            int64_t ibal = ssdk.fetchBalance(a);
+                            std::lock_guard<std::mutex> plk(bal_mu);
+                            if (ibal > 0) {
                                 std::cout << "  Shard " << s << ": " << a
-                                          << " balance=" << bal
+                                          << " balance=" << ibal
                                           << " (batch missed, individually OK)\n";
                             } else {
                                 truly_unfunded.push_back(a);
@@ -8084,15 +8080,108 @@ contract AMMPool {
                                           << " balance=0 (genuinely unfunded)\n";
                             }
                         }
-                        if (!truly_unfunded.empty()) {
-                            std::cout << "  Shard " << s << ": FAILED "
-                                      << truly_unfunded.size() << "/"
-                                      << addrs.size() << " genuinely unfunded after 300s\n";
-                            total_unfunded.fetch_add((uint32_t)truly_unfunded.size());
-                        } else {
-                            std::cout << "  Shard " << s << ": all " << addrs.size()
-                                      << " accounts funded OK (batch had false misses)\n";
+                    }
+
+                    // Retry: resend funding TXs for relay-lost accounts, then wait 120s.
+                    if (!truly_unfunded.empty()) {
+                        {
+                            std::lock_guard<std::mutex> lk(bal_mu);
+                            std::cout << "  Shard " << s << ": retrying "
+                                      << truly_unfunded.size() << " unfunded accounts...\n";
                         }
+                        int rfd = ::socket(AF_INET, SOCK_STREAM, 0);
+                        if (rfd >= 0) {
+                            int rone = 1;
+                            ::setsockopt(rfd, IPPROTO_TCP, TCP_NODELAY, &rone, sizeof(rone));
+                            sockaddr_in rsa{};
+                            rsa.sin_family = AF_INET;
+                            rsa.sin_port   = htons(ftcp8);
+                            ::inet_pton(AF_INET, fip8.c_str(), &rsa.sin_addr);
+                            if (::connect(rfd, (sockaddr*)&rsa, sizeof(rsa)) == 0) {
+                                for (size_t ri = 0; ri < truly_unfunded.size(); ++ri) {
+                                    uint32_t rfi;
+                                    int64_t rnonce;
+                                    {
+                                        std::lock_guard<std::mutex> lk(bal_mu);
+                                        rfi = (uint32_t)(ri % nf8);
+                                        rnonce = ++fstates8[rfi].nonce_sent;
+                                    }
+                                    auto& rfs = fstates8[rfi];
+                                    auto rtx = CreateTransactionWithAttr(
+                                        rfs.sec, (uint64_t)rnonce, rfs.prikey,
+                                        common::Encode::HexDecode(truly_unfunded[ri]),
+                                        "", "", kFundAmt8, 210000, 1, (int32_t)funder_shard);
+                                    if (!rtx) continue;
+                                    rtx->header.set_from_public_port(
+                                        common::GlobalInfo::Instance()->config_public_port());
+                                    if (!rtx->header.has_hash64() || rtx->header.hash64() == 0) {
+                                        std::string rhs = rtx->header.SerializeAsString();
+                                        rtx->header.set_hash64(common::Hash::Hash64(rhs));
+                                    }
+                                    std::string rpayload = rtx->header.SerializeAsString();
+                                    uint32_t rplen = (uint32_t)rpayload.size();
+                                    uint8_t rhdr[4] = {
+                                        (uint8_t)(rplen & 0xFF),
+                                        (uint8_t)((rplen >> 8) & 0xFF),
+                                        (uint8_t)((rplen >> 16) & 0xFF), 0
+                                    };
+                                    bool rok = (::send(rfd, rhdr, 4, MSG_NOSIGNAL) == 4);
+                                    if (rok) {
+                                        uint32_t roff = 0;
+                                        while (roff < rplen) {
+                                            ssize_t rn = ::send(rfd, rpayload.data() + roff,
+                                                                rplen - roff, MSG_NOSIGNAL);
+                                            if (rn <= 0) { rok = false; break; }
+                                            roff += (uint32_t)rn;
+                                        }
+                                    }
+                                    if (!rok) { ::close(rfd); rfd = -1; break; }
+                                }
+                            }
+                            if (rfd >= 0) ::close(rfd);
+                        }
+                        // Wait up to 120s for retry TXs to settle
+                        pending = truly_unfunded;
+                        for (int rrd = 0; rrd < 120 && !pending.empty() && !global_stop; ++rrd) {
+                            auto rr = ssdk.batchQueryAccounts(pending);
+                            std::vector<std::string> rstill;
+                            if (rr.contains("accounts")) {
+                                for (auto& a : pending) {
+                                    uint64_t rbal = 0;
+                                    if (rr["accounts"].contains(a))
+                                        rbal = parseBalance8(rr["accounts"][a]["balance"]);
+                                    if (rbal == 0) rstill.push_back(a);
+                                }
+                            } else { rstill = pending; }
+                            pending = rstill;
+                            if (!pending.empty() && rrd % 20 == 0) {
+                                std::lock_guard<std::mutex> lk(bal_mu);
+                                std::cout << "  Shard " << s << " [retry " << rrd << "s]: "
+                                          << (truly_unfunded.size() - pending.size()) << "/"
+                                          << truly_unfunded.size() << " retry accounts funded\n";
+                            }
+                            if (!pending.empty()) usleep(1000000);
+                        }
+                        // Final individual confirmation for retry accounts
+                        truly_unfunded.clear();
+                        for (auto& a : pending) {
+                            int64_t fbal = ssdk.fetchBalance(a);
+                            if (fbal == 0) truly_unfunded.push_back(a);
+                        }
+                    }
+
+                    std::lock_guard<std::mutex> lk(bal_mu);
+                    if (truly_unfunded.empty() && pending.empty()) {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " accounts funded OK\n";
+                    } else if (!truly_unfunded.empty()) {
+                        std::cout << "  Shard " << s << ": FAILED "
+                                  << truly_unfunded.size() << "/"
+                                  << addrs.size() << " genuinely unfunded after retry\n";
+                        total_unfunded.fetch_add((uint32_t)truly_unfunded.size());
+                    } else {
+                        std::cout << "  Shard " << s << ": all " << addrs.size()
+                                  << " accounts funded OK (batch had false misses)\n";
                     }
                 });
             }
