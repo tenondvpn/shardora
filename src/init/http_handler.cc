@@ -3039,6 +3039,7 @@ void HttpHandler::Run() {
     .get("/explorer/contract",      explorerHandler(explorer::ExplorerContract,    "/explorer/contract"))
     .get("/explorer/gas-presets",   explorerHandler(explorer::ExplorerGasPresets,  "/explorer/gas-presets"))
     .get("/explorer/chain-info",    explorerHandler(explorer::ExplorerChainInfo,   "/explorer/chain-info"))
+    .get("/explorer/addresses",     explorerHandler(explorer::ExplorerAddresses,   "/explorer/addresses"))
     .listen("0.0.0.0", http_port_, [this](auto *listen_socket) {
         if (listen_socket) {
             SHARDORA_INFO("HTTPS server listening on 0.0.0.0:%d", http_port_);

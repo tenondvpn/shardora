@@ -102,6 +102,17 @@ bool Explorer::Init() {
 
     // Create tables
     if (!ExecSQL(write_db_, kCreateTablesSQL)) return false;
+    // Migrate existing DB: add balance/nonce columns to addresses (ignore errors if already present)
+    {
+        char* errmsg = nullptr;
+        // Split on ';' and exec each ALTER TABLE individually so one failure doesn't block the other
+        sqlite3_exec(write_db_, "ALTER TABLE addresses ADD COLUMN balance INTEGER NOT NULL DEFAULT 0;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg); errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE addresses ADD COLUMN nonce INTEGER NOT NULL DEFAULT 0;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg);
+    }
     // Seed gas presets
     if (!ExecSQL(write_db_, kSeedGasPresetsSQL)) return false;
 
@@ -316,6 +327,47 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
                 sqlite3_bind_text(stmt, 6, t2.c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_text(stmt, 7, t3.c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_text(stmt, 8, data_hex.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_step(stmt);
+                sqlite3_finalize(stmt);
+            }
+        }
+    }
+
+    // Upsert address post-states from address_array (balance/nonce after each tx)
+    {
+        int64_t now_ms = static_cast<int64_t>(common::TimeUtils::TimestampMs());
+        const char* sql =
+            "INSERT INTO addresses(addr,addr_type,shard_id,pool_index,is_contract,"
+            " balance,nonce,first_seen,last_seen,tx_count,updated_at)"
+            " VALUES(?,?,?,?,?,?,?,?,?,0,?)"
+            " ON CONFLICT(addr) DO UPDATE SET"
+            " addr_type=excluded.addr_type,"
+            " shard_id=excluded.shard_id,"
+            " pool_index=excluded.pool_index,"
+            " is_contract=MAX(is_contract,excluded.is_contract),"
+            " balance=excluded.balance,"
+            " nonce=excluded.nonce,"
+            " last_seen=excluded.last_seen,"
+            " updated_at=excluded.updated_at;";
+        for (int ai = 0; ai < block.address_array_size(); ++ai) {
+            const auto& ai_info = block.address_array(ai);
+            if (ai_info.addr().empty()) continue;
+            std::string addr_hex = HexStr(ai_info.addr());
+            if (addr_hex == "0x") continue;
+            int addr_type   = static_cast<int>(ai_info.type());
+            int is_contract = ai_info.has_bytes_code() ? 1 : 0;
+            sqlite3_stmt* stmt = nullptr;
+            if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text (stmt, 1, addr_hex.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_int  (stmt, 2, addr_type);
+                sqlite3_bind_int  (stmt, 3, static_cast<int>(ai_info.sharding_id()));
+                sqlite3_bind_int  (stmt, 4, static_cast<int>(ai_info.pool_index()));
+                sqlite3_bind_int  (stmt, 5, is_contract);
+                sqlite3_bind_int64(stmt, 6, static_cast<int64_t>(ai_info.balance()));
+                sqlite3_bind_int64(stmt, 7, static_cast<int64_t>(ai_info.nonce()));
+                sqlite3_bind_int64(stmt, 8, ts);
+                sqlite3_bind_int64(stmt, 9, ts);
+                sqlite3_bind_int64(stmt, 10, now_ms);
                 sqlite3_step(stmt);
                 sqlite3_finalize(stmt);
             }
@@ -601,6 +653,52 @@ std::string Explorer::QueryAddressTxs(const std::string& addr,
         int count = 0;
         while (sqlite3_step(stmt) == SQLITE_ROW && count < fetch) {
             arr.push_back(TxRowToJson(stmt));
+            ++count;
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    bool has_more = (static_cast<int>(arr.size()) > limit);
+    int64_t next_cursor = 0;
+    if (has_more) {
+        arr.erase(arr.begin() + limit, arr.end());
+        next_cursor = arr.back()["id"].get<int64_t>();
+    }
+    return JsonList(arr, next_cursor, has_more);
+}
+
+std::string Explorer::QueryAddresses(uint32_t shard_id, int pool_index,
+                                     int64_t before_id, int limit) {
+    int fetch = limit + 1;
+    std::ostringstream ss;
+    ss << "SELECT rowid,addr,addr_type,shard_id,pool_index,is_contract,"
+          "balance,nonce,first_seen,last_seen,tx_count"
+          " FROM addresses WHERE 1=1";
+    if (before_id > 0)   ss << " AND rowid<" << before_id;
+    if (shard_id > 0)    ss << " AND shard_id=" << shard_id;
+    if (pool_index >= 0) ss << " AND pool_index=" << pool_index;
+    ss << " ORDER BY rowid DESC LIMIT " << fetch;
+
+    json arr = json::array();
+    sqlite3_stmt* stmt = nullptr;
+    std::string sql = ss.str();
+    if (sqlite3_prepare_v2(read_db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        int count = 0;
+        while (sqlite3_step(stmt) == SQLITE_ROW && count < fetch) {
+            json obj;
+            obj["id"]          = sqlite3_column_int64(stmt, 0);
+            auto ad = sqlite3_column_text(stmt, 1);
+            obj["addr"]        = ad ? (const char*)ad : "";
+            obj["addr_type"]   = sqlite3_column_int(stmt, 2);
+            obj["shard_id"]    = sqlite3_column_int(stmt, 3);
+            obj["pool_index"]  = sqlite3_column_int(stmt, 4);
+            obj["is_contract"] = sqlite3_column_int(stmt, 5);
+            obj["balance"]     = sqlite3_column_int64(stmt, 6);
+            obj["nonce"]       = sqlite3_column_int64(stmt, 7);
+            obj["first_seen"]  = sqlite3_column_int64(stmt, 8);
+            obj["last_seen"]   = sqlite3_column_int64(stmt, 9);
+            obj["tx_count"]    = sqlite3_column_int64(stmt, 10);
+            arr.push_back(obj);
             ++count;
         }
         sqlite3_finalize(stmt);

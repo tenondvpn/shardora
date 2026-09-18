@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS addresses (
     shard_id    INTEGER NOT NULL DEFAULT 0,
     pool_index  INTEGER NOT NULL DEFAULT 0,
     is_contract INTEGER NOT NULL DEFAULT 0,
+    balance     INTEGER NOT NULL DEFAULT 0,
+    nonce       INTEGER NOT NULL DEFAULT 0,
     first_seen  INTEGER NOT NULL DEFAULT 0,
     last_seen   INTEGER NOT NULL DEFAULT 0,
     tx_count    INTEGER NOT NULL DEFAULT 0,
@@ -116,6 +118,13 @@ CREATE TABLE IF NOT EXISTS gas_presets (
     gas_amount  INTEGER NOT NULL,
     description TEXT
 );
+)SQL";
+
+// Run after CREATE TABLE — adds columns to existing DBs that pre-date this schema.
+// SQLite returns an error if the column already exists; we ignore it.
+static const char* kMigrateAddressesSQL = R"SQL(
+ALTER TABLE addresses ADD COLUMN balance INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE addresses ADD COLUMN nonce   INTEGER NOT NULL DEFAULT 0;
 )SQL";
 
 static const char* kSeedGasPresetsSQL = R"SQL(

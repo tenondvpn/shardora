@@ -21,6 +21,7 @@ void ExplorerTxList     (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerTx         (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerAddress    (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerAddressTxs (const init::UWSRequest& req, init::UWSResponse& res);
+void ExplorerAddresses  (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerContracts  (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerContract   (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerGasPresets (const init::UWSRequest& req, init::UWSResponse& res);

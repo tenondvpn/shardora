@@ -159,5 +159,18 @@ void ExplorerChainInfo(const init::UWSRequest& req, init::UWSResponse& res) {
     res.set_content(g_explorer->QueryChainInfo(), kJson);
 }
 
+// GET /explorer/addresses?shard_id=3&pool_index=-1&before_id=0&limit=50
+void ExplorerAddresses(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+    uint32_t shard_id  = static_cast<uint32_t>(ParamInt(req, "shard_id", 0));
+    int pool_index     = ParamInt(req, "pool_index", -1);
+    int64_t before_id  = ParamInt64(req, "before_id", 0);
+    int limit          = ParamInt(req, "limit", 50);
+    if (limit <= 0 || limit > 200) limit = 50;
+    res.set_content(
+        g_explorer->QueryAddresses(shard_id, pool_index, before_id, limit),
+        kJson);
+}
+
 }  // namespace explorer
 }  // namespace shardora

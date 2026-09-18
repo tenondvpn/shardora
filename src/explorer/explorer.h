@@ -43,6 +43,9 @@ public:
     std::string QueryAddress(const std::string& addr);
     std::string QueryAddressTxs(const std::string& addr,
                                 int64_t before_id, int limit);
+    // List all addresses, optionally filtered by shard/pool. Cursor-based pagination.
+    std::string QueryAddresses(uint32_t shard_id, int pool_index,
+                               int64_t before_id, int limit);
     std::string QueryContracts(int is_library, int is_clone,
                                int64_t before_id, int limit);
     std::string QueryContract(const std::string& addr);
