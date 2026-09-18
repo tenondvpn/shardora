@@ -321,7 +321,7 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
                         }
                         if (s1 < decoded.size()) {
                             src_code = decoded.substr(s0, s1 - s0);
-                            // unescape \n and \\
+                            // unescape escape sequences in source string
                             for (size_t p = 0; p + 1 < src_code.size(); ++p) {
                                 if (src_code[p] == '\\' && src_code[p+1] == 'n') {
                                     src_code.replace(p, 2, "\n"); continue;
