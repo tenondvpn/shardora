@@ -1146,10 +1146,10 @@ static void BatchQueryAccounts(const UWSRequest& req, UWSResponse& http_res) {
         return;
     }
 
-    if (addrs_splits.Count() > 500) {
+    if (addrs_splits.Count() > 2000) {
         nlohmann::json err;
         err["status"] = 1;
-        err["msg"] = "too many addresses, max 500";
+        err["msg"] = "too many addresses, max 2000";
         http_res.set_content(err.dump(), "application/json");
         return;
     }

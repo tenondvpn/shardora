@@ -505,12 +505,12 @@ public:
             return {{"status", 1}, {"msg", "empty addresses"}};
         }
 
-        // Adaptive batch size: 80-char prepayment addresses need smaller batches
-        // to stay under uWebSockets ~16KB body limit.
-        // Normal (40-char): 500 × 41 = ~20KB → use 300
-        // Prepayment (80-char): 50 × 81 = ~4KB → safe
+        // Server-side BatchQueryAccounts enforces a hard 500-address limit
+        // (http_handler.cc:1149).  Split<2048> is the template limit so
+        // prepayment (80-char) batches use a smaller sub-limit to stay under
+        // the uWebSockets body ceiling.
         size_t avg_addr_len = addresses.empty() ? 40 : addresses[0].size();
-        const size_t kBatchSize = (avg_addr_len > 50) ? 10000 : 30000;
+        const size_t kBatchSize = (avg_addr_len > 50) ? 50 : 500;
         json merged;
         merged["status"] = 0;
         merged["msg"] = "ok";
