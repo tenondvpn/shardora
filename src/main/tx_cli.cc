@@ -8619,9 +8619,14 @@ contract AMMPool {
         std::atomic<uint32_t> xok5{0}, xfail5{0};
         {
             std::vector<std::thread> xth5;
-            // Throttle only the initial setGasPrefund burst (release immediately after call).
-            const int kP5MaxConcurrent = 20;
-            std::counting_semaphore<1024> p5_sem(kP5MaxConcurrent);
+            // Per-shard semaphore: token distribution is skewed (some shards hold 40+ tokens).
+            // A global semaphore is insufficient — we need to bound HTTP concurrency per shard
+            // to avoid overwhelming any single shard's HTTP server.
+            // Covers: setGasPrefund, ppnonce polling, and each callContractWithNonce.
+            const int kP5MaxPerShard = 5;
+            std::unordered_map<uint32_t, std::shared_ptr<std::counting_semaphore<100>>> shard_sem5;
+            for (auto& [sh, ep] : eps8)
+                shard_sem5[sh] = std::make_shared<std::counting_semaphore<100>>(kP5MaxPerShard);
             for (uint32_t ti = 0; ti < kTokens && !global_stop; ++ti) {
                 xth5.emplace_back([&, ti]() {
                     auto& td = tdeps8[ti];
@@ -8629,12 +8634,13 @@ contract AMMPool {
 
                     ShardoraSDK dsdk(eps8[td.signer_shard].ip,
                                      eps8[td.signer_shard].http);
+                    auto& sem5 = *shard_sem5[td.signer_shard];
 
-                    // step=7: create prepayment account (contract_addr+deployer_addr)
-                    p5_sem.acquire();
+                    // step=7: create prepayment account (throttled per shard)
+                    sem5.acquire();
                     auto pfres = dsdk.setGasPrefund(
                         pk_hex, td.contract_addr_hex, kGasPrefund5);
-                    p5_sem.release();
+                    sem5.release();
                     if (!pfres.contains("status") || pfres["status"] != 0) {
                         std::cerr << "  [token" << ti << "] setGasPrefund failed: "
                                   << pfres.value("msg", "?") << "\n";
@@ -8642,12 +8648,14 @@ contract AMMPool {
                         return;
                     }
 
-                    // Wait up to 60s for prepayment account to confirm
+                    // Wait up to 60s for prepayment account to confirm (throttled per shard)
                     std::string ppkey = td.contract_addr_hex + td.addr_hex;
                     int64_t ppnonce = -1;
                     for (int pw = 0; pw < 60 && !global_stop; ++pw) {
                         usleep(1000000);
+                        sem5.acquire();
                         ppnonce = dsdk.fetchNonce(ppkey);
+                        sem5.release();
                         if (ppnonce >= 0) break;
                     }
                     if (ppnonce < 0) {
@@ -8668,7 +8676,7 @@ contract AMMPool {
                     // one shadow contract per token.
                     {
                         int64_t amm_nonce = ppnonce;
-                        // AMM deployer liquidity transfers
+                        // AMM deployer liquidity transfers (throttled per shard)
                         for (uint32_t k = 0; k < kAmmPairs && !global_stop; ++k) {
                             if (adeps8[k].token_a != ti && adeps8[k].token_b != ti) continue;
                             const auto& ad = adeps8[k];
@@ -8677,8 +8685,10 @@ contract AMMPool {
                                 + encodeUint256u128((__uint128_t)kLiqAmt7)
                                 + encodeUint32ABI(ad.signer_shard)
                                 + encodeUint32ABI(ad.deployer_pool);
+                            sem5.acquire();
                             auto ra = dsdk.callContractWithNonce(
                                 pk_hex, td.contract_addr_hex, cd, amm_nonce);
+                            sem5.release();
                             if (ra.contains("status") && ra["status"] == 0) {
                                 xok5.fetch_add(1); ++amm_nonce;
                             } else {
@@ -8705,8 +8715,10 @@ contract AMMPool {
                                     + encodeUint256u128((__uint128_t)kSwapXferAmt)
                                     + encodeUint32ABI(u.shard_id)    // user's own shard (== amm.shard for co-located users)
                                     + encodeUint32ABI(u.pool_idx);   // user's own pool  (== amm.pool for co-located users)
+                                sem5.acquire();
                                 auto ra = dsdk.callContractWithNonce(
                                     pk_hex, td.contract_addr_hex, cd, amm_nonce);
+                                sem5.release();
                                 if (ra.contains("status") && ra["status"] == 0) {
                                     xok5.fetch_add(1); ++amm_nonce;
                                 } else {
