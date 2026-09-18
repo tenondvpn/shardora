@@ -296,7 +296,7 @@ private:
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
     uint8_t message_handler_thread_count_ = 8;
     bool for_ck_server_ = false;
-    bool for_explorer_  = false;
+    bool for_explorer_  = true;
     std::string ck_host_ = "127.0.0.1";
     uint16_t ck_port_ = 9000;
     std::string ck_user_ = "default";
