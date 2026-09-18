@@ -113,6 +113,19 @@ bool Explorer::Init() {
                      nullptr, nullptr, &errmsg);
         sqlite3_free(errmsg);
     }
+    // Migrate contracts table: add bytecode/source_code/abi columns (ignore errors if already present)
+    {
+        char* errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE contracts ADD COLUMN bytecode    TEXT;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg); errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE contracts ADD COLUMN source_code TEXT;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg); errmsg = nullptr;
+        sqlite3_exec(write_db_, "ALTER TABLE contracts ADD COLUMN abi         TEXT;",
+                     nullptr, nullptr, &errmsg);
+        sqlite3_free(errmsg);
+    }
     // Seed gas presets
     if (!ExecSQL(write_db_, kSeedGasPresetsSQL)) return false;
 
@@ -281,23 +294,92 @@ void Explorer::WriteBlock(sqlite3* db, const std::shared_ptr<hotstuff::ViewBlock
         if ((step == 6 || step == 13 || step == 19) && !to_hex.empty()) {
             int is_lib   = (step == 13) ? 1 : 0;
             int is_clone = (step == 19) ? 1 : 0;
+
+            // Extract bytecode hex from contract_code field
+            std::string bytecode_hex = tx.contract_code().empty() ? "" : HexStr(tx.contract_code());
+
+            // Try to decode contract_input as source code JSON for step=6
+            std::string src_code, abi_json;
+            if (step == 6 && !input_hex.empty()) {
+                std::string decoded;
+                decoded.reserve(input_hex.size() / 2);
+                for (size_t k = 0; k + 1 < input_hex.size(); k += 2) {
+                    char buf[3] = { input_hex[k], input_hex[k+1], '\0' };
+                    decoded += static_cast<char>(static_cast<uint8_t>(strtol(buf, nullptr, 16)));
+                }
+                if (decoded.find("\"__type\":\"SHRDORA_CONTRACT_SRC\"") != std::string::npos) {
+                    // extract "source" string value
+                    auto s0 = decoded.find("\"source\":\"");
+                    if (s0 != std::string::npos) {
+                        s0 += 10;
+                        // find closing quote, skipping escaped quotes
+                        size_t s1 = s0;
+                        while (s1 < decoded.size()) {
+                            if (decoded[s1] == '\\') { s1 += 2; continue; }
+                            if (decoded[s1] == '"') break;
+                            ++s1;
+                        }
+                        if (s1 < decoded.size()) {
+                            src_code = decoded.substr(s0, s1 - s0);
+                            // unescape \n and \\
+                            for (size_t p = 0; p + 1 < src_code.size(); ++p) {
+                                if (src_code[p] == '\\' && src_code[p+1] == 'n') {
+                                    src_code.replace(p, 2, "\n"); continue;
+                                }
+                                if (src_code[p] == '\\' && src_code[p+1] == '\\') {
+                                    src_code.replace(p, 2, "\\"); continue;
+                                }
+                                if (src_code[p] == '\\' && src_code[p+1] == '"') {
+                                    src_code.replace(p, 2, "\""); continue;
+                                }
+                            }
+                        }
+                    }
+                    // extract "abi" string value
+                    auto a0 = decoded.find("\"abi\":\"");
+                    if (a0 != std::string::npos) {
+                        a0 += 7;
+                        size_t a1 = a0;
+                        while (a1 < decoded.size()) {
+                            if (decoded[a1] == '\\') { a1 += 2; continue; }
+                            if (decoded[a1] == '"') break;
+                            ++a1;
+                        }
+                        if (a1 < decoded.size()) {
+                            abi_json = decoded.substr(a0, a1 - a0);
+                            for (size_t p = 0; p + 1 < abi_json.size(); ++p) {
+                                if (abi_json[p] == '\\' && abi_json[p+1] == '"') {
+                                    abi_json.replace(p, 2, "\""); continue;
+                                }
+                                if (abi_json[p] == '\\' && abi_json[p+1] == '\\') {
+                                    abi_json.replace(p, 2, "\\"); continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             const char* sql =
                 "INSERT OR IGNORE INTO contracts"
                 "(addr,creator_addr,create_tx_hash,create_height,create_timestamp,"
-                " shard_id,pool_index,is_library,is_clone,updated_at)"
-                " VALUES(?,?,?,?,?,?,?,?,?,?);";
+                " shard_id,pool_index,is_library,is_clone,bytecode,source_code,abi,updated_at)"
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);";
             sqlite3_stmt* stmt = nullptr;
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-                sqlite3_bind_text (stmt, 1,  to_hex.c_str(),       -1, SQLITE_TRANSIENT);
-                sqlite3_bind_text (stmt, 2,  from_hex.c_str(),     -1, SQLITE_TRANSIENT);
-                sqlite3_bind_text (stmt, 3,  tx_hash_hex.c_str(),  -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 1,  to_hex.c_str(),         -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 2,  from_hex.c_str(),       -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 3,  tx_hash_hex.c_str(),    -1, SQLITE_TRANSIENT);
                 sqlite3_bind_int64(stmt, 4,  static_cast<int64_t>(height));
                 sqlite3_bind_int64(stmt, 5,  ts);
                 sqlite3_bind_int  (stmt, 6,  static_cast<int>(shard_id));
                 sqlite3_bind_int  (stmt, 7,  static_cast<int>(pool_idx));
                 sqlite3_bind_int  (stmt, 8,  is_lib);
                 sqlite3_bind_int  (stmt, 9,  is_clone);
-                sqlite3_bind_int64(stmt, 10, now_ms);
+                sqlite3_bind_text (stmt, 10, bytecode_hex.c_str(),   -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 11, src_code.c_str(),       -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text (stmt, 12, abi_json.c_str(),       -1, SQLITE_TRANSIENT);
+                sqlite3_bind_int64(stmt, 13, now_ms);
                 sqlite3_step(stmt);
                 sqlite3_finalize(stmt);
             }
@@ -718,7 +800,8 @@ std::string Explorer::QueryContracts(int is_library, int is_clone,
     int fetch = limit + 1;
     std::ostringstream ss;
     ss << "SELECT rowid,addr,creator_addr,create_tx_hash,create_height,"
-          "create_timestamp,shard_id,pool_index,is_library,is_clone"
+          "create_timestamp,shard_id,pool_index,is_library,is_clone,"
+          "bytecode,source_code,abi"
           " FROM contracts WHERE 1=1";
     if (before_id > 0)  ss << " AND rowid<" << before_id;
     if (is_library >= 0) ss << " AND is_library=" << is_library;
@@ -745,6 +828,12 @@ std::string Explorer::QueryContracts(int is_library, int is_clone,
             obj["pool_index"]       = sqlite3_column_int(stmt, 7);
             obj["is_library"]       = sqlite3_column_int(stmt, 8);
             obj["is_clone"]         = sqlite3_column_int(stmt, 9);
+            auto bc = sqlite3_column_text(stmt, 10);
+            obj["bytecode"]         = bc ? (const char*)bc : "";
+            auto sc = sqlite3_column_text(stmt, 11);
+            obj["source_code"]      = sc ? (const char*)sc : "";
+            auto ab = sqlite3_column_text(stmt, 12);
+            obj["abi"]              = ab ? (const char*)ab : "";
             arr.push_back(obj);
             ++count;
         }
@@ -763,7 +852,8 @@ std::string Explorer::QueryContracts(int is_library, int is_clone,
 std::string Explorer::QueryContract(const std::string& addr) {
     const char* sql =
         "SELECT rowid,addr,creator_addr,create_tx_hash,create_height,"
-        "create_timestamp,shard_id,pool_index,is_library,is_clone"
+        "create_timestamp,shard_id,pool_index,is_library,is_clone,"
+        "bytecode,source_code,abi"
         " FROM contracts WHERE addr=? LIMIT 1;";
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(read_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
@@ -784,6 +874,12 @@ std::string Explorer::QueryContract(const std::string& addr) {
         obj["pool_index"]       = sqlite3_column_int(stmt, 7);
         obj["is_library"]       = sqlite3_column_int(stmt, 8);
         obj["is_clone"]         = sqlite3_column_int(stmt, 9);
+        auto bc = sqlite3_column_text(stmt, 10);
+        obj["bytecode"]         = bc ? (const char*)bc : "";
+        auto sc = sqlite3_column_text(stmt, 11);
+        obj["source_code"]      = sc ? (const char*)sc : "";
+        auto ab = sqlite3_column_text(stmt, 12);
+        obj["abi"]              = ab ? (const char*)ab : "";
         sqlite3_finalize(stmt);
         return JsonOk(obj);
     }
