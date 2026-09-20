@@ -206,7 +206,7 @@ $$T \in [120\text{s},\ 5150\text{s}],\quad T=600\text{s 严格位于内部}$$
 
 > **前提**：BLS $(t, k)$ 门限签名方案满足 EUF-CMA 安全性（DLOG 假设，[Boneh-Lynn-Shacham 2001]）；哈希函数 $H_{256}$ 满足抗碰撞性（随机预言机模型）；拜占庭委员会成员数 $|\mathcal{B}| < t = \lceil k/3 \rceil$。
 
-设 $\mathtt{epoch\_random\_} = H_{256}(\mathtt{sign\_x} \| \mathtt{sign\_y})$，其中 $(\mathtt{sign\_x}, \mathtt{sign\_y})$ 是时间块 $h_{\mathrm{tb}}$ 的 BLS 门限签名（`vss_manager.cc:18`，门限 $t = \lceil k/3 \rceil$）。则对任意 PPT 对手 $\mathcal{A}$，在时间块 QC 产生之前：
+设 $\mathtt{epoch\_random\_} = H_{256}(\mathtt{sign\_x} \| \mathtt{sign\_y})$，其中 $(\mathtt{sign\_x}, \mathtt{sign\_y})$ 是时间块 $h_{\mathrm{tb}}$ 的 BLS 门限签名（`vss_manager.cc:18` — 已修复为 `Hash::Sha256`，SHA-256，替换原非密码哈希 XXHash64；门限 $t = \lceil k/3 \rceil$）。则对任意 PPT 对手 $\mathcal{A}$，在时间块 QC 产生之前：
 
 $$\Pr\!\left[\mathcal{A}\!\left(1^\lambda,\; \{\mathrm{pk}_i\}_{i=1}^k,\; h_{\mathrm{tb}}\right) = \mathtt{epoch\_random\_}\right] \leq \mathrm{negl}(\lambda)$$
 
@@ -218,6 +218,8 @@ $$\Pr\!\left[\mathcal{A}\!\left(1^\lambda,\; \{\mathrm{pk}_i\}_{i=1}^k,\; h_{\ma
 - $(3)$ **哈希传递**：随机预言机 $H_{256}$ 将签名的不可预测性传递至输出 $\mathtt{epoch\_random\_}$，使其在 QC 形成前计算不可区分于 $\mathcal{U}(\{0,1\}^{256})$。$\square$
 
 > **应用**：引理 2.1 是 M2（延迟委员会派生）的密码学基础——对手在时间块 QC 产生前无法预测 $\mathtt{epoch\_random\_}$，因而无法预计算 FisherYates 委员会选举结果，有效攻击窗口压缩至 $T_W = T_{\mathrm{bls}} = 190$s（→ 定理 4.6/4.7）。亦是 M6 中继随机性和 PoRA 不可预测性的密码学来源（→ 定理 13.7）。
+
+> **实现完备性（代码已修复）**：引理 2.1 的密码学保证需要整条随机链密码安全。①`epoch_random_` 由 `Hash::Sha256`（SHA-256）生成（`vss_manager.cc:18`），替换了原非密码哈希 XXHash64；②FTS 委员会抽签（`elect_tx_item.cc:59`）使用以 `epoch_random_` 为种子的 **`CsprngU64`**（SHA-256 计数器模式 CSPRNG，`src/common/csprng.h`），替换了原非密码 PRNG `mt19937_64`（Mersenne Twister：312 个 64-bit 输出后内部状态可完全重建，不满足计算不可区分性）。两处修复共同保证从 BLS 门限签名到最终委员会成员集的完整随机链在密码学上不可预测，与引理 2.1 证明前提严格一致。
 
 ---
 
@@ -892,6 +894,8 @@ static const int64_t kRotationPeriod = 1200ll * 1000ll * 1000ll;
 | `src/common/utils.h` | `kMaxConsecutiveElections`；`kCommitteeMaxOnlineRatio` | M3，M4 |
 | `src/consensus/hotstuff/hotstuff.cc` | 验证块成功后广播 `AttestMsg` | M1，M5 |
 | `src/common/utils.h:226` | **仅修改 `kRotationPeriod`** | Epoch 周期 |
+| `src/vss/vss_manager.cc` | `OnTimeBlock` 使用 `Hash::Sha256` 替换 `Hash::Hash64`（XXHash64 → SHA-256） | 密码安全修复（引理 2.1） |
+| `src/common/csprng.h`（新增）、`src/common/fts_tree.h`、`src/consensus/zbft/elect_tx_item.h/cc` | FTS 委员会抽签 PRNG 从 `mt19937_64` 换为 `CsprngU64`（SHA-256 计数器模式） | 密码安全修复（引理 2.1） |
 
 HotStuff 核心共识代码（`hotstuff.cc` 投票路径、`crypto.cc`、`pacemaker.cc`）**零改动**。
 

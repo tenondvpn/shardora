@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block/account_manager.h"
+#include "common/csprng.h"
 #include "consensus/hotstuff/view_block_chain.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "elect/elect_manager.h"
@@ -161,7 +162,7 @@ private:
     uint32_t min_tx_count_ = common::kInvalidUint32;
     int32_t max_credit_ = 0;
     int32_t min_credit_ = common::kInvalidInt32;
-    std::shared_ptr<std::mt19937_64> g2_ = nullptr;
+    std::shared_ptr<common::CsprngU64> g2_ = nullptr;
     uint64_t first_timeblock_timestamp_ = 0;
     bool stop_mining_ = false;
     uint32_t network_count_ = 2;
