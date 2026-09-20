@@ -10,7 +10,7 @@
 >
 > **密码学底层**：DKG 采用发表于 TNSE（IEEE Transactions on Network Science and Engineering）的 PPKG（位置保持增量密钥生成）协议。核心机制为**选择性交互**：每 Epoch 仅洗牌约 10% 的委员会成员（$\approx102$ 个新节点），新节点（10%）需向全体 $k-1=1023$ 个委员会成员广播验证向量与密钥份额；复用节点（90%，约 922 个）保留原有多项式，仅向新加入的 102 个节点广播密钥份额，与其余 90% 复用节点之间**无需任何重新交互**。全委员会共产生 $k=1024$ 条广播消息，平摊在 10 分钟（600 秒）Epoch 周期内仅约 **1.7 条/秒**，几乎无网络压力；实测每个复用节点仅消耗约 8 MB 带宽和 17 ms 计算时间，对出块处理影响可忽略，与 Kronos、sharBFT 等标准方案相比通信与计算开销均降低 **90% 以上**。
 >
-> **核心结论**：在 A1–A10 条件下，方案达到 BFT 安全性（$\approx2^{-72}$，$k=1024$，$\beta\leq0.2$，定理 4.1；保守配置 $k=2048$ 可达 $\approx2^{-144}$）、有效 Nakamoto 系数理论上界的 $95.4\%$（31,790）、线性通信复杂度最优（$O(k)$），TPS 与候选池规模完全解耦，且网络规模通过 Root 共识准入限流实现李雅普诺夫渐近稳定收敛（定理 13.16）。
+> **核心结论**：在 A1'–A10 条件下，方案达到 BFT 安全性（FTS 加权采样下：$\approx2^{-55}$，$k=1024$，$\beta_w\leq0.2$，定理 4.1'；等权重退化 / $k=2048$ 保守配置：$\approx2^{-72}$ / $\approx2^{-109}$，定理 4.1'/4.1）、有效 Nakamoto 系数理论上界的 $95.4\%$（31,790）、线性通信复杂度最优（$O(k)$），TPS 与候选池规模完全解耦，且网络规模通过 Root 共识准入限流实现李雅普诺夫渐近稳定收敛（定理 13.16）。
 >
 > **交叉验证发现五处新结论**，见第六部分。原三份文档可废弃，以本文为准。
 
@@ -355,6 +355,110 @@ $$\Pr[X \geq k\epsilon] \leq e^{-k D(\epsilon\|\beta)}$$
 令 $\epsilon = 1/3$ 即得上式。完整推导见 [Serfling 1974] 或 [Dubhashi & Panconesi 2009, Thm. 2.10]。$\square$
 
 > **参考**：Serfling, R. J. (1974). *Probability inequalities for the sum in sampling without replacement.* Annals of Statistics **2**(1), 39–48.
+
+---
+
+### 4.0' FTS 加权采样安全界（定理 4.1 的 PoS 推广）
+
+**动机**：定理 4.1 假设均匀无放回抽样（超几何分布）；而代码实际执行的是 FTS 加权抽样（`fts_tree.cc`），每节点入选概率正比于其 FTS 权重（质押 + 在线证明 + 轮换惩罚）。本节给出适用于加权抽样的严格安全界，同时揭示"拜占庭权重分数"是比"拜占庭节点数"更自然的 PoS 安全参数。
+
+**定理 4.1'（FTS 加权委员会安全界）**
+
+**设定**：
+
+- 候选池 $N$ 个节点，节点 $i$ 的 FTS 权重 $w_i \in [w_{\min}, W_{\max}]$，总权重 $W = \sum_{i=1}^N w_i$
+- 拜占庭节点集合 $\mathcal{B}$，总拜占庭权重 $W_{\mathcal{B}} = \sum_{i\in\mathcal{B}} w_i$，**有效拜占庭权重分数** $\beta_w = W_{\mathcal{B}}/W$
+- FTS 加权无放回抽样委员会 $k$ 个节点（每轮按剩余权重比例独立抽取一个节点后移除）
+- 委员会中拜占庭节点数 $X = \sum_{i\in\mathcal{B}} \mathbf{1}[i \text{ 被选入}]$
+
+**定理**：对任意 $\beta_w < 1/3$：
+
+$$\boxed{\Pr[X \geq k/3] \leq \exp\!\left(-k \cdot \Phi(\beta_w)\right)}$$
+
+其中：
+
+$$\Phi(\beta_w) = \frac{1}{3}\ln\frac{1}{3\beta_w} + \beta_w - \frac{1}{3} \quad (> 0 \text{ 当且仅当 } \beta_w < 1/3)$$
+
+**完整证明**（三步）：
+
+**步骤 1：FTS 加权无放回抽样满足负关联性（NA）**
+
+定义节点 $i$ 的入选指示变量 $X_i \in \{0,1\}$。FTS 加权无放回抽样等价于概率按大小比例抽样（Probability Proportional to Size without Replacement，PPS-WoR）。由 [Dubhashi & Ranjan 1998，定理 2.1]，PPS-WoR 的入选指示变量满足**负关联性（Negative Association，NA）**：
+
+$$\forall \text{ 不相交子集 } I, J \text{ 及非降函数 } f, g \colon \quad E[f(\mathbf{X}_I) \cdot g(\mathbf{X}_J)] \leq E[f(\mathbf{X}_I)] \cdot E[g(\mathbf{X}_J)]$$
+
+**步骤 2：指数矩上界**
+
+由 NA 性质，对任意 $\theta > 0$（矩生成函数乘积上界）：
+
+$$E\!\left[e^{\theta X}\right] = E\!\left[e^{\theta \sum_{i\in\mathcal{B}} X_i}\right] \leq \prod_{i\in\mathcal{B}} E\!\left[e^{\theta X_i}\right]$$
+
+Horvitz-Thompson 一阶包含概率 $\pi_i = \Pr[X_i=1] = kw_i/W$（见 [Horvitz & Thompson 1952]），因此：
+
+$$E[e^{\theta X_i}] = 1 - \pi_i + \pi_i e^{\theta} = 1 + \pi_i(e^{\theta}-1)$$
+
+利用 $1 + x \leq e^x$（$\forall x \in \mathbb{R}$）：
+
+$$\prod_{i\in\mathcal{B}} \!\left(1 + \pi_i(e^{\theta}-1)\right) \leq \exp\!\left((e^{\theta}-1)\sum_{i\in\mathcal{B}} \pi_i\right) = \exp\!\left((e^{\theta}-1)\cdot k\beta_w\right)$$
+
+由 Markov 不等式：
+
+$$\Pr[X \geq k/3] \leq e^{-\theta k/3} \cdot \exp\!\left((e^{\theta}-1)\cdot k\beta_w\right) = \exp\!\left(k\!\left[(e^{\theta}-1)\beta_w - \frac{\theta}{3}\right]\right)$$
+
+**步骤 3：最优 $\theta$ 选取**
+
+对 $h(\theta) = (e^{\theta}-1)\beta_w - \theta/3$ 求导并令 $h'(\theta^*) = 0$：
+
+$$\beta_w e^{\theta^*} = \frac{1}{3} \implies \theta^* = \ln\frac{1}{3\beta_w} > 0 \text{（因 } \beta_w < 1/3\text{）}$$
+
+代入得：
+
+$$h(\theta^*) = \left(\frac{1}{3\beta_w} - 1\right)\beta_w - \frac{1}{3}\ln\frac{1}{3\beta_w} = \frac{1}{3} - \beta_w - \frac{1}{3}\ln\frac{1}{3\beta_w} = -\Phi(\beta_w)$$
+
+故 $\Pr[X \geq k/3] \leq \exp(-k\Phi(\beta_w))$。$\square$
+
+---
+
+**数值对比**（加权 FTS 界 vs. 等权重超几何 KL 界）：
+
+| $k$ | $\beta_w$ | $\Phi(\beta_w)$ | **加权 FTS 安全位数** | $D(1/3\|\beta_w)$ | 等权重参考位数 |
+|-----|-----------|----------------|---------------------|-------------------|--------------|
+| 1024 | 0.20 | 0.0370 | **≈ 55-bit** | 0.0488 | 72-bit |
+| 1024 | 0.15 | 0.0822 | **≈ 121-bit** | 0.1007 | 149-bit |
+| 2048 | 0.20 | 0.0370 | **≈ 109-bit** | 0.0488 | 144-bit |
+| 2048 | 0.15 | 0.0822 | **≈ 243-bit** | 0.1007 | 298-bit |
+
+> **界的差距来源**：$\Phi(\beta_w) = D(1/3\|\beta_w) - \underbrace{\frac{2}{3}\ln\frac{2/3}{1-\beta_w}}_{\geq 0}$，加权 FTS 界放弃了超几何 KL 界中对"诚实节点丰余"的精细刻画（$1 + x \leq e^x$ 代入产生 slack）。等权重时两界退化一致（$\pi_i = k/N$ 为常数，分布精确为超几何）。
+
+---
+
+**安全假设的迁移（A1 → A1'）**：
+
+本定理将假设从 A1（"拜占庭节点数比例 $\beta_{\rm count} < 1/3$"）替换为：
+
+> **A1'（PoS 自然假设）**：拜占庭节点持有的 FTS 权重之和不超过全网总权重的 $1/5$，即 $\beta_w = W_{\mathcal{B}}/W \leq 0.2$。
+
+在 PoS 系统中 A1' 比 A1 更自然：节点的经济地位（质押 + 在线证明收入）与其 FTS 权重直接挂钩，攻击者积累 20% 的 FTS 权重需要相应的经济投入，而积累 20% 的节点数量可以零成本（Sybil 攻击）。
+
+---
+
+**与 M5 质押上限的量化联系**：
+
+M5 引入质押上限 $W_{\max}$ 和隐含最低质押 $w_{\min}$（准入门槛）。最坏情况下（拜占庭节点全持上限权重，诚实节点全持下限权重）：
+
+$$\beta_w^{\max} = \frac{\beta_{\rm count} \cdot W_{\max}}{\beta_{\rm count} \cdot W_{\max} + (1-\beta_{\rm count}) \cdot w_{\min}} = \frac{\beta_{\rm count} \cdot C}{\beta_{\rm count} \cdot C + (1-\beta_{\rm count})}$$
+
+其中 $C = W_{\max}/w_{\min}$ 为权重离散度。
+
+**关键推论**：若独立假设 $\beta_w \leq 0.2$（拜占庭节点不积累超比例 FTS 权重），则定理 4.1' 直接给出 $k=1024$ 时 **≈55-bit 安全**；若需达到定理 4.1 的 **72-bit 级别**，有两条路径：
+
+| 路径 | 条件 | 安全位数 |
+|------|------|---------|
+| 增大委员会 | $k=2048$，$\beta_w \leq 0.20$ | **≈109-bit**（超过 72-bit） |
+| 降低 $\beta_w$ 上界 | $k=1024$，$\beta_w \leq 0.15$ | **≈121-bit**（超过 72-bit） |
+| 等权重（M5 强制 $C=1$）| $k=1024$，$\beta_w=\beta_{\rm count}\leq0.20$ | **72-bit**（退化为定理 4.1） |
+
+> **参考**：Dubhashi, D. & Ranjan, D. (1998). *Balls and bins: A study in negative dependence.* Random Structures & Algorithms **13**(2), 99–124. ／ Horvitz, D. G. & Thompson, D. J. (1952). *A generalization of sampling without replacement from a finite universe.* JASA **47**(260), 663–685.
 
 ---
 
@@ -1264,7 +1368,7 @@ $$\frac{C(600)}{C(T^*)} \leq 1 + \frac{C''(T^*)}{2C(T^*)} \cdot (600-480)^2 = 1 
 
 **最终结论**：单分片 $T=600$s + 候选池 $N=10^5$ + 委员会 $k=1024$ + 六项机制（M1–M6），在 A1–A10 条件全部满足的前提下：
 
-1. **达到了 BFT 安全保证**（$\beta<1/3$，$\Pr[\text{攻破}]\leq2^{-72}$，$k=1024$，$\beta\leq0.2$，定理 4.1；$2^{-144}$ 安全性见 $k=2048$ 保守配置）
+1. **达到了 BFT 安全保证**（FTS 加权采样：$\Pr[\text{攻破}]\leq2^{-55}$，$k=1024$，$\beta_w\leq0.2$，定理 4.1'；等权重退化：$2^{-72}$，$k=1024$，定理 4.1；$k=2048$ 保守配置：$2^{-109}$，定理 4.1'）
 2. **达到了线性通信复杂度的理论最优**（HotStuff $O(k)$，与全员 $O(N)$ 相比节省 $10^3\times$）
 3. **将 Nakamoto 系数从 $O(k)=342$ 提升至 $O(N)=31{,}790$**，达到理论上界的 $95.4\%$
 4. **性能与候选池规模 $N$ 完全解耦**，扩展到十万节点不损失 TPS 和延迟
@@ -2281,5 +2385,7 @@ TNSE 密钥复用（10% 拜占庭）：   P50=25s, P95=90s,  P99<150s （在 190
 13. Buterin, V. (2014). **A Next-Generation Smart Contract and Decentralized Application Platform**. Ethereum White Paper.
 14. **Shardora Team. Dynamic Key Reuse and Communication-Efficient Secret Reconstruction for Large-Scale Distributed Consensus. IEEE Transactions on Network Science and Engineering (TNSE).** *(本方案 DKG 层的密码学底层协议来源：动态多项式密钥复用、零常数项扰动前向安全刷新，将 k=1024 委员会 DKG 通信量降低 90%，使广域网并发 DKG 在 T_bls=190s 窗口内物理可行。)*
 15. Abraham, I. et al. (2021). **Reaching Consensus for Asynchronous Distributed Key Generation**. PODC. *(ADKG 参考方案，用于与 TNSE 协议的对比分析。)*
+18. Dubhashi, D. & Ranjan, D. (1998). **Balls and bins: A study in negative dependence**. Random Structures & Algorithms **13**(2), 99–124. *(FTS 加权无放回采样负关联性（NA）的核心文献；定理 4.1' 步骤 1 直接引用定理 2.1。)*
+19. Horvitz, D. G. & Thompson, D. J. (1952). **A generalization of sampling without replacement from a finite universe**. Journal of the American Statistical Association **47**(260), 663–685. *(Horvitz-Thompson 一阶包含概率 $\pi_i = kw_i/W$，定理 4.1' 期望值计算基础。)*
 16. Kate, A., Zaverucha, G. M., & Goldberg, I. (2010). **Constant-Size Commitments to Polynomials and Their Applications**. ASIACRYPT. *(eVSS/KZG 承诺方案，Complaint-free DKG 变体的理论基础。)*
 17. Canetti, R. & Herzberg, A. (1994). **Maintaining Security in the Presence of Transient Faults**. CRYPTO. *(Proactive Secret Sharing 原始论文，TNSE 零常数项扰动前向安全性的理论基础。)*
