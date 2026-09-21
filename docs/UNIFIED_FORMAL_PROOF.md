@@ -1497,6 +1497,35 @@ OnTimeBlock(block) →  epoch_random = vss_mgr_->EpochRandom()
                        [此时委员会才固化，对手知晓身份时距开始工作仅剩 T_bls=190s]
 ```
 
+**跨纪元安全切换机制（两步原子切换）**
+
+本协议的跨纪元委员会交接不需要独立的状态机；它是 HotStuff 安全性与 leader liveness 的自然推论：
+
+```
+步骤 A — ElectBlock QC 确认（新公钥授权）
+  旧委员会在正常 HotStuff 共识中提案并提交 ElectBlock
+  （包含新委员会成员列表和 BLS 公钥，DKG 已在此前完成）。
+  ElectBlock 获得 QC（≥342 合法 BLS 分签）后：
+    → hotstuff.h: OnNewElectBlock(elect_height, members, common_pk, sec_key)
+         latest_elect_height_  ← 更新为新纪元高度
+         consecutive_failures_ ← 归零（新纪元 liveness 从头计数）
+         update_latest_view_tm_ ← true（视图计时器重置）
+         GetLeader()            ← 立即派生新委员会第一个 leader
+
+步骤 B — 新 leader 直接提案（liveness 继承）
+  OnNewElectBlock() 完成后，新 leader 按标准 HotStuff 流程发出
+  ProposalMsg。若新 leader 超时：
+    consecutive_failures_++ → 视图变换 → 下一个新委员会 leader
+  与单纪元内 leader 轮换机制完全相同，无需额外协议。
+```
+
+| 安全关切 | 保障来源 |
+|---------|---------|
+| 谁授权新公钥 | ElectBlock QC（HotStuff 安全性：任何 QC 块 ≥2/3 确认，与普通块无异） |
+| 旧节点何时停止 | 无需显式停止：新 elect_height 后旧 BLS 公钥验签失败，旧委员会无法为新纪元块形成合法 QC |
+| 冲突切换 | 不可能：HotStuff 每高度至多一个 QC，ElectBlock 一经提交不可回滚 |
+| DKG 失败 | DKG 成功是 ElectBlock 被提案的前提；失败时 epoch_random_ 不可用，ElectBlock 不产生 |
+
 ### A.3 机制 M3 实现（强制轮换）
 
 ```cpp
