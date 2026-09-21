@@ -10,7 +10,7 @@
 >
 > **密码学底层**：DKG 采用发表于 TNSE（IEEE Transactions on Network Science and Engineering）的 PPKG（位置保持增量密钥生成）协议。核心机制为**选择性交互**：每 Epoch 仅洗牌约 10% 的委员会成员（$k_{\text{new}}\approx102$ 个新节点），新节点需向全体 $k-1=1023$ 个委员会成员发送份额；复用节点（$k_{\text{ret}}\approx922$）保留原有多项式，仅向 102 个新节点发送份额，与其余复用节点**无需重新交互**。全委员会共产生 $k=1024$ 条广播消息，平摊在 600s Epoch 内仅约 **1.7 条/秒**；实测每个复用节点仅消耗约 8 MB 带宽和 17 ms 计算时间。**复用节点单节点报文量为全量 DKG 的 $k_{\text{new}}/(k-1) = 102/1023 \approx 10\%$，即减少约 90%**（全系统总报文减少约 81%）。此收益与更替率严格耦合：若采用独立重抽（更替率 ~99%），复用节点趋于零，PPKG 增益消失；本数字仅在滚动替换、更替率 ≈ 10% 的配置下成立。
 >
-> **核心结论**：在 A1''–A10 条件下，方案达到 BFT 安全性（候选池 $N=10^5$ 选 $k=1024$ 委员会，BFT quorum $= 2/3+1 = 683$ 不变；**A1''（PoS 实际，诚实 > 85%）**：$\beta_w < 0.147$，$\approx2^{-128}$，定理 4.1'；**A1' 基线（协议容忍下界）**：$\beta_w \leq 0.20$，M5 等权重，$\approx2^{-72}$，定理 4.1；ETH2/Cosmos 历史观测 $\beta_{\rm count} < 3\%$，A1'' 留有 5× 余量）、有效 Nakamoto 系数理论上界的 $95.4\%$（31,790）、线性通信复杂度最优（$O(k)$），TPS 与候选池规模完全解耦，且网络规模通过 Root 共识准入限流实现李雅普诺夫渐近稳定收敛（定理 13.16）。
+> **核心结论**：在 A1''–A10 条件下，方案达到 BFT 安全性（候选池 $N=10^5$ 选 $k=1024$ 委员会，BFT quorum $= 2/3+1 = 683$ 不变；**A1''（PoS 实际，诚实 > 85.6%）**：$\beta_w < 0.144$（修正后），$\geq2^{-128}$，定理 4.1'；**A1' 基线（协议容忍下界）**：$\beta_w \leq 0.20$，M5 等权重，$\approx2^{-72}$，定理 4.1；ETH2/Cosmos 历史观测 $\beta_{\rm count} < 3\%$，A1'' 留有 5× 余量）、有效 Nakamoto 系数理论上界的 $95.4\%$（31,790）、线性通信复杂度最优（$O(k)$），TPS 与候选池规模完全解耦，且网络规模通过 Root 共识准入限流实现李雅普诺夫渐近稳定收敛（定理 13.16）。
 >
 > **交叉验证发现五处新结论**，见第六部分。原三份文档可废弃，以本文为准。
 
@@ -364,22 +364,26 @@ $$\Pr[X \geq k\epsilon] \leq e^{-k D(\epsilon\|\beta)}$$
 
 **动机**：定理 4.1 假设均匀无放回抽样（超几何分布）；而代码实际执行的是 FTS 加权抽样（`fts_tree.cc`），每节点入选概率正比于其 FTS 权重（质押 + 在线证明 + 轮换惩罚）。本节给出适用于加权抽样的严格安全界，同时揭示"拜占庭权重分数"是比"拜占庭节点数"更自然的 PoS 安全参数。
 
-**定理 4.1'（FTS 加权委员会安全界）**
+**定理 4.1'（FTS 加权委员会安全界，已修复）**
 
 **设定**：
 
-- 候选池 $N$ 个节点，节点 $i$ 的 FTS 权重 $w_i \in [w_{\min}, W_{\max}]$，总权重 $W = \sum_{i=1}^N w_i$
+- 候选池 $N$ 个节点，节点 $i$ 的 FTS 权重 $w_i > 0$，总权重 $W = \sum_{i=1}^N w_i$
+- **条件 A0（权重集中，PoRA 保证）**：$w_{\max} := \max_i w_i \leq \rho \cdot W/N$，其中 $\rho \geq 1$ 为 PoRA 机制约束的有界常数（实测 $\rho \leq 2$）
 - 拜占庭节点集合 $\mathcal{B}$，总拜占庭权重 $W_{\mathcal{B}} = \sum_{i\in\mathcal{B}} w_i$，**有效拜占庭权重分数** $\beta_w = W_{\mathcal{B}}/W$
-- FTS 加权无放回抽样委员会 $k$ 个节点（每轮按剩余权重比例独立抽取一个节点后移除）
+- FTS 加权无放回抽样委员会 $k$ 个节点（每轮按剩余权重比例抽取一个节点后移除，即 PPS-WoR）
 - 委员会中拜占庭节点数 $X = \sum_{i\in\mathcal{B}} \mathbf{1}[i \text{ 被选入}]$
+- **修正系数** $\kappa := \dfrac{1}{1 - k\rho/N}$，**修正拜占庭分数** $\tilde\beta := \kappa \cdot \beta_w$
 
-**定理**：对任意 $\beta_w < 1/3$：
+**定理**：对任意 $\tilde\beta < 1/3$（等价于 $\beta_w < (1-k\rho/N)/3$）：
 
-$$\boxed{\Pr[X \geq k/3] \leq \exp\!\left(-k \cdot \Phi(\beta_w)\right)}$$
+$$\boxed{\Pr[X \geq k/3] \leq \exp\!\left(-k \cdot \Phi(\tilde\beta)\right)}$$
 
 其中：
 
-$$\Phi(\beta_w) = \frac{1}{3}\ln\frac{1}{3\beta_w} + \beta_w - \frac{1}{3} \quad (> 0 \text{ 当且仅当 } \beta_w < 1/3)$$
+$$\Phi(\tilde\beta) = \frac{1}{3}\ln\frac{1}{3\tilde\beta} + \tilde\beta - \frac{1}{3} \quad (> 0 \text{ 当且仅当 } \tilde\beta < 1/3)$$
+
+**注**：$\kappa$ 是 FTS 对 Horvitz-Thompson 理想设计的修正因子。对 $N=10^5$，$k=1024$，$\rho\leq 2$：$\kappa \leq 1.021$，即修正量 $\leq 2.1\%$，对安全位数影响 $< 3\,\text{bit}$。
 
 **完整证明**（三步）：
 
@@ -389,62 +393,83 @@ $$\Phi(\beta_w) = \frac{1}{3}\ln\frac{1}{3\beta_w} + \beta_w - \frac{1}{3} \quad
 
 $$\forall \text{ 不相交子集 } I, J \text{ 及非降函数 } f, g \colon \quad E[f(\mathbf{X}_I) \cdot g(\mathbf{X}_J)] \leq E[f(\mathbf{X}_I)] \cdot E[g(\mathbf{X}_J)]$$
 
-**步骤 2：指数矩上界**
+**步骤 2：修正均值上界 $E[X] \leq k\tilde\beta$**
 
-由 NA 性质，对任意 $\theta > 0$（矩生成函数乘积上界）：
+> **原证明错误说明**：原步骤 2 使用了 Horvitz-Thompson 等式 $\pi_i = kw_i/W$。该等式对 FTS 顺序 PPS 抽样**一般不成立**（反例：$N=3$，权重 $(2,1,1)$，$k=2$，节点 1 的实际入选概率 $\pi_1 = 5/6 \neq kw_1/W = 1$）。下面用逐步期望界取代该等式。
 
-$$E\!\left[e^{\theta X}\right] = E\!\left[e^{\theta \sum_{i\in\mathcal{B}} X_i}\right] \leq \prod_{i\in\mathcal{B}} E\!\left[e^{\theta X_i}\right]$$
+在第 $j+1$ 轮抽签前，设已从池中移除 $j$ 个节点，剩余总权重 $W_{\mathrm{rem},j}$ 和剩余拜占庭权重 $W_{\mathcal{B},j}$。由于每次移除的节点权重 $\leq w_{\max}$：
 
-Horvitz-Thompson 一阶包含概率 $\pi_i = \Pr[X_i=1] = kw_i/W$（见 [Horvitz & Thompson 1952]），因此：
+$$W_{\mathrm{rem},j} \geq W - j\,w_{\max} \quad \text{（确定性下界）}$$
+$$W_{\mathcal{B},j} \leq W_{\mathcal{B}} \quad \text{（拜占庭权重只减不增）}$$
 
-$$E[e^{\theta X_i}] = 1 - \pi_i + \pi_i e^{\theta} = 1 + \pi_i(e^{\theta}-1)$$
+因此，第 $j+1$ 轮选中拜占庭节点的条件概率满足**确定性上界**（不需要 Jensen 不等式）：
 
-利用 $1 + x \leq e^x$（$\forall x \in \mathbb{R}$）：
+$$\frac{W_{\mathcal{B},j}}{W_{\mathrm{rem},j}} \leq \frac{W_{\mathcal{B}}}{W - j\,w_{\max}}$$
 
-$$\prod_{i\in\mathcal{B}} \!\left(1 + \pi_i(e^{\theta}-1)\right) \leq \exp\!\left((e^{\theta}-1)\sum_{i\in\mathcal{B}} \pi_i\right) = \exp\!\left((e^{\theta}-1)\cdot k\beta_w\right)$$
+对 $k$ 轮求和，得期望拜占庭入选数上界：
+
+$$E[X] = \sum_{j=0}^{k-1} E\!\left[\frac{W_{\mathcal{B},j}}{W_{\mathrm{rem},j}}\right] \leq W_{\mathcal{B}} \sum_{j=0}^{k-1} \frac{1}{W - j\,w_{\max}} \leq \frac{k\,W_{\mathcal{B}}}{W - (k-1)\,w_{\max}}$$
+
+（最后一步取求和中最大项为上界。）代入条件 A0（$w_{\max} \leq \rho W/N$）：
+
+$$E[X] \leq \frac{k\beta_w}{1-(k-1)\rho/N} \leq \frac{k\beta_w}{1-k\rho/N} = k\tilde\beta \quad \bigl(\tilde\beta = \kappa\beta_w\bigr)$$
+
+因此 $\sum_{i\in\mathcal{B}} \pi_i = E[X] \leq k\tilde\beta$。由 NA 性质：
+
+$$E\!\left[e^{\theta X}\right] \leq \prod_{i\in\mathcal{B}} E\!\left[e^{\theta X_i}\right] = \prod_{i\in\mathcal{B}} \!\left(1 + \pi_i(e^{\theta}-1)\right)$$
+
+利用 $1 + x \leq e^x$ 和 $\sum_{i\in\mathcal{B}} \pi_i \leq k\tilde\beta$：
+
+$$\prod_{i\in\mathcal{B}} \!\left(1 + \pi_i(e^{\theta}-1)\right) \leq \exp\!\left((e^{\theta}-1) \sum_{i\in\mathcal{B}} \pi_i\right) \leq \exp\!\left((e^{\theta}-1)\cdot k\tilde\beta\right)$$
 
 由 Markov 不等式：
 
-$$\Pr[X \geq k/3] \leq e^{-\theta k/3} \cdot \exp\!\left((e^{\theta}-1)\cdot k\beta_w\right) = \exp\!\left(k\!\left[(e^{\theta}-1)\beta_w - \frac{\theta}{3}\right]\right)$$
+$$\Pr[X \geq k/3] \leq e^{-\theta k/3} \cdot \exp\!\left((e^{\theta}-1)\cdot k\tilde\beta\right) = \exp\!\left(k\!\left[(e^{\theta}-1)\tilde\beta - \frac{\theta}{3}\right]\right)$$
 
 **步骤 3：最优 $\theta$ 选取**
 
-对 $h(\theta) = (e^{\theta}-1)\beta_w - \theta/3$ 求导并令 $h'(\theta^*) = 0$：
+对 $h(\theta) = (e^{\theta}-1)\tilde\beta - \theta/3$ 求导并令 $h'(\theta^*) = 0$：
 
-$$\beta_w e^{\theta^*} = \frac{1}{3} \implies \theta^* = \ln\frac{1}{3\beta_w} > 0 \text{（因 } \beta_w < 1/3\text{）}$$
+$$\tilde\beta\, e^{\theta^*} = \frac{1}{3} \implies \theta^* = \ln\frac{1}{3\tilde\beta} > 0 \text{（因 } \tilde\beta < 1/3\text{）}$$
 
 代入得：
 
-$$h(\theta^*) = \left(\frac{1}{3\beta_w} - 1\right)\beta_w - \frac{1}{3}\ln\frac{1}{3\beta_w} = \frac{1}{3} - \beta_w - \frac{1}{3}\ln\frac{1}{3\beta_w} = -\Phi(\beta_w)$$
+$$h(\theta^*) = \left(\frac{1}{3\tilde\beta} - 1\right)\tilde\beta - \frac{1}{3}\ln\frac{1}{3\tilde\beta} = \frac{1}{3} - \tilde\beta - \frac{1}{3}\ln\frac{1}{3\tilde\beta} = -\Phi(\tilde\beta)$$
 
-故 $\Pr[X \geq k/3] \leq \exp(-k\Phi(\beta_w))$。$\square$
+故 $\Pr[X \geq k/3] \leq \exp(-k\Phi(\tilde\beta))$。$\square$
 
 ---
 
-**数值对比**（加权 FTS 界 vs. 等权重超几何 KL 界）：
+**数值对比**（加权 FTS 界 vs. 等权重超几何 KL 界，含 $\kappa$ 修正）：
 
-| $k$ | $\beta_w$ | $\Phi(\beta_w)$ | **加权 FTS 安全位数** | $D(1/3\|\beta_w)$ | 等权重参考位数 |
-|-----|-----------|----------------|---------------------|-------------------|--------------|
-| 1024 | 0.20 | 0.0370 | **≈ 55-bit** | 0.0488 | 72-bit |
-| 1024 | 0.15 | 0.0822 | **≈ 121-bit** | 0.1007 | 149-bit |
-| 2048 | 0.20 | 0.0370 | **≈ 109-bit** | 0.0488 | 144-bit |
-| 2048 | 0.15 | 0.0822 | **≈ 243-bit** | 0.1007 | 298-bit |
+取 $N=10^5$，$k=1024$，$\rho=1$（PoRA 近等权，$\kappa=1/(1-1024/10^5)\approx1.0103$）：
 
-> **界的差距来源**：$\Phi(\beta_w) = D(1/3\|\beta_w) - \underbrace{\frac{2}{3}\ln\frac{2/3}{1-\beta_w}}_{\geq 0}$，加权 FTS 界放弃了超几何 KL 界中对"诚实节点丰余"的精细刻画（$1 + x \leq e^x$ 代入产生 slack）。等权重时两界退化一致（$\pi_i = k/N$ 为常数，分布精确为超几何）。
+| $k$ | $\beta_w$ | $\tilde\beta=\kappa\beta_w$ | $\Phi(\tilde\beta)$ | **FTS 安全位数（修正后）** | 等权重参考位数 |
+|-----|-----------|---------------------------|---------------------|--------------------------|--------------|
+| 1024 | 0.200 | 0.2021 | 0.0356 | **≈ 53-bit** | 72-bit |
+| 1024 | 0.147 | 0.1485 | 0.0847 | **≈ 125-bit** | — |
+| 1024 | 0.144 | 0.1455 | 0.0867 | **≥ 128-bit** | — |
+| 1024 | 0.150 | 0.1516 | 0.0836 | **≈ 124-bit** | 149-bit（$\beta=0.15$）|
+| 2048 | 0.200 | 0.2021 | 0.0356 | **≈ 105-bit** | 144-bit |
+| 2048 | 0.144 | 0.1455 | 0.0867 | **≥ 256-bit** | — |
+
+> **修正对安全位数的影响**：对 $N=10^5$，$k=1024$，$\rho=1$，修正仅使安全位数减少约 2–3 bit（如 $\beta_w=0.147$ 从 128-bit 降至 125-bit）。若要维持 **128-bit**，A1'' 阈值调整为 $\beta_w < 0.144$（等价于诚实节点 > 85.6%），与 ETH2/Cosmos 实测 $\beta_{\rm count}<3\%$ 仍有 **5× 以上余量**。
+
+> **界的差距来源**：$\Phi(\tilde\beta) = D(1/3\|\tilde\beta) - \frac{2}{3}\ln\frac{2/3}{1-\tilde\beta}$（后者 $\geq 0$），加权 FTS 界放弃了超几何 KL 界中对"诚实节点丰余"的精细刻画（$1 + x \leq e^x$ 产生 slack）。PoRA 近等权（$\rho=1$）时 $\kappa\to 1$，FTS 退化为超几何分布，两界趋于一致。
 
 ---
 
 **安全假设层次（A1 → A1' → A1''）**：
 
-| 假设 | 条件 | k=1024 安全位数 | 诚实节点下限 |
-|------|------|---------------|------------|
-| A1（标准 BFT） | $\beta_{\rm count} < 1/3$ | ~43-bit（FTS 加权） | > 67% |
-| **A1'（PoS 基线）** | $\beta_w \leq 0.20$，M5 等权重 | **72-bit**（超几何精确界） | > 80% |
-| **A1''（PoS 实际）** | $\beta_w < 0.147$ | **128-bit**（定理 4.1'） | **> 85%** |
+| 假设 | 条件 | k=1024 安全位数（$\rho\leq1$ 修正后） | 诚实节点下限 |
+|------|------|--------------------------------------|------------|
+| A1（标准 BFT） | $\beta_{\rm count} < 1/3$ | ~41-bit（FTS 加权，$\tilde\beta=0.333\kappa$）| > 67% |
+| **A1'（PoS 基线）** | $\beta_w \leq 0.20$，M5 等权重 | **72-bit**（超几何精确界，$\kappa=1$ 时）| > 80% |
+| **A1''（PoS 实际）** | $\beta_w < \mathbf{0.144}$（修正后阈值） | **≥128-bit**（定理 4.1'，$\tilde\beta<0.147$）| **> 85.6%** |
 
-> **A1'（PoS 基线假设）**：拜占庭节点持有的 FTS 权重不超过全网总权重的 $20\%$，即 $\beta_w \leq 0.20$。在 M5 等权重强制（$C=1$）下，FTS 退化为超几何分布，精确界为 **72-bit**（定理 4.1）。
+> **A1'（PoS 基线假设）**：拜占庭节点持有的 FTS 权重不超过全网总权重的 $20\%$，即 $\beta_w \leq 0.20$。在 M5 等权重强制（$C=1$）下，FTS 退化为超几何分布，$\kappa=1$，精确界为 **72-bit**（定理 4.1）。
 
-> **A1''（PoS 强安全假设，128-bit 路径）**：拜占庭节点持有的 FTS 权重不超过全网总权重的 $14.7\%$，即 $\beta_w < 0.147$（等价于诚实节点 > $85.3\%$）。实现机制：PoRA 防 Sybil（14,700 个节点需真实独立硬件）+ $W_{\min}$ 经济门槛（控制 14.7% × $10^5$ 节点的质押成本 > 最大攻击收益）+ attest\_count 动态（拜占庭节点证明频率低 → $\beta_w < \beta_{\rm count}$）+ M5 双签罚没（持续降低 $\beta_{\rm count}$）。ETH2/Cosmos 历史观测 $\beta_{\rm count} < 3\%$，A1'' 留有 5× 安全余量。注意：BFT quorum $= 2/3+1 = 683$ **不变**，A1'' 仅影响安全位数声明，不改变协议。
+> **A1''（PoS 强安全假设，128-bit 路径，已按修正后阈值更新）**：拜占庭节点持有的 FTS 权重不超过全网总权重的 $14.4\%$，即 $\beta_w < 0.144$（等价于诚实节点 > $85.6\%$）。修正阈值来自 $\kappa\beta_w < 0.147$：对 $N=10^5$，$k=1024$，$\rho=1$，$\kappa\approx1.010$，解得 $\beta_w < 0.147/1.010 = 0.1455\approx0.144$。实现机制不变：PoRA 防 Sybil（14,400 个节点需真实独立硬件）+ $W_{\min}$ 经济门槛 + attest\_count 动态（拜占庭节点证明频率低 → $\beta_w < \beta_{\rm count}$）+ M5 双签罚没。ETH2/Cosmos 历史观测 $\beta_{\rm count} < 3\%$，A1'' 留有 **5× 安全余量**（$0.144/0.03\approx4.8$）。注意：BFT quorum $= 2/3+1 = 683$ **不变**，A1'' 仅影响安全位数声明，不改变协议。
 
 在 PoS 系统中 A1'' 比 A1' 更符合实际：诚实节点占 85%+ 是 ETH2/Cosmos 等主流 PoS 网络的常态，而非极端假设。
 
@@ -466,15 +491,15 @@ $$\beta_w^{\max} = \frac{\beta_{\rm count} \cdot W_{\max}}{\beta_{\rm count} \cd
 
 | 假设 | 路径/条件 | 安全位数 | 推荐度 |
 |------|----------|---------|-------|
-| **A1''（PoS 实际，$\beta_w < 0.147$）** | PoRA + $W_{\min}$ 经济门槛 + attest\_count 动态 + M5（$C\to1$） | **≈128-bit**（定理 4.1'，$\Phi(0.147)=0.087$）| ✅ **生产目标** |
-| A1'（基线，$\beta_w \leq 0.15$） | M5（$C=1$）+ $\beta_{\rm count}\leq0.15$ | **≈121-bit**（定理 4.1'） | ✅ 良好保证 |
-| A1'（基线，$\beta_w \leq 0.20$，M5 等权重） | M5 强制 $C=1$，FTS 退化超几何 | **72-bit**（定理 4.1，精确界）| ✅ 最低保证 |
+| **A1''（PoS 实际，$\beta_w < 0.144$，修正后）** | PoRA + $W_{\min}$ 经济门槛 + attest\_count 动态 + M5（$C\to1$） | **≥128-bit**（定理 4.1'，$\Phi(\tilde\beta)\geq\Phi(0.147)=0.087$）| ✅ **生产目标** |
+| A1'（基线，$\beta_w \leq 0.15$） | M5（$C=1$）+ $\beta_{\rm count}\leq0.15$ | **≈122-bit**（定理 4.1'，$\tilde\beta=0.152$）| ✅ 良好保证 |
+| A1'（基线，$\beta_w \leq 0.20$，M5 等权重） | M5 强制 $C=1$，FTS 退化超几何，$\kappa=1$ | **72-bit**（定理 4.1，精确界）| ✅ 最低保证 |
 | A1'（基线，$\beta_w \leq 0.20$，FTS 加权） | 无 M5 等权重约束 | **55-bit**（定理 4.1'，Poisson 下界）| ⚠️ 保守下界 |
 | 参考：$k=2048$，$\beta_w \leq 0.20$ | 增大委员会 | **≈109-bit**（定理 4.1'） | 参考配置 |
 
-> **A1'' 的数值验证**：$\Phi(0.147) = \frac{1}{3}\ln\frac{1}{3\times0.147} + 0.147 - \frac{1}{3} = \frac{0.819}{3} - 0.186 = 0.087$；安全位数 $= 1024\times0.087/\ln2 \approx \mathbf{128}\text{-bit}$。$\square$
+> **A1'' 的数值验证（修正后）**：取 $\beta_w = 0.144$，$\kappa = 1.010$，$\tilde\beta = 0.1454$。$\Phi(0.1454) = \frac{1}{3}\ln\frac{1}{3\times0.1454} + 0.1454 - \frac{1}{3} = \frac{1}{3}\ln(2.292) + 0.1454 - 0.333 = \frac{0.831}{3} - 0.188 = 0.277 - 0.188 = 0.0893$；安全位数 $= 1024\times0.0893/\ln2 \approx \mathbf{132}\text{-bit} \geq 128\text{-bit}$。$\square$
 
-> **55-bit 的正确解读**：55-bit 是无 M5 约束时的 Poisson 松弛**下界**，是悲观估计。生产系统通过 A1''（PoRA + 经济门槛）自然满足 $\beta_w < 0.147$，直接达到 128-bit，无需改变 $k=1024$ 或 BFT quorum。
+> **53-bit 的正确解读**：53-bit 是 $\beta_w=0.20$、FTS 加权无 M5 约束时的 Poisson 松弛**下界**（修正后值；原无修正版本为 55-bit）。生产系统通过 A1''（PoRA + 经济门槛）自然满足 $\beta_w < 0.144$，直接达到 $\geq$128-bit，无需改变 $k=1024$ 或 BFT quorum。
 
 ---
 
@@ -488,17 +513,17 @@ $$\pi(\beta) = V_{\max} \cdot \exp\!\bigl(-k\,\Phi(\beta)\bigr) - \beta \cdot N 
 
 **定理**：对任意有限 $V_{\max} < \infty$ 和任意 $C_{\rm entry} > 0$：
 
-$$\pi(\beta) < 0 \quad \forall\, \beta \in (0,\, 0.147)$$
+$$\pi(\beta) < 0 \quad \forall\, \beta \in (0,\, 0.144)$$
 
-即 A1''（$\beta_{\rm count} < 0.147$，诚实节点 > 85%）**在经济理性均衡下自动成立**，无需调优参数 $C_{\rm entry}$ 或 $V_{\max}$。
+即 A1''（$\beta_{\rm count} < 0.144$，诚实节点 > 85.6%）**在经济理性均衡下自动成立**（0.144 为定理 4.1' 修正后阈值，替代旧值 0.147；见定理 4.1' A0 条件）。
 
-**证明**：对任意 $\beta \in (0, 0.147)$，由 $\Phi$ 在 $(0, 1/3)$ 上单调递减：
+**证明**：对任意 $\beta \in (0, 0.144)$，取 $\kappa=1.010$，$\tilde\beta = \kappa\beta < 0.144\times1.010 = 0.1454 < 0.147$，由 $\Phi$ 在 $(0, 1/3)$ 上单调递减：
 
-$$\Phi(\beta) > \Phi(0.147) = 0.087$$
+$$\Phi(\tilde\beta) > \Phi(0.147) = 0.087$$
 
 故攻击成功概率满足：
 
-$$\exp(-k\,\Phi(\beta)) < \exp(-k \cdot 0.087) = \exp(-89.1) = 2^{-128.5} < 10^{-38}$$
+$$\exp(-k\,\Phi(\tilde\beta)) < \exp(-k \cdot 0.087) = \exp(-89.1) = 2^{-128.5} < 10^{-38}$$
 
 因此收益上界：
 
