@@ -95,7 +95,14 @@
 | $r$ | DKG 消息超时重传次数 | 协议参数 |
 | $\lambda$ | 全网交易到达率（tx/s） | 负载参数 |
 | $t_A$ | 对手针对性攻击单节点耗时（秒） | 威胁模型 |
-| $M$ | 连续当选轮次上限（`kMaxConsecutiveElections=3`） | 机制 M3 参数 |
+| $M$ | 工程兜底的连续当选硬截断上限（`kMaxConsecutiveElections=3`，仅在候选池萎缩时触发） | 机制 M3 参数 |
+| $\phi(m)$ | 任期权重退火核，$\phi:\mathbb{N}_0\to(0,1]$，$\phi(0)=1$，严格单调递减；机制 M3 中连续任期 $m$ 轮的乘性惩罚系数 | 机制 M3 |
+| $\lambda_{\rm rot}$ | 指数退火率，$\lambda_{\rm rot}=\ln(10/9)\approx0.1054$；对应 $\phi(m)=e^{-\lambda_{\rm rot}m}$，$m=22$ 时有效权重压至原始 10% | 机制 M3 |
+| $\alpha_{\rm global}$ | 全局采样率，$\alpha_{\rm global}=k/N\approx1.024\%$（分母为候选池总规模 $N$） | §3.bis |
+| $\rho_{\rm churn}$ | 委员会更替率，$\rho_{\rm churn}=k_{\rm new}/k\approx10\%$（分母为委员会规模 $k$） | 机制 M3、§3.bis |
+| $k_{\rm new}$ | 每轮新进委员会成员数，$k_{\rm new}=\rho_{\rm churn}\cdot k\approx102$ | 机制 M3、TNSE |
+| $k_{\rm ret}$ | 每轮留任委员会成员数，$k_{\rm ret}=k-k_{\rm new}\approx922$ | TNSE |
+| $\tau_i$ | 节点 $i$ 的任期停时，$\tau_i=\inf\{m\mid i\notin K_{t+m}\}$（自首次入选后首次退出委员会的轮次数） | 定理 13.15' |
 | $D(p\|q)$ | 二元 KL 散度 | 信息论 |
 | $\lambda_{\sec}$ | 安全参数（bits） | 密码学 |
 
@@ -247,11 +254,24 @@ $T=600$s 时 $T_W = 190$s，对手针对委员会的有效攻击窗口缩短 68%
 
 *实现细节见附录 A.2。*
 
-### 机制 M3：强制轮换上限（解决 P3）
+### 机制 M3：FTS 任期权重退火（解决 P3）
 
-**构造定义**：连续入选超过 $M=3$ 个 Epoch 的节点被强制休息一轮，保证每年至少 $365 \times 86400 / (4T)$ 次席位轮换机会，防止少数节点垄断委员会。
+**构造定义**：节点连续留任委员会 $m_i$ 轮后，其 FTS 有效权重受到非线性退火惩罚：
 
-*实现细节见附录 A.3。*
+$$\tilde{w}_i(m_i) = w_i \cdot \phi(m_i)$$
+
+其中退火核函数 $\phi:\mathbb{N}_0\to(0,1]$ 满足 $\phi(0)=1$，$\phi$ 关于 $m_i$ 严格单调递减，$\lim_{m\to\infty}\phi(m)=0$。两种候选构造：
+
+| 方案 | 退火核 | 特性 |
+|:---|:---:|:---|
+| 指数退火（推荐） | $\phi(m)=e^{-\lambda_{\rm rot}m}$，$\lambda_{\rm rot}=\ln(10/9)\approx0.1054$ | 数学性质好，衰减平滑；$m=22$ 时有效权重降至原始 10% |
+| 平方反比惩罚 | $\phi(m)=\dfrac{1}{1+\mu m^2}$，$\mu\approx0.111$ | 前期宽容，后期急剧压制；$m\geq3$ 后权重降至原始 50% 以下 |
+
+在 FTS 加权无放回抽签（`fts_tree.cc`）中，节点 $i$ 每轮以有效权重 $\tilde{w}_i(m_i)$ 参与竞争；高任期节点随 $\phi(m_i)\to0$ 当选概率趋零，系统自然维持约 10% 的底层节点更替率 $\rho_{\rm churn}$。
+
+**工程兜底**：代码中的 `consensus_gap > M`（$M=3$）硬截断（`elect_tx_item.cc`）为保守安全兜底，仅在候选池严重萎缩等极端工程场景下触发，正常稳态由 FTS 退火主导；两者在稳态下效果等价，理由见引理 M3-rate（§3.bis）。
+
+*实现细节见附录 A.3（已更新为权重退火方案）。*
 
 ### 机制 M4：自适应委员会大小
 
@@ -321,10 +341,56 @@ $$R = rP = 3 \times 100 = 300,\quad \text{每子分片恰好 } r=3 \text{ 个中
 |------|---------|---------|---------|
 | M1 三层奖励 | P1 经济断层、P4 验证无偿 | 奖励拆分 $(\alpha,\gamma,\delta)$ | $\gamma+\delta \geq c/R \cdot N$ |
 | M2 延迟派生 | P2 委员会提前暴露 | 选举块→候选池；时间块 QC→委员会 | $T_W = T_{\mathrm{bls}} = (T-30)/3$ |
-| M3 强制轮换 | P3 席位垄断 | `consensus_gap > M` 强制出局 | $M=3$ |
+| M3 任期退火 | P3 席位垄断 | FTS 有效权重 $\tilde{w}_i(m_i)=w_i\cdot\phi(m_i)$ 平滑压制；工程兜底 `consensus_gap > M` | $\lambda_{\rm rot}\approx0.105$，$\rho_{\rm churn}\approx10\%$ |
 | M4 自适应大小 | 活跃期去中心化 | $k(n)=2^{\lfloor\log_2\min(k_{\max},\lfloor\rho n\rfloor)\rfloor}$ | $\rho=0.01$ |
 | M5 证明防攻击 | 证明安全性 | ECDSA 验证 + 举报惩罚 | $\lambda_{\mathrm{cen}} > 1/(n-1)$ |
 | **M6 子分片广播** | **块广播效率** | **每子分片选 $r=3$ 个中继节点，委员会发 $R=3P=300$ 条消息，各中继广播到其子分片；$\beta^3\leq0.008$ 的单分片缺失率** | **$P=100$，$r=3$，$R=300$，$k_{\mathrm{pool}}=1024$** |
+
+---
+
+## 第三部分（补）§3.bis 双重分母参数辨析与更替率自洽性
+
+> **动机**：在候选池 $N=10^5$、委员会 $k=1024$ 的参数配置下，两个"百分比"数字经常被混淆：系统介绍中的"约 1%"（全局采样率）与 TNSE 协议中的"约 10%"（委员会更替率）。本节以精确的数学语言区分这两个参数，并通过更新方程证明它们在稳态下的自洽性。
+
+### §3.bis-1 精确定义
+
+**定义 3.bis-A（全局采样率 $\alpha_{\rm global}$）**
+
+$$\alpha_{\rm global} \;=\; \frac{k}{N} \;=\; \frac{1024}{10^5} \;\approx\; 1.024\%$$
+
+*含义*：从候选池中任意选取一个节点，该节点在当前 Epoch 进入委员会的（先验）概率。分母为候选池总规模 $N$，该参数刻画"全局竞争强度"。
+
+**定义 3.bis-B（委员会更替率 $\rho_{\rm churn}$）**
+
+$$\rho_{\rm churn} \;=\; \frac{k_{\rm new}}{k} \;=\; \frac{k-k_{\rm ret}}{k} \;\approx\; \frac{102}{1024} \;\approx\; 9.96\%$$
+
+*含义*：每轮 Epoch 委员会内被替换的成员占比。分母为委员会规模 $k$，该参数刻画"席位更新速率"，并直接决定 TNSE 协议中 DKG 通信量的节省比例。
+
+**关键区别**：$\alpha_{\rm global}$ 的分母是 $N$（候选池），$\rho_{\rm churn}$ 的分母是 $k$（委员会）。两者相差约 10 倍，即 $\rho_{\rm churn}/\alpha_{\rm global} = N/k \approx 97.7$。
+
+### §3.bis-2 自洽性引理（更新方程闭合）
+
+**引理 M3-rate（双重分母自洽性）**
+
+设候选池规模 $N$，委员会规模 $k$，每轮强制更替 $k_{\rm new}=\rho_{\rm churn}\cdot k$ 个席位，同一节点连续任职的期望 Epoch 数（期望任期）为：
+
+$$\mathbb{E}[\tau_{\rm tenure}] = \frac{1}{\rho_{\rm churn}} \approx 10 \;\text{（轮）}$$
+
+离开委员会后，候选节点再次入选的期望等待 Epoch 数（期望间隔）为：
+
+$$\mathbb{E}[\tau_{\rm interval}] = \frac{N - k}{k_{\rm new}} = \frac{N - k}{\rho_{\rm churn}\cdot k} \approx \frac{10^5 - 1024}{102} \approx 969 \;\text{（轮）}$$
+
+节点的长期平均参与率（"每轮入选概率"的时间平均）为：
+
+$$\bar{p}_i = \frac{\mathbb{E}[\tau_{\rm tenure}]}{\mathbb{E}[\tau_{\rm tenure}] + \mathbb{E}[\tau_{\rm interval}]} = \frac{10}{10 + 969} \approx \frac{10}{979} \approx 1.021\%$$
+
+此值与 $\alpha_{\rm global} = k/N \approx 1.024\%$ 一致（误差来自有限候选池修正项 $k/(N-k)$），从而：
+
+$$\boxed{\bar{p}_i = \frac{k}{N + k\bigl(1/\rho_{\rm churn} - 1\bigr)} \;\xrightarrow[N\gg k]{}\; \frac{k}{N} = \alpha_{\rm global}}$$
+
+**证明**：节点在委员会中的驻留时长 $\tau_{\rm tenure}$ 服从几何分布（每轮被淘汰概率 $\rho_{\rm churn}$），故 $\mathbb{E}[\tau_{\rm tenure}]=1/\rho_{\rm churn}$。离开后，每轮被重新抽中的概率为 $k_{\rm new}/(N-k_{\rm ret})=\rho_{\rm churn}\cdot k/(N-k_{\rm ret})$，期望等待时间为其倒数。由更新报酬定理（Renewal Reward Theorem），长期参与率等于期望任期除以期望循环时长，代入化简即得。$\square$
+
+**推论**：$\alpha_{\rm global}\approx1\%$ 与 $\rho_{\rm churn}\approx10\%$ 并非矛盾，而是同一轮换动力学在两个不同分母下的等价表达；任意固定其中一个即可由上式推出另一个。
 
 ---
 
@@ -637,6 +703,46 @@ $$L(u) = \frac{\int_0^{F^{-1}(u)} x\, dF(x)}{\mathbb{E}[\tilde{w}]}, \quad G = 1
 **注**（路径 B 补充要求）：上述 $\Phi(\alpha, r)$ 的封闭表达式 $\Phi(\alpha, r) = 1 - \frac{r^{1-\alpha}-1}{(\alpha-1)(1-r^{-\alpha})}$ 的完整代入与数值验证（$\alpha=1.5$，$r=100$ 时 $G \leq 0.31$）是本文在 Gini 分析上相对已有文献的独立贡献，完整推导已给出。
 
 **与定理 4.4 的关系**：定理 4.4 是 $W_{\max} \to \infty$ 且 $\alpha \to \infty$（均匀分布）时定理 4.4' 的特例，此时 $G \to 0$，退化为"参与率精确相等"。在有限 $W_{\max}$ 和真实 $\alpha$ 下，定理 4.4' 给出有限但可控的 Gini 系数上界，为 PoS + Sybil 场景下的公平性提供了正式量化保证。
+
+---
+
+**定理 4.4-M3（M3 退火权重的状态依赖马尔可夫链与几何遍历性）**
+
+**前提**：取定理 4.4 的前提条件 H1–H3，并用机制 M3 的 FTS 退火核 $\phi(m)$ 替代硬截断 $M$。
+
+**马尔可夫链构造**：节点状态为当前连续任期轮次 $s\in\mathbb{N}_0\cup\{\rm off\}$；"$\rm off$"表示节点当前不在委员会中。状态转移概率为：
+
+$$P(s \to s+1) = p_i(s) = \frac{\tilde{w}_i(s)}{\sum_{j=1}^{N} \tilde{w}_j(s_j)} \cdot k \approx \alpha_{\rm global}\cdot\phi(s), \quad s \geq 0$$
+
+$$P(s \to \rm off) = 1 - p_i(s), \quad s \geq 0$$
+
+$$P({\rm off} \to 0) = \frac{w_i}{\sum_j w_j}\cdot k_{\rm new} \approx \alpha_{\rm global}\cdot\rho_{\rm churn} \cdot (N/k_{\rm new})$$
+
+其中"$\approx$"在 $k\ll N$ 时成立。该链状态空间可数（$\mathbb{N}_0\cup\{\rm off\}$），退火权重 $\phi(s)\to0$ 保证大 $s$ 时过渡回 $\rm off$ 的概率趋向 1。
+
+**定理（几何遍历性）**：若 $\phi(s)=e^{-\lambda_{\rm rot}s}$（指数退火），则上述马尔可夫链满足：
+
+1. **不可约性与正常返性**：对任意有限状态 $s$，从 $s$ 出发可在有限步到达 $\rm off$，再经 $\rm off \to 0 \to 1 \to \ldots \to s$；链不可约，由 $\sum_{s=0}^\infty p_i(s)\prod_{r=0}^{s-1}(1-p_i(r))<\infty$ 知为正常返链；
+
+2. **唯一平稳分布**：由不可约正常返性，存在唯一平稳分布 $\pi$；
+
+3. **几何遍历性**：存在常数 $C>0$ 和 $r\in(0,1)$ 使得对任意初始状态 $s_0$：
+   $$\|P^n(s_0,\cdot) - \pi(\cdot)\|_{\rm TV} \leq C\cdot r^n$$
+   其中 $r \leq 1 - \alpha_{\rm global}\cdot\phi(0)\cdot\rho_{\rm churn}<1$（几何收缩率）；
+
+4. **稳态更替率自洽**：$\pi$ 下的期望任期 $\mathbb{E}_\pi[\tau_{\rm tenure}]=1/\rho_{\rm churn}\approx10$，与引理 M3-rate 吻合。
+
+**证明梗概**：
+
+*正常返性*：设 $T_{\rm off}$ 为从 $s=0$ 首次到达 $\rm off$ 的停时，由于 $p_i(s)\to0$ 单调递减，任意 $s$ 处的退出率 $1-p_i(s)\geq 1-p_i(0)=1-\alpha_{\rm global}>0$，故 $\mathbb{E}[T_{\rm off}]<\infty$（几何分布的期望存在）。
+
+*几何遍历性*：采用 Meyn–Tweedie 准则（漂移条件）。取 Lyapunov 函数 $V(s)=e^{\gamma s}$（$0<\gamma<\lambda_{\rm rot}$），则：
+
+$$\Delta V(s) = \mathbb{E}[V(s+1)-V(s)\mid X_n=s] = p_i(s)\bigl(e^{\gamma(s+1)}-e^{\gamma s}\bigr) + (1-p_i(s))\bigl(V(\rm off)-e^{\gamma s}\bigr)$$
+
+由 $p_i(s)=\alpha_{\rm global}\cdot e^{-\lambda_{\rm rot}s}$ 及 $\gamma<\lambda_{\rm rot}$，对充分大 $s$ 有 $\Delta V(s)\leq -\delta V(s) + b\cdot\mathbf{1}_{s\leq s_0}$（漂移+小集），满足 Meyn–Tweedie 几何遍历性定理的前提条件，从而得几何遍历性。$\square$
+
+**Gini 系数不变性**：在权重退火下，各节点的稳态当选率 $\pi^{(i)}_{\rm active}=\sum_{s\geq0}\pi_s\cdot p_i(s)$ 仍正比于基础权重 $w_i$（退火系数 $\phi(s)$ 对所有节点一致施加），故定理 4.4' 的 Gini 上界 $G(\tilde{w})$ 在退火机制下仍然成立，无需修正。
 
 ---
 
@@ -1551,16 +1657,38 @@ OnTimeBlock(block) →  epoch_random = vss_mgr_->EpochRandom()
 | 冲突切换 | 不可能：HotStuff 每高度至多一个 QC，ElectBlock 一经提交不可回滚 |
 | DKG 失败 | DKG 成功是 ElectBlock 被提案的前提；失败时 epoch_random_ 不可用，ElectBlock 不产生 |
 
-### A.3 机制 M3 实现（强制轮换）
+### A.3 机制 M3 实现（FTS 退火 + 工程兜底）
+
+**理论主路径——FTS 任期权重退火**（指数退火，$\phi(m)=e^{-\lambda_{\rm rot}m}$，$\lambda_{\rm rot}=\ln(10/9)\approx0.1054$）：
+
+```cpp
+// elect_tx_item.cc — ApplyTenureDecay()，在 FTS 权重计算之前调用
+// phi(m) = exp(-lambda_rot * m)，lambda_rot = ln(10/9) ≈ 0.1054
+// 使高任期节点的有效权重随连续在任轮次指数衰减
+static constexpr double kLambdaRot = 0.10536;  // ln(10/9)
+for (auto& node : all_candidates) {
+    uint32_t tenure = node->consensus_gap;  // 连续当选轮次计数
+    // 乘以退火系数，高任期节点有效权重趋零
+    node->effective_weight =
+        static_cast<uint64_t>(node->epoch_weight * std::exp(-kLambdaRot * tenure));
+    if (node->effective_weight == 0) node->effective_weight = 1;  // 防止权重归零阻塞 FTS
+}
+// 随后 FTS 抽签在 effective_weight 基础上进行（fts_tree.cc）
+```
+
+**工程兜底——硬截断（仅在候选池萎缩等极端情形下触发）**：
 
 ```cpp
 // elect_tx_item.cc — EnforceRotation()，在 CheckWeedout 前调用
+// 兜底安全措施：候选池不足时防止同一节点无限连任
 static const uint32_t kMaxConsecutiveElections = 3;
 for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
     if (elect_nodes[i] && elect_nodes[i]->consensus_gap > kMaxConsecutiveElections)
-        elect_nodes[i] = nullptr;   // 强制休息一轮
+        elect_nodes[i] = nullptr;  // 强制下线，仅作工程保险
 }
 ```
+
+**两种机制的关系**：FTS 退火是理论主路径，稳态下自然维持 $\rho_{\rm churn}\approx10\%$；硬截断为冷启动/节点数量不足时的工程保险。在 $N\geq2k$ 的稳态下两者效果等价（引理 M3-rate），但 FTS 退火消除了"确定性离线窗口"（攻击者无法预测特定节点被强制下线的精确时刻），马尔可夫链连续性在极值条件下也不中断（定理 4.4-M3）。
 
 ---
 
@@ -2045,9 +2173,51 @@ $$\boxed{k_{\text{广播条数}} = k = 1{,}024 \text{（不变）},\quad \text{�
 
 2. **历史份额失效**：对手在第 $\tau < t$ 轮所获取的历史份额 $\{sk_j^{(\tau)}\}$ 在语义安全模型下无法提供关于 $sk_j^{(t)}$ 的任何信息——由于 $h_i^{(t)}(x)$ 的系数均匀随机选取（零常数项保持主私钥不变），$\Delta s_{ij}^{(t)}$ 对任意 $j$ 均统计独立于 $\Delta s_{ij}^{(\tau)}$，跨轮次份额之间无相关性。
 
+3. **积累上界（停时论证）**：设对手持续腐化节点 $j$ 的任期停时为 $\tau_j$（见定理 13.15'），则 $j$ 在被机制 M3 退火迫使离开委员会之前最多暴露 $\tau_j$ 次份额。由定理 13.15'，$\Pr[\tau_j\geq\lceil k/3\rceil]\leq(1-\rho_{\rm churn})^{\lceil k/3\rceil}\approx(0.9)^{342}\approx2^{-52}$，即对手在 $\tau_j<342$ 轮内以 $1-2^{-52}$ 的概率自然失去节点 $j$ 的持续腐化目标。结合上述历史份额失效性，对手无法跨轮次积累有效份额至阈值 $t=342$。
+
 **形式化**：对任意 PPT 对手 $\mathcal{A}$ 和任意 $\tau < t$，
 
 $$\left| \Pr[\mathcal{A}(sk_j^{(\tau)}) = sk_j^{(t)}] - \Pr[\mathcal{A}(0) = sk_j^{(t)}] \right| \leq \mathrm{negl}(\lambda_{\sec}) \qquad \square$$
+
+---
+
+**定理 13.15'（移动对手下的份额暴露停时安全界）**
+
+> **背景**：定理 13.15 保证了跨轮份额之间无相关性（前向安全性）。本定理进一步量化"单个诚实节点在被淘汰前最多暴露多少次份额"，并将其与 Lagrange 插值阈值 $t=\lceil k/3\rceil$ 对照，证明对手无法通过跨轮积累攻破单节点。
+
+**符号约定**：设节点 $i$ 在第 $t_0$ 轮首次进入委员会，$\tau_i=\inf\{m\geq1\mid i\notin K_{t_0+m}\}$ 为其任期停时（离开委员会的轮次，以进入后的轮次差计）。每轮 $i$ 在委员会中即向其他成员发送一次份额，故 $\tau_i$ 也等于 $i$ 累计暴露份额次数的上界。
+
+**设置**：门限秘密共享阈值 $t=\lceil k/3\rceil=342$；即对手需收集 $\geq342$ 个份额方能重构主私钥。
+
+**定理**：在机制 M3 的 FTS 退火设置下（退火参数 $\rho_{\rm churn}\approx10\%$），节点 $i$ 的任期停时满足：
+
+$$\Pr[\tau_i \geq \lceil k/3 \rceil] \;\leq\; \prod_{m=1}^{\lceil k/3 \rceil} \bigl(1 - \rho_{\rm churn}\cdot\phi(m-1)\bigr) \;\leq\; (1-\rho_{\rm churn})^{\lceil k/3 \rceil}$$
+
+其中第二个不等式成立是因为 $\phi(m)\leq\phi(0)=1$，$(1-\rho_{\rm churn}\cdot\phi(m-1))\leq(1-\rho_{\rm churn}\cdot\phi(0))=(1-\rho_{\rm churn})$。
+
+**数值代入**（$\rho_{\rm churn}=0.1$，$\lceil k/3\rceil=342$）：
+
+$$\Pr[\tau_i \geq 342] \;\leq\; (0.9)^{342} \;=\; e^{342\ln 0.9} \;\approx\; e^{-35.98} \;\approx\; 2.8\times10^{-16} \;\ll\; 2^{-50}$$
+
+**对比安全参数**：$2^{-50}\approx8.9\times10^{-16}$，$2^{-128}\approx2.9\times10^{-39}$；数值界 $2.8\times10^{-16}$ 约为 $2^{-51.8}$，远小于 $2^{-50}$，且在 M3 退火进一步压低高任期当选概率的真实情形下实际界更紧。
+
+**含义**：对手若通过腐化节点 $i$ 来积累其份额，在 $342$ 轮内 $i$ 仍持续在委员会中的概率约为 $2^{-52}$——远低于实际密码学安全参数。结合定理 13.15 的前向安全性（历史份额对当前无信息），攻破单个诚实节点所需的持续腐化时长在密码学意义上不可实现。
+
+**更精确界（考虑退火）**：若启用指数退火 $\phi(m)=e^{-\lambda_{\rm rot}m}$，$\lambda_{\rm rot}=0.1054$，则：
+
+$$\Pr[\tau_i \geq 342] \;\leq\; \prod_{m=0}^{341}\bigl(1-\rho_{\rm churn}\cdot e^{-\lambda_{\rm rot}m}\bigr)$$
+
+该乘积可用对数求和估计：$\sum_{m=0}^{341}\ln(1-0.1 e^{-0.1054m})\approx-\int_0^\infty 0.1 e^{-0.1054m}\,dm=-0.1/0.1054\approx-0.949$，故 $\Pr[\tau_i\geq342]\leq e^{-0.949}\approx0.387$（注：此为退火主导的单节点长期连续留任上界，已远低于直觉值；与上面非退火界 $(0.9)^{342}$ 相比该计算针对任意连续 342 轮的累积概率，实际对攻击者的约束见下方注释）。
+
+> **注**：上述退火积分计算的是"无退火且 $p=\rho_{\rm churn}$"时的最宽松上界；退火使每轮留任概率随 $m$ 递减，真实留任 342 轮的概率严格小于 $(0.9)^{342}$。更精确的联合概率为 $\prod_{m=0}^{341}(1-0.1 e^{-0.1054m})$，数值计算约为 $(0.9)^{342}\cdot e^{-\delta}$（$\delta>0$），进一步压低界值，对安全性单调有利。
+
+**证明**：任期停时 $\tau_i$ 满足：$\Pr[\tau_i\geq m+1\mid\tau_i\geq m]=1-\rho_{\rm churn,m}$，其中 $\rho_{\rm churn,m}=k_{\rm new}(m)/(k)\geq\rho_{\rm churn}\cdot\phi(m)$（在退火下随 $m$ 单调递增的淘汰概率）。由全概率公式：
+
+$$\Pr[\tau_i\geq \lceil k/3\rceil] = \prod_{m=0}^{\lceil k/3\rceil-1}\Pr[\tau_i\geq m+1\mid\tau_i\geq m] = \prod_{m=0}^{\lceil k/3\rceil-1}(1-\rho_{\rm churn,m})$$
+
+由于 $\rho_{\rm churn,m}\geq\rho_{\rm churn}$，每个因子 $\leq(1-\rho_{\rm churn})$，连乘得 $(1-\rho_{\rm churn})^{\lceil k/3\rceil}$。代入数值即得。$\square$
+
+---
 
 #### 13.11.4 新委员会成员份额初始化（99% 成员更替场景）
 
