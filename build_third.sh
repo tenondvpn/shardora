@@ -522,11 +522,15 @@ if [ ! -d "$SRC_PATH/third_party/include/rocksdb" ]; then
     cd $SRC_PATH
     ensure_cmake_submodule third_party/rocksdb
     cd third_party/rocksdb && git checkout . && sed -i "s/-march=native//g" ./CMakeLists.txt && git submodule update --init
-    # Apply shardora patch: add GetSubValue(key, offset, length, out) to rocksdb::DB
+    # Apply shardora patch to source before compilation
     python3 "$SRC_PATH/scripts/patch_rocksdb_get_subvalue.py" \
         "$SRC_PATH/third_party/rocksdb/include/rocksdb/db.h"
     cd "$SRC_PATH/third_party/rocksdb" && cmake -S . -B build_release -DWITH_TESTS=OFF -DPORTABLE=1  -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" -DWITH_GFLAGS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SRC_PATH/third_party/ && cd build_release && make -j${nproc} && make install
 fi
+# GetSubValue is inline — patch only needs to be in the installed header, not librocksdb.a.
+# Run unconditionally (script is idempotent via PATCH_MARKER check).
+python3 "$SRC_PATH/scripts/patch_rocksdb_get_subvalue.py" \
+    "$SRC_PATH/third_party/include/rocksdb/db.h"
 require_installed_file "$SRC_PATH/third_party/include/rocksdb/db.h"
 require_installed_file "$SRC_PATH/third_party/lib/librocksdb.a"
 
