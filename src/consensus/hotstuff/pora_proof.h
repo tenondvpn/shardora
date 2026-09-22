@@ -29,12 +29,8 @@ inline uint64_t PoraHashToU64(const std::string& h) {
 // unpredictable random seed, selects a committed historical block, reads
 // kPoraKappa bytes at a random offset, and returns
 //   SHA256(sampled_bytes || sign_x || sign_y)
-// as the proof.
 //
-// Returns an empty string when no history is available (H_max == 0) or when
-// the historical block data cannot be read.  Callers must treat an empty
-// proof as "skip" — the first few blocks before any history exists have no
-// PoRA obligation.
+// Returns empty when no history is available yet (genesis / early blocks).
 inline std::string ComputePoraProof(
         const std::string& sign_x,
         const std::string& sign_y,
@@ -78,26 +74,6 @@ inline std::string ComputePoraProof(
     }
 
     return common::Hash::Sha256(sampled + seed);
-}
-
-// Verify a PoRA proof.  Returns true when the proof matches the recomputed
-// value.  An empty proof is accepted without check (no history yet).
-inline bool VerifyPoraProof(
-        const std::string& sign_x,
-        const std::string& sign_y,
-        uint32_t sharding_id,
-        uint32_t pool_index,
-        protos::PrefixDb* prefix_db,
-        const std::string& proof) {
-    if (proof.empty()) {
-        return true;  // genesis / no-history block: no obligation
-    }
-    const std::string expected = ComputePoraProof(
-        sign_x, sign_y, sharding_id, pool_index, prefix_db);
-    if (expected.empty()) {
-        return true;  // local history not yet available; give benefit of doubt
-    }
-    return proof == expected;
 }
 
 }  // namespace hotstuff

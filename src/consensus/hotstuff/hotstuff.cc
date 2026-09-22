@@ -1139,32 +1139,6 @@ Status Hotstuff::HandleProposeMsgStep_VerifyViewBlock(std::shared_ptr<ProposeMsg
         return Status::kError;
     }
 
-    // PoRA verification: replica checks that the leader actually held the
-    // challenged historical block data.  An empty proof is accepted when there
-    // is no committed history yet (genesis / early blocks).
-    {
-        const auto& view_block = *pro_msg_wrap->view_block_ptr;
-        // The seed is the parent block's QC BLS aggregate signature.
-        auto parent_info = view_block_chain()->Get(view_block.parent_hash());
-        const std::string sign_x = (parent_info && parent_info->view_block)
-            ? parent_info->view_block->qc().sign_x() : std::string();
-        const std::string sign_y = (parent_info && parent_info->view_block)
-            ? parent_info->view_block->qc().sign_y() : std::string();
-        if (!sign_x.empty() && !view_block.pora_proof().empty()) {
-            if (!VerifyPoraProof(
-                    sign_x, sign_y,
-                    common::GlobalInfo::Instance()->network_id(),
-                    pool_idx_,
-                    prefix_db_.get(),
-                    view_block.pora_proof())) {
-                SHARDORA_WARN("PoRA verify failed pool=%u view=%lu hash=%s",
-                    pool_idx_, view_block.qc().view(),
-                    common::Encode::HexEncode(view_block.qc().view_block_hash()).c_str());
-                return Status::kError;
-            }
-        }
-    }
-    
 #ifndef NDEBUG
     SHARDORA_DEBUG("====1.1 pool: %d, verify view block success, view: %lu, "
         "hash: %s, qc_view: %lu, hash64: %lu, propose_debug: %s",
@@ -2436,7 +2410,7 @@ Status Hotstuff::ConstructViewBlock(
             pool_idx_,
             prefix_db_.get());
         if (!pora.empty()) {
-            view_block->set_pora_proof(pora);
+            view_block->mutable_block_info()->set_pora_proof(pora);
             SHARDORA_DEBUG("PoRA proof generated pool=%u h_block=%lu proof_len=%zu",
                 pool_idx_, view_block->block_info().height(), pora.size());
         }
