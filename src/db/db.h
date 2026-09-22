@@ -233,6 +233,32 @@ public:
         return db_->Get(read_opt, DbSlice(key), value);
     }
 
+    // Read bytes [offset, offset+length) from the stored value of key.
+    // Returns NotFound if key does not exist.
+    // Returns InvalidArgument if offset >= value.size().
+    // If offset+length > value.size() the available suffix is returned.
+    DbStatus GetSubValue(const std::string& key,
+                         size_t offset, size_t length,
+                         std::string* out) {
+#ifdef LEVELDB
+        // LevelDB has no partial-value read API; fall back to full read + slice.
+        std::string full_value;
+        auto st = db_->Get(DbReadOptions(), DbSlice(key), &full_value);
+        if (!st.ok()) return st;
+        if (offset >= full_value.size()) {
+            return DbStatus::InvalidArgument("GetSubValue: offset out of range");
+        }
+        const size_t actual_len =
+            (length < full_value.size() - offset) ? length
+                                                   : (full_value.size() - offset);
+        out->assign(full_value.data() + offset, actual_len);
+        return st;
+#else
+        DbReadOptions read_opt;
+        return db_->GetSubValue(read_opt, DbSlice(key), offset, length, out);
+#endif
+    }
+
     std::vector<DbStatus> Get(const std::vector<DbSlice>& keys, std::vector<std::string>* value) {
         DbReadOptions read_opt;
         return std::vector<DbStatus>();
