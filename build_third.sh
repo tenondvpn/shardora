@@ -111,6 +111,11 @@ for required_file in "${required_installed_files[@]}"; do
 done
 
 if [ "$all_required_installed" = true ]; then
+    # Ensure the inline GetSubValue patch is present even on a cached build.
+    if [ -f "$SRC_PATH/third_party/include/rocksdb/db.h" ]; then
+        python3 "$SRC_PATH/scripts/patch_rocksdb_get_subvalue.py" \
+            "$SRC_PATH/third_party/include/rocksdb/db.h"
+    fi
     mkdir -p "$SRC_PATH/third_party"
     printf 'complete\n' > "$COMPLETE_MARKER"
     echo "Third-party install outputs are complete; skipping source submodule refresh."
