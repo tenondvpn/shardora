@@ -24,6 +24,7 @@ message ViewBlockItem {
     optional bytes debug = 5;
     optional bytes sync_tc_item = 6;       // transient: serialized QcItem (TC) piggybacked from sync server
     optional bytes sync_tc_ref_block = 7;  // transient: serialized ViewBlockItem referenced by sync_tc_item
+    optional bytes pora_proof = 8;         // PoRA: SHA256(block_bytes[offset:offset+kappa] || sign_x || sign_y)
 }
 
 message MemberConsensusStat {
