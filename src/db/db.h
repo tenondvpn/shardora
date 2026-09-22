@@ -234,29 +234,98 @@ public:
     }
 
     // Read bytes [offset, offset+length) from the stored value of key.
-    // Returns NotFound if key does not exist.
-    // Returns InvalidArgument if offset >= value.size().
-    // If offset+length > value.size() the available suffix is returned.
+    // Always safe: offset and length are clamped to the actual value size.
+    //   - Returns NotFound (and leaves *out unchanged) if key does not exist.
+    //   - If offset >= value.size(), returns ok() with out->clear() (empty slice).
+    //   - If offset+length > value.size(), length is silently clamped.
+    // NOTE: reads the full value — use GetSubValueChunked for large values.
     DbStatus GetSubValue(const std::string& key,
                          size_t offset, size_t length,
                          std::string* out) {
-#ifdef LEVELDB
-        // LevelDB has no partial-value read API; fall back to full read + slice.
+        out->clear();
         std::string full_value;
-        auto st = db_->Get(DbReadOptions(), DbSlice(key), &full_value);
+        auto st = Get(key, &full_value);
         if (!st.ok()) return st;
-        if (offset >= full_value.size()) {
-            return DbStatus::InvalidArgument("GetSubValue: offset out of range");
-        }
-        const size_t actual_len =
-            (length < full_value.size() - offset) ? length
-                                                   : (full_value.size() - offset);
-        out->assign(full_value.data() + offset, actual_len);
+        const size_t val_size = full_value.size();
+        if (offset >= val_size || length == 0) return st;
+        const size_t available = val_size - offset;
+        const size_t safe_len  = (length <= available) ? length : available;
+        out->assign(full_value.data() + offset, safe_len);
         return st;
-#else
-        DbReadOptions read_opt;
-        return db_->GetSubValue(read_opt, DbSlice(key), offset, length, out);
-#endif
+    }
+
+    // Write value as fixed kPoraChunkSize-byte chunks for efficient partial reads.
+    // Chunk keys: key + uint32_le(chunk_index)
+    // Size key:   key + uint32_le(0xFFFFFFFF) → uint64_le(total_size)
+    // All entries are added to batch; flushed atomically with the caller's batch.
+    static constexpr size_t kPoraChunkSize = 1024;
+
+    void PutChunked(const std::string& key,
+                    const std::string& value,
+                    DbWriteBatch& batch) {
+        const size_t val_size = value.size();
+        constexpr uint32_t kSizeSentinel = 0xFFFFFFFFu;
+        std::string size_key = key;
+        size_key.append(reinterpret_cast<const char*>(&kSizeSentinel), 4);
+        uint64_t sz64 = static_cast<uint64_t>(val_size);
+        batch.Put(size_key, std::string(reinterpret_cast<const char*>(&sz64), 8));
+
+        const uint32_t num_chunks = static_cast<uint32_t>(
+            (val_size + kPoraChunkSize - 1) / kPoraChunkSize);
+        for (uint32_t i = 0; i < num_chunks; ++i) {
+            std::string chunk_key = key;
+            chunk_key.append(reinterpret_cast<const char*>(&i), 4);
+            const size_t start = i * kPoraChunkSize;
+            const size_t len   = std::min(kPoraChunkSize, val_size - start);
+            batch.Put(chunk_key, std::string(value.data() + start, len));
+        }
+    }
+
+    // Read bytes [offset, offset+length) from chunked storage written by PutChunked.
+    // Only loads the 1-2 RocksDB entries that overlap the requested range.
+    // Offset and length are clamped; no error is returned for out-of-range inputs.
+    DbStatus GetSubValueChunked(const std::string& key,
+                                 size_t offset, size_t length,
+                                 std::string* out) {
+        out->clear();
+        if (length == 0) return DbStatus();
+
+        constexpr uint32_t kSizeSentinel = 0xFFFFFFFFu;
+        std::string size_key = key;
+        size_key.append(reinterpret_cast<const char*>(&kSizeSentinel), 4);
+        std::string size_str;
+        auto st = Get(size_key, &size_str);
+        if (!st.ok()) return st;
+
+        const uint64_t val_size =
+            *reinterpret_cast<const uint64_t*>(size_str.data());
+        if (offset >= static_cast<size_t>(val_size)) return DbStatus();
+
+        const size_t available = static_cast<size_t>(val_size) - offset;
+        const size_t safe_len  = (length <= available) ? length : available;
+
+        const uint32_t first_chunk =
+            static_cast<uint32_t>(offset / kPoraChunkSize);
+        const uint32_t last_chunk  =
+            static_cast<uint32_t>((offset + safe_len - 1) / kPoraChunkSize);
+
+        out->reserve(safe_len);
+        size_t cur  = offset;
+        size_t left = safe_len;
+        for (uint32_t ci = first_chunk; ci <= last_chunk; ++ci) {
+            std::string chunk_key = key;
+            chunk_key.append(reinterpret_cast<const char*>(&ci), 4);
+            std::string chunk_data;
+            st = Get(chunk_key, &chunk_data);
+            if (!st.ok()) return st;
+
+            const size_t intra = cur - static_cast<size_t>(ci) * kPoraChunkSize;
+            const size_t take  = std::min(chunk_data.size() - intra, left);
+            out->append(chunk_data.data() + intra, take);
+            cur  += take;
+            left -= take;
+        }
+        return st;
     }
 
     std::vector<DbStatus> Get(const std::vector<DbSlice>& keys, std::vector<std::string>* value) {

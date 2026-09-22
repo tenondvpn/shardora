@@ -17,25 +17,24 @@ PATCH_MARKER = "// shardora-patch: GetSubValue"
 NEW_METHODS = r"""
   // shardora-patch: GetSubValue
   // Read bytes [offset, offset+length) from the stored value of key.
+  // Always safe: offset and length are clamped to the actual value size.
   //   - Returns NotFound if key does not exist.
-  //   - Returns InvalidArgument if offset >= value.size().
-  //   - If offset+length > value.size() the available suffix is returned.
-  // This is a convenience wrapper around Get(); it reads the full value and
-  // then extracts the requested range.  Suitable for KB-sized values such as
-  // committed HotStuff blocks used by the PoRA storage-replication challenge.
+  //   - If offset >= value.size(), returns ok() with out->clear().
+  //   - If offset+length > value.size(), length is clamped to the available suffix.
   Status GetSubValue(const ReadOptions& options,
                      ColumnFamilyHandle* column_family, const Slice& key,
                      size_t offset, size_t length, std::string* out) {
+    out->clear();
     std::string full_value;
     Status s = Get(options, column_family, key, &full_value);
     if (!s.ok()) return s;
-    if (offset >= full_value.size()) {
-      return Status::InvalidArgument("GetSubValue: offset out of range");
+    const size_t val_size = full_value.size();
+    if (offset >= val_size || length == 0) {
+      return s;  // ok() with empty out
     }
-    const size_t actual_len =
-        (length < full_value.size() - offset) ? length
-                                               : (full_value.size() - offset);
-    out->assign(full_value.data() + offset, actual_len);
+    const size_t available = val_size - offset;
+    const size_t safe_len  = (length <= available) ? length : available;
+    out->assign(full_value.data() + offset, safe_len);
     return s;
   }
 

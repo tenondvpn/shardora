@@ -90,6 +90,7 @@ static const std::string kUserTxGidPrefix = "bd\x01";
 static const std::string kElectHeightWithElectBlock = "bd\x02";
 static const std::string kOverUniqueHash = "be\x02";
 static const std::string kLeaderLatestProposeMessage = "bf\x02";
+static const std::string kPoraChunkPrefix = "bg\x02";
 
 class PrefixDb {
 public:
@@ -431,6 +432,12 @@ public:
         std::string block_str;
         view_block.SerializeToString(&block_str);
         batch.Put(key, block_str);
+        // Store block in chunked format for efficient PoRA partial reads.
+        std::string chunk_base_key;
+        chunk_base_key.reserve(kPoraChunkPrefix.size() + view_block.qc().view_block_hash().size());
+        chunk_base_key.append(kPoraChunkPrefix);
+        chunk_base_key.append(view_block.qc().view_block_hash());
+        db_->PutChunked(chunk_base_key, block_str, batch);
         std::string view_key;
         view_key.reserve(48);
         view_key.append(kBlockVaildHeight);
@@ -533,6 +540,28 @@ public:
         }
 
         return GetBlockString(block_hash, block_str);
+    }
+
+    // Read bytes [offset, offset+length) from the serialized block at the given height.
+    // Uses chunked storage: only loads the 1-2 RocksDB entries covering the range.
+    // Offset and length are clamped; returns false only if the block does not exist.
+    bool GetBlockSubValue(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t height,
+            size_t offset,
+            size_t length,
+            std::string* out) {
+        std::string block_hash;
+        if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
+            return false;
+        }
+        std::string chunk_base_key;
+        chunk_base_key.reserve(kPoraChunkPrefix.size() + block_hash.size());
+        chunk_base_key.append(kPoraChunkPrefix);
+        chunk_base_key.append(block_hash);
+        auto st = db_->GetSubValueChunked(chunk_base_key, offset, length, out);
+        return st.ok();
     }
 
     void SaveLatestToTxsHeights(
