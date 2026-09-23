@@ -1174,7 +1174,7 @@ Status Hotstuff::HandleProposeMsgStep_Directly(
             true, 
             balance_map,
             shardora_host,
-            latest_qc_item_ptr_,) != Status::kSuccess) {
+            latest_qc_item_ptr_) != Status::kSuccess) {
         SHARDORA_DEBUG("====1.1.2 Accept pool: %d, verify view block failed, "
             "view: %lu, hash: %s, qc_view: %lu, hash64: %lu",
             pool_idx_,
