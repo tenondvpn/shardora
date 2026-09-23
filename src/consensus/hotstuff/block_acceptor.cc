@@ -472,7 +472,7 @@ Status BlockAcceptor::Accept(
         latest_qc_item_ptr->sign_x(), latest_qc_item_ptr->sign_y(),
         common::GlobalInfo::Instance()->network_id(),
         pool_idx_,
-        view_block.block_info().height() - 1llu,
+        view_block.block_info().height(),
         prefix_db_.get());
     if (!pora.empty()) {
         view_block.mutable_block_info()->set_pora_proof(pora);

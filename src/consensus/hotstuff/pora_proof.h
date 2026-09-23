@@ -38,6 +38,10 @@ inline std::string ComputePoraProof(
         uint32_t pool_index,
         uint64_t h_max,
         protos::PrefixDb* prefix_db) {
+    if (h_max <= 0) {
+        return {};
+    }
+    
     if (sign_x.empty() || sign_y.empty() || prefix_db == nullptr) {
         return {};
     }
@@ -45,7 +49,7 @@ inline std::string ComputePoraProof(
     const std::string seed = sign_x + sign_y;
     // Target block height: 1 .. h_max (inclusive).
     const std::string h_seed = common::Hash::Sha256(seed);
-    const uint64_t h_tgt = (PoraHashToU64(h_seed) % h_max) + 1;
+    const uint64_t h_tgt = (PoraHashToU64(h_seed) % h_max);
     // Random offset (GetBlockSubValue clamps for us).
     const std::string off_seed = common::Hash::Sha256(seed + "off");
     const size_t offset = static_cast<size_t>(PoraHashToU64(off_seed));
