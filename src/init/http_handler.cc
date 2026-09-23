@@ -538,9 +538,13 @@ static int CreateTransactionWithAttr(
 
     auto contract_bytes = req.get_param_value("bytes_code");
     if (step_val == pools::protobuf::kCreateLibrary || step_val == pools::protobuf::kCreateContract) {
+        SHARDORA_INFO("contract bytecode hex_len=%zu", contract_bytes.size());
         contract_bytes = common::Encode::HexDecode(contract_bytes);
-        if (common::IsContractBytescodeValid(contract_bytes) != common::ValidationStatus::SUCCESS) {
-            SHARDORA_INFO("create contract not has valid contract code: %s",
+        SHARDORA_INFO("contract bytecode bin_len=%zu", contract_bytes.size());
+        auto valid_status = common::IsContractBytescodeValid(contract_bytes);
+        if (valid_status != common::ValidationStatus::SUCCESS) {
+            SHARDORA_INFO("create contract not has valid contract code: status=%d hex=%s",
+                (int)valid_status,
                 common::Encode::HexEncode(contract_bytes).c_str());
             return kHttpError;
         }
