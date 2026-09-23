@@ -955,5 +955,46 @@ std::string Explorer::QueryChainInfo() {
     return JsonOk(result);
 }
 
+std::string Explorer::UpdateContract(const std::string& addr,
+                                     const std::string& source_code,
+                                     const std::string& abi,
+                                     const std::string& bytecode) {
+    // UPSERT: insert if not exists, update source_code/abi/bytecode if it does.
+    const char* sql =
+        "INSERT INTO contracts(addr,source_code,abi,bytecode,updated_at)"
+        " VALUES(?,?,?,?,?)"
+        " ON CONFLICT(addr) DO UPDATE SET"
+        "  source_code=excluded.source_code,"
+        "  abi=excluded.abi,"
+        "  bytecode=CASE WHEN excluded.bytecode!='' THEN excluded.bytecode ELSE bytecode END,"
+        "  updated_at=excluded.updated_at;";
+    int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(write_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
+        return JsonErr("prepare failed");
+    sqlite3_bind_text (stmt, 1, addr.c_str(),        -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 2, source_code.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 3, abi.c_str(),         -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 4, bytecode.c_str(),    -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 5, now_ms);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) return JsonErr(std::string("update failed: ") + sqlite3_errmsg(write_db_));
+    return JsonOk(json::object());
+}
+
+std::string Explorer::DeleteContract(const std::string& addr) {
+    const char* sql = "DELETE FROM contracts WHERE addr=?;";
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(write_db_, sql, -1, &stmt, nullptr) != SQLITE_OK)
+        return JsonErr("prepare failed");
+    sqlite3_bind_text(stmt, 1, addr.c_str(), -1, SQLITE_TRANSIENT);
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (rc != SQLITE_DONE) return JsonErr(std::string("delete failed: ") + sqlite3_errmsg(write_db_));
+    return JsonOk(json::object());
+}
+
 }  // namespace explorer
 }  // namespace shardora

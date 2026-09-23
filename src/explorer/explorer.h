@@ -51,6 +51,11 @@ public:
     std::string QueryContract(const std::string& addr);
     std::string QueryGasPresets();
     std::string QueryChainInfo();
+    std::string UpdateContract(const std::string& addr,
+                               const std::string& source_code,
+                               const std::string& abi,
+                               const std::string& bytecode);
+    std::string DeleteContract(const std::string& addr);
 
 private:
     void FlushLoop();

@@ -172,5 +172,53 @@ void ExplorerAddresses(const init::UWSRequest& req, init::UWSResponse& res) {
         kJson);
 }
 
+// POST /explorer/contract/update
+// Body (JSON): {"addr":"...","source_code":"...","abi":"...","bytecode":"..."}
+void ExplorerUpdateContract(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+
+    std::string addr, source_code, abi, bytecode;
+    if (!req.body.empty()) {
+        try {
+            auto j = nlohmann::json::parse(req.body);
+            addr        = j.value("addr", "");
+            source_code = j.value("source_code", "");
+            abi         = j.value("abi", "");
+            bytecode    = j.value("bytecode", "");
+        } catch (...) {}
+    }
+    if (addr.empty())        addr        = ParamStr(req, "addr");
+    if (source_code.empty()) source_code = ParamStr(req, "source_code");
+    if (abi.empty())         abi         = ParamStr(req, "abi");
+    if (bytecode.empty())    bytecode    = ParamStr(req, "bytecode");
+
+    if (addr.empty()) {
+        res.set_content(R"({"code":-1,"msg":"addr required"})", kJson);
+        return;
+    }
+    res.set_content(g_explorer->UpdateContract(addr, source_code, abi, bytecode), kJson);
+}
+
+// POST /explorer/contract/delete
+// Body (JSON): {"addr":"..."}
+void ExplorerDeleteContract(const init::UWSRequest& req, init::UWSResponse& res) {
+    if (!g_explorer) { res.set_content(kNoExplorer, kJson); return; }
+
+    std::string addr;
+    if (!req.body.empty()) {
+        try {
+            auto j = nlohmann::json::parse(req.body);
+            addr = j.value("addr", "");
+        } catch (...) {}
+    }
+    if (addr.empty()) addr = ParamStr(req, "addr");
+
+    if (addr.empty()) {
+        res.set_content(R"({"code":-1,"msg":"addr required"})", kJson);
+        return;
+    }
+    res.set_content(g_explorer->DeleteContract(addr), kJson);
+}
+
 }  // namespace explorer
 }  // namespace shardora

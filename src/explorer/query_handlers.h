@@ -27,6 +27,11 @@ void ExplorerContract   (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerGasPresets (const init::UWSRequest& req, init::UWSResponse& res);
 void ExplorerChainInfo  (const init::UWSRequest& req, init::UWSResponse& res);
 
+// POST /explorer/contract/update  — upsert source_code, abi, bytecode
+// POST /explorer/contract/delete  — remove contract record
+void ExplorerUpdateContract(const init::UWSRequest& req, init::UWSResponse& res);
+void ExplorerDeleteContract(const init::UWSRequest& req, init::UWSResponse& res);
+
 // Global explorer instance — set by NetworkInit, used by handlers
 void SetGlobalExplorer(std::shared_ptr<Explorer> explorer);
 

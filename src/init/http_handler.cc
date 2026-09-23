@@ -3026,7 +3026,7 @@ void HttpHandler::Run() {
     ).options("/explorer/*", [](auto *res, auto *req) {
         res->writeStatus("204 No Content")
            ->writeHeader("Access-Control-Allow-Origin", "*")
-           ->writeHeader("Access-Control-Allow-Methods", "GET, OPTIONS")
+           ->writeHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
            ->writeHeader("Access-Control-Allow-Headers", "Content-Type")
            ->end();
     }).get("/explorer/blocks",       explorerHandler(explorer::ExplorerBlocks,     "/explorer/blocks"))
@@ -3040,6 +3040,8 @@ void HttpHandler::Run() {
     .get("/explorer/gas-presets",   explorerHandler(explorer::ExplorerGasPresets,  "/explorer/gas-presets"))
     .get("/explorer/chain-info",    explorerHandler(explorer::ExplorerChainInfo,   "/explorer/chain-info"))
     .get("/explorer/addresses",     explorerHandler(explorer::ExplorerAddresses,   "/explorer/addresses"))
+    .post("/explorer/contract/update", explorerHandler(explorer::ExplorerUpdateContract, "/explorer/contract/update"))
+    .post("/explorer/contract/delete", explorerHandler(explorer::ExplorerDeleteContract, "/explorer/contract/delete"))
     .listen("0.0.0.0", http_port_, [this](auto *listen_socket) {
         if (listen_socket) {
             SHARDORA_INFO("HTTPS server listening on 0.0.0.0:%d", http_port_);
