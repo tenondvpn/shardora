@@ -14,6 +14,7 @@
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
 #include "consensus/hotstuff/block_executor.h"
+#include "consensus/hotstuff/pora_proof.h"
 #include "consensus/hotstuff/types.h"
 #include "consensus/hotstuff/view_block_chain.h"
 #include "consensus/zbft/contract_call.h"
