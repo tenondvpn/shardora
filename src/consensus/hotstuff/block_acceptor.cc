@@ -378,6 +378,7 @@ Status BlockAcceptor::Accept(
         bool directly_user_leader_txs,
         BalanceAndNonceMap& balance_and_nonce_map,
         shardoravm::ShardorahainHost& shardora_host,
+        std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map) {
     auto accept_begin_ms = common::TimeUtils::TimestampMs();
     auto& msg_ptr = pro_msg_wrap->msg_ptr;
@@ -463,6 +464,22 @@ Status BlockAcceptor::Accept(
             (get_txs_end_ms - get_txs_begin_ms),
             (txs_ptr ? txs_ptr->txs.size() : 0));
         return s;
+    }
+
+    // PoRA: compute proof using parent block's BLS aggregate signature as seed.
+    auto pora = ComputePoraProof(
+        latest_qc_item_ptr->sign_x(), latest_qc_item_ptr->sign_y(),
+        common::GlobalInfo::Instance()->network_id(),
+        pool_idx_,
+        view_block.block_info().height() - 1llu,
+        prefix_db_.get());
+    if (!pora.empty()) {
+        view_block->mutable_block_info()->set_pora_proof(pora);
+        SHARDORA_DEBUG("PoRA proof generated pool=%u h_block=%lu proof_len=%zu",
+            pool_idx_, view_block->block_info().height(), pora.size());
+    } else {
+        SHARDORA_DEBUG("PoRA proof generated pool=%u h_block=%lu proof_len=%zu",
+            pool_idx_, view_block->block_info().height(), pora.size());
     }
 
     // 3. Do txs and create block_tx.

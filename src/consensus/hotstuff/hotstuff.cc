@@ -1272,6 +1272,7 @@ Status Hotstuff::HandleProposeMsgStep_TxAccept(std::shared_ptr<ProposeMsgWrapper
         false, 
         balance_and_nonce_map,
         shardora_host,
+        latest_qc_item_ptr_,
         pro_msg_wrap->leader_nonce_map.get());
     if (s != Status::kSuccess) {
 #ifndef NDEBUG
@@ -2400,22 +2401,6 @@ Status Hotstuff::ConstructViewBlock(
     }
     
     ADD_DEBUG_PROCESS_TIMESTAMP();
-
-    // PoRA: compute proof using parent block's BLS aggregate signature as seed.
-    const auto& parent_qc = pre_v_block->qc();
-    if (!parent_qc.sign_x().empty() && !parent_qc.sign_y().empty()) {
-        auto pora = ComputePoraProof(
-            parent_qc.sign_x(), parent_qc.sign_y(),
-            common::GlobalInfo::Instance()->network_id(),
-            pool_idx_,
-            prefix_db_.get());
-        if (!pora.empty()) {
-            view_block->mutable_block_info()->set_pora_proof(pora);
-            SHARDORA_DEBUG("PoRA proof generated pool=%u h_block=%lu proof_len=%zu",
-                pool_idx_, view_block->block_info().height(), pora.size());
-        }
-    }
-
     return Status::kSuccess;
 }
 

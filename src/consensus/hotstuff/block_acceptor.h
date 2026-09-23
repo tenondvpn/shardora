@@ -63,6 +63,7 @@ public:
         bool directly_user_leader_txs,
         BalanceAndNonceMap& balance_map,
         shardoravm::ShardorahainHost& shardora_host,
+        std::shared_ptr<view_block::protobuf::QcItem> latest_qc_item_ptr,
         std::unordered_map<std::string, uint64_t>* out_leader_nonce_map = nullptr) = 0;
     // Accept a block and txs in it from sync msg.
     virtual Status AcceptSync(const view_block::protobuf::ViewBlockItem& block) = 0;
